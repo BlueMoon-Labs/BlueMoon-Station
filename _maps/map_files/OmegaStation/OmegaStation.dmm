@@ -8609,7 +8609,7 @@
 	id = "detectivewindows";
 	name = "HoS Privacy Blast door"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "aqz" = (
@@ -37843,7 +37843,7 @@
 /area/maintenance/starboard/aft)
 "pjU" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/yellow/hidden{
+/obj/machinery/atmospherics/pipe/simple/green/hidden{
 	dir = 6
 	},
 /turf/closed/wall/r_wall,

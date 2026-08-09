@@ -60,7 +60,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 	/// Sample fields worth averaging in the summary record.
 	var/static/list/summary_fields = list(
 		"cost", "tu", "tks",
-		"c_rb", "c_pn", "c_am", "c_at", "c_eq", "c_eg", "c_pp", "c_hp", "c_hs", "c_sc",
+		"c_rb", "c_pn", "c_am", "c_at", "c_at_raw", "c_ao", "c_eq", "c_eg", "c_pp", "c_hp", "c_hs", "c_sc",
 		"at", "eg", "hs", "hpd", "gm", "egt", "eqn",
 		"td_c", "td_f", "cpu", "mcpu",
 	)
@@ -70,6 +70,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"c_pn" = "pipenets",
 		"c_am" = "machinery",
 		"c_at" = "active turfs",
+		"c_ao" = "atmos-sensitive atoms",
 		"c_eq" = "equalize",
 		"c_eg" = "excited groups",
 		"c_pp" = "post process",
@@ -117,8 +118,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"ssair_wait" = SSair.wait,
 		"equalize_enabled" = SSair.equalize_enabled,
 		"heat_enabled" = SSair.heat_enabled,
-		"share_max_steps_target" = SSair.share_max_steps_target,
-		"eg_pressure_goal" = SSair.excited_group_pressure_goal_target,
+		"atmos_speed" = SSair.atmos_speed,
 		"atmos_speed_multiplier" = CONFIG_GET(number/atmos_speed_multiplier),
 		"byond" = "[world.byond_version].[world.byond_build]",
 		"active_turfs_now" = length(SSair.active_turfs),
@@ -134,6 +134,8 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"c_pn" = "pipenet processing ms",
 			"c_am" = "atmos machinery ms",
 			"c_at" = "active turf share/react ms",
+			"c_at_raw" = "same phase, unsmoothed: cost of the single last fire, so spike amplitude survives",
+			"c_ao" = "opt-in atmos-sensitive atom processing ms",
 			"c_eq" = "equalize (zone pressure) ms",
 			"c_eg" = "excited group processing ms",
 			"c_pp" = "turf sleep-check post process ms",
@@ -141,12 +143,13 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"c_hs" = "hotspot (fire) ms",
 			"c_sc" = "turf superconduction ms",
 			"at" = "active turfs",
+			"ao" = "opt-in atmos-sensitive atoms",
 			"eg" = "excited groups",
 			"hs" = "hotspots",
 			"pn" = "pipenets",
 			"am" = "processing (awake) atmos machines",
 			"ami" = "sleeping atmos machines waiting in the idle heartbeat queue",
-			"hpd" = "high pressure delta turfs",
+			"hpd" = "turfs the high pressure phase moved things on last fire (the queue itself is drained by then)",
 			"rbq" = "pipenets awaiting rebuild",
 			"gm" = "alive gas mixtures",
 			"gma" = "gas mixture high-water mark",
@@ -160,7 +163,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"cpu" = "world.cpu",
 			"mcpu" = "world.map_cpu",
 			"cl" = "connected clients",
-			"sms" = "share_max_steps now (< target means adaptive throttle engaged)",
+			"wt" = "SSair.wait now in deciseconds (> header ssair_wait means the lag valve slowed the cadence, < means the speed lever is up)",
 			"adjq" = "SSadjacent_air queue length",
 			"hbw" = "machines the idle heartbeat returned for a recheck on the last machinery pass (rotation share of c_am)",
 			"pnu" = "pipenets flagged dirty (update=TRUE) at sample time - they reconcile next fire",
@@ -188,6 +191,8 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"c_pn" = round(air.cost_pipenets, 0.01),
 		"c_am" = round(air.cost_atmos_machinery, 0.01),
 		"c_at" = round(air.cost_turfs, 0.01),
+		"c_at_raw" = round(air.cost_turfs_last, 0.01),
+		"c_ao" = round(air.cost_atmos_atoms, 0.01),
 		"c_eq" = round(air.cost_equalize, 0.01),
 		"c_eg" = round(air.cost_groups, 0.01),
 		"c_pp" = round(air.cost_post_process, 0.01),
@@ -195,13 +200,15 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"c_hs" = round(air.cost_hotspots, 0.01),
 		"c_sc" = round(air.cost_superconductivity, 0.01),
 		"at" = length(air.active_turfs),
+		"ao" = length(air.atom_process),
 		"eg" = length(air.excited_groups),
 		"hs" = length(air.hotspots),
 		"pn" = length(air.networks),
 		"am" = length(air.atmos_machinery),
-		"ami" = length(air.atmos_idle_queue),
-		"hpd" = length(air.high_pressure_delta),
+		"ami" = air.idle_machine_count(),
+		"hpd" = air.high_pressure_processed,
 		"rbq" = length(air.pipenets_needing_rebuilt),
+		"epq" = length(air.expansion_queue),
 		"gm" = air.gas_mixes_count,
 		"gma" = air.gas_mixes_allocated,
 		"egt" = air.num_group_turfs_processed,
@@ -214,7 +221,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"cpu" = round(world.cpu, 0.1),
 		"mcpu" = round(world.map_cpu, 0.1),
 		"cl" = length(GLOB.clients),
-		"sms" = air.share_max_steps,
+		"wt" = air.wait,
 		"adjq" = length(SSadjacent_air.queue),
 		"hbw" = air.heartbeat_wakes_last,
 		"pnu" = air.count_dirty_pipenets(),
@@ -387,7 +394,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 	var/total_machines = 0
 	// Awake machines plus sleepers in the heartbeat queue. Machines that left
 	// via PROCESS_KILL (settled canisters, empty connectors) are not counted.
-	for(var/obj/machinery/machine as anything in (SSair.atmos_machinery.Copy() + SSair.atmos_idle_queue.Copy()))
+	for(var/obj/machinery/machine as anything in (SSair.atmos_machinery.Copy() + SSair.idle_machine_list()))
 		if(!machine)
 			continue
 		total_machines++
@@ -494,14 +501,227 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 #endif
 /// Deep per-turf snapshot every this many completed cycles.
 #define ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY 15
+#define ATMOS_HEADLESS_ROOM_WIDTH 50
+#define ATMOS_HEADLESS_ROOM_HEIGHT 40
+#define ATMOS_HEADLESS_ROOM_OUTER_WIDTH (ATMOS_HEADLESS_ROOM_WIDTH + 2)
+#define ATMOS_HEADLESS_ROOM_OUTER_HEIGHT (ATMOS_HEADLESS_ROOM_HEIGHT + 2)
+#define ATMOS_HEADLESS_ROOM_GAP 4
+#define ATMOS_HEADLESS_ROOM_COUNT 4
+#define ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE 20
 
 GLOBAL_VAR_INIT(atmos_headless_bench_path, "data/atmos_headless_bench_[time2text(world.realtime, "YYYY-MM-DD_hh.mm.ss")].jsonl")
 GLOBAL_VAR_INIT(atmos_headless_bench_snapshot_running, FALSE)
 GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 
+/area/atmos_headless_bench
+	name = "Atmos Headless Bench"
+	requires_power = FALSE
+	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
+	has_gravity = STANDARD_GRAVITY
+
+/area/atmos_headless_bench/one
+/area/atmos_headless_bench/two
+/area/atmos_headless_bench/three
+/area/atmos_headless_bench/four
+
 /datum/controller/subsystem/air
 	/// Completed finish-phase cycles since round start (bench cadence counter).
 	var/headless_bench_cycles = 0
+	/// Number of MC invocations used by the currently completing SSair fire.
+	var/headless_bench_mc_slices = 1
+	var/headless_bench_scenario_checked = FALSE
+	var/headless_bench_scenario
+	var/headless_bench_scenario_building = FALSE
+	var/headless_bench_scenario_ready = FALSE
+	var/headless_bench_breach_cycle = ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE
+	var/headless_bench_breach_count = 1
+	var/headless_bench_firelocks = TRUE
+	var/datum/turf_reservation/headless_bench_reservation
+	var/list/turf/open/headless_bench_room_turfs = list()
+	var/list/turf/headless_bench_breach_turfs = list()
+	var/list/obj/machinery/door/firedoor/headless_bench_firedoors = list()
+	var/list/area/headless_bench_areas = list()
+	/// Buffered so benchmark logging does not inflate the excited-group phase it
+	/// is supposed to measure.
+	var/list/headless_bench_breakdown_records = list()
+
+/// Reads the optional synthetic scenario parameters exactly once.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_configure()
+	if(headless_bench_scenario_checked)
+		return
+	headless_bench_scenario_checked = TRUE
+	// A/B-рычаг спящих рёбер: "atmos-bench-sleeping-edges=1" включает фичу на
+	// весь прогон, любое другое значение/отсутствие - оставляет конфигный дефолт.
+	if(world.params["atmos-bench-sleeping-edges"] == "1")
+		sleeping_edges_enabled = TRUE
+	headless_bench_scenario = world.params["atmos-bench-scenario"]
+	if(!headless_bench_scenario)
+		headless_bench_scenario_ready = TRUE
+		return
+	// The generic event cycle; the old breach-cycle spelling stays as an alias.
+	headless_bench_breach_cycle = max(1, text2num(world.params["atmos-bench-event-cycle"]) || text2num(world.params["atmos-bench-breach-cycle"]) || ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE)
+	headless_bench_breach_count = clamp(text2num(world.params["atmos-bench-breaches"]) || 1, 1, ATMOS_HEADLESS_ROOM_COUNT)
+	var/firelock_param = world.params["atmos-bench-firelocks"]
+	headless_bench_firelocks = isnull(firelock_param) || firelock_param != "0"
+
+/// Builds four independent 50x40 rooms on a reserved z-level. Each has a
+/// central open firelock; disabling firelocks welds it open so the topology is
+/// identical but pressure-stop cannot close it. The west hull wall is retained
+/// as each room's deterministic breach point.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_multi_breach()
+	can_fire = FALSE
+	var/reservation_width = ATMOS_HEADLESS_ROOM_OUTER_WIDTH * 2 + ATMOS_HEADLESS_ROOM_GAP
+	var/reservation_height = ATMOS_HEADLESS_ROOM_OUTER_HEIGHT * 2 + ATMOS_HEADLESS_ROOM_GAP
+	headless_bench_reservation = SSmapping.RequestBlockReservation(reservation_width, reservation_height)
+	if(!headless_bench_reservation)
+		log_world("ATMOS-BENCH: failed to reserve the multi-breach arena")
+		GLOB.atmos_headless_bench_finished = TRUE
+		can_fire = TRUE
+		del(world)
+		return
+
+	var/list/area_types = list(
+		/area/atmos_headless_bench/one,
+		/area/atmos_headless_bench/two,
+		/area/atmos_headless_bench/three,
+		/area/atmos_headless_bench/four,
+	)
+	var/base_x = headless_bench_reservation.bottom_left_coords[1]
+	var/base_y = headless_bench_reservation.bottom_left_coords[2]
+	var/base_z = headless_bench_reservation.bottom_left_coords[3]
+	for(var/room_index in 1 to ATMOS_HEADLESS_ROOM_COUNT)
+		var/column = (room_index - 1) % 2
+		var/row = round((room_index - 1) / 2)
+		var/origin_x = base_x + column * (ATMOS_HEADLESS_ROOM_OUTER_WIDTH + ATMOS_HEADLESS_ROOM_GAP)
+		var/origin_y = base_y + row * (ATMOS_HEADLESS_ROOM_OUTER_HEIGHT + ATMOS_HEADLESS_ROOM_GAP)
+		var/divider_x = origin_x + round(ATMOS_HEADLESS_ROOM_OUTER_WIDTH / 2)
+		var/door_y = origin_y + round(ATMOS_HEADLESS_ROOM_OUTER_HEIGHT / 2)
+		var/room_area_type = area_types[room_index]
+		var/area/room_area = new room_area_type
+		room_area.name = "Atmos Headless Bench [room_index]"
+		headless_bench_areas += room_area
+		for(var/x in origin_x to origin_x + ATMOS_HEADLESS_ROOM_OUTER_WIDTH - 1)
+			for(var/y in origin_y to origin_y + ATMOS_HEADLESS_ROOM_OUTER_HEIGHT - 1)
+				var/turf/T = locate(x, y, base_z)
+				var/area/old_area = T.loc
+				room_area.contents += T
+				T.change_area(old_area, room_area, skip_blend = TRUE)
+				var/outer_wall = x == origin_x || x == origin_x + ATMOS_HEADLESS_ROOM_OUTER_WIDTH - 1 || y == origin_y || y == origin_y + ATMOS_HEADLESS_ROOM_OUTER_HEIGHT - 1
+				var/divider_wall = x == divider_x && y != door_y
+				if(outer_wall || divider_wall)
+					T.ChangeTurf(/turf/closed/wall)
+				else
+					var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
+					headless_bench_room_turfs += floor
+				CHECK_TICK
+		room_area.reg_in_areas_in_z()
+		var/turf/door_turf = locate(divider_x, door_y, base_z)
+		var/obj/machinery/door/firedoor/firedoor = new(door_turf)
+		if(!headless_bench_firelocks)
+			// An open welded firelock preserves the exact same open adjacency but
+			// ignores both firealert and emergency pressure-stop closure.
+			firedoor.welded = TRUE
+		firedoor.CalculateAffectingAreas()
+		headless_bench_firedoors += firedoor
+		new /obj/machinery/airalarm(locate(origin_x + ATMOS_HEADLESS_ROOM_WIDTH - 5, door_y, base_z))
+		headless_bench_breach_turfs += locate(origin_x, door_y, base_z)
+
+	// ChangeTurf's deferred adjacency queue is intentionally bypassed here so
+	// every run starts from the same fully-connected room graph.
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		T.ImmediateCalculateAdjacentTurfs()
+		add_to_active(T)
+		CHECK_TICK
+	headless_bench_scenario_ready = TRUE
+	headless_bench_scenario_building = FALSE
+	can_fire = TRUE
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "scenario_ready",
+		"scenario" = headless_bench_scenario,
+		"rooms" = ATMOS_HEADLESS_ROOM_COUNT,
+		"room_turfs" = ATMOS_HEADLESS_ROOM_WIDTH * ATMOS_HEADLESS_ROOM_HEIGHT,
+		"breaches" = headless_bench_breach_count,
+		"breach_cycle" = headless_bench_breach_cycle,
+		"firelocks" = headless_bench_firelocks,
+		"seed" = Master.random_seed,
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+	log_world("ATMOS-BENCH: multi-breach arena ready ([headless_bench_breach_count] breach(es), firelocks [headless_bench_firelocks ? "enabled" : "disabled"])")
+
+/datum/controller/subsystem/air/proc/atmos_headless_bench_open_breaches()
+	for(var/index in 1 to headless_bench_breach_count)
+		var/turf/breach = headless_bench_breach_turfs[index]
+		if(!breach)
+			continue
+		breach.ChangeTurf(/turf/open/space)
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "breach",
+		"cyc" = headless_bench_cycles,
+		"breaches" = headless_bench_breach_count,
+		"firelocks" = headless_bench_firelocks,
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+
+/datum/controller/subsystem/air/proc/atmos_headless_bench_record_breakdown(members, duration, slices, completed)
+	headless_bench_breakdown_records += list(list(
+		"rec" = "breakdown",
+		"cyc" = headless_bench_cycles,
+		"members" = members,
+		"duration_ds" = duration,
+		"slices" = slices,
+		"completed" = completed,
+		"t" = world.time,
+	))
+
+/// Intra-phase profiler driver for the active turf pass.
+///
+/// The turf phase is the most expensive part of SSair and used to report one
+/// number, so every optimisation guess about process_cell was blind. The
+/// ATMOS_TPROF_* macros split it into named slots; this proc arms them for
+/// exactly one cycle per snapshot interval and writes the harvest as a `tprof`
+/// record. Arming for one cycle at a time is what keeps the instrumentation
+/// from distorting the very curve the benchmark is measuring.
+///
+/// The "space" slot is nested inside "neighbors" and is therefore excluded
+/// from the parts total; comparing that total against phase_ms shows how much
+/// the stopwatches themselves cost. Overlay counters also pick up the
+/// update_visuals calls that excited-group breakdown makes in the same cycle,
+/// which is deliberate: those are part of the same per-cycle overlay budget.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_turf_profile(cycle)
+	if(GLOB.atmos_tprof_active)
+		GLOB.atmos_tprof_active = FALSE
+		var/list/slots = list()
+		var/parts_ms = 0
+		for(var/slot in GLOB.atmos_tprof_ms)
+			var/value = round(GLOB.atmos_tprof_ms[slot], 0.001)
+			slots[slot] = value
+			if(slot != "space")
+				parts_ms += value
+		var/list/record = list(
+			"rec" = "tprof",
+			"cyc" = cycle,
+			"fired" = times_fired,
+			"t" = world.time,
+			"at" = length(active_turfs),
+			"eg" = length(excited_groups),
+			"slots" = slots,
+			"counts" = GLOB.atmos_tprof_counts.Copy(),
+			"parts_ms" = round(parts_ms, 0.001),
+			"phase_ms" = round(cost_turfs_last, 0.001),
+		)
+		rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+		GLOB.atmos_tprof_ms.Cut()
+		GLOB.atmos_tprof_counts.Cut()
+		return
+	if(cycle % ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY != 0)
+		return
+	GLOB.atmos_tprof_ms.Cut()
+	GLOB.atmos_tprof_counts.Cut()
+	GLOB.atmos_tprof_active = TRUE
 
 /// Cycle budget: world.params override (dd -params "atmos-bench-cycles=600") wins
 /// over the compile-time default, so run length changes need no rebuild.
@@ -515,7 +735,38 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 /datum/controller/subsystem/air/proc/atmos_headless_bench_tick()
 	if(GLOB.atmos_headless_bench_finished)
 		return
+	atmos_headless_bench_configure()
+	if(headless_bench_scenario && !headless_bench_scenario_ready)
+		if(!headless_bench_scenario_building)
+			headless_bench_scenario_building = TRUE
+			INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_build_scenario))
+		return
 	headless_bench_cycles++
+	if(headless_bench_scenario)
+		atmos_headless_bench_scenario_event(headless_bench_cycles)
+	var/largest_group = 0
+	var/scenario_largest_group = 0
+	var/track_scenario_areas = length(headless_bench_areas) > 0
+	for(var/datum/excited_group/group as anything in excited_groups)
+		if(group)
+			largest_group = max(largest_group, length(group.turf_list))
+			if(track_scenario_areas && length(group.turf_list))
+				var/area/group_area = get_area(group.turf_list[1])
+				if(group_area in headless_bench_areas)
+					scenario_largest_group = max(scenario_largest_group, length(group.turf_list))
+	var/scenario_active_turfs = 0
+	if(track_scenario_areas)
+		for(var/turf/open/T as anything in active_turfs)
+			if(get_area(T) in headless_bench_areas)
+				scenario_active_turfs++
+	var/closed_firedoors = 0
+	for(var/obj/machinery/door/firedoor/firedoor as anything in headless_bench_firedoors)
+		if(firedoor?.density)
+			closed_firedoors++
+	var/alarmed_areas = 0
+	for(var/area/bench_area as anything in headless_bench_areas)
+		if(bench_area?.fire)
+			alarmed_areas++
 	var/list/record = list(
 		"rec" = "hb",
 		"cyc" = headless_bench_cycles,
@@ -526,15 +777,42 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"hs" = length(hotspots),
 		"cost" = round(cost, 0.01),
 		"c_at" = round(cost_turfs, 0.01),
+		// Unsmoothed twin of c_at: MC_AVERAGE hides the true spike amplitude.
+		"c_at_raw" = round(cost_turfs_last, 0.01),
+		"c_ao" = round(cost_atmos_atoms, 0.01),
 		"c_eg" = round(cost_groups, 0.01),
+		"c_dc" = round(cost_decompression, 0.01),
 		"c_pp" = round(cost_post_process, 0.01),
+		"c_hs" = round(cost_hotspots, 0.01),
+		"c_sc" = round(cost_superconductivity, 0.01),
+		"c_hp" = round(cost_highpressure, 0.01),
+		"c_eq" = round(cost_equalize, 0.01),
+		// Work done by the group and equalize phases, so their cost can be
+		// normalised per unit of work instead of compared as raw wall-clock
+		// between runs that saw different amounts of it.
+		"egt" = num_group_turfs_processed,
+		"eqn" = num_equalize_processed,
+		"sct" = length(active_super_conductivity),
+		"eqv" = equalize_valve_mode,
+		"da" = num_decompression_areas,
+		"largest_eg" = largest_group,
+		"scenario_at" = track_scenario_areas ? scenario_active_turfs : null,
+		"scenario_largest_eg" = track_scenario_areas ? scenario_largest_group : null,
+		"mc" = headless_bench_mc_slices,
+		"td_c" = round(SStime_track.time_dilation_current, 0.01),
+		"scenario" = headless_bench_scenario,
+		"doors_closed" = closed_firedoors,
+		"doors_total" = length(headless_bench_firedoors),
+		"alarms" = alarmed_areas,
 		// Machinery visibility: the turf-only records hid a machinery-wake
 		// regression once (breakdown wakes pinning vents awake), so A/B runs
 		// must see the awake set and its cost too.
 		"c_pn" = round(cost_pipenets, 0.01),
 		"c_am" = round(cost_atmos_machinery, 0.01),
+		"hpd" = high_pressure_processed,
 		"am" = length(atmos_machinery),
-		"ami" = length(atmos_idle_queue),
+		"ao" = length(atom_process),
+		"ami" = idle_machine_count(),
 		"hbw" = heartbeat_wakes_last,
 		"pnu" = count_dirty_pipenets(),
 	)
@@ -548,6 +826,7 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		machinery_profile["t"] = world.time
 		machinery_profile["fired"] = times_fired
 		rustg_file_append("[json_encode(machinery_profile)]\n", GLOB.atmos_headless_bench_path)
+	atmos_headless_bench_turf_profile(headless_bench_cycles)
 	if(headless_bench_cycles >= atmos_headless_bench_target())
 		GLOB.atmos_headless_bench_finished = TRUE
 		INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_finish))
@@ -632,6 +911,8 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 			"awake" = awake_count,
 			"bd_cd" = group.breakdown_cooldown,
 			"dm_cd" = group.dismantle_cooldown,
+			"bd_stage" = group.breakdown_stage,
+			"bd_cursor" = group.breakdown_cursor,
 			"area" = group_area_key,
 		))
 		CHECK_TICK
@@ -676,6 +957,225 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
 	GLOB.atmos_headless_bench_snapshot_running = FALSE
 
+/// Gives an isolated operation profile for the new mechanics after the normal
+/// SSair run. It cannot distort the cycle curves because it runs only after the
+/// final snapshot. Permanent-cost paths (turf signals, atom processing,
+/// pipenets and machinery) remain visible in every heartbeat above.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_feature_probe()
+	var/iterations = 500
+	var/list/costs = list()
+	var/list/checks = list()
+	var/timer
+	var/turf/open/probe_turf = length(headless_bench_room_turfs) ? headless_bench_room_turfs[1] : null
+	// Map-settling runs do not build the synthetic multi-breach arena. Borrow an
+	// already-active open turf instead so feature checks remain live in both
+	// benchmark modes; every temporary air change below is restored.
+	if(!probe_turf)
+		for(var/turf/open/candidate as anything in active_turfs)
+			probe_turf = candidate
+			break
+
+	var/obj/machinery/atmospherics/components/binary/temperature_gate/gate = new(null)
+	var/obj/machinery/atmospherics/components/binary/temperature_pump/temperature_pump = new(null)
+	var/obj/machinery/atmospherics/components/binary/pressure_valve/pressure_valve = new(null)
+	for(var/obj/machinery/atmospherics/components/component as anything in list(gate, temperature_pump, pressure_valve))
+		stop_processing_machine(component)
+		component.machine_stat &= ~(NOPOWER|BROKEN)
+		component.set_is_operational(TRUE)
+		component.atmos_idle_until = 0
+		component.atmos_idle_streak = 0
+		for(var/i in 1 to component.device_type)
+			var/datum/pipeline/parent = new
+			parent.air = new(200)
+			parent.other_atmosmch += component
+			parent.other_airs += component.airs[i]
+			component.parents[i] = parent
+	gate.on = TRUE
+	gate.target_temperature = T20C + 50
+	temperature_pump.on = TRUE
+	temperature_pump.heat_transfer_rate = 50
+	pressure_valve.on = TRUE
+	pressure_valve.target_pressure = ONE_ATMOSPHERE
+	timer = TICK_USAGE_REAL
+	for(var/i in 1 to iterations)
+		gate.airs[1].clear()
+		gate.airs[2].clear()
+		gate.airs[1].set_moles(GAS_O2, 40)
+		gate.airs[1].set_temperature(T20C)
+		gate.process_atmos()
+		temperature_pump.airs[1].clear()
+		temperature_pump.airs[2].clear()
+		temperature_pump.airs[1].set_moles(GAS_N2, 30)
+		temperature_pump.airs[2].set_moles(GAS_N2, 30)
+		temperature_pump.airs[1].set_temperature(500)
+		temperature_pump.airs[2].set_temperature(250)
+		temperature_pump.process_atmos()
+		pressure_valve.airs[1].clear()
+		pressure_valve.airs[2].clear()
+		pressure_valve.airs[1].set_moles(GAS_O2, 100)
+		pressure_valve.airs[1].set_temperature(T20C)
+		pressure_valve.process_atmos()
+	costs["sensor_valves_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+	checks["temperature_gate"] = gate.airs[2].total_moles() > 0
+	checks["temperature_pump"] = temperature_pump.airs[1].return_temperature() < 500
+	checks["pressure_valve"] = pressure_valve.airs[2].total_moles() > 0
+	qdel(gate)
+	qdel(temperature_pump)
+	qdel(pressure_valve)
+
+	var/obj/machinery/atmospherics/components/quaternary/omni_filter/omni_filter = new(null)
+	var/obj/machinery/atmospherics/components/quaternary/omni_mixer/omni_mixer = new(null)
+	for(var/obj/machinery/atmospherics/components/component as anything in list(omni_filter, omni_mixer))
+		stop_processing_machine(component)
+		component.machine_stat &= ~(NOPOWER|BROKEN)
+		component.set_is_operational(TRUE)
+		component.atmos_idle_until = 0
+		component.atmos_idle_streak = 0
+		for(var/i in 1 to QUATERNARY)
+			component.nodes[i] = component
+			var/datum/pipeline/parent = new
+			parent.air = new(200)
+			parent.other_atmosmch += component
+			parent.other_airs += component.airs[i]
+			component.parents[i] = parent
+	omni_filter.on = TRUE
+	omni_mixer.on = TRUE
+	omni_mixer.target_pressure = ONE_ATMOSPHERE
+	timer = TICK_USAGE_REAL
+	for(var/i in 1 to iterations)
+		for(var/port_index in 1 to QUATERNARY)
+			omni_filter.airs[port_index].clear()
+			omni_mixer.airs[port_index].clear()
+		omni_filter.airs[1].set_moles(GAS_O2, 20)
+		omni_filter.airs[1].set_moles(GAS_PLASMA, 10)
+		omni_filter.process_atmos()
+		omni_mixer.airs[1].set_moles(GAS_O2, 50)
+		omni_mixer.airs[2].set_moles(GAS_N2, 50)
+		omni_mixer.airs[3].set_moles(GAS_CO2, 50)
+		for(var/port_index in 1 to 3)
+			omni_mixer.airs[port_index].set_temperature(T20C)
+		omni_mixer.process_atmos()
+	costs["omni_devices_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+	checks["omni_filter"] = omni_filter.airs[3].get_moles(GAS_PLASMA) > 9.9 && omni_filter.airs[2].get_moles(GAS_PLASMA) < 0.001
+	checks["omni_mixer"] = omni_mixer.airs[4].get_moles(GAS_O2) > 0 && omni_mixer.airs[4].get_moles(GAS_N2) > 0 && omni_mixer.airs[4].get_moles(GAS_CO2) > 0
+	qdel(omni_filter)
+	qdel(omni_mixer)
+
+	var/obj/machinery/portable_atmospherics/scrubber/pipe/pipe_scrubber = new(null)
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = new(null)
+	var/obj/item/tank/internals/emergency_oxygen/holding_tank = new(null)
+	stop_processing_machine(pipe_scrubber)
+	stop_processing_machine(port)
+	var/datum/pipeline/port_parent = new
+	port_parent.air = new(35)
+	port_parent.other_atmosmch += port
+	port_parent.other_airs += port.airs[1]
+	port.parents[1] = port_parent
+	pipe_scrubber.connected_port = port
+	port.connected_device = pipe_scrubber
+	pipe_scrubber.holding = holding_tank
+	pipe_scrubber.on = TRUE
+	timer = TICK_USAGE_REAL
+	for(var/i in 1 to iterations)
+		pipe_scrubber.air_contents.clear()
+		holding_tank.air_contents.clear()
+		pipe_scrubber.air_contents.set_moles(GAS_PLASMA, 10)
+		pipe_scrubber.process_atmos()
+	costs["pipe_scrubber_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+	checks["pipe_scrubber"] = holding_tank.air_contents.get_moles(GAS_PLASMA) > 0
+	pipe_scrubber.disconnect()
+	qdel(pipe_scrubber)
+	qdel(holding_tank)
+	qdel(port)
+
+	var/obj/item/clothing/under/probe_clothing = new(null)
+	timer = TICK_USAGE_REAL
+	for(var/i in 1 to iterations * 10)
+		probe_clothing.plasma_contamination = 0
+		probe_clothing.absorb_plasma(50)
+	costs["plasma_clothing_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+	checks["plasma_clothing"] = probe_clothing.plasma_contamination > 0
+	qdel(probe_clothing)
+
+	timer = TICK_USAGE_REAL
+	for(var/i in 1 to iterations * 20)
+		get_air_alarm_mode(1 + (i % 9))
+	costs["air_alarm_mode_lookup_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+	checks["air_alarm_modes"] = length(GLOB.air_alarm_modes) == 9
+	checks["breathed_product"] = GLOB.gas_data.breath_reagents[GAS_H2O] == /datum/reagent/water
+	checks["condensation_product"] = FALSE
+	if(probe_turf)
+		var/datum/gas_mixture/condensation_mix = new(CELL_VOLUME)
+		condensation_mix.set_moles(GAS_H2O, 5)
+		condensation_mix.set_moles(GAS_N2, 80)
+		condensation_mix.set_temperature(T20C)
+		var/water_vapor_before = condensation_mix.get_moles(GAS_H2O)
+		var/condensation_result = condensation_mix.react(probe_turf)
+		checks["condensation_product"] = (condensation_result & REACTING) && condensation_mix.get_moles(GAS_H2O) < water_vapor_before
+		qdel(condensation_mix)
+
+	// Every gas that can be seen must own a prebuilt overlay ladder: turf visuals
+	// now pick the dominant gas's own sprite, with nothing to fall back on.
+	var/visible_gas_types = 0
+	var/complete_ladders = 0
+	for(var/gas_id in GLOB.gas_data.visibility)
+		if(!GLOB.gas_data.visibility[gas_id])
+			continue
+		visible_gas_types++
+		var/list/ladder = GLOB.gas_data.overlays[gas_id]
+		var/filled = 0
+		if(islist(ladder) && length(ladder) == FACTOR_GAS_VISIBLE_MAX)
+			for(var/i in 1 to FACTOR_GAS_VISIBLE_MAX)
+				if(istype(ladder[i], /obj/effect/overlay/gas))
+					filled++
+		if(filled == FACTOR_GAS_VISIBLE_MAX)
+			complete_ladders++
+	checks["gas_overlay_ladders"] = visible_gas_types && complete_ladders == visible_gas_types
+
+	if(probe_turf)
+		var/turf/open/probe_neighbor = get_step(probe_turf, EAST)
+		timer = TICK_USAGE_REAL
+		for(var/i in 1 to iterations * 10)
+			probe_turf.consider_pressure_difference(probe_neighbor, 100)
+			probe_turf.pressure_vector_x = 0
+			probe_turf.pressure_vector_y = 0
+		costs["vector_wind_accumulation_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+		checks["vector_wind"] = TRUE
+		high_pressure_delta -= probe_turf
+		probe_turf.high_pressure_queued = FALSE
+
+	var/turf/firelock_turf = length(headless_bench_firedoors) ? get_turf(headless_bench_firedoors[1]) : null
+	if(firelock_turf)
+		timer = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			SEND_SIGNAL(firelock_turf, COMSIG_TURF_EXPOSE, firelock_turf.return_air(), T20C)
+		costs["firelock_signal_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
+		checks["firelock_merger_signal"] = TRUE
+
+	return list(
+		"rec" = "features",
+		"iterations" = iterations,
+		"costs" = costs,
+		"checks" = checks,
+		"coverage" = list(
+			"smart_pipes" = "topology-only; zero steady-state processing",
+			"temperature_gate_pump_pressure_valve" = "sensor_valves_ms",
+			"portable_pipe_scrubber" = "pipe_scrubber_ms",
+			"bridge_pipe" = "topology-only; zero steady-state processing",
+			"air_alarm_mode_datums" = "air_alarm_mode_lookup_ms",
+			"firelock_signals_mergers_atmos_sensitive" = "heartbeat c_ao plus firelock_signal_ms",
+			"pipe_leaks_bursts_auto_valves" = "rejected after gameplay review: extreme XFR networks must remain viable",
+			"plasma_clothing" = "plasma_clothing_ms; no item processing list",
+			"breathed_product" = "existing gas registry check",
+			"condensation_product" = "live gas-to-turf reaction check",
+			"omni_filter_mixer" = "omni_devices_ms",
+			"vector_wind" = "SSair high-pressure phase plus vector_wind_accumulation_ms",
+			"mixture_color_overlay" = "turf phase; dominant gas keeps its own sprite, no separate cache",
+			"airlock_pump" = "rejected: needs dual waste and distribution map layers",
+			"color_adapter" = "rejected: meaningful behavior requires global color-isolated pipenets and remapping",
+		),
+	)
+
 /// Final snapshot, summary record, then kill the server so the runner script
 /// can collect the file without babysitting the process.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_finish()
@@ -684,6 +1184,11 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		stoplag()
 	GLOB.atmos_headless_bench_snapshot_running = TRUE
 	atmos_headless_bench_snapshot()
+	for(var/list/breakdown_record as anything in headless_bench_breakdown_records)
+		rustg_file_append("[json_encode(breakdown_record)]\n", GLOB.atmos_headless_bench_path)
+	var/list/feature_record = atmos_headless_bench_feature_probe()
+	feature_record["t"] = world.time
+	rustg_file_append("[json_encode(feature_record)]\n", GLOB.atmos_headless_bench_path)
 	var/list/record = list(
 		"rec" = "summary",
 		"cycles" = headless_bench_cycles,
@@ -692,6 +1197,10 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"at" = length(active_turfs),
 		"eg" = length(excited_groups),
 		"map" = SSmapping.config?.map_name,
+		"scenario" = headless_bench_scenario,
+		"breaches" = headless_bench_scenario == "multi-breach" ? headless_bench_breach_count : null,
+		"firelocks" = headless_bench_scenario == "multi-breach" ? headless_bench_firelocks : null,
+		"seed" = Master.random_seed,
 	)
 	var/encoded = json_encode(record)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
@@ -700,5 +1209,12 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	del(world)
 
 #undef ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY
+#undef ATMOS_HEADLESS_ROOM_WIDTH
+#undef ATMOS_HEADLESS_ROOM_HEIGHT
+#undef ATMOS_HEADLESS_ROOM_OUTER_WIDTH
+#undef ATMOS_HEADLESS_ROOM_OUTER_HEIGHT
+#undef ATMOS_HEADLESS_ROOM_GAP
+#undef ATMOS_HEADLESS_ROOM_COUNT
+#undef ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE
 
 #endif // ifdef ATMOS_HEADLESS_BENCH

@@ -29,6 +29,7 @@
 
 /obj/machinery/door/window/Initialize(mapload, set_dir)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(set_dir)
 		setDir(set_dir)
 	if(src.req_access && src.req_access.len)
@@ -300,6 +301,12 @@
 	if(exposed_temperature > T0C + (reinf ? 1600 : 800))
 		take_damage(round(exposed_volume / 200), BURN, 0, 0)
 	..()
+
+/obj/machinery/door/window/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + (reinf ? 1600 : 800))
+
+/obj/machinery/door/window/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(round(exposed_air.return_volume() / 200), BURN, 0, 0)
 
 /obj/machinery/door/window/emag_act(mob/user)
 	. = ..()

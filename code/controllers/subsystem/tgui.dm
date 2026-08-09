@@ -421,6 +421,10 @@ SUBSYSTEM_DEF(tgui)
 /datum/controller/subsystem/tgui/proc/unregister_ui(datum/tgui/ui)
 	// Remove it from the list of processing UIs.
 	open_uis.Remove(ui)
+	//current_run - копия open_uis на текущий проход. Обычно она рассасывается за
+	//пару тиков, но подсистема, вставшая на паузу или споткнувшаяся о рантайм,
+	//держала бы закрытый интерфейс со всем его user/src_object до нового прохода.
+	current_run.Remove(ui)
 	if(isnull(ui))
 		return FALSE
 	// If the user exists, remove it from them too.

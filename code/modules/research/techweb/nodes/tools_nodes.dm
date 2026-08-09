@@ -54,6 +54,17 @@
 	prereq_ids = list("basic_tools", "adv_engi") // BLUEMOON ADD basic_tools for order consistency
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2750)
 
+/// Продолжение линии холофанов: обычный проектор уводит заряд в ноль и гасит
+/// всё разом, этот подзаряжается на ходу и держит одну проекцию бесконечно.
+/datum/techweb_node/sustained_projection
+	id = "sustained_projection"
+	display_name = "Sustained Field Projection"
+	description = "Closed-loop emitters that feed a projected barrier while it stands."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
+	design_ids = list("holosignatmos_sustained")
+	prereq_ids = list("exp_tools")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 4500)
+
 /datum/techweb_node/sec_basic
 	id = "sec_basic"
 	display_name = "Basic Security Equipment"

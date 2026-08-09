@@ -69,6 +69,10 @@ require only minor tweaks.
 // string - type path of the z-level's baseturf (defaults to space)
 #define ZTRAIT_BASETURF "Baseturf"
 
+// string - id профиля параллакса, закреплённого за z-уровнем.
+// Отсутствует - профиль выбирается автоподбором по окружению уровня.
+#define ZTRAIT_PARALLAX "Parallax"
+
 // default trait definitions, used by SSmapping
 #define ZTRAITS_CENTCOM list(\
 	ZTRAIT_CENTCOM = TRUE, \

@@ -1,288 +1,359 @@
-// Atmos handbook metadata (init_factors) for gas reactions.
-// Kept separate from reactions.dm to keep reaction logic readable.
+// Метаданные реакций для внутриигрового справочника по атмосу.
+//
+// Держится отдельно от reactions.dm, чтобы логика реакций читалась без стены
+// текста. Здесь же задаются названия: name у реакции нигде, кроме справочника,
+// не показывается, поэтому переводить его в reactions.dm незачем - весь текст
+// для игрока лежит в одном файле и правится одной правкой.
+//
+// Всё написано по-русски по той же причине, по которой написаны описания
+// газов: игрок обязан узнавать правила из игры, а не с вики.
+
+/// Одна и та же строка у всех катализируемых реакций: игрок должен видеть, что
+/// флюксин делает ровно одно и то же везде, а не гадать по каждой отдельно.
+#define FLUXIN_HANDBOOK_FACTOR "Необязательный катализатор: поднимает верхнюю границу температурного окна и срезает расход сырья до [FLUXIN_MAX_BONUS * 100]% на [FLUXIN_FULL_EFFECT_MOLES] молях. Медленно тратится."
 
 /datum/gas_reaction/nobliumsupression/init_factors()
-	desc = "Hyper-noblium suppresses other gas reactions when present in sufficient quantity."
+	name = "Подавление реакций гипернобелем"
+	desc = "Гипернобель глушит вообще все остальные реакции в смеси, пока его в ней достаточно. Лучшее аварийное средство: заглушает и пожар, и разгон супермтерии."
 	factor = list(
-		/datum/gas/hypernoblium = "At least [REACTION_OPPRESSION_THRESHOLD] moles required to suppress reactions",
-		"Temperature" = "Only suppresses reactions above [REACTION_OPPRESSION_MIN_TEMP] kelvin",
+		/datum/gas/hypernoblium = "Нужно не меньше [REACTION_OPPRESSION_THRESHOLD] молей, чтобы подавление включилось",
+		"Temperature" = "Подавляет реакции только выше [REACTION_OPPRESSION_MIN_TEMP] К",
 	)
 
 /datum/gas_reaction/water_vapor/init_factors()
-	desc = "Water vapor extinguishes fires or freezes freon-based effects on open turfs."
+	name = "Водяной пар"
+	desc = "Пар тушит огонь на открытом турфе, а на холоде вместо этого запускает фреоновые эффекты и намерзает льдом."
 	factor = list(
-		/datum/gas/water_vapor = "At least [MOLES_GAS_VISIBLE] moles required",
-		"Temperature" = "Above [WATER_VAPOR_FREEZE] K extinguishes fires; at or below, triggers freon turf effects",
-		"Location" = "Only occurs on open turfs",
+		/datum/gas/water_vapor = "Нужно не меньше [MOLES_GAS_VISIBLE] молей",
+		"Temperature" = "Выше [WATER_VAPOR_FREEZE] К тушит пожар; на этой отметке и ниже идёт фреоновый эффект",
+		"Location" = "Работает только на открытом турфе",
 	)
 
 /datum/gas_reaction/tritfire/init_factors()
-	desc = "Tritium combustion with oxygen. Runs before plasma combustion."
+	name = "Горение трития"
+	desc = "Тритий горит в кислороде жарче плазмы и облучает всё вокруг. Считается раньше горения плазмы."
 	factor = list(
-		/datum/gas/tritium = "Consumed as fuel; rate depends on oxygen ratio",
-		/datum/gas/oxygen = "Oxidizer for tritium burn",
-		/datum/gas/water_vapor = "Produced from combustion",
-		"Temperature" = "Requires at least [FIRE_MINIMUM_TEMPERATURE_TO_EXIST] kelvin",
-		"Radiation" = "May emit radiation pulses when enough fuel burns",
-		"Energy" = "[FIRE_HYDROGEN_ENERGY_RELEASED] joules released per mole of fuel burned",
-		"Location" = "Creates hotspots on open turfs",
+		/datum/gas/tritium = "Топливо; скорость горения зависит от доли кислорода",
+		/datum/gas/oxygen = "Окислитель",
+		/datum/gas/water_vapor = "Продукт горения",
+		"Temperature" = "Нужно не меньше [FIRE_MINIMUM_TEMPERATURE_TO_EXIST] К",
+		"Radiation" = "При большом расходе топлива выдаёт импульсы радиации",
+		"Energy" = "Выделяет [FIRE_HYDROGEN_ENERGY_RELEASED] джоулей на моль сгоревшего топлива",
+		"Location" = "На открытом турфе поджигает его",
 	)
 
 /datum/gas_reaction/plasmafire/init_factors()
-	desc = "Plasma combustion with oxygen. High O2:plasma ratio produces tritium instead of CO2."
+	name = "Горение плазмы"
+	desc = "Основной пожар станции. При большом избытке кислорода вместо углекислоты даёт тритий - на этом и строят его добычу."
 	factor = list(
-		/datum/gas/plasma = "Primary fuel; burn rate scales with temperature",
-		/datum/gas/oxygen = "Oxidizer; high O2:plasma ratio produces tritium instead of CO2",
-		/datum/gas/carbon_dioxide = "Produced when O2:plasma ratio is below [SUPER_SATURATION_THRESHOLD]",
-		/datum/gas/tritium = "Produced when O2:plasma ratio exceeds [SUPER_SATURATION_THRESHOLD]",
-		"Temperature" = "Requires at least [FIRE_MINIMUM_TEMPERATURE_TO_EXIST] kelvin",
-		"Energy" = "[FIRE_PLASMA_ENERGY_RELEASED] joules released per mole of plasma burned",
-		"Location" = "Creates hotspots on open turfs",
+		/datum/gas/plasma = "Основное топливо; скорость горения растёт с температурой",
+		/datum/gas/oxygen = "Окислитель; при высоком отношении кислорода к плазме вместо углекислоты рождается тритий",
+		/datum/gas/carbon_dioxide = "Продукт, пока отношение кислорода к плазме ниже [SUPER_SATURATION_THRESHOLD]",
+		/datum/gas/tritium = "Продукт, когда отношение кислорода к плазме выше [SUPER_SATURATION_THRESHOLD]",
+		"Temperature" = "Нужно не меньше [FIRE_MINIMUM_TEMPERATURE_TO_EXIST] К",
+		"Energy" = "Выделяет [FIRE_PLASMA_ENERGY_RELEASED] джоулей на моль сгоревшей плазмы",
+		"Location" = "На открытом турфе поджигает его",
 	)
 
 /datum/gas_reaction/genericfire/init_factors()
-	desc = "Universal combustion of oxidizers and flammable gases based on enthalpy tables. Plasma and tritium are handled separately."
+	name = "Общее горение"
+	desc = "Универсальное горение всего остального: у каждого газа своя температура воспламенения, свой окислитель и свои продукты. Плазма и тритий считаются отдельно."
 	factor = list(
-		"Temperature" = "Each gas burns only above its ignition or oxidation temperature",
-		"Energy" = "Heat released from per-gas enthalpy values; products defined per gas type",
-		"Location" = "On lavaland Z-levels, nitrogen is not treated as a fuel",
+		"Temperature" = "Каждый газ горит только выше собственной температуры воспламенения или окисления",
+		"Energy" = "Тепло берётся из энтальпии конкретного газа, продукты тоже свои у каждого",
+		"Location" = "На лавовой планете азот топливом не считается",
 	)
 
 /datum/gas_reaction/fusion/init_factors()
-	desc = "Chaotic plasma fusion. Disabled in active atmospheric processing."
+	name = "Плазменный синтез"
+	desc = "Хаотичный синтез на плазме и углекислоте. В штатной обработке атмоса отключён и живёт только в HFR."
 	factor = list(
-		/datum/gas/plasma = "Primary fuel; must exceed [FUSION_MOLE_THRESHOLD] moles",
-		/datum/gas/carbon_dioxide = "Must exceed [FUSION_MOLE_THRESHOLD] moles; modulates instability",
-		/datum/gas/tritium = "[FUSION_TRITIUM_MOLES_USED] mole consumed per tick",
-		/datum/gas/oxygen = "Produced during exothermic fusion",
-		/datum/gas/nitrous_oxide = "Produced during exothermic fusion",
-		/datum/gas/bz = "Produced during endothermic fusion",
-		/datum/gas/nitryl = "Produced during endothermic fusion",
-		"Temperature" = "Requires at least [FUSION_TEMPERATURE_THRESHOLD] kelvin",
-		"Radiation" = "Emits radiation and may spawn nuclear particles at high energy",
-		"Energy" = "Highly variable; includes mass-energy conversion via plasma binding energy",
+		/datum/gas/plasma = "Основное топливо; нужно больше [FUSION_MOLE_THRESHOLD] молей",
+		/datum/gas/carbon_dioxide = "Нужно больше [FUSION_MOLE_THRESHOLD] молей; управляет нестабильностью",
+		/datum/gas/tritium = "Расходуется по [FUSION_TRITIUM_MOLES_USED] моля за тик",
+		/datum/gas/oxygen = "Рождается при экзотермическом ходе реакции",
+		/datum/gas/nitrous_oxide = "Рождается при экзотермическом ходе реакции",
+		/datum/gas/bz = "Рождается при эндотермическом ходе реакции",
+		/datum/gas/nitryl = "Рождается при эндотермическом ходе реакции",
+		"Temperature" = "Нужно не меньше [FUSION_TEMPERATURE_THRESHOLD] К",
+		"Radiation" = "Излучает радиацию, а на высоких энергиях порождает ядерные частицы",
+		"Energy" = "Величина непредсказуема: в неё входит превращение массы плазмы в энергию",
 	)
 
 /datum/gas_reaction/nitrylformation/init_factors()
-	desc = "Endothermic formation of nitryl from oxygen and nitrogen, catalyzed by N2O."
+	name = "Синтез нитрила"
+	desc = "Кислород и азот в жаре собираются в нитрил, закись азота работает катализатором. Реакция поглощает тепло."
 	factor = list(
-		/datum/gas/oxygen = "Consumed at 1:1 reaction rate",
-		/datum/gas/nitrogen = "Consumed at 1:1 reaction rate",
-		/datum/gas/nitrous_oxide = "Catalyst; at least 5 moles required",
-		/datum/gas/nitryl = "Produced at 2x reaction rate",
-		"Temperature" = "Rate scales with temperature above [FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 25] kelvin",
-		"Energy" = "[NITRYL_FORMATION_ENERGY] joules absorbed per reaction rate",
+		/datum/gas/oxygen = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/nitrogen = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/nitrous_oxide = "Катализатор; нужно не меньше 5 молей",
+		/datum/gas/nitryl = "Рождается вдвое быстрее скорости реакции",
+		"Temperature" = "Скорость растёт с температурой выше [FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 25] К",
+		"Energy" = "Поглощает [NITRYL_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/bzformation/init_factors()
-	desc = "Formation of BZ from N2O and plasma at low pressure. Exothermic."
+	name = "Синтез BZ"
+	desc = "Закись азота и плазма при НИЗКОМ давлении дают BZ - катализатор половины верхней химии. Чем ниже давление, тем выше выход, поэтому камеру специально разрежают."
 	factor = list(
-		/datum/gas/nitrous_oxide = "Consumed at 1:1 reaction rate; at least 10 moles",
-		/datum/gas/plasma = "Consumed at 2:1 reaction rate relative to N2O; at least 10 moles",
-		/datum/gas/bz = "Produced at 1:1 reaction rate",
-		/datum/gas/oxygen = "May be produced when all N2O is consumed",
-		"Pressure" = "Lower pressure increases efficiency; optimal around 10 kPa",
-		"Energy" = "[FIRE_CARBON_ENERGY_RELEASED * 2] joules released per reaction rate",
+		/datum/gas/nitrous_oxide = "Расходуется один к одному со скоростью реакции; нужно не меньше 10 молей",
+		/datum/gas/plasma = "Расходуется вдвое быстрее закиси; нужно не меньше 10 молей",
+		/datum/gas/bz = "Рождается один к одному со скоростью реакции",
+		/datum/gas/oxygen = "Может выделиться, когда закись азота кончилась",
+		"Pressure" = "Чем ниже давление, тем выше выход; лучше всего около 10 кПа",
+		"Energy" = "Выделяет [FIRE_CARBON_ENERGY_RELEASED * 2] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/stimformation/init_factors()
-	desc = "Formation of stimulum from tritium, plasma, nitryl, and BZ. Can be exo- or endothermic."
+	name = "Синтез стимулума"
+	desc = "Самая требовательная цепочка в игре: тритий, плазма и нитрил разом, плюс BZ катализатором. В зависимости от температуры греет или холодит."
 	factor = list(
-		/datum/gas/tritium = "Consumed at 1:1 heat scale; at least 30 moles",
-		/datum/gas/plasma = "Consumed at 1:1 heat scale; at least 10 moles",
-		/datum/gas/nitryl = "Consumed at 1:1 heat scale; at least 30 moles",
-		/datum/gas/bz = "Required catalyst; at least 20 moles",
-		/datum/gas/stimulum = "Produced at 0.1x heat scale",
-		"Temperature" = "Effectiveness follows a quintic curve vs temperature / [STIMULUM_HEAT_SCALE]",
-		"Energy" = "Net heat change varies with temperature via stimulum polynomial",
+		/datum/gas/tritium = "Расходуется один к одному с тепловым множителем; нужно не меньше 30 молей",
+		/datum/gas/plasma = "Расходуется один к одному с тепловым множителем; нужно не меньше 10 молей",
+		/datum/gas/nitryl = "Расходуется один к одному с тепловым множителем; нужно не меньше 30 молей",
+		/datum/gas/bz = "Обязательный катализатор; нужно не меньше 20 молей",
+		/datum/gas/stimulum = "Рождается в объёме 0.1 от теплового множителя",
+		"Temperature" = "Выход идёт по кривой пятой степени от температуры, делённой на [STIMULUM_HEAT_SCALE]",
+		"Energy" = "Знак и величина зависят от температуры: реакция бывает и экзо-, и эндотермической",
 	)
 
 /datum/gas_reaction/nobliumformation/init_factors()
-	desc = "Formation of hyper-noblium from nitrogen and tritium at cryogenic temperatures."
+	name = "Конденсация гипернобеля"
+	desc = "Азот и тритий на криогенном холоде сходятся в гипернобель. BZ в смеси удешевляет реакцию по тритию, но и тепла даёт меньше."
 	factor = list(
-		/datum/gas/nitrogen = "10 moles consumed per mole of hyper-noblium",
-		/datum/gas/tritium = "5 moles per noblium at no BZ; less with BZ present",
-		/datum/gas/bz = "Reduces tritium consumption and energy released",
-		/datum/gas/hypernoblium = "Produced from N2 and tritium",
-		"Temperature" = "Only occurs below [NOBLIUM_FORMATION_MAX_TEMP] kelvin",
-		"Energy" = "[NOBLIUM_FORMATION_ENERGY] joules released per mole formed (reduced by BZ)",
+		/datum/gas/nitrogen = "10 молей на каждый моль гипернобеля",
+		/datum/gas/tritium = "5 молей на моль без BZ, с BZ - меньше",
+		/datum/gas/bz = "Снижает расход трития и выделяемое тепло",
+		/datum/gas/hypernoblium = "Продукт реакции",
+		"Temperature" = "Идёт только ниже [NOBLIUM_FORMATION_MAX_TEMP] К",
+		"Energy" = "Выделяет [NOBLIUM_FORMATION_ENERGY] джоулей на моль (с BZ меньше)",
 	)
 
 /datum/gas_reaction/miaster/init_factors()
-	desc = "Dry heat sterilization of miasma into oxygen."
+	name = "Сухая стерилизация миазмы"
+	desc = "Сухой жар выжигает трупный газ, оставляя вместо него кислород. Влага реакцию срывает, поэтому камеру сушат."
 	factor = list(
-		/datum/gas/miasma = "Consumed up to 20 + (T - 443.15) / 20 moles per tick",
-		/datum/gas/oxygen = "Produced 1:1 from destroyed miasma",
-		/datum/gas/water_vapor = "More than 0.1 moles prevents the reaction",
-		"Temperature" = "Requires at least [T0C + 170] kelvin (170°C)",
-		"Energy" = "Slightly exothermic (+0.002 K per mole cleaned)",
+		/datum/gas/miasma = "Сгорает до 20 + (T - 443.15) / 20 молей за тик",
+		/datum/gas/oxygen = "Рождается один к одному из сожжённой миазмы",
+		/datum/gas/water_vapor = "Больше 0.1 моля пара полностью останавливает реакцию",
+		"Temperature" = "Нужно не меньше [T0C + 170] К (170 °C)",
+		"Energy" = "Чуть греет смесь: около +0.002 К на моль очистки",
 	)
 
 /datum/gas_reaction/nitric_oxide/init_factors()
-	desc = "Low-temperature decomposition and oxidation of nitric oxide."
+	name = "Распад оксида азота"
+	desc = "На холоде оксид азота либо разваливается обратно на азот и кислород, либо доокисляется до нитрила."
 	factor = list(
-		/datum/gas/nitric_oxide = "Decomposes to N2 and O2, or reacts with O2 to form nitryl",
-		/datum/gas/oxygen = "Enables nitryl formation when present",
-		/datum/gas/nitryl = "Produced from NO + O2 reaction",
-		/datum/gas/nitrogen = "Produced from decomposition",
-		"Temperature" = "Only occurs below [FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 100] kelvin",
+		/datum/gas/nitric_oxide = "Распадается на азот и кислород либо доокисляется до нитрила",
+		/datum/gas/oxygen = "Если он есть, вместо распада идёт синтез нитрила",
+		/datum/gas/nitryl = "Продукт реакции с кислородом",
+		/datum/gas/nitrogen = "Продукт распада",
+		"Temperature" = "Идёт только ниже [FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 100] К",
 	)
 
 /datum/gas_reaction/hagedorn/init_factors()
-	desc = "Converts all gases into quark matter at extreme temperatures."
+	name = "Распад Хагедорна"
+	desc = "При запредельных энергиях адроны разваливаются и вся смесь превращается в кварковую материю."
 	factor = list(
-		/datum/gas/quark_matter = "All mixture energy converted into quark matter moles",
-		"Temperature" = "Requires at least 2e12 kelvin",
-		"Energy" = "Conserves total thermal energy of the mixture",
+		/datum/gas/quark_matter = "Вся энергия смеси уходит в моли кварковой материи",
+		"Temperature" = "Нужно не меньше 2e12 К",
+		"Energy" = "Полная тепловая энергия смеси сохраняется",
 	)
 
 /datum/gas_reaction/dehagedorn/init_factors()
-	desc = "Condenses quark matter back into random gases below the Hagedorn temperature."
+	name = "Конденсация Хагедорна"
+	desc = "Остыв ниже температуры Хагедорна, кварковая материя сворачивается обратно в случайные газы."
 	factor = list(
-		/datum/gas/quark_matter = "Consumed entirely to seed gas reformation",
-		"Temperature" = "Only occurs below 1.99e12 kelvin",
-		"Energy" = "Thermal energy redistributed into random gases (not tritium or hyper-noblium)",
+		/datum/gas/quark_matter = "Расходуется целиком и задаёт, сколько газа родится",
+		"Temperature" = "Идёт только ниже 1.99e12 К",
+		"Energy" = "Тепловая энергия распределяется по случайным газам (кроме трития и гипернобеля)",
 	)
 
 /datum/gas_reaction/freonfire/init_factors()
-	desc = "Endothermic freon combustion with oxygen. Proto-nitrate extends the burn window."
+	name = "Горение фреона"
+	desc = "Единственное горение, которое смесь охлаждает, а не греет. Прото-нитрат в смеси поднимает верхнюю границу окна горения."
 	factor = list(
-		/datum/gas/freon = "Fuel; burn rate scales with temperature below 0°C",
-		/datum/gas/oxygen = "Oxidizer consumed per freon burn rate",
-		/datum/gas/carbon_dioxide = "Produced 1:1 from burned freon",
-		/datum/gas/proto_nitrate = "Raises maximum burn temperature to [FREON_CATALYST_MAX_TEMPERATURE] K",
-		"Temperature" = "Burns between [FREON_TERMINAL_TEMPERATURE] and [FREON_MAXIMUM_BURN_TEMPERATURE] K (or [FREON_CATALYST_MAX_TEMPERATURE] K with proto-nitrate)",
-		"Energy" = "[FIRE_FREON_ENERGY_CONSUMED] joules absorbed per mole of freon burned",
-		"Location" = "May create hot ice on open turfs between [FREON_HOT_ICE_MIN_TEMP]-[FREON_HOT_ICE_MAX_TEMP] K",
+		/datum/gas/freon = "Топливо; скорость горения растёт по мере приближения к 0 °C",
+		/datum/gas/oxygen = "Окислитель, расходуется вместе с фреоном",
+		/datum/gas/carbon_dioxide = "Рождается один к одному из сожжённого фреона",
+		/datum/gas/proto_nitrate = "Поднимает верхнюю границу горения до [FREON_CATALYST_MAX_TEMPERATURE] К",
+		"Temperature" = "Горит между [FREON_TERMINAL_TEMPERATURE] и [FREON_MAXIMUM_BURN_TEMPERATURE] К (с прото-нитратом - до [FREON_CATALYST_MAX_TEMPERATURE] К)",
+		"Energy" = "Поглощает [FIRE_FREON_ENERGY_CONSUMED] джоулей на моль сгоревшего фреона",
+		"Location" = "На открытом турфе между [FREON_HOT_ICE_MIN_TEMP] и [FREON_HOT_ICE_MAX_TEMP] К намораживает горячий лёд",
 	)
 
 /datum/gas_reaction/freonformation/init_factors()
-	desc = "Endothermic formation of freon from plasma, CO2, and BZ."
+	name = "Синтез фреона"
+	desc = "Плазма, углекислота и BZ в жаре собираются во фреон. Реакция поглощает тепло, поэтому контур приходится подогревать."
 	factor = list(
-		/datum/gas/plasma = "Consumed at 0.6 per reaction unit",
-		/datum/gas/carbon_dioxide = "Consumed at 0.3 per reaction unit",
-		/datum/gas/bz = "Consumed at 0.1 per reaction unit",
-		/datum/gas/freon = "Produced at 10x reaction units",
-		"Temperature" = "Requires at least [FREON_FORMATION_MIN_TEMPERATURE] kelvin; rate scales with excess heat",
-		"Energy" = "[FREON_FORMATION_ENERGY_CONSUMED] joules absorbed per reaction unit",
+		/datum/gas/plasma = "Расходуется по 0.6 на единицу реакции",
+		/datum/gas/carbon_dioxide = "Расходуется по 0.3 на единицу реакции",
+		/datum/gas/bz = "Расходуется по 0.1 на единицу реакции",
+		/datum/gas/freon = "Рождается по 10 на единицу реакции",
+		"Temperature" = "Нужно не меньше [FREON_FORMATION_MIN_TEMPERATURE] К; скорость растёт с избытком тепла",
+		"Energy" = "Поглощает [FREON_FORMATION_ENERGY_CONSUMED] джоулей на единицу реакции",
 	)
 
 /datum/gas_reaction/halon_o2removal/init_factors()
-	desc = "Halon absorbs oxygen to form pluoxium. Endothermic."
+	name = "Поглощение кислорода галоном"
+	desc = "Галон связывает кислород и отдаёт вместо него плуоксий, попутно охлаждая смесь. Так гасят пожар без воды."
 	factor = list(
-		/datum/gas/halon = "Consumed at 1:1 reaction rate",
-		/datum/gas/oxygen = "Consumed at 20:1 relative to halon",
-		/datum/gas/pluoxium = "Produced at 2.5x reaction rate",
-		"Temperature" = "Requires at least [HALON_COMBUSTION_MIN_TEMPERATURE] kelvin; rate scales with temperature",
-		"Energy" = "[HALON_COMBUSTION_ENERGY] joules absorbed per reaction rate",
+		/datum/gas/halon = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/oxygen = "Расходуется по 20 молей на моль галона",
+		/datum/gas/pluoxium = "Рождается в объёме 2.5 от скорости реакции",
+		"Temperature" = "Нужно не меньше [HALON_COMBUSTION_MIN_TEMPERATURE] К; скорость растёт с температурой",
+		"Energy" = "Поглощает [HALON_COMBUSTION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/healium_formation/init_factors()
-	desc = "Formation of healium from BZ and freon."
+	name = "Синтез хилия"
+	desc = "BZ и фреон в узком температурном окне дают лечебный газ. Основа медицинской атмосферики."
 	factor = list(
-		/datum/gas/freon = "Consumed at 2.75x reaction rate",
-		/datum/gas/bz = "Consumed at 0.25x reaction rate",
-		/datum/gas/healium = "Produced at 3x reaction rate",
-		"Temperature" = "Can only occur between [HEALIUM_FORMATION_MIN_TEMP] - [HEALIUM_FORMATION_MAX_TEMP] kelvin",
-		"Energy" = "[HEALIUM_FORMATION_ENERGY] joules released per reaction rate",
+		/datum/gas/freon = "Расходуется в объёме 2.75 от скорости реакции",
+		/datum/gas/bz = "Расходуется в объёме 0.25 от скорости реакции",
+		/datum/gas/healium = "Рождается втрое быстрее скорости реакции",
+		/datum/gas/fluxin = FLUXIN_HANDBOOK_FACTOR,
+		"Temperature" = "Идёт только между [HEALIUM_FORMATION_MIN_TEMP] и [HEALIUM_FORMATION_MAX_TEMP] К",
+		"Energy" = "Выделяет [HEALIUM_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/zauker_formation/init_factors()
-	desc = "Production of zauker using hyper-noblium and nitrium under very high temperatures."
+	name = "Синтез заукера"
+	desc = "Гипернобель и нитрий в чудовищной жаре дают самый смертоносный газ в игре. Обе составляющие сами по себе - конец собственных цепочек."
 	factor = list(
-		/datum/gas/hypernoblium = "Hyper-Noblium is consumed at 0.01 reaction rate",
-		/datum/gas/nitrium = "Nitrium is consumed at 0.5 reaction rate",
-		/datum/gas/zauker = "Zauker is produced at 0.5 reaction rate",
-		"Temperature" = "Can only occur between [ZAUKER_FORMATION_MIN_TEMPERATURE] - [ZAUKER_FORMATION_MAX_TEMPERATURE] kelvin",
-		"Energy" = "[ZAUKER_FORMATION_ENERGY] joules of energy is absorbed per reaction rate",
+		/datum/gas/hypernoblium = "Расходуется в объёме 0.01 от скорости реакции",
+		/datum/gas/nitrium = "Расходуется в объёме 0.5 от скорости реакции",
+		/datum/gas/zauker = "Рождается в объёме 0.5 от скорости реакции",
+		/datum/gas/fluxin = FLUXIN_HANDBOOK_FACTOR,
+		"Temperature" = "Идёт только между [ZAUKER_FORMATION_MIN_TEMPERATURE] и [ZAUKER_FORMATION_MAX_TEMPERATURE] К",
+		"Energy" = "Поглощает [ZAUKER_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/zauker_decomp/init_factors()
-	desc = "Zauker decomposes in the presence of nitrogen to limit floods."
+	name = "Распад заукера"
+	desc = "В присутствии азота заукер разваливается сам. Именно поэтому залив станции заукером не превращается в вечный - и именно поэтому азотный баллон лучшее противоядие."
 	factor = list(
-		/datum/gas/zauker = "Consumed up to [ZAUKER_DECOMPOSITION_MAX_RATE] moles per tick",
-		/datum/gas/nitrogen = "Required catalyst; consumed alongside zauker",
-		/datum/gas/oxygen = "Produced at 0.3x decomposition rate",
-		"Energy" = "[ZAUKER_DECOMPOSITION_ENERGY] joules released per mole decomposed",
+		/datum/gas/zauker = "Распадается до [ZAUKER_DECOMPOSITION_MAX_RATE] молей за тик",
+		/datum/gas/nitrogen = "Обязательный катализатор, расходуется вместе с заукером",
+		/datum/gas/oxygen = "Рождается в объёме 0.3 от скорости распада",
+		"Energy" = "Выделяет [ZAUKER_DECOMPOSITION_ENERGY] джоулей на моль распада",
 	)
 
 /datum/gas_reaction/nitrium_formation/init_factors()
-	desc = "Endothermic formation of nitrium from tritium, nitrogen, and BZ."
+	name = "Синтез нитрия"
+	desc = "Тритий, азот и щепотка BZ в жаре дают боевой стимулятор. Реакция поглощает тепло."
 	factor = list(
-		/datum/gas/tritium = "Consumed at 1:1 reaction rate; at least 20 moles",
-		/datum/gas/nitrogen = "Consumed at 1:1 reaction rate; at least 10 moles",
-		/datum/gas/bz = "Consumed at 0.05x reaction rate; at least 5 moles",
-		/datum/gas/nitrium = "Produced at 1:1 reaction rate",
-		"Temperature" = "Requires at least [NITRIUM_FORMATION_MIN_TEMP] kelvin; rate scales with temperature",
-		"Energy" = "[NITRIUM_FORMATION_ENERGY] joules absorbed per reaction rate",
+		/datum/gas/tritium = "Расходуется один к одному со скоростью реакции; нужно не меньше 20 молей",
+		/datum/gas/nitrogen = "Расходуется один к одному со скоростью реакции; нужно не меньше 10 молей",
+		/datum/gas/bz = "Расходуется в объёме 0.05 от скорости реакции; нужно не меньше 5 молей",
+		/datum/gas/nitrium = "Рождается один к одному со скоростью реакции",
+		"Temperature" = "Нужно не меньше [NITRIUM_FORMATION_MIN_TEMP] К; скорость растёт с температурой",
+		"Energy" = "Поглощает [NITRIUM_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/nitrium_decomposition/init_factors()
-	desc = "Nitrium decomposes into nitrogen and hydrogen when heated."
+	name = "Распад нитрия"
+	desc = "Нагретый нитрий разваливается на азот и водород. Хранить его в горячем контуре бессмысленно."
 	factor = list(
-		/datum/gas/nitrium = "Consumed at 1:1 reaction rate",
-		/datum/gas/nitrogen = "Produced at 1:1 reaction rate",
-		/datum/gas/hydrogen = "Produced at 1:1 reaction rate",
-		"Temperature" = "Only occurs below [NITRIUM_DECOMPOSITION_MAX_TEMP] kelvin; rate scales with temperature",
-		"Energy" = "[NITRIUM_DECOMPOSITION_ENERGY] joules released per reaction rate",
+		/datum/gas/nitrium = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/nitrogen = "Рождается один к одному со скоростью реакции",
+		/datum/gas/hydrogen = "Рождается один к одному со скоростью реакции",
+		"Temperature" = "Идёт только ниже [NITRIUM_DECOMPOSITION_MAX_TEMP] К; скорость растёт с температурой",
+		"Energy" = "Выделяет [NITRIUM_DECOMPOSITION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/pluox_formation/init_factors()
-	desc = "Formation of pluoxium from CO2, oxygen, and tritium."
+	name = "Синтез плуоксия"
+	desc = "Углекислота, кислород и капля трития дают плотный носитель кислорода. Дешёвый вход в верхнюю химию: сырьё есть на любой станции."
 	factor = list(
-		/datum/gas/carbon_dioxide = "Consumed 1:1 per pluoxium produced",
-		/datum/gas/oxygen = "Consumed 2:1 per pluoxium produced",
-		/datum/gas/tritium = "Consumed at 0.01:1 per pluoxium produced",
-		/datum/gas/pluoxium = "Produced up to [PLUOXIUM_FORMATION_MAX_RATE] moles per tick",
-		/datum/gas/hydrogen = "Byproduct at 0.01:1 per pluoxium produced",
-		"Temperature" = "Can only occur between [PLUOXIUM_FORMATION_MIN_TEMP] - [PLUOXIUM_FORMATION_MAX_TEMP] kelvin",
-		"Energy" = "[PLUOXIUM_FORMATION_ENERGY] joules released per mole of pluoxium",
+		/datum/gas/carbon_dioxide = "Один моль на моль плуоксия",
+		/datum/gas/oxygen = "Два моля на моль плуоксия",
+		/datum/gas/tritium = "0.01 моля на моль плуоксия",
+		/datum/gas/pluoxium = "Рождается до [PLUOXIUM_FORMATION_MAX_RATE] молей за тик",
+		/datum/gas/hydrogen = "Побочный продукт, 0.01 моля на моль плуоксия",
+		/datum/gas/fluxin = FLUXIN_HANDBOOK_FACTOR,
+		"Temperature" = "Идёт только между [PLUOXIUM_FORMATION_MIN_TEMP] и [PLUOXIUM_FORMATION_MAX_TEMP] К",
+		"Energy" = "Выделяет [PLUOXIUM_FORMATION_ENERGY] джоулей на моль плуоксия",
 	)
 
 /datum/gas_reaction/proto_nitrate_formation/init_factors()
-	desc = "Formation of proto-nitrate from pluoxium and hydrogen at high temperature."
+	name = "Синтез прото-нитрата"
+	desc = "Плуоксий и водород в жаре дают реактивный газ, по-разному отвечающий на другие газы. На этих ответах и строят каскадные схемы."
 	factor = list(
-		/datum/gas/pluoxium = "Consumed at 0.2x reaction rate",
-		/datum/gas/hydrogen = "Consumed at 2x reaction rate",
-		/datum/gas/proto_nitrate = "Produced at 2.2x reaction rate",
-		"Temperature" = "Can only occur between [PN_FORMATION_MIN_TEMPERATURE] - [PN_FORMATION_MAX_TEMPERATURE] kelvin",
-		"Energy" = "[PN_FORMATION_ENERGY] joules released per reaction rate",
+		/datum/gas/pluoxium = "Расходуется в объёме 0.2 от скорости реакции",
+		/datum/gas/hydrogen = "Расходуется вдвое быстрее скорости реакции",
+		/datum/gas/proto_nitrate = "Рождается в объёме 2.2 от скорости реакции",
+		/datum/gas/fluxin = FLUXIN_HANDBOOK_FACTOR,
+		"Temperature" = "Идёт только между [PN_FORMATION_MIN_TEMPERATURE] и [PN_FORMATION_MAX_TEMPERATURE] К",
+		"Energy" = "Выделяет [PN_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/proto_nitrate_hydrogen_response/init_factors()
-	desc = "Proto-nitrate converts excess hydrogen into more proto-nitrate."
+	name = "Прото-нитрат и водород"
+	desc = "Лишний водород прото-нитрат перерабатывает в самого себя. Так контур сам себя раскармливает."
 	factor = list(
-		/datum/gas/hydrogen = "Consumed up to [PN_HYDROGEN_CONVERSION_MAX_RATE] moles per tick; requires [PN_HYDROGEN_CONVERSION_THRESHOLD]+ moles",
-		/datum/gas/proto_nitrate = "Increased at 0.5x conversion rate",
-		"Energy" = "[PN_HYDROGEN_CONVERSION_ENERGY] joules absorbed per mole converted",
+		/datum/gas/hydrogen = "Расходуется до [PN_HYDROGEN_CONVERSION_MAX_RATE] молей за тик; нужно не меньше [PN_HYDROGEN_CONVERSION_THRESHOLD] молей",
+		/datum/gas/proto_nitrate = "Прибавляется в объёме 0.5 от скорости переработки",
+		"Energy" = "Поглощает [PN_HYDROGEN_CONVERSION_ENERGY] джоулей на моль переработки",
 	)
 
 /datum/gas_reaction/proto_nitrate_tritium_response/init_factors()
-	desc = "Proto-nitrate converts tritium into hydrogen at moderate temperatures."
+	name = "Прото-нитрат и тритий"
+	desc = "На умеренном нагреве прото-нитрат разбирает тритий обратно на водород - и тем самым гасит радиацию в контуре."
 	factor = list(
-		/datum/gas/tritium = "Consumed at 1:1 conversion rate",
-		/datum/gas/proto_nitrate = "Consumed at 0.01x conversion rate",
-		/datum/gas/hydrogen = "Produced at 1:1 conversion rate",
-		"Temperature" = "Can only occur between [PN_TRITIUM_CONVERSION_MIN_TEMP] - [PN_TRITIUM_CONVERSION_MAX_TEMP] kelvin",
-		"Energy" = "[PN_TRITIUM_CONVERSION_ENERGY] joules released per mole converted",
+		/datum/gas/tritium = "Расходуется один к одному со скоростью переработки",
+		/datum/gas/proto_nitrate = "Расходуется в объёме 0.01 от скорости переработки",
+		/datum/gas/hydrogen = "Рождается один к одному со скоростью переработки",
+		"Temperature" = "Идёт только между [PN_TRITIUM_CONVERSION_MIN_TEMP] и [PN_TRITIUM_CONVERSION_MAX_TEMP] К",
+		"Energy" = "Выделяет [PN_TRITIUM_CONVERSION_ENERGY] джоулей на моль переработки",
 	)
 
 /datum/gas_reaction/proto_nitrate_bz_response/init_factors()
-	desc = "Proto-nitrate breaks down BZ into nitrogen, helium, and plasma."
+	name = "Прото-нитрат и BZ"
+	desc = "Прото-нитрат разбирает BZ на азот, гелий и плазму. Дорогой, но единственный способ убрать BZ из смеси."
 	factor = list(
-		/datum/gas/bz = "Consumed at 1:1 reaction rate",
-		/datum/gas/proto_nitrate = "Consumed at 1:1 reaction rate",
-		/datum/gas/nitrogen = "Produced at 0.4x reaction rate",
-		/datum/gas/helium = "Produced at 1.6x reaction rate",
-		/datum/gas/plasma = "Produced at 0.8x reaction rate",
-		"Temperature" = "Can only occur between [PN_BZASE_MIN_TEMP] - [PN_BZASE_MAX_TEMP] kelvin",
-		"Energy" = "[PN_BZASE_ENERGY] joules released per mole reacted",
+		/datum/gas/bz = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/proto_nitrate = "Расходуется один к одному со скоростью реакции",
+		/datum/gas/nitrogen = "Рождается в объёме 0.4 от скорости реакции",
+		/datum/gas/helium = "Рождается в объёме 1.6 от скорости реакции",
+		/datum/gas/plasma = "Рождается в объёме 0.8 от скорости реакции",
+		"Temperature" = "Идёт только между [PN_BZASE_MIN_TEMP] и [PN_BZASE_MAX_TEMP] К",
+		"Energy" = "Выделяет [PN_BZASE_ENERGY] джоулей на моль реакции",
 	)
 
 /datum/gas_reaction/antinoblium_replication/init_factors()
-	desc = "Antinoblium converts other gases into more antinoblium proportionally."
+	name = "Размножение антиноблия"
+	desc = "Антиноблий переводит соседние газы в самого себя и остужает смесь. Оставленный без присмотра, он съедает содержимое контура целиком."
 	factor = list(
-		/datum/gas/antinoblium = "Catalyst; at least [MOLES_GAS_VISIBLE] moles required",
-		"Temperature" = "Requires above [REACTION_OPPRESSION_MIN_TEMP] kelvin",
-		"Energy" = "Endothermic; temperature drops as gases are converted",
+		/datum/gas/antinoblium = "Катализатор; нужно не меньше [MOLES_GAS_VISIBLE] молей",
+		"Temperature" = "Нужно выше [REACTION_OPPRESSION_MIN_TEMP] К",
+		"Energy" = "Реакция поглощает тепло: смесь остывает по мере переработки",
 	)
+
+/datum/gas_reaction/pyronite_formation/init_factors()
+	name = "Синтез пиронита"
+	desc = "Пиронит варится из трития и плазмы на прото-нитрате как катализаторе. Газовый насос такого давления не даёт: контур додавливают объёмным насосом или нагревом."
+	factor = list(
+		/datum/gas/tritium = "Расходуется в объёме [PYRONITE_TRITIUM_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
+		/datum/gas/plasma = "Расходуется в объёме [PYRONITE_PLASMA_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
+		/datum/gas/proto_nitrate = "Катализатор, расходуется в объёме [PYRONITE_CATALYST_PER_UNIT] от скорости реакции, нужно не меньше 5 молей",
+		/datum/gas/pyronite = "Рождается в объёме [PYRONITE_YIELD_PER_UNIT] от скорости реакции",
+		"Temperature" = "Идёт только между [PYRONITE_FORMATION_MIN_TEMP] и [PYRONITE_FORMATION_MAX_TEMP] К",
+		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - выше потолка газового насоса. Дальнейший рост давления ускоряет реакцию до [PYRONITE_PRESSURE_SCALE_CAP] раз",
+		"Energy" = "Поглощает [PYRONITE_FORMATION_ENERGY] джоулей на единицу скорости реакции",
+	)
+
+/datum/gas_reaction/fluxin_formation/init_factors()
+	name = "Синтез флюксина"
+	desc = "Флюксин варится из гелия, BZ и плазмы. Как и пиронит, требует давления выше потолка газового насоса."
+	factor = list(
+		/datum/gas/helium = "Расходуется в объёме [FLUXIN_HELIUM_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
+		/datum/gas/bz = "Расходуется в объёме [FLUXIN_BZ_PER_UNIT] от скорости реакции, нужно не меньше 10 молей",
+		/datum/gas/plasma = "Расходуется в объёме [FLUXIN_PLASMA_PER_UNIT] от скорости реакции, нужно не меньше 10 молей",
+		/datum/gas/fluxin = "Рождается в объёме [FLUXIN_YIELD_PER_UNIT] от скорости реакции",
+		"Temperature" = "Идёт только между [FLUXIN_FORMATION_MIN_TEMP] и [FLUXIN_FORMATION_MAX_TEMP] К",
+		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - выше потолка газового насоса",
+		"Energy" = "Поглощает [FLUXIN_FORMATION_ENERGY] джоулей на единицу скорости реакции",
+	)
+
+#undef FLUXIN_HANDBOOK_FACTOR

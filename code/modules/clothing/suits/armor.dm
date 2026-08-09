@@ -261,6 +261,9 @@
 			RESKIN_ITEM_STATE = "riot"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/riot/wm
 	icon_state = "riot-wm"
@@ -297,6 +300,9 @@
 			RESKIN_ITEM_STATE = "armor"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/bulletproof/wm
 	icon_state = "bulletproof-wm"

@@ -1,6 +1,6 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple
 	icon = 'icons/obj/atmospherics/pipes/he-simple.dmi'
-	icon_state = "pipe11-2"
+	icon_state = "pipe11-3"
 
 	name = "pipe"
 	desc = "A one meter section of heat-exchanging pipe."
@@ -26,14 +26,26 @@
 
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple/update_icon()
 	. = ..()
-	icon_state = "pipe[nodes[1] ? "1" : "0"][nodes[2] ? "1" : "0"]-[piping_layer]"
+	// Всегда центральный кадр: полосу в свой слой уводит apply_layer_offset().
+	icon_state = "pipe[nodes[1] ? "1" : "0"][nodes[2] ? "1" : "0"]-[PIPING_LAYER_DEFAULT]"
+	apply_layer_offset()
 	update_layer()
 	update_alpha()
 
+// Крайние слои игре рисует пиксельный сдвиг, а вот редактору карт нужен кадр,
+// по которому видно полосу, - для него запечённые кадры и остаются.
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1
 	piping_layer = 1
 	icon_state = "pipe11-1"
 
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer3
-	piping_layer = 3
-	icon_state = "pipe11-3"
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2
+	piping_layer = 2
+	icon_state = "pipe11-2"
+
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer4
+	piping_layer = 4
+	icon_state = "pipe11-4"
+
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer5
+	piping_layer = 5
+	icon_state = "pipe11-5"

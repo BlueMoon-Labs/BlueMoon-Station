@@ -488,6 +488,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/pref_queue
 	var/char_queue
+	/// world.time, позже которого отложенную запись префов больше не переносят.
+	/// Каждый вызов внутри кулдауна перевзводил таймер, и игрок, который щёлкает
+	/// тумблеры чаще кулдауна, не сохранялся вообще - до самого логаута.
+	var/pref_queue_deadline = 0
+	/// То же самое для записи персонажа.
+	var/char_queue_deadline = 0
 
 	var/silicon_lawset
 

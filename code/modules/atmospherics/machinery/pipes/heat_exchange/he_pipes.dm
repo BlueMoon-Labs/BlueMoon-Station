@@ -19,6 +19,38 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/hide()
 	return
 
+/// Полосу слоя задаёт пиксельный сдвиг, а не отдельный кадр на каждый слой.
+///
+/// Полоса теплообменной трубы - 15 пикселей, и пять полос с шагом 5 требуют
+/// 15 + 4*5 = 35 пикселей на 32-пиксельном тайле. Запечённый в лист сдвиг на
+/// крайних слоях вылезал за границу кадра, где его срезало: у прямой трубы
+/// отъедало крайнее ребро, у джанкшена - зубец. Сдвиг в рантайме не режет
+/// ничего: BYOND просто рисует иконку со смещением, ровно как APC со своим
+/// pixel_x -25. На слоях 2-4 результат совпадает с прежними запечёнными
+/// кадрами пиксель в пиксель, включая диагонали - у них сдвиг по обеим осям,
+/// и PIPING_LAYER_SHIFT на диагональном dir даёт ровно его.
+///
+/// Манифолдам это не подходит: их корпус сдвигается по обеим осям сразу, а
+/// патрубки при этом обязаны дотягиваться до края тайла, то есть меняют длину,
+/// а не только положение. Поэтому у них остался PIPING_INNER_LAYERS_ONLY.
+/obj/machinery/atmospherics/pipe/heat_exchanging/proc/apply_layer_offset()
+	// Сбрасываем обе оси: PIPING_LAYER_SHIFT трогает только ту, что отвечает
+	// текущему dir, и после поворота трубы вторая осталась бы от прошлого.
+	pixel_x = 0
+	pixel_y = 0
+	PIPING_LAYER_SHIFT(src, piping_layer)
+
+/// Unlike every other pipe, a heat exchanger does real work each fire, so it
+/// cannot PROCESS_KILL itself out of the machinery list. It can still be idle:
+/// a pipe sitting at the same temperature as its surroundings conducts nothing.
+/// Without this gate SSair paid for every heat exchanging pipe on the map every
+/// single fire forever - measured at 69% of the whole machinery phase with 200
+/// of them installed, all of it spent discovering that nothing had changed.
+///
+/// Waking is covered from both sides: the turf registration (register_turf_wake,
+/// armed by atmos_consider_idle) catches the room changing, the pipeline's
+/// wake_heat_exchangers() catches heat arriving through the loop, and the idle
+/// heartbeat backstops anything that slips through both.
 /obj/machinery/atmospherics/pipe/heat_exchanging/process_atmos()
 	var/environment_temperature = 0
 	var/datum/gas_mixture/pipe_air = return_air()
@@ -37,12 +69,15 @@
 	else if(T)
 		environment_temperature = T.return_temperature()
 
+	var/did_work = FALSE
 	if(abs(environment_temperature-pipe_air.return_temperature()) > minimum_temperature_difference)
 		parent.temperature_interact(T, volume, thermal_conductivity)
+		did_work = TRUE
 
 
 	//heatup/cooldown any mobs buckled to ourselves based on our temperature
 	if(has_buckled_mobs())
+		did_work = TRUE
 		var/hc = pipe_air.heat_capacity()
 		var/mob/living/heat_source = buckled_mobs[1]
 		//Best guess-estimate of the total bodytemperature of all the mobs, since they share the same environment it's ~ok~ to guess like this
@@ -51,6 +86,11 @@
 			var/mob/living/L = m
 			L.bodytemperature = avg_temp
 		pipe_air.set_temperature(avg_temp)
+
+	if(did_work)
+		atmos_idle_streak = 0
+		return
+	atmos_consider_idle()
 
 /obj/machinery/atmospherics/pipe/heat_exchanging/process()
 	if(!parent)

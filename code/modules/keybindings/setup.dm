@@ -162,11 +162,38 @@
 				var/list/the_set = macrosets[macroset]
 				the_set[actual] = command
 
+	// A +UP event can disappear when DreamSeeker loses application focus. Movement
+	// repeat macros renew a short server lease, bounding that failure instead of
+	// trusting keys_held forever. Do this after explicit clientside macros so a
+	// special binding keeps precedence over movement fallback.
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_HOTKEYS], movement_keys, TRUE)
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_HOTKEYS], movement_keys, TRUE)
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_INPUT], movement_keys, FALSE)
+
 	// Lastly, set the actual macros.
 	for(var/macroset in macrosets)
 		apply_macro_set(macroset, macrosets[macroset])
 	// Finally, set hotkeys.
 	set_hotkeys_preference(prefs_override)
+
+/// Adds repeat keepalives and matching releases without replacing explicit macros.
+/// Hotkey macrosets can fall through to Any for the initial press; classic input
+/// may repeat only keys that already have an explicit KeyDown there, so letters
+/// remain typeable. Explicit +UP is required because DreamSeeker 516 can fail to
+/// route a release through Any+UP after a key-specific +REP macro matched it.
+/proc/keybindings_add_movement_repeat_macros(list/macroset, list/movement_keys, allow_any_fallback)
+	if(!macroset || !movement_keys)
+		return
+	for(var/key as anything in movement_keys)
+		var/keydown_command = "\"KeyDown [key]\""
+		var/existing_command = macroset[key]
+		if(existing_command && existing_command != keydown_command)
+			continue
+		if(!allow_any_fallback && !existing_command)
+			continue
+		macroset["[key]+REP"] = "\"KeyRepeat [key]\""
+		if(!macroset["[key]+UP"])
+			macroset["[key]+UP"] = "\"KeyUp [key]\""
 
 /proc/keybind_modifier_permutation(key, alt = FALSE, ctrl = FALSE, shift = FALSE, self = TRUE)
 	var/list/permutations = list()

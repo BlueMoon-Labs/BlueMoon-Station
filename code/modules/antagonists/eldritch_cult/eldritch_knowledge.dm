@@ -210,6 +210,10 @@
 //Ascension knowledge
 /datum/eldritch_knowledge/final_eldritch
 	var/finished = FALSE
+	/// Ключ сцены параллакса, которую вознесение вешает за иллюминатор. См.
+	/// _rendering/parallax/antag_scenes.dm. Объявляется путём, ставится здесь -
+	/// все четыре пути зовут этот прок родителя, и дублировать вызов незачем.
+	var/parallax_scene
 
 /datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc,selected_atoms)
 	if(finished)
@@ -224,6 +228,8 @@
 
 /datum/eldritch_knowledge/final_eldritch/on_finished_recipe(	mob/living/user, list/atoms, loc)
 	finished = TRUE
+	if(parallax_scene)
+		set_antag_parallax_scene(parallax_scene, ANTAG_PARALLAX_TOKEN_HERETIC)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/cleanup_atoms(list/atoms)
