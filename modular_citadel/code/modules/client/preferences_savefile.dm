@@ -7,8 +7,19 @@
 	features["ipc_antenna"] 	= sanitize_inlist(features["ipc_antenna"], GLOB.ipc_antennas_list)
 	//Citadel
 	features["flavor_text"]		= sanitize_text(features["flavor_text"], initial(features["flavor_text"]))
-	// Свечение глаз
-	features["emissive_eyes"] = sanitize_integer(S["feature_emissive_eyes"], 0, 1, FALSE)
+	features["allow_emissives"] = sanitize_integer(S["feature_allow_emissives"], 0, 1, FALSE)
+	var/legacy_emissive_eyes = sanitize_integer(S["feature_emissive_eyes"], 0, 1, FALSE)
+	var/legacy_emissive_parts = safe_json_decode(S["feature_emissive_parts"])
+	var/list/emissive_parts = list()
+	if(islist(legacy_emissive_parts))
+		for(var/part in legacy_emissive_parts)
+			if(part in GLOB.emissive_parts_list)
+				emissive_parts += part
+	if(legacy_emissive_eyes)
+		emissive_parts |= "eyes"
+		features["allow_emissives"] = TRUE
+	if(length(emissive_parts))
+		features["emissive_parts"] = emissive_parts
 	if(!features["mcolor2"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
 		features["mcolor2"] = pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F")
 	if(!features["mcolor3"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
@@ -58,8 +69,9 @@
 	WRITE_FILE(S["feature_mam_tail_animated"], features["mam_tail_animated"])
 	WRITE_FILE(S["feature_taur"], features["taur"])
 	WRITE_FILE(S["feature_mam_snouts"],	features["mam_snouts"])
-	// Свечение глаз
-	WRITE_FILE(S["feature_emissive_eyes"], features["emissive_eyes"])
+	WRITE_FILE(S["feature_allow_emissives"], features["allow_emissives"])
+	WRITE_FILE(S["feature_emissive_eyes"], FALSE)
+	WRITE_FILE(S["feature_emissive_parts"], safe_json_encode(features["emissive_parts"]))
 	//Xeno features
 	WRITE_FILE(S["feature_xeno_tail"], features["xenotail"])
 	WRITE_FILE(S["feature_xeno_dors"], features["xenodorsal"])

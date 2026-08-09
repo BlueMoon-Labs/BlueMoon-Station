@@ -20,7 +20,7 @@
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 2
+#define STATBROWSER_PROTOCOL_VERSION 3
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"
@@ -28,6 +28,9 @@
 #define STATPANEL_CHANNEL_SPELLS "spells"
 #define STATPANEL_CHANNEL_TICKETS "tickets"
 #define STATPANEL_CHANNEL_SDQL2 "sdql2"
+#define STATPANEL_CHANNEL_READYPLAYERS "readyplayers"
+/// Ready players payload is rebuilt at most this often (deciseconds).
+#define STATPANEL_READYPLAYERS_CACHE_DELAY 15
 
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
@@ -49,6 +52,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/slow_data_counter = 0
 	var/list/cached_vote_base
 	var/cached_vote_encoded
+	var/cached_readyplayers_encoded
+	var/readyplayers_cache_time = 0
 	var/list/perf_history_cpu = list()
 	var/list/perf_history_tidi = list()
 	var/list/perf_history_ping = list()
@@ -88,6 +93,14 @@ SUBSYSTEM_DEF(statpanels)
 		list("Подключено Игроков", player_trend),
 		list("Предыдущие Режимы", SSpersistence ? jointext(SSpersistence.saved_modes, ", ") : ""))
 	encoded_global_slow = url_encode(json_encode(server_section))
+
+/datum/controller/subsystem/statpanels/proc/build_readyplayers_payload()
+	var/list/rows = list()
+	for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+		if(np.ready != PLAYER_READY_TO_PLAY || !np.client)
+			continue
+		rows += np.client.prefs?.real_name || np.client.ckey
+	return rows
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
@@ -322,6 +335,16 @@ SUBSYSTEM_DEF(statpanels)
 					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
 
 		if(target.mob)
+			if(istype(target.mob, /mob/dead/new_player) && !SSticker.HasRoundStarted())
+				if(!cached_readyplayers_encoded || world.time >= readyplayers_cache_time)
+					cached_readyplayers_encoded = url_encode(json_encode(build_readyplayers_payload()))
+					readyplayers_cache_time = world.time + STATPANEL_READYPLAYERS_CACHE_DELAY
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] != cached_readyplayers_encoded)
+					target << output(cached_readyplayers_encoded, "statbrowser:update_readyplayers")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] = cached_readyplayers_encoded
+			else if(target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] != null)
+				target << output("", "statbrowser:remove_readyplayers")
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_READYPLAYERS
 			var/mob/M = target.mob
 			// Process listed-turf BEFORE the spell tick check, so the listed-turf path is not starved
 			// when a slow fire yields halfway through this client's per-tick work.
@@ -798,3 +821,5 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_CHANNEL_SPELLS
 #undef STATPANEL_CHANNEL_TICKETS
 #undef STATPANEL_CHANNEL_SDQL2
+#undef STATPANEL_CHANNEL_READYPLAYERS
+#undef STATPANEL_READYPLAYERS_CACHE_DELAY

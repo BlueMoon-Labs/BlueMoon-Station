@@ -896,19 +896,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += left_eye
 				standing += right_eye
 				// Свечение глаз
-				if(H.dna?.features["emissive_eyes"])
-					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					left_eye_emissive.pixel_x = left_eye.pixel_x
-					left_eye_emissive.pixel_y = left_eye.pixel_y
-					right_eye_emissive.pixel_x = right_eye.pixel_x
-					right_eye_emissive.pixel_y = right_eye.pixel_y
-					left_eye_emissive.category = "HEAD"
-					right_eye_emissive.category = "HEAD"
-					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
-					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
-					standing += left_eye_emissive
-					standing += right_eye_emissive
+				if(has_emissive_part(H.dna.features, "eyes"))
+					standing += emissive_copy(left_eye)
+					standing += emissive_copy(right_eye)
 
 	/* skyrat edit
 	//Underwear, Undershirts & Socks
@@ -1198,6 +1188,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 			standing += accessory_overlay
 
+			if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+				standing += emissive_copy(accessory_overlay)
+
 			if(S.extra) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra_accessory_overlay.category = S.mutable_category
@@ -1245,6 +1238,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				standing += extra_accessory_overlay
 
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra_accessory_overlay)
+
 			if(S.extra2) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra2_accessory_overlay.category = S.mutable_category
@@ -1286,6 +1282,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					extra2_accessory_overlay.pixel_y += H.dna.species.offset_features[OFFSET_MUTPARTS][2]
 
 				standing += extra2_accessory_overlay
+
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing
 
