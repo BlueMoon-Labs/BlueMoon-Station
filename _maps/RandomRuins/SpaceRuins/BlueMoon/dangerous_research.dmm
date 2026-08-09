@@ -177,7 +177,7 @@
 /area/ruin/space/has_grav/Strange_Avanpost)
 "dZ" = (
 /obj/machinery/air_sensor{
-	chamber_id = "asrc_a"
+	id_tag = "asrc_a"
 	},
 /turf/open/floor/engine/airless,
 /area/ruin/space/has_grav/Strange_Avanpost)
@@ -528,7 +528,7 @@
 /area/ruin/space/has_grav/Strange_Avanpost)
 "kc" = (
 /obj/machinery/air_sensor{
-	chamber_id = "asrc_b"
+	id_tag = "asrc_b"
 	},
 /turf/open/floor/engine/air,
 /area/ruin/space/has_grav/Strange_Avanpost)
