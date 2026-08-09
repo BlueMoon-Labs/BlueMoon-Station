@@ -157,6 +157,8 @@
 	var/mob/living/target = panel?.panel_target
 	//Getting player
 	var/mob/living/self = parent
+	if(!self)
+		return
 	//Getting info
 	.["isTargetSelf"] = target == self // Why all of these?
 	.["user"] = self // Because people may have the same name
