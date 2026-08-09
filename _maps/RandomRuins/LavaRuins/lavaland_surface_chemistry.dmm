@@ -263,7 +263,7 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "oP" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/shuttle/survival_pod,
 /obj/structure/grille,
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor{

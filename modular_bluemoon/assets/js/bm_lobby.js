@@ -34,11 +34,14 @@ function bmToggleSidebar() {
   _bm_sidebar_open = !_bm_sidebar_open;
   var sb = document.getElementById('bm-sidebar');
   var tb = document.getElementById('bm-toggle-btn');
+  var db = document.getElementById('bm-disclaimer-btn');
   if (_bm_sidebar_open) {
     sb.classList.remove('collapsed'); tb.classList.remove('collapsed');
+    if (db) db.classList.remove('collapsed');
     tb.innerHTML = '&#9654;'; tb.style.right = getComputedStyle(sb).width;
   } else {
     sb.classList.add('collapsed'); tb.classList.add('collapsed');
+    if (db) db.classList.add('collapsed');
     tb.innerHTML = '&#9664;'; tb.style.right = '0';
   }
 }
