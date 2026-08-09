@@ -400,6 +400,51 @@
 	TEST_ASSERT(!(turret in GLOB.hostile_machines), "A destroyed turret must leave GLOB.hostile_machines")
 	TEST_ASSERT(!(turret in GLOB.hostile_machines_by_zlevel[z_level]), "A destroyed turret must leave its hostile-machine z bucket")
 
+///Мех с пилотом - легитимная цель, и целью обязан становиться САМ мех: его моб
+///может бить (attack_animal), а пилот в потрохах для милишки недосягаем (Adjacent
+///через не-турф loc всегда FALSE - моб застывал бы столбом). Репорт плейтеста:
+///"мобы не агрятся на игроков в мехе".
+/datum/unit_test/ai_targets_occupied_mecha/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	var/turf/mech_turf = locate(start_turf.x + 3, start_turf.y, start_turf.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, mech_turf)
+	//низкоуровневая посадка: moved_inside() требует клиента, которого у тестовых мобов нет
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	TEST_ASSERT_EQUAL(pilot.loc, mech, "Санити: пилот обязан сидеть внутри меха")
+	TEST_ASSERT(pawn.CanAttack(mech), "Санити: мех с пилотом обязан быть атакуемым")
+
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	var/verdict = finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(verdict & AI_BEHAVIOR_SUCCEEDED, "The finder must acquire a target from an occupied mech scene")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], mech, "The acquired target must be the mech itself, not the pilot inside it")
+
+	//пилот, севший в мех ПОСЛЕ приобретения, обязан разжаловаться на ревалидации
+	//(иначе моб вечно держит недосягаемую цель и стоит столбом у брони)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, pilot)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_NOTEQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], pilot, "A target that boarded a sealed vehicle must not survive revalidation")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], mech, "The rescan must swap the boarded pilot for the mech")
+
+	qdel(controller)
+
+///Пустой мех целью не является: CanAttack без атакуемых окупантов - FALSE
+/datum/unit_test/ai_ignores_empty_mecha/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	var/turf/mech_turf = locate(start_turf.x + 3, start_turf.y, start_turf.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	TEST_ASSERT(!pawn.CanAttack(mech), "An empty mech must not be attackable")
+
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "An empty mech must not be acquired as a target")
+	qdel(controller)
+
 ///Майнбот не поворачивается против владельца. Прод, раунд 9875: шахтёр ткнул
 ///своего бота сумкой с рудой (урон ноль, NEWHP не изменился) - бот ответил
 ///через 258 мс и до конца раунда стрелял в него из кинетика. Причина: обида

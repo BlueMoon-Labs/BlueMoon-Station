@@ -432,6 +432,10 @@
 	for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(targets_from, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, vision_range))
 		if(candidate == src || QDELETED(candidate) || get_dist(targets_from, candidate) > vision_range)
 			continue
+		//пилот в закрытой технике - не отдельная угроза: его представляет сам
+		//мех из реестра машин ниже (паритет с гейтом candidate_passes финдера)
+		if(istype(candidate.loc, /obj/vehicle/sealed))
+			continue
 		AI_METRIC_INC(los_checks)
 		if(can_see(targets_from, candidate, vision_range) && CanAttack(candidate))
 			. += candidate

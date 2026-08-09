@@ -244,6 +244,14 @@
 /datum/ai_behavior/find_potential_targets/proc/candidate_passes(mob/living/living_mob, atom/candidate, datum/targeting_strategy/targeting_strategy, aggro_range, check_sight = TRUE)
 	if(QDELETED(candidate))
 		return FALSE
+	//Пилот в закрытой технике недосягаем как прямая цель (Adjacent через не-турф
+	//loc всегда FALSE - милишка стояла бы столбом), его представляет сам мех из
+	//реестра машин. Грид, в отличие от легаси view(), потроха техники видит,
+	//поэтому без гейта пилот выигрывал тай-брейк у меха на той же клетке (репорт:
+	//"мобы не агрятся на игроков в мехе"). Ревалидация текущей цели идёт этим же
+	//гейтом - севший в мех пилот разжалуется первым же кадансом финдера.
+	if(ismob(candidate) && istype(candidate.loc, /obj/vehicle/sealed))
+		return FALSE
 	if(get_dist(living_mob, candidate) > aggro_range)
 		return FALSE
 	var/turf/candidate_turf = get_turf(candidate)
