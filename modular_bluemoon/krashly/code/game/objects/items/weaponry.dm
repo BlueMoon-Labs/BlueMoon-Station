@@ -262,8 +262,8 @@
 
 /obj/item/ammo_box/magazine/ak12/r
 	name = "\improper Pink AK-12 magazine"
-	icon_state = "akr12_mag"
-	item_state = "akr12_mag"
+	icon_state = "ak12_mag"
+	item_state = "ak12_mag"
 
 /obj/item/gun/ballistic/revolver/inteq
 	icon_state = "revolver_inteq"
