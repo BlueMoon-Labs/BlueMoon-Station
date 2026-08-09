@@ -155,6 +155,10 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(!random_seed)
 		#ifdef UNIT_TESTS
 		random_seed = 29051994
+		#elif defined(ATMOS_HEADLESS_BENCH)
+		// Headless atmos A/B runs must be reproducible. The runner may override
+		// this, but otherwise every run gets the same seed instead of rand().
+		random_seed = text2num(world.params["atmos-bench-seed"]) || 29051994
 		#else
 		random_seed = rand(1, 1e9)
 		#endif

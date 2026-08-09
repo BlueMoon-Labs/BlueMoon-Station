@@ -18,6 +18,9 @@
 		return
 
 	var/obj/machinery/atmospherics/pipe/P = A
+	if(!P.paintable)
+		to_chat(user, "<span class='warning'>\The [P] has no paint to speak of - it joins any colour as it is.</span>")
+		return
 	if(P.paint(GLOB.pipe_paint_colors[paint_color]))
 		playsound(src, 'sound/machines/click.ogg', 50, 1)
 		user.visible_message("<span class='notice'>[user] paints \the [P] [paint_color].</span>","<span class='notice'>You paint \the [P] [paint_color].</span>")

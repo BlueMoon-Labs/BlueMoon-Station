@@ -240,7 +240,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/light/directional/south,
@@ -285,7 +285,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /obj/machinery/atmospherics/pipe/manifold/purple/visible{
 	dir = 4
 	},
@@ -610,7 +610,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2,
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
@@ -916,7 +916,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/purple/visible{
@@ -1057,7 +1057,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer2{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/purple/visible,
@@ -1620,7 +1620,7 @@
 /area/shuttle/solfed/destroyer)
 "qT" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2{
 	dir = 9
 	},
 /turf/open/floor/plasteel/dark,
@@ -1686,7 +1686,7 @@
 /obj/machinery/computer/atmos_control/incinerator{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "sc" = (
@@ -2245,7 +2245,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/purple/visible,
@@ -2451,7 +2451,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 6
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -2468,7 +2468,7 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/shuttle/solfed/destroyer)
 "Ar" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4;
 	filter_types = list("o2")
 	},
@@ -2529,7 +2529,7 @@
 /area/shuttle/solfed/destroyer)
 "Bb" = (
 /obj/machinery/atmospherics/components/binary/circulator{
-	piping_layer = 1
+	piping_layer = 2
 	},
 /turf/open/space/basic,
 /area/shuttle/solfed/destroyer)
@@ -2647,7 +2647,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Dq" = (
@@ -2933,7 +2933,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "Ir" = (
@@ -3014,7 +3014,7 @@
 /obj/machinery/atmospherics/pipe/simple/purple/hidden{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 10
 	},
 /turf/open/floor/engine/vacuum,
@@ -3243,7 +3243,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -3565,7 +3565,7 @@
 	dir = 1;
 	name = "burn chamber input pump"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -3661,7 +3661,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable{
@@ -3809,7 +3809,7 @@
 /obj/machinery/atmospherics/pipe/simple/purple/visible{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2{
 	dir = 9
 	},
 /turf/open/floor/plasteel/dark,
@@ -4025,7 +4025,7 @@
 /obj/machinery/atmospherics/pipe/simple/purple/visible{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/dark/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/dark/visible/layer2{
 	dir = 6
 	},
 /obj/structure/sign/warning/nosmoking{
@@ -4197,7 +4197,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Yp" = (
-/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/dark/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/purple/hidden,
 /obj/machinery/door/poddoor{
 	id = "talos_tank_burn"

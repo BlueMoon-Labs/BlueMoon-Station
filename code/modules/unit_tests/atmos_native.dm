@@ -120,6 +120,33 @@
 	qdel(ref_a)
 	qdel(ref_b)
 
+	// Exercise the specialized cool O2/N2 path against the generic reference.
+	new_a = unit_test_air_mix()
+	new_b = unit_test_air_mix()
+	ref_a = unit_test_air_mix()
+	ref_b = unit_test_air_mix()
+	for(var/datum/gas_mixture/giver_mix as anything in list(new_a, ref_a))
+		giver_mix.set_moles(GAS_O2, MOLES_O2STANDARD * 3)
+		giver_mix.set_moles(GAS_N2, MOLES_N2STANDARD * 0.5)
+		giver_mix.archive()
+	for(var/datum/gas_mixture/taker_mix as anything in list(new_b, ref_b))
+		taker_mix.set_moles(GAS_O2, MOLES_O2STANDARD * 0.5)
+		taker_mix.set_moles(GAS_N2, MOLES_N2STANDARD * 2)
+		taker_mix.set_temperature(T20C + MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER * 0.5)
+		taker_mix.archive()
+	new_result = new_a.share(new_b, 0.2, 0.25)
+	ref_result = unit_test_reference_share(ref_a, ref_b, 0.2, 0.25)
+	TEST_ASSERT(abs(new_result - ref_result) < 0.01, "O2/N2 share() return value diverged from reference: [new_result] vs [ref_result]")
+	TEST_ASSERT(abs(new_a.last_share - ref_a.last_share) < TEST_GAS_EPSILON, "O2/N2 share() last_share diverged")
+	for(var/id in new_a.get_gases() | ref_a.get_gases())
+		TEST_ASSERT(abs(new_a.get_moles(id) - ref_a.get_moles(id)) < TEST_GAS_EPSILON, "O2/N2 source [id] diverged")
+	for(var/id in new_b.get_gases() | ref_b.get_gases())
+		TEST_ASSERT(abs(new_b.get_moles(id) - ref_b.get_moles(id)) < TEST_GAS_EPSILON, "O2/N2 sharer [id] diverged")
+	qdel(new_a)
+	qdel(new_b)
+	qdel(ref_a)
+	qdel(ref_b)
+
 /datum/unit_test/atmos_react_dispatch/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	TEST_ASSERT(length(SSair.gas_reactions), "SSair.gas_reactions is empty")
@@ -176,6 +203,7 @@
 	var/result = wet_mix.react(floor)
 	TEST_ASSERT(result & REACTING, "water vapor did not condense on a warm turf")
 	TEST_ASSERT(wet_mix.get_moles(GAS_H2O) < moles_before, "condensation did not consume water vapor")
+	TEST_ASSERT(floor.GetComponent(/datum/component/wet_floor), "water vapor condensation did not leave a wet floor")
 	qdel(wet_mix)
 
 /datum/unit_test/atmos_transfer_conservation/Run()
@@ -242,6 +270,7 @@
 	room.air.set_temperature(T20C)
 	SSair.remove_from_active(room)
 	SSair.pipenets_needing_rebuilt -= scrubber
+	scrubber.rebuild_queued = FALSE
 	TEST_ASSERT(!scrubber.scrub(room), "scrub() reported success over a clean room")
 	TEST_ASSERT(!room.excited, "scrubbing a clean room reactivated its turf")
 	TEST_ASSERT(!(scrubber in SSair.pipenets_needing_rebuilt), "scrubbing a clean room dirtied the pipenet path")
@@ -258,6 +287,7 @@
 
 	// Cleanup subsystem side effects of the allocation.
 	SSair.pipenets_needing_rebuilt -= scrubber
+	scrubber.rebuild_queued = FALSE
 	room.air.copy_from_turf(room)
 	SSair.remove_from_active(room)
 
@@ -471,6 +501,59 @@
 	SSair.remove_from_active(first)
 	SSair.remove_from_active(second)
 	SSair.remove_from_active(resting)
+
+/// The subsystem may yield between breakdown slices, but accumulation must not
+/// expose a partial average and the completed state machine must conserve gas.
+/datum/unit_test/atmos_breakdown_resumes_without_partial_write/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/turf/open/members = list(
+		locate(origin.x + 1, origin.y + 1, origin.z),
+		locate(origin.x + 2, origin.y + 1, origin.z),
+		locate(origin.x + 3, origin.y + 1, origin.z),
+	)
+	var/datum/excited_group/group = new
+	var/total_before = 0
+	var/energy_before = 0
+	var/index = 0
+	for(var/turf/open/member as anything in members)
+		TEST_ASSERT(istype(member), "test location is not an open turf")
+		index++
+		member.air.copy_from_turf(member)
+		member.air.set_moles(GAS_O2, member.air.get_moles(GAS_O2) + index * 10)
+		member.air.set_temperature(T20C + index * 20)
+		total_before += member.air.total_moles()
+		energy_before += member.air.thermal_energy()
+		group.add_turf(member)
+
+	var/first_o2_before = members[1].air.get_moles(GAS_O2)
+	TEST_ASSERT(!group.self_breakdown(slice_budget = 1), "one-member slice completed a multi-member breakdown")
+	TEST_ASSERT_EQUAL(members[1].air.get_moles(GAS_O2), first_o2_before, "collection slice wrote a partial average")
+	TEST_ASSERT(group.breakdown_stage, "incomplete breakdown did not retain resumable state")
+
+	var/slices = 1
+	while(!group.self_breakdown(slice_budget = 1) && slices < 100)
+		slices++
+	TEST_ASSERT(slices < 100, "resumable breakdown did not complete")
+	TEST_ASSERT_EQUAL(group.breakdown_stage, 0, "completed breakdown retained state")
+	var/total_after = 0
+	var/energy_after = 0
+	var/expected_o2 = 0
+	for(var/turf/open/member as anything in members)
+		total_after += member.air.total_moles()
+		energy_after += member.air.thermal_energy()
+		expected_o2 += member.air.get_moles(GAS_O2)
+	expected_o2 /= length(members)
+	for(var/turf/open/member as anything in members)
+		TEST_ASSERT(abs(member.air.get_moles(GAS_O2) - expected_o2) < TEST_GAS_EPSILON, "resumed breakdown did not produce a uniform average")
+	TEST_ASSERT(abs(total_before - total_after) < TEST_GAS_EPSILON, "resumed breakdown lost moles: [total_before] -> [total_after]")
+	TEST_ASSERT(abs(energy_before - energy_after) / energy_before < 0.000001, "resumed breakdown lost thermal energy: [energy_before] -> [energy_after]")
+
+	group.garbage_collect()
+	for(var/turf/open/member as anything in members)
+		member.air.copy_from_turf(member)
+		member.atmos_cooldown = 0
+		SSair.remove_from_active(member)
 
 /// With full-group averaging, the poke's only remaining job is frontier
 /// expansion: a resting member bordering turfs OUTSIDE the group must wake to
@@ -891,11 +974,9 @@
 		neighbor.air.copy_from_turf(neighbor)
 		SSair.remove_from_active(neighbor)
 
-/// Space drains must finish the job: below SPACE_DRAIN_FINISH_PRESSURE the
-/// tile dumps everything in one pass and matches space temperature - the
-/// exponential 1/(neighbors+1) bleed spends tens of cycles on residue that is
-/// already unsurvivable, and that tail was pure churn. Above the threshold
-/// the gradual drain (and its spacewind) must stay untouched.
+/// Space drains take everything in one pass (tg-паритет share_end): кромка
+/// пробоины опустошается за фаер и остывает до TCMB, спейсвинд получает полную
+/// дельту давления, а зона дыры встаёт в декомп-очередь ровно один раз.
 /datum/unit_test/atmos_space_drain_finish/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/origin = run_loc_floor_bottom_left
@@ -915,35 +996,83 @@
 	drain.ImmediateCalculateAdjacentTurfs()
 	TEST_ASSERT_EQUAL(LAZYLEN(drain.atmos_adjacent_turfs), 1, "pocket arena should have exactly the space neighbor")
 	TEST_ASSERT(locate(/turf/open/space) in drain.atmos_adjacent_turfs, "arena setup failed: no space neighbor")
+	// The reservation zone lives in /area/space, which queue_decompression_area
+	// rightly refuses; transplant the drain tile into a queueable area so the
+	// decompression asserts below exercise the real path.
+	var/area/drain_old_area = get_area(drain)
+	var/area/unit_test_decompression/drain_area = new
+	drain_area.contents += drain
+	SSair.decompression_areas -= drain_area
+	SSair.decompression_handled_at -= drain_area
 	if(drain.excited_group)
 		drain.excited_group.garbage_collect()
 	SSair.remove_from_active(drain)
 
-	// Above the threshold: one cycle takes 1/(neighbors+1) = half, not all.
+	// Полное давление: один фаер забирает всё, тайл выходит на TCMB, спейсвинд
+	// получает полную дельту (дыра на севере - вектор строго +y).
 	drain.air.copy_from_turf(drain)
 	var/moles_full = drain.air.total_moles()
 	TEST_ASSERT(moles_full > 0, "drain tile has no default air")
+	var/pressure_full = drain.air.return_pressure()
+	drain.pressure_vector_x = 0
+	drain.pressure_vector_y = 0
 	SSair.add_to_active(drain, FALSE)
+	// Прайм подтверждающего гейта декомп-тревоги: этот тест проверяет сам слив и
+	// постановку в очередь, окно подтверждения покрыто отдельным тестом.
+	SSair.decompression_pending[drain_area] = SSair.times_fired - 1
 	var/fire_count = drain.current_cycle + 1
 	drain.process_cell(fire_count)
-	TEST_ASSERT(abs(drain.air.total_moles() - moles_full * 0.5) < 0.1, "above-threshold space drain is no longer gradual: [drain.air.total_moles()] of [moles_full] mol left")
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "full-pressure space drain left residue: [drain.air.total_moles()] of [moles_full] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+	TEST_ASSERT(abs(drain.pressure_vector_y - pressure_full) < 0.5, "spacewind must carry the full pressure delta toward the hole (got [drain.pressure_vector_y] of [pressure_full])")
+	TEST_ASSERT(SSair.decompression_areas[drain_area], "room-to-space pressure delta did not queue the breached area")
+	var/queued_areas = length(SSair.decompression_areas)
+	SSair.queue_decompression_area(drain)
+	TEST_ASSERT_EQUAL(length(SSair.decompression_areas), queued_areas, "multiple leaking turfs queued the same area more than once")
 
-	// Below the threshold: the tile dumps everything and matches space.
+	// Порог декомп-события - HAZARD_LOW, а не WARNING_LOW: зона у дыры,
+	// просевшая ниже 50 кПа, обязана перевзводить тревогу, пока держит
+	// выживаемое давление (раунд 9906: события глохли, створки переоткрывались,
+	// станция дренировалась до 34 кПа через вечно открытые двери).
+	SSair.decompression_areas -= drain_area
+	SSair.decompression_handled_at -= drain_area
 	drain.air.copy_from_turf(drain)
-	drain.air.multiply(0.15)
+	drain.air.multiply(0.34)
+	TEST_ASSERT(drain.air.return_pressure() < DECOMPRESSION_FIRELOCK_PRESSURE_DELTA, "mid-drain fixture must sit below the old 50 kPa gate (got [drain.air.return_pressure()])")
+	TEST_ASSERT(drain.air.return_pressure() >= HAZARD_LOW_PRESSURE, "mid-drain fixture must hold survivable pressure (got [drain.air.return_pressure()])")
+	SSair.add_to_active(drain, FALSE)
+	SSair.decompression_pending[drain_area] = SSair.times_fired - 1
+	fire_count++
+	drain.process_cell(fire_count)
+	TEST_ASSERT(SSair.decompression_areas[drain_area], "a sub-50 kPa room venting to space must still queue its decompression event")
+
+	// Тёплый подпороговый огрызок (моли ниже MINIMUM_MOLES_DELTA_TO_MOVE, но
+	// температура выше TCMB) тоже уходит целиком - раньше такой висел на
+	// экспоненциальном хвосте десятки циклов.
+	drain.air.copy_from_turf(drain)
+	drain.air.multiply(0.0005)
+	drain.air.set_temperature(T20C)
+	TEST_ASSERT(drain.air.total_moles() <= MINIMUM_MOLES_DELTA_TO_MOVE, "wisp fixture must sit below the mole gate")
 	SSair.add_to_active(drain, FALSE)
 	fire_count++
 	drain.process_cell(fire_count)
-	TEST_ASSERT(drain.air.total_moles() < 0.001, "sub-threshold space drain left residue: [drain.air.total_moles()] mol")
-	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "warm wisp survived the space drain: [drain.air.total_moles()] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "warm wisp kept its temperature against space")
 
 	if(drain.excited_group)
 		drain.excited_group.garbage_collect()
 	SSair.high_pressure_delta -= drain
+	drain.high_pressure_queued = FALSE
 	drain.pressure_difference = 0
+	drain.pressure_vector_x = 0
+	drain.pressure_vector_y = 0
 	drain.atmos_cooldown = 0
 	drain.air.copy_from_turf(drain)
 	SSair.remove_from_active(drain)
+	SSair.decompression_areas -= drain_area
+	SSair.decompression_handled_at -= drain_area
+	SSair.decompression_pending -= drain_area
+	drain_old_area.contents += drain
 
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,
 /// and enter the heartbeat only after a full streak of no-op fires.
@@ -994,17 +1123,15 @@
 	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
 	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
 		scrubber.atmos_consider_idle()
-	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "scrubber did not enter the idle queue during setup")
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "scrubber did not enter the idle queue during setup")
 	// Флаш уже истёкших ЧУЖИХ машин: heartbeat-очередь глобальная и живая станция
 	// подмешивает в счётчик свои спящие вентиляции (наблюдалось woken=4 на Box).
 	// Между флашем и замером снов нет, world.time заморожен - новые дедлайны истечь
 	// не могут, значит следующий вызов посчитает ровно нашу машину.
 	SSair.wake_expired_idle_machines()
-	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "flushing expired machines must not touch the unexpired scrubber")
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "flushing expired machines must not touch the unexpired scrubber")
 	// The queue is FIFO by deadline; simulating expiry means moving to the head.
-	SSair.atmos_idle_queue.Remove(scrubber)
-	SSair.atmos_idle_queue.Insert(1, scrubber)
-	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	TEST_ASSERT(SSair.expire_idle_machine_for_test(scrubber), "could not expire the queued scrubber")
 	var/woken = SSair.wake_expired_idle_machines()
 	TEST_ASSERT_EQUAL(woken, 1, "wake_expired_idle_machines did not report the single woken machine")
 	TEST_ASSERT(scrubber.atmos_processing, "the counted machine was not actually returned to processing")
@@ -1050,18 +1177,16 @@
 	TEST_ASSERT(!scrubber.atmos_processing, "idle-heartbeat machine stayed in SSair processing")
 	TEST_ASSERT(!(scrubber in SSair.atmos_machinery), "idle-heartbeat machine stayed in atmos_machinery")
 	TEST_ASSERT(scrubber.atmos_idle_queued, "sleeping machine is not flagged as queued")
-	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "sleeping machine is not in the idle wake queue")
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "sleeping machine is not in the idle wake queue")
 
 	// An expired heartbeat deadline returns it for one full recheck. The queue
 	// is FIFO by deadline, so simulating expiry means moving to the head too
 	// (live station machines with future deadlines are queued ahead of us).
-	SSair.atmos_idle_queue.Remove(scrubber)
-	SSair.atmos_idle_queue.Insert(1, scrubber)
-	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	TEST_ASSERT(SSair.expire_idle_machine_for_test(scrubber), "could not expire the queued scrubber")
 	SSair.wake_expired_idle_machines()
 	TEST_ASSERT(scrubber.atmos_processing, "expired heartbeat did not return the machine to processing")
 	TEST_ASSERT(!scrubber.atmos_idle_queued, "heartbeat-woken machine kept its queued flag")
-	TEST_ASSERT(!(scrubber in SSair.atmos_idle_queue), "heartbeat-woken machine stayed in the idle wake queue")
+	TEST_ASSERT(!SSair.idle_machine_queued(scrubber), "heartbeat-woken machine stayed in the idle wake queue")
 
 	// Going idle again re-enqueues; an event wake must put it straight back.
 	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
@@ -1076,9 +1201,20 @@
 	var/obj/machinery/atmospherics/components/unary/vent_scrubber/doomed_sleeper = new(room)
 	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
 		doomed_sleeper.atmos_consider_idle()
-	TEST_ASSERT(doomed_sleeper in SSair.atmos_idle_queue, "sleeping test machine did not enter the idle wake queue")
+	TEST_ASSERT(SSair.idle_machine_queued(doomed_sleeper), "sleeping test machine did not enter the idle wake queue")
 	qdel(doomed_sleeper)
-	TEST_ASSERT(!(doomed_sleeper in SSair.atmos_idle_queue), "Destroy() left the machine in the idle wake queue")
+	TEST_ASSERT(!SSair.idle_machine_queued(doomed_sleeper), "Destroy() left the machine in the idle wake queue")
+
+	// Обратный случай: флаг соврал (FALSE), а запись в очереди осталась. Именно
+	// такой рассинхрон и пинил бы удалённую машину, поэтому снятие обязано
+	// смотреть на саму очередь, а не только на флаг.
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/desynced_sleeper = new(room)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		desynced_sleeper.atmos_consider_idle()
+	TEST_ASSERT(SSair.idle_machine_queued(desynced_sleeper), "second sleeping test machine did not enter the idle wake queue")
+	desynced_sleeper.atmos_idle_queued = FALSE
+	qdel(desynced_sleeper)
+	TEST_ASSERT(!SSair.idle_machine_queued(desynced_sleeper), "a desynced queued flag left a strong ref in the idle wake queue")
 
 	// A settled canister with a closed valve sleeps entirely.
 	var/obj/machinery/portable_atmospherics/canister/oxygen/settled = allocate(/obj/machinery/portable_atmospherics/canister/oxygen, room)
@@ -1108,4 +1244,368 @@
 	TEST_ASSERT(!portable.pump.atmos_idle_queued, "idle bookkeeping enqueued the internal pump for heartbeat wake-ups")
 	SSair.remove_from_active(room)
 
+/// Construction QoL and active devices must retain the expected topology and
+/// gas/energy behavior after being adapted to this atmos implementation.
+/datum/unit_test/atmos_engineering_devices/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+
+	var/obj/machinery/atmospherics/pipe/bridge_pipe/bridge = allocate(/obj/machinery/atmospherics/pipe/bridge_pipe, room)
+	TEST_ASSERT(bridge.pipe_flags & PIPING_BRIDGE, "bridge pipe lost its crossing construction flag")
+
+	var/obj/machinery/atmospherics/components/binary/temperature_gate/gate = allocate(/obj/machinery/atmospherics/components/binary/temperature_gate, room)
+	gate.on = TRUE
+	gate.target_temperature = T20C + 50
+	gate.airs[1].set_moles(GAS_O2, 40)
+	gate.airs[1].set_temperature(T20C)
+	var/gate_output_before = gate.airs[2].total_moles()
+	gate.process_atmos()
+	TEST_ASSERT(gate.airs[2].total_moles() > gate_output_before, "temperature gate did not pass gas below its threshold")
+
+	var/obj/machinery/atmospherics/components/binary/temperature_pump/temperature_pump = allocate(/obj/machinery/atmospherics/components/binary/temperature_pump, room)
+	temperature_pump.on = TRUE
+	temperature_pump.machine_stat &= ~NOPOWER
+	temperature_pump.set_is_operational(TRUE)
+	temperature_pump.heat_transfer_rate = 50
+	temperature_pump.airs[1].set_moles(GAS_N2, 30)
+	temperature_pump.airs[2].set_moles(GAS_N2, 30)
+	temperature_pump.airs[1].set_temperature(500)
+	temperature_pump.airs[2].set_temperature(250)
+	var/thermal_energy_before = temperature_pump.airs[1].thermal_energy() + temperature_pump.airs[2].thermal_energy()
+	temperature_pump.process_atmos()
+	var/thermal_energy_after = temperature_pump.airs[1].thermal_energy() + temperature_pump.airs[2].thermal_energy()
+	TEST_ASSERT(abs(thermal_energy_before - thermal_energy_after) < 0.01, "temperature pump did not conserve gas thermal energy")
+	TEST_ASSERT(temperature_pump.airs[1].return_temperature() < 500 && temperature_pump.airs[2].return_temperature() > 250, "temperature pump moved heat in the wrong direction")
+
+	var/obj/machinery/atmospherics/components/binary/pressure_valve/pressure_valve = allocate(/obj/machinery/atmospherics/components/binary/pressure_valve, room)
+	pressure_valve.on = TRUE
+	pressure_valve.target_pressure = ONE_ATMOSPHERE
+	pressure_valve.airs[1].set_moles(GAS_O2, 100)
+	pressure_valve.airs[1].set_temperature(T20C)
+	pressure_valve.process_atmos()
+	TEST_ASSERT(pressure_valve.airs[2].total_moles() > 0, "pressure valve did not open above its threshold")
+
+	var/obj/machinery/atmospherics/components/quaternary/omni_filter/omni_filter = allocate(/obj/machinery/atmospherics/components/quaternary/omni_filter, room)
+	omni_filter.on = TRUE
+	omni_filter.set_is_operational(TRUE)
+	for(var/i in 1 to QUATERNARY)
+		omni_filter.nodes[i] = omni_filter
+	omni_filter.airs[1].set_moles(GAS_O2, 20)
+	omni_filter.airs[1].set_moles(GAS_PLASMA, 10)
+	omni_filter.process_atmos()
+	TEST_ASSERT(omni_filter.airs[3].get_moles(GAS_PLASMA) > 9.9, "omni filter did not route plasma to its configured side")
+	TEST_ASSERT(omni_filter.airs[2].get_moles(GAS_O2) > 19.9, "omni filter did not route clean gas to its configured side")
+	TEST_ASSERT(omni_filter.airs[2].get_moles(GAS_PLASMA) < TEST_GAS_EPSILON, "omni filter leaked its selected gas into the clean output")
+
+	var/obj/machinery/atmospherics/components/quaternary/omni_mixer/omni_mixer = allocate(/obj/machinery/atmospherics/components/quaternary/omni_mixer, room)
+	omni_mixer.on = TRUE
+	omni_mixer.set_is_operational(TRUE)
+	omni_mixer.target_pressure = ONE_ATMOSPHERE
+	for(var/i in 1 to QUATERNARY)
+		omni_mixer.nodes[i] = omni_mixer
+	omni_mixer.airs[1].set_moles(GAS_O2, 50)
+	omni_mixer.airs[2].set_moles(GAS_N2, 50)
+	omni_mixer.airs[3].set_moles(GAS_CO2, 50)
+	for(var/i in 1 to 3)
+		omni_mixer.airs[i].set_temperature(T20C)
+	omni_mixer.process_atmos()
+	TEST_ASSERT(omni_mixer.airs[4].get_moles(GAS_O2) > 0, "omni mixer omitted its north input")
+	TEST_ASSERT(omni_mixer.airs[4].get_moles(GAS_N2) > 0, "omni mixer omitted its south input")
+	TEST_ASSERT(omni_mixer.airs[4].get_moles(GAS_CO2) > 0, "omni mixer omitted its east input")
+
+	var/obj/machinery/portable_atmospherics/scrubber/pipe/pipe_scrubber = allocate(/obj/machinery/portable_atmospherics/scrubber/pipe, room)
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = allocate(/obj/machinery/atmospherics/components/unary/portables_connector, room)
+	var/datum/pipeline/port_parent = new
+	port_parent.air = new(35)
+	port.parents[1] = port_parent
+	port_parent.other_atmosmch += port
+	port_parent.other_airs += port.airs[1]
+	pipe_scrubber.connected_port = port
+	port.connected_device = pipe_scrubber
+	pipe_scrubber.holding = allocate(/obj/item/tank/internals/emergency_oxygen, room)
+	pipe_scrubber.on = TRUE
+	pipe_scrubber.air_contents.set_moles(GAS_PLASMA, 10)
+	var/tank_plasma_before = pipe_scrubber.holding.air_contents.get_moles(GAS_PLASMA)
+	pipe_scrubber.process_atmos()
+	TEST_ASSERT(pipe_scrubber.holding.air_contents.get_moles(GAS_PLASMA) > tank_plasma_before, "portable pipe scrubber did not move selected gas into its tank")
+	pipe_scrubber.disconnect()
+	qdel(port_parent)
+
+/// Fans are unconditional atmos barriers now that the pressure clutch is gone:
+/// they block air whatever the difference across them is, and the powered fan
+/// only stops blocking when it loses power.
+/datum/unit_test/atmos_fan_barrier/Run()
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/list/turf/open/test_turfs = list(room)
+	for(var/direction in GLOB.cardinals)
+		var/turf/open/neighbour = get_step(room, direction)
+		if(istype(neighbour))
+			test_turfs |= neighbour
+	var/list/saved_air = list()
+	for(var/turf/open/test_turf as anything in test_turfs)
+		var/datum/gas_mixture/snapshot = new(CELL_VOLUME)
+		snapshot.copy_from(test_turf.return_air())
+		saved_air[test_turf] = snapshot
+		var/datum/gas_mixture/test_air = test_turf.return_air()
+		test_air.clear()
+		test_air.set_temperature(T20C)
+		test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
+
+	// Without this the adjacency assertions below would pass on an empty list.
+	room.air_update_turf(TRUE)
+	TEST_ASSERT(length(room.atmos_adjacent_turfs), "precondition failed: the bare test turf shares air with nothing")
+
+	var/obj/structure/fans/tiny/tiny_fan = allocate(/obj/structure/fans/tiny, room)
+	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "tiny fan did not block air")
+	TEST_ASSERT(!length(room.atmos_adjacent_turfs), "a tiny fan left its turf atmos-adjacent to its neighbours")
+
+	// The pressure difference the old safety clutch used to fail open on is
+	// exactly what the fan is built for.
+	var/datum/gas_mixture/room_air = room.return_air()
+	room_air.set_moles(GAS_N2, MAX_OUTPUT_PRESSURE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
+	room.air_update_turf(TRUE)
+	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "tiny fan stopped blocking air under a large pressure difference")
+	TEST_ASSERT(!length(room.atmos_adjacent_turfs), "a large pressure difference reopened the turf a tiny fan sealed")
+
+	var/obj/structure/fans/tiny/invisible/map_blocker = allocate(/obj/structure/fans/tiny/invisible, room)
+	TEST_ASSERT_EQUAL(map_blocker.CanAtmosPass, ATMOS_PASS_NO, "invisible map blocker did not block air")
+
+	var/obj/machinery/poweredfans/powered_fan = allocate(/obj/machinery/poweredfans, room)
+	powered_fan.use_power = NO_POWER_USE
+	powered_fan.refresh_atmos_barrier()
+	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_NO, "powered fan did not block air while powered")
+	powered_fan.use_power = ACTIVE_POWER_USE
+	powered_fan.refresh_atmos_barrier()
+	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_YES, "unpowered fan still blocked air")
+
+	for(var/turf/open/test_turf as anything in test_turfs)
+		var/datum/gas_mixture/snapshot = saved_air[test_turf]
+		test_turf.return_air().copy_from(snapshot)
+		qdel(snapshot)
+
+/obj/effect/atmos_unit_test_sensitive
+	var/exposure_count = 0
+
+/obj/effect/atmos_unit_test_sensitive/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > T20C + 50
+
+/obj/effect/atmos_unit_test_sensitive/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	exposure_count++
+
+/// Signal listeners, merger grouping, vector wind, overlay aggregation and
+/// declarative data hooks are all opt-in or shared-cache paths.
+/datum/unit_test/atmos_signals_and_gameplay_hooks/Run()
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/east_room = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(east_room), "test location has no adjacent open turf")
+
+	var/obj/effect/atmos_unit_test_sensitive/sensitive = allocate(/obj/effect/atmos_unit_test_sensitive, room)
+	sensitive.AddElement(/datum/element/atmos_sensitive)
+	SEND_SIGNAL(room, COMSIG_TURF_EXPOSE, room.air, T20C + 100)
+	TEST_ASSERT(sensitive.flags_1 & ATMOS_IS_PROCESSING_1, "atmos-sensitive atom did not enter opt-in processing")
+	TEST_ASSERT(sensitive in SSair.atom_process, "atmos-sensitive atom is absent from the SSair atom list")
+	SEND_SIGNAL(room, COMSIG_TURF_EXPOSE, room.air, T20C)
+	TEST_ASSERT(!(sensitive.flags_1 & ATMOS_IS_PROCESSING_1), "atmos-sensitive atom did not leave processing after conditions normalized")
+
+	var/obj/machinery/door/firedoor/first_door = allocate(/obj/machinery/door/firedoor, room)
+	var/obj/machinery/door/firedoor/second_door = allocate(/obj/machinery/door/firedoor, east_room)
+	var/datum/merger/firelock_group = first_door.GetMergeGroup("firelocks", first_door.merger_typecache)
+	TEST_ASSERT(second_door in firelock_group.members, "touching firelocks did not enter one merger group")
+	// Initialize() correctly classified the reservation's immutable space air as
+	// cold. Replace only that setup state with a shared controlled packet so the
+	// transition assertions below are independent of the reservation template.
+	var/list/controlled_issues = list()
+	for(var/obj/machinery/door/firedoor/group_door as anything in firelock_group.members)
+		group_door.issue_turfs = controlled_issues
+		group_door.alarm_type = null
+		group_door.generic_alarm = FALSE
+	first_door.process_atmos_alarm(room, room.air, ATMOS_HEAT_ALARM_TEMPERATURE + 1)
+	TEST_ASSERT_EQUAL(first_door.alarm_type, FIRELOCK_ALARM_TYPE_HOT, "firelock did not classify a hot turf alarm")
+	TEST_ASSERT_EQUAL(second_door.alarm_type, FIRELOCK_ALARM_TYPE_HOT, "firelock merger did not propagate the hot alarm")
+	first_door.process_atmos_alarm(room, room.air, T20C)
+	TEST_ASSERT(!first_door.alarm_type && !second_door.alarm_type, "firelock merger did not clear a normalized turf alarm: first=[first_door.alarm_type], second=[second_door.alarm_type], issues=[json_encode(first_door.issue_turfs)], generic=[first_door.generic_alarm]/[second_door.generic_alarm]")
+	first_door.generic_alarm = TRUE
+	first_door.recompute_atmos_alarm()
+	TEST_ASSERT_EQUAL(second_door.alarm_type, FIRELOCK_ALARM_TYPE_GENERIC, "generic area alarm did not propagate through the merger")
+	first_door.generic_alarm = FALSE
+	first_door.recompute_atmos_alarm()
+
+	SSair.high_pressure_delta -= room
+	room.high_pressure_queued = FALSE
+	room.pressure_vector_x = 0
+	room.pressure_vector_y = 0
+	room.consider_pressure_difference(east_room, 100)
+	var/turf/open/north_room = get_step(room, NORTH)
+	if(istype(north_room))
+		room.consider_pressure_difference(north_room, 100)
+	// Очередь ветра больше не сканируется линейно на вставке: членство сторожит
+	// явный флаг high_pressure_queued, поэтому второй шер в том же цикле обязан
+	// попасть в уже стоящую запись, а не завести вторую
+	var/queued_entries = 0
+	for(var/turf/open/queued as anything in SSair.high_pressure_delta)
+		if(queued == room)
+			queued_entries++
+	TEST_ASSERT_EQUAL(queued_entries, 1, "ветровая очередь получила дубль турфа за один цикл")
+	room.high_pressure_movements()
+	TEST_ASSERT(room.pressure_direction & EAST, "vector wind lost its east component")
+	if(istype(north_room))
+		TEST_ASSERT(room.pressure_direction & NORTH, "vector wind did not combine orthogonal gradients")
+	SSair.high_pressure_delta -= room
+	room.high_pressure_queued = FALSE
+	room.pressure_vector_x = 0
+	room.pressure_vector_y = 0
+	room.pressure_difference = 0
+	room.pressure_direction = 0
+
+	room.air.copy_from_turf(room)
+	room.air.set_moles(GAS_PLASMA, MOLES_GAS_VISIBLE_STEP * 2)
+	room.air.set_moles(GAS_NITROUS, MOLES_GAS_VISIBLE_STEP * 2)
+	room.update_visuals()
+	TEST_ASSERT_EQUAL(LAZYLEN(room.atmos_overlay_types), 1, "visible gas mixture produced more than one shared color overlay")
+	room.air.copy_from_turf(room)
+	room.update_visuals()
+
+	TEST_ASSERT_EQUAL(length(GLOB.air_alarm_modes), 9, "air alarm datum registry does not contain every mode")
+	var/datum/air_alarm_mode/filtering_mode = get_air_alarm_mode(1)
+	TEST_ASSERT(filtering_mode?.description, "air alarm mode has no contextual description")
+	TEST_ASSERT_EQUAL(GLOB.gas_data.breath_reagents[GAS_H2O], /datum/reagent/water, "breath reagent gas hook is not registered")
+
+	var/obj/item/clothing/under/clothes = allocate(/obj/item/clothing/under, room)
+	clothes.absorb_plasma(50)
+	TEST_ASSERT(clothes.plasma_contamination > 0, "permeable clothing did not adsorb plasma")
+	var/obj/item/clothing/suit/space/sealed = allocate(/obj/item/clothing/suit/space, room)
+	sealed.absorb_plasma(50)
+	TEST_ASSERT_EQUAL(sealed.plasma_contamination, 0, "sealed clothing adsorbed plasma")
+	var/obj/machinery/washing_machine/washer = allocate(/obj/machinery/washing_machine, room)
+	clothes.machine_wash(washer)
+	TEST_ASSERT_EQUAL(clothes.plasma_contamination, 0, "washing machine did not remove plasma contamination")
+
+/// The archive is what makes a cycle order-independent: every share in a cycle
+/// reads the state its partner had when the cycle started. A tile with several
+/// active neighbours used to be re-archived by each of them in turn, so the
+/// second neighbour shared against gas the first one had already delivered and
+/// the result depended on the order the active list happened to be in.
+/datum/unit_test/atmos_neighbour_archive_is_cycle_start/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/base = run_loc_floor_bottom_left
+
+	// Seal the perimeter so nothing this test moves can leak into the reserved
+	// z-level and colour the tests that run after it.
+	for(var/dx in 0 to 4)
+		for(var/dy in 0 to 4)
+			var/turf/edge = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT_NOTNULL(edge, "test zone turf missing at offset [dx],[dy]")
+			if(dx == 0 || dy == 0 || dx == 4 || dy == 4)
+				edge.ChangeTurf(/turf/closed/wall)
+
+	var/list/turf/open/room = list()
+	for(var/dx in 1 to 3)
+		for(var/dy in 1 to 3)
+			var/turf/open/inner = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT(istype(inner), "inner room turf is not open at offset [dx],[dy]")
+			inner.ImmediateCalculateAdjacentTurfs()
+			inner.air.copy_from_turf(inner)
+			if(inner.excited_group)
+				inner.excited_group.garbage_collect()
+			SSair.remove_from_active(inner)
+			room += inner
+
+	var/turf/open/middle = locate(base.x + 2, base.y + 2, base.z)
+	var/turf/open/late = locate(base.x + 3, base.y + 2, base.z)
+	var/fire_count = 0
+	for(var/turf/open/tile as anything in room)
+		fire_count = max(fire_count, tile.current_cycle)
+	fire_count++
+
+	// The middle tile takes its cycle-start snapshot, and then a neighbour that
+	// has already run this cycle feeds gas into it.
+	middle.archive(fire_count)
+	TEST_ASSERT_NOTNULL(middle.air.gas_archive, "archiving the middle tile produced no snapshot")
+	middle.air.set_moles(GAS_PLASMA, 5)
+
+	late.process_cell(fire_count)
+
+	// The plasma itself must NOT cross: the transfer is computed from the two
+	// archives and neither of them has any. What proves the neighbour loop
+	// actually reached the middle tile - the branch right after the archive - is
+	// that the two ended up sharing an excited group.
+	TEST_ASSERT_EQUAL(late.current_cycle, fire_count, "the neighbouring tile never ran its cycle, so nothing was exercised")
+	TEST_ASSERT_NOTNULL(middle.excited_group, "the neighbouring tile never engaged the middle one, so the archive branch was never reached")
+	TEST_ASSERT_EQUAL(middle.air.gas_archive[GAS_PLASMA] || 0, 0,
+		"the middle tile was re-archived mid-cycle: its share baseline moved to include gas an earlier neighbour had already delivered")
+
+	for(var/turf/open/tile as anything in room)
+		if(tile.excited_group)
+			tile.excited_group.garbage_collect()
+		SSair.remove_from_active(tile)
+		tile.air.copy_from_turf(tile)
+
+/// The registered-mixture counter feeds the SSair stat line, the perf CSV and
+/// the headless benchmark, so it has to mean "alive right now". Most mixtures
+/// never see qdel - they go out of scope and BYOND reclaims them through Del() -
+/// and counting only the qdel-ed ones made the number climb all round.
+/// del() is the deterministic way to reach the same hook from a test.
+/datum/unit_test/atmos_gas_mixture_count_is_live/Run()
+	var/before = SSair.get_amt_gas_mixes()
+
+	var/datum/gas_mixture/scratch = new(CELL_VOLUME)
+	TEST_ASSERT_EQUAL(SSair.get_amt_gas_mixes(), before + 1, "a fresh gas mixture did not register itself")
+
+	del(scratch)
+	TEST_ASSERT_EQUAL(SSair.get_amt_gas_mixes(), before, "a gas mixture that went away without qdel left the live count inflated")
+
+	// The qdel path takes the same mixture off the count exactly once: Destroy()
+	// clears the flag, and the Del() that follows it has to find nothing to do.
+	var/datum/gas_mixture/disposable = new(CELL_VOLUME)
+	qdel(disposable)
+	TEST_ASSERT_EQUAL(SSair.get_amt_gas_mixes(), before, "qdel-ing a gas mixture did not put the live count back where it started")
+	TEST_ASSERT(!disposable.dm_registered_to_ssair, "Destroy() left the mixture registered, so its Del() would decrement the count a second time")
+
 #undef TEST_GAS_EPSILON
+
+///react() бежит по каждому активному турфу, пайпнету и переносному баллону
+///каждый проход SSair, и подавляющее большинство вызовов не находит ни одного
+///кандидата. Ранний выход обязан гасить результат ПРОШЛОГО вызова - хотспоты
+///читают reaction_results["fire"] сразу после react(), и залипший результат
+///поджёг бы плитку, на которой уже нечему гореть, - но не обязан заводить пустой
+///список смеси, которая не реагировала ни разу.
+/datum/unit_test/atmos_react_no_candidate_exit/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair не инициализирован")
+
+	// Газ подбираем по индексу, а не наугад: у азота бакет реакций есть, и смесь
+	// из него законно доходит до разбора кандидатов.
+	var/list/by_gas = SSair.reactions_by_key_gas
+	var/inert_gas
+	for(var/id in GLOB.gas_data.specific_heats)
+		if(!length(by_gas?[id]))
+			inert_gas = id
+			break
+	TEST_ASSERT(inert_gas, "предпосылка: нужен газ, не владеющий ни одной реакцией")
+	TEST_ASSERT(T20C < SSair.temp_gated_min_temp, "предпосылка: комнатная температура должна быть ниже температурного гейта реакций")
+
+	var/datum/gas_mixture/fresh = new
+	fresh.set_moles(inert_gas, MOLES_CELLSTANDARD)
+	fresh.set_temperature(T20C)
+	TEST_ASSERT_EQUAL(fresh.react(null), NO_REACTION, "смесь без кандидатов отчиталась о реакции")
+	// Список результатов заводит сам New(), поэтому проверяем не его отсутствие, а
+	// что ранний выход ничего в него не записал.
+	TEST_ASSERT(!length(fresh.reaction_results), "ранний выход записал результат смеси, которая не реагировала")
+
+	var/datum/gas_mixture/stale = new
+	stale.set_moles(inert_gas, MOLES_CELLSTANDARD)
+	stale.set_temperature(T20C)
+	stale.reaction_results = list("fire" = 1)
+	TEST_ASSERT_EQUAL(stale.react(null), NO_REACTION, "смесь без кандидатов отчиталась о реакции")
+	TEST_ASSERT(!length(stale.reaction_results), "ранний выход оставил результат прошлой реакции")
+
+	//Вторая ранняя развилка - нулевые моли. Газ обязан быть с бакетом реакций,
+	//иначе смесь уйдёт через проверку кандидатов и развилка по молям не проверится.
+	TEST_ASSERT(length(SSair.reactions_by_key_gas?[GAS_PLASMA]), "предпосылка: у плазмы должен быть бакет реакций")
+	var/datum/gas_mixture/emptied = new
+	emptied.set_moles(GAS_PLASMA, 0)
+	emptied.set_temperature(T20C)
+	emptied.reaction_results = list("fire" = 1)
+	TEST_ASSERT_EQUAL(emptied.react(null), NO_REACTION, "смесь без молей отчиталась о реакции")
+	TEST_ASSERT(!length(emptied.reaction_results), "смесь без молей сохранила результат прошлой реакции")

@@ -4,8 +4,6 @@ import { toFixed } from 'common/math';
 
 import { useBackend, useLocalState } from '../backend';
 import {
-  Box,
-  Collapsible,
   LabeledList,
   ProgressBar,
   Section,
@@ -13,6 +11,7 @@ import {
 } from '../components';
 import { getGasColor, getGasLabel } from '../constants';
 import { NtosWindow } from '../layouts';
+import { AtmosHandbookContent } from './common/AtmosHandbookContent';
 
 const TAB_SCAN = 'scan';
 const TAB_HANDBOOK = 'handbook';
@@ -23,8 +22,6 @@ export const NtosAtmos = (props) => {
   const {
     AirTemp,
     AirPressure,
-    reactionInfo = [],
-    gasInfo = [],
   } = data;
   const gases = flow([
     filter(gas => gas.percentage >= 0.01),
@@ -80,57 +77,10 @@ export const NtosAtmos = (props) => {
             </Section>
           </>
         )}
+        {/* Тело справочника общее с отдельным окном, которое открывают консоль
+            атмоса и газоанализатор: три копии разметки однажды разошлись бы. */}
         {tab === TAB_HANDBOOK && (
-          <Section title="Реакции">
-            {reactionInfo.map(reaction => (
-              <Collapsible
-                key={reaction.id}
-                title={reaction.disabled
-                  ? `${reaction.name} (отключена)`
-                  : reaction.name}
-                color="transparent">
-                {reaction.description && (
-                  <Box mb={1} color="label">
-                    {reaction.description}
-                  </Box>
-                )}
-                <LabeledList>
-                  {(reaction.factors || []).map((factor, index) => (
-                    <LabeledList.Item
-                      key={`${reaction.id}-${index}`}
-                      label={factor.factor_name}
-                      tooltip={factor.tooltip}>
-                      {factor.desc}
-                    </LabeledList.Item>
-                  ))}
-                </LabeledList>
-              </Collapsible>
-            ))}
-            {!!gasInfo.length && (
-              <Section title="Газы" mt={1}>
-                {gasInfo.map(gas => (
-                  <Collapsible
-                    key={gas.id}
-                    title={gas.name}
-                    color="transparent">
-                    <LabeledList>
-                      <LabeledList.Item label="ID">
-                        {gas.id}
-                      </LabeledList.Item>
-                      <LabeledList.Item label="Теплоёмкость">
-                        {gas.specific_heat}
-                      </LabeledList.Item>
-                      {!!Object.keys(gas.reactions || {}).length && (
-                        <LabeledList.Item label="Реакции">
-                          {Object.values(gas.reactions).join(', ')}
-                        </LabeledList.Item>
-                      )}
-                    </LabeledList>
-                  </Collapsible>
-                ))}
-              </Section>
-            )}
-          </Section>
+          <AtmosHandbookContent data={data} />
         )}
       </NtosWindow.Content>
     </NtosWindow>

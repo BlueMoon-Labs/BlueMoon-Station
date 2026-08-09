@@ -148,7 +148,7 @@
 /area/shuttle/solfed/frigate)
 "bZ" = (
 /obj/machinery/atmospherics/components/unary/thermomachine{
-	piping_layer = 2;
+	piping_layer = 3;
 	dir = 8
 	},
 /obj/machinery/camera/autoname{
@@ -500,7 +500,7 @@
 	pixel_y = 32
 	},
 /obj/machinery/portable_atmospherics/canister/air,
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4{
 	dir = 4
 	},
 /obj/machinery/light/directional/west,
@@ -1362,7 +1362,7 @@
 /area/shuttle/solfed/frigate)
 "pd" = (
 /obj/machinery/meter{
-	target_layer = 4
+	target_layer = 5
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -2045,7 +2045,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "vD" = (
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4{
 	dir = 8
 	},
 /obj/machinery/button/door{
@@ -2865,7 +2865,7 @@
 /area/shuttle/solfed/frigate)
 "Eb" = (
 /obj/machinery/portable_atmospherics/canister/air,
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4{
 	dir = 8
 	},
 /obj/machinery/light/directional/east,
@@ -3335,7 +3335,7 @@
 /obj/effect/decal/cleanable/robot_debris/old,
 /obj/item/wrench,
 /obj/machinery/meter{
-	target_layer = 2
+	target_layer = 3
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -3814,7 +3814,7 @@
 "Nw" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
 	dir = 4;
-	piping_layer = 2
+	piping_layer = 3
 	},
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
@@ -4061,7 +4061,7 @@
 /obj/structure/window/plasma/reinforced,
 /obj/machinery/atmospherics/components/trinary/mixer/airmix{
 	dir = 4;
-	piping_layer = 2
+	piping_layer = 3
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
@@ -4280,7 +4280,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Sf" = (
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3{
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4{
 	dir = 4
 	},
 /obj/machinery/button/door{

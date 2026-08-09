@@ -36,8 +36,15 @@
 
 	var/old_suppress = recorder.suppress_side_effects
 	var/old_ignore_empty = recorder.ignore_empty_server
+	// Метка собственного дампа живёт по РЕАЛЬНОМУ world.time и переживает reset_state().
+	// Если профайлер дампился в этом же тике (периодическая сетка или авто-дамп по
+	// внешнему столлу), classify_spike() коротит на "спайк вызван предыдущим дампом"
+	// и синтетика ниже классифицируется мимо всего, что тест проверяет. Окно всего
+	// 2 тика, поэтому падает редко и на случайной карте - CI multiz_debug, PR #3588.
+	var/old_self_inflicted = recorder.self_inflicted_until
 	recorder.suppress_side_effects = TRUE
 	recorder.ignore_empty_server = TRUE
+	recorder.self_inflicted_until = 0
 	recorder.reset_state()
 
 	// 1. Ровная последовательность: 50мс реального времени на 0.5дс игрового - дрифта нет
@@ -249,5 +256,6 @@
 	recorder.reset_state()
 	recorder.suppress_side_effects = old_suppress
 	recorder.ignore_empty_server = old_ignore_empty
+	recorder.self_inflicted_until = old_self_inflicted
 
 #undef TICK_SPIKE_TEST_FLAT_TICKS
