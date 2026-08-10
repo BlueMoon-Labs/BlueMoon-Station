@@ -24187,6 +24187,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
+"pgX" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/indestructible/rock,
+/area/centcom/holding/shootingrange)
 "pha" = (
 /obj/effect/decal/cleanable/semen/femcum,
 /turf/open/indestructible/boss/air,
@@ -31572,10 +31576,6 @@
 /obj/effect/turf_decal/tile/brown,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
-"vWE" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/indestructible/rock,
-/area/centcom/holding/shootingrange)
 "vWH" = (
 /obj/effect/turf_decal/tile/dark_blue{
 	dir = 1
@@ -51242,7 +51242,7 @@ uZR
 uZR
 uZR
 uZR
-vWE
+pgX
 aaa
 aaa
 aaa
@@ -51740,7 +51740,7 @@ upz
 rwb
 btB
 rwb
-rwb
+kfE
 rwb
 rwb
 rwb
@@ -52251,7 +52251,7 @@ fON
 fON
 uZR
 qTG
-rwb
+kfE
 rwb
 rwb
 rwb
@@ -55084,7 +55084,7 @@ rwb
 rwb
 rwb
 rwb
-rwb
+kfE
 wXZ
 lpf
 lpf
@@ -56365,13 +56365,13 @@ uZR
 wIT
 eQE
 jou
-rwb
+kfE
 rwb
 rwb
 rwb
 rwb
 ily
-rwb
+kfE
 rwb
 rwb
 rwb
@@ -56636,7 +56636,7 @@ wIT
 wXZ
 rwb
 rwb
-rwb
+kfE
 rwb
 wXZ
 uZR
