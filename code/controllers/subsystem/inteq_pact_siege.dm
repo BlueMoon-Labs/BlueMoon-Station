@@ -16,10 +16,36 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/obj/machinery/gateway/away/pact_siege/return_gateway
 	/// CentCom siege announcement has been sent — gateway destination unlocks after prep
 	var/gateway_announced = FALSE
+	/// Evac timer elapsed — InteQ must launch the shuttle from the console aboard it
+	var/evac_ready = FALSE
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
 	/// Visual sync: whether station gateway was already flipped to «open» overlays
 	var/gateway_visual_open = FALSE
+	/// Round report: siege was activated this round
+	var/siege_was_activated = FALSE
+	/// Round report: winner side after conclude (null if unfinished)
+	var/concluded_side = null
+	var/conclude_reason_text = ""
+	/// ckey -> "defender" | "attacker"
+	var/list/siege_participant_roles = list()
+
+/datum/inteq_pact_siege/proc/reset_round_report_data()
+	siege_was_activated = FALSE
+	concluded_side = null
+	conclude_reason_text = ""
+	siege_participant_roles = list()
+
+/datum/inteq_pact_siege/proc/track_participant(mob/living/L, role)
+	if(QDELETED(L))
+		return
+	var/raw = L.mind?.key || L.ckey
+	if(!raw)
+		return
+	var/ck = ckey(raw)
+	if(!ck)
+		return
+	siege_participant_roles[ck] = role
 
 /datum/inteq_pact_siege/proc/role_check_inteq(mob/living/user)
 	if(!user)
@@ -134,6 +160,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
 	defenders |= WEAKREF(L)
 	defenders_ever_registered = TRUE
+	track_participant(L, "defender")
 
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
@@ -142,6 +169,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
 	attackers |= WEAKREF(L)
+	track_participant(L, "attacker")
 
 /datum/inteq_pact_siege/proc/living_defenders_count()
 	. = 0
@@ -149,6 +177,23 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		var/mob/living/L = W.resolve()
 		if(!QDELETED(L) && L.stat != DEAD && (ROLE_INTEQ in L.faction))
 			.++
+
+/datum/inteq_pact_siege/proc/is_on_evac_shuttle(mob/living/L)
+	if(!L)
+		return FALSE
+	return istype(get_area(L), /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+
+/datum/inteq_pact_siege/proc/living_inteq_on_shuttle_count()
+	. = 0
+	for(var/mob/living/L in GLOB.mob_living_list)
+		if(QDELETED(L) || L.stat == DEAD || !(ROLE_INTEQ in L.faction))
+			continue
+		if(is_on_evac_shuttle(L))
+			.++
+
+/datum/inteq_pact_siege/proc/refresh_console_descriptions()
+	for(var/obj/machinery/computer/inteq_pact_siege/C in GLOB.machines)
+		C.update_siege_desc()
 
 /datum/inteq_pact_siege/proc/scan_battlefield_participants()
 	if(!active || !siege_z)
@@ -296,6 +341,10 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	started_at = world.time
 	end_time = world.time + PACT_SIEGE_TIMER
 	active = TRUE
+	siege_was_activated = TRUE
+	concluded_side = null
+	conclude_reason_text = ""
+	siege_participant_roles = list()
 
 	setup_battlefield_return_gateway()
 	register_existing_defenders()
@@ -325,6 +374,41 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 	message_admins("[key_name_admin(user)] активировал(а) протокол осады InteQ/PACT. Поле боя: [length(turfs)] турфов, z=[siege_z].")
 	log_game("PACT siege activated by [key_name(user)]; battlefield turfs=[length(turfs)] z=[siege_z].")
+	refresh_console_descriptions()
+	return TRUE
+
+/datum/inteq_pact_siege/proc/mark_evac_ready()
+	if(evac_ready)
+		return
+	evac_ready = TRUE
+	priority_announce(
+		"БС-двигатели эвакуационного шаттла InteQ синхронизированы. Для отбытия уполномоченный персонал InteQ должен находиться на шаттле и подтвердить запуск на консоли эвакуации.",
+		"Центральное Командование",
+		'sound/misc/announce_dig.ogg',
+		null,
+		null,
+		TRUE,
+	)
+	for(var/mob/living/L in GLOB.player_list)
+		if(QDELETED(L) || !(ROLE_INTEQ in L.faction))
+			continue
+		to_chat(L, span_userdanger("Эвакуационный шаттл готов к отлёту! Зайдите на шаттл и подтвердите запуск на консоли БС-двигателя."))
+	refresh_console_descriptions()
+
+/datum/inteq_pact_siege/proc/launch_evac(mob/living/user)
+	if(!active || !evac_ready)
+		return FALSE
+	if(!role_check_inteq(user))
+		to_chat(user, span_warning("Консоль не реагирует: нет авторизации InteQ."))
+		return FALSE
+	if(!is_on_evac_shuttle(user))
+		to_chat(user, span_warning("Для запуска шаттла вы должны находиться на его палубе."))
+		return FALSE
+	var/inteq_aboard = living_inteq_on_shuttle_count()
+	if(inteq_aboard > 0)
+		conclude(PACT_SIEGE_SIDE_INTEQ, "силы InteQ эвакуировались с объекта на шаттле ([inteq_aboard] на борту).")
+	else
+		conclude(PACT_SIEGE_SIDE_PACT, "эвакуационный шаттл запущен без персонала InteQ на борту.", TRUE)
 	return TRUE
 
 /datum/inteq_pact_siege/proc/resolve_reward_client(mob/living/L)
@@ -339,6 +423,14 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return GLOB.directory[L.ckey]
 	return null
 
+/datum/inteq_pact_siege/proc/track_round_earning(ck, amount, category)
+	if(!SSmetadollars || !ck || amount <= 0 || !category)
+		return
+	LAZYINITLIST(SSmetadollars.round_earnings[ck])
+	var/list/E = SSmetadollars.round_earnings[ck]
+	E[category] = (E[category] || 0) + amount
+	E["total"] = (E["total"] || 0) + amount
+
 /datum/inteq_pact_siege/proc/grant_siege_metadollars(mob/living/L, amount, category)
 	if(QDELETED(L) || amount <= 0)
 		return FALSE
@@ -351,16 +443,19 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			SSmetadollars.add_amount(C, amount, category)
 		else
 			SSmetadollars.metadollar_adjust(amount, C.ckey, C.key)
+			track_round_earning(C.ckey, amount, category)
 		return TRUE
 	/// Offline but still has a mind — persist balance without round_earnings UI.
 	var/raw_key = L.mind?.key || L.ckey
 	if(!raw_key)
 		return FALSE
-	SSmetadollars.metadollar_adjust(amount, ckey(raw_key), raw_key)
+	var/ck = ckey(raw_key)
+	SSmetadollars.metadollar_adjust(amount, ck, raw_key)
+	track_round_earning(ck, amount, category)
 	return TRUE
 
 /datum/inteq_pact_siege/proc/reward_pact_winner(mob/living/L)
-	if(QDELETED(L) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
+	if(QDELETED(L) || L.stat == DEAD || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
 		return
 	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_PACT_WIN, "pact_siege"))
 		log_game("PACT siege: failed to grant PACT reward to [key_name(L)]")
@@ -370,7 +465,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		to_chat(C, span_greentext("<b>ПАКТ победил в протоколе осады. Начислено [PACT_SIEGE_REWARD_PACT_WIN] метадолларов.</b>"))
 
 /datum/inteq_pact_siege/proc/reward_inteq_winner(mob/living/L)
-	if(QDELETED(L) || !(ROLE_INTEQ in L.faction) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
+	if(QDELETED(L) || L.stat == DEAD || !(ROLE_INTEQ in L.faction) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
+		return
+	if(!is_on_evac_shuttle(L))
 		return
 	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_INTEQ_WIN, "pact_siege"))
 		log_game("PACT siege: failed to grant InteQ reward to [key_name(L)]")
@@ -496,12 +593,24 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	QDEL_NULL(old_dest)
 	gateway_visual_open = FALSE
 
-/datum/inteq_pact_siege/proc/conclude(side, reason)
+/datum/inteq_pact_siege/proc/conclude(side, reason, pact_absence_announce = FALSE)
 	if(!active)
 		return
 	active = FALSE
+	evac_ready = FALSE
+	concluded_side = side
+	conclude_reason_text = reason
 
 	priority_announce("Протокол осады InteQ/ПАКТ завершён: [reason]", "Центральное Командование", 'sound/misc/announce_dig.ogg', null, null, TRUE)
+	if(pact_absence_announce || (side == PACT_SIEGE_SIDE_PACT && !living_inteq_on_shuttle_count()))
+		priority_announce(
+			"Присутствие InteQ на объекте отсутствует. Славная работа — подразделениям ПАКТ разрешено покинуть зону зачистки.",
+			"Центральное Командование",
+			'sound/misc/announce_dig.ogg',
+			null,
+			null,
+			TRUE,
+		)
 
 	scan_battlefield_participants()
 
@@ -512,6 +621,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	else if(side == PACT_SIEGE_SIDE_INTEQ)
 		for(var/datum/weakref/W as anything in defenders)
 			var/mob/living/L = W.resolve()
+			if(QDELETED(L) || !is_on_evac_shuttle(L))
+				continue
 			reward_inteq_winner(L)
 
 	/// InteQ leave via goodbye when the shuttle actually departs; PACT still aboard are wiped with it.
@@ -527,6 +638,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	/// siege_z kept until wipe so hyperspace sound / wipe can resolve the battlefield
 	started_at = 0
 	end_time = 0
+	refresh_console_descriptions()
 	log_game("PACT siege concluded: [side] — [reason]")
 	addtimer(CALLBACK(src, PROC_REF(finish_siege_cleanup)), PACT_SIEGE_EVAC_WARNING + 12 SECONDS)
 
@@ -548,13 +660,50 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	refresh_station_gateway_visuals()
 	scan_battlefield_participants()
 	if(defenders_ever_registered && !living_defenders_count())
-		conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы; ПАКТ выполнил цель.")
+		conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы; ПАКТ выполнил цель.", TRUE)
 		return
-	if(world.time >= end_time)
-		if(living_defenders_count())
-			conclude(PACT_SIEGE_SIDE_INTEQ, "силы InteQ удержали позиции и эвакуировались до истечения окна осады.")
-		else
-			conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы к моменту эвакуации; ПАКТ выполнил цель.")
+	if(world.time >= end_time && !evac_ready)
+		mark_evac_ready()
+		return
+	refresh_console_descriptions()
+
+
+/datum/inteq_pact_siege/proc/common_roundend_html()
+	if(!siege_was_activated)
+		return ""
+	var/outcome = concluded_side == PACT_SIEGE_SIDE_INTEQ ? "Победа InteQ" : (concluded_side == PACT_SIEGE_SIDE_PACT ? "Победа ПАКТ" : "исход не определён")
+	var/reason = conclude_reason_text || "раунд завершился до определения исхода осады"
+	return "<div class='panel clockborder'><span class='header'>Осада InteQ / ПАКТ</span><br>Исход: <b>[outcome]</b><br><small>[reason]</small></div>"
+
+/datum/inteq_pact_siege/proc/personal_roundend_html(client/C)
+	if(!C?.ckey || !siege_was_activated)
+		return ""
+	var/role = siege_participant_roles[C.ckey]
+	if(!role && !concluded_side)
+		return common_roundend_html()
+	var/outcome = concluded_side == PACT_SIEGE_SIDE_INTEQ ? "Победа InteQ" : (concluded_side == PACT_SIEGE_SIDE_PACT ? "Победа ПАКТ" : "исход не определён")
+	var/list/lines = list()
+	lines += "Исход осады: <b>[outcome]</b>"
+	if(conclude_reason_text)
+		lines += "[conclude_reason_text]"
+	if(role == "defender")
+		lines += "Ваша роль: <b>InteQ (оборона)</b>"
+		if(concluded_side)
+			lines += concluded_side == PACT_SIEGE_SIDE_INTEQ ? span_greentext("Ваша сторона победила.") : span_redtext("Ваша сторона проиграла.")
+	else if(role == "attacker")
+		lines += "Ваша роль: <b>ПАКТ (штурм)</b>"
+		if(concluded_side)
+			lines += concluded_side == PACT_SIEGE_SIDE_PACT ? span_greentext("Ваша сторона победила.") : span_redtext("Ваша сторона проиграла.")
+	var/earned = 0
+	if(SSmetadollars?.round_earnings[C.ckey])
+		earned = SSmetadollars.round_earnings[C.ckey]["pact_siege"] || 0
+	if(earned > 0)
+		lines += "Начислено за осады: <b>[earned] М$</b>"
+	else if(role && concluded_side)
+		var/won = (role == "defender" && concluded_side == PACT_SIEGE_SIDE_INTEQ) || (role == "attacker" && concluded_side == PACT_SIEGE_SIDE_PACT)
+		if(won)
+			lines += "<small>Метадоллары за победу не начислены (не выполнены условия выплаты или нет префов).</small>"
+	return "<div class='panel clockborder'><span class='header'>Ваш протокол осады</span><br><small>[lines.Join("<br>")]</small></div>"
 
 
 /// Gateway destination: station -> InteQ battlefield
@@ -671,7 +820,12 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 	// Resolve siege z early so ghost roles / tools can query it
 	GLOB.inteq_pact_siege.resolve_siege_z()
 	GLOB.inteq_pact_siege.suppress_auto_away_destinations()
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(on_round_start))
 	return ..()
+
+/datum/controller/subsystem/inteq_pact_siege/proc/on_round_start()
+	SIGNAL_HANDLER
+	GLOB.inteq_pact_siege.reset_round_report_data()
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
 	if(!GLOB.inteq_pact_siege?.active)

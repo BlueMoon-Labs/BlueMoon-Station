@@ -969,6 +969,12 @@
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
+"da" = (
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/space/basic,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "db" = (
 /obj/item/restraints/handcuffs/cable/zipties/used,
 /turf/open/floor/plasteel/dark,
@@ -1012,7 +1018,7 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "dg" = (
 /obj/structure/chair/stool/alien,
 /obj/effect/turf_decal/tile/brown/full,
@@ -1163,7 +1169,7 @@
 	dir = 8
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "dF" = (
 /obj/structure/chair{
 	dir = 4
@@ -1585,7 +1591,7 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "eN" = (
 /obj/item/storage/box/syndie_kit/scarp,
 /turf/open/floor/plating/asteroid/airless,
@@ -2045,7 +2051,9 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/big_sign/solgov/bb,
-/obj/machinery/syndicatebomb/self_destruct,
+/obj/machinery/syndicatebomb/self_destruct{
+	anchored = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "gb" = (
@@ -2930,7 +2938,6 @@
 /area/InteQ_ship/ship1)
 "iK" = (
 /obj/machinery/light/floor,
-/obj/machinery/syndicatebomb/self_destruct,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -4049,7 +4056,7 @@
 	dir = 8
 	},
 /turf/open/space/basic,
-/area/space)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "lR" = (
 /obj/structure/table/reinforced,
 /obj/effect/decal/cleanable/dirt,
@@ -5392,12 +5399,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "pz" = (
-/obj/machinery/porta_turret/inteq/energy{
-	name = "InteQ Ship Turret";
-	dir = 4
-	},
-/turf/closed/wall/r_wall/syndicate,
-/area/InteQ_ship)
+/turf/open/space/basic,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "pA" = (
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
@@ -8139,7 +8142,7 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "xQ" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -8734,7 +8737,7 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "zI" = (
 /obj/machinery/porta_turret/syndicate/energy{
 	dir = 1;
@@ -34545,18 +34548,18 @@ AM
 wF
 wF
 AM
-AM
-AM
+pz
+pz
 lQ
 AM
 AM
-AM
-AM
+pz
+pz
 lQ
 AM
 AM
-AM
-AM
+pz
+pz
 lQ
 AM
 AM
@@ -34757,19 +34760,19 @@ AM
 wF
 wF
 AM
+pz
+pz
+pz
 AM
 AM
+pz
+pz
+pz
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
+pz
+pz
+pz
 AM
 wF
 vB
@@ -34968,21 +34971,21 @@ AM
 AM
 AM
 wF
-oX
-AM
-AM
-AM
-oX
-oX
-AM
-AM
-AM
-oX
-oX
-AM
-AM
-AM
-oX
+da
+pz
+pz
+pz
+da
+da
+pz
+pz
+pz
+da
+da
+pz
+pz
+pz
+da
 wF
 vB
 vB
@@ -38163,7 +38166,7 @@ pR
 pR
 pR
 Sh
-pz
+jT
 XU
 wY
 zo
