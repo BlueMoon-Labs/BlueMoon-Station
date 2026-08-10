@@ -1178,8 +1178,6 @@
 
 /datum/unit_test/floorbot_failed_path_search_has_cooldown/Run()
 	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
-	// Plating first so TILE_EMAG cannot pick the bot's own turf if a scan runs.
-	bot_turf = bot_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 	var/mob/living/simple_animal/bot/floorbot/bot = allocate(/mob/living/simple_animal/bot/floorbot, bot_turf)
 	bot.toggle_ai(AI_OFF)
 	bot.emagged = 2
@@ -1191,6 +1189,7 @@
 	var/turf/second_target = locate(bot_turf.x - 2, bot_turf.y, bot_turf.z)
 	TEST_ASSERT(get_dist(bot, first_target) > BOT_TARGET_PATH_LIMIT, "Sanity: the first floorbot target must exceed the JPS distance limit")
 	bot.target = first_target
+	TEST_ASSERT_NOTEQUAL(get_turf(bot), first_target, "Sanity: the floorbot target must require movement")
 
 	var/jps_before = GLOB.ai_metrics.jps_requests
 	bot.handle_automated_action()
@@ -1201,7 +1200,7 @@
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another JPS request")
 
-	// Force another unreachable target after the cooldown: do not depend on scan/ignore_list.
+	// Force another unreachable target after the cooldown: walls block view()/TILE_EMAG self-pick.
 	bot.next_path_attempt = world.time
 	bot.ignore_list = list()
 	bot.path = list()
