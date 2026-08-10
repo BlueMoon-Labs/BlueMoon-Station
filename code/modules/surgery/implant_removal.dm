@@ -19,7 +19,7 @@
 
 /datum/surgery_step/extract_implant/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	var/implants = list()
-	for(var/obj/item/O in target.implants)
+	for(var/obj/item/implant/O in target.implants)
 		if(!O.removable)
 			continue
 		implants[O.name] = O

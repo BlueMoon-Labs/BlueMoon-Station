@@ -387,6 +387,9 @@
 	desc = "An illegally modified .50 cal sniper rifle with suppression compatibility. Quickscoping still doesn't work."
 	pin = /obj/item/firing_pin/implant/pindicate
 
+/obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted
+	pin = /obj/item/firing_pin
+
 // Old Semi-Auto Rifle //
 
 /obj/item/gun/ballistic/automatic/surplus
