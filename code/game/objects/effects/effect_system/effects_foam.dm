@@ -183,7 +183,7 @@
 				var/turf/T = O.loc
 				if(T.intact && O.level == 1) //hidden under the floor
 					continue
-			reagents.reaction(O, VAPOR, fraction)
+			reagents.reaction(O, TOUCH, fraction)
 	var/hit = 0
 	if(foam_turf)
 		for(var/mob/living/L in foam_turf)
@@ -191,7 +191,7 @@
 	if(hit)
 		lifetime += tick_multiplier //this is so the decrease from mobs hit and the natural decrease don't cumulate.
 	if(lifetime % reagent_divisor)
-		reagents.reaction(foam_turf, VAPOR, fraction)
+		reagents.reaction(foam_turf, TOUCH, fraction)
 
 	if(--amount < 0)
 		// Разлив закончен: пена больше не спредится, дотикивать жизнь и травить
@@ -212,7 +212,7 @@
 		return FALSE
 	var/fraction = tick_multiplier/initial(reagent_divisor)
 	if(lifetime % reagent_divisor)
-		reagents.reaction(L, VAPOR, fraction)
+		reagents.reaction(L, TOUCH, fraction)
 	lifetime -= tick_multiplier
 	return TRUE
 
