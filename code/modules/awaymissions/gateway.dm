@@ -223,10 +223,13 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/datum/gateway_destination/dest = target
 	target = null
 	playsound(src, 'sound/machines/gateway/gateway_close.ogg', 140, TRUE, TRUE, SOUND_RANGE)
-	dest.deactivate(src)
+	if(dest)
+		dest.deactivate(src)
 	QDEL_NULL(portal)
 	use_power(IDLE_POWER_USE)
 	transport_active = FALSE
+	teleportion_possible = FALSE
+	process()
 	update_appearance()
 	portal_visuals.reset_visuals()
 
@@ -250,7 +253,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		return FALSE
 	if(istype(possible_destination, /datum/gateway_destination/gateway))
 		var/datum/gateway_destination/gateway/gateway_dest = possible_destination
-		if(gateway_dest.target_gateway == gateway_dest.target_gateway)
+		if(gateway_dest.target_gateway == src)
 			return FALSE
 	return TRUE
 
@@ -398,6 +401,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/list/destinations = list()
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)
+			if(possible_destination.hidden)
+				continue
 			if(!G.valid_destination(possible_destination))
 				continue
 			destinations += list(possible_destination.get_ui_data())

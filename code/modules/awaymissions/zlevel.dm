@@ -35,6 +35,10 @@
 
 /obj/effect/landmark/awaystart/Initialize(mapload)
 	. = ..()
+	var/turf/spawn_turf = get_turf(src)
+	/// PACT siege maps use /datum/gateway_destination/point/pact_siege_battle instead.
+	if(spawn_turf && is_pact_siege_level(spawn_turf.z))
+		return
 	var/datum/gateway_destination/point/current
 	for(var/datum/gateway_destination/point/D in GLOB.gateway_destinations)
 		if(D.id == id)

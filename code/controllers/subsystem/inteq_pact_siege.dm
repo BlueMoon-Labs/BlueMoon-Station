@@ -62,6 +62,19 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		D.enabled = FALSE
 		D.hidden = TRUE
 
+/datum/inteq_pact_siege/proc/restore_auto_away_destinations()
+	var/z = siege_z || resolve_siege_z()
+	for(var/datum/gateway_destination/point/D as anything in GLOB.gateway_destinations)
+		if(istype(D, /datum/gateway_destination/point/pact_siege_battle) || istype(D, /datum/gateway_destination/point/pact_siege_station_return))
+			continue
+		for(var/turf/T as anything in D.target_turfs)
+			if(!T)
+				continue
+			if(is_pact_siege_level(T.z) || (z && T.z == z))
+				D.enabled = TRUE
+				D.hidden = FALSE
+				break
+
 /datum/inteq_pact_siege/proc/build_battle_turfs()
 	. = list()
 	var/z = resolve_siege_z()
@@ -197,6 +210,12 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/on_station_siege_gateway_closed()
 	if(return_gateway?.target == station_return_dest)
 		return_gateway.deactivate()
+	if(GLOB.the_gateway && !GLOB.the_gateway.target && active)
+		GLOB.the_gateway.teleportion_possible = FALSE
+		GLOB.the_gateway.process()
+		if(GLOB.the_gateway.pact_siege_visual)
+			GLOB.the_gateway.pact_siege_visual = gates_unlocked() ? "open" : "calibrating"
+		GLOB.the_gateway.update_appearance()
 
 /datum/inteq_pact_siege/proc/cleanup_return_gateway()
 	on_station_siege_gateway_closed()
@@ -454,6 +473,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 /datum/inteq_pact_siege/proc/cleanup_gateway()
 	cleanup_return_gateway()
+	restore_auto_away_destinations()
 	var/datum/gateway_destination/old_dest = battle_dest
 	battle_dest = null
 	if(old_dest)
