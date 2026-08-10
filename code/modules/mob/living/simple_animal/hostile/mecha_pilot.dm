@@ -29,6 +29,7 @@
 	var/spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded
 	var/obj/vehicle/sealed/mecha/mecha //Ref to pilot's mecha instance
 	var/obj/vehicle/sealed/mecha/movement_hooked_mecha
+	var/prior_mecha_internals
 	var/required_mecha_charge = 7500 //If the pilot doesn't have a mecha, what charge does a potential Grand Theft Mecha need? (Defaults to half a battery)
 	var/mecha_charge_evacuate = 50 //Amount of charge at which the pilot tries to abandon the mecha
 
@@ -90,6 +91,8 @@
 	M.aimob_enter_mech(src)
 	if(!mecha)
 		return FALSE
+	prior_mecha_internals = mecha.use_internal_tank
+	mecha.use_internal_tank = TRUE
 	targets_from = M
 	allow_movement_on_non_turfs = TRUE //duh
 	set_mecha_movement_hook(M)
@@ -126,10 +129,16 @@
 	SIGNAL_HANDLER
 	ai_controller?.update_grid()
 
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/restore_mecha_internals()
+	if(mecha && !isnull(prior_mecha_internals))
+		mecha.use_internal_tank = prior_mecha_internals
+	prior_mecha_internals = null
+
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/exit_mecha(obj/vehicle/sealed/mecha/M)
 	if(!M)
 		return FALSE
 
+	restore_mecha_internals()
 	mecha.aimob_exit_mech(src)
 	set_mecha_movement_hook(null)
 	allow_movement_on_non_turfs = FALSE
@@ -299,12 +308,14 @@
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/death(gibbed)
 	set_mecha_movement_hook(null)
+	restore_mecha_internals()
 	if(mecha)
 		mecha.aimob_exit_mech(src)
 	..()
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/gib()
 	set_mecha_movement_hook(null)
+	restore_mecha_internals()
 	if(mecha)
 		mecha.aimob_exit_mech(src)
 	..()
