@@ -175,6 +175,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/atom/movable/screen/map_view/gateway_port/portal_visuals
 	var/teleportion_possible = FALSE
 	var/transport_active = FALSE
+	/// PACT siege red-channel visuals: null, "calibrating", or "open"
+	var/pact_siege_visual = null
 
 	//SKYRAT EDIT ADDITION
 	var/requires_key = FALSE
@@ -266,6 +268,25 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/gateway/update_overlays()
 	. = ..()
+	if(pact_siege_visual)
+		/// Red channel: custom portal_light (replaces the default untinted one)
+		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
+		glow.color = "#ff2525"
+		. += glow
+		. += emissive_appearance(icon, "portal_light", src)
+		if(pact_siege_visual == "calibrating")
+			/// Drawn last so it sits in front of the frame / red light
+			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")
+			loading.layer = FLOAT_LAYER + 0.2
+			. += loading
+		else if(pact_siege_visual == "open")
+			var/mutable_appearance/mask = mutable_appearance(icon, "portal_mask")
+			mask.color = "#ff3030"
+			mask.alpha = 220
+			mask.layer = FLOAT_LAYER + 0.2
+			. += mask
+		. += show_light_overlays("portal_effect", transport_active)
+		return
 	. += show_light_overlays("portal_light", teleportion_possible)
 	. += show_light_overlays("portal_effect", transport_active)
 

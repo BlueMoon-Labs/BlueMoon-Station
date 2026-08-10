@@ -45,16 +45,44 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 				return siege_z
 	return 0
 
+/datum/inteq_pact_siege/proc/suppress_auto_away_destinations()
+	/// Awaystarts on Inteq_base auto-register a gateway destination at mapload — hide it so only the siege channel is used.
+	for(var/datum/gateway_destination/point/D as anything in GLOB.gateway_destinations)
+		if(!istype(D, /datum/gateway_destination/point))
+			continue
+		if(istype(D, /datum/gateway_destination/point/pact_siege_battle) || istype(D, /datum/gateway_destination/point/pact_siege_station_return))
+			continue
+		var/touches_siege = FALSE
+		for(var/turf/T as anything in D.target_turfs)
+			if(T && (is_pact_siege_level(T.z) || (siege_z && T.z == siege_z)))
+				touches_siege = TRUE
+				break
+		if(!touches_siege)
+			continue
+		D.enabled = FALSE
+		D.hidden = TRUE
+
 /datum/inteq_pact_siege/proc/build_battle_turfs()
 	. = list()
 	var/z = resolve_siege_z()
-	if(!z)
-		return .
+	/// Prefer mapped awaystart landmarks (PACT drop points), not a random map center.
+	for(var/obj/effect/landmark/awaystart/L as anything in GLOB.landmarks_list)
+		if(!istype(L, /obj/effect/landmark/awaystart))
+			continue
+		var/turf/T = get_turf(L)
+		if(!T)
+			continue
+		if(z && T.z != z)
+			continue
+		. += T
+	if(length(.))
+		return uniqueList(.)
+	/// Fallback if the map has no awaystarts yet
 	for(var/area/A as anything in GLOB.all_areas)
 		if(!is_battle_area(A))
 			continue
 		for(var/turf/open/floor/T in A)
-			if(T.z != z)
+			if(z && T.z != z)
 				continue
 			if(T.is_blocked_turf(exclude_mobs = TRUE, source_atom = null, ignore_atoms = null))
 				continue
@@ -64,7 +92,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			if(!is_battle_area(A))
 				continue
 			for(var/turf/open/T in A)
-				if(T.z != z)
+				if(z && T.z != z)
 					continue
 				. += T
 	return uniqueList(.)
@@ -197,6 +225,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			null,
 			TRUE,
 		)
+	if(GLOB.the_gateway.pact_siege_visual)
+		GLOB.the_gateway.pact_siege_visual = should_be_open ? "open" : "calibrating"
 	GLOB.the_gateway.update_appearance()
 
 /datum/inteq_pact_siege/proc/register_existing_defenders()
@@ -235,7 +265,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	battle_dest.enabled = TRUE
 	battle_dest.owner = src
 
-	var/turf/open/sample = turfs[1]
+	var/turf/sample = turfs[1]
 	siege_z = sample.z
 
 	started_at = world.time
@@ -244,15 +274,17 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 	setup_battlefield_return_gateway()
 	register_existing_defenders()
+	suppress_auto_away_destinations()
 
 	priority_announce(
-		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ на станции [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
+		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
 		"Центральное Командование",
 		'sound/misc/announce_dig.ogg',
 		null,
 		null,
 		TRUE,
 	)
+	set_security_level(SEC_LEVEL_LAMBDA, null, TRUE)
 	gateway_announced = TRUE
 	gateway_visual_open = FALSE
 	GLOB.gateway_destinations += battle_dest
@@ -260,6 +292,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(GLOB.the_gateway)
 		GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
 		GLOB.the_gateway.teleportion_possible = TRUE
+		GLOB.the_gateway.pact_siege_visual = "calibrating"
 		GLOB.the_gateway.update_appearance()
 		GLOB.the_gateway.process()
 	else
@@ -429,6 +462,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		if(GLOB.the_gateway.target == old_dest)
 			GLOB.the_gateway.deactivate()
 		GLOB.the_gateway.RemoveElement(/datum/element/pact_siege_red_gateway)
+		GLOB.the_gateway.pact_siege_visual = null
 		GLOB.the_gateway.teleportion_possible = FALSE
 		/// Re-evaluate other destinations so the gate can return to a normal idle/ready look
 		GLOB.the_gateway.process()
@@ -602,6 +636,7 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 	. = ..()
 	/// Resolve siege z early so ghost roles / tools can query it
 	GLOB.inteq_pact_siege.resolve_siege_z()
+	GLOB.inteq_pact_siege.suppress_auto_away_destinations()
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
