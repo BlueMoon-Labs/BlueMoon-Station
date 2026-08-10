@@ -5435,7 +5435,6 @@
 #include "modular_sand\code\game\area\areas\shuttles.dm"
 #include "modular_sand\code\game\area\areas\ruins\lavaland.dm"
 #include "modular_sand\code\game\machinery\autodoc.dm"
-#include "modular_sand\code\game\machinery\cryopod.dm"
 #include "modular_sand\code\game\machinery\cryptominers.dm"
 #include "modular_sand\code\game\machinery\Sleeper.dm"
 #include "modular_sand\code\game\machinery\computer\arcade\tetris.dm"
