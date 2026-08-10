@@ -157,6 +157,8 @@ GLOBAL_VAR_INIT(miscreants_allowed, FALSE)
 		L = get_equipped_items()
 	for(var/A in L)
 		var/obj/item/I = A
+		if(istype(I, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
+			continue //Делаем, чтоб пояс лапки не закрывал грудь. Поломать ничего не должно, просто исключение.
 		if(I.body_parts_covered & CHEST)
 			return FALSE
 	return TRUE
