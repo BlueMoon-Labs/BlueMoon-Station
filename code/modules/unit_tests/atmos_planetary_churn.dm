@@ -302,6 +302,54 @@
 	TEST_ASSERT_EQUAL(sky_a_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_a_diff]')")
 	TEST_ASSERT_EQUAL(sky_b_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_b_diff]')")
 
+/// Брейкдаун не копит осевшее небо. Болезнь раунда 9929: пробоина держала
+/// группу живой, бодрая кромка неба грела бакет-среднее, и каждый брейкдаун
+/// удерживал (air_changed) и перезаписывал ВСЕХ осевших планетарных членов -
+/// группа кольцами впитала 19 тысяч спящих турфов, а первый же мердж с новым
+/// событием разбудил их поуком за один цикл, и 32-40 тысяч активных не оседали
+/// до конца раунда. Теперь планетарные члены в усреднении не участвуют:
+/// осевшие выселяются нетронутыми (их держит шаблон), бодрые живут своим
+/// process_cell.
+/datum/unit_test/planetary_churn/breakdown_evicts_settled_planetary/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	build_room()
+	for(var/turf/open/T as anything in room)
+		make_planetary(T, PLANETARY_CHURN_TEMPLATE_B)
+	settle_room()
+	var/turf/base = run_loc_floor_bottom_left
+	var/turf/open/warm_edge = locate(base.x + 2, base.y + 2, base.z)
+	var/datum/gas_mixture/template = SSair.get_planetary_template(warm_edge)
+	var/datum/excited_group/group = new
+	for(var/turf/open/T as anything in room)
+		SSair.add_to_active(T, FALSE)
+		group.add_turf(T)
+	// Кромка у пробоины: заметно теплее неба, чтобы бакет-среднее (старое
+	// поведение) ушло от шаблона дальше порога compare() и удержало всех.
+	warm_edge.air.set_temperature(400)
+	var/list/turf/open/settled_sky = list()
+	for(var/turf/open/T as anything in room)
+		if(T == warm_edge)
+			continue
+		settled_sky += T
+		SSair.sleep_active_turf(T)
+	group.self_breakdown(poke_resting = TRUE)
+	var/evict_failures = 0
+	var/touched_air = 0
+	var/woken = 0
+	for(var/turf/open/T as anything in settled_sky)
+		if(T.excited_group)
+			evict_failures++
+		if(T.air.compare(template) != "")
+			touched_air++
+		if(T.excited)
+			woken++
+	var/edge_retained = (warm_edge.excited_group == group)
+	cleanup_room()
+	TEST_ASSERT_EQUAL(evict_failures, 0, "брейкдаун удержал осевшие планетарные турфы в группе вместо выселения")
+	TEST_ASSERT_EQUAL(touched_air, 0, "брейкдаун переписал воздух осевших планетарных турфов (усреднение неба)")
+	TEST_ASSERT_EQUAL(woken, 0, "брейкдаун-поук разбудил осевшее небо")
+	TEST_ASSERT(edge_retained, "бодрый планетарный член должен оставаться в группе до собственного отдыха")
+
 /// The planetary templates themselves must be chemically inert: a template
 /// whose react() consumes its own gases turns every planetary turf into a
 /// perpetual reaction+regeneration pump.

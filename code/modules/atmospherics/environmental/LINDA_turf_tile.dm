@@ -1689,7 +1689,22 @@
 					if(breakdown_space_is_all_consuming && istype(T.air, /datum/gas_mixture/immutable/space))
 						breakdown_space_in_group = TRUE
 					snap_vented_wisp(T)
-					var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
+					// Планетарный член в усреднении не участвует вовсе: его к смеси
+					// неба тянет собственный шаблонный шер (PLANET_SHARE_RATIO за
+					// фаер), и это сходится быстрее любого усреднения. Участие же
+					// стоило раунда 9929: пробоина у командного коридора держала
+					// группу живой, группа кольцо за кольцом впитывала ОСЕВШУЮ
+					// планетарку (запись среднего дальше по конвейеру - это
+					// air_changed, то есть вечное удержание в turf_list), тепло
+					// насоса размазывалось по всем членам каждые 4 фаера, а первый
+					// же мердж с новым событием (хлопок в медбее) вылился в
+					// breakdown_poke на всю накопленную группу: 19 тысяч турфов
+					// проснулись за один цикл и 32-40 тысяч не оседали до конца
+					// раунда. Небо держит каждый свой турф само - группе оно не
+					// принадлежит.
+					if(T.planetary_atmos)
+						continue
+					var/bucket_key = ""
 					var/datum/gas_mixture/bucket_mix = breakdown_bucket_mixes[bucket_key]
 					if(!bucket_mix)
 						bucket_mix = new
@@ -1735,8 +1750,25 @@
 					if(!T.air)
 						breakdown_retained_members += T
 						continue
-					var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
+					// Небо среднее не получает (см. стадию сбора). Бодрый член
+					// остаётся - его жизненный цикл идёт через собственный
+					// process_cell; осевший выселяется: его уже держит шаблон, а
+					// членство в группе означало бы вечное удержание с poke-волной
+					// на каждый брейкдаун. Выселенный возвращается обычными путями
+					// пробуждения, как любой спящий планетарный турф.
+					if(T.planetary_atmos)
+						if(T.excited)
+							breakdown_retained_members += T
+						else
+							breakdown_to_evict += T
+						continue
+					var/bucket_key = ""
 					var/datum/gas_mixture/bucket_mix = breakdown_bucket_mixes[bucket_key]
+					// Смесь могла не собраться (турф сменил тип или обрёл воздух
+					// между слайсами возобновляемого брейкдауна) - без неё записи нет.
+					if(!bucket_mix)
+						breakdown_retained_members += T
+						continue
 					var/air_changed = T.air.compare(bucket_mix)
 					T.air.copy_from(bucket_mix)
 					T.update_visuals()
@@ -1761,6 +1793,11 @@
 					var/turf/open/T = breakdown_members[breakdown_cursor++]
 					remaining--
 					if(!istype(T) || T.excited_group != src || !T.air)
+						continue
+					// Небо космосом не выедается: шаблон восстановит любой унос за
+					// пару фаеров, а обнуление планетарного турфа - это волна
+					// шаблонной регенерации на всю округу.
+					if(T.planetary_atmos)
 						continue
 					T.air.copy_from(breakdown_space_mix)
 					T.update_visuals()
@@ -1799,6 +1836,13 @@
 					var/turf/open/T = turf_list[breakdown_cursor++]
 					remaining--
 					if(!istype(T) || !T.air || T.excited)
+						continue
+					// Осевшее небо не пробуждается поуком: среднее оно не получало,
+					// значит сверять ему с соседями нечего - проснулся бы, сравнил
+					// себя с шаблоном и лёг обратно, холостой цикл на сотни турфов.
+					// (Обычный путь выселяет его ещё до поука; сюда оно доживает
+					// только через space-ветку, идущую без выселения.)
+					if(T.planetary_atmos)
 						continue
 					for(var/turf/open/neighbor as anything in T.atmos_adjacent_turfs)
 						if(!istype(neighbor) || neighbor.excited_group == src)
