@@ -661,12 +661,11 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 	wait = 2 SECONDS
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
-/datum/controller/subsystem/inteq_pact_siege/Initialize()
-	. = ..()
-	/// Resolve siege z early so ghost roles / tools can query it
+/datum/controller/subsystem/inteq_pact_siege/Initialize(start_timeofday)
+	// Resolve siege z early so ghost roles / tools can query it
 	GLOB.inteq_pact_siege.resolve_siege_z()
 	GLOB.inteq_pact_siege.suppress_auto_away_destinations()
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
 	if(!GLOB.inteq_pact_siege?.active)
