@@ -2,7 +2,7 @@
 
 /obj/item/hypernoblium_crystal
 	name = "Hypernoblium Crystal"
-	desc = "Crystallized oxygen and hypernoblium stored in a bottle to pressure-proof your clothes or stop reactions occurring in portable atmospheric devices."
+	desc = "Кристаллизованные кислород и гиперноблиум. Однократно делает обычную одежду устойчивой к вакууму и космическому холоду; скафандрам такая обработка не требуется."
 	icon = CRYSTALLIZER_CRYSTALS_DMI
 	icon_state = "hypernoblium_crystal"
 	var/uses = 1

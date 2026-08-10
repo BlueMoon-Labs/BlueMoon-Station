@@ -32,6 +32,9 @@
 	GLOB.cult_narsie = src
 	GLOB.poi_list |= src
 	narsie_darken_cosmos()
+	// Сцена за бортом на том же токене, что и ступени культа: она их и заменяет.
+	// Быстрее обычного - призыв это не нарастание, а разрыв.
+	set_antag_parallax_scene(ANTAG_SCENE_NARSIE, ANTAG_PARALLAX_TOKEN_CULT, 3 SECONDS)
 	send_to_playing_players("<span class='narsie'>NAR'SIE ВОЗНЕСЛАСЬ</span>")
 	sound_to_playing_players('sound/creatures/narsie_rises.ogg')
 

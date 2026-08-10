@@ -69,7 +69,7 @@
 /turf/closed/wall/r_wall,
 /area/space/nearstation)
 "aan" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/effect/spawner/structure/window/reinforced,
@@ -77,7 +77,7 @@
 /turf/open/floor/plating,
 /area/engineering/atmos)
 "aao" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /obj/effect/spawner/structure/window/reinforced,
@@ -85,7 +85,7 @@
 /turf/open/floor/plating,
 /area/engineering/atmos)
 "aap" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
@@ -94,7 +94,7 @@
 /obj/structure/closet/radiation,
 /obj/effect/turf_decal/delivery,
 /obj/item/clothing/glasses/meson/engine,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -109,7 +109,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/firealarm{
@@ -123,7 +123,7 @@
 /area/engineering/main/reactor_control)
 "aas" = (
 /obj/structure/closet/emcloset,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/structure/sign/warning/radiation{
@@ -139,13 +139,13 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aau" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /obj/machinery/firealarm{
@@ -163,7 +163,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aav" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
 /obj/structure/table,
@@ -232,7 +232,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos)
 "aaD" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -264,7 +264,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aaF" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -282,7 +282,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aaI" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -326,7 +326,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aaN" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -339,7 +339,7 @@
 /turf/open/floor/carpet/royalblack,
 /area/engineering/main/reactor_control)
 "aaO" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /obj/structure/chair/office/light{
@@ -383,39 +383,39 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "aaV" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/engineering/atmos)
 "aaW" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "aaY" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 1
 	},
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "aaZ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos)
 "abe" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "abf" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
@@ -424,7 +424,7 @@
 /obj/machinery/shower{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -433,7 +433,7 @@
 /turf/open/floor/noslip,
 /area/engineering/main/reactor_control)
 "abh" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/light/small,
@@ -447,20 +447,20 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
 /turf/open/floor/noslip,
 /area/engineering/main/reactor_control)
 "abj" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 1
 	},
 /turf/closed/wall/r_wall,
 /area/engineering/main/reactor_control)
 "abk" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -472,7 +472,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "abl" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -485,17 +485,17 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "abm" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "abn" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -505,7 +505,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "abq" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/light,
@@ -516,7 +516,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main/reactor_control)
 "abr" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/structure/table,
@@ -542,7 +542,7 @@
 /turf/open/space,
 /area/space/nearstation)
 "abu" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/engineering/atmos)
@@ -553,7 +553,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos)
 "abw" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/engineering/atmos)
@@ -573,7 +573,7 @@
 /turf/closed/wall/r_wall,
 /area/engineering/main/reactor_control)
 "abC" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
@@ -610,7 +610,7 @@
 /area/engineering/main/reactor_control)
 "abI" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -625,7 +625,7 @@
 /turf/open/floor/plating,
 /area/engineering/main/reactor_control)
 "abL" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "abM" = (
@@ -637,7 +637,7 @@
 /turf/open/floor/plating,
 /area/engineering/atmos)
 "abN" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "abO" = (
@@ -663,7 +663,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "abR" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/closet/secure_closet/engineering_welding,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -690,7 +690,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "abU" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -699,7 +699,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "abX" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/camera/autoname,
@@ -712,7 +712,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "abY" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/power/apc/auto_name/north{
@@ -731,7 +731,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "abZ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -767,7 +767,7 @@
 /turf/closed/wall/r_wall,
 /area/space/nearstation)
 "ace" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
@@ -784,7 +784,7 @@
 /turf/open/floor/plating,
 /area/engineering/atmos)
 "acl" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 10
 	},
@@ -845,7 +845,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "acz" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 4
 	},
@@ -896,7 +896,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "acQ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
 	dir = 8
 	},
@@ -981,7 +981,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "adl" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -1026,7 +1026,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "ady" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
@@ -1308,7 +1308,7 @@
 /area/space/nearstation)
 "afB" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/junction,
-/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer1,
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer2,
 /obj/structure/lattice,
 /turf/open/space/basic,
 /area/space/nearstation)
@@ -1321,7 +1321,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
 	dir = 6
 	},
 /obj/structure/lattice/catwalk,
@@ -1331,7 +1331,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
 	dir = 4
 	},
 /obj/structure/lattice/catwalk,
@@ -1341,7 +1341,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
 	dir = 9
 	},
 /obj/structure/lattice/catwalk,
@@ -1351,7 +1351,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
 	dir = 5
 	},
 /obj/structure/lattice/catwalk,
@@ -1361,7 +1361,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
 	dir = 10
 	},
 /obj/structure/lattice/catwalk,

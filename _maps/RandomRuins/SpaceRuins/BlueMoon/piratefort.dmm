@@ -231,9 +231,6 @@
 /mob/living/simple_animal/hostile/pirate/contrabandist,
 /turf/open/floor/carpet,
 /area/ruin/space/has_grav/powered)
-"kb" = (
-/obj/machinery/door/airlock/hatch,
-/area/ruin/space/has_grav/powered)
 "kh" = (
 /obj/structure/safe,
 /obj/item/implanter/storage,
@@ -403,6 +400,9 @@
 "qq" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/item/gun/ballistic/automatic/surplus,
+/obj/item/gun/ballistic/automatic/surplus,
+/obj/item/gun/ballistic/automatic/surplus,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "rq" = (
@@ -753,6 +753,9 @@
 	req_access = list("armory")
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/item/gun/ballistic/automatic/ak47/pindicate,
+/obj/item/gun/ballistic/automatic/m9smg,
+/obj/item/gun/ballistic/automatic/mp7,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Et" = (
@@ -801,6 +804,7 @@
 	name = "Loot Storage";
 	req_access = list("command","tech_storage")
 	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "FP" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
@@ -826,6 +830,7 @@
 /area/ruin/space/has_grav/powered)
 "Hd" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/corner,
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger4,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Hi" = (
@@ -849,6 +854,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 6
 	},
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger1,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Js" = (
@@ -1129,7 +1135,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Yn" = (
-/obj/machinery/door/airlock/glass,
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger1,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Yt" = (
 /obj/structure/table,
@@ -1705,7 +1715,7 @@ Js
 Js
 Js
 Js
-Yn
+Zs
 Gm
 pS
 pS
@@ -1751,7 +1761,7 @@ ih
 FP
 LI
 Kj
-Kj
+Yn
 Kj
 Kj
 Kj
@@ -2125,7 +2135,7 @@ LG
 LG
 LG
 Ma
-kb
+Cq
 FP
 cn
 xb
@@ -2259,7 +2269,7 @@ pS
 pS
 Qc
 Ma
-kb
+Cq
 FP
 cn
 ih

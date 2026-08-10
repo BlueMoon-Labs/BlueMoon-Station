@@ -268,6 +268,10 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	if(WM.color_source)
 		dye_item(WM.color_source.dye_color)
 
+/obj/item/clothing/machine_wash(obj/machinery/washing_machine/WM)
+	plasma_contamination = 0
+	return ..()
+
 /obj/item/clothing/under/dye_item(dye_color, dye_key)
 	. = ..()
 	if(.)

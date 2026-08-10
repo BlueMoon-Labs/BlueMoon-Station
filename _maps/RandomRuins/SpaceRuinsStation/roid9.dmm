@@ -16,7 +16,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav)
 "g" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/airlock/highsecurity,
 /turf/open/floor/plasteel,
@@ -26,7 +26,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav)
 "k" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -52,7 +52,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav)
 "p" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
@@ -67,7 +67,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "r" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -95,12 +95,12 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "y" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav)
 "z" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/door/airlock/highsecurity,
@@ -126,7 +126,7 @@
 /turf/closed/mineral/random,
 /area/ruin/space)
 "D" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer1{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
 	dir = 1
 	},
 /turf/open/floor/plating/asteroid/airless,
@@ -147,7 +147,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "J" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -164,11 +164,11 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "P" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "Q" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
 /obj/structure/table/wood,
@@ -180,7 +180,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/space)
 "T" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 6
 	},
 /turf/open/floor/wood,
@@ -194,7 +194,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "W" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2,
 /obj/machinery/airalarm{
 	dir = 1;
 	pixel_y = -22
@@ -202,7 +202,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav)
 "Y" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 6
 	},
 /turf/open/floor/plating/asteroid/airless,

@@ -306,7 +306,10 @@
 	LAZYREMOVE(antag_datums, instanced_datum)
 	if(. && !LAZYLEN(antag_datums))
 		ambitions = null
-		remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
+		//разум без тела (тело удалено, дисконнект): remove_verb по null роняет CRASH,
+		//парный do_add_antag_datum гардит current точно так же
+		if(current)
+			remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 
 /datum/mind/proc/remove_all_antag_datums() //For the Lazy amongst us.

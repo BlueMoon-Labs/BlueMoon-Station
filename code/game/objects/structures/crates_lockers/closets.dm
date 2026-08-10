@@ -189,6 +189,13 @@
 	else if(broken)
 		. += span_notice("Замок <b>вкручен</b> внутрь.")
 
+	// Замок на шкаф ставится обычной дверной электроникой, и об этом до сих пор
+	// не было сказано нигде: ни на шкафу, ни на самой электронике.
+	if(secure && !broken && !locked)
+		. += span_notice("Замок можно <b>вывинтить</b> отвёрткой.")
+	else if(!secure && !broken)
+		. += span_notice("Сюда можно поставить замок: приложите <b>дверную электронику</b> с прописанным доступом.")
+
 	if(isobserver(user))
 		. += span_info("Внутри находится: [english_list(contents)].")
 		investigate_log("had its contents examined by [user] as a ghost.", INVESTIGATE_GHOST)

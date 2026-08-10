@@ -14,8 +14,9 @@
 
 /obj/machinery/portable_atmospherics/scrubber/Destroy()
 	var/turf/T = get_turf(src)
-	T.assume_air(air_contents)
-	air_update_turf()
+	if(T)
+		T.assume_air(air_contents)
+		air_update_turf()
 	return ..()
 
 /obj/machinery/portable_atmospherics/scrubber/update_icon_state()
@@ -54,6 +55,45 @@
 	if(!holding)
 		air_update_turf()
 
+/// A dockable scrubber for removing selected gases directly from a pipenet.
+/// The removable tank is deliberately required: filtered gas never shares the
+/// machine's pipenet-facing mixture, so reconnecting cannot put it back.
+/obj/machinery/portable_atmospherics/scrubber/pipe
+	name = "portable pipe scrubber"
+	desc = "A portable scrubber for filtering a connected pipenet into an inserted gas tank. It stops before the tank reaches leak pressure."
+	// Amber housing: this and the ordinary portable scrubber ship in the same
+	// cargo crate and would otherwise be the same sprite standing side by side.
+	icon_state = "pipescrubber:0"
+	volume_rate = 500
+
+/obj/machinery/portable_atmospherics/scrubber/pipe/update_icon_state()
+	icon_state = "pipescrubber:[on]"
+
+/obj/machinery/portable_atmospherics/scrubber/pipe/process_atmos()
+	if(!connected_port)
+		return ..()
+	if(!on || !holding || holding.air_contents.return_pressure() >= TANK_LEAK_PRESSURE * 0.9)
+		excited = FALSE
+		return
+	var/network_volume = air_contents.return_volume()
+	if(network_volume <= 0)
+		excited = FALSE
+		return
+	var/moles_before = air_contents.total_moles()
+	air_contents.scrub_into(holding.air_contents, min(1, volume_rate / network_volume), scrubbing)
+	if(air_contents.total_moles() < moles_before)
+		holding.excite_tank()
+		// The connector's pipeline can be mid-rebuild (unwrenched/exploded pipe).
+		var/datum/pipeline/pipe_net = connected_port.parents[1]
+		if(pipe_net)
+			pipe_net.mark_dirty()
+	excited = FALSE
+
+/obj/machinery/portable_atmospherics/scrubber/pipe/examine(mob/user)
+	. = ..()
+	if(!holding)
+		. += "<span class='warning'>Для фильтрации пайплайна нужно вставить пустой газовый баллон.</span>"
+
 /obj/machinery/portable_atmospherics/scrubber/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
@@ -71,22 +111,15 @@
 		ui.open()
 
 /obj/machinery/portable_atmospherics/scrubber/ui_data()
-	var/data = list()
+	var/list/data = ui_contents_data()
 	data["on"] = on
-	data["connected"] = connected_port ? 1 : 0
-	data["pressure"] = round(air_contents.return_pressure() ? air_contents.return_pressure() : 0)
+	data["volume_rate"] = round(volume_rate)
+	data["max_volume_rate"] = round(volume)
 
 	data["id_tag"] = -1 //must be defined in order to reuse code between portable and vent scrubbers
 	data["filter_types"] = list()
 	for(var/id in GLOB.gas_data.ids)
 		data["filter_types"] += list(list("gas_id" = id, "gas_name" = GLOB.gas_data.names[id], "enabled" = (id in scrubbing)))
-
-	if(holding)
-		data["holding"] = list()
-		data["holding"]["name"] = holding.name
-		data["holding"]["pressure"] = round(holding.air_contents.return_pressure())
-	else
-		data["holding"] = null
 	return data
 
 /obj/machinery/portable_atmospherics/scrubber/ui_act(action, params)
@@ -104,6 +137,25 @@
 		if("toggle_filter")
 			scrubbing ^= params["val"]
 			. = TRUE
+		if("set_all_filters")
+			// Отметить полтора десятка газов по одному - занятие на минуту.
+			// Список плоский: GLOB.gas_data.ids ассоциативен, а scrubbing
+			// живёт под операцией ^= и обязан остаться обычным списком.
+			scrubbing = list()
+			if(text2num(params["val"]))
+				for(var/gas_id in GLOB.gas_data.ids)
+					scrubbing += gas_id
+			. = TRUE
+		if("volume_rate")
+			var/rate = params["rate"]
+			if(rate == "max")
+				rate = volume
+				. = TRUE
+			else if(!isnull(text2num(rate)))
+				rate = text2num(rate)
+				. = TRUE
+			if(.)
+				volume_rate = clamp(rate, 0, volume)
 	// Power/filter changes must pull a sleeping scrubber back in.
 	excite()
 	update_icon()
