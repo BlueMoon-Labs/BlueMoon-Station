@@ -1,4 +1,4 @@
-/// Core runtime for InteQ vs PACT siege (see modular_bluemoon/code/__DEFINES/pact_siege.dm)
+/// Core runtime for InteQ vs PACT siege
 #define PACT_SIEGE_TRAIT_SOURCE "pact_siege_mode"
 
 GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
@@ -8,92 +8,78 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/active = FALSE
 	var/started_at = 0
 	var/end_time = 0
-	/// Observed z of battlefield (for recall heuristics)
 	var/siege_z = 0
 	/// At least one defender registered — avoids instant PACT win before ghost roles spawn
 	var/defenders_ever_registered = FALSE
-	/// Forgotten ship loaded on SSmapping.empty_space
-	var/battlefield_loaded = FALSE
-	var/battlefield_z = 0
 	var/datum/gateway_destination/point/pact_siege_battle/battle_dest
 	var/datum/gateway_destination/point/pact_siege_station_return/station_return_dest
 	var/obj/machinery/gateway/away/pact_siege/return_gateway
-	/// CentCom siege announcement has been sent — gateway destination unlocks after this
+	/// CentCom siege announcement has been sent — gateway destination unlocks after prep
 	var/gateway_announced = FALSE
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
+	/// Visual sync: whether station gateway was already flipped to «open» overlays
+	var/gateway_visual_open = FALSE
 
 /datum/inteq_pact_siege/proc/role_check_inteq(mob/living/user)
 	if(!user)
 		return FALSE
 	return (ROLE_INTEQ in user.faction)
 
+/datum/inteq_pact_siege/proc/is_battle_area(area/A)
+	return istype(A, /area/InteQ_ship)
+
+/datum/inteq_pact_siege/proc/resolve_siege_z()
+	if(siege_z)
+		return siege_z
+	var/list/levels = SSmapping.levels_by_trait(ZTRAIT_PACT_SIEGE)
+	if(length(levels))
+		siege_z = levels[1]
+		return siege_z
+	for(var/area/A as anything in GLOB.all_areas)
+		if(!is_battle_area(A))
+			continue
+		for(var/turf/T in A)
+			if(T?.z)
+				siege_z = T.z
+				return siege_z
+	return 0
+
 /datum/inteq_pact_siege/proc/build_battle_turfs()
 	. = list()
-	for(var/area_type in GLOB.pact_siege_battle_area_types)
-		var/area/A = GLOB.areas_by_type[area_type]
-		if(!A)
-			continue
-		if(battlefield_z && A.z != battlefield_z)
+	var/z = resolve_siege_z()
+	if(!z)
+		return .
+	for(var/area/A as anything in GLOB.all_areas)
+		if(!is_battle_area(A))
 			continue
 		for(var/turf/open/floor/T in A)
-			if(battlefield_z && T.z != battlefield_z)
+			if(T.z != z)
 				continue
 			if(T.is_blocked_turf(exclude_mobs = TRUE, source_atom = null, ignore_atoms = null))
 				continue
 			. += T
 	if(!length(.))
-		for(var/area_type in GLOB.pact_siege_battle_area_types)
-			var/area/A = GLOB.areas_by_type[area_type]
-			if(!A)
-				continue
-			if(battlefield_z && A.z != battlefield_z)
+		for(var/area/A as anything in GLOB.all_areas)
+			if(!is_battle_area(A))
 				continue
 			for(var/turf/open/T in A)
-				if(battlefield_z && T.z != battlefield_z)
+				if(T.z != z)
 					continue
 				. += T
 	return uniqueList(.)
 
-/// Load InteQ/SolFed ghost ship on the dedicated empty sector z-level (not space-ruin roulette).
-/datum/inteq_pact_siege/proc/load_empty_sector_battlefield()
-	if(battlefield_loaded)
-		return TRUE
-	var/datum/space_level/sector = SSmapping.empty_space
-	if(!sector)
-		return FALSE
-
-	var/datum/map_template/ruin/station/template
-	if(GLOB.master_mode == "Extended")
-		template = new /datum/map_template/ruin/station/forgottenship/sol
-	else
-		template = new /datum/map_template/ruin/station/forgottenship
-
-	template.preload_size()
-	var/z = sector.z_value
-	var/turf/center = locate(round(world.maxx * 0.5), round(world.maxy * 0.5), z)
-	if(!center)
-		return FALSE
-
-	var/list/bounds = template.load(center, centered = TRUE)
-	if(!bounds)
-		message_admins("PACT siege: не удалось загрузить карту поля боя на пустом секторе (z=[z]). Проверьте размеры forgotten_ship.dmm.")
-		return FALSE
-
-	battlefield_loaded = TRUE
-	battlefield_z = z
-	log_game("PACT siege battlefield loaded on empty sector z=[z] ([template.name]).")
-	return TRUE
-
 /datum/inteq_pact_siege/proc/is_on_battlefield(mob/living/L)
 	if(!L)
 		return FALSE
-	var/area/A = get_area(L)
-	if(A && (A.type in GLOB.pact_siege_battle_area_types))
+	var/turf/T = get_turf(L)
+	if(!T)
+		return FALSE
+	if(siege_z && T.z == siege_z)
 		return TRUE
-	if(siege_z && L.z == siege_z)
+	if(is_pact_siege_level(T.z))
 		return TRUE
-	return FALSE
+	return is_battle_area(get_area(L))
 
 /datum/inteq_pact_siege/proc/register_defender(mob/living/L)
 	if(QDELETED(L) || !(ROLE_INTEQ in L.faction))
@@ -105,6 +91,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
 		return
+	if(ROLE_INTEQ in L.faction)
+		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
 	attackers |= WEAKREF(L)
 
@@ -115,6 +103,19 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		if(!QDELETED(L) && L.stat != DEAD && (ROLE_INTEQ in L.faction))
 			.++
 
+/datum/inteq_pact_siege/proc/scan_battlefield_participants()
+	if(!active || !siege_z)
+		return
+	for(var/mob/living/L in GLOB.player_list)
+		if(QDELETED(L) || L.stat == DEAD)
+			continue
+		if(!is_on_battlefield(L))
+			continue
+		if(ROLE_INTEQ in L.faction)
+			register_defender(L)
+		else
+			register_attacker(L)
+
 /datum/inteq_pact_siege/proc/get_station_gateway_arrival()
 	if(!GLOB.the_gateway?.portal)
 		return null
@@ -124,18 +125,18 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return GLOB.the_gateway?.target == battle_dest
 
 /datum/inteq_pact_siege/proc/find_return_gateway_turf()
-	var/list/bridge_types = list(
-		/area/ruin/space/has_grav/bluemoon/inteq_forgotten_bridge,
-		/area/ruin/space/has_grav/bluemoon/solfed_ship/bridge,
-	)
-	for(var/area_type in bridge_types)
-		var/area/A = GLOB.areas_by_type[area_type]
-		if(!A)
+	var/z = resolve_siege_z()
+	if(!z)
+		return null
+	for(var/obj/machinery/gateway/away/G in GLOB.machines)
+		if(G.z != z)
 			continue
-		if(battlefield_z && A.z != battlefield_z)
+		return get_turf(G)
+	for(var/area/A as anything in GLOB.all_areas)
+		if(!is_battle_area(A))
 			continue
 		for(var/turf/open/floor/T in A)
-			if(battlefield_z && T.z != battlefield_z)
+			if(T.z != z)
 				continue
 			if(T.is_blocked_turf(exclude_mobs = TRUE, source_atom = null, ignore_atoms = null))
 				continue
@@ -143,14 +144,25 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return null
 
 /datum/inteq_pact_siege/proc/setup_battlefield_return_gateway()
-	if(return_gateway)
+	if(return_gateway && !QDELETED(return_gateway))
 		return
 	if(!station_return_dest)
 		station_return_dest = new()
 		station_return_dest.owner = src
+	var/z = resolve_siege_z()
+	for(var/obj/machinery/gateway/away/G in GLOB.machines)
+		if(G.z != z)
+			continue
+		if(istype(G, /obj/machinery/gateway/away/pact_siege))
+			return_gateway = G
+			return
+		var/turf/GT = get_turf(G)
+		qdel(G)
+		return_gateway = new /obj/machinery/gateway/away/pact_siege(GT)
+		return
 	var/turf/spawn_turf = find_return_gateway_turf()
 	if(!spawn_turf)
-		message_admins("PACT siege: не удалось найти турф для обратных врат на мостике поля боя.")
+		message_admins("PACT siege: не удалось найти турф для обратных врат на поле боя.")
 		return
 	return_gateway = new /obj/machinery/gateway/away/pact_siege(spawn_turf)
 
@@ -160,52 +172,66 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 /datum/inteq_pact_siege/proc/cleanup_return_gateway()
 	on_station_siege_gateway_closed()
-	QDEL_NULL(return_gateway)
+	if(return_gateway && !QDELETED(return_gateway))
+		/// Restore a standard away gateway so survivors can still walk home after the siege ends.
+		var/turf/GT = get_turf(return_gateway)
+		QDEL_NULL(return_gateway)
+		if(GT)
+			var/obj/machinery/gateway/away/home_gate = new /obj/machinery/gateway/away(GT)
+			home_gate.desc = "Стабилизированный выход БС-канала к станции. После осады используйте его для возврата."
 	QDEL_NULL(station_return_dest)
+
+/datum/inteq_pact_siege/proc/refresh_station_gateway_visuals()
+	if(!GLOB.the_gateway)
+		return
+	var/should_be_open = gates_unlocked()
+	if(should_be_open == gateway_visual_open)
+		return
+	gateway_visual_open = should_be_open
+	if(should_be_open)
+		priority_announce(
+			"Красный канал врат на объект InteQ синхронизирован и открыт. Подразделениям ПАКТ разрешено начать зачистку.",
+			"Центральное Командование",
+			'sound/misc/announce_dig.ogg',
+			null,
+			null,
+			TRUE,
+		)
+	GLOB.the_gateway.update_appearance()
 
 /datum/inteq_pact_siege/proc/register_existing_defenders()
 	for(var/mob/living/L in GLOB.mob_living_list)
 		if(is_on_battlefield(L))
 			register_defender(L)
 
-/datum/inteq_pact_siege/proc/try_roundstart_activate(attempt = 1)
-	if(active)
-		return
-	if(!battlefield_loaded && !load_empty_sector_battlefield())
-		if(attempt >= 30)
-			message_admins("PACT siege: не удалось загрузить поле боя в пустом секторе (проверьте space_empty_levels в конфиге карты).")
-			return
-		addtimer(CALLBACK(src, PROC_REF(try_roundstart_activate), attempt + 1), 10 SECONDS)
-		return
-	if(activate(null, roundstart = TRUE))
-		return
-	if(attempt >= 30)
-		message_admins("PACT siege: поле боя загружено, но автоматическая активация осады не удалась.")
-		return
-	addtimer(CALLBACK(src, PROC_REF(try_roundstart_activate), attempt + 1), 10 SECONDS)
+/datum/inteq_pact_siege/proc/gates_unlocked()
+	return active && gateway_announced && (world.time >= started_at + PACT_SIEGE_PREP_TIME)
 
-/datum/inteq_pact_siege/proc/activate(mob/living/user, roundstart = FALSE)
+/datum/inteq_pact_siege/proc/time_until_gates()
+	return max(0, (started_at + PACT_SIEGE_PREP_TIME) - world.time)
+
+/datum/inteq_pact_siege/proc/time_until_evac()
+	return max(0, end_time - world.time)
+
+/datum/inteq_pact_siege/proc/activate(mob/living/user)
 	if(active)
 		if(user)
 			to_chat(user, span_warning("Протокол осады уже активен."))
 		return FALSE
-	if(!roundstart && !role_check_inteq(user))
+	if(!role_check_inteq(user))
 		to_chat(user, span_warning("Только персонал InteQ может задействовать этот протокол."))
 		return FALSE
 
 	var/list/turfs = build_battle_turfs()
 	if(!length(turfs))
-		if(user)
-			to_chat(user, span_boldwarning("Не найдена карта поля боя (типы зон в pact_siege_battle_area_types). Активация отменена."))
-		if(roundstart)
-			return FALSE
-		message_admins("PACT siege: no battlefield turfs — check GLOB.pact_siege_battle_area_types / mapping.")
+		to_chat(user, span_boldwarning("Не найдена карта поля боя InteQ. Активация отменена."))
+		message_admins("PACT siege: no battlefield turfs — check Inteq_base.dmm / ZTRAIT_PACT_SIEGE.")
 		return FALSE
 
 	battle_dest = new()
 	battle_dest.name = "InteQ — объект осады (ПАКТ)"
 	battle_dest.target_turfs = turfs
-	battle_dest.wait = roundstart ? CONFIG_GET(number/gateway_delay) : 0
+	battle_dest.wait = 0
 	battle_dest.enabled = TRUE
 	battle_dest.owner = src
 
@@ -220,7 +246,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	register_existing_defenders()
 
 	priority_announce(
-		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в системе [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект.",
+		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в системе [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
 		"Центральное Командование",
 		'sound/misc/announce_dig.ogg',
 		null,
@@ -228,49 +254,170 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		TRUE,
 	)
 	gateway_announced = TRUE
+	gateway_visual_open = FALSE
 	GLOB.gateway_destinations += battle_dest
 
 	if(GLOB.the_gateway)
-		if(!roundstart)
-			GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
-			GLOB.the_gateway.teleportion_possible = TRUE
+		GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
+		GLOB.the_gateway.teleportion_possible = TRUE
 		GLOB.the_gateway.update_appearance()
 		GLOB.the_gateway.process()
-	else if(roundstart)
+	else
 		message_admins("PACT siege: станция без GLOB.the_gateway — пункт назначения осады только в консоли врат.")
 
-	if(roundstart)
-		message_admins("PACT siege: автоматическая активация roundstart. Поле боя: [length(turfs)] турфов, z=[siege_z].")
-		log_game("PACT siege auto-activated at roundstart; battlefield turfs=[length(turfs)] z=[siege_z].")
-	else
-		message_admins("[key_name_admin(user)] активировал(а) протокол осады InteQ/PACT. Поле боя: [length(turfs)] турфов, z=[siege_z].")
-		log_game("PACT siege activated by [key_name(user)]; battlefield turfs=[length(turfs)] z=[siege_z].")
+	message_admins("[key_name_admin(user)] активировал(а) протокол осады InteQ/PACT. Поле боя: [length(turfs)] турфов, z=[siege_z].")
+	log_game("PACT siege activated by [key_name(user)]; battlefield turfs=[length(turfs)] z=[siege_z].")
+	return TRUE
+
+/datum/inteq_pact_siege/proc/resolve_reward_client(mob/living/L)
+	if(QDELETED(L))
+		return null
+	if(L.client)
+		return L.client
+	/// Dead / ghosted participants keep the mind key — client lives on the ghost.
+	if(L.mind?.key)
+		return GLOB.directory[ckey(L.mind.key)]
+	if(L.ckey)
+		return GLOB.directory[L.ckey]
+	return null
+
+/datum/inteq_pact_siege/proc/grant_siege_metadollars(mob/living/L, amount, category)
+	if(QDELETED(L) || amount <= 0)
+		return FALSE
+	if(!SSmetadollars)
+		return FALSE
+	var/client/C = resolve_reward_client(L)
+	if(C?.ckey)
+		/// add_amount also tracks round_earnings, but requires prefs.
+		if(C.prefs)
+			SSmetadollars.add_amount(C, amount, category)
+		else
+			SSmetadollars.metadollar_adjust(amount, C.ckey, C.key)
+		return TRUE
+	/// Offline but still has a mind — persist balance without round_earnings UI.
+	var/raw_key = L.mind?.key || L.ckey
+	if(!raw_key)
+		return FALSE
+	SSmetadollars.metadollar_adjust(amount, ckey(raw_key), raw_key)
 	return TRUE
 
 /datum/inteq_pact_siege/proc/reward_pact_winner(mob/living/L)
-	if(!L?.client || L.stat == DEAD || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
+	if(QDELETED(L) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
 		return
-	L.client.give_award(/datum/award/score/pact_siege_pact, L, PACT_SIEGE_REWARD_PACT_WIN)
-	to_chat(L, span_greenannounce("ПАКТ победил в протоколе осады. Награда начислена в прогресс достижений (учёт на сервере)."))
+	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_PACT_WIN, "pact_siege"))
+		log_game("PACT siege: failed to grant PACT reward to [key_name(L)]")
+		return
+	var/client/C = resolve_reward_client(L)
+	if(C)
+		to_chat(C, span_greentext("<b>ПАКТ победил в протоколе осады. Начислено [PACT_SIEGE_REWARD_PACT_WIN] метадолларов.</b>"))
 
 /datum/inteq_pact_siege/proc/reward_inteq_winner(mob/living/L)
-	if(!L?.client || L.stat == DEAD || !(ROLE_INTEQ in L.faction) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
+	if(QDELETED(L) || !(ROLE_INTEQ in L.faction) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
 		return
-	L.client.give_award(/datum/award/score/pact_siege_inteq, L, PACT_SIEGE_REWARD_INTEQ_WIN)
-	to_chat(L, span_greenannounce("InteQ удержал объект. Награда начислена в прогресс достижений (учёт на сервере)."))
+	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_INTEQ_WIN, "pact_siege"))
+		log_game("PACT siege: failed to grant InteQ reward to [key_name(L)]")
+		return
+	var/client/C = resolve_reward_client(L)
+	if(C)
+		to_chat(C, span_greentext("<b>InteQ успешно эвакуировался с объекта. Начислено [PACT_SIEGE_REWARD_INTEQ_WIN] метадолларов.</b>"))
 
 /datum/inteq_pact_siege/proc/recall_attackers()
-	var/turf/dest = get_station_gateway_arrival()
-	if(!dest)
-		priority_announce("Блюспейс-отзыв с зоны осады недоступен: станционный шлюз не отвечает. ПАКТу эвакуироваться самостоятельно.", "Центральное Командование", 'sound/misc/announce_dig.ogg', null, null, TRUE)
-		return
+	/// After the siege, attackers return via the battlefield gateway (standard away gate).
+	priority_announce(
+		"Протокол штурма завершён. Силам ПАКТ на объекте InteQ надлежит вернуться на станцию через врата на поле боя.",
+		"Центральное Командование",
+		'sound/misc/announce_dig.ogg',
+		null,
+		null,
+		TRUE,
+	)
 	for(var/mob/living/L in GLOB.player_list)
 		if(QDELETED(L) || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
 			continue
 		if(!is_on_battlefield(L))
 			continue
-		L.forceMove(dest)
-		to_chat(L, span_notice("Импульс экстренного отзыва ПАКТ переносит вас к станционным вратам."))
+		to_chat(L, span_notice("Осада завершена. Вернитесь на станцию через ГЕЙТ на объекте InteQ."))
+
+/datum/inteq_pact_siege/proc/evacuate_defenders()
+	/// Living InteQ leave the round via goodbye() when the shuttle departs.
+	for(var/datum/weakref/W as anything in defenders)
+		var/mob/living/L = W.resolve()
+		if(QDELETED(L) || L.stat == DEAD)
+			continue
+		to_chat(L, span_notice("Эвакуационный шаттл InteQ покидает зону боя..."))
+		L.goodbye()
+
+/datum/inteq_pact_siege/proc/play_evac_hyperspace_sound(sound_file)
+	var/z = siege_z || resolve_siege_z()
+	if(!z)
+		return
+	var/atom/source = locate(round(world.maxx * 0.5), round(world.maxy * 0.5), z)
+	if(!source)
+		return
+	for(var/mob/M as anything in SSmobs.clients_by_zlevel[z])
+		if(QDELETED(M) || !M.client)
+			continue
+		M.playsound_local(source, sound_file, 100, FALSE)
+
+/datum/inteq_pact_siege/proc/warn_evac_shuttle_departure()
+	priority_announce(
+		"Эвакуационный шаттл InteQ готовится к отлёту. Всем, кто находится на его палубе: у вас [DisplayTimeText(PACT_SIEGE_EVAC_WARNING)] до запуска. Не успевшие будут унесены вместе с кораблём.",
+		"Центральное Командование",
+		'sound/misc/announce_dig.ogg',
+		null,
+		null,
+		TRUE,
+	)
+	play_evac_hyperspace_sound('sound/effects/hyperspace_begin.ogg')
+	for(var/mob/living/L in GLOB.player_list)
+		if(QDELETED(L))
+			continue
+		var/area/A = get_area(L)
+		if(!istype(A, /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship))
+			continue
+		to_chat(L, span_userdanger("Эвакуационный шаттл InteQ стартует через [DisplayTimeText(PACT_SIEGE_EVAC_WARNING)]! Покиньте палубу через ГЕЙТ или будете уничтожены вместе с кораблём."))
+
+/datum/inteq_pact_siege/proc/depart_evac_shuttle()
+	play_evac_hyperspace_sound('sound/effects/hyperspace_progress.ogg')
+	priority_announce(
+		"Эвакуационный шаттл InteQ покинул зону боя.",
+		"Центральное Командование",
+		'sound/misc/announce_dig.ogg',
+		null,
+		null,
+		TRUE,
+	)
+	evacuate_defenders()
+	/// goodbye() needs a moment; then wipe the shuttle volume (PACT still aboard are deleted with it)
+	addtimer(CALLBACK(src, PROC_REF(wipe_inteq_forgotten_ship)), 10 SECONDS)
+
+/// Delete the InteQ forgotten-ship shuttle volume — it has left the battlefield.
+/datum/inteq_pact_siege/proc/wipe_inteq_forgotten_ship()
+	var/area/ship = GLOB.areas_by_type[/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship]
+	if(!ship)
+		return
+	var/area/space_area = GLOB.areas_by_type[/area/space]
+	if(!space_area)
+		for(var/area/A as anything in GLOB.all_areas)
+			if(istype(A, /area/space))
+				space_area = A
+				break
+	var/list/coords = list()
+	for(var/turf/T in ship)
+		coords += list(list(T.x, T.y, T.z))
+	for(var/list/C as anything in coords)
+		var/turf/T = locate(C[1], C[2], C[3])
+		if(!T)
+			continue
+		/// Mid-goodbye InteQ are ignored; anyone else still aboard (включая ПАКТ) удаляется с шаттлом.
+		T.empty(/turf/open/space/basic, ignore_typecache = typecacheof(list(/mob/dead)))
+		T = locate(C[1], C[2], C[3])
+		if(!T || !space_area || istype(T.loc, /area/space))
+			continue
+		var/area/old_area = T.loc
+		space_area.contents += T
+		T.change_area(old_area, space_area)
+	log_game("PACT siege: wiped /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship ([length(coords)] turfs).")
 
 /datum/inteq_pact_siege/proc/cleanup_gateway()
 	cleanup_return_gateway()
@@ -282,8 +429,12 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		if(GLOB.the_gateway.target == old_dest)
 			GLOB.the_gateway.deactivate()
 		GLOB.the_gateway.RemoveElement(/datum/element/pact_siege_red_gateway)
+		GLOB.the_gateway.teleportion_possible = FALSE
+		/// Re-evaluate other destinations so the gate can return to a normal idle/ready look
 		GLOB.the_gateway.process()
+		GLOB.the_gateway.update_appearance()
 	QDEL_NULL(old_dest)
+	gateway_visual_open = FALSE
 
 /datum/inteq_pact_siege/proc/conclude(side, reason)
 	if(!active)
@@ -291,6 +442,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	active = FALSE
 
 	priority_announce("Протокол осады InteQ/ПАКТ завершён: [reason]", "Центральное Командование", 'sound/misc/announce_dig.ogg', null, null, TRUE)
+
+	scan_battlefield_participants()
 
 	if(side == PACT_SIEGE_SIDE_PACT)
 		for(var/datum/weakref/W as anything in attackers)
@@ -301,17 +454,25 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			var/mob/living/L = W.resolve()
 			reward_inteq_winner(L)
 
+	/// InteQ leave via goodbye when the shuttle actually departs; PACT still aboard are wiped with it.
+	warn_evac_shuttle_departure()
+	addtimer(CALLBACK(src, PROC_REF(depart_evac_shuttle)), PACT_SIEGE_EVAC_WARNING)
 	recall_attackers()
 	cleanup_gateway()
 	remove_siege_traits()
 	attackers.Cut()
-	defenders.Cut()
+	/// defenders kept until depart_evac_shuttle() for goodbye targeting
 	defenders_ever_registered = FALSE
 	gateway_announced = FALSE
-	siege_z = 0
+	/// siege_z kept until wipe so hyperspace sound / wipe can resolve the battlefield
 	started_at = 0
 	end_time = 0
 	log_game("PACT siege concluded: [side] — [reason]")
+	addtimer(CALLBACK(src, PROC_REF(finish_siege_cleanup)), PACT_SIEGE_EVAC_WARNING + 12 SECONDS)
+
+/datum/inteq_pact_siege/proc/finish_siege_cleanup()
+	defenders.Cut()
+	siege_z = 0
 
 /datum/inteq_pact_siege/proc/remove_siege_traits()
 	for(var/datum/weakref/W as anything in attackers + defenders)
@@ -324,11 +485,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/process_tick()
 	if(!active)
 		return
+	refresh_station_gateway_visuals()
+	scan_battlefield_participants()
 	if(defenders_ever_registered && !living_defenders_count())
 		conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы; ПАКТ выполнил цель.")
 		return
 	if(world.time >= end_time)
-		conclude(PACT_SIEGE_SIDE_INTEQ, "силы InteQ удержали позиции до истечения окна осады.")
+		if(living_defenders_count())
+			conclude(PACT_SIEGE_SIDE_INTEQ, "силы InteQ удержали позиции и эвакуировались до истечения окна осады.")
+		else
+			conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы к моменту эвакуации; ПАКТ выполнил цель.")
 
 
 /// Gateway destination: station -> InteQ battlefield
@@ -339,14 +505,22 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	owner?.on_station_siege_gateway_closed()
 
 /datum/gateway_destination/point/pact_siege_battle/is_available()
-	if(!owner?.gateway_announced)
+	if(!owner?.gates_unlocked())
 		return FALSE
 	return ..()
 
 /datum/gateway_destination/point/pact_siege_battle/get_available_reason()
-	if(!owner?.gateway_announced)
+	if(!owner?.active || !owner.gateway_announced)
 		return "Ожидание объявления Центрального Командования."
+	if(!owner.gates_unlocked())
+		return "Калибровка красного канала. Открытие через [DisplayTimeText(owner.time_until_gates())]."
 	return ..()
+
+/datum/gateway_destination/point/pact_siege_battle/get_ui_data()
+	. = ..()
+	if(owner?.active && !owner.gates_unlocked())
+		var/prep = PACT_SIEGE_PREP_TIME
+		.["timeout"] = clamp(1 - owner.time_until_gates() / prep, 0, 1)
 
 /datum/gateway_destination/point/pact_siege_battle/incoming_pass_check(atom/movable/AM)
 	if(!isliving(AM))
@@ -424,12 +598,10 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 	wait = 2 SECONDS
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
-/datum/controller/subsystem/inteq_pact_siege/proc/start_roundstart_activate()
-	GLOB.inteq_pact_siege.try_roundstart_activate()
-
 /datum/controller/subsystem/inteq_pact_siege/Initialize()
 	. = ..()
-	addtimer(CALLBACK(src, PROC_REF(start_roundstart_activate)), 10 SECONDS)
+	/// Resolve siege z early so ghost roles / tools can query it
+	GLOB.inteq_pact_siege.resolve_siege_z()
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)

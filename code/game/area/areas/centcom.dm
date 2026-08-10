@@ -418,3 +418,8 @@
 	name = "Pacr Ship Taran"
 	icon_state = "syndie-control"
 	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/evac
+	name = "InteQ Evacuation Shuttle"
+	icon_state = "syndie-elite"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED

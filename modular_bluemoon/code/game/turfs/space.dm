@@ -27,34 +27,14 @@
 	always_place = TRUE
 	id = "ds2-base"
 
-/datum/map_template/ruin/station/forgottenship
-	name = "SCSBC-12"
-	description = "InteQ хотели бы напомнить своим сотрудникам, что любой линейный крейсер будет обслуживаться соответствующим образом, как и экипаж."
-	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
-	suffix = "forgotten_ship.dmm"
-	allow_duplicates = FALSE
-	always_place = FALSE
-	cost = 1000
-	id = "forgottenship"
-
 /datum/map_template/ruin/station/forgottenship/sol
 	name = "SCSBC-13"
 	description = "SolFed хотели бы напомнить своим сотрудникам, что любой линейный крейсер будет обслуживаться соответствующим образом, как и экипаж."
 	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
 	suffix = "sol_ship.dmm"
 	allow_duplicates = FALSE
-	always_place = FALSE
-	cost = 1000
+	cost = 10
 	id = "forgottenship_sol"
-
-/datum/map_template/ruin/space/forgottenship/nothing
-	name = "SCSBC-14"
-	description = "Nobody хотели бы напомнить своим сотрудникам, что любой линейный крейсер будет обслуживаться соответствующим образом, как и экипаж."
-	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
-	suffix = "nothing_ship.dmm"
-	allow_duplicates = FALSE
-	always_place = FALSE
-	id = "forgottenship_nothing"
 
 /datum/map_template/ruin/space/abductorcrush
 	name = "Crushed Abductor Ship"

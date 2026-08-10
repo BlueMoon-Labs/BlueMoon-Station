@@ -25,6 +25,7 @@ GLOBAL_LIST_INIT(anchor_implant_allowed_z_levels, list())
 /obj/item/implant/anchor/proc/get_anchor_z_levels_for_turf(turf/spawn_turf)
 	var/list/levels = list()
 	levels += SSmapping.levels_by_trait(ZTRAIT_CENTCOM)
+	levels += SSmapping.levels_by_trait(ZTRAIT_PACT_SIEGE)
 	levels += SSmapping.levels_by_all_trait(ZTRAITS_LAVALAND_JUNGLE)
 	levels += SSmapping.levels_by_trait(ZTRAIT_RESERVED)
 	if(GLOB.master_mode == "Extended")
@@ -35,7 +36,7 @@ GLOBAL_LIST_INIT(anchor_implant_allowed_z_levels, list())
 		levels |= spawn_z
 	var/area/spawn_area = spawn_turf ? get_area(spawn_turf) : null
 	// BlueMoon off-station bases (DS-2, InteQ, etc.) share the station + deep space ruin z-levels of the local sector.
-	if(istype(spawn_area, /area/ruin/space/has_grav/bluemoon))
+	if(istype(spawn_area, /area/ruin/space/has_grav/bluemoon) || istype(spawn_area, /area/InteQ_ship))
 		levels |= SSmapping.levels_by_trait(ZTRAIT_STATION)
 		levels |= SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
 	return levels
@@ -70,7 +71,7 @@ GLOBAL_LIST_INIT(anchor_implant_allowed_z_levels, list())
 	if(!my_location)
 		return
 	var/area/my_area = get_area(owner)
-	if(istype(my_area, /area/ruin/space/has_grav/bluemoon) || istype(my_area, /area/shuttle/sbc_corvette) || istype(my_area, /area/shuttle/inteq))
+	if(istype(my_area, /area/ruin/space/has_grav/bluemoon) || istype(my_area, /area/InteQ_ship) || istype(my_area, /area/shuttle/sbc_corvette) || istype(my_area, /area/shuttle/inteq))
 		return
 	if(SSmapping.level_trait(my_location.z, ZTRAIT_RESERVED))
 		return
