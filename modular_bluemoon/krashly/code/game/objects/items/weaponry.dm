@@ -250,8 +250,6 @@
 	name = "\improper Pink AK-12 rifle"
 	icon_state = "akr12"
 	item_state = "akr12"
-	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
-	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	fire_delay = 3
 	mag_type = /obj/item/ammo_box/magazine/ak12/r
 	//fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'

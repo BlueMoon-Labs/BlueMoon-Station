@@ -58,7 +58,7 @@
 	name = "\improper tactical M16A4 rifle"
 	desc = "A Solar Federation automatic rifle chambered for the 5.56 round, designed for use by Special Ops."
 	icon_state = "m16_tactical"
-	item_state = "m16_tactical"
+	item_state = "m16"
 	burst_size = 3 // EDIT - was "burst_size = 5"
 	fire_delay = 2 // EDIT - was "fire_delay = 3"
 
