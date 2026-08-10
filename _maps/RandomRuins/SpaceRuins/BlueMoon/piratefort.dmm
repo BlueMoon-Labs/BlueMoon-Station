@@ -31,6 +31,7 @@
 /obj/item/wirecutters/advanced,
 /obj/item/weldingtool/advanced,
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/light/directional/east,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "bF" = (
@@ -46,6 +47,7 @@
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
+/obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "bR" = (
@@ -152,6 +154,7 @@
 /obj/item/laser_pointer,
 /obj/item/lazarus_injector,
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "gy" = (
@@ -167,6 +170,7 @@
 "gP" = (
 /obj/structure/table/wood,
 /obj/item/modular_computer/pda/cargo,
+/obj/machinery/light/directional/east,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "gZ" = (
@@ -233,7 +237,6 @@
 /area/ruin/space/has_grav/powered)
 "kh" = (
 /obj/structure/safe,
-/obj/item/implanter/storage,
 /obj/item/stack/spacecash/c10000,
 /obj/item/stack/spacecash/c10000,
 /obj/item/stack/sheet/mineral/diamond{
@@ -248,6 +251,7 @@
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 10
 	},
+/obj/item/implanter/hijack,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
 "km" = (
@@ -325,6 +329,7 @@
 	amount = 15
 	},
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/light/directional/west,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "nJ" = (
@@ -403,6 +408,7 @@
 /obj/item/gun/ballistic/automatic/surplus,
 /obj/item/gun/ballistic/automatic/surplus,
 /obj/item/gun/ballistic/automatic/surplus,
+/obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "rq" = (
@@ -491,11 +497,16 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
+"uf" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
 "us" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 10
 	},
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger2,
+/obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "vE" = (
@@ -548,7 +559,6 @@
 /obj/structure/closet/crate/secure/plasma{
 	req_access = list("armory")
 	},
-/obj/item/clothing/head/helmet/juggernaut,
 /obj/item/clothing/suit/armor/heavy/juggernaut,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
@@ -576,6 +586,7 @@
 "wT" = (
 /obj/machinery/computer/security,
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "xb" = (
@@ -584,6 +595,10 @@
 	},
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
 /turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"xe" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "xg" = (
 /obj/effect/turf_decal/trimline/brown/filled/line{
@@ -618,6 +633,14 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
+"yb" = (
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/pen/fountain,
+/obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "yl" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 9
@@ -627,6 +650,7 @@
 "yo" = (
 /obj/structure/tank_holder/extinguisher,
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/west,
 /turf/open/floor/wood/wood_tiled,
 /area/ruin/space/has_grav/powered)
 "yr" = (
@@ -641,6 +665,10 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"yJ" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/powered)
 "yP" = (
 /obj/effect/turf_decal/bot,
@@ -680,12 +708,33 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
+"Aj" = (
+/obj/machinery/computer{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "Ao" = (
 /obj/structure/table/wood/poker,
 /obj/item/toy/cards/cardhand{
 	pixel_x = -5
 	},
 /turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Aq" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 6
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"Ax" = (
+/obj/machinery/sleeper/syndie,
+/obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "AS" = (
 /obj/machinery/porta_turret{
@@ -718,6 +767,13 @@
 "CV" = (
 /obj/item/kirbyplants/random,
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"Db" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Dy" = (
@@ -783,6 +839,7 @@
 /area/ruin/space/has_grav/powered)
 "ET" = (
 /obj/machinery/suit_storage_unit/syndicate,
+/obj/machinery/light/directional/west,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Fb" = (
@@ -820,6 +877,7 @@
 /obj/item/retractor/alien,
 /obj/item/scalpel/alien,
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Gm" = (
@@ -827,6 +885,10 @@
 	dir = 9
 	},
 /turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"GA" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "Hd" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/corner,
@@ -843,7 +905,7 @@
 /obj/structure/closet/crate/secure{
 	req_access = list("armory")
 	},
-/obj/item/implanter/hijack,
+/obj/item/clothing/head/helmet/juggernaut,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
 "Iy" = (
@@ -975,6 +1037,13 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
+"Ow" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "Ph" = (
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/engine,
@@ -1013,6 +1082,10 @@
 /obj/structure/table/wood,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/powered)
+"RG" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
 "RQ" = (
 /obj/structure/chair,
 /turf/open/floor/wood,
@@ -1021,10 +1094,37 @@
 /obj/machinery/door/airlock/external/glass,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"Sy" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 9
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"SU" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"Tb" = (
+/obj/structure/filingcabinet/chestdrawer,
+/obj/effect/turf_decal/tile/dark_red/fourcorners,
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "Tm" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/closet/crate/medical,
 /obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"Tq" = (
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
+	dir = 5
+	},
+/obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "TD" = (
@@ -1092,6 +1192,10 @@
 /obj/machinery/door/airlock/captain,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
+"Vw" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/powered)
 "Vx" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/closet/crate/secure/loot,
@@ -1119,6 +1223,7 @@
 "WI" = (
 /obj/item/gun/energy/laser,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/light/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "WT" = (
@@ -1127,7 +1232,8 @@
 /area/ruin/space/has_grav/powered)
 "Xe" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/line,
-/turf/closed/wall/r_wall/rust,
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "XT" = (
 /obj/structure/rack,
@@ -1182,6 +1288,11 @@
 /obj/structure/table/wood,
 /obj/item/paper_bin,
 /obj/item/pen/fountain/captain,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ZA" = (
+/obj/structure/bed,
+/obj/machinery/light/directional/east,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 
@@ -1406,19 +1517,19 @@ Gm
 pS
 pS
 pS
+Db
 pS
 pS
+Db
 pS
 pS
+Db
 pS
 pS
+Db
 pS
 pS
-pS
-pS
-pS
-pS
-pS
+Db
 pS
 xw
 ih
@@ -1490,19 +1601,19 @@ BS
 LG
 Hd
 Kj
+SU
 Kj
 Kj
+SU
 Kj
 Kj
+SU
 Kj
 Kj
+SU
 Kj
 Kj
-Kj
-Kj
-Kj
-Kj
-Kj
+SU
 Kj
 Ut
 ih
@@ -1668,11 +1779,11 @@ ih
 ih
 ih
 ih
+RG
 Js
 Js
 Js
-Js
-Js
+uf
 ih
 ih
 ih
@@ -1696,7 +1807,7 @@ vX
 vX
 vX
 ih
-BS
+Ow
 LG
 Ma
 ih
@@ -1718,12 +1829,12 @@ Js
 Zs
 Gm
 pS
+Db
 pS
 pS
 pS
 pS
-pS
-pS
+Db
 hN
 DF
 ih
@@ -1758,7 +1869,7 @@ jK
 ga
 Js
 ih
-FP
+Tq
 LI
 Kj
 Yn
@@ -1828,7 +1939,7 @@ wG
 ih
 Qw
 zk
-MY
+yb
 Fb
 wL
 ox
@@ -1875,14 +1986,14 @@ pS
 hd
 DF
 ih
-ru
+yJ
 ru
 Js
 ga
 ad
 ad
 Mc
-Js
+uf
 ih
 TD
 eY
@@ -1926,7 +2037,7 @@ Js
 Js
 Js
 ih
-eY
+xe
 eY
 ih
 WI
@@ -1990,16 +2101,16 @@ vX
 ih
 hM
 sS
-Js
+GA
 ap
 ap
 ih
-TY
+Ax
 BS
 LG
 LG
 LG
-Ma
+Xe
 ih
 ru
 ru
@@ -2018,8 +2129,8 @@ Oo
 Oo
 ih
 ih
-FP
-zx
+Tq
+Aq
 ih
 vX
 vX
@@ -2087,10 +2198,10 @@ Ma
 ih
 ox
 Gm
+Db
 pS
 pS
-pS
-pS
+Db
 pS
 DF
 ih
@@ -2102,7 +2213,7 @@ Zj
 cn
 pV
 ih
-Gm
+Sy
 us
 ih
 vX
@@ -2171,10 +2282,10 @@ zx
 ih
 FP
 Kj
+SU
 Kj
 Kj
-Kj
-Kj
+SU
 Kj
 zx
 ih
@@ -2203,7 +2314,7 @@ nJ
 Ht
 tC
 ih
-BS
+Ow
 LG
 yE
 pS
@@ -2241,7 +2352,7 @@ vX
 vX
 ih
 ih
-Fd
+Vw
 Fd
 Fd
 TO
@@ -2283,7 +2394,7 @@ vX
 vX
 ih
 ih
-Fd
+Vw
 Fd
 Fd
 TO
@@ -2293,7 +2404,7 @@ LG
 LG
 LG
 Ma
-pV
+Aj
 ih
 MX
 Js
@@ -2329,7 +2440,7 @@ bF
 vY
 kh
 ih
-FP
+Tq
 CM
 LG
 LG
@@ -2416,14 +2527,14 @@ ih
 Yt
 Yt
 Ef
-Fb
+Tb
 Fb
 Yt
 Wd
 ih
 wR
 Iy
-wR
+ZA
 Iy
 wR
 gP

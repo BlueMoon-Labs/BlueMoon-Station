@@ -105,7 +105,9 @@
 	req_access_txt = "208";
 	name = "Хлам"
 	},
-/obj/effect/spawner/lootdrop/trader/cool,
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 5
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "eL" = (
@@ -162,7 +164,7 @@
 /turf/open/floor/carpet/red,
 /area/ruin/powered)
 "jr" = (
-/obj/machinery/chem_dispenser,
+/obj/machinery/chem_dispenser/fullupgrade,
 /turf/open/floor/pod/light,
 /area/ruin/powered)
 "jY" = (
@@ -228,7 +230,9 @@
 	req_access_txt = "208";
 	name = "Не показывать"
 	},
-/obj/effect/spawner/lootdrop/trader/illegal,
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 5
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "nb" = (
@@ -398,7 +402,9 @@
 "xE" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/closet/secure_closet,
-/obj/effect/spawner/lootdrop/trader/ammo,
+/obj/effect/spawner/lootdrop/trader/ammo{
+	lootcount = 7
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "ya" = (
@@ -464,6 +470,17 @@
 "AY" = (
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger2,
 /turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Bw" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208";
+	name = "Хлам"
+	},
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 9
+	},
+/turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "BN" = (
 /obj/machinery/button/door{
@@ -559,6 +576,10 @@
 	},
 /turf/open/floor/pod/light,
 /area/ruin/powered)
+"He" = (
+/obj/item/reagent_containers/glass/beaker/bluespace,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
 "Ih" = (
 /obj/structure/tank_dispenser/oxygen,
 /obj/structure/sign/flag/terragov{
@@ -630,6 +651,9 @@
 	name = "Old safe";
 	desc = "Очень старый сейф. Петли проржавели насквозь и совершенно не хотят дать дверце закрыться, но за то из него выходит отличный шкафчик для гор денег."
 	},
+/obj/effect/spawner/lootdrop/trader/illegal{
+	lootcount = 3
+	},
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/ruin/powered)
 "Md" = (
@@ -642,7 +666,9 @@
 	req_access_txt = "208";
 	name = "Патроны"
 	},
-/obj/effect/spawner/lootdrop/trader/ammo,
+/obj/effect/spawner/lootdrop/trader/ammo{
+	lootcount = 7
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "MC" = (
@@ -693,7 +719,9 @@
 /obj/structure/closet/secure_closet{
 	req_access_txt = "208"
 	},
-/obj/effect/spawner/lootdrop/trader/under,
+/obj/effect/spawner/lootdrop/trader/under{
+	lootcount = 8
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "Qj" = (
@@ -1040,7 +1068,7 @@ rf
 KF
 wT
 wT
-wT
+He
 wT
 MC
 rf
@@ -1435,7 +1463,7 @@ gj
 Kl
 qj
 CI
-et
+Bw
 nb
 Ym
 ou
