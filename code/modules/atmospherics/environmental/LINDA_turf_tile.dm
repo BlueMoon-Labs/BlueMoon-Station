@@ -77,6 +77,7 @@
 		if(SSair)
 			// Losing a neighbor changes who they can share with, not what they
 			// hold: one cycle to re-compare, no fresh stall budget.
+			ATMOS_BENCH_WAKE("turf_destroy")
 			SSair.add_to_active(T, FALSE, reset_stall = FALSE)
 	update_air_ref(-1)
 	air = null
@@ -97,6 +98,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -110,6 +112,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -120,6 +123,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -130,6 +134,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -138,6 +143,7 @@
 	var/datum/gas_mixture/removed = ours.remove(amount)
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return removed
 
@@ -146,6 +152,7 @@
 	var/datum/gas_mixture/removed = ours.remove_ratio(ratio)
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE("gas_write")
 		SSair.add_to_active(src)
 	return removed
 
@@ -239,6 +246,7 @@
 		if(abs(air.return_temperature() - other.return_temperature()) < MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 			return
 		temperature_share_open_to_solid(other)
+	ATMOS_BENCH_WAKE("conduct")
 	SSair.add_to_active(src)
 
 /turf/proc/super_conduct()
@@ -347,6 +355,7 @@
 	// a no-op for the fast path there, leaving a turf that claims to be active
 	// while never appearing in the list.
 	if(SSair)
+		ATMOS_BENCH_WAKE("set_excited")
 		SSair.add_to_active(src, FALSE)
 
 /////////////////////////GAS OVERLAYS//////////////////////////////
@@ -467,6 +476,7 @@
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
+			ATMOS_BENCH_WAKE("pair_share") \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
 	} else if(last_share > our_move_threshold) { \
@@ -474,6 +484,7 @@
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
+			ATMOS_BENCH_WAKE("pair_share") \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
 	}
@@ -737,6 +748,7 @@
 							if(abs(group_air.temperature - temperature_before[index]) <= MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
 								continue
 					if(SSair)
+						ATMOS_BENCH_WAKE("equalize")
 						SSair.add_to_active(group_turf, FALSE)
 				if(cursor <= zone_turfs.len)
 					return FALSE
@@ -1106,6 +1118,7 @@
 		else if(our_air.compare(enemy_air))
 			ATMOS_TPROF_COUNT("group_creates")
 			if(!enemy_tile.excited && SSair)
+				ATMOS_BENCH_WAKE("pair_new_group")
 				SSair.add_to_active(enemy_tile)
 			var/datum/excited_group/EG = our_excited_group || enemy_excited_group || new
 			if(!our_excited_group)
@@ -1804,6 +1817,7 @@
 					var/turf/open/T = breakdown_to_poke[breakdown_cursor++]
 					remaining--
 					if(SSair)
+						ATMOS_BENCH_WAKE("breakdown_poke")
 						SSair.add_to_active(T, FALSE, wake_machines = FALSE)
 					T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 				if(breakdown_cursor <= length(breakdown_to_poke))

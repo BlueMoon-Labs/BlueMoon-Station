@@ -67,6 +67,11 @@
 /// boot time stays bearable on a full map.
 #define ATMOS_BENCH_STATION_ITEM_STRIDE 8
 #define ATMOS_BENCH_STATION_ITEM_CAP 1500
+/// icemoon-blast: эпицентр взрыва раунда 9929 - Medbay Aft, нижний уровень
+/// станции IceMoon (z6 при штатном порядке загрузки icemoonstation.json).
+#define ATMOS_BENCH_BLAST_X 70
+#define ATMOS_BENCH_BLAST_Y 155
+#define ATMOS_BENCH_BLAST_Z 6
 /// Side of the square hull breach punched into the middle of the station.
 #define ATMOS_BENCH_STATION_BREACH_SIDE 5
 
@@ -96,6 +101,11 @@
 	var/list/turf/headless_bench_storm_walls = list()
 	/// changeturf-storm cursor, so the stripe walks the room instead of flapping.
 	var/headless_bench_storm_column = 0
+	/// Пробуждения турфов с прошлого бенч-тика по имени вызова (ATMOS_BENCH_WAKE):
+	/// harvest уходит полем "wake" в hb-запись и обнуляется там же.
+	var/list/headless_wake_tally = list()
+	/// icemoon-blast: эпицентр, зафиксированный на построении сценария.
+	var/turf/headless_bench_blast_turf
 
 /// Build dispatch: called async from atmos_headless_bench_tick when a scenario
 /// is requested but not yet built.
@@ -130,6 +140,8 @@
 			atmos_headless_bench_build_changeturf_storm()
 		if("station-breach")
 			atmos_headless_bench_build_station_breach()
+		if("icemoon-blast")
+			atmos_headless_bench_build_icemoon_blast()
 		else
 			log_world("ATMOS-BENCH: unknown scenario '[headless_bench_scenario]', running as plain settling")
 			headless_bench_scenario = null
@@ -180,6 +192,10 @@
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_vent_event_turfs()
+		if("icemoon-blast")
+			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
+				headless_bench_event_fired = TRUE
+				atmos_headless_bench_fire_icemoon_blast()
 
 /// Writes the standard scenario_ready event record.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_mark_ready(list/extra)
@@ -1024,6 +1040,46 @@
 		"breach_area" = breach_area ? "[breach_area.type]" : null,
 	))
 
+// ---------------------------------------------------------------------------
+// icemoon-blast: реконструкция раунда 9929. Крошечный взрыв (0/0/2/3 - хлопок
+// сварочного бака) в нижнем медбее IceMoon Station поднял актив с ~900 до 40к
+// турфов - вся планетарка трёх z-уровней - и до конца раунда он не осел.
+// Сценарий не строит арену: бьёт по живой карте на event-cycle и смотрит, кто
+// именно просыпается (поле "wake" в hb-записях) и почему не засыпает обратно.
+// ---------------------------------------------------------------------------
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_icemoon_blast()
+	var/turf/blast = locate(ATMOS_BENCH_BLAST_X, ATMOS_BENCH_BLAST_Y, ATMOS_BENCH_BLAST_Z)
+	if(!blast)
+		log_world("ATMOS-BENCH: icemoon-blast epicenter not found, running as plain settling")
+		headless_bench_scenario = null
+		headless_bench_scenario_ready = TRUE
+		headless_bench_scenario_building = FALSE
+		can_fire = TRUE
+		return
+	headless_bench_blast_turf = blast
+	var/area/blast_area = get_area(blast)
+	atmos_headless_bench_mark_ready(list(
+		"blast_at" = "[blast.x],[blast.y],[blast.z]",
+		"blast_area" = blast_area ? "[blast_area.type]" : null,
+	))
+
+/// Ровно взрыв из admin-лога 9929: size (0, 0, 2, 3) = dev/heavy/light/flame.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fire_icemoon_blast()
+	var/turf/blast = headless_bench_blast_turf
+	if(!blast)
+		return
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "icemoon_blast",
+		"cyc" = headless_bench_cycles,
+		"at" = "[blast.x],[blast.y],[blast.z]",
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+	// Взрыв асинхронный по своей природе (SSexplosions дожёвывает очереди
+	// следующими тиками) - но сам вызов обязан уйти из фаера SSair без сна.
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(explosion), blast, 0, 0, 2, 0, TRUE, FALSE, 3)
+
 #undef ATMOS_BENCH_FIRE_CORRIDOR_LENGTH
 #undef ATMOS_BENCH_FIRE_CORRIDOR_WIDTH
 #undef ATMOS_BENCH_FIRE_PLASMA_COLUMNS
@@ -1063,5 +1119,8 @@
 #undef ATMOS_BENCH_STATION_ITEM_STRIDE
 #undef ATMOS_BENCH_STATION_ITEM_CAP
 #undef ATMOS_BENCH_STATION_BREACH_SIDE
+#undef ATMOS_BENCH_BLAST_X
+#undef ATMOS_BENCH_BLAST_Y
+#undef ATMOS_BENCH_BLAST_Z
 
 #endif // ifdef ATMOS_HEADLESS_BENCH
