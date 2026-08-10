@@ -237,7 +237,6 @@
 /area/ruin/space/has_grav/powered)
 "kh" = (
 /obj/structure/safe,
-/obj/item/implanter/storage,
 /obj/item/stack/spacecash/c10000,
 /obj/item/stack/spacecash/c10000,
 /obj/item/stack/sheet/mineral/diamond{
@@ -252,6 +251,7 @@
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 10
 	},
+/obj/item/implanter/hijack,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
 "km" = (
@@ -559,7 +559,6 @@
 /obj/structure/closet/crate/secure/plasma{
 	req_access = list("armory")
 	},
-/obj/item/clothing/head/helmet/juggernaut,
 /obj/item/clothing/suit/armor/heavy/juggernaut,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
@@ -906,7 +905,7 @@
 /obj/structure/closet/crate/secure{
 	req_access = list("armory")
 	},
-/obj/item/implanter/hijack,
+/obj/item/clothing/head/helmet/juggernaut,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/powered)
 "Iy" = (
