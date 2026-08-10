@@ -465,9 +465,7 @@
 	},
 /obj/item/card/id/inteq,
 /obj/item/card/id/inteq,
-/obj/item/card/id/inteq,
-/obj/item/card/id/inteq,
-/obj/item/card/id/inteq,
+/obj/item/card/id/centcom,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "bv" = (
@@ -847,6 +845,11 @@
 	light_color = "#e8eaff"
 	},
 /turf/open/floor/mineral/plastitanium,
+/area/InteQ_ship)
+"cG" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/girder/displaced,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "cH" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
@@ -1685,6 +1688,11 @@
 /obj/machinery/space_heater,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship4)
+"fb" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/girder/displaced,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "fc" = (
 /obj/item/ammo_box/magazine/m9smgmag,
 /turf/open/floor/plating/asteroid/airless,
@@ -1879,6 +1887,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/girder/displaced,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "fA" = (
@@ -2632,6 +2641,7 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "hS" = (
 /obj/structure/hellgate_factory,
+/obj/structure/girder/displaced,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hT" = (
@@ -7610,6 +7620,11 @@
 "wk" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/InteQ_ship/ship5)
+"wl" = (
+/obj/item/stack/sheet/metal,
+/obj/structure/girder/displaced,
+/turf/open/floor/plating,
+/area/InteQ_ship)
 "wn" = (
 /obj/structure/table/reinforced,
 /obj/item/book/manual/wiki/barman_recipes{
@@ -9307,6 +9322,11 @@
 /obj/item/kirbyplants/hedge,
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"Bq" = (
+/obj/structure/hellgate_factory,
+/obj/structure/girder/displaced,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Br" = (
 /mob/living/simple_animal/hostile/malf_drone,
@@ -12199,13 +12219,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship4)
-"Jj" = (
-/obj/machinery/porta_turret/inteq/energy{
-	name = "InteQ Ship Turret";
-	dir = 4
-	},
-/turf/closed/wall/mineral/plastitanium,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Jk" = (
 /obj/machinery/sleeper/syndie,
 /turf/open/floor/plasteel/dark,
@@ -14074,6 +14087,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/obj/structure/girder/displaced,
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "Pb" = (
@@ -15687,12 +15701,6 @@
 	},
 /obj/item/storage/box/syndie_kit/chameleon,
 /obj/item/storage/box/syndie_kit/chameleon,
-/obj/item/storage/box/syndie_kit/chameleon,
-/obj/item/storage/box/syndie_kit/chameleon,
-/obj/item/storage/box/syndie_kit/chameleon,
-/obj/item/clothing/glasses/night/syndicate,
-/obj/item/clothing/glasses/night/syndicate,
-/obj/item/clothing/glasses/night/syndicate,
 /obj/item/clothing/glasses/night/syndicate,
 /obj/item/clothing/glasses/night/syndicate,
 /obj/effect/turf_decal/stripes{
@@ -15708,6 +15716,7 @@
 	pixel_y = 23;
 	start_charge = 100
 	},
+/obj/item/clothing/glasses/thermal/eyepatch,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "TX" = (
@@ -33517,7 +33526,7 @@ vB
 vB
 vB
 rM
-rM
+Ee
 Ee
 Al
 Al
@@ -34156,7 +34165,7 @@ Ee
 Ee
 Kw
 hS
-hT
+fb
 Xl
 Al
 Al
@@ -34367,7 +34376,7 @@ Az
 Az
 Pa
 Pa
-mW
+wl
 Az
 Up
 fQ
@@ -34577,10 +34586,10 @@ fQ
 fQ
 Az
 Az
-fQ
-fQ
-If
-gQ
+Az
+Az
+Bq
+cG
 If
 DR
 qj
@@ -35175,6 +35184,7 @@ AM
 AM
 AM
 wF
+Sh
 pR
 pR
 pR
@@ -35188,8 +35198,7 @@ pR
 pR
 pR
 pR
-pR
-pR
+Sh
 wF
 vB
 vB
@@ -35598,7 +35607,7 @@ AM
 AM
 AM
 AM
-qg
+pR
 Zi
 mH
 mH
@@ -35810,7 +35819,7 @@ AM
 AM
 AM
 AM
-qg
+pR
 be
 mH
 mH
@@ -36022,7 +36031,7 @@ AM
 AM
 AM
 AM
-qg
+pR
 qg
 KS
 KS
@@ -36234,7 +36243,7 @@ AM
 AM
 AM
 AM
-Jj
+jT
 KH
 mH
 mH
@@ -36446,7 +36455,7 @@ AM
 AM
 AM
 AM
-qg
+pR
 Ut
 mH
 mH
@@ -36658,7 +36667,7 @@ AM
 AM
 AM
 AM
-qg
+pR
 HP
 mH
 mH
