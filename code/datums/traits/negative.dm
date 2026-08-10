@@ -391,21 +391,15 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/phobia/post_add()
 	var/mob/living/carbon/human/H = quirk_holder
+	var/selected_phobia
 
 	// BLUEMOON EDIT START - получение выбранной фобии из настроек персонажа
-	// На старте раунда квирки выдаются в equip_characters(), а ключ переезжает в тело
-	// только в transfer_characters() - между ними целая стадия с уступками тика, так что
-	// отложенный на 3 секунды post_add почти всегда видит тело без клиента. Настройка
-	// молча терялась и подменялась случайной; mind переезжает раньше, по его ключу
-	// клиент находится и до переноса.
-	var/client/holder_client = quirk_holder.client
-	if(!holder_client)
-		var/holder_key = quirk_holder.mind?.key
-		if(holder_key)
-			holder_client = GLOB.directory[ckey(holder_key)]
+	if(quirk_holder.client?.prefs)
+		selected_phobia = quirk_holder.client.prefs.phobia_type
 
 	// Если фобия не выбрана или невалидна — берём случайную из доступных в подсистеме
-	var/selected_phobia = SStraumas.pick_phobia_type(holder_client?.prefs?.phobia_type)
+	if(!selected_phobia || !(selected_phobia in SStraumas.phobia_types))
+		selected_phobia = pick(SStraumas.phobia_types)
 	// BLUEMOON EDIT END
 
 	// Создаем травму с выбранным типом фобии

@@ -53,12 +53,8 @@
 			else
 				surgery.status--
 	// BLUEMOON ADD START - перенесено сюда оповещение о неправильном инструменте для предотвращения лишнего дубля
-	// Было "!tool?.tool_behaviour == TOOL_CAUTERY": "!" связывает крепче "==", так что
-	// сравнивалось число со строкой и всё условие было вечно ложным - подсказка о неверном
-	// инструменте не печаталась НИ РАЗУ, хирург просто тыкал в молчащего пациента.
-	// Исключение для каутеров сохранено, оно тут не случайно.
-	if(!success && tool?.tool_behaviour != TOOL_CAUTERY) // каутеры for some reason вызывают ошибки, более красивого фикса не придумал
-		to_chat(user, "<span class='warning'>Для этого этапа нужен другой инструмент!</span>")
+	if(!success && !tool?.tool_behaviour == TOOL_CAUTERY) // каутеры for some reason вызывают ошибки, более красивого фикса не придумал
+		to_chat(user, "<span class='warning'>This step requires a different tool!</span>")
 	// BLUEMOON ADD END
 	return FALSE
 

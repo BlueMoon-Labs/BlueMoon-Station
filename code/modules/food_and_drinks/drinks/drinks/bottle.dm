@@ -489,7 +489,7 @@
 	foodtype = FRUIT| BREAKFAST
 
 /obj/item/reagent_containers/food/drinks/bottle/bio_carton
-	name = "small carton box"
+	name = "Small Carton Box"
 	desc = "A small biodegradable carton box made from plant biomatter."
 	icon_state = "eco_box"
 	item_state = "carton"
@@ -497,7 +497,6 @@
 	righthand_file = 'icons/mob/inhands/equipment/kitchen_righthand.dmi'
 	volume = 50
 	isGlass = FALSE
-	obj_flags = UNIQUE_RENAME
 
 /obj/item/reagent_containers/food/drinks/bottle/cream
 	name = "Milk Cream"

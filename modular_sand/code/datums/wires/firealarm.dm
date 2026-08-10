@@ -35,7 +35,7 @@
 			else if(!A.alarm_active)
 				A.alarm() //no wire_override here, it's just a pulse.
 		if(WIRE_FIRE_DETECT)
-			A.set_detecting(!A.detecting)
+			A.detecting = !A.detecting
 		if(WIRE_FIRE_TRIGGER)
 			A.alarm()
 			addtimer(CALLBACK(A, TYPE_PROC_REF(/obj/machinery/firealarm, reset), wire), 1000)
@@ -51,7 +51,10 @@
 				A.wire_override = TRUE
 				A.alarm()
 		if(WIRE_FIRE_DETECT)
-			A.set_detecting(mend)
+			if(mend)
+				A.detecting = TRUE
+			else
+				A.detecting = FALSE
 		if(WIRE_FIRE_TRIGGER)
 			if(mend)
 				A.button_wire_cut = FALSE

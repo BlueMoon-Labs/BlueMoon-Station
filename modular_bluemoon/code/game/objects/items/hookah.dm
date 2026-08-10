@@ -73,10 +73,7 @@
 
 /obj/item/clothing/mask/hookah_hose/equipped(mob/user, slot, initial)
 	. = ..()
-	// Перевесить шланг из рук в слот маски это второй equipped() без dropped() между ними,
-	// то есть повторная регистрация на том же мобе. Обработчик идемпотентный - просто
-	// перерисовывает луч, - так что переподписка законна, а без override она рантаймит
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_mob_move), override = TRUE)
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_mob_move))
 
 /obj/item/clothing/mask/hookah_hose/dropped(mob/user)
 	. = ..()

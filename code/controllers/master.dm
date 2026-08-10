@@ -155,10 +155,6 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(!random_seed)
 		#ifdef UNIT_TESTS
 		random_seed = 29051994
-		#elif defined(ATMOS_HEADLESS_BENCH)
-		// Headless atmos A/B runs must be reproducible. The runner may override
-		// this, but otherwise every run gets the same seed instead of rand().
-		random_seed = text2num(world.params["atmos-bench-seed"]) || 29051994
 		#else
 		random_seed = rand(1, 1e9)
 		#endif
@@ -620,15 +616,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			//сырой (неусреднённый) прогон для диагностики тик-спайков: усреднённый cost прячет одиночные фризы
 			if (SStick_spikes && queue_node != SStick_spikes)
-				//самый тяжёлый прогон тика, а не последний: последним всегда оказывается
-				//подсистема с приоритетом выше детектора, и поле не несло информации
-				if (SStick_spikes.heaviest_run_tick != world.time)
-					SStick_spikes.heaviest_run_tick = world.time
-					SStick_spikes.heaviest_run_subsystem_usage = 0
-					SStick_spikes.heaviest_run_subsystem_name = null
-				if (tick_usage >= SStick_spikes.heaviest_run_subsystem_usage)
-					SStick_spikes.heaviest_run_subsystem_usage = tick_usage
-					SStick_spikes.heaviest_run_subsystem_name = queue_node.name
+				SStick_spikes.last_run_subsystem_name = queue_node.name
+				SStick_spikes.last_run_subsystem_time = world.time
 				if (tick_usage >= SStick_spikes.heavy_run_threshold)
 					SStick_spikes.record_heavy_run(queue_node, tick_usage)
 

@@ -6,11 +6,6 @@
 /// Порт локального dev-сервера tgui (см. tgui/scripts/vite-dev.cjs). Должен совпадать с серверным.
 #define TGUI_DEV_SERVER_PORT 3000
 
-/// Тип скин-контрола по id окна: "BROWSER", "WINDOW" и так далее. Задан скин-файлом
-/// и в пределах одного подключения не меняется, а winexists - это round-trip до
-/// клиента на каждое открытие окна tgui. Спрашиваем один раз за сессию.
-/client/var/list/tgui_window_control_types = list()
-
 /datum/tgui_window
 	var/id
 	var/client/client
@@ -149,18 +144,7 @@
 	if(pooled && istype(client))
 		winset(client, id, "is-visible=0")
 	// Detect whether the control is a browser
-	if(!istype(client))
-		return
-	var/win_type = client.tgui_window_control_types[id]
-	if(!win_type)
-		win_type = tracked_winexists(client, id)
-		// winexists усыпил прок до ответа скина - клиент мог за это время отвалиться
-		if(!istype(client))
-			return
-		// Пустой ответ означает "контрола нет"; такое не кэшируем, чтобы окно,
-		// созданное позже, определилось правильно
-		if(length(win_type))
-			client.tgui_window_control_types[id] = win_type
+	var/win_type = winexists(client, id)
 	is_browser = win_type == "BROWSER"
 	if(CONFIG_GET(flag/emergency_tgui_logging))
 		var/primary_target = get_primary_output_target()
@@ -384,7 +368,8 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_window/proc/on_message(type, payload, href_list)
-	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
+		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
 	if(log_handshake)
 		log_tgui(client,
 			"[id]/on_message type=[type], status_before=[status], queue_len=[length(message_queue)]",

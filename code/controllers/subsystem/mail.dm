@@ -1,9 +1,6 @@
 SUBSYSTEM_DEF(mail)
 	name = "Mail"
-	// SS_NO_TICK_CHECK тут означал "выдай весь тик": раз в пять минут подсистема
-	// разом создавала пачку писем со всем их содержимым и стоила до 24мс одним
-	// куском (раунд 9827, спайк #47). Генерация теперь уступает тик по ходу дела.
-	flags = SS_BACKGROUND
+	flags = SS_BACKGROUND | SS_NO_TICK_CHECK
 	priority = FIRE_PRIORITY_MAIL
 	runlevels = RUNLEVEL_GAME
 	init_order = INIT_ORDER_MAIL
@@ -170,17 +167,12 @@ SUBSYSTEM_DEF(mail)
 /// Deleting mails from sealed_mails list, which lifetime was expired, calling their mail/disappear() proc
 /datum/controller/subsystem/mail/proc/delete_obsolete_mails()
 	var/deleted_mails_count = 0
-	//правка списка прямо в обходе по нему проматывает индекс: письмо, стоящее за
-	//удалённым, не проверялось вовсе и жило до следующего фаера, а то и дольше
-	var/list/expired = list()
 	for(var/obj/item/mail/sealed_mail in sealed_mails)
 		if(world.time > sealed_mails[sealed_mail])
-			expired += sealed_mail
-	for(var/obj/item/mail/sealed_mail as anything in expired)
-		sealed_mails[sealed_mail] = null
-		sealed_mails -= sealed_mail
-		INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
-		deleted_mails_count++
+			sealed_mails[sealed_mail] = null
+			sealed_mails -= sealed_mail
+			INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
+			deleted_mails_count++
 	if(deleted_mails_count)
 		log_subsystem(src, "Удалено [deleted_mails_count] старых неоткрытых писем")
 
@@ -195,7 +187,7 @@ SUBSYSTEM_DEF(mail)
 		if(human.stat == DEAD || !human.mind)
 			continue
 		// Отправляем письма только тем, у кого валидная работа, чтобы отфильтровать всяких ноунеймичей
-		if(!GLOB.all_jobs_lookup[human.mind.assigned_role])
+		if(!(human.mind.assigned_role in get_all_jobs()))
 			continue
 
 		mail_recipients += human
@@ -204,22 +196,9 @@ SUBSYSTEM_DEF(mail)
 		var/mob/living/carbon/human/recipient = pick_n_take(mail_recipients)
 		if(!recipient)
 			continue
-		//список получателей собран до CHECK_TICK: за время сна получатель мог умереть или
-		//лишиться разума, а create_mail_for_recipient сразу читает recipient.mind.assigned_role
-		if(!recipient.mind || recipient.stat == DEAD)
-			continue
 		if(main_storage.contents.len >= main_storage.storage_capacity)
 			break
 		create_mail_for_recipient(recipient, main_storage)
-		//письмо со всем содержимым - не бесплатная операция, а их тут пачка
-		CHECK_TICK
-		if(QDELETED(main_storage))
-			//ссылку обязательно обнулить: istype() на qdel-нутом датуме всё ещё TRUE, поэтому
-			//следующий fire прошёл бы мимо create_main_storage() и складывал письма в мертвеца,
-			//а накопленный mail_waiting навсегда запер бы генерацию на проверке ёмкости
-			main_storage = null
-			mail_waiting = 0
-			return
 
 	main_storage.update_icon()
 

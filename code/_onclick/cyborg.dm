@@ -98,11 +98,7 @@
 /mob/living/silicon/robot/CtrlClickOn(atom/A)
 	A.BorgCtrlClick(src)
 /mob/living/silicon/robot/AltClickOn(atom/A)
-	var/obj/item/pinpointer/syndicate_cyborg/PP = get_active_held_item()
-	if(istype(PP))
-		PP.switch_tracking_mode(src)
-		return
-	return ..()
+	A.BorgAltClick(src)
 
 /atom/proc/BorgCtrlShiftClick(mob/living/silicon/robot/user) //forward to human click if not overridden
 	CtrlShiftClick(user)

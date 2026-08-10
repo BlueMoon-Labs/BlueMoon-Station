@@ -595,8 +595,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ghost_others"] >> ghost_others
 	S["preferred_map"] >> preferred_map
 	S["ignoring"] >> ignoring
-	S["hearted_until"] >> hearted_until
-	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
@@ -924,14 +922,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, saveprefcooldown, PREF_SAVE_COOLDOWN)
 	if(pref_queue)
 		deltimer(pref_queue)
-	// Обнуляем явно: сработавший one-shot оставлял непустой id, и следующая
-	// постановка в очередь сверялась бы с протухшим крайним сроком.
-	pref_queue = null
-	pref_queue_deadline = 0
-	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
-	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
-	// безымянный "внешний столл", поэтому замеряем
-	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(path)
 	if(!S)
 		return FALSE
@@ -980,7 +970,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ghost_others"], ghost_others)
 	WRITE_FILE(S["preferred_map"], preferred_map)
 	WRITE_FILE(S["ignoring"], ignoring)
-	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
@@ -1083,20 +1072,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved preferences!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (запись)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving preferences in [save_in * 0.1] second\s."))
 	if(pref_queue)
-		// Крайний срок уже наступил: пусть заряженный таймер отработает, иначе
-		// поток правок чаще кулдауна переносит запись бесконечно.
-		if(world.time >= pref_queue_deadline)
-			return
 		deltimer(pref_queue)
-	else
-		pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	pref_queue = addtimer(CALLBACK(src, PROC_REF(save_preferences), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 /datum/preferences/proc/load_character(slot, bypass_cooldown = FALSE, savefile/provided)
@@ -1157,9 +1139,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "arachnid_legs" = "Plain",
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
-	"mam_body_markings" = "Plain",
-	"allow_emissives" = FALSE,
-	"emissive_parts" = list(),
+"mam_body_markings" = "Plain",
+"emissive_eyes" = FALSE,
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
@@ -1399,7 +1380,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_mcolor3"] >> features["mcolor3"]
 	// note safe json decode will runtime the first time it migrates but this is fine and it solves itself don't worry about it if you see it error
 	features["mam_body_markings"] = safe_json_decode(S["feature_mam_body_markings"])
-	features["emissive_parts"] = safe_json_decode(S["feature_emissive_parts"])
 	S["feature_mam_tail"] >> features["mam_tail"]
 	S["feature_mam_ears"] >> features["mam_ears"]
 	S["feature_mam_tail_animated"] >> features["mam_tail_animated"]
@@ -1664,12 +1644,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
-	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
-	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
-	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
-	//навсегда, потому что следующий же save_character писал null на диск
-	if(SStraumas)
-		phobia_type = SStraumas.sanitize_phobia_type(phobia_type)
+	//у if-а не было тела, и санитайзер молча ничего не делал: фобия из старого
+	//сейва, которой больше нет в списке SStraumas, доезжала до раунда как есть
+	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
+		phobia_type = null //null = "случайная", ровно как в меню выбора
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 
@@ -1703,14 +1681,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["arachnid_legs"] = sanitize_inlist(features["arachnid_legs"], GLOB.arachnid_legs_list, "Plain")
 	features["arachnid_spinneret"] = sanitize_inlist(features["arachnid_spinneret"], GLOB.arachnid_spinneret_list, "Plain")
 	features["arachnid_mandibles"] = sanitize_inlist(features["arachnid_mandibles"], GLOB.arachnid_mandibles_list, "Plain")
-	if(!islist(features["emissive_parts"]))
-		features["emissive_parts"] = list()
-	else
-		var/list/filtered_emissive_parts = list()
-		for(var/part in features["emissive_parts"])
-			if(part in GLOB.emissive_parts_list)
-				filtered_emissive_parts += part
-		features["emissive_parts"] = filtered_emissive_parts
 
 	var/static/size_min
 	if(!size_min)
@@ -1979,9 +1949,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
 	if(char_queue)
 		deltimer(char_queue)
-	char_queue = null
-	char_queue_deadline = 0
-	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
 		return FALSE
@@ -2271,19 +2238,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved character slot!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (запись)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving character in [save_in * 0.1] second\s."))
 	if(char_queue)
-		// См. queue_save_pref: перенос отложенной записи ограничен крайним сроком.
-		if(world.time >= char_queue_deadline)
-			return
 		deltimer(char_queue)
-	else
-		char_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	char_queue = addtimer(CALLBACK(src, PROC_REF(save_character), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 #undef SAVEFILE_VERSION_MAX

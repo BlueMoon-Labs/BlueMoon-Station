@@ -89,12 +89,8 @@
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
 	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
-	if(!Storage)
-		return
-	//вещи лежат в contents самого костюма, а окно к ним даёт только компонент:
-	//снести компонент молча = запереть содержимое в МОДе навсегда
-	Storage.do_quick_empty(mod.drop_location())
-	qdel(Storage)
+	if(Storage)
+		Storage.Destroy()
 
 
 
@@ -133,14 +129,11 @@
 	cooldown_time = 0.5 SECONDS
 	overlay_state_inactive = "module_jetpack"
 	overlay_state_active = "module_jetpack_on"
-	/// Гасить ли дрейф. Включено по умолчанию и переживает выключение модуля - прежний сброс
-	/// в FALSE на каждой деактивации и был той "сбрасывающейся стабилизацией" из баг-репорта.
-	var/stabilizers = TRUE
+	/// Do we stop the wearer from gliding in space.
+	var/stabilizers = FALSE
 	/// Do we give the wearer a speed buff.
 	var/full_speed = FALSE
 	var/datum/effect_system/trail_follow/ion/ion_trail
-	/// Не больше одного списания за тик, см. одноимённое поле у баллонного джетпака.
-	var/last_thrust_time = -1
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
 
 /obj/item/mod/module/jetpack/Initialize(mapload)
@@ -156,51 +149,24 @@
 	QDEL_NULL(ion_trail)
 	return ..()
 
-/// Потолок, до которого этот двигатель разгоняет свободный полёт. Вровень с шаговой скоростью носителя в этом же костюме.
-/obj/item/mod/module/jetpack/proc/thrust_cap()
-	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
-
 /obj/item/mod/module/jetpack/on_activation()
 	. = ..()
 	if(!.)
 		return
 	ion_trail.start()
-	RegisterSignal(mod.wearer, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death), override = TRUE)
-	mod.wearer.register_thrust_source(src, cap = thrust_cap())
+	RegisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
 	if(full_speed)
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	else
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	mod.wearer.update_flight_alert()
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
-	if(!.)
-		return
+	stabilizers = FALSE
 	ion_trail.stop()
-	if(!mod?.wearer)
-		return
-	UnregisterSignal(mod.wearer, COMSIG_LIVING_DEATH)
-	mod.wearer.unregister_thrust_source(src)
+	UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	mod.wearer.update_flight_alert()
-
-/**
- * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только
- * потом чистит `wearer`. Гасим двигатель здесь, пока ещё известно, с кого снимать тягу и модификатор
- * скорости - иначе они остались бы висеть на бывшем носителе навсегда.
- */
-/obj/item/mod/module/jetpack/on_unequip()
-	if(active)
-		on_deactivation()
-
-/// Мёртвый не тянет рычаги. Дрейф остаётся - тело летит по инерции.
-/obj/item/mod/module/jetpack/proc/on_wearer_death(mob/living/source)
-	SIGNAL_HANDLER
-	if(!active)
-		return
-	on_deactivation()
 
 /obj/item/mod/module/jetpack/get_configuration()
 	. = ..()
@@ -209,42 +175,19 @@
 /obj/item/mod/module/jetpack/configure_edit(key, value)
 	switch(key)
 		if("stabilizers")
-			set_stabilizers(text2num(value), mod?.wearer)
+			stabilizers = text2num(value)
 
-/// Единая точка переключения режима: её же дёргает клик по алерту полёта.
-/obj/item/mod/module/jetpack/proc/set_stabilizers(new_state, mob/user)
-	if(stabilizers == new_state)
-		return FALSE
-	stabilizers = new_state
-	if(user)
-		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
-	// Алерт висит на носителе, а не на том, кто щёлкнул тумблером: режим мог поменять кто угодно
-	// через конфиг-меню костюма, и надпись обязана догнать состояние в любом случае.
-	mod?.wearer?.update_flight_alert()
-	return TRUE
+/obj/item/mod/module/jetpack/proc/move_react(mob/user)
+	allow_thrust()
 
-/**
- * Спрашивает у двигателя, есть ли заряд, и по желанию списывает за него.
- *
- * Раньше расход шёл и на каждый `Moved()` (включая шаги наката), и из `Process_Spacemove` -
- * то есть по два-три списания за шаг, и всё это на скорости, которая сама была втрое завышена.
- * Отсюда и жалоба "быстро съела батарейку".
- */
-/obj/item/mod/module/jetpack/proc/allow_thrust(consume = TRUE)
+/obj/item/mod/module/jetpack/proc/allow_thrust(use_fuel = TRUE)
 	if(!active)
 		return FALSE
-	if(mod?.wearer?.stat != CONSCIOUS)
-		return FALSE
-	if(!consume || last_thrust_time == world.time)
+	if(!use_fuel)
 		return check_power(use_power_cost)
 	if(!drain_power(use_power_cost))
 		return FALSE
-	last_thrust_time = world.time
 	return TRUE
-
-/obj/item/mod/module/jetpack/examine(mob/user)
-	. = ..()
-	. += "<span class='notice'>Режим: [stabilizers ? "стабилизация - гасит дрейф, заряд тратится на каждый шаг" : "свободный полёт - разгон до крейсерской скорости, дальше накат бесплатно"].</span>"
 
 /obj/item/mod/module/jetpack/advanced
 	name = "MOD advanced ion jetpack module"

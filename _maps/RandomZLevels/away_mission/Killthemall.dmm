@@ -278,7 +278,7 @@
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "eL" = (
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/spaceship,
 /area/space)
 "eP" = (
 /obj/structure/destructible/cult/pylon{
@@ -327,7 +327,13 @@
 /area/awaymission/Killthemall/Level)
 "ft" = (
 /obj/item/clothing/suit/straight_jacket,
-/mob/living/simple_animal/hostile/gigachad_inteq/shooter/sniper,
+/mob/living/simple_animal/hostile/gigachad_inteq{
+	health = 480;
+	maxHealth = 480;
+	inertia_move_delay = 0;
+	faction = list("shiz");
+	stop_automated_movement = 1
+	},
 /turf/open/floor/padded,
 /area/awaymission/Killthemall/Level)
 "fv" = (
@@ -390,8 +396,7 @@
 	},
 /area/awaymission/Killthemall/Boss)
 "gb" = (
-/obj/effect/turf_decal/delivery/blue,
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun{
+/mob/living/simple_animal/hostile/syndicate/melee{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -492,7 +497,7 @@
 /turf/open/indestructible,
 /area/awaymission/Killthemall/start)
 "hU" = (
-/mob/living/simple_animal/hostile/inteq/melee/space/stormtrooper{
+/mob/living/simple_animal/hostile/syndicate/melee/space/stormtrooper{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -573,7 +578,7 @@
 /turf/closed/wall/mineral/cult,
 /area/awaymission/Killthemall/Level)
 "jN" = (
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq{
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot{
 	icon_dead = "russianmelee_dead";
 	icon_living = "russianofficer";
 	icon_state = "russianofficer";
@@ -697,7 +702,7 @@
 	},
 /area/awaymission/Killthemall/start)
 "mk" = (
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/spaceship,
 /area/awaymission/Killthemall/Level)
 "mp" = (
 /mob/living/simple_animal/hostile/construct/builder/hostile{
@@ -784,7 +789,7 @@
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "nP" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -795,8 +800,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "nV" = (
-/mob/living/simple_animal/hostile/syndicate/space,
-/turf/open/floor/mineral/plastitanium,
+/obj/structure/spacevine,
+/obj/structure/spacevine,
+/mob/living/simple_animal/hostile/venus_human_trap{
+	stop_automated_movement = 1;
+	stop_automated_movement_when_pulled = 1;
+	turns_per_move = 0
+	},
+/turf/open/misc/grass,
 /area/awaymission/Killthemall/Level)
 "nX" = (
 /obj/structure/destructible/cult/pylon,
@@ -1393,7 +1404,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "xg" = (
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun{
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -1535,7 +1546,7 @@
 /area/awaymission/Killthemall/Level)
 "zk" = (
 /obj/machinery/status_display/syndie,
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/spaceship,
 /area/awaymission/Killthemall/Level)
 "zl" = (
 /obj/effect/decal/cleanable/blood,
@@ -2190,6 +2201,17 @@
 	},
 /turf/open/floor/fakespace,
 /area/awaymission/Killthemall/Level)
+"JN" = (
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper/anthro{
+	inertia_move_delay = 0;
+	stop_automated_movement = 1;
+	stop_automated_movement_when_pulled = 1;
+	turns_per_move = 0
+	},
+/obj/effect/turf_decal/delivery/blue,
+/obj/effect/decal/cleanable/wrapping,
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/Killthemall/Level)
 "JQ" = (
 /obj/structure/flora/tree/jungle{
 	layer = 4
@@ -2479,7 +2501,7 @@
 /area/awaymission/Killthemall/Level)
 "Op" = (
 /obj/structure/salvage/protolathe,
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/spaceship,
 /area/awaymission/Killthemall/Level)
 "Ou" = (
 /obj/effect/decal/hammerandsickle,
@@ -2590,7 +2612,7 @@
 /area/awaymission/Killthemall/Level)
 "PJ" = (
 /obj/machinery/computer/security/telescreen/entertainment,
-/turf/closed/wall/mineral/titanium,
+/turf/closed/wall/mineral/titanium/spaceship,
 /area/awaymission/Killthemall/Level)
 "PM" = (
 /obj/structure/chair/office,
@@ -5597,7 +5619,7 @@ nM
 Rq
 nM
 yd
-nM
+VC
 nM
 yt
 sU
@@ -5767,7 +5789,7 @@ Kt
 Kt
 Kt
 Kt
-nV
+Kt
 zC
 LV
 Kt
@@ -6282,7 +6304,7 @@ Kt
 Kt
 Kt
 Kt
-Kt
+gb
 Kt
 Kt
 Pi
@@ -6461,13 +6483,13 @@ lK
 lK
 lK
 lK
+oZ
 lK
 lK
 lK
 lK
 lK
-lK
-lK
+oZ
 lK
 lK
 lm
@@ -6543,7 +6565,7 @@ Kt
 Kt
 Kt
 zC
-gb
+LV
 Kt
 Kt
 TG
@@ -6800,7 +6822,7 @@ Kt
 Kt
 Kt
 zC
-WK
+JN
 Kt
 Kt
 TG
@@ -6976,7 +6998,7 @@ SX
 Dc
 gm
 Kt
-Kt
+Dc
 Kt
 Kt
 gm
@@ -7426,7 +7448,7 @@ TH
 TH
 TH
 TH
-TH
+mp
 TH
 in
 in
@@ -7712,11 +7734,11 @@ Gm
 Mf
 Mf
 Mf
+Dl
 Mf
 Mf
 Mf
-Mf
-Mf
+Dl
 Mf
 Mf
 Mf
@@ -8517,7 +8539,7 @@ lK
 lK
 lK
 lK
-lK
+oZ
 lK
 lK
 oZ
@@ -18543,7 +18565,7 @@ Zr
 Zr
 Zr
 Zr
-Zr
+EQ
 Zr
 Zr
 ue
@@ -19569,7 +19591,7 @@ ON
 Zr
 Zr
 Zr
-Zr
+fq
 Zr
 Zr
 Zr
@@ -19825,9 +19847,9 @@ ON
 ON
 ON
 Zr
+Qc
 Zr
-Zr
-Zr
+EQ
 Zr
 Zr
 Zr
@@ -20305,7 +20327,7 @@ SM
 Pe
 Uj
 uS
-qV
+nV
 HG
 ol
 Bi
@@ -22518,7 +22540,7 @@ fv
 fv
 fv
 fv
-fv
+aZ
 fv
 fv
 fv
@@ -24313,7 +24335,7 @@ fv
 Es
 fv
 fv
-fv
+aZ
 fv
 fv
 fv

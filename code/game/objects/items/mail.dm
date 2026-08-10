@@ -276,7 +276,7 @@
 		if(human.stat == DEAD || !human.mind)
 			continue
 		// Skip wizards, nuke ops, cyborgs; Centcom does not send them mail
-		if(!GLOB.all_jobs_lookup[human.mind.assigned_role])
+		if(!(human.mind.assigned_role in get_all_jobs()))
 			continue
 
 		mail_recipients += human.mind

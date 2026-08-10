@@ -34,7 +34,7 @@
 	for(var/mob/living/carbon/human/crew_member in GLOB.player_list)
 		if(crew_member.stat == DEAD || !crew_member.mind)
 			continue
-		if(!GLOB.all_jobs_lookup[crew_member.mind.assigned_role])
+		if(!(crew_member.mind.assigned_role in get_all_jobs()))
 			continue
 		candidates += crew_member
 

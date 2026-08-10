@@ -212,7 +212,8 @@
 	if(!href_list["tgui"])
 		return FALSE
 	var/type = href_list["type"]
-	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
+		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
 	if(log_handshake)
 		log_tgui(usr,
 			"type=[type], window_id=[href_list["window_id"]], has_payload=[!isnull(href_list["payload"])]",

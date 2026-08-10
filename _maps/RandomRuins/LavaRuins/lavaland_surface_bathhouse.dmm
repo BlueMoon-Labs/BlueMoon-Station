@@ -9,7 +9,7 @@
 /obj/machinery/shower{
 	pixel_y = 16
 	},
-/mob/living/simple_animal/hostile/gigachad_inteq/shooter/sniper,
+/obj/structure/curtain,
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/powered/bathhouse)
 "e" = (
@@ -62,16 +62,6 @@
 /obj/item/bedsheet,
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/bathhouse)
-"u" = (
-/obj/structure/curtain,
-/turf/open/floor/plasteel/white,
-/area/ruin/lavaland/powered/bathhouse)
-"I" = (
-/obj/machinery/shower{
-	pixel_y = 16
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/lavaland/powered/bathhouse)
 
 (1,1,1) = {"
 b
@@ -86,7 +76,7 @@ a
 (2,1,1) = {"
 b
 c
-u
+g
 g
 b
 j
@@ -96,7 +86,7 @@ j
 (3,1,1) = {"
 b
 b
-b
+g
 g
 i
 k
@@ -105,8 +95,8 @@ j
 "}
 (4,1,1) = {"
 b
-I
-u
+c
+g
 g
 b
 l
@@ -116,7 +106,7 @@ j
 (5,1,1) = {"
 b
 b
-b
+g
 g
 b
 m
@@ -125,8 +115,8 @@ j
 "}
 (6,1,1) = {"
 b
-I
-u
+c
+g
 g
 b
 j
@@ -136,7 +126,7 @@ j
 (7,1,1) = {"
 b
 b
-b
+g
 h
 b
 n

@@ -7,9 +7,6 @@
 	id = GAS_HOOKAH_VAPOR
 	specific_heat = 40
 	name = "Hookah Steam"
-	description = "Ароматный пар от кальяна. Ведёт себя как водяной, но пол под ним не мокнет и постепенно развеивается сам. Никакой практической ценности в атмосе не имеет и ничем не опасен."
-	tier = GAS_TIER_RAW
-	price = 0
 	gas_overlay = "water_vapor"
 	moles_visible = 0.01
 
@@ -19,21 +16,11 @@
 // Постепенное развеивание
 /datum/gas_reaction/hookah_vapor_dissipation
 	priority = 0
-	name = "Развеивание кальянного пара"
+	name = "Hookah Vapor Dissipation"
 	id = "hookah_dissipation"
 
 /datum/gas_reaction/hookah_vapor_dissipation/init_reqs()
 	min_requirements = list(GAS_HOOKAH_VAPOR = MINIMUM_MOLE_COUNT)
-
-// Карточка для внутриигрового справочника. Без неё реакция приезжает в него
-// безымянной строкой без объяснений, а справочник обязан описывать всё, что в
-// нём показывается.
-/datum/gas_reaction/hookah_vapor_dissipation/init_factors()
-	desc = "Кальянный пар развеивается сам, по десятой доле за раз. Ничего не производит и ни на что не влияет - нужен только чтобы пар не копился в комнате навсегда."
-	factor = list(
-		/datum/gas/hookah_vapor = "Развеивается по 10% от того, что есть, но не меньше минимальной доли",
-		"Location" = "Идёт только на открытом турфе",
-	)
 
 /datum/gas_reaction/hookah_vapor_dissipation/react(datum/gas_mixture/air, datum/holder)
 	var/turf/open/location = holder

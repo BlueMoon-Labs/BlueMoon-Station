@@ -125,9 +125,6 @@
 	attack_verb = list("drilled", "screwed", "jabbed")
 	toolspeed = 0.25
 
-/obj/item/wrench/power/get_belt_overlay()
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
-
 /obj/item/wrench/power/attack_self(mob/user)
 	playsound(get_turf(user),'sound/items/change_drill.ogg',50,1)
 	var/obj/item/wirecutters/power/s_drill = new /obj/item/screwdriver/power(drop_location())
@@ -186,16 +183,17 @@
 	name = "advanced wrench"
 	desc = "A wrench that uses the same magnetic technology that abductor tools use, but slightly more ineffeciently."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "adv_wrench"
+	icon_state = "wrench"
 	usesound = 'sound/effects/empulse.ogg'
 	toolspeed = 0.2
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE = "adv_wrench_black",
+			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
+			RESKIN_ICON_STATE = "wrench_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "adv_wrench",
+			RESKIN_ICON_STATE = "wrench",
 		)
 	)
 // BLUEMOON ADD END

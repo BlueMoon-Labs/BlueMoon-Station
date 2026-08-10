@@ -146,11 +146,8 @@
 		add_objective(new/datum/objective/escape)
 
 /datum/team/brother_team/proc/forge_single_objective()
-	var/tier = bm_traitor_violence_tier()
-	if(prob(50) && tier != BM_TRAITOR_VIOLENCE_NONE)
-		if(tier == BM_TRAITOR_VIOLENCE_SOFT)
-			add_objective(new/datum/objective/assassinate/once, TRUE)
-		else if(LAZYLEN(active_ais()) && prob(100/GLOB.joined_player_list.len))
+	if(prob(50))
+		if(LAZYLEN(active_ais()) && prob(100/GLOB.joined_player_list.len))
 			add_objective(new/datum/objective/destroy, TRUE)
 		else
 			add_objective(new/datum/objective/assassinate, TRUE)

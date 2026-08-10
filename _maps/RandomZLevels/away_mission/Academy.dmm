@@ -44,6 +44,7 @@
 /obj/structure/chair/office/light{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/wizard,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/academy/headmaster)
 "aj" = (
@@ -2998,6 +2999,10 @@
 /obj/item/stock_parts/manipulator,
 /turf/open/floor/glass/reinforced,
 /area/awaymission/academy/academyaft)
+"iC" = (
+/mob/living/simple_animal/hostile/wizard,
+/turf/open/floor/carpet/purple,
+/area/awaymission/academy/headmaster)
 "iD" = (
 /obj/structure/toilet{
 	dir = 4
@@ -3840,7 +3845,7 @@
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kQ" = (
-/mob/living/simple_animal/hostile/inteq,
+/mob/living/simple_animal/hostile/syndicate,
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kR" = (
@@ -4526,6 +4531,13 @@
 /obj/machinery/vending/drugs,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
+"nT" = (
+/mob/living/simple_animal/hostile/wizard,
+/obj/structure/chair/wood/wings{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/awaymission/academy/headmaster)
 "nU" = (
 /obj/machinery/door/window{
 	dir = 1
@@ -7547,6 +7559,13 @@
 /obj/structure/closet/crate/coffin/metalcoffin,
 /turf/open/floor/plating,
 /area/awaymission/academy/academyengine)
+"NN" = (
+/obj/structure/chair/wood/wings{
+	dir = 8
+	},
+/mob/living/simple_animal/hostile/wizard,
+/turf/open/floor/wood,
+/area/awaymission/academy/headmaster)
 "NO" = (
 /obj/structure/table/wood,
 /obj/item/paper_bin,
@@ -8052,6 +8071,10 @@
 /obj/machinery/deepfryer,
 /turf/open/floor/plasteel/white,
 /area/awaymission/academy/classrooms)
+"RB" = (
+/mob/living/simple_animal/hostile/wizard,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/academy/headmaster)
 "RC" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/condiment/soymilk,
@@ -12298,7 +12321,7 @@ mN
 mN
 nm
 mN
-mN
+nm
 mN
 mD
 aG
@@ -14451,7 +14474,7 @@ kz
 el
 el
 el
-dc
+xw
 dc
 zW
 bs
@@ -15606,7 +15629,7 @@ AS
 ZK
 bB
 ZI
-bB
+ox
 cO
 cZ
 bz
@@ -17408,7 +17431,7 @@ aX
 Ts
 LJ
 aF
-LJ
+NN
 aW
 ab
 GO
@@ -17621,7 +17644,7 @@ kn
 CO
 uL
 kf
-kf
+mG
 Un
 jS
 aa
@@ -17752,7 +17775,7 @@ Ao
 ky
 mF
 kf
-kf
+mG
 jS
 aa
 aa
@@ -17817,7 +17840,7 @@ yh
 yh
 yh
 yh
-yh
+iC
 yh
 yh
 yh
@@ -17847,7 +17870,7 @@ AE
 gF
 fF
 fF
-fF
+kC
 fF
 fF
 fF
@@ -18202,7 +18225,7 @@ as
 cL
 pT
 oq
-ZU
+nT
 yh
 yh
 an
@@ -18982,7 +19005,7 @@ ab
 UI
 ab
 bO
-cd
+RB
 cl
 cd
 cl
@@ -19927,7 +19950,7 @@ Bq
 fF
 uX
 fF
-fF
+kC
 ho
 kC
 ho
@@ -20546,7 +20569,7 @@ VI
 bT
 Rg
 bT
-bT
+Rg
 Ub
 bs
 zr

@@ -32,7 +32,6 @@
 	maxHealth = 400
 	health = 400
 	icon_state = "Queen Walking"
-	var/eggsac = TRUE
 	var/datum/action/maid/maidify_action
 	var/obj/effect/proc_holder/alien/royal/queen/promote/promote
 
@@ -70,8 +69,7 @@
 	internal_organs += new /obj/item/organ/alien/resinspinner
 	internal_organs += new /obj/item/organ/alien/acid
 	internal_organs += new /obj/item/organ/alien/neurotoxin
-	if(eggsac)
-		internal_organs += new /obj/item/organ/alien/eggsac
+	internal_organs += new /obj/item/organ/alien/eggsac
 	..()
 
 //Queen verbs

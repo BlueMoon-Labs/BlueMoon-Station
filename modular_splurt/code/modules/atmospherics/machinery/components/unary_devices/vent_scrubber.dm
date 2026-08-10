@@ -9,10 +9,6 @@
 	on = TRUE
 	update_appearance()
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/hilbertshotel/layer4
-	piping_layer = 4
-	icon_state = "scrub_map-4"
-
-/obj/machinery/atmospherics/components/unary/vent_scrubber/hilbertshotel/layer5
-	piping_layer = 5
-	icon_state = "scrub_map-5"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/hilbertshotel/layer3
+	piping_layer = 3
+	icon_state = "scrub_map-3"

@@ -17,15 +17,6 @@
 /datum/station_trait/distant_supply_lines/on_round_start()
 	SSeconomy.pack_price_modifier *= 3
 
-/datum/station_trait/cramped_escape_pods
-	name = "Cramped Escape Pods"
-	trait_type = STATION_TRAIT_NEGATIVE
-	weight = 5
-	show_in_report = TRUE
-	report_message = "Due to budget cuts, we have downsized your escape pods."
-	trait_to_give = STATION_TRAIT_SMALLER_PODS
-	blacklist = list(/datum/station_trait/luxury_escape_pods)
-
 /datum/station_trait/late_arrivals
 	name = "Late Arrivals"
 	trait_type = STATION_TRAIT_NEGATIVE
@@ -67,13 +58,6 @@
 	SIGNAL_HANDLER
 
 	if(prob(15))
-		return
-	// Силиконовые должности выдаются через Robotize() прямо внутри EquipRank, а сигнал
-	// прилетает уже на исходного человека - он к этому моменту qdel'нут, dna и held_items
-	// обнулены, и can_equip падает с "Cannot read null.species".
-	if(job?.departments & DEPARTMENT_BITFLAG_SILICON)
-		return
-	if(QDELETED(spawned_mob))
 		return
 	if(!iscarbon(spawned_mob)) // don't want silicons or similar to be counted here
 		return

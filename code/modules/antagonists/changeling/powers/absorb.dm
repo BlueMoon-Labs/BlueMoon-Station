@@ -65,10 +65,7 @@
 
 	if(target.mind && user.mind)//if the victim and user have minds
 //ambition start
-		// Получателя надо передавать явно: без него show_memory подставляет current,
-		// то есть окно с воспоминаниями открывалось у ЖЕРТВЫ, а генокраду уходил
-		// пустой <i></i>. window = FALSE печатает записи в чат тому, кто поглощает.
-		target.mind.show_memory(user, window = FALSE) //I can read your mind, kekeke. Output all their notes.
+		to_chat(user, "<i>[target.mind.show_memory()]</i>") //I can read your mind, kekeke. Output all their notes.
 //ambition end
 
 		//Some of target's recent speech, so the changeling can attempt to imitate them better.

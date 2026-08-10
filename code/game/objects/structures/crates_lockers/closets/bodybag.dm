@@ -159,7 +159,6 @@
 		ADD_TRAIT(AM, TRAIT_RESISTLOWPRESSURE, REF(src))
 		ADD_TRAIT(AM, TRAIT_RESISTHEAT, REF(src))
 		ADD_TRAIT(AM, TRAIT_RESISTCOLD, REF(src))
-		ADD_TRAIT(AM, TRAIT_NOBREATH, REF(src))
 
 /obj/structure/closet/body_bag/containment/prisoner/Exited(atom/movable/AM, atom/newLoc)
 	. = ..()

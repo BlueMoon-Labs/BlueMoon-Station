@@ -458,7 +458,7 @@
 	name = "advanced welding tool"
 	desc = "A modern welding tool combined with an alien welding tool, it almost never runs out of fuel and works nearly as fast."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "adv_welder"
+	icon_state = "welder"
 	item_state = "alienwelder"
 	self_fueling = TRUE
 	can_off_process = TRUE
@@ -469,10 +469,10 @@
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE = "adv_welder_black",
+			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "adv_welder",
+			RESKIN_ICON_STATE = "welder",
 		)
 	)
 // BLUEMOON ADD END
