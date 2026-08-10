@@ -72,6 +72,15 @@
 #define ATMOS_BENCH_BLAST_X 70
 #define ATMOS_BENCH_BLAST_Y 155
 #define ATMOS_BENCH_BLAST_Z 6
+/// Первая фаза той же реконструкции: большой взрыв 09:42 в Command Hallway z7
+/// (size 1/4/16/0) - пробоина станции на поверхность, 15 минут насоса до
+/// медбейного хлопка. Именно он держит живой гигантскую excited-группу.
+#define ATMOS_BENCH_BLAST_FIRST_X 138
+#define ATMOS_BENCH_BLAST_FIRST_Y 54
+#define ATMOS_BENCH_BLAST_FIRST_Z 7
+/// Задержка второй фазы (циклов SSair после первой): на проде прошло ~1800
+/// фаеров; для бенча хватает окна, в котором группа успевает вырасти.
+#define ATMOS_BENCH_BLAST_SECOND_DELAY 300
 /// Side of the square hull breach punched into the middle of the station.
 #define ATMOS_BENCH_STATION_BREACH_SIDE 5
 
@@ -195,6 +204,8 @@
 		if("icemoon-blast")
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
+				atmos_headless_bench_fire_icemoon_first_blast()
+			if(cycle == headless_bench_breach_cycle + ATMOS_BENCH_BLAST_SECOND_DELAY)
 				atmos_headless_bench_fire_icemoon_blast()
 
 /// Writes the standard scenario_ready event record.
@@ -1063,7 +1074,23 @@
 		"blast_area" = blast_area ? "[blast_area.type]" : null,
 	))
 
-/// Ровно взрыв из admin-лога 9929: size (0, 0, 2, 3) = dev/heavy/light/flame.
+/// Фаза 1, взрыв 09:42 из admin-лога 9929: size (1, 4, 16, 0) в командном
+/// коридоре z7 - настоящая пробоина интерьера на планетарную поверхность.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fire_icemoon_first_blast()
+	var/turf/blast = locate(ATMOS_BENCH_BLAST_FIRST_X, ATMOS_BENCH_BLAST_FIRST_Y, ATMOS_BENCH_BLAST_FIRST_Z)
+	if(!blast)
+		return
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "icemoon_first_blast",
+		"cyc" = headless_bench_cycles,
+		"at" = "[blast.x],[blast.y],[blast.z]",
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(explosion), blast, 1, 4, 16, 0, TRUE, FALSE, 0)
+
+/// Фаза 2, взрыв 09:57: size (0, 0, 2, 3) = dev/heavy/light/flame.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_fire_icemoon_blast()
 	var/turf/blast = headless_bench_blast_turf
 	if(!blast)
@@ -1122,5 +1149,9 @@
 #undef ATMOS_BENCH_BLAST_X
 #undef ATMOS_BENCH_BLAST_Y
 #undef ATMOS_BENCH_BLAST_Z
+#undef ATMOS_BENCH_BLAST_FIRST_X
+#undef ATMOS_BENCH_BLAST_FIRST_Y
+#undef ATMOS_BENCH_BLAST_FIRST_Z
+#undef ATMOS_BENCH_BLAST_SECOND_DELAY
 
 #endif // ifdef ATMOS_HEADLESS_BENCH
