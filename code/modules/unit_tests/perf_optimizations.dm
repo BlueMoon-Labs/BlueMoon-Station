@@ -1185,22 +1185,18 @@
 	bot.emagged = 2
 	bot.auto_patrol = FALSE
 	bot.on = TRUE
-	for(var/direction in GLOB.alldirs)
-		allocate(/obj/structure/window/reinforced/fulltile, get_step(bot, direction))
-	var/turf/first_target = locate(bot_turf.x + 2, bot_turf.y, bot_turf.z)
+	var/turf/first_target = locate(1, 1, bot_turf.z)
+	if(get_dist(bot_turf, first_target) <= BOT_TARGET_PATH_LIMIT)
+		first_target = locate(world.maxx, world.maxy, bot_turf.z)
 	var/turf/second_target = locate(bot_turf.x - 2, bot_turf.y, bot_turf.z)
+	TEST_ASSERT(get_dist(bot, first_target) > BOT_TARGET_PATH_LIMIT, "Sanity: the first floorbot target must exceed the JPS distance limit")
 	bot.target = first_target
 
 	var/jps_before = GLOB.ai_metrics.jps_requests
 	bot.handle_automated_action()
 	var/jps_after_failure = GLOB.ai_metrics.jps_requests
-	var/ring_windows = 0
-	for(var/direction in GLOB.alldirs)
-		var/obj/structure/window/ring_window = locate(/obj/structure/window) in get_step(bot, direction)
-		if(ring_window?.density)
-			ring_windows++
-	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed floorbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8)")
-	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed floorbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8, jps_delta=[jps_after_failure - jps_before])")
+	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The out-of-range floorbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)])")
+	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed floorbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], jps_delta=[jps_after_failure - jps_before])")
 
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another JPS request")
