@@ -139,6 +139,12 @@
 				/obj/item/gun/ballistic/shotgun/automatic/combat = 2,
 				/obj/item/gun/ballistic/shotgun/m870 = 2,
 				/obj/item/gun/ballistic/shotgun/spas = 2,
+				/obj/item/gun/ballistic/shotgun/riot = 2,
+				/obj/item/gun/ballistic/shotgun/riot/syndicate = 2,
+				/obj/item/gun/ballistic/shotgun/shorty = 3,
+				/obj/item/gun/ballistic/shotgun/hunting = 2,
+				/obj/item/gun/ballistic/shotgun/leveraction = 2,
+				/obj/item/gun/ballistic/shotgun/brush2 = 2,
 				/obj/item/ammo_box/magazine/m12g = 5,
 				/obj/item/ammo_box/shotgun/loaded/buckshot = 6,
 			)

@@ -201,7 +201,7 @@
 	name = "Casings Cleanup Button"
 	desc = "Удаляет все гильзы из тира при нажатии. Работает только в зоне тира."
 	skin = "doorctrl"
-	var/cooldown_time = 60 // 1 minute in seconds
+	var/cooldown_time = 1 MINUTES
 	var/next_use_time = 0
 
 /obj/machinery/button/door/casings_cleanup/on_attack_hand(mob/user)
@@ -216,7 +216,7 @@
 		return
 
 	if(world.time < next_use_time)
-		var/time_left = (next_use_time - world.time) / 10 // Convert to seconds
+		var/time_left = (next_use_time - world.time) / 10
 		to_chat(user, "<span class='warning'>Кнопка перезаряжается! Осталось [round(time_left)] секунд.</span>")
 		flick("[skin]-denied", src)
 		return
@@ -234,16 +234,15 @@
 	else
 		to_chat(user, "<span class='notice'>В тире нет гильз для удаления.</span>")
 
-	// Set cooldown
-	next_use_time = world.time + (cooldown_time * 10) // Convert to deciseconds
+	next_use_time = world.time + cooldown_time
 	icon_state = "[skin]1"
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 15)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 1.5 SECONDS)
 
 /obj/machinery/button/door/gore_cleanup
 	name = "Gore Cleanup Button"
 	desc = "Удаляет всю кровь и внутренности из тира при нажатии. Работает только в зоне тира."
 	skin = "doorctrl"
-	var/cooldown_time = 60
+	var/cooldown_time = 1 MINUTES
 	var/next_use_time = 0
 
 /obj/machinery/button/door/gore_cleanup/on_attack_hand(mob/user)
@@ -257,9 +256,8 @@
 		flick("[skin]-denied", src)
 		return
 
-
 	if(world.time < next_use_time)
-		var/time_left = (next_use_time - world.time) / 10 // Convert to seconds
+		var/time_left = (next_use_time - world.time) / 10
 		to_chat(user, "<span class='warning'>Кнопка перезаряжается! Осталось [round(time_left)] секунд.</span>")
 		flick("[skin]-denied", src)
 		return
@@ -267,7 +265,6 @@
 	var/cleaned_count = 0
 
 	for(var/turf/T in current_area)
-		// Remove all cleanable objects
 		for(var/obj/effect/decal/cleanable/cleanable in T)
 			qdel(cleanable)
 			cleaned_count++
@@ -285,9 +282,9 @@
 	else
 		to_chat(user, "<span class='notice'>В тире нет крови и внутренностей для удаления.</span>")
 
-	next_use_time = world.time + (cooldown_time * 10) // Convert to deciseconds
+	next_use_time = world.time + cooldown_time
 	icon_state = "[skin]1"
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 15)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 1.5 SECONDS)
 
 /obj/machinery/button/vv_edit_var(vname, vval)
 	. = ..()

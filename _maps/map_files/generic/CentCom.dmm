@@ -31572,6 +31572,10 @@
 /obj/effect/turf_decal/tile/brown,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
+"vWE" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/indestructible/rock,
+/area/centcom/holding/shootingrange)
 "vWH" = (
 /obj/effect/turf_decal/tile/dark_blue{
 	dir = 1
@@ -51238,7 +51242,7 @@ uZR
 uZR
 uZR
 uZR
-uZR
+vWE
 aaa
 aaa
 aaa
@@ -51734,7 +51738,7 @@ fON
 uZR
 upz
 rwb
-rwb
+btB
 rwb
 rwb
 rwb
@@ -52252,7 +52256,7 @@ rwb
 rwb
 rwb
 rwb
-rwb
+btB
 rwb
 upz
 rwb
@@ -55333,7 +55337,7 @@ uZR
 wIT
 bhA
 rwb
-rwb
+btB
 rwb
 rwb
 rwb
@@ -55603,7 +55607,7 @@ rwb
 rwb
 rwb
 rwb
-rwb
+btB
 rwb
 rwb
 wIT
@@ -57659,7 +57663,7 @@ nWY
 uZR
 wIT
 rwb
-rwb
+btB
 rwb
 rwb
 rwb
