@@ -327,6 +327,7 @@
 			prof.appearance_list[slot] = I.appearance
 			prof.flags_cover_list[slot] = I.flags_cover
 			prof.item_state_list[slot] = I.item_state
+			prof.mutantrace_variation_list[slot] = I.mutantrace_variation
 			prof.exists_list[slot] = 1
 		else
 			continue
@@ -532,6 +533,7 @@
 	var/list/flags_cover_list = list()
 	var/list/exists_list = list()
 	var/list/item_state_list = list()
+	var/list/mutantrace_variation_list = list()
 
 	var/underwear
 	var/undie_color
@@ -557,6 +559,7 @@
 	newprofile.flags_cover_list = flags_cover_list.Copy()
 	newprofile.exists_list = exists_list.Copy()
 	newprofile.item_state_list = item_state_list.Copy()
+	newprofile.mutantrace_variation_list = mutantrace_variation_list.Copy()
 	newprofile.underwear = underwear
 	newprofile.undershirt = undershirt
 	newprofile.socks = socks
