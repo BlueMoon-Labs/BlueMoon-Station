@@ -15,8 +15,8 @@
 /obj/item/gun/ballistic/revolver/doublebarrel/sawn //a dedicated sawn off shotgun for crates and what not
 	name = "sawn-off double-barreled shotgun"
 	desc = "Omar's coming!"
-	icon_state = "sawnshotgun"
-	item_state = "sawnshotgun"
+	icon_state = "dshotgun-sawn"
+	item_state = "dshotgun-sawn"
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM
 	force = 10

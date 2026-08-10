@@ -4722,6 +4722,7 @@
 #include "modular_bluemoon\code\modules\asset_cache\assets\paper.dm"
 #include "modular_bluemoon\code\modules\awaymissions\corpse.dm"
 #include "modular_bluemoon\code\modules\awaymissions\urbanism.dm"
+#include "modular_bluemoon\code\modules\awaymissions\blackmesa\ghostcafe_spawner.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mesa_areas.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mesa_clothing.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mesa_floor.dm"
