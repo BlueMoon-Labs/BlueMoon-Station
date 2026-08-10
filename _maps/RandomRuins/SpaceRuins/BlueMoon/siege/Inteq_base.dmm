@@ -4856,7 +4856,8 @@
 "oc" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor/multi_tile/four_tile_hor{
-	id = "pact_poddurs"
+	id = "pact_poddurs";
+	max_integrity = 99999
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
@@ -5493,6 +5494,10 @@
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
+"pY" = (
+/mob/living/simple_animal/hostile/carp,
+/turf/closed/mineral/random,
+/area/space)
 "pZ" = (
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/machinery/door/airlock/hatch{
@@ -6354,10 +6359,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"sr" = (
-/obj/machinery/portable_atmospherics/canister/toxins,
-/turf/open/floor/plasteel/rockvault/alien,
-/area/InteQ_ship)
 "ss" = (
 /obj/machinery/sleeper/syndie,
 /turf/open/floor/plasteel/dark,
@@ -6813,8 +6814,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
 "uc" = (
-/obj/structure/window/reinforced/fulltile,
-/obj/structure/grille/broken,
+/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/space)
 "ue" = (
@@ -7207,10 +7207,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"vk" = (
-/obj/effect/decal/cleanable/glass/titanium,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "vl" = (
 /obj/item/stack/circuit_stack/full,
 /obj/structure/closet/crate/secure/gear{
@@ -7495,10 +7491,6 @@
 /obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
-"wb" = (
-/obj/structure/carp_rift,
-/turf/open/floor/plating,
-/area/space)
 "wc" = (
 /obj/structure/shuttle/engine/large,
 /turf/open/space/basic,
@@ -9004,13 +8996,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/hellgate_factory/roboticarm,
 /turf/open/floor/plating,
-/area/InteQ_ship)
-"AF" = (
-/obj/effect/decal/cleanable/blood,
-/obj/effect/turf_decal/tile/brown/full,
-/turf/open/floor/plasteel{
-	icon_state = "damaged5"
-	},
 /area/InteQ_ship)
 "AG" = (
 /obj/structure/sign/flag/inteq{
@@ -11616,6 +11601,19 @@
 	},
 /turf/open/space/basic,
 /area/space)
+"HK" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "HL" = (
 /obj/structure/sign/poster/contraband/inteq/inteq_better_dead{
 	pixel_x = -32
@@ -13029,6 +13027,14 @@
 /obj/machinery/seed_extractor,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"LV" = (
+/obj/item/gun/ballistic/automatic/pistol/hellgate_vp78,
+/obj/item/ammo_box/magazine/hellgate_vp78,
+/obj/item/ammo_box/magazine/hellgate_vp78,
+/obj/item/ammo_box/magazine/hellgate_vp78,
+/obj/structure/closet/crate/large,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "LW" = (
 /turf/open/space/basic,
 /area/InteQ_ship)
@@ -14514,6 +14520,10 @@
 /obj/effect/spawner/lootdrop/salvage,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
+"QN" = (
+/mob/living/simple_animal/hostile/carp/eyeball,
+/turf/open/floor/plating,
+/area/space)
 "QO" = (
 /obj/structure/lattice,
 /turf/closed/indestructible/syndicate,
@@ -15493,7 +15503,8 @@
 "TM" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor/multi_tile/two_tile_ver{
-	id = "pact_poddurs"
+	id = "pact_poddurs";
+	max_integrity = 99999
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/ship7)
@@ -35816,7 +35827,7 @@ YY
 WO
 yJ
 yJ
-WO
+pY
 "}
 (87,1,1) = {"
 AM
@@ -36025,7 +36036,7 @@ vB
 vB
 uc
 Hd
-wb
+go
 go
 yJ
 WO
@@ -36235,8 +36246,8 @@ vB
 vB
 vB
 vB
-ig
-go
+uc
+QN
 go
 go
 Sa
@@ -36448,7 +36459,7 @@ vB
 vB
 vB
 uc
-go
+QN
 sD
 go
 yJ
@@ -36520,7 +36531,7 @@ mH
 ei
 pR
 hR
-dv
+HK
 hR
 Sh
 pR
@@ -36659,8 +36670,8 @@ vB
 vB
 vB
 vB
-uc
 go
+QN
 go
 go
 go
@@ -36871,7 +36882,7 @@ vB
 vB
 vB
 vB
-wF
+go
 wF
 sD
 go
@@ -38109,8 +38120,8 @@ VN
 gc
 gc
 Cr
-vk
-kW
+LV
+LV
 zf
 zf
 nd
@@ -38321,8 +38332,8 @@ GR
 GJ
 gc
 oc
-kW
-vk
+LV
+LV
 zf
 zf
 nd
@@ -38779,8 +38790,8 @@ vB
 vB
 vB
 vB
-wF
 go
+QN
 sD
 sD
 yJ
@@ -38991,8 +39002,8 @@ vB
 vB
 vB
 vB
-we
-go
+uc
+QN
 go
 go
 go
@@ -39203,8 +39214,8 @@ vB
 vB
 vB
 vB
-we
-go
+uc
+QN
 go
 go
 Sa
@@ -39415,9 +39426,9 @@ vB
 vB
 vB
 vB
-we
+uc
 Cw
-wb
+go
 sD
 yJ
 WO
@@ -43125,7 +43136,7 @@ Kt
 Ce
 mv
 Uc
-sr
+je
 je
 je
 je
@@ -43336,7 +43347,7 @@ FI
 FI
 mi
 FI
-AF
+Ee
 JD
 dg
 Qj
