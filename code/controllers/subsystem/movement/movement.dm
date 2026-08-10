@@ -58,7 +58,7 @@ SUBSYSTEM_DEF(movement)
 			continue
 		loop.process()
 		if(!QDELETED(loop)) //Re-Insert the loop
-			loop.timer = world.time + loop.delay
+			loop.timer = world.time + loop.scheduled_delay
 			queue_loop(loop)
 		if (MC_TICK_CHECK)
 			break

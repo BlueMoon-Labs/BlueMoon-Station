@@ -194,6 +194,9 @@
 	var/on = FALSE					// 1 if on, 0 if off
 	var/on_gs = FALSE
 	var/static_power_used = 0
+	/// Область, которой сейчас записан static_power_used. Снимать вклад обязательно с неё:
+	/// get_area(src) в момент снятия может быть уже другой (перелёт шаттла, смена области турфа).
+	var/area/static_power_area
 	var/brightness = 8			// luminosity when on, also used in power calculation
 	var/bulb_power = 0.79			// basically the alpha of the emitted light source
 	var/bulb_colour = "#cae2fa"	// befault colour of the light.
@@ -360,11 +363,17 @@
 			update(0)
 
 /obj/machinery/light/Destroy()
+	unpark_flicker()
 	stop_damage_flicker()
 	stop_power_loss_sequence()
 	var/area/A = get_area(src)
 	if(A)
 		on = FALSE
+	// on = FALSE выше идёт мимо update(), поэтому on_gs оставался TRUE и вклад лампы в
+	// static_light области не снимался никогда - область платила за снесённый плафон до
+	// конца раунда. Снимаем явно.
+	on_gs = FALSE
+	bill_static_power(0)
 	mark_apc_light_cache_dirty(A)
 	nightshift_update_queued = FALSE
 	GLOB.nightshift_light_queue -= src
@@ -584,10 +593,35 @@
 	if(on != on_gs)
 		on_gs = on
 		if(on)
-			static_power_used = brightness * 20 * (hijacked ? 2 : 1) //20W per unit luminosity
-			addStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(brightness * 20 * (hijacked ? 2 : 1)) //20W per unit luminosity
 		else
-			removeStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(0)
+
+/**
+ * Переносит вклад лампы в static_light на ТЕКУЩУЮ область, сняв его с той, куда он был записан.
+ *
+ * addStaticPower/removeStaticPower (power.dm) резолвят область через get_area(src) на момент
+ * вызова, а лампа помнила только число и флаг on_gs - без области. Пары "начислили/сняли" в
+ * разных областях достаточно, чтобы область осталась с вечным фантомным потреблением, а APC
+ * платит за него из ячейки напрямую (lastused_light -> cell.use). На шаттле с маленькой
+ * батареей это и выглядело как "шаттлы разряжаются": пока турф отдан подстилающему космосу,
+ * гашение лампы списывало ватты с /area/space, а область шаттла оставалась с +160 Вт на каждый
+ * погасший плафон. Плюс Destroy() статику не снимал вовсе - снесённый горящий плафон оставлял
+ * своё потребление области навсегда.
+ */
+/obj/machinery/light/proc/bill_static_power(watts)
+	if(static_power_area)
+		static_power_area.addStaticPower(-static_power_used, STATIC_LIGHT)
+		static_power_area = null
+	static_power_used = 0
+	if(!watts)
+		return
+	var/area/current_area = get_area(src)
+	if(!current_area)
+		return
+	static_power_used = watts
+	static_power_area = current_area
+	current_area.addStaticPower(watts, STATIC_LIGHT)
 
 /obj/machinery/light/update_atom_colour()
 	. = ..()
@@ -989,6 +1023,63 @@
 	sleep(1)
 	qdel(src)
 
+// --- Парковка мерцания на z-уровнях без наблюдателей ---
+
+/// Как часто единственный на весь мир сторож проверяет, не появились ли зрители
+/// у припаркованных ламп
+#define LIGHT_FLICKER_PARK_POLL_INTERVAL (5 SECONDS)
+
+/// Лампы, чьи цепочки мерцания остановлены до появления клиентов на их z-уровне.
+/// Раньше цепочка перевзводилась и на пустом уровне: обесточенная область оставляла
+/// десятки вечных таймеров, которые никто не видел.
+GLOBAL_LIST_EMPTY(parked_flicker_lights)
+/// id таймера сторожа; он живёт только пока список парковки не пуст
+GLOBAL_VAR(parked_flicker_watchdog_id)
+
+/// Ставит лампу на паузу вместо перевзвода цепочки мерцания
+/obj/machinery/light/proc/park_flicker()
+	GLOB.parked_flicker_lights |= src
+	// Таймер, из колбека которого мы сюда попали, уже отработал - его id протух
+	damage_flicker_timer_id = null
+	power_loss_timer_id = null
+	if(!isnull(GLOB.parked_flicker_watchdog_id))
+		return
+	GLOB.parked_flicker_watchdog_id = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wake_parked_flicker_lights)), LIGHT_FLICKER_PARK_POLL_INTERVAL, TIMER_STOPPABLE)
+
+/// Снимает лампу с парковки: её состояние сменилось или лампа уничтожается
+/obj/machinery/light/proc/unpark_flicker()
+	GLOB.parked_flicker_lights -= src
+
+/// Возобновляет ту цепочку мерцания, в которой лампа находится сейчас. Первый тик
+/// разбрасывается по времени: иначе целый обесточенный уровень стартовал бы одним тиком.
+/obj/machinery/light/proc/resume_parked_flicker()
+	if(emergency_mode)
+		power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), rand(1, LIGHT_EMERGENCY_FLICKER_INTERVAL), TIMER_STOPPABLE)
+		return
+	if(damage_flickering)
+		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), rand(1, LIGHT_FLICKER_INTERVAL_NORMAL), TIMER_STOPPABLE)
+
+/// Единственный сторож припаркованных ламп: один таймер вместо личной цепочки у каждой
+/proc/wake_parked_flicker_lights()
+	GLOB.parked_flicker_watchdog_id = null
+	// Список правится прямо в цикле, поэтому идём по копии
+	for(var/obj/machinery/light/parked as anything in GLOB.parked_flicker_lights.Copy())
+		if(QDELETED(parked))
+			GLOB.parked_flicker_lights -= parked
+			continue
+		if(!parked.emergency_mode && !parked.damage_flickering)
+			// Пока лампа стояла на паузе, её состояние сменилось (починили, обесточили,
+			// вырубили аварийку) - возобновлять больше нечего
+			GLOB.parked_flicker_lights -= parked
+			continue
+		if(!parked.has_z_viewers())
+			continue
+		GLOB.parked_flicker_lights -= parked
+		parked.resume_parked_flicker()
+	if(!length(GLOB.parked_flicker_lights))
+		return
+	GLOB.parked_flicker_watchdog_id = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wake_parked_flicker_lights)), LIGHT_FLICKER_PARK_POLL_INTERVAL, TIMER_STOPPABLE)
+
 // --- Damage flickering ---
 
 /// Checks if light should start or stop flickering based on damage ratio
@@ -1036,8 +1127,11 @@
 	var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
 
 	if(!has_z_viewers())
-		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
-		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		// Никого нет - паркуемся до прихода зрителей, но сперва возвращаем номинал:
+		// иначе лампа так и осталась бы висеть на случайной яркости прошлого тика
+		if(!isnull(damage_flicker_base_power))
+			set_light(l_power = damage_flicker_base_power)
+		park_flicker()
 		return
 
 	// Determine dropout chance and power variance
@@ -1064,11 +1158,11 @@
 		stop_damage_flicker()
 		return
 	if(!has_z_viewers())
-		var/ratio = obj_integrity / max_integrity
-		var/severe = ratio <= LIGHT_DAMAGE_FLICKER_SEVERE
-		var/base_interval = severe ? LIGHT_FLICKER_INTERVAL_SEVERE : LIGHT_FLICKER_INTERVAL_NORMAL
-		var/next_interval = base_interval * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
-		damage_flicker_timer_id = addtimer(CALLBACK(src, PROC_REF(damage_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		// Обязательно снимаем провал яркости перед парковкой, иначе лампа застынет
+		// в промежуточной фазе мерцания до самого прихода зрителей
+		if(!isnull(damage_flicker_base_power))
+			set_light(l_power = damage_flicker_base_power)
+		park_flicker()
 		return
 	// Restore to slightly varied power and continue the cycle
 	set_light(l_power = damage_flicker_base_power)
@@ -1093,6 +1187,7 @@
 /obj/machinery/light/proc/stop_power_loss_sequence()
 	if(!power_loss_stage)
 		return
+	unpark_flicker()
 	if(power_loss_timer_id)
 		deltimer(power_loss_timer_id)
 		power_loss_timer_id = null
@@ -1100,6 +1195,7 @@
 
 /obj/machinery/light/proc/clear_emergency_state(stop_processing_if_unpowered = TRUE)
 	emergency_mode = FALSE
+	unpark_flicker()
 	if(power_loss_timer_id)
 		deltimer(power_loss_timer_id)
 		power_loss_timer_id = null
@@ -1130,7 +1226,7 @@
 		// Handle static power accounting since we bypass update()
 		if(on_gs)
 			on_gs = FALSE
-			removeStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(0)
 		update_icon()
 		// Schedule emergency activation after a random delay
 		var/delay = rand(LIGHT_EMERGENCY_DELAY_MIN, LIGHT_EMERGENCY_DELAY_MAX)
@@ -1173,8 +1269,9 @@
 		clear_emergency_state()
 		return
 	if(!has_z_viewers())
-		var/next_interval = LIGHT_EMERGENCY_FLICKER_INTERVAL * (LIGHT_INTERVAL_JITTER_MIN + rand() * LIGHT_INTERVAL_JITTER_RANGE)
-		power_loss_timer_id = addtimer(CALLBACK(src, PROC_REF(emergency_flicker_tick)), next_interval, TIMER_STOPPABLE)
+		// Возвращаем аварийку на номинал и паркуемся до прихода зрителей
+		set_light(brightness * bulb_emergency_brightness_mul, max(bulb_emergency_pow_min, bulb_emergency_pow_mul * (cell.charge / cell.maxcharge)), bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
+		park_flicker()
 		return
 	// Vary emergency power ±10%
 	var/charge_ratio = cell.charge / cell.maxcharge

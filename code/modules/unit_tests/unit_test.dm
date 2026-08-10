@@ -67,12 +67,19 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	if (QDELETED(reservation))
 		reservation = null
 	if (isnull(reservation))
-		reservation = SSmapping.RequestBlockReservation(5, 5)
+		// 9x9 со стеновым кордоном по периметру: рабочая арена - центральные
+		// 5x5, вокруг неё кольцо пола-фартука (часть тестов ставит фикстуры на
+		// get_step(run_loc, WEST/SOUTH) - один тайл за ареной). Без кордона
+		// кромка граничит с космосом резервного z и вентилируется на каждом
+		// фаере SSair; с tg-паритетным полным сбросом арена уходит в вакуум за
+		// секунды, а спейсвинд полной дельтой расшвыривает фикстуры (труп для
+		// кокона паука, питомца pet_bonus) - тесты флачат по скорости раннера.
+		reservation = SSmapping.RequestBlockReservation(9, 9, border_type_override = /turf/closed/wall)
 
 	allocated = new
 	allocated_force_qdel = new
-	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1], reservation.bottom_left_coords[2], reservation.bottom_left_coords[3])
-	run_loc_floor_top_right = locate(reservation.top_right_coords[1], reservation.top_right_coords[2], reservation.top_right_coords[3])
+	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1] + 2, reservation.bottom_left_coords[2] + 2, reservation.bottom_left_coords[3])
+	run_loc_floor_top_right = locate(reservation.top_right_coords[1] - 2, reservation.top_right_coords[2] - 2, reservation.top_right_coords[3])
 
 	// Свет СТРОГО до сброса зоны: create_lighting_for_zlevel может уйти в полный краул z
 	// с CHECK_TICK-снами (self-heal гард видит недофлашенную отложку конкурентного краула,
@@ -83,7 +90,17 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	// Сброс зоны - последний шаг, между ним и Run() снов нет.
 	create_lighting_for_zlevel(run_loc_floor_bottom_left.z)
 
+	var/ring_left = reservation.bottom_left_coords[1]
+	var/ring_bottom = reservation.bottom_left_coords[2]
+	var/ring_right = reservation.top_right_coords[1]
+	var/ring_top = reservation.top_right_coords[2]
 	for (var/turf/reserved_turf in reservation.reserved_turfs)
+		// Кордон перестраиваем обратно в стену (тест мог сломать его взрывом),
+		// внутренность - в чистый пол.
+		if(reserved_turf.x == ring_left || reserved_turf.x == ring_right || reserved_turf.y == ring_bottom || reserved_turf.y == ring_top)
+			if(!iswallturf(reserved_turf))
+				reserved_turf.ChangeTurf(/turf/closed/wall)
+			continue
 		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
 
 	TEST_ASSERT(isfloorturf(run_loc_floor_bottom_left), "run_loc_floor_bottom_left was not a floor ([run_loc_floor_bottom_left])")
@@ -145,8 +162,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 #define UNIT_TEST_WAIT_GRACE_FIRES 10
 /// Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
 /// от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
-/// потолок никогда не подрезал само окно на медленном мировом времени.
-#define UNIT_TEST_WAIT_HARD_LIMIT (10 SECONDS)
+/// потолок никогда не подрезал само окно на медленном мировом времени. Потолок
+/// щедрый сознательно: на перегруженном CI-раннере SStimer может не получать
+/// тактов дольше 10 реальных секунд (наблюдалось на layeniastation), и жадный
+/// потолок валит тест раньше, чем grace-проходы успевают набежать. Платим этим
+/// временем только в двух случаях - мёртвый SStimer или задушенный раннер, и в
+/// обоих спешить некуда.
+#define UNIT_TEST_WAIT_HARD_LIMIT (60 SECONDS)
 
 #define WAIT_BUDGET_WORLD_DEADLINE 1
 #define WAIT_BUDGET_REAL_DEADLINE 2

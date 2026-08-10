@@ -180,17 +180,17 @@
 	output_temperature = linked_output.airs[1].return_temperature()
 	temperature_period = seconds_per_tick
 	switch(fusion_temperature)
-		if(-INFINITY to 500)
+		if(-INFINITY to HFR_POWER_LEVEL_1_TEMPERATURE)
 			power_level = 0
-		if(500 to 1e3)
+		if(HFR_POWER_LEVEL_1_TEMPERATURE to HFR_POWER_LEVEL_2_TEMPERATURE)
 			power_level = 1
-		if(1e3 to 1e4)
+		if(HFR_POWER_LEVEL_2_TEMPERATURE to HFR_POWER_LEVEL_3_TEMPERATURE)
 			power_level = 2
-		if(1e4 to 1e5)
+		if(HFR_POWER_LEVEL_3_TEMPERATURE to HFR_POWER_LEVEL_4_TEMPERATURE)
 			power_level = 3
-		if(1e5 to 1e6)
+		if(HFR_POWER_LEVEL_4_TEMPERATURE to HFR_POWER_LEVEL_5_TEMPERATURE)
 			power_level = 4
-		if(1e6 to 1e7)
+		if(HFR_POWER_LEVEL_5_TEMPERATURE to HFR_POWER_LEVEL_6_TEMPERATURE)
 			power_level = 5
 		else
 			power_level = 6

@@ -735,7 +735,10 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	var/server_url = servers[server_name]
 	if (!server_url)
 		CRASH("Invalid cross comms config: [server_name]")
+	// world.Export держит весь мир на всё время HTTP-обмена с соседним сервером
+	var/blocking_started_ms = blocking_call_start()
 	world.Export("[server_url]?[list2params(message)]")
+	blocking_call_finish(blocking_started_ms, "world.Export", "кросс-сервер [server_name]")
 
 /proc/ircadminwho()
 	var/list/message = list("Admins: ")

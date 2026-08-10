@@ -86,11 +86,24 @@ In my current plan for it, 'solid' will be defined as anything with density == 1
 
 /obj/effect/immovablerod/Destroy()
 	GLOB.poi_list -= src
+	SSaugury.unregister_doom(src) //метеоры так и делают, род забывал
+	//walk_towards() из New() заводит внутренний цикл BYOND, а тот держит ссылку на
+	//движимое и продолжает тикать после qdel - род так и не доходит до сборщика.
+	//Тот же walk(src, 0) уже стоит в complete_trajectory(), здесь его просто не было.
+	walk(src, 0)
+	SSmove_manager.stop_looping(src) //walk_in_direction() ходит через мув-менеджер
+	//Род переживает qdel в чужих списках дольше, чем нам хочется, поэтому не тащим
+	//за собой ни визарда (а с ним его мозг), ни цель наведения.
+	wizard = null
+	special_target = null
+	destination = null
+	destination_turf = null
 	. = ..()
 
 /obj/effect/immovablerod/Moved()
 	if((z != z_original) || (loc == destination))
 		qdel(src)
+		return ..() //дальше по мёртвому роду ходить нечем
 	if(special_target && loc == get_turf(special_target))
 		complete_trajectory()
 	return ..()

@@ -9,6 +9,12 @@
 	id = SPECIES_ASHWALKER_WEST
 	burnmod = 0.95
 	brutemod = 0.95
+	// Женский подтип пеплохода держит обычную ловкость рук: TRAIT_CHUNKYFINGERS родителя
+	// запрещает пользоваться большей частью предметов. Строка пропала вместе с правкой
+	// гениталий (#3568), к которой отношения не имела, и на это есть тест
+	// western_ashwalker_has_item_dexterity. Принудительный женский пол оттуда не возвращаю -
+	// его убрали намеренно.
+	inherent_traits = list()
 
 /// Selectable in character prefs (generate_selectable_species); station jobs blocked via qualifies_for_rank.
 /datum/species/lizard/ashwalker/eastern/check_roundstart_eligible()

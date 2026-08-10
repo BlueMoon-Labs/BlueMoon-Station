@@ -26,6 +26,10 @@
 	var/turf/spawn_location
 
 /datum/round_event/anomaly/announce(fake)
+	// Ложная тревога зовёт announce() без start(), то есть без выбранной зоны -
+	// сабтайпы этот гард уже носят, а базовый тип падал (раунд 9875).
+	if(isnull(impact_area))
+		impact_area = placer.findValidArea()
 	priority_announce("Обнаружен гипер-энергетический поток на [ANOMALY_ANNOUNCE_DANGEROUS_TEXT] [impact_area.name].", "ВНИМАНИЕ: АНОМАЛИЯ", 'sound/announcer/classic/anomaly/anomaly_flux.ogg')
 
 /datum/round_event/anomaly/start()

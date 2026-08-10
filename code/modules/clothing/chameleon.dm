@@ -252,6 +252,8 @@
 		CL.flags_inv = PCL.flags_inv
 		CL.mutantrace_variation = PCL.mutantrace_variation
 		CL.mob_overlay_icon = PCL.mob_overlay_icon
+		if(istype(CL, /obj/item/clothing/under) && istype(PCL, /obj/item/clothing/under))
+			CL:fitted = PCL:fitted
 		qdel(PCL)
 	chameleon_item.update_icon()
 	on_change?.Invoke(picked_item)

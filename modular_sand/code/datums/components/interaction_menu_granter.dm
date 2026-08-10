@@ -42,7 +42,7 @@
 	if(world.time <= next_interaction_time)
 		return
 	next_interaction_time = world.time + auto_interaction_pace
-	var/interaction_key = "[currently_active_interaction.type]"
+	var/interaction_key = currently_active_interaction.custom_interaction_key || "[currently_active_interaction.type]"
 	var/check_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
 		? !!hidden_interactions[interaction_key] \
 		: FALSE
@@ -459,7 +459,7 @@
 	.["auto_interaction_pace"] = auto_interaction_pace
 	.["is_auto_target_self"] = auto_interaction_target == self
 	.["auto_interaction_target"] = auto_interaction_target
-	.["currently_active_interaction"] = currently_active_interaction?.type
+	.["currently_active_interaction"] = currently_active_interaction?.custom_interaction_key || currently_active_interaction?.type
 
 	//Get their genitals
 	var/list/genitals = list()
@@ -537,6 +537,7 @@
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
+		.["custom_verb_consent"] = 		prefs.custom_verb_consent
 		.["ranged_verb_pref"] = 		!!CHECK_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 		.["lewd_verb_sounds"] = 		!!CHECK_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
 		.["arousable"] = 				prefs.arousable
@@ -565,6 +566,37 @@
 		.["cum_onto_pref"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, CUM_ONTO)
 		.["sex_jitter"] = 				!!CHECK_BITFIELD(prefs.cit_toggles, SEX_JITTER)	//By Gardelin0
 		.["no_disco_dance"] = 			!CHECK_BITFIELD(prefs.cit_toggles, NO_DISCO_DANCE) //By SmiLeY
+
+	var/list/custom_interactions_sent = list()
+	if(target?.client?.prefs && target.ckey)
+		var/list/customs = target.client.prefs.custom_interactions
+		for(var/i in 1 to length(customs))
+			var/datum/interaction/custom/custom = customs[i]
+			if(!custom?.name || !custom.message)
+				continue
+			if(!custom.pass_requirement_gate(self, target))
+				continue
+			custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][target.ckey]:[i]", target.real_name))
+	.["custom_interactions_list"] = custom_interactions_sent
+
+	var/list/own_customs = list()
+	if(self.client?.prefs?.custom_interactions)
+		for(var/i in 1 to length(self.client.prefs.custom_interactions))
+			var/datum/interaction/custom/custom = self.client.prefs.custom_interactions[i]
+			own_customs += list(list(
+				"key" = "[CUSTOM_INTERACTION_PREFIX][self.ckey]:[i]",
+				"name" = custom.name,
+				"message" = custom.message,
+				"interaction_type" = custom.interaction_type,
+				"type_label" = custom.get_type_label(),
+				"arousal_level" = custom.arousal_level,
+				"arousal_label" = custom.get_arousal_label(),
+				"requires_tail" = custom.requires_tail,
+				"requires_telekinesis" = custom.requires_telekinesis,
+				"max_distance" = custom.max_distance,
+			))
+	.["own_custom_interactions"] = own_customs
+	.["max_custom_interactions"] = self.client.prefs.get_custom_interaction_limit()
 
 /datum/component/interaction_menu_granter/ui_static_data(mob/living/user)
 	. = ..()
@@ -640,13 +672,16 @@
 			return TRUE
 		if("interact")
 			var/interaction_key = params["interaction"]
-			var/datum/interaction/o = SSinteractions.interactions[interaction_key]
-			if(!o)
-				return FALSE
-
 			var/is_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
 				? !!hidden_interactions[interaction_key] \
 				: FALSE
+			var/datum/interaction/o
+			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
+				o = SSinteractions.get_custom_interaction(target, interaction_key)
+			else
+				o = SSinteractions.interactions[interaction_key]
+			if(!o)
+				return FALSE
 
 			if(o == currently_active_interaction)
 				to_chat(parent_mob, span_notice("Включена автоматическая интеракция."))
@@ -661,7 +696,12 @@
 			src.auto_interaction_pace = speed
 			return TRUE
 		if("toggle_auto_interaction")
-			var/datum/interaction/o = SSinteractions.interactions[params["interaction"]]
+			var/interaction_key = params["interaction"]
+			var/datum/interaction/o
+			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
+				o = SSinteractions.get_custom_interaction(target, interaction_key)
+			else
+				o = SSinteractions.interactions[interaction_key]
 			if(!o || (currently_active_interaction == o) && (auto_interaction_target == target))
 				auto_interaction_target = null
 				currently_active_interaction = null
@@ -672,17 +712,16 @@
 				START_PROCESSING(SSinteractions, src)
 			return TRUE
 		if("favorite")
-			var/datum/interaction/interaction = SSinteractions.interactions[params["interaction"]]
-			if(!interaction)
+			var/interaction_key = params["interaction"]
+			if(!(interaction_key in SSinteractions.interactions) && findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) != 1)
 				return FALSE
-			var/client/C = parent_mob?.client
-			if(!C?.prefs)
+			var/datum/preferences/prefs = parent_mob?.client?.prefs
+			if(!prefs)
 				return FALSE
-			var/datum/preferences/prefs = C.prefs
-			if(interaction.type in prefs.favorite_interactions)
-				LAZYREMOVE(prefs.favorite_interactions, interaction.type)
+			if(interaction_key in prefs.favorite_interactions)
+				LAZYREMOVE(prefs.favorite_interactions, interaction_key)
 			else
-				LAZYADD(prefs.favorite_interactions, interaction.type)
+				LAZYADD(prefs.favorite_interactions, interaction_key)
 			prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 			return TRUE
 		if("genital")
@@ -800,6 +839,8 @@
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
+				if("custom_verb_consent")
+					prefs.custom_verb_consent = !prefs.custom_verb_consent
 				if("ranged_verb_pref")
 					TOGGLE_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
 				if("lewd_verb_sounds")
@@ -892,5 +933,105 @@
 			else
 				to_chat(parent_mob, span_warning("Unavailable for non-humanoid mob."))
 				return FALSE
+		if("custom_create")
+			return custom_create(parent_mob, params)
+		if("custom_edit")
+			return custom_edit(parent_mob, params)
+		if("custom_delete")
+			return custom_delete(parent_mob, params)
+
+/datum/component/interaction_menu_granter/proc/build_custom_interaction_entry(datum/interaction/custom/custom, key, owner_name)
+	var/list/interaction = list()
+	interaction["key"] = key
+	interaction["desc"] = custom.name
+	interaction["type"] = custom.get_interaction_type_num()
+	interaction["interactionFlags"] = custom.get_interaction_flags()
+	interaction["maxDistance"] = custom.max_distance
+	interaction["isCustom"] = TRUE
+	var/list/details = list()
+	details += list(list("info" = "Вариант персонажа [owner_name]", "icon" = "user", "color" = "green"))
+	var/type_label = custom.get_type_label()
+	if(type_label != "Действие")
+		details += list(list("info" = "Тип: [type_label]", "icon" = "tag", "color" = "teal"))
+	if(custom.requires_tail)
+		details += list(list("info" = "Нужен хвост у кого-то из пары", "icon" = "paw", "color" = "purple"))
+	if(custom.requires_telekinesis)
+		details += list(list("info" = "Нужен телекинез у кого-то из пары", "icon" = "brain", "color" = "purple"))
+	interaction["additionalDetails"] = details
+	return interaction
+
+/datum/component/interaction_menu_granter/proc/custom_create(mob/living/user, params)
+	var/datum/preferences/prefs = user.client?.prefs
+	if(!prefs)
+		return FALSE
+	var/name = copytext(strip_html(params["name"]), 1, MAX_CUSTOM_INTERACTION_NAME_LENGTH + 1)
+	var/message = copytext(strip_html(params["message"]), 1, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH + 1)
+	if(!name || !message)
+		to_chat(user, span_warning("Название и текст кастомного интеракта не могут быть пустыми."))
+		return FALSE
+	var/interaction_type = sanitize_inlist(params["interaction_type"], CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
+	var/max_customs = prefs.get_custom_interaction_limit()
+	if(length(prefs.custom_interactions) >= max_customs)
+		to_chat(user, span_warning("Достигнут лимит из [max_customs] кастомных интерактов."))
+		return FALSE
+	var/datum/interaction/custom/custom = new
+	custom.name = name
+	custom.message = message
+	custom.interaction_type = interaction_type
+	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
+	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
+	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
+	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	LAZYADD(prefs.custom_interactions, custom)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	log_custom_interaction(user, "создал", custom)
+	to_chat(user, span_notice("Кастомный интеракт \"[custom.name]\" создан."))
+	SStgui.update_uis(src)
+	return TRUE
+
+/datum/component/interaction_menu_granter/proc/custom_edit(mob/living/user, params)
+	var/datum/preferences/prefs = user.client?.prefs
+	if(!prefs)
+		return FALSE
+	var/index = text2num(copytext(params["key"], findlasttext(params["key"], ":") + 1))
+	if(!index || index > length(prefs.custom_interactions))
+		return FALSE
+	var/datum/interaction/custom/custom = prefs.custom_interactions[index]
+	var/name = copytext(strip_html(params["name"]), 1, MAX_CUSTOM_INTERACTION_NAME_LENGTH + 1)
+	var/message = copytext(strip_html(params["message"]), 1, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH + 1)
+	if(!name || !message)
+		to_chat(user, span_warning("Название и текст кастомного интеракта не могут быть пустыми."))
+		return FALSE
+	custom.name = name
+	custom.message = message
+	custom.interaction_type = sanitize_inlist(params["interaction_type"], CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
+	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
+	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
+	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
+	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	log_custom_interaction(user, "изменил", custom)
+	SStgui.update_uis(src)
+	return TRUE
+
+/datum/component/interaction_menu_granter/proc/custom_delete(mob/living/user, params)
+	var/datum/preferences/prefs = user.client?.prefs
+	if(!prefs)
+		return FALSE
+	var/index = text2num(copytext(params["key"], findlasttext(params["key"], ":") + 1))
+	if(!index || index > length(prefs.custom_interactions))
+		return FALSE
+	var/datum/interaction/custom/custom = prefs.custom_interactions[index]
+	LAZYREMOVE(prefs.custom_interactions, custom)
+	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	log_custom_interaction(user, "удалил", custom)
+	qdel(custom)
+	SStgui.update_uis(src)
+	return TRUE
+
+/datum/component/interaction_menu_granter/proc/log_custom_interaction(mob/living/user, action, datum/interaction/custom/custom)
+	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
+	log_admin(log_text)
+	message_admins(log_text)
 
 #undef INTERACTION_UNHOLY //SPLURT Edit

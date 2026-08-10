@@ -42,11 +42,17 @@
 		ForceAllKeysUp()		//groan, more hacky kevcode
 		return
 
-	if(length(keys_held) >= MAX_HELD_KEYS && !keys_held[_key])
+	if(length(keys_held) >= MAX_HELD_KEYS && !(_key in keys_held))
 		keyUp(keys_held[1])
-	var/was_held = keys_held[_key]
+	var/was_held = (_key in keys_held)
 	keys_held[_key] = world.time
 	var/movement = movement_keys[_key]
+	if(movement)
+		last_movement_key_repeat = world.time
+	// Native +REP and browser auto-repeat are keepalives. A held key has already
+	// run its bindings and only needs to renew the movement lease.
+	if(was_held)
+		return
 	if(movement && !was_held && !(next_move_dir_sub & movement) && !keys_held["Ctrl"])
 		next_move_dir_add |= movement
 
@@ -77,6 +83,22 @@
 	mob?.focus?.key_down(_key, src, full_key)
 	mob?.update_mouse_pointer()
 
+/// Receives legitimate native/TGUI key-repeat events without feeding them into
+/// the KeyDown flood counter. The first event still uses normal KeyDown so an
+/// invented repeat cannot create held state or bypass its validation.
+/client/verb/keyRepeat(_key as text)
+	SHOULD_NOT_SLEEP(TRUE)
+	set instant = TRUE
+	set hidden = TRUE
+
+	if(!(_key in keys_held))
+		keyDown(_key)
+		return
+	last_activity = world.time
+	keys_held[_key] = world.time
+	if(movement_keys[_key])
+		last_movement_key_repeat = world.time
+
 /// Keyup's all keys held down, including modifier keys.
 /client/proc/ForceAllKeysUp()
 	for(var/key in keys_held.Copy())
@@ -88,7 +110,7 @@
 	set hidden = TRUE
 
 	// TGUI/WebView can duplicate orphaned KeyUp events when focus changes; only real releases should touch the movement buffer.
-	var/was_held = keys_held[_key]
+	var/was_held = (_key in keys_held)
 	if(!was_held)
 		return
 	keys_held -= _key
@@ -96,6 +118,8 @@
 	var/movement = movement_keys[_key]
 	if(movement && was_held && !(next_move_dir_add & movement))
 		next_move_dir_sub |= movement
+	if(movement && !keybindings_has_held_movement_key(keys_held, movement_keys))
+		last_movement_key_repeat = null
 
 	if(prefs.modless_key_bindings[_key])
 		var/datum/keybinding/kb = GLOB.keybindings_by_name[prefs.modless_key_bindings[_key]]
@@ -114,5 +138,18 @@
 
 // Called every game tick
 /client/keyLoop()
+	release_expired_movement_keys()
 	holder?.keyLoop(src)
 	mob?.focus?.keyLoop(src)
+
+/// Releases movement whose KeyUp vanished when DreamSeeker lost focus. Other held
+/// actions and modifiers keep their ordinary down/up lifetime.
+/client/proc/release_expired_movement_keys(now = world.time)
+	var/list/expired_keys = keybindings_expired_movement_keys(keys_held, movement_keys, last_movement_key_repeat, now)
+	if(!length(expired_keys))
+		return FALSE
+	for(var/key as anything in expired_keys)
+		keyUp(key)
+	last_movement_key_repeat = null
+	log_game("INPUT: [key_name(src)] force-released stale movement key(s): [expired_keys.Join(", ")].")
+	return TRUE

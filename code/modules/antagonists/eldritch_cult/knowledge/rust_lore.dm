@@ -194,6 +194,7 @@
 	sacs_needed = 5
 	required_atoms = list(/mob/living/carbon/human)
 	route = PATH_RUST
+	parallax_scene = ANTAG_SCENE_HERETIC_RUST
 
 /datum/eldritch_knowledge/final_eldritch/rust_final/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/mob/living/carbon/human/H = user

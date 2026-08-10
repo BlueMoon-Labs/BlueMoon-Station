@@ -339,18 +339,12 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "bg" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
 /turf/open/floor/plating/icemoon,
 /area/icemoon/surface/outdoors)
 "bh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 6
 	},
@@ -363,7 +357,7 @@
 /obj/machinery/door/airlock/engineering{
 	name = "The Singularity Engine"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{

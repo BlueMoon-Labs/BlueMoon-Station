@@ -9,6 +9,13 @@
 	owner = new_owner
 	owner.ambition_objectives += src
 
+//Отцепляемся именно от СВОЕГО владельца: панель разума ищет амбицию по REF глобально
+//и вычёркивает её из списка того разума, чью панель открыли, а не из списка owner
+/datum/ambition_objective/Destroy(force)
+	owner?.ambition_objectives -= src
+	owner = null
+	return ..()
+
 /datum/ambition_objective/proc/get_random_ambition()
 	var/result
 

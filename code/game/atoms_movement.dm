@@ -126,11 +126,11 @@
 					// Half-finished diagonal: one cardinal step succeeded — match old inertia (Moved skipped newtonian during split).
 					if(!inertia_moving && first_step_dir)
 						inertia_next_move = world.time + inertia_move_delay
-						newtonian_move(first_step_dir)
+						newtonian_move(first_step_dir, drift_force = self_thrust_force, controlled_cap = self_thrust_cap)
 				else if (!inertia_moving)
 					inertia_next_move = world.time + inertia_move_delay
 					// Single combined impulse — do not stack with per-cardinal Moved() calls during this diagonal.
-					newtonian_move(direct)
+					newtonian_move(direct, drift_force = self_thrust_force, controlled_cap = self_thrust_cap)
 			moving_diagonally = 0
 			return
 
@@ -195,7 +195,10 @@
 	// Diagonal intents are split into two cardinals inside Move(); defer newtonian to one call at split end (see above).
 	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED) && !moving_diagonally)
 		inertia_next_move = world.time + inertia_move_delay
-		newtonian_move(Dir)
+		// Потолок собственной тяги: шаг доливает дрейф до крейсерской скорости своего
+		// двигателя и дальше не разгоняет. Взрыв или отдача выше потолка не срезаются -
+		// controlled_cap берётся как max(текущая сила, потолок).
+		newtonian_move(Dir, drift_force = self_thrust_force, controlled_cap = self_thrust_cap)
 	return TRUE
 
 // Make sure you know what you're doing if you call this, this is intended to only be called by byond directly.
@@ -386,6 +389,71 @@
 /// Subtype hook (e.g. lattice); [Process_Spacemove] already handles lattice on /atom/movable — mobs override and use backups
 /atom/movable/proc/handle_spacemove_grabbing()
 	return FALSE
+
+/**
+ * Объявляет, что [source] толкает нас собственной тягой: джетпак, имплант-трастеры, крылья.
+ *
+ * Источники держатся списком, а не пишут [self_thrust_cap] напрямую, потому что носитель
+ * может нести сразу несколько, и выключенный первым затёр бы цифры оставшегося. Складываем
+ * по максимуму: потолок задаёт лучший из работающих двигателей.
+ *
+ * Ключ - строка REF, а не сам датум: список живёт на мобе, и жёсткая ссылка на снятый
+ * джетпак пережила бы его удаление. Сам источник лежит слабой ссылкой, и запись, чей источник
+ * не воскрес, отсеивается на ближайшем пересчёте.
+ */
+/atom/movable/proc/register_thrust_source(datum/source, force = INERTIA_THRUST_FORCE_DEFAULT, cap = INERTIA_THRUST_CAP_JETPACK)
+	if(QDELETED(source))
+		return FALSE
+	LAZYSET(thrust_sources, REF(source), list(force, cap, WEAKREF(source)))
+	recalculate_self_thrust()
+	return TRUE
+
+/atom/movable/proc/unregister_thrust_source(datum/source)
+	if(isnull(source) || !LAZYACCESS(thrust_sources, REF(source)))
+		return FALSE
+	LAZYREMOVE(thrust_sources, REF(source))
+	recalculate_self_thrust()
+	return TRUE
+
+/**
+ * Передаёт наш текущий дрейф отпущенному грузу.
+ *
+ * `controlled_cap` ставится равным передаваемой силе: груз получает ровно наш вектор, не
+ * больше, и собственная тяга груза от этого не растёт.
+ */
+/atom/movable/proc/hand_off_drift(atom/movable/cargo)
+	if(QDELETED(cargo) || isnull(drift_handler) || isnull(drift_handler.drifting_loop))
+		return FALSE
+	var/carried_force = drift_handler.drift_force
+	if(carried_force <= 0)
+		return FALSE
+	// Пауза до нашего следующего шага: без неё груз обгонит буксир и врежется в него.
+	var/start_delay = max(0, drift_handler.drifting_loop.timer - world.time + world.tick_lag)
+	return cargo.newtonian_move(
+		angle2dir(drift_handler.drifting_loop.angle),
+		start_delay = start_delay,
+		drift_force = carried_force,
+		controlled_cap = carried_force,
+	)
+
+/// Пересобирает [self_thrust_force] и [self_thrust_cap] по живым источникам. Зовётся только при правке списка — [Moved] читает готовые значения.
+/atom/movable/proc/recalculate_self_thrust()
+	var/force = INERTIA_THRUST_FORCE_DEFAULT
+	var/cap = INERTIA_THRUST_CAP_UNAIDED
+	var/list/stale
+	for(var/source_key in thrust_sources)
+		var/list/profile = thrust_sources[source_key]
+		var/datum/weakref/source_ref = profile[THRUST_SOURCE_REF]
+		if(!source_ref?.resolve())
+			// Вычищаем после обхода: правка списка внутри for-in сдвигает индексы и пропускает записи.
+			LAZYADD(stale, source_key)
+			continue
+		force = max(force, profile[THRUST_SOURCE_FORCE])
+		cap = max(cap, profile[THRUST_SOURCE_CAP])
+	for(var/source_key in stale)
+		LAZYREMOVE(thrust_sources, source_key)
+	self_thrust_force = force
+	self_thrust_cap = cap
 
 /// Only moves the object if it's under no gravity. Uses smooth drift when possible. [inertia_dir] is a BYOND dir flag.
 /atom/movable/proc/newtonian_move(

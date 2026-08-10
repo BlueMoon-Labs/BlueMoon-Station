@@ -11,7 +11,7 @@
 //     but overall network volume is also increased as this increases...
 
 /obj/machinery/atmospherics/components/binary/volume_pump
-	icon_state = "volpump_map-2"
+	icon_state = "volpump_map-3"
 	name = "volumetric gas pump"
 	desc = "A pump that moves gas by volume."
 
@@ -73,7 +73,7 @@
 	var/input_starting_pressure = air1.return_pressure()
 	var/output_starting_pressure = air2.return_pressure()
 
-	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
+	if((input_starting_pressure < 0.01) || (output_starting_pressure > VOLUME_PUMP_PRESSURE_CEILING))
 		// Woken by the pipenet pressure-jump broadcast.
 		atmos_consider_idle()
 		return
@@ -123,6 +123,10 @@
 	data["on"] = on
 	data["rate"] = round(transfer_rate)
 	data["max_rate"] = round(MAX_TRANSFER_RATE)
+	// Уставка тут в л/с. Панели нужно текущее давление выхода: без него игрок
+	// не видит, докуда насос уже додавил линию.
+	data["line_pressure"] = output_line_pressure()
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/volume_pump/atmosinit()
@@ -209,9 +213,17 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/on
 	on = TRUE
@@ -221,6 +233,14 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/on/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"

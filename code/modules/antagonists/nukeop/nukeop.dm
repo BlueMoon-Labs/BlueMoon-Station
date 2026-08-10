@@ -285,6 +285,16 @@
 	if(GLOB.round_type == ROUNDTYPE_EXTENDED || GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT) // round_type, не master_mode: тот мутирует при смене режима мидгеймом
 		priority_announce("Приветствую, Станция. Мы отправляем к вам Специалиста по Защите Ядерного Диска ввиду того, что заметили недостаточную его безопасность. Bстречайте.", "Фрегат [title] ССО Синдиката")
 
+/datum/antagonist/nukeop/lone/syndicate/forge_objectives()
+	. = ..()
+	var/datum/objective/hijack/syndicate/hijack = new
+	hijack.owner = owner
+	objectives += hijack
+
+/datum/antagonist/nukeop/lone/syndicate/greet()
+	. = ..()
+	to_chat(owner, span_syndicate("Взломайте консоль аварийного шаттла (ALT-ЛКМ), чтобы перенаправить эвакуацию на Синди-Аванпост."))
+
 /datum/team/nuclear
 	var/syndicate_name
 	var/obj/machinery/nuclearbomb/tracked_nuke

@@ -95,7 +95,7 @@
 	return bleed_amt
 
 /datum/wound/slash/handle_process()
-	if(victim.stat == DEAD)
+	if(victim_appears_dead())
 		blood_flow -= max(clot_rate, WOUND_SLASH_DEAD_CLOT_MIN)
 		if(blood_flow < minimum_flow)
 			if(demotes_to)
@@ -103,6 +103,13 @@
 				return
 			qdel(src)
 			return
+		// Ветка трупа обязана выходить сама. Без этого return управление проваливалось
+		// в "живую" логику ниже: тело сворачивало кровь дважды за тик, зря изнашивало
+		// бинт, реагировало на гепарин и писало мёртвому игроку "ваша рука перестала
+		// истекать кровью". У апстрима этот выход есть.
+		if(limb)
+			limb.update_part_wound_overlay()
+		return
 
 	blood_flow = min(blood_flow, WOUND_SLASH_MAX_BLOODFLOW)
 

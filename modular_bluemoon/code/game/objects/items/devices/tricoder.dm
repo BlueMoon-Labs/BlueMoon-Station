@@ -23,6 +23,8 @@
 
 	var/medicalTricorder = FALSE	//Set to TRUE for normal medical scanner, set to FALSE for a gutted version
 
+/obj/item/multitool/tricorder/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state)
 
 /obj/item/multitool/tricorder/suicide_act(mob/living/carbon/user)
 	user.visible_message(span_suicide("[user] пробует провести глубокий анализ себя!"))

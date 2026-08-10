@@ -2,7 +2,6 @@
 
 /obj/machinery/computer/crew
 	name = "crew monitoring console"
-	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Used to monitor active health sensors built into most of the crew's uniforms."
 	icon_screen = "crew"
 	icon_keyboard = "med_key"
@@ -12,7 +11,6 @@
 	circuit = /obj/item/circuitboard/computer/crew
 	var/obj/item/radio/headset/radio = /obj/item/radio/headset/headset_med
 	light_color = LIGHT_COLOR_BLUE
-	COOLDOWN_DECLARE(data_update_cooldown)
 
 /obj/machinery/computer/crew/Initialize()
 	. = ..()
@@ -26,17 +24,12 @@
 /obj/machinery/computer/crew/proc/radioAnnounce(message)
 	radio?.talk_into(src, message, MODE_DEPARTMENT)
 
-/obj/machinery/computer/crew/process(delta_time)
-	. = ..()
-	if(!.)
-		return
-	if(COOLDOWN_FINISHED(src, data_update_cooldown))
-		COOLDOWN_START(src, data_update_cooldown, SENSORS_UPDATE_PERIOD)
-		var/sector = z
-		if(!sector)
-			var/turf/T = get_turf(src)
-			sector = T.z
-		GLOB.crewmonitor.update_data(sector)
+// No process() override on purpose. The console used to rebuild GLOB.crewmonitor's per-z sensor
+// snapshot every SENSORS_UPDATE_PERIOD, but nothing reads that snapshot except
+// /datum/crewmonitor/ui_data(), which calls update_data() itself and gets the same cache. So every
+// console on the station was walking GLOB.carbon_list on a timer to warm a cache no one was
+// reading - and holding itself awake on SSmachines to do it (idle_sleeps = FALSE), which in turn
+// kept its area drawing dynamically and blocked the area's APC from parking.
 
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"

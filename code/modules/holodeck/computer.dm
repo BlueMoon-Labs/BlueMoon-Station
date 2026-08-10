@@ -179,7 +179,9 @@
 			T.hotspot_expose(700,25,1)
 
 	if(!(obj_flags & EMAGGED))
-		for(var/item in spawned)
+		// derez() правит spawned, поэтому обходим снимок - иначе часть уехавших
+		// за пределы голодека предметов проскакивает проверку
+		for(var/item in spawned.Copy())
 			if(!(get_turf(item) in linked))
 				derez(item, 0)
 	for(var/e in effects)
@@ -292,7 +294,9 @@
 			if(is_cleanable(O))
 				qdel(O)
 
-	for(var/item in spawned)
+	// derez() правит spawned, снимок обязателен - иначе часть клонов старой
+	// программы остаётся на голодеке до конца раунда
+	for(var/item in spawned.Copy())
 		derez(item, !force)
 
 	program = A
@@ -310,13 +314,23 @@
 
 /obj/machinery/computer/holodeck/proc/finish_spawn()
 	var/list/added = list()
+	// Снимок обязателен: ниже мы правим spawned, а правка списка прямо в обходе
+	// по нему проматывает индекс, и стоящий за удалённым эффект не активируется
+	var/list/pending = list()
 	for(var/obj/effect/holodeck_effect/HE in spawned)
+		pending += HE
+	for(var/obj/effect/holodeck_effect/HE as anything in pending)
+		if(QDELETED(HE))
+			continue
 		effects += HE
 		spawned -= HE
 		var/atom/x = HE.activate(src)
 		if(istype(x) || islist(x))
 			spawned += x // holocarp are not forever
 			added += x
+		// activate() у спавнера мобов создаёт живого симпла со всей обвязкой -
+		// это ~80-110мс на штуку. Прок висит в колбеке таймера, спать безопасно
+		CHECK_TICK
 	for(var/obj/machinery/M in added)
 		M.flags_1 |= NODECONSTRUCT_1
 	for(var/obj/structure/S in added)

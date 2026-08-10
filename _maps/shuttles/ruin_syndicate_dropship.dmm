@@ -131,7 +131,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot{
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot{
 	environment_smash = 0
 	},
 /turf/open/floor/plasteel/dark,

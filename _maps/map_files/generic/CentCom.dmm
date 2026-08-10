@@ -21256,8 +21256,8 @@
 "mug" = (
 /obj/structure/table/wood,
 /obj/machinery/fax{
-	fax_name = "Central Comand Fax";
-	name = "Central Comand Fax";
+	fax_name = "Central Command Fax";
+	name = "Central Command Fax";
 	pixel_y = 5
 	},
 /turf/open/floor/carpet/black,
@@ -23084,7 +23084,7 @@
 /area/syndicate_mothership/control)
 "owp" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
-	piping_layer = 2
+	piping_layer = 3
 	},
 /obj/machinery/light{
 	dir = 4
