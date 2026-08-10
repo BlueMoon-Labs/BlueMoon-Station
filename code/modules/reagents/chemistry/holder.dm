@@ -408,7 +408,7 @@
 			reagent.on_mob_metabolize(owner)
 		if(can_overdose)
 			if(reagent.overdose_threshold)
-				if(reagent.volume >= reagent.overdose_threshold && !reagent.overdosed)
+				if(reagent.volume > reagent.overdose_threshold && !reagent.overdosed)
 					reagent.overdosed = TRUE
 					need_mob_update += reagent.overdose_start(owner)
 					log_game("[key_name(owner)] has started overdosing on [reagent.name] at [reagent.volume] units.")
