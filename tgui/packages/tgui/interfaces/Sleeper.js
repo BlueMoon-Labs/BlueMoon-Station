@@ -109,9 +109,9 @@ export const Sleeper = (props) => {
               icon={chem.overdose_threshold || chem.addiction_threshold ? 'triangle-exclamation' : 'flask'}
               iconColor={chem.overdose_threshold ? 'bad' : chem.addiction_threshold ? 'warning' : null}
               tooltip={[
-                chem.overdose_threshold && `Передозировка: ${chem.overdose_threshold} юнитов.`,
-                chem.addiction_threshold && `Зависимость: ${chem.addiction_threshold} юнитов.`,
-              ].filter(Boolean).join('\n')}
+                chem.overdose_threshold && `Передозировка: ${chem.overdose_threshold}u`,
+                chem.addiction_threshold && `Зависимость: ${chem.addiction_threshold}u`,
+              ].filter(Boolean).join(' | ')}
               content={chem.name}
               disabled={!occupied || !chem.allowed}
               width="140px"
