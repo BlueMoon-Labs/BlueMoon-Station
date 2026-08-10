@@ -641,7 +641,7 @@
 	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
 	// fresh stall budget. A door cycling next to a settled room used to hand its
 	// whole neighborhood a new rest window every time it opened.
-	ATMOS_BENCH_WAKE("adjacency")
+	ATMOS_BENCH_WAKE(open_turf, "adjacency")
 	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /turf/proc/update_air_ref(flag)
@@ -679,7 +679,7 @@
 	if(SSair.initialized && !SSair.map_loading)
 		// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
 		// турфу нужен, свежее окно отдыха - нет.
-		ATMOS_BENCH_WAKE("air_ref")
+		ATMOS_BENCH_WAKE(open_turf, "air_ref")
 		SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /proc/_dm_atmos_should_process_pair(turf/open/source, turf/open/target)

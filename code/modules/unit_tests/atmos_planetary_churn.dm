@@ -8,6 +8,10 @@
 #define PLANETARY_CHURN_TEMPLATE_A "o2=14;n2=23;TEMP=320"
 #define PLANETARY_CHURN_TEMPLATE_B "o2=22;n2=82;TEMP=293.15"
 #define PLANETARY_CHURN_MAX_CYCLES 400
+/// Температура бодрой кромки в breakdown_evicts_settled_planetary: на ~107 K
+/// выше шаблона B, чтобы бакет-среднее девяти членов (старое поведение) ушло от
+/// шаблона дальше 4K-порога compare() и удержало осевших.
+#define PLANETARY_CHURN_WARM_EDGE_TEMPERATURE 400
 
 /datum/unit_test/planetary_churn
 	priority = TEST_LONGER
@@ -325,7 +329,7 @@
 		group.add_turf(T)
 	// Кромка у пробоины: заметно теплее неба, чтобы бакет-среднее (старое
 	// поведение) ушло от шаблона дальше порога compare() и удержало всех.
-	warm_edge.air.set_temperature(400)
+	warm_edge.air.set_temperature(PLANETARY_CHURN_WARM_EDGE_TEMPERATURE)
 	var/list/turf/open/settled_sky = list()
 	for(var/turf/open/T as anything in room)
 		if(T == warm_edge)
@@ -448,3 +452,4 @@
 #undef PLANETARY_CHURN_TEMPLATE_A
 #undef PLANETARY_CHURN_TEMPLATE_B
 #undef PLANETARY_CHURN_MAX_CYCLES
+#undef PLANETARY_CHURN_WARM_EDGE_TEMPERATURE

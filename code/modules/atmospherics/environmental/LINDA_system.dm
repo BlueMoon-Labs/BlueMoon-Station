@@ -183,7 +183,7 @@
 	if(remove)
 		SSair.remove_from_active(src)
 	else
-		ATMOS_BENCH_WAKE("air_update_turf")
+		ATMOS_BENCH_WAKE(src, "air_update_turf")
 		SSair.add_to_active(src)
 
 /atom/movable/proc/move_update_air(turf/T)

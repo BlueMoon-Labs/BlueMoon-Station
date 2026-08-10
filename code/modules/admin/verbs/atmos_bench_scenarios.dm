@@ -79,8 +79,10 @@
 #define ATMOS_BENCH_BLAST_FIRST_Y 54
 #define ATMOS_BENCH_BLAST_FIRST_Z 7
 /// Задержка второй фазы (циклов SSair после первой): на проде прошло ~1800
-/// фаеров; для бенча хватает окна, в котором группа успевает вырасти.
-#define ATMOS_BENCH_BLAST_SECOND_DELAY 300
+/// фаеров; для бенча хватает окна, в котором группа успевает вырасти. При
+/// дефолтных event-cycle 20 и ATMOS_HEADLESS_BENCH_CYCLES 240 вторая фаза
+/// обязана успеть выстрелить (20 + 200 = 220 < 240).
+#define ATMOS_BENCH_BLAST_SECOND_DELAY 200
 /// Side of the square hull breach punched into the middle of the station.
 #define ATMOS_BENCH_STATION_BREACH_SIDE 5
 
