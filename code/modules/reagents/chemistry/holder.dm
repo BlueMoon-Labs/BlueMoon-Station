@@ -523,8 +523,14 @@
 					else
 						if(cached_my_atom.type == C.required_container)
 							matching_container = 1
+					// Пропускаем ЭТОТ рецепт, а не весь разбор. Здесь был return, и он обрывал
+					// handle_reactions() целиком, теряя уже собранные possible_reactions:
+					// индекс рецептов строится по ПЕРВОМУ реагенту (см. break выше), поэтому
+					// достаточно сахара в теле - и на /datum/chemical_reaction/food/caramel
+					// (mob_react = FALSE) внутримобная химия умирала вся сразу. Так же и с
+					// водой (dough), кровью (synthmeat), salglu (coagulant_weak).
 					if (isliving(cached_my_atom) && !C.mob_react) //Makes it so certain chemical reactions don't occur in mobs
-						return
+						continue
 					if(!C.required_other)
 						matching_other = 1
 

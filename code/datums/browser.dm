@@ -76,8 +76,14 @@
 			SSassets.transport.register_asset(asset_name, file)
 
 /datum/browser/proc/add_script(name, file)
-	scripts["[ckey(name)].js"] = file
-	SSassets.transport.register_asset("[ckey(name)].js", file)
+	var/asset_name = "[ckey(name)].js"
+	scripts[asset_name] = file
+	// Гард как у add_stylesheet выше: register_asset строит ACI (то есть хеширует файл
+	// через md5asfile - fcopy плюс rustg_hash_file плюс fdel, три синхронных похода на
+	// диск) и только потом смотрит в кэш. Окно чарсетапа перерисовывается на каждый клик,
+	// поэтому один и тот же .js перехешировался снова и снова, блокируя мир
+	if (!SSassets.cache[asset_name])
+		SSassets.transport.register_asset(asset_name, file)
 
 /datum/browser/proc/set_content(ncontent)
 	content = ncontent
@@ -165,16 +171,20 @@
 	if (use_onclose)
 		setup_onclose()
 
+/// Сколько раз ждём появления окна у клиента. Каждая попытка - round-trip winexists до
+/// скина, у медленного клиента одна такая пачка отъедала десятки секунд.
+#define BROWSER_ONCLOSE_ATTEMPTS 3
+
 /datum/browser/proc/setup_onclose()
 	set waitfor = 0 //winexists sleeps, so we don't need to.
 	var/client/browser_client = resolve_client()
 	if(!browser_client)
 		return
-	for (var/i in 1 to 10)
+	for (var/i in 1 to BROWSER_ONCLOSE_ATTEMPTS)
 		browser_client = resolve_client()
 		if(!browser_client)
 			return
-		if (winexists(browser_client, window_id))
+		if (tracked_winexists(browser_client, window_id))
 			var/atom/send_ref
 			if(ref)
 				send_ref = ref.resolve()
@@ -306,13 +316,13 @@
 	if (stealfocus)
 		. = ..(use_onclose = 1)
 	else
-		var/focusedwindow = winget(user, null, "focus")
+		var/focusedwindow = tracked_winget(user, null, "focus")
 		. = ..(use_onclose = 1)
 
 		//waits for the window to show up client side before attempting to un-focus it
 		//winexists sleeps until it gets a reply from the client, so we don't need to bother sleeping
 		for (var/i in 1 to 10)
-			if (resolve_client() && winexists(user, window_id))
+			if (resolve_client() && tracked_winexists(user, window_id))
 				if (focusedwindow)
 					winset(user, focusedwindow, "focus=true")
 				else
@@ -562,3 +572,5 @@
 	// so just reset the user mob's machine var
 	if(src?.mob)
 		src.mob.unset_machine()
+
+#undef BROWSER_ONCLOSE_ATTEMPTS

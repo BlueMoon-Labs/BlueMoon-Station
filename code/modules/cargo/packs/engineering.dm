@@ -121,7 +121,8 @@
 	desc = "Миазмы сбивают тебя с ног? Плазма в вентиляции? Освежите воздух с помощью этих двух совершенно новых скрубберов!"
 	cost = 3000
 	contains = list(/obj/machinery/portable_atmospherics/scrubber,
-					/obj/machinery/portable_atmospherics/scrubber)
+					/obj/machinery/portable_atmospherics/scrubber/pipe,
+					/obj/item/tank/internals/oxygen/empty)
 	crate_name = "portable scrubber crate"
 
 /datum/supply_pack/engineering/power

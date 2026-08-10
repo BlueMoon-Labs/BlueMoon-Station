@@ -1122,6 +1122,72 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 		return J
 	return FALSE
 
+/// Собирает многодирекционную плоскую иконку по уже существующему атому: по кадру
+/// на каждую дирекцию из show_dirs, с выравниванием кадров по общему размеру.
+/// Вынесено из get_flat_human_icon, чтобы фото манифеста можно было снимать прямо
+/// с настоящего моба, минуя постройку и экипировку манекена.
+///
+/// force_dir - снимать не с самого атома, а с копии его внешности с принудительной
+/// дирекцией. У живого моба dir произвольный, а getFlatIcon предпочитает
+/// собственную дирекцию цели запрошенной: без копии фас и профиль вышли бы двумя
+/// одинаковыми кадрами. Манекену это не нужно - он всегда смотрит на юг.
+/proc/build_flat_multidir_icon(atom/subject, list/show_dirs = GLOB.cardinals, no_anim = FALSE, force_dir = FALSE)
+	if(QDELETED(subject))
+		return icon('icons/effects/effects.dmi', "nothing")
+
+	// Внешность снимается один раз до цикла: между дирекциями прок уступает тик, и
+	// живой моб успел бы повернуться, переодеться или лечь - кадры разъехались бы.
+	var/frozen_appearance
+	if(force_dir)
+		frozen_appearance = subject.appearance
+
+	var/icon/out_icon
+	var/list/good_partials = list()
+	var/list/good_dirs = list()
+	var/max_w = 0
+	var/max_h = 0
+	for(var/photo_dir in show_dirs)
+		// Один getFlatIcon гуманоида со всеми оверлеями стоит десятки миллисекунд, а
+		// дирекций тут до четырёх - без выхода наружу вся генерация уходила одним
+		// неразрывным куском. В прод-раунде очередь фото манифеста давала блоки по
+		// 130-450 мс, то есть рвала тик в три-девять раз.
+		CHECK_TICK
+		var/icon/partial
+		if(isnull(frozen_appearance))
+			partial = getFlatIcon(subject, defdir = photo_dir, no_anim = no_anim)
+		else
+			var/image/dir_snapshot = new
+			dir_snapshot.appearance = frozen_appearance
+			dir_snapshot.dir = photo_dir
+			partial = getFlatIcon(dir_snapshot, defdir = photo_dir, no_anim = no_anim)
+		if(!istype(partial, /icon) || !partial.Width() || !partial.Height())
+			continue
+		good_partials += partial
+		good_dirs += photo_dir
+		var/partial_width = partial.Width()
+		var/partial_height = partial.Height()
+		if(partial_width > max_w)
+			max_w = partial_width
+		if(partial_height > max_h)
+			max_h = partial_height
+
+	if(length(good_dirs))
+		out_icon = new /icon()
+		for(var/i = 1 to length(good_dirs))
+			var/photo_dir = good_dirs[i]
+			var/icon/slot = good_partials[i]
+			if(slot.Width() != max_w || slot.Height() != max_h)
+				var/icon/padded = new /icon(slot)
+				padded.Crop(1, 1, max_w, max_h)
+				slot = padded
+			try
+				out_icon.Insert(slot, dir = photo_dir, frame = 1, delay = 0)
+			catch(var/exception/e)
+				stack_trace("build_flat_multidir_icon: Insert failed for dir=[photo_dir] ([e])")
+	if(!out_icon || !out_icon.Width())
+		out_icon = icon('icons/effects/effects.dmi', "nothing")
+	return out_icon
+
 /// Bounded cache for /proc/get_flat_human_icon — was unbounded var/static, leaked
 /// for the whole round when many distinct outfits/keys were rendered. Trim 25%
 /// (oldest entries) when over the cap.
@@ -1133,57 +1199,44 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
 	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
-		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key)
+		// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
+		// перерисовывается перед getFlatIcon, так что штатный regenerate_icons()
+		// на входе - выброшенная работа на каждом вызове.
+		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
 
+		// Всё до цикла по дирекциям шло одним неразрывным куском: copy_to тянет за собой
+		// set_species с полной пересборкой конечностей и органов, equip спавнит весь
+		// комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
+		// блок мерился в 120-190 мс при потолке тика в 12 - то есть уступать было пора
+		// давно, а первый CHECK_TICK стоял только ниже. Прок и так умеет спать, манекен
+		// на это время остаётся занятым, но остальные вызывающие ждут его на in_use
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
+			CHECK_TICK
 		if(J)
 			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
+			CHECK_TICK
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
+			CHECK_TICK
 
 		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
 		body.update_body(update_genitals = TRUE)
 		body.update_hair()
 		body.update_mutations_overlay()
+		CHECK_TICK
 
-		var/icon/out_icon
-		var/list/good_partials = list()
-		var/list/good_dirs = list()
-		var/max_w = 0
-		var/max_h = 0
-		for(var/D in showDirs)
-			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
-			if(istype(partial, /icon) && partial.Width() && partial.Height())
-				good_partials += partial
-				good_dirs += D
-				var/pw = partial.Width()
-				var/ph = partial.Height()
-				if(pw > max_w)
-					max_w = pw
-				if(ph > max_h)
-					max_h = ph
+		// Манекен на время съёмки остаётся занятым, но остальные вызывающие и так
+		// ждут его на in_use. Дирекцию не форсируем: манекен всегда смотрит на юг,
+		// и getFlatIcon возьмёт запрошенную.
+		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim)
 
-		if(length(good_dirs))
-			// Чиню за собой партиклы моба, на некоторых персах с специфическими данными превью ломалось.
-			out_icon = new /icon()
-			for(var/i = 1 to length(good_dirs))
-				var/D = good_dirs[i]
-				var/icon/slot = good_partials[i]
-				if(slot.Width() != max_w || slot.Height() != max_h)
-					var/icon/padded = new /icon(slot)
-					padded.Crop(1, 1, max_w, max_h)
-					slot = padded
-				try
-					out_icon.Insert(slot, dir = D, frame = 1, delay = 0)
-				catch(var/exception/e)
-					stack_trace("get_flat_human_icon: Insert failed for dir=[D] ([e])")
-		if(!out_icon || !out_icon.Width())
-			out_icon = icon('icons/effects/effects.dmi', "nothing")
-
-		GLOB.humanoid_icon_cache[icon_id] = out_icon
-		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
-			GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
+		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
+		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
+		if(icon_id)
+			GLOB.humanoid_icon_cache[icon_id] = out_icon
+			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
+				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
 		return out_icon
 	else
@@ -1470,7 +1523,10 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 		icon2collapse = A.icon
 		if (isnull(icon_state))
 			icon_state = A.icon_state
-			if (!(icon_state in icon_states(icon2collapse, 1)))
+			// Через мемоизированный список: сырой icon_states() заново разбирает весь
+			// лист, а у крупных (борговский widerobot.dmi - мегабайт на 364 стейта)
+			// это и есть основная цена холодного промаха кэша icon2html.
+			if (!(icon_state in cached_icon_states(icon2collapse, 1)))
 				icon_state = initial(A.icon_state)
 				if (isnull(dir))
 					dir = initial(A.dir)

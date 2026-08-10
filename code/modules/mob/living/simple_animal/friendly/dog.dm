@@ -53,6 +53,15 @@
 	QDEL_NULL(inventory_back)
 	return ..()
 
+// Осмотр обязан перечислять надетое: спрятать что-нибудь в шапке на собаке можно, а
+// нарисованный для питомца спрайт есть далеко не у каждой шапки. Одного оверлея мало.
+/mob/living/simple_animal/pet/dog/corgi/examine(mob/user)
+	. = ..()
+	if(inventory_head)
+		. += span_notice("[p_they_ru(TRUE)] носит на голове [inventory_head.name].")
+	if(inventory_back)
+		. += span_notice("[p_they_ru(TRUE)] несёт на спине [inventory_back.name].")
+
 /mob/living/simple_animal/pet/dog/corgi/handle_atom_del(atom/A)
 	if(A == inventory_head)
 		inventory_head = null
@@ -609,13 +618,15 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 			DF.obj_color = inventory_head.color
 
 		if(health <= 0)
-			head_icon = DF.get_overlay(dir = EAST)
-			head_icon.pixel_y = -8
-			head_icon.transform = turn(head_icon.transform, 180)
+			head_icon = DF.get_overlay(EAST, inventory_head)
+			if(head_icon) //спрайта может не быть вовсе - раньше тут был разыменованный null
+				head_icon.pixel_y = -8
+				head_icon.transform = turn(head_icon.transform, 180)
 		else
-			head_icon = DF.get_overlay()
+			head_icon = DF.get_overlay(worn_item = inventory_head)
 
-		add_overlay(head_icon)
+		if(head_icon)
+			add_overlay(head_icon)
 
 	if(inventory_back)
 		var/image/back_icon
@@ -629,12 +640,14 @@ GLOBAL_LIST_INIT(strippable_corgi_items, create_strippable_list(list(
 			DF.obj_color = inventory_back.color
 
 		if(health <= 0)
-			back_icon = DF.get_overlay(dir = EAST)
-			back_icon.pixel_y = -11
-			back_icon.transform = turn(back_icon.transform, 180)
+			back_icon = DF.get_overlay(EAST, inventory_back)
+			if(back_icon)
+				back_icon.pixel_y = -11
+				back_icon.transform = turn(back_icon.transform, 180)
 		else
-			back_icon = DF.get_overlay()
-		add_overlay(back_icon)
+			back_icon = DF.get_overlay(worn_item = inventory_back)
+		if(back_icon)
+			add_overlay(back_icon)
 
 	return
 

@@ -15,9 +15,14 @@
 	set name = "Subtler Anti-Ghost"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, message)
+		to_chat(usr, html_encode(message))
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
+	// текст верба приходит сырым, а канал эмоутов ничего не экранирует - кодируем ровно один раз здесь
+	if(length(message))
+		message = stripped_text_or_reflect(usr, message)
+		if(!length(message))
+			return
 	usr.emote("subtler", message = message)
 
 /mob/living/verb/subtler_indicatored()
@@ -61,8 +66,14 @@
 	set name = "Subtler Target"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is dumb but it's here because heehoo copypaste, who the FUCK uses this to identify lag?
+		to_chat(usr, html_encode(message))
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
+	// текст верба приходит сырым, а канал эмоутов ничего не экранирует - кодируем ровно один раз здесь
+	if(length(message))
+		message = stripped_text_or_reflect(usr, message)
+		if(!length(message))
+			return
 	usr.emote("subtler_target", message = list("text" = message, "indicator" = FALSE))
 
 /mob/living/verb/subtler_target_indicatored()
@@ -226,8 +237,9 @@
 		to_chat(user, span_boldwarning("You cannot send IC messages (muted)."))
 		return FALSE
 
+	// params сюда доходит уже закодированным (верб, инпут индикатора или sanitize() внутри say для "*subtler")
 	if(istext(params) && length(params))
-		message = stripped_text_or_reflect(user, params)
+		message = params
 	else
 		if(user.client?.prefs.tgui_input_verbs)
 			message = tgui_input_text(user, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
@@ -314,8 +326,9 @@
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 
+	// params сюда доходит уже закодированным (верб или sanitize() внутри say для "*subtler_table")
 	if(istext(params) && length(params))
-		message = stripped_text_or_reflect(user, params)
+		message = params
 	else
 		if(user.client?.prefs.tgui_input_verbs)
 			message = tgui_input_text(user, "Choose an emote to display.", "Subtler Around Table", null, MAX_MESSAGE_LEN, TRUE, TRUE)
@@ -485,8 +498,9 @@
 	. = TRUE
 	if(!istext(params))
 		return FALSE
-	message = stripped_text_or_reflect(user, params)
-	if(!message)
+	// params сюда доходит уже закодированным (верб или sanitize() внутри say для "*narrate")
+	message = params
+	if(!length(message))
 		return FALSE
 	if(jobban_isbanned(user, "emote"))
 		to_chat(user, message)

@@ -799,27 +799,13 @@
 	qdel(arena)
 	TEST_ASSERT(targeted_prey, "Rabid slime must target an adjacent monkey in the open")
 
-///Рычаг 3 (осознанный компромисс): grid-канал без LOS, поэтому слайм ТЕПЕРЬ чует
-///добычу за стеной. Тест фиксирует это поведение как намеренное (бенч показал:
-///can_see по каждому кандидату в 2.2х дороже, чем экономит view; см. slime/life.dm).
-/datum/unit_test/slime_prey_scan_grid_ignores_walls/Run()
-	var/datum/turf_reservation/arena = ssmobs_slime_scan_arena(8, 3)
-	TEST_ASSERT_NOTNULL(arena, "Failed to reserve slime scan arena")
-	//полная стена-колонна dx=2 по всей высоте: view бы её не пробил, grid - да
-	for(var/wall_dy in 0 to 2)
-		var/turf/wall_turf = ssmobs_arena_turf(arena, 2, wall_dy)
-		wall_turf.ChangeTurf(/turf/closed/wall)
-	var/mob/living/simple_animal/slime/hunter = new(ssmobs_arena_turf(arena, 0, 1))
-	var/mob/living/carbon/monkey/prey = new(ssmobs_arena_turf(arena, 4, 1))
-	hunter.rabid = 1
-	hunter.Target = null
-	hunter.next_hunt_scan = 0
-	hunter.handle_targets()
-	var/targeted_through_wall = (hunter.Target == prey)
-	qdel(hunter)
-	qdel(prey)
-	qdel(arena)
-	TEST_ASSERT(targeted_through_wall, "Grid scan (no can_see) must sense prey through a wall - the deliberate lever-3 tradeoff")
+//Здесь стоял slime_prey_scan_grid_ignores_walls, фиксировавший "видит сквозь стены"
+//как намеренный компромисс рычага 3 (бенч: can_see по каждому кандидату в 2.2х дороже,
+//чем экономит view). Компромисс пересмотрен: погоня всё равно отбраковывает цель вне
+//view(), поэтому слайм в ксенобио брал целью добычу за стеклом соседнего загона, тут же
+//её бросал и перевыбирал заново - до своей добычи очередь не доходила. Луч вернули, но
+//ПОСЛЕ дешёвых отсевов, где кандидатов уже единицы, а не весь грид-пул. Поведение теперь
+//закрыто тестом slime_ai_ignores_prey_behind_wall (с контрольной проверкой без стены).
 
 ///Рычаг 3: слайм НЕ таргетит добычу дальше радиуса скана (get_dist фильтр после
 ///грубого грид-пула, который отдаёт содержимое ячеек шире 7).

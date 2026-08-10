@@ -20,6 +20,8 @@
 	if(temp_bleed)
 		bleed(temp_bleed)
 
+	update_damage_hud()
+
 	//Blood regeneration if there is some space
 	if(blood_volume < BLOOD_VOLUME_NORMAL)
 		blood_volume += 0.1 // regenerate blood VERY slowly
@@ -130,6 +132,8 @@
 
 		if(temp_bleed)
 			bleed(temp_bleed)
+
+	update_damage_hud()
 
 //Makes a blood drop, leaking amt units of blood from the mob
 /mob/living/carbon/proc/bleed(amt, force)

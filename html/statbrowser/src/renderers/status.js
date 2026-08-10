@@ -1,4 +1,4 @@
-var st_sections = { round: true, time: true, character: true };
+var st_sections = { round: true, time: true, character: true, readyplayers: true };
 var st_skeleton = null;
 var st_els = {};
 var st_fixSent = false;
@@ -68,6 +68,7 @@ function st_ensureSkeleton() {
 	st_skeleton.appendChild(st_els.voteSection);
 
 	statcontent.appendChild(st_skeleton);
+	rp_ensureSkeleton();
 }
 
 function st_parseMobItem(str) {
@@ -212,6 +213,8 @@ function draw_status() {
 	} else {
 		st_els.voteSection.style.display = "none";
 	}
+
+	draw_readyplayers();
 
 	if (!st_fixSent && (State.verbTabs.length === 0 || State.verbs.length === 0)) {
 		st_fixSent = true;

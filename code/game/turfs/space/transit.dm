@@ -72,10 +72,24 @@
 
 /turf/open/space/transit/Entered(atom/movable/AM, atom/OldLoc)
 	. = ..()
+	// Родитель имеет право утащить пришедшего прямо здесь: дамп в космос уносит его
+	// на другой z, а TRAIT_DEL_ON_SPACE_DUMP - удаляет совсем. Тогда get_turf(AM)
+	// уже null, и SSshuttle.is_in_shuttle_bounds рантаймит по одному разу на КАЖДЫЙ
+	// док станции. Гард ровно тот же, что стоит у /turf/open/space/Entered.
+	if(QDELETED(AM) || AM.loc != src)
+		return
 	init_shuttle_cling(AM)
 
 /turf/open/space/transit/Exited(atom/movable/gone, direction)
 	. = ..()
+	var/turf/location = gone.loc
+	// Must check the transit parent path, not src.type: BlueMoon uses directional subtypes
+	// (/transit/south, /transit/border/north, …). Checking src.type dumps anything that crosses
+	// from interior → border (and vice versa), which instantly qdels shuttle-event spawns
+	// (TRAIT_DEL_ON_SPACE_DUMP) and yeets projectiles/debris into realspace.
+	if(istype(location, /turf/open/space) && !istype(location, /turf/open/space/transit))
+		dump_in_space(gone)
+		return
 	if(!istype(gone.loc, /turf/open/space/transit))
 		var/datum/component/shuttle_cling/cling = gone.GetComponent(/datum/component/shuttle_cling)
 		if(cling)
@@ -125,23 +139,80 @@
 		if(WEST)
 			. = -90
 
+/proc/get_hyperspace_dump_zlevels()
+	var/list/result = list()
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		result += z
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS))
+		if(!(z in result))
+			result += z
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_MINING))
+		if(!(z in result))
+			result += z
+	if(length(result))
+		return result
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		if(level.linkage != CROSSLINKED)
+			continue
+		if(is_hilbert_hotel_zlevel(level.z_value))
+			continue
+		result += level.z_value
+	return result
+
+/proc/is_hilbert_hotel_zlevel(z)
+	for(var/area/A as anything in GLOB.sortedAreas)
+		if(A.z != z)
+			continue
+		if(istype(A, /area/hilbertshotel) || istype(A, /area/hilbertshotelstorage))
+			return TRUE
+	return FALSE
+
 ///Dump a movable in a random valid spacetile
 /proc/dump_in_space(atom/movable/dumpee)
 	if(HAS_TRAIT(dumpee, TRAIT_DEL_ON_SPACE_DUMP))
 		qdel(dumpee)
 		return
 
-	var/max = world.maxx-TRANSITIONEDGE
-	var/min = 1+TRANSITIONEDGE
+	var/max = world.maxx - TRANSITIONEDGE
+	var/min = 1 + TRANSITIONEDGE
+	var/list/valid_z = get_hyperspace_dump_zlevels()
+	if(!length(valid_z))
+		for(var/datum/space_level/level as anything in SSmapping.z_list)
+			if(level.linkage == CROSSLINKED && !is_hilbert_hotel_zlevel(level.z_value))
+				valid_z += level.z_value
+	if(!length(valid_z))
+		valid_z = SSmapping.levels_by_trait(ZTRAIT_MINING)
+	if(!length(valid_z))
+		valid_z = SSmapping.levels_by_trait(ZTRAIT_STATION)
 
-	var/list/possible_transtitons = list()
-	for(var/datum/space_level/level as anything in SSmapping.z_list)
-		if (level.linkage == CROSSLINKED)
-			possible_transtitons += level.z_value
-	if(!length(possible_transtitons)) //No space to throw them to - try throwing them onto mining
-		possible_transtitons = SSmapping.levels_by_trait(ZTRAIT_MINING)
-		if(!length(possible_transtitons)) //Just throw them back on station, if not just runtime.
-			possible_transtitons = SSmapping.levels_by_trait(ZTRAIT_STATION)
+	var/target_z
+	var/list/station_z = list()
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		if(z in valid_z)
+			station_z += z
+	if(prob(25) && length(station_z))
+		target_z = pick(station_z)
+	else
+		var/list/space_z = list()
+		for(var/z in valid_z)
+			if(z in station_z)
+				continue
+			space_z += z
+		if(!length(space_z))
+			space_z = valid_z
+		target_z = pick(space_z)
 
-	//move the dumpee to a random coordinate turf
-	dumpee.forceMove(locate(rand(min,max), rand(min,max), pick(possible_transtitons)))
+	var/turf/destination = locate(rand(min, max), rand(min, max), target_z)
+	if(!destination)
+		destination = locate(1, 1, pick(valid_z))
+	if(!destination)
+		return
+	dumpee.forceMove(destination)
+
+	if(!ismovable(dumpee))
+		return
+	var/atom/movable/M = dumpee
+	var/throw_dir = pick(GLOB.cardinals)
+	var/turf/throw_target = get_edge_target_turf(M, throw_dir)
+	if(throw_target)
+		M.safe_throw_at(throw_target, rand(15, 25), rand(8, 12), spin = TRUE, force = MOVE_FORCE_EXTREMELY_STRONG)

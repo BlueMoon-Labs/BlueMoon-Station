@@ -31,6 +31,13 @@
 #define QCD_RESEARCH_AMOUNT					0.2 // often made in absolutely massive quantities due to the simple nature of fusion
 #define MIASMA_RESEARCH_AMOUNT				6
 #define STIMULUM_RESEARCH_AMOUNT			50
+//Разовая награда за первый за раунд синтез газа, по уровню сложности синтеза.
+//Платится именно за первый, а не за объём: плата за объём превратила бы атмос в
+//ферму очков и обесценила бы остальную науку. Наградой сделана широта освоенного,
+//поэтому полный обход дерева газов стоит примерно одного крупного узла техвеба.
+#define GAS_DISCOVERY_RESEARCH_BASIC		250
+#define GAS_DISCOVERY_RESEARCH_ADVANCED		750
+#define GAS_DISCOVERY_RESEARCH_EXOTIC		2000
 //Plasma fusion properties
 #define FUSION_ENERGY_THRESHOLD				3e9 	//Amount of energy it takes to start a fusion reaction
 #define FUSION_MOLE_THRESHOLD				250 	//Mole count required (tritium/plasma) to start a fusion reaction
@@ -120,3 +127,44 @@
 #define PLUOXIUM_RADIATION_O2_DIVISOR		2000
 #define PLUOXIUM_RADIATION_OUTPUT_DIVISOR	4000
 #define HYDROGEN_IRRADIATION_DIVISOR		1000
+
+// Пиронит - топливо высокого давления.
+//
+// Окно намеренно горячее: разогретая смесь и без того распирает трубу, поэтому
+// игрок приходит к порогу давления сам, просто нагревая контур, и обычная
+// разводка на этом ломается раньше, чем реакция пойдёт.
+#define PYRONITE_FORMATION_MIN_TEMP			1500
+#define PYRONITE_FORMATION_MAX_TEMP			6000
+/// Делитель температуры в скорости реакции: при 6000 K даёт 6 единиц за проход.
+#define PYRONITE_FORMATION_TEMP_DIVISOR		1000
+/// Давление сверх порога ускоряет синтез, но не бесконечно - иначе выгоднее
+/// было бы гнать линию к разрыву, а не строить её с запасом.
+#define PYRONITE_PRESSURE_SCALE_CAP			3
+#define PYRONITE_TRITIUM_PER_UNIT			2
+#define PYRONITE_PLASMA_PER_UNIT			2
+/// Прото-нитрат работает катализатором и тратится в сотню раз медленнее сырья.
+#define PYRONITE_CATALYST_PER_UNIT			0.02
+#define PYRONITE_YIELD_PER_UNIT				3
+/// Синтез эндотермический: контур приходится греть, и сам себя он не разгоняет.
+#define PYRONITE_FORMATION_ENERGY			150000
+/// Теплота сгорания моля пиронита. Вдвое выше плазмы: это и есть ось энергетики,
+/// ради которой строится усиленный контур.
+#define PYRONITE_COMBUSTION_ENERGY			(FIRE_PLASMA_ENERGY_RELEASED * 2)
+
+// Флюксин - катализатор.
+#define FLUXIN_FORMATION_MIN_TEMP			300
+#define FLUXIN_FORMATION_MAX_TEMP			600
+#define FLUXIN_FORMATION_TEMP_DIVISOR		200
+#define FLUXIN_HELIUM_PER_UNIT				2
+#define FLUXIN_BZ_PER_UNIT					0.5
+#define FLUXIN_PLASMA_PER_UNIT				1
+#define FLUXIN_YIELD_PER_UNIT				2
+#define FLUXIN_FORMATION_ENERGY				80000
+/// Сколько молей флюксина в смеси дают полный эффект катализа.
+#define FLUXIN_FULL_EFFECT_MOLES			50
+/// Во сколько раз при полном эффекте раздвигается верхняя граница окна и во
+/// столько же раз дешевле обходится сырьё катализируемой реакции.
+#define FLUXIN_MAX_BONUS					0.5
+/// Расход катализатора на единицу проделанной работы. Катализатор не должен
+/// быть вечным: сваренный один раз, он иначе работал бы всю смену даром.
+#define FLUXIN_CONSUMPTION_PER_UNIT			0.01
