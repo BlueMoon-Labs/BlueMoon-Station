@@ -168,6 +168,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	max_integrity = 500
 	armor = list(MELEE = 10, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	flags_1 = NODECONSTRUCT_1
+	interaction_flags_machine = INTERACT_MACHINE_WIRES_IF_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OPEN_SILICON | INTERACT_MACHINE_SET_MACHINE | INTERACT_MACHINE_OFFLINE
 
 	var/tele = FALSE
 
@@ -182,6 +183,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /obj/machinery/cryopod/Initialize(mapload)
 	..()
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
 	return INITIALIZE_HINT_LATELOAD //Gotta populate the cryopod computer GLOB first
 
 /obj/machinery/cryopod/LateInitialize()
@@ -192,6 +194,14 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/machinery/cryopod/Destroy()
 	control_computer_weakref = null
 	return ..()
+
+/obj/machinery/cryopod/is_operational()
+	return !(machine_stat & (BROKEN|MAINT))
+
+/obj/machinery/cryopod/on_stat_update(old_value)
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
 
 /obj/machinery/cryopod/close_machine(atom/movable/target)
 	if(!control_computer_weakref)
