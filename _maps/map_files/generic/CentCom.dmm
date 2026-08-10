@@ -10127,7 +10127,8 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "bti" = (
-/obj/machinery/vending/security,
+/obj/structure/fence,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating/ironsand,
 /area/centcom/holding/shootingrange)
 "btp" = (
@@ -12861,7 +12862,9 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "efq" = (
-/obj/machinery/vending/donksofttoyvendor,
+/obj/machinery/vending/toyliberationstation{
+	shut_up = 1
+	},
 /turf/open/floor/plasteel/sepia,
 /area/centcom/holding/shootingrange)
 "egf" = (
@@ -14666,6 +14669,7 @@
 /obj/structure/fence/door{
 	dir = 4
 	},
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/plating/ironsand,
 /area/centcom/holding/shootingrange)
 "fRP" = (
@@ -15845,6 +15849,11 @@
 	},
 /turf/closed/indestructible/riveted,
 /area/centcom/control)
+"gVU" = (
+/obj/structure/table/reinforced/plastitanium,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/plating/ironsand,
+/area/centcom/holding/shootingrange)
 "gWm" = (
 /obj/structure/reagent_dispensers/water_cooler,
 /turf/open/floor/holofloor/wood,
@@ -23395,6 +23404,12 @@
 	},
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
+"owH" = (
+/obj/structure/table/reinforced/plastitanium,
+/obj/item/ghostcafe_spawner,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/plating/ironsand,
+/area/centcom/holding/shootingrange)
 "oxc" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -23510,6 +23525,10 @@
 /obj/item/storage/firstaid/tactical/ert_first,
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
+"oCC" = (
+/obj/effect/baseturf_helper/black_mesa,
+/turf/closed/indestructible/rock,
+/area/centcom/holding/shootingrange)
 "oCK" = (
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
@@ -24187,10 +24206,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
-"pgX" = (
-/obj/effect/baseturf_helper/black_mesa,
-/turf/closed/indestructible/rock,
-/area/centcom/holding/shootingrange)
 "pha" = (
 /obj/effect/decal/cleanable/semen/femcum,
 /turf/open/indestructible/boss/air,
@@ -24930,6 +24945,18 @@
 /obj/effect/turf_decal/big_sign/snowdin_station_sign/two,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership)
+"pOm" = (
+/obj/structure/reagent_dispensers/watertank/high,
+/obj/item/reagent_containers/glass/bucket{
+	pixel_x = -5;
+	pixel_y = 0
+	},
+/obj/item/reagent_containers/glass/bucket{
+	pixel_x = 10;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/centcom/holding)
 "pPs" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/structure/table/reinforced,
@@ -32916,6 +32943,19 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel,
+/area/centcom/holding)
+"xnv" = (
+/obj/item/lighter,
+/obj/item/lighter{
+	pixel_x = 7;
+	pixel_y = 0
+	},
+/obj/item/lighter{
+	pixel_x = -7;
+	pixel_y = 0
+	},
+/obj/structure/table,
+/turf/open/floor/plasteel/showroomfloor,
 /area/centcom/holding)
 "xnx" = (
 /obj/effect/turf_decal/tile/dark_blue{
@@ -51242,7 +51282,7 @@ uZR
 uZR
 uZR
 uZR
-pgX
+oCC
 aaa
 aaa
 aaa
@@ -51744,7 +51784,7 @@ kfE
 rwb
 rwb
 rwb
-bWo
+owH
 rwb
 rwb
 rwb
@@ -52001,7 +52041,7 @@ rwb
 rwb
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -52258,7 +52298,7 @@ rwb
 rwb
 btB
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -52515,7 +52555,7 @@ rwb
 rwb
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -53029,7 +53069,7 @@ wBo
 wBo
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -53286,7 +53326,7 @@ ifI
 wBo
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -53543,7 +53583,7 @@ wBo
 wBo
 rwb
 rwb
-bWo
+owH
 rwb
 rwb
 rwb
@@ -54057,7 +54097,7 @@ oGF
 wBo
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -54314,7 +54354,7 @@ wBo
 wBo
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -54571,7 +54611,7 @@ rwb
 rwb
 rwb
 rwb
-upz
+gVU
 rwb
 rwb
 rwb
@@ -54828,7 +54868,7 @@ rwb
 rwb
 rwb
 rwb
-bWo
+owH
 rwb
 rwb
 rwb
@@ -55086,16 +55126,16 @@ rwb
 rwb
 kfE
 wXZ
-lpf
-lpf
-lpf
-lpf
-lpf
+bti
+bti
+bti
+bti
+bti
 fRN
-lpf
-lpf
-lpf
-lpf
+bti
+bti
+bti
+bti
 wXZ
 uZR
 hFy
@@ -57420,7 +57460,7 @@ vaT
 ubJ
 cbD
 pJw
-bti
+pJw
 wIT
 uZR
 hFy
@@ -67127,7 +67167,7 @@ aFe
 aFe
 aFe
 aFe
-pXv
+xnv
 pXv
 pXv
 ryB
@@ -67384,7 +67424,7 @@ oom
 fFG
 oom
 aFe
-pXv
+pOm
 pXv
 pXv
 aFe

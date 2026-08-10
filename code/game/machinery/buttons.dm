@@ -275,6 +275,9 @@
 		for(var/obj/item/bodypart/bodypart in T)
 			qdel(bodypart)
 			cleaned_count++
+		for(var/obj/effect/decal/remains/human/remains in T)
+			qdel(remains)
+			cleaned_count++
 
 	if(cleaned_count > 0)
 		to_chat(user, "<span class='notice'>Удалено [cleaned_count] объектов крови и внутренностей из тира.</span>")

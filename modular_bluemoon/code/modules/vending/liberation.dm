@@ -190,6 +190,7 @@
 				/obj/item/ammo_box/magazine/mm712x82 = 3,
 				/obj/item/ammo_casing/caseless/rocket = 3,
 				/obj/item/ammo_box/magazine/ak12 = 5,
+				/obj/item/ammo_box/magazine/ak12/r = 3,
 				/obj/item/ammo_box/magazine/ak47 = 5,
 				/obj/item/ammo_box/magazine/m16 = 5,
 			)
@@ -234,7 +235,7 @@
 		),
 	)
 	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
-	resistance_flags = FIRE_PROOF
+	resistance_flags = 115 // INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | UNACIDABLE | FREEZE_PROOF | LAVA_PROOF
 	default_price = PRICE_ABOVE_NORMAL
 	extra_price = PRICE_ABOVE_EXPENSIVE
 	payment_department = ACCOUNT_SEC

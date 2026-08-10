@@ -35,6 +35,11 @@
 	if(!isturf(target))
 		return
 
+	var/area/target_area = get_area(target)
+	if(!istype(target_area, /area/centcom/holding/shootingrange))
+		to_chat(user, span_warning("Спавн возможен только в пределах тира!"))
+		return
+
 	if(world.time < next_spawn_time)
 		var/time_left = (next_spawn_time - world.time) / 10
 		to_chat(user, span_warning("Подождите ещё [time_left] секунд перед следующим спавном!"))
@@ -45,6 +50,7 @@
 		return
 
 	var/datum/outfit/selected_outfit = available_outfits[choice]
+	var/datum/outfit/outfit_instance = new selected_outfit
 
 	if(current_spawned && !QDELETED(current_spawned))
 		current_spawned.dust()
@@ -53,7 +59,7 @@
 	var/mob/living/carbon/human/H = new /mob/living/carbon/human(target)
 	H.set_species(/datum/species/human) // Жёстко задаём человека
 
-	H.equipOutfit(selected_outfit)
+	H.equipOutfit(outfit_instance)
 
 	// Remove any radios or PDAs
 	for(var/obj/item/radio/R in H.get_all_slots())
@@ -75,8 +81,10 @@
 	current_spawned = H
 	next_spawn_time = world.time + cooldown
 
-	to_chat(user, span_notice("Заспавнен человек с лоадаутом: [selected_outfit.name]"))
+	to_chat(user, span_notice("Заспавнен человек с лоадаутом: [outfit_instance.name]"))
 	playsound(src, 'sound/magic/staff_change.ogg', 50, TRUE)
+
+	qdel(outfit_instance)
 
 /obj/item/ghostcafe_spawner/proc/protect_clothing(mob/living/carbon/human/H)
 	// Protect all items from being dropped
@@ -147,6 +155,7 @@
 /datum/outfit/syndicate/full/training
 	name = "Syndicate Operative - Full Kit Training"
 	ears = null
+	r_hand = null // Remove bulldog for training
 	post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 		return // Skip antagonist post_equip
 
