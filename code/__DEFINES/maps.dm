@@ -34,7 +34,7 @@ require only minor tweaks.
 #define ZTRAIT_SPACE_RUINS "Space Ruins"
 #define ZTRAIT_LAVA_RUINS "Lava Ruins"
 #define ZTRAIT_LAVA_JUNGLE_RUINS "Lava Jungle Ruins" //Skyrat change
-#define ZTRAIT_PACT_SIEGE "Pact Siege"
+#define ZTRAIT_PACT_SIEGE "PACT Siege"
 
 #define ZTRAIT_ICE_RUINS "Ice Ruins"
 #define ZTRAIT_ICE_RUINS_UNDERGROUND "Ice Ruins Underground"

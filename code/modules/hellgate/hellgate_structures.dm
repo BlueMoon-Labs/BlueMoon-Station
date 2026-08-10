@@ -1,4 +1,4 @@
-// HellGate / PactDivest — OBJ-структуры (спрайты из sprites_HellGate)
+// HellGate / PACTDivest — OBJ-структуры (спрайты из sprites_HellGate)
 // Иконки: icons/obj/hellgate/
 // Имена состояний взяты из .dmi
 

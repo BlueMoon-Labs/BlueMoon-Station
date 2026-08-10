@@ -42,7 +42,25 @@
 	},
 /obj/item/ammo_box/magazine/recharge/lasgun,
 /obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = -6
+	},
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = 6
+	},
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = 6
+	},
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = 6
+	},
 /obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = -6
+	},
+/obj/item/ammo_box/magazine/recharge/lasgun{
+	pixel_x = -6
+	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
 "al" = (
@@ -75,13 +93,6 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"aq" = (
-/obj/machinery/porta_turret/inteq/energy/heavy{
-	name = "InteQ Ship Turret";
-	dir = 5
-	},
-/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ar" = (
 /obj/effect/turf_decal/big_sign/chapel/center{
@@ -573,10 +584,13 @@
 "bM" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /obj/structure/frame,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
+"bN" = (
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/nanotrasen,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "bO" = (
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt,
@@ -753,16 +767,6 @@
 /obj/structure/salvage/protolathe,
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
-"cs" = (
-/obj/item/ammo_box/magazine/hellgate_sg60{
-	pixel_x = -11;
-	pixel_y = 13
-	},
-/obj/item/ammo_box/magazine/hellgate_sg60{
-	pixel_y = 13
-	},
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "ct" = (
 /obj/machinery/mech_bay_recharge_port,
 /obj/structure/cable{
@@ -780,7 +784,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "cv" = (
@@ -807,7 +811,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/corner{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "cA" = (
@@ -883,6 +887,19 @@
 "cL" = (
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship2)
+"cM" = (
+/obj/item/kirbyplants/hedge,
+/obj/structure/deployable_barricade/metal{
+	dir = 4
+	},
+/obj/structure/deployable_barricade/metal{
+	pixel_y = 14
+	},
+/obj/structure/deployable_barricade/metal{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "cN" = (
 /obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/light{
@@ -896,7 +913,6 @@
 	req_one_access_txt = "152";
 	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
 	},
-/obj/item/gun/ballistic/automatic/hellgate_sg60,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "cP" = (
@@ -1042,9 +1058,6 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = 59
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 8
-	},
 /turf/open/floor/wood,
 /area/InteQ_ship)
 "dn" = (
@@ -1107,7 +1120,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -1245,7 +1258,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -1351,9 +1364,16 @@
 /area/InteQ_ship/ship5)
 "ei" = (
 /obj/structure/table/reinforced,
-/obj/item/clothing/glasses/thermal/eyepatch,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
+	},
+/obj/item/gun/ballistic/automatic/hellgate_sg60,
+/obj/item/ammo_box/magazine/hellgate_sg60{
+	pixel_x = -11;
+	pixel_y = 13
+	},
+/obj/item/ammo_box/magazine/hellgate_sg60{
+	pixel_y = 13
 	},
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -1417,15 +1437,6 @@
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"er" = (
-/obj/structure/sign/flag/inteq{
-	pixel_y = -32
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 8
-	},
-/turf/open/floor/wood,
 /area/InteQ_ship)
 "es" = (
 /obj/machinery/porta_turret/syndicate/energy{
@@ -1532,6 +1543,13 @@
 /obj/structure/urinal/shit,
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
+"eH" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown,
+/turf/open/floor/circuit/red,
+/area/InteQ_ship)
 "eI" = (
 /obj/machinery/porta_turret/inteq/energy{
 	name = "InteQ Ship Turret";
@@ -1547,7 +1565,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -1635,7 +1653,7 @@
 	req_one_access_txt = "152"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "eW" = (
@@ -1677,7 +1695,7 @@
 	req_one_access_txt = "152"
 	},
 /obj/effect/turf_decal/trimline/yellow/filled/line,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
@@ -1708,7 +1726,7 @@
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -1730,7 +1748,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "fk" = (
@@ -2022,6 +2040,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/big_sign/solgov/bb,
+/obj/machinery/syndicatebomb/self_destruct,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "gb" = (
@@ -2088,7 +2107,7 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "gm" = (
-/obj/machinery/rnd/production/protolathe/department,
+/obj/machinery/rnd/production/protolathe,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "gn" = (
@@ -2109,16 +2128,6 @@
 /obj/structure/table/wood,
 /obj/item/folder/blue,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"gs" = (
-/obj/machinery/light,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 9
-	},
-/turf/open/floor/wood,
 /area/InteQ_ship)
 "gt" = (
 /obj/machinery/vending/medical/syndicate_access/cybersun,
@@ -2287,8 +2296,8 @@
 /obj/machinery/light/small/red/dim/directional{
 	dir = 8
 	},
-/obj/machinery/suit_storage_unit/open,
 /obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "gO" = (
@@ -2659,11 +2668,11 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "hW" = (
-/obj/machinery/autolathe,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4;
 	layer = 3
 	},
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hX" = (
@@ -2953,6 +2962,10 @@
 "iQ" = (
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"iR" = (
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "iS" = (
 /obj/machinery/door/airlock/grunge,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
@@ -3027,7 +3040,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/nanotrasen,
@@ -3114,7 +3127,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -3256,7 +3269,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -3369,7 +3382,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -3457,7 +3470,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "ki" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/closed/wall/r_wall/syndicate,
@@ -3557,6 +3570,9 @@
 	},
 /obj/structure/rack,
 /obj/effect/turf_decal/delivery,
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_assault,
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_medical,
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_saboteur,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ku" = (
@@ -3638,7 +3654,7 @@
 /obj/machinery/computer/cryopod{
 	pixel_y = 32
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark,
@@ -3706,7 +3722,7 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1;
 	pixel_x = -5
 	},
@@ -3952,7 +3968,7 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = 32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /turf/open/floor/wood,
@@ -3993,7 +4009,7 @@
 	dir = 1;
 	name = "InteQ Forgotten Ship APC";
 	pixel_y = 23;
-	start_charge = 35
+	start_charge = 100
 	},
 /obj/item/soap/syndie,
 /obj/item/reagent_containers/spray/cleaner,
@@ -4009,7 +4025,7 @@
 /obj/effect/turf_decal/tile/brown/half,
 /obj/structure/bed/roller,
 /obj/machinery/iv_drip,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -4239,7 +4255,7 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "my" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -4247,14 +4263,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"mz" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/general/hidden{
-	dir = 10;
-	icon_state = "pipe11-2"
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/InteQ_ship/SOLVED)
 "mA" = (
 /obj/effect/decal/cleanable/blood/gibs,
 /mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
@@ -4340,7 +4348,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 1
 	},
@@ -4362,7 +4370,7 @@
 /obj/item/ammo_box/shotgun/loaded/buckshot,
 /obj/item/ammo_box/shotgun/loaded/stunslug,
 /obj/item/ammo_box/shotgun/loaded/stunslug,
-/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
+/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "mQ" = (
@@ -4444,7 +4452,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -4597,7 +4605,7 @@
 	dir = 4;
 	name = "InteQ Forgotten Ship APC";
 	pixel_x = 24;
-	start_charge = 35
+	start_charge = 100
 	},
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
@@ -4616,7 +4624,6 @@
 	light_color = "#e8eaff"
 	},
 /obj/machinery/suit_storage_unit/inteq_spacesuit,
-/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "nx" = (
@@ -4691,7 +4698,7 @@
 /obj/effect/turf_decal/trimline/red/filled/corner{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -4703,7 +4710,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 5
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -4825,7 +4832,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/wood/wood_large,
@@ -4962,6 +4969,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"oq" = (
+/obj/item/gun/energy/laser/sniper,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "or" = (
 /obj/effect/turf_decal/tile/bar,
 /obj/effect/turf_decal/tile/bar{
@@ -4977,6 +4988,8 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/structure/closet/crate/freezer/blood,
+/obj/item/gun/medbeam,
+/obj/item/gun/medbeam,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "ot" = (
@@ -5015,8 +5028,11 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 5
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "oB" = (
 /obj/structure/window/reinforced{
@@ -5103,10 +5119,16 @@
 /turf/open/floor/carpet/royalblack,
 /area/InteQ_ship)
 "oO" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"oP" = (
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret"
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "oQ" = (
 /obj/structure/cable,
@@ -5160,7 +5182,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -5284,6 +5306,13 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/InteQ_ship)
+"pr" = (
+/obj/structure/deployable_barricade/metal,
+/obj/structure/deployable_barricade/metal{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "ps" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
@@ -5316,7 +5345,7 @@
 	dir = 1;
 	name = "InteQ Post APC";
 	pixel_y = 23;
-	start_charge = 35
+	start_charge = 100
 	},
 /obj/structure/cable{
 	icon_state = "0-2"
@@ -5349,6 +5378,13 @@
 /obj/item/tank/internals/oxygen/red,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
+"py" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/deployable_barricade/metal,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "pz" = (
 /obj/machinery/porta_turret/inteq/energy{
 	name = "InteQ Ship Turret";
@@ -5359,9 +5395,6 @@
 "pA" = (
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 8
 	},
 /obj/machinery/light,
 /turf/open/floor/wood,
@@ -5457,10 +5490,6 @@
 "pR" = (
 /turf/closed/wall/r_wall/syndicate,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"pT" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "pU" = (
 /obj/item/stack/sheet/glass{
 	pixel_y = 3
@@ -5540,7 +5569,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "qe" = (
@@ -5630,9 +5659,9 @@
 	dir = 1
 	},
 /obj/structure/rack/shelf,
-/obj/item/stack/sheet/spaceship,
-/obj/item/stack/sheet/spaceship,
-/obj/item/stack/sheet/spaceship,
+/obj/item/stack/ore/plasma{
+	amount = 50
+	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "qu" = (
@@ -5668,7 +5697,7 @@
 	dir = 10
 	},
 /obj/structure/window/reinforced/spawner/west,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -5754,7 +5783,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -6030,7 +6059,7 @@
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
 "rz" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -6055,6 +6084,11 @@
 /obj/item/storage/toolbox/syndicate,
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
+"rD" = (
+/obj/structure/rack/shelf,
+/obj/item/gun/ballistic/automatic/pistol,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "rE" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -6065,7 +6099,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -6417,6 +6451,12 @@
 /obj/item/target/alien/anchored,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"sF" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/InteQ_ship)
 "sG" = (
 /obj/structure/salvage/protolathe,
 /turf/open/floor/plasteel/dark,
@@ -6488,7 +6528,7 @@
 	dir = 1
 	},
 /obj/structure/table/optable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -6616,7 +6656,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/real_syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "tr" = (
@@ -6757,14 +6797,12 @@
 /turf/closed/wall/r_wall,
 /area/InteQ_ship/SOLVED)
 "tP" = (
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/gun/medbeam,
-/obj/item/gun/medbeam,
 /obj/effect/turf_decal/stripes{
 	dir = 1;
 	icon_state = "delivery_red"
+	},
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
@@ -6810,7 +6848,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
 "uc" = (
@@ -6926,6 +6964,7 @@
 /obj/item/ammo_box/c9mm,
 /obj/item/flashlight/seclite,
 /obj/item/storage/belt/esabre_belt,
+/obj/item/crowbar/red,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "uq" = (
@@ -7096,7 +7135,7 @@
 /turf/open/space/basic,
 /area/space)
 "uT" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
 /turf/open/floor/glass/reinforced,
 /area/InteQ_ship)
 "uV" = (
@@ -7160,7 +7199,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
 /turf/open/floor/wood/wood_large,
@@ -7204,7 +7243,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "vl" = (
@@ -7240,7 +7279,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -7297,11 +7336,30 @@
 /obj/machinery/light/broken/directional/east,
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/InteQ_ship/ship2)
+"vx" = (
+/obj/item/kirbyplants/hedge,
+/obj/structure/deployable_barricade/metal{
+	dir = 8
+	},
+/obj/structure/deployable_barricade/metal{
+	pixel_y = 14
+	},
+/obj/structure/deployable_barricade/metal{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "vy" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"vz" = (
+/obj/effect/mob_spawn/human/inteqspace{
+	dir = 8
+	},
+/turf/open/floor/wood,
 /area/InteQ_ship)
 "vA" = (
 /obj/structure/curtain,
@@ -7504,7 +7562,7 @@
 /turf/open/floor/plating,
 /area/space)
 "wf" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -7607,7 +7665,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "ww" = (
@@ -7680,7 +7738,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -7692,6 +7750,12 @@
 /mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/plasteel/damturf,
+/area/InteQ_ship)
+"wI" = (
+/obj/item/stack/ore/bluespace_crystal{
+	amount = 5
+	},
+/turf/open/floor/plasteel,
 /area/InteQ_ship)
 "wJ" = (
 /obj/structure/table/wood,
@@ -7717,10 +7781,6 @@
 /obj/machinery/vending/inteq_vendomat,
 /turf/open/floor/wood,
 /area/InteQ_ship)
-"wN" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro,
-/turf/open/space,
-/area/space)
 "wP" = (
 /obj/item/clothing/glasses/hud/health/night,
 /obj/item/storage/pill_bottle/stimulant,
@@ -7803,7 +7863,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "xa" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "xb" = (
@@ -7873,7 +7933,7 @@
 /area/InteQ_ship)
 "xi" = (
 /obj/machinery/light,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -7981,7 +8041,7 @@
 "xy" = (
 /obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/mech_bay_recharge_port,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "xz" = (
 /obj/structure/closet/crate/wooden,
@@ -8012,6 +8072,13 @@
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/ship3)
+"xC" = (
+/obj/structure/deployable_barricade/metal,
+/obj/structure/deployable_barricade/metal{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "xD" = (
 /obj/effect/turf_decal{
 	dir = 8
@@ -8046,6 +8113,10 @@
 /obj/structure/cable,
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
+"xL" = (
+/obj/machinery/vending/magivend,
+/turf/open/floor/wood,
+/area/InteQ_ship)
 "xO" = (
 /obj/structure/fans/tiny,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -8057,14 +8128,6 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"xP" = (
-/obj/machinery/porta_turret/inteq/energy/heavy{
-	name = "InteQ Ship Turret";
-	dir = 8;
-	pass_flags = 16
-	},
-/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "xQ" = (
 /obj/structure/cable{
@@ -8091,7 +8154,7 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = 32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -8210,12 +8273,16 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"yo" = (
+/obj/machinery/rnd/production/protolathe/bioaegis/syndicate,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "yp" = (
 /turf/closed/mineral/random/high_chance,
 /area/space)
@@ -8327,7 +8394,7 @@
 	name = "Dorms";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -8378,10 +8445,6 @@
 "yJ" = (
 /turf/closed/wall,
 /area/space)
-"yL" = (
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
-/turf/open/space,
-/area/space)
 "yM" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/firstaid/regular,
@@ -8404,7 +8467,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -8608,6 +8671,7 @@
 	icon_state = "4-8"
 	},
 /obj/structure/rack/shelf,
+/obj/item/gun/ballistic/automatic/pistol,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "zC" = (
@@ -8789,7 +8853,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -8891,10 +8955,6 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden{
-	dir = 5;
-	icon_state = "pipe11-2"
-	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/big_sign/solgov/ba,
 /turf/open/floor/mineral/plastitanium,
@@ -8984,7 +9044,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -9040,6 +9100,10 @@
 /obj/structure/table,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"AL" = (
+/obj/machinery/telecomms/relay/preset/ruskie,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "AM" = (
 /turf/open/space/basic,
 /area/space)
@@ -9049,7 +9113,7 @@
 /turf/open/floor/carpet/green,
 /area/InteQ_ship)
 "AP" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4{
 	dir = 8;
 	volume_rate = 200
 	},
@@ -9077,7 +9141,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -9125,7 +9189,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "AY" = (
@@ -9137,8 +9201,6 @@
 	light_color = "#c1caff"
 	},
 /obj/machinery/suit_storage_unit/inteq_spacesuit,
-/obj/item/clothing/suit/space/syndicate/inteq,
-/obj/item/clothing/head/helmet/space/syndicate/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "AZ" = (
@@ -9176,7 +9238,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -9201,7 +9263,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Bi" = (
@@ -9214,8 +9276,6 @@
 	dir = 4
 	},
 /obj/machinery/suit_storage_unit/inteq_spacesuit,
-/obj/item/clothing/suit/space/syndicate/inteq,
-/obj/item/clothing/head/helmet/space/syndicate/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Bl" = (
@@ -9351,7 +9411,7 @@
 	dir = 1;
 	name = "InteQ Post APC";
 	pixel_y = 23;
-	start_charge = 35
+	start_charge = 100
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
@@ -9569,7 +9629,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -9652,9 +9712,8 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
-/obj/item/clothing/suit/space/syndicate/inteq,
-/obj/item/clothing/head/helmet/space/syndicate/inteq,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Cq" = (
@@ -9670,7 +9729,7 @@
 	dir = 8
 	},
 /obj/structure/window/reinforced/spawner/west,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -9792,7 +9851,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -10123,7 +10182,6 @@
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/brown/full,
-/obj/effect/mob_spawn/human/inteqspace/engineer,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "Dr" = (
@@ -10186,7 +10244,8 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/machinery/vending/magivend,
+/obj/structure/janitorialcart,
+/obj/item/mop/cyborg,
 /turf/open/floor/wood/wood_tiled,
 /area/InteQ_ship)
 "DG" = (
@@ -10763,14 +10822,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Fr" = (
 /obj/machinery/light,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -10782,7 +10841,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/door/airlock/grunge{
@@ -11041,6 +11100,10 @@
 /obj/item/soap/inteq,
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
+"Gf" = (
+/obj/structure/deployable_barricade/metal,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "Gg" = (
 /obj/structure/sign/barsign,
 /turf/closed/wall/r_wall,
@@ -11052,7 +11115,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
@@ -11067,7 +11130,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/turretid{
@@ -11184,6 +11247,12 @@
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/InteQ_ship)
+"GA" = (
+/obj/structure/deployable_barricade/metal/plasteel{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "GB" = (
 /obj/structure/rack/shelf,
 /obj/effect/spawner/lootdrop/syndicate_present,
@@ -11226,8 +11295,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "GG" = (
-/obj/item/kirbyplants/hedge,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "GH" = (
@@ -11235,7 +11303,6 @@
 /obj/effect/turf_decal/tile/bar{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/big_sign/solgov/aa,
 /turf/open/floor/mineral/plastitanium,
@@ -11255,8 +11322,12 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 8;
+	pass_flags = 16
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "GN" = (
 /obj/effect/decal/cleanable/blood{
@@ -11336,7 +11407,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -11364,6 +11435,10 @@
 	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"Hb" = (
+/mob/living/simple_animal/hostile/space_mosquito,
+/turf/open/floor/engine,
 /area/InteQ_ship)
 "Hc" = (
 /obj/machinery/button/door{
@@ -11409,7 +11484,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /turf/open/floor/wood/wood_large,
@@ -11608,7 +11683,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
@@ -11648,6 +11723,7 @@
 /obj/item/folder/red{
 	pixel_x = -6
 	},
+/obj/item/toy/figure/inteq,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "HQ" = (
@@ -11777,6 +11853,13 @@
 	icon_state = "platingdmg2"
 	},
 /area/InteQ_ship)
+"Ik" = (
+/obj/structure/sign/poster/contraband/inteq/inteq_better_dead{
+	pixel_x = -32
+	},
+/obj/machinery/autodoc,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "Il" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/contraband/rebels_unite{
@@ -11819,8 +11902,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
 	},
-/obj/item/clothing/suit/space/syndicate/inteq,
-/obj/item/clothing/head/helmet/space/syndicate/inteq,
+/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Is" = (
@@ -11833,7 +11915,7 @@
 /obj/machinery/light,
 /obj/item/paper_bin,
 /obj/item/pen/fountain/captain,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/wood/wood_large,
@@ -11867,7 +11949,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Iz" = (
@@ -11892,7 +11974,7 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -11930,7 +12012,7 @@
 /area/InteQ_ship/SOLVED)
 "II" = (
 /obj/machinery/mecha_part_fabricator/offstation,
-/turf/open/floor/circuit/green,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "IJ" = (
 /obj/machinery/door/airlock/grunge{
@@ -12009,7 +12091,7 @@
 /area/InteQ_ship)
 "IU" = (
 /obj/effect/decal/cleanable/robot_debris/limb,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -12062,7 +12144,7 @@
 	dir = 4
 	},
 /obj/structure/window/reinforced/spawner/west,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -12215,6 +12297,7 @@
 	dir = 4
 	},
 /obj/structure/rack/shelf,
+/obj/item/gun/ballistic/automatic/pistol,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Jx" = (
@@ -12347,6 +12430,12 @@
 /obj/item/ai_module/core/full/solfed,
 /turf/open/floor/plating,
 /area/InteQ_ship/SOLVED)
+"JQ" = (
+/obj/structure/sign/flag/inteq{
+	pixel_y = -32
+	},
+/turf/open/floor/wood,
+/area/InteQ_ship)
 "JR" = (
 /obj/machinery/vending/clothing,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -12468,7 +12557,9 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Kl" = (
-/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins{
+	faction = list("neutral")
+	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Km" = (
@@ -12524,7 +12615,7 @@
 /area/InteQ_ship)
 "Kx" = (
 /obj/machinery/mech_bay_recharge_port,
-/turf/open/floor/circuit/green,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "Ky" = (
 /obj/effect/turf_decal{
@@ -12618,6 +12709,11 @@
 /obj/item/pizzabox/vegetable,
 /turf/open/space,
 /area/space)
+"KG" = (
+/obj/effect/decal/cleanable/oil,
+/mob/living/simple_animal/hostile/space_mosquito,
+/turf/open/floor/engine,
+/area/InteQ_ship)
 "KH" = (
 /obj/machinery/photocopier{
 	pixel_y = 3
@@ -12642,7 +12738,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "KL" = (
@@ -12746,7 +12842,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Ld" = (
@@ -12875,7 +12971,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -12885,7 +12981,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "LB" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -13221,7 +13317,7 @@
 	dir = 8
 	},
 /obj/structure/window/reinforced/spawner/west,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
@@ -13280,7 +13376,7 @@
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -13431,7 +13527,7 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Np" = (
@@ -13448,7 +13544,7 @@
 	dir = 1;
 	name = "InteQ Post APC";
 	pixel_y = 23;
-	start_charge = 35
+	start_charge = 100
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
@@ -13475,7 +13571,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -13562,7 +13658,7 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "NH" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "NI" = (
@@ -13629,7 +13725,6 @@
 	pixel_x = 8;
 	pixel_y = -2
 	},
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/nanotrasen,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "NW" = (
@@ -13759,6 +13854,12 @@
 "On" = (
 /turf/open/floor/plating/airless,
 /area/InteQ_ship/ship4)
+"Op" = (
+/obj/machinery/mech_bay_recharge_port{
+	dir = 2
+	},
+/turf/open/floor/circuit/red,
+/area/InteQ_ship)
 "Oq" = (
 /obj/effect/decal/cleanable/glass,
 /obj/effect/turf_decal{
@@ -13897,7 +13998,7 @@
 	dir = 5
 	},
 /obj/item/storage/backpack/duffelbag/syndie/inteq/surgery_adv,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
 /turf/open/floor/plasteel/dark,
@@ -14040,7 +14141,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 10
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -14148,6 +14249,11 @@
 	icon_state = "platingdmg3"
 	},
 /area/InteQ_ship/ship1)
+"PA" = (
+/obj/structure/mopbucket,
+/obj/item/soap,
+/turf/open/floor/wood/wood_tiled,
+/area/InteQ_ship)
 "PB" = (
 /obj/effect/decal/cleanable/glass,
 /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq,
@@ -14387,6 +14493,10 @@
 	},
 /turf/open/floor/carpet,
 /area/InteQ_ship)
+"Qu" = (
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
+/turf/open/space,
+/area/space)
 "Qv" = (
 /obj/machinery/light,
 /obj/effect/turf_decal/tile/brown{
@@ -14425,7 +14535,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "QA" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -14469,7 +14579,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "QH" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -14502,7 +14612,7 @@
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship2)
 "QL" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -14699,7 +14809,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -14726,7 +14836,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -14768,7 +14878,7 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "RF" = (
 /obj/machinery/recharge_station,
-/turf/open/floor/circuit/green,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "RG" = (
 /obj/structure/closet/secure_closet/medical3,
@@ -14885,7 +14995,7 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/InteQ_ship)
 "RX" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/shuttle/survival_pod,
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
 "RY" = (
@@ -14990,7 +15100,7 @@
 /area/InteQ_ship)
 "Sq" = (
 /obj/structure/lattice,
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/space,
 /area/space)
 "Ss" = (
@@ -15023,7 +15133,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -15242,7 +15352,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Tg" = (
@@ -15274,7 +15384,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Tk" = (
@@ -15529,7 +15639,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "TP" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/glass/reinforced,
 /area/InteQ_ship)
 "TQ" = (
@@ -15568,7 +15678,7 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "TW" = (
@@ -15596,7 +15706,7 @@
 	dir = 1;
 	name = "InteQ Post APC";
 	pixel_y = 23;
-	start_charge = 35
+	start_charge = 100
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
@@ -15605,7 +15715,6 @@
 	dir = 1;
 	icon_state = "delivery_red"
 	},
-/obj/machinery/telecomms/relay/preset/ruskie,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "TY" = (
@@ -15662,9 +15771,6 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 8
-	},
 /turf/open/floor/wood,
 /area/InteQ_ship)
 "Ul" = (
@@ -15704,7 +15810,6 @@
 /area/InteQ_ship)
 "Ut" = (
 /obj/structure/table/reinforced,
-/obj/item/toy/figure/inteq,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -15723,11 +15828,12 @@
 	req_one_access_txt = "152";
 	pixel_y = 23
 	},
+/obj/item/clothing/glasses/thermal/eyepatch,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Uu" = (
 /obj/machinery/light,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -15768,7 +15874,7 @@
 /area/InteQ_ship/ship2)
 "Ux" = (
 /obj/machinery/atmospherics/components/unary/vent_pump,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Uz" = (
@@ -15897,7 +16003,6 @@
 	dir = 8
 	},
 /obj/machinery/suit_storage_unit/inteq_spacesuit,
-/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "UR" = (
@@ -15921,6 +16026,12 @@
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"UU" = (
+/obj/structure/deployable_barricade/metal/plasteel{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "UW" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/structure/closet/crate/freezer,
@@ -15998,7 +16109,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -16141,7 +16252,7 @@
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /turf/open/floor/wood,
@@ -16150,6 +16261,10 @@
 /obj/item/broken_missile,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
+"VB" = (
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
+/turf/open/space/basic,
+/area/space)
 "VC" = (
 /obj/item/ammo_casing,
 /obj/structure/cable{
@@ -16237,7 +16352,7 @@
 	dir = 5
 	},
 /obj/structure/closet/crate/bin,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -16268,7 +16383,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/turf/open/floor/circuit/green,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "VY" = (
 /obj/effect/decal/cleanable/dirt,
@@ -16286,7 +16401,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Wd" = (
@@ -16341,7 +16456,7 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/InteQ_ship)
 "Wl" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Wm" = (
@@ -16447,7 +16562,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -16458,7 +16573,6 @@
 "WC" = (
 /obj/effect/mob_spawn/human/corpse/nanotrasenassaultsoldier,
 /obj/effect/decal/cleanable/blood,
-/obj/item/gun/energy/laser/sniper,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "WD" = (
@@ -16470,7 +16584,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "WG" = (
@@ -16560,6 +16674,21 @@
 	},
 /turf/closed/wall/r_wall,
 /area/InteQ_ship/SOLVED)
+"WS" = (
+/obj/effect/turf_decal/tile/bar,
+/obj/effect/turf_decal/tile/bar{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4;
+	icon_state = "pipe11-2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/InteQ_ship/SOLVED)
 "WT" = (
 /obj/item/gun/grenadelauncher,
 /obj/structure/table/reinforced{
@@ -16575,7 +16704,7 @@
 /obj/machinery/portable_atmospherics/scrubber{
 	anchored = 1
 	},
-/obj/machinery/atmospherics/components/unary/portables_connector/layer3,
+/obj/machinery/atmospherics/components/unary/portables_connector/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "WX" = (
@@ -16771,7 +16900,7 @@
 /obj/effect/turf_decal/tile/brown/half,
 /obj/structure/bed/roller,
 /obj/machinery/iv_drip,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -16803,7 +16932,8 @@
 /turf/open/floor/plasteel/airless,
 /area/space)
 "XF" = (
-/turf/open/floor/circuit/green,
+/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes,
+/turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "XG" = (
 /obj/effect/decal/cleanable/glass,
@@ -16854,7 +16984,7 @@
 	pixel_x = -12
 	},
 /obj/structure/window/reinforced/spawner/west,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -16897,6 +17027,11 @@
 /obj/machinery/power/smes,
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
+"XY" = (
+/obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "XZ" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -16930,7 +17065,7 @@
 /area/InteQ_ship)
 "Ye" = (
 /obj/item/stack/sheet/metal,
-/mob/living/simple_animal/hostile/syndicate/ranged,
+/mob/living/simple_animal/hostile/inteq/ranged,
 /turf/open/floor/glass/reinforced,
 /area/InteQ_ship)
 "Yf" = (
@@ -17007,7 +17142,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -17242,7 +17377,7 @@
 	welded = 1;
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/InteQ_ship/ship2)
 "Zb" = (
@@ -31072,7 +31207,7 @@ Ee
 Ee
 La
 Ee
-Dk
+oP
 vB
 vB
 vB
@@ -35283,7 +35418,7 @@ DN
 Ee
 EX
 dm
-gs
+NQ
 Ee
 rd
 Ee
@@ -35498,7 +35633,7 @@ Ee
 AG
 Ee
 qJ
-er
+JQ
 Ee
 Yj
 Ee
@@ -35765,7 +35900,7 @@ rM
 rM
 vB
 vB
-wN
+vB
 vB
 vB
 vB
@@ -35978,7 +36113,7 @@ rM
 rM
 vB
 vB
-yL
+Qu
 vB
 vB
 vB
@@ -36002,7 +36137,7 @@ AM
 AM
 AM
 AM
-AM
+VB
 AM
 AM
 AM
@@ -36210,7 +36345,7 @@ vB
 AM
 AM
 AM
-AM
+VB
 AM
 AM
 AM
@@ -36434,7 +36569,7 @@ vB
 vB
 vB
 vB
-vB
+Qu
 vB
 vB
 vB
@@ -36610,7 +36745,7 @@ Rp
 Ee
 Jw
 zB
-Vu
+rD
 zB
 Od
 Ee
@@ -36653,7 +36788,7 @@ vB
 vB
 vB
 vB
-vB
+Qu
 vB
 vB
 vB
@@ -36737,7 +36872,7 @@ AM
 AM
 pR
 cO
-cs
+mH
 mH
 qe
 It
@@ -37203,10 +37338,10 @@ Ee
 Ee
 Ee
 Ee
+Op
+XF
 Ee
-Ee
-Ee
-Al
+AL
 Ee
 pl
 Nf
@@ -37274,8 +37409,8 @@ gV
 gV
 UG
 JW
-kW
-kW
+GA
+GA
 zY
 pp
 gV
@@ -37469,7 +37604,7 @@ Nq
 Ee
 Ee
 DV
-aq
+DV
 DV
 Ee
 Ee
@@ -37659,12 +37794,12 @@ dS
 Wt
 PV
 Ma
-PV
+cM
 Al
 OW
-PV
+cM
 Ma
-PV
+cM
 Ma
 rL
 Ee
@@ -37673,7 +37808,7 @@ Al
 Ee
 Al
 Al
-pT
+iR
 Al
 Wt
 DV
@@ -37814,9 +37949,9 @@ pR
 wF
 XU
 id
+eH
 wY
-wY
-wY
+eH
 wY
 wY
 wY
@@ -37901,7 +38036,7 @@ Al
 wv
 Al
 Al
-Al
+iR
 GG
 IZ
 IZ
@@ -38081,7 +38216,7 @@ Ms
 Pf
 Ms
 Kf
-Al
+xC
 Al
 Al
 Al
@@ -38097,7 +38232,7 @@ Al
 zR
 Cd
 Ey
-pT
+iR
 Al
 Pp
 Ms
@@ -38114,7 +38249,7 @@ Df
 tb
 uT
 tb
-Al
+GG
 GR
 VN
 gc
@@ -38137,7 +38272,7 @@ vB
 vB
 vB
 vB
-vB
+Qu
 vB
 vB
 vB
@@ -38293,7 +38428,7 @@ YJ
 Ee
 NJ
 Po
-Ms
+py
 Ms
 Ms
 Ms
@@ -38313,7 +38448,7 @@ Al
 Al
 Al
 Al
-pT
+iR
 Ee
 ap
 qb
@@ -38326,7 +38461,7 @@ tb
 Ye
 tb
 tb
-Al
+GG
 Ee
 GR
 GJ
@@ -38505,7 +38640,7 @@ Al
 Ee
 NJ
 Wt
-Al
+Gf
 Al
 Al
 Al
@@ -38538,7 +38673,7 @@ dC
 tb
 tb
 TP
-Al
+GG
 IZ
 GR
 gc
@@ -38717,7 +38852,7 @@ Al
 tB
 Al
 Wt
-Al
+pr
 Al
 Al
 Al
@@ -38750,7 +38885,7 @@ tb
 TP
 tb
 tb
-Al
+GG
 om
 Ee
 Bv
@@ -38962,7 +39097,7 @@ Al
 Al
 Al
 Al
-PV
+GG
 om
 Ee
 QO
@@ -39143,12 +39278,12 @@ Al
 Wt
 PV
 EC
-PV
+vx
 Al
 VM
-PV
+vx
 EC
-PV
+vx
 EC
 PV
 Ee
@@ -39182,8 +39317,8 @@ gV
 gV
 cj
 HI
-kW
-kW
+UU
+UU
 mf
 pp
 gV
@@ -39369,15 +39504,15 @@ Al
 Vw
 Al
 Al
-pT
-pT
+iR
+iR
 Al
 TF
 zP
 Ee
 Ee
 DV
-xP
+DV
 DV
 Ee
 Ee
@@ -39945,15 +40080,15 @@ ru
 Ph
 Al
 Ee
-NA
+sF
 LR
 Al
 eF
 eF
 Al
 Ee
+vz
 qJ
-Ee
 Ee
 eF
 Al
@@ -39966,7 +40101,7 @@ Ee
 gm
 Al
 Al
-Ww
+Ik
 rN
 Al
 Mu
@@ -40026,7 +40161,7 @@ vB
 vB
 vB
 vB
-vB
+Qu
 vB
 vB
 vB
@@ -40039,7 +40174,7 @@ vB
 vB
 vB
 vB
-vB
+Qu
 AM
 AM
 AM
@@ -40157,7 +40292,7 @@ ST
 Yi
 gn
 Ee
-rV
+xL
 Ee
 cT
 Ag
@@ -40165,7 +40300,7 @@ CU
 Gn
 Ee
 rd
-Uk
+JQ
 Ee
 Ai
 Ms
@@ -40178,7 +40313,7 @@ Ee
 Nt
 Al
 Al
-Al
+yo
 gA
 gA
 hW
@@ -40244,7 +40379,7 @@ vB
 vB
 AM
 AM
-vB
+Qu
 vB
 vB
 vB
@@ -40434,7 +40569,7 @@ vB
 rM
 Sq
 vB
-wN
+vB
 vB
 vB
 vB
@@ -40794,7 +40929,7 @@ Yi
 gn
 Ee
 yX
-Ee
+tB
 Al
 Al
 Al
@@ -41005,8 +41140,8 @@ DN
 DN
 Yi
 Ee
-yX
-CG
+PA
+Ee
 Al
 Gn
 OH
@@ -41433,11 +41568,11 @@ Ck
 qJ
 NQ
 Ee
-qJ
-Uk
+vz
+JQ
 Ee
 qJ
-er
+JQ
 Ee
 UZ
 RB
@@ -41873,7 +42008,7 @@ NR
 Ee
 RF
 RF
-XF
+kK
 II
 VX
 RF
@@ -42326,7 +42461,7 @@ ca
 gQ
 fQ
 fQ
-iq
+wI
 bF
 qs
 Ee
@@ -43595,7 +43730,7 @@ cT
 sB
 Ee
 eJ
-Em
+Hb
 Em
 UX
 Pn
@@ -43808,7 +43943,7 @@ Oe
 IL
 RP
 Em
-RP
+KG
 UX
 Pn
 AM
@@ -44019,7 +44154,7 @@ bF
 sT
 Ee
 rs
-Em
+Hb
 Zo
 UX
 Pn
@@ -44230,9 +44365,9 @@ mq
 xn
 bF
 Ee
+KG
 RP
-RP
-Em
+Hb
 UX
 Pn
 AM
@@ -47316,7 +47451,7 @@ Lz
 Ex
 Nr
 Ox
-OG
+oq
 vu
 Xu
 Nr
@@ -48587,7 +48722,7 @@ Nr
 Nr
 cw
 Nr
-OG
+bN
 Nr
 Nr
 Nr
@@ -48805,7 +48940,7 @@ gp
 Mb
 Nr
 gN
-zK
+XY
 Nr
 AM
 AM
@@ -55405,7 +55540,7 @@ Ig
 on
 WO
 Mk
-GY
+on
 on
 iI
 on
@@ -57228,7 +57363,7 @@ AM
 UJ
 LQ
 Dr
-mz
+VY
 bM
 GH
 Ar
@@ -58079,7 +58214,7 @@ Dr
 VY
 UJ
 nl
-FW
+WS
 zT
 zw
 RN

@@ -12,7 +12,7 @@ export const Uplink = (props, context) => {
   const { data } = useBackend(context);
   const { telecrystals, uplink_type } = data;
 
-  const theme = uplink_type === 'Pact Uplink' ? 'pact' : 'syndicate';
+  const theme = uplink_type === 'PACT Uplink' ? 'pact' : 'syndicate';
 
   return (
     <Window

@@ -395,17 +395,17 @@
 	icon_state = "syndie-elite"
 
 /area/InteQ_ship/ship4
-	name = "Pact Ship"
+	name = "PACT Ship"
 	icon_state = "syndie-control"
 	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
 
 /area/InteQ_ship/ship5
-	name = "Pact Ship"
+	name = "PACT Ship"
 	icon_state = "syndie-control"
 	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
 
 /area/InteQ_ship/ship6
-	name = "Pact Ship ruins"
+	name = "PACT Ship ruins"
 	icon_state = "syndie-control"
 	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
 

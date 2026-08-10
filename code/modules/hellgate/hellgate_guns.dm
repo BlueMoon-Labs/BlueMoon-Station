@@ -1,4 +1,4 @@
-// HellGate / PactDivest — оружие на спрайтах sprites_HellGate
+// HellGate / PACTDivest — оружие на спрайтах sprites_HellGate
 // Пистолеты: pistol-ammo.dmi, 17 патр. Винтовки: rifle-ammo.dmi, 30 патр. Пулемёты: machinegun-ammo.dmi, 100 патр. Иконка _e — пустой.
 
 // Магазин для VP78 (10мм, 17 патр.) — спрайт pistol-ammo.dmi

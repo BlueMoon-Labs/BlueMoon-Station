@@ -147,7 +147,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/get_station_gateway_arrival()
 	if(!GLOB.the_gateway?.portal)
 		return null
-	return get_step(GLOB.the_gateway.portal, turn(GLOB.the_gateway.dir, 180))
+	return get_step(GLOB.the_gateway.portal, GLOB.the_gateway.dir)
 
 /datum/inteq_pact_siege/proc/station_siege_gateway_linked()
 	return GLOB.the_gateway?.target == battle_dest
@@ -277,10 +277,10 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	suppress_auto_away_destinations()
 
 	priority_announce(
-		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
+		"Внимание, обнаружена активность в области подбитого объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: УНИЧТОЖИТЬ ВЫЖИВШИХ. Всем подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционный ГЕЙТ откалиброван на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
 		"Центральное Командование",
-		'sound/misc/announce_dig.ogg',
-		null,
+		'sound/misc/announce_syndi.ogg',
+		"Priority",
 		null,
 		TRUE,
 	)
@@ -357,7 +357,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/recall_attackers()
 	/// After the siege, attackers return via the battlefield gateway (standard away gate).
 	priority_announce(
-		"Протокол штурма завершён. Силам ПАКТ на объекте InteQ надлежит вернуться на станцию через врата на поле боя.",
+		"Протокол штурма завершён. Силам ПАКТ на объекте InteQ надлежит вернуться на станцию через ГЕЙТ.",
 		"Центральное Командование",
 		'sound/misc/announce_dig.ogg',
 		null,
@@ -570,7 +570,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(isliving(AM))
 		GLOB.inteq_pact_siege.register_attacker(AM)
 
-/// Gateway destination: InteQ battlefield -> random station turf
+/// Gateway destination: InteQ battlefield -> station gateway exit
 /datum/gateway_destination/point/pact_siege_station_return
 	var/datum/inteq_pact_siege/owner
 
@@ -578,7 +578,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return owner?.active && owner.station_siege_gateway_linked()
 
 /datum/gateway_destination/point/pact_siege_station_return/get_target_turf()
+	var/turf/arrival = owner?.get_station_gateway_arrival()
+	if(arrival)
+		return arrival
 	return get_safe_random_station_turf()
+
+/datum/gateway_destination/point/pact_siege_station_return/post_transfer(atom/movable/AM)
+	. = ..()
+	var/obj/machinery/gateway/G = GLOB.the_gateway
+	if(G)
+		addtimer(CALLBACK(AM, TYPE_PROC_REF(/atom/movable, setDir), G.dir), 0)
 
 /datum/gateway_destination/point/pact_siege_station_return/incoming_pass_check(atom/movable/AM)
 	if(!is_available())
