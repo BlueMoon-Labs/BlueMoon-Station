@@ -279,6 +279,8 @@
 	new /obj/item/modkit/pulsar_kit(src)
 	new /obj/item/modkit/lapkee_arm_shield_kit(src)
 	new /obj/item/modkit/white_belt_kit(src)
+	new /obj/item/modkit/lapkee_carrier_kit(src)
+	new /obj/item/modkit/concord_riot_helmet_kit(src)
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
