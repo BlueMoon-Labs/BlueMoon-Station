@@ -582,6 +582,14 @@
 	// дешевле шести Cut() по спискам.
 	if(!istype(seed) || seed.blocks_air || !seed.air)
 		return FALSE
+	// Небо не эквализится: планетарный турф прибит к своему шаблону, и любой
+	// сдвинутый в него газ шаблон сотрёт за пару фаеров - обход найдёт ту же
+	// дельту снова, и так до бесконечности. Раунд 9929: группа у пробоины
+	// доросла до порога зонального клапана, клапан погнал обходы через границу
+	// в планетарку, и самоподкармливающийся эквалайзер будил по 20 тысяч
+	// турфов КАЖДЫЙ фаер (c_eq 0 -> 950мс) до конца раунда.
+	if(seed.planetary_atmos)
+		return FALSE
 	if(seed.equalize_cycle >= walk_cycle)
 		return FALSE
 	reset()
@@ -667,6 +675,11 @@
 							continue
 						var/turf/open/open_neighbor = neighbor
 						if(!istype(open_neighbor) || open_neighbor.blocks_air || !open_neighbor.air)
+							continue
+						// Граница с небом - стена для обхода (см. гард затравки в
+						// begin()): пару "член зоны - спящее небо" обслуживает
+						// sky-ветка LINDA, а не усреднение зоны.
+						if(open_neighbor.planetary_atmos)
 							continue
 						if(seen[open_neighbor])
 							continue

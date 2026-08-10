@@ -151,6 +151,12 @@
 				T.excited = FALSE
 			evict_active_turf(T)
 			continue
+		// Небо затравкой не бывает (зеркало гарда в zone_walk.begin()): планетарный
+		// турф прибит к шаблону, его "дельта" вечна - обход через него кормил бы
+		// сам себя. Гард стоит до скана соседей: после массового пробуждения
+		// планетарки кандидатов из неё - десятки тысяч за фаер.
+		if(T.planetary_atmos)
+			continue
 		// Valve mode: only members of an oversized group qualify. Ordinary
 		// rooms keep pure LINDA behavior with the config flag off.
 		if(equalize_valve_mode)
