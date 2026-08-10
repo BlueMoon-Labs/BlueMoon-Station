@@ -1215,7 +1215,7 @@
 /area/ruin/space/has_grav/MimicResrch)
 "ZI" = (
 /obj/machinery/door/airlock/wood/glass,
-/turf/open/space/basic,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/MimicResrch)
 "ZJ" = (
 )
