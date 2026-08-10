@@ -3,7 +3,7 @@
 	description = "A unique healing solution developed by Black Mesa scientists. It is designed to accelerate the healing process of burns, wounds, and toxins."
 	color = "#44944a"
 	taste_description = "strange metallic"
-	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	metabolization_rate = 2 * REAGENTS_METABOLISM
 	overdose_threshold = 30
 	can_synth = FALSE
 	value = REAGENT_VALUE_RARE
@@ -13,11 +13,11 @@
 		return
 
 	if(M.getFireLoss_nonProsthetic() > 0)
-		M.heal_bodypart_damage(0, 0.5)
+		M.heal_bodypart_damage(0, 3)
 
 	if(M.getBruteLoss_nonProsthetic() > 0)
-		M.heal_bodypart_damage(0.5, 0)
-	M.adjustToxLoss(-0.5, 0, TRUE)
+		M.heal_bodypart_damage(3, 0)
+	M.adjustToxLoss(-3, 0, TRUE)
 
 	..()
 
@@ -40,8 +40,9 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	amount = 1
 	max_amount = 1
-	self_delay = 100
-	other_delay = 100
+	self_delay = 50
+	other_delay = 50
+	merge_type = null // Prevent stacking
 	repeating = FALSE
 	heal_brute = 0
 	heal_burn = 0
@@ -140,6 +141,7 @@
 
 	if(healed_something)
 		user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
+		// Don't set used = TRUE - tactical medkit stays usable
 		used = TRUE
 		update_icon()
 
@@ -160,7 +162,7 @@
 	reagent_flags = DRAWABLE
 	flags_1 = null
 
-	var/healing_use_time = 30
+	var/healing_use_time = 20
 
 /obj/item/reagent_containers/hypospray/medipen/mesa_healing/attack(mob/M, mob/user)
 	if(!M)
@@ -207,6 +209,7 @@
 	else
 		user.visible_message("<span class='green'>[user] успешно использовал [src] на [C]!</span>", "<span class='green'>Вы успешно использовали [src] на [C]!</span>")
 		to_chat(C, "<span class='green'>[user] использовал [src] на вас!</span>")
+	// Don't disable the syringe after use - it stays usable
 	if(!iscyborg(user))
 		reagents.maximum_volume = 0
 		reagent_flags = NONE
@@ -434,9 +437,10 @@
 	else
 		user.visible_message("<span class='green'>[user] успешно использовал [src] на [R]!</span>", "<span class='green'>Вы успешно использовал [src] на [R]!</span>")
 		to_chat(R, "<span class='green'>[user] использовал [src] на вас!</span>")
-	if(!iscyborg(user))
-		reagents.maximum_volume = 0
-		reagent_flags = NONE
+	// Don't disable the syringe after use - it stays usable
+	// if(!iscyborg(user))
+	// 	reagents.maximum_volume = 0
+	// 	reagent_flags = NONE
 	update_icon()
 
 /obj/item/reagent_containers/hypospray/medipen/mesa_robot/update_icon_state()

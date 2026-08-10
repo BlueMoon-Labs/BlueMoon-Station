@@ -3,6 +3,9 @@
 // AI Director controlled zombie waves for ihategordon mission
 // =============================================================================
 
+// Hunter infected stealth ability
+#define HUNTER_STEALTH "hunter_stealth"
+
 // =============================================================================
 // ACID OOZE POOL
 // =============================================================================
@@ -545,6 +548,200 @@
 		toggle_ai(AI_OFF)
 
 // =============================================================================
+// TIER 4: HUNTER ZOMBIE
+// Stealthy, high damage, isolates players, drags victims to darkness
+// =============================================================================
+/mob/living/simple_animal/hostile/infected/hunter
+	name = "hunter infected"
+	desc = "A terrifying creature that moves silently through darkness, hunting isolated prey with deadly leaps."
+	icon = 'modular_bluemoon/icons/mob/gonome.dmi'
+	icon_state = "gonome_fast"
+	icon_living = "gonome_fast"
+	icon_dead = "former_dead"
+	mob_biotypes = list(MOB_ORGANIC, MOB_HUMANOID)
+	faction = list(FACTION_XEN)
+	maxHealth = 70
+	health = 70
+	speed = 0
+	melee_damage_lower = 25
+	melee_damage_upper = 35
+	attack_verb_continuous = "mauls"
+	attack_verb_simple = "maul"
+	attack_sound = 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg'
+	speak = list('modular_bluemoon/sound/creatures/mesa/hunter/hunter1.ogg', 'modular_bluemoon/sound/creatures/mesa/hunter/hunter2.ogg')
+	deathsound = 'modular_bluemoon/sound/creatures/mesa/hunter/death.ogg'
+	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
+	minbodytemp = 0
+	maxbodytemp = 1500
+	robust_searching = 1
+	search_objects = 1
+	wanted_objects = list(/obj/structure/urbanism_generator)
+	environment_smash = ENVIRONMENT_SMASH_NONE
+	gold_core_spawnable = NO_SPAWN
+	density = TRUE
+	mouse_opacity = MOUSE_OPACITY_OPAQUE
+	vision_range = 25
+	aggro_vision_range = 30
+	pass_flags = PASSTABLE | PASSFENCE
+	pass_flags_self = NONE
+	sight = 20
+	move_on_shuttle = TRUE
+	stop_automated_movement = 0
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	sharpness = SHARP_NONE
+	// Hunter-specific variables
+	var/is_stealthed = FALSE
+	var/mob/living/dragging_target = null
+	var/mob/living/ignored_target = null
+	var/stealth_alpha = 30
+	var/light_threshold = SHADOW_SPECIES_LIGHT_THRESHOLD
+	var/leap_range = 6
+	var/leap_cooldown_time = 2.5 SECONDS
+	var/leap_damage = 35
+	var/miss_stun_duration = 1.5 SECONDS
+	var/last_light_check = 0
+	var/light_check_interval = 5
+	// AI configuration - use ranged attack for leap (like headcrab)
+	ranged = TRUE
+	ranged_message = "leaps"
+	ranged_cooldown_time = 25 // 2.5 seconds in deciseconds
+	var/jumpdistance = 6
+	var/jumpspeed = 1
+	var/is_leaping = FALSE
+	var/is_dragging = FALSE
+	var/drag_distance = 0
+	var/drag_target_distance = 15
+	var/drag_direction = null
+	// Dodging configuration - higher dodge chance for evasive movement
+	dodge_prob = 60
+
+/mob/living/simple_animal/hostile/infected/hunter/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/swarming)
+	wanted_objects = typecacheof(wanted_objects, TRUE)
+
+/mob/living/simple_animal/hostile/infected/hunter/Move(atom/newloc, dir, step_x, step_y)
+	if(handle_fence_movement(newloc))
+		return
+	. = ..()
+
+/mob/living/simple_animal/hostile/infected/hunter/Life()
+	. = ..()
+	if(speak && speak.len && prob(5))
+		playsound(get_turf(src), pick(speak), 100, TRUE, FALSE, 100)
+	handle_stealth()
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/handle_stealth()
+	if(!src)
+		return
+	if(world.time < last_light_check + light_check_interval)
+		return
+	last_light_check = world.time
+
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+
+	// Calculate light excluding background floodlights
+	var/light_amount = T.get_lumcount()
+
+	// Check for background floodlights nearby and reduce their light contribution
+	var/turf/nearby_turf = locate(/obj/machinery/power/floodlight) in range(10, src)
+	if(nearby_turf)
+		light_amount *= 0.3 // Reduce effect of background floodlights by 70%
+
+	if(light_amount < light_threshold)
+		if(!is_stealthed)
+			is_stealthed = TRUE
+			animate(src, alpha = stealth_alpha, time = 10)
+			ADD_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
+			var/mutable_appearance/eyes = mutable_appearance(icon, "hunter_eyes")
+			eyes.layer = ABOVE_MOB_LAYER
+			add_overlay(eyes)
+	else
+		if(is_stealthed)
+			is_stealthed = FALSE
+			animate(src, alpha = 255, time = 5)
+			REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
+			cut_overlay("hunter_eyes")
+
+/mob/living/simple_animal/hostile/infected/hunter/Aggro()
+	. = ..()
+	if(speak && speak.len && prob(60))
+		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/greetings.ogg', 100, TRUE, FALSE, 100)
+
+/mob/living/simple_animal/hostile/infected/hunter/CanAttack(atom/the_target)
+	if(!the_target)
+		return FALSE
+	if(ignored_target && the_target == ignored_target)
+		return FALSE
+	return ..()
+
+/mob/living/simple_animal/hostile/infected/hunter/OpenFire(atom/A)
+	if(check_friendly_fire)
+		for(var/turf/T in getline(src,A))
+			for(var/mob/living/L in T)
+				if(L == src || L == A)
+					continue
+				if(faction_check_mob(L) && !attack_same)
+					return
+
+	visible_message("<span class='danger'><b>[src]</b> [ranged_message] at [A]!</span>")
+	playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/hscream.ogg', 80, TRUE, FALSE, 100)
+	shake_camera(src, 2, 2)
+	is_leaping = TRUE
+	throw_at(A, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE)
+	ranged_cooldown = world.time + ranged_cooldown_time
+
+/mob/living/simple_animal/hostile/infected/hunter/Bump(atom/A)
+	if(!A)
+		return
+	if(is_leaping)
+		is_leaping = FALSE
+	if(isliving(A))
+		var/mob/living/L = A
+		if(L && L.stat != DEAD)
+			L.apply_damage(leap_damage, BRUTE)
+			L.Paralyze(20)
+			shake_camera(L, 4, 3)
+			shake_camera(src, 2, 3)
+
+		// Start dragging victim manually
+		if(!is_dragging)
+			start_dragging(L)
+		else if(A.density && !A.CanPass(src))
+			visible_message("<span class='danger'>[src] crashes into [A]!</span>")
+			playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg', 80, TRUE, FALSE, 100)
+			Stun(miss_stun_duration * 10)
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/crit_and_ignore(mob/living/victim)
+	if(!victim || QDELETED(victim))
+		return
+	if(victim.stat == DEAD)
+		return
+
+	// Leave victim in critical condition
+	victim.health = -victim.maxHealth * 0.5
+	victim.updatehealth()
+	if(victim.client)
+		to_chat(victim, span_userdanger("Вас оставили в критическом состоянии!"))
+
+	// Add to ignore list so hunter won't target them again
+	ignored_target = victim
+
+/mob/living/simple_animal/hostile/infected/hunter/death(gibbed)
+	. = ..(gibbed)
+	is_leaping = FALSE
+	dragging_target = null
+	stop_pulling()
+	is_stealthed = FALSE
+	animate(src, alpha = 255, time = 5)
+	REMOVE_TRAIT(src, TRAIT_STRONG_INVISIBILITY, HUNTER_STEALTH)
+	if(!ckey)
+		toggle_ai(AI_OFF)
+
+// =============================================================================
 // ZOMBIE SPAWN LANDMARK
 // Invisible landmark that randomly spawns infected or bruiser zombies
 // =============================================================================
@@ -565,6 +762,14 @@
 		/mob/living/simple_animal/hostile/infected/bruiser = 25,
 		/mob/living/simple_animal/hostile/infected/acid_spitter = 20,
 		/mob/living/simple_animal/hostile/infected/charger = 15
+	)
+	var/spawn_mob_types_diff5 = list(
+		/mob/living/simple_animal/hostile/infected = 55,
+		/mob/living/simple_animal/hostile/infected/bruiser = 20,
+		/mob/living/simple_animal/hostile/infected/bruiser/alt = 10,
+		/mob/living/simple_animal/hostile/infected/acid_spitter = 5,
+		/mob/living/simple_animal/hostile/infected/charger = 7,
+		/mob/living/simple_animal/hostile/infected/hunter = 3
 	)
 
 /obj/effect/landmark/zombie_spawn/Initialize(mapload)
@@ -590,7 +795,9 @@
 	var/list/current_spawn_types = spawn_mob_types
 	if(GLOB.zombie_director)
 		var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
-		if(D && D.difficulty_level >= 4)
+		if(D && D.difficulty_level >= 5)
+			current_spawn_types = spawn_mob_types_diff5
+		else if(D && D.difficulty_level >= 4)
 			current_spawn_types = spawn_mob_types_diff4
 
 	var/mob_type = pickweight(current_spawn_types)
@@ -605,3 +812,99 @@
 			if(D && D.zombie_hp_multiplier > 1.0)
 				Z.maxHealth = round(Z.maxHealth * D.zombie_hp_multiplier)
 				Z.health = Z.maxHealth
+/mob/living/simple_animal/hostile/infected/hunter/Bump(atom/A)
+	if(!A)
+		return
+	if(is_leaping)
+		is_leaping = FALSE
+	if(isliving(A))
+		var/mob/living/L = A
+		if(L && L.stat != DEAD)
+			L.apply_damage(leap_damage, BRUTE)
+			L.Paralyze(20)
+			shake_camera(L, 4, 3)
+			shake_camera(src, 2, 3)
+
+			// Start dragging victim manually
+			if(!is_dragging)
+				start_dragging(L)
+
+	else if(A.density && !A.CanPass(src))
+		visible_message("<span class='danger'>[src] crashes into [A]!</span>")
+		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg', 80, TRUE, FALSE, 100)
+		Stun(miss_stun_duration * 10)
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/start_dragging(mob/living/victim)
+	if(!victim || QDELETED(victim))
+		return
+	if(is_dragging)
+		return
+
+	is_dragging = TRUE
+	dragging_target = victim
+	drag_distance = 0
+
+	// Find available direction for dragging
+	var/list/available_dirs = list()
+	for(var/d in list(NORTH, SOUTH, EAST, WEST))
+		var/turf/T = get_step(src, d)
+		if(T && !T.density)
+			var/blocked = FALSE
+			for(var/obj/structure/fence/nocut/F in T)
+				if(F && F.Adjacent(src))
+					blocked = TRUE
+					break
+			if(!blocked)
+				available_dirs += d
+
+	if(available_dirs.len)
+		drag_direction = pick(available_dirs)
+		// Set strong grab
+		start_pulling(victim, supress_message = TRUE)
+		setGrabState(GRAB_NECK)
+		// Start dragging process
+		drag_tick()
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/drag_tick()
+	if(!is_dragging || !dragging_target || QDELETED(dragging_target))
+		end_dragging()
+		return
+
+	if(drag_distance >= drag_target_distance)
+		end_dragging()
+		// Put victim in critical condition
+		crit_and_ignore(dragging_target)
+		return
+
+	// Try to move in drag direction
+	var/turf/next_turf = get_step(src, drag_direction)
+	if(!next_turf || next_turf.density)
+		end_dragging()
+		crit_and_ignore(dragging_target)
+		return
+
+	// Check for fences
+	var/fence_blocked = FALSE
+	for(var/obj/structure/fence/nocut/F in next_turf)
+		if(F && F.Adjacent(src))
+			fence_blocked = TRUE
+			break
+
+	if(fence_blocked)
+		end_dragging()
+		crit_and_ignore(dragging_target)
+		return
+
+	// Move hunter and pull victim
+	Move(next_turf, drag_direction)
+	drag_distance++
+
+	// Continue dragging
+	addtimer(CALLBACK(src, PROC_REF(drag_tick)), 0.1 SECONDS)
+
+/mob/living/simple_animal/hostile/infected/hunter/proc/end_dragging()
+	is_dragging = FALSE
+	dragging_target = null
+	drag_distance = 0
+	drag_direction = null
+	stop_pulling()

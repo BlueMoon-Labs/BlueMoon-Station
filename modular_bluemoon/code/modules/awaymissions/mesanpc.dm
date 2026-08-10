@@ -459,9 +459,14 @@
 		icon_screen = "tactical_off"
 		set_light(0) // Disable light when not enabled
 
+	// Add z-level restriction to keep eye in bombardment zone
+	var/turf/myturf = get_turf(src)
+	if(myturf)
+		z_lock = list(myturf.z)
+
 /obj/machinery/computer/camera_advanced/bombardment/GrantActions(mob/living/user)
-	..(user)
-	if(mark_action && enabled)
+	..(user)  // Grant parent actions first
+	if(mark_action && enabled && eyeobj && eyeobj.eye_initialized)
 		mark_action.target = src
 		mark_action.Grant(user)
 		actions += mark_action
@@ -478,13 +483,11 @@
 	return ..()
 
 /obj/machinery/computer/camera_advanced/bombardment/CreateEye()
-
 	eyeobj = new /mob/camera/aiEye/remote/bombardment(get_turf(src))
 	eyeobj.origin = src
 	eyeobj.visible_icon = TRUE
 	eyeobj.icon = 'icons/mob/cameramob.dmi'
 	eyeobj.icon_state = "generic_camera"
-	eyeobj.use_static = USE_STATIC_NONE
 
 /obj/machinery/computer/camera_advanced/bombardment/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(!enabled)
@@ -501,17 +504,17 @@
 	var/allowed_area = null
 
 /mob/camera/aiEye/remote/bombardment/Initialize(mapload)
-	// Store the allowed area path, not name
-	if(console_origin)
-		allowed_area = console_origin.restricted_area
+	var/area/A = get_area(loc)
+	if(A)
+		allowed_area = A.name  // Store area name for comparison like xenobio
 	. = ..()
 
 /mob/camera/aiEye/remote/bombardment/setLoc(turf/destination)
 	if(!console_origin || !console_origin.enabled)
 		return
 	var/area/new_area = get_area(destination)
-	// Restrict movement to only the bombardment zone
-	if(new_area && istype(new_area, allowed_area))
+	// Restrict movement to only the bombardment zone by name (like xenobio)
+	if(new_area && (new_area.name == allowed_area || istype(new_area, /area/awaymission/ihategordon/outsideofmesa/bombardment)))
 		return ..()
 	else
 		return

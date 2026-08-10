@@ -225,7 +225,22 @@
 				continue
 
 			var/mob_type
-			if(difficulty_level >= 4)
+			if(difficulty_level >= 5)
+				// After trigger5, include hunter in rotation (rare special)
+				var/spawn_roll = rand(1, 100)
+				if(spawn_roll <= 55)
+					mob_type = /mob/living/simple_animal/hostile/infected
+				else if(spawn_roll <= 75)
+					mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+				else if(spawn_roll <= 85)
+					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+				else if(spawn_roll <= 90)
+					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+				else if(spawn_roll <= 97)
+					mob_type = /mob/living/simple_animal/hostile/infected/charger
+				else
+					mob_type = /mob/living/simple_animal/hostile/infected/hunter
+			else if(difficulty_level >= 4)
 				// After trigger4, include acid spitter and charger in rotation
 				var/spawn_roll = rand(1, 100)
 				if(spawn_roll <= 40)
