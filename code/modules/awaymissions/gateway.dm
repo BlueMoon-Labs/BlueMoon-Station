@@ -218,6 +218,24 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	destination.name = destination_name
 	destination.target_gateway = src
 	GLOB.gateway_destinations += destination
+	sync_destination_identity()
+
+/obj/machinery/gateway/proc/sync_destination_identity()
+	if(!destination)
+		return
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	if(is_pact_siege_level(T.z))
+		destination.hidden = TRUE
+		return
+	if(destination_name != initial(destination_name))
+		return
+	var/datum/space_level/level = SSmapping.get_level(T.z)
+	if(!level?.name)
+		return
+	destination_name = level.name
+	destination.name = level.name
 
 /obj/machinery/gateway/proc/deactivate()
 	var/datum/gateway_destination/dest = target
@@ -242,6 +260,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(teleportion_possible)
 		return
 	for(var/datum/gateway_destination/possible_destination as anything in GLOB.gateway_destinations)
+		if(possible_destination.hidden)
+			continue
+		if(!istype(possible_destination, /datum/gateway_destination/point))
+			continue
 		if(!valid_destination(possible_destination) || !possible_destination.is_available())
 			continue
 		teleportion_possible = TRUE
@@ -359,6 +381,12 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	density = TRUE
 	use_power = NO_POWER_USE
 
+/obj/machinery/gateway/away/Initialize(mapload)
+	. = ..()
+	var/turf/T = get_turf(src)
+	if(T && SSmapping.level_trait(T.z, ZTRAIT_AWAY) && !is_pact_siege_level(T.z))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sync_away_gateway_calibration_wait), T.z), 0)
+
 /obj/machinery/gateway/away/interact(mob/user)
 	. = ..()
 	if(!target)
@@ -402,6 +430,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)
 			if(possible_destination.hidden)
+				continue
+			if(!istype(possible_destination, /datum/gateway_destination/point))
 				continue
 			if(!G.valid_destination(possible_destination))
 				continue

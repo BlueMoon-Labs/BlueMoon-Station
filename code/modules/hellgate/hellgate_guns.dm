@@ -72,7 +72,7 @@
 	desc = "Магазин под пулемёт SG60. Калибр .45."
 	icon = 'icons/obj/hellgate/machinegun-ammo.dmi'
 	icon_state = "sg60"
-	ammo_type = /obj/item/projectile/bullet/c45/lethal
+	ammo_type = /obj/item/ammo_casing/c45/lethal
 	caliber = ".45"
 	max_ammo = 60
 

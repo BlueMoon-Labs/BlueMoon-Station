@@ -14,10 +14,6 @@
 	icon_state = "platingdmg3"
 	},
 /area/InteQ_ship)
-"ae" = (
-/obj/effect/mob_spawn/human/syndicatesoldier/coldres/alive/female,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship/ship4)
 "af" = (
 /obj/machinery/porta_turret/inteq/energy{
 	name = "InteQ Ship Turret"
@@ -30282,7 +30278,7 @@ av
 av
 av
 mM
-av
+Jh
 av
 hY
 fp
@@ -30708,7 +30704,7 @@ av
 mM
 Jh
 av
-ae
+av
 Rk
 mM
 mM
@@ -32614,7 +32610,7 @@ av
 av
 av
 mM
-av
+Jh
 av
 hY
 fp
@@ -32827,7 +32823,7 @@ RJ
 av
 mM
 JC
-ae
+av
 Rk
 mM
 mM
