@@ -107,7 +107,6 @@ export const Sleeper = (props) => {
             <Button
               key={chem.name}
               icon={chem.overdose_threshold || chem.addiction_threshold ? 'triangle-exclamation' : 'flask'}
-              iconColor={chem.overdose_threshold || chem.addiction_threshold ? 'warning' : null}
               tooltip={[
                 chem.overdose_threshold && `Передозировка: ${chem.overdose_threshold}u`,
                 chem.addiction_threshold && `Зависимость: ${chem.addiction_threshold}u`,
