@@ -542,7 +542,11 @@ Pass a positive integer as an argument to override a bot's default speed.
 */
 /mob/living/simple_animal/bot/proc/bot_move(dest, move_speed)
 	if(!dest || !path || path.len == 0) //A-star failed or a path/destination was not set.
-		set_path(null)
+		// Keep empty paths as a plain list; avoid set_path(null) HUD work when there is nothing to clear.
+		if(length(path))
+			set_path(null)
+		else
+			path = list()
 		return FALSE
 	dest = get_turf(dest) //We must always compare turfs, so get the turf of the dest var if dest was originally something else.
 	var/turf/last_node = get_turf(path[path.len]) //This is the turf at the end of the path, it should be equal to dest.
@@ -1034,15 +1038,22 @@ Pass a positive integer as an argument to override a bot's default speed.
 	path = newpath ? newpath : list()
 	if(!path_hud)
 		return
-	var/list/path_huds_watching_me = list(GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED])
-	if(path_hud)
-		path_huds_watching_me += path_hud
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	var/list/path_huds_watching_me = list()
+	var/datum/atom_hud/diagnostic_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
+	if(diagnostic_hud)
+		path_huds_watching_me += diagnostic_hud
+	path_huds_watching_me += path_hud
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.remove_from_hud(src)
 
-	var/list/path_images = hud_list[DIAG_PATH_HUD]
-	QDEL_LIST(path_images)
+	var/list/path_images = hud_list?[DIAG_PATH_HUD]
+	if(isnull(path_images))
+		path_images = list()
+		hud_list[DIAG_PATH_HUD] = path_images
+	else
+		QDEL_LIST(path_images)
 	if(newpath)
 		for(var/i in 1 to newpath.len)
 			var/turf/T = newpath[i]
@@ -1080,8 +1091,9 @@ Pass a positive integer as an argument to override a bot's default speed.
 			path[T] = I
 			path_images += I
 
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.add_to_hud(src)
 
 

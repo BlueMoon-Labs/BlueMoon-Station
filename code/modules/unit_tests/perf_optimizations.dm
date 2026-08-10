@@ -1148,11 +1148,11 @@
 	bot.toggle_ai(AI_OFF)
 	bot.auto_patrol = FALSE
 	bot.on = TRUE
-	// Dense turfs, not windows: can_step rejects them before LinkBlockedWithAccess.
+	// Transparent dense barriers: targets stay visible, JPS cannot step through.
 	for(var/direction in GLOB.alldirs)
-		get_step(bot, direction).ChangeTurf(/turf/closed/wall)
+		allocate(/obj/structure/window/reinforced/fulltile, get_step(bot, direction))
 	var/obj/effect/decal/cleanable/ash/first_target = allocate(/obj/effect/decal/cleanable/ash, locate(bot_turf.x + 2, bot_turf.y, bot_turf.z))
-	allocate(/obj/effect/decal/cleanable/ash, locate(bot_turf.x - 2, bot_turf.y, bot_turf.z))
+	var/obj/effect/decal/cleanable/ash/second_target = allocate(/obj/effect/decal/cleanable/ash, locate(bot_turf.x - 2, bot_turf.y, bot_turf.z))
 	bot.mode = BOT_IDLE
 	bot.path = list()
 	bot.target = first_target
@@ -1162,44 +1162,58 @@
 	var/jps_before = GLOB.ai_metrics.jps_requests
 	bot.handle_automated_action()
 	var/jps_after_failure = GLOB.ai_metrics.jps_requests
-	var/ring_walls = 0
+	var/ring_windows = 0
 	for(var/direction in GLOB.alldirs)
-		if(iswallturf(get_step(bot, direction)))
-			ring_walls++
-	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed cleanbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_walls]/8)")
-	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed cleanbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_walls]/8, jps_delta=[jps_after_failure - jps_before])")
+		var/obj/structure/window/ring_window = locate(/obj/structure/window) in get_step(bot, direction)
+		if(ring_window?.density)
+			ring_windows++
+	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed cleanbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8)")
+	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed cleanbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8, jps_delta=[jps_after_failure - jps_before])")
 
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another cleanbot JPS request")
 
+	// Force another unreachable target after the cooldown: do not depend on scan/ignore_list.
 	bot.next_path_attempt = world.time
+	bot.ignore_list = list()
+	bot.path = list()
+	bot.target = second_target
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure + 1, "Cleanbot must retry autonomous targets after the cooldown expires")
 
 /datum/unit_test/floorbot_failed_path_search_has_cooldown/Run()
 	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	// Plating first so TILE_EMAG cannot pick the bot's own turf if a scan runs.
+	bot_turf = bot_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 	var/mob/living/simple_animal/bot/floorbot/bot = allocate(/mob/living/simple_animal/bot/floorbot, bot_turf)
 	bot.toggle_ai(AI_OFF)
 	bot.emagged = 2
 	bot.auto_patrol = FALSE
 	bot.on = TRUE
 	for(var/direction in GLOB.alldirs)
-		get_step(bot, direction).ChangeTurf(/turf/closed/wall)
-	bot.target = locate(bot_turf.x + 2, bot_turf.y, bot_turf.z)
+		allocate(/obj/structure/window/reinforced/fulltile, get_step(bot, direction))
+	var/turf/first_target = locate(bot_turf.x + 2, bot_turf.y, bot_turf.z)
+	var/turf/second_target = locate(bot_turf.x - 2, bot_turf.y, bot_turf.z)
+	bot.target = first_target
 
 	var/jps_before = GLOB.ai_metrics.jps_requests
 	bot.handle_automated_action()
 	var/jps_after_failure = GLOB.ai_metrics.jps_requests
-	var/ring_walls = 0
+	var/ring_windows = 0
 	for(var/direction in GLOB.alldirs)
-		if(iswallturf(get_step(bot, direction)))
-			ring_walls++
-	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed floorbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_walls]/8)")
-	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed floorbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_walls]/8, jps_delta=[jps_after_failure - jps_before])")
+		var/obj/structure/window/ring_window = locate(/obj/structure/window) in get_step(bot, direction)
+		if(ring_window?.density)
+			ring_windows++
+	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed floorbot fixture must execute one failed JPS request (mode=[bot.mode], on=[bot.on], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8)")
+	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed floorbot path must arm the autonomous retry cooldown (next_path_attempt=[bot.next_path_attempt], world.time=[world.time], mode=[bot.mode], target=[bot.target || "null"], path.len=[length(bot.path)], ring=[ring_windows]/8, jps_delta=[jps_after_failure - jps_before])")
 
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another JPS request")
 
+	// Force another unreachable target after the cooldown: do not depend on scan/ignore_list.
 	bot.next_path_attempt = world.time
+	bot.ignore_list = list()
+	bot.path = list()
+	bot.target = second_target
 	bot.handle_automated_action()
 	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure + 1, "Floorbot must retry autonomous targets after the cooldown expires")

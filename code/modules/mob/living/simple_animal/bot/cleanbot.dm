@@ -430,14 +430,22 @@
 
 		if(!path || path.len == 0) //No path, need a new one
 			//Try to produce a path to the target, and ignore airlocks to which it has access.
-			path = get_path_to(src, target, BOT_TARGET_PATH_LIMIT, id=access_card)
-			// Empty JPS must arm the cooldown without bot_move() → set_path(null).
-			if(!length(path) || !bot_move(target))
+			path = get_path_to(src, get_turf(target), BOT_TARGET_PATH_LIMIT, id=access_card)
+			// Arm the retry cooldown from the JPS result before bot_move()/set_path(null)
+			// or ignore-list bookkeeping: a runtime there used to leave next_path_attempt at 0.
+			if(!length(path))
+				next_path_attempt = world.time + CLEANBOT_FAILED_PATH_RETRY
 				add_to_ignore(target)
 				target = null
 				path = list()
 				mode = BOT_IDLE
+				return
+			if(!bot_move(target))
 				next_path_attempt = world.time + CLEANBOT_FAILED_PATH_RETRY
+				add_to_ignore(target)
+				target = null
+				path = list()
+				mode = BOT_IDLE
 				return
 			next_path_attempt = 0
 			mode = BOT_MOVING

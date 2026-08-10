@@ -355,18 +355,22 @@
 			path = list()
 			return
 		if(path.len == 0)
-			if(!isturf(target))
-				var/turf/TL = get_turf(target)
-				path = get_path_to(src, TL, BOT_TARGET_PATH_LIMIT, id=access_card,simulated_only = 0)
-			else
-				path = get_path_to(src, target, BOT_TARGET_PATH_LIMIT, id=access_card,simulated_only = 0)
+			var/turf/path_target = isturf(target) ? target : get_turf(target)
+			path = get_path_to(src, path_target, BOT_TARGET_PATH_LIMIT, id=access_card, simulated_only = 0)
 
-			// Empty JPS must arm the cooldown without bot_move() → set_path(null).
-			if(!length(path) || !bot_move(target))
+			// Arm the retry cooldown from the JPS result before bot_move()/set_path(null)
+			// or ignore-list bookkeeping: a runtime there used to leave next_path_attempt at 0.
+			if(!length(path))
+				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
 				add_to_ignore(target)
 				target = null
 				mode = BOT_IDLE
+				return
+			if(!bot_move(target))
 				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
+				add_to_ignore(target)
+				target = null
+				mode = BOT_IDLE
 				return
 			next_path_attempt = 0
 		else if(!bot_move(target))
