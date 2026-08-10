@@ -1208,7 +1208,9 @@ GLOBAL_VAR(parked_flicker_watchdog_id)
 /// Returns TRUE if any clients are on this light's z-level
 /obj/machinery/light/proc/has_z_viewers()
 	var/our_z = z
-	if(!our_z || !SSmobs?.initialized)
+	// SSmobs объявлена SS_NO_INIT, её initialized не станет TRUE никогда - раскладку
+	// клиентов по z заполняет первый fire(), по её наличию и проверяем.
+	if(!our_z || !length(SSmobs.clients_by_zlevel))
 		return TRUE
 	return our_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[our_z])
 
