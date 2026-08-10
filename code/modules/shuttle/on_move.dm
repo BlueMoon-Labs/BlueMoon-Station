@@ -114,6 +114,20 @@ All ShuttleMove procs go here
 		SSspatial_grid.exit_cell(src, oldT)
 		SSspatial_grid.enter_cell(src, newT)
 
+	//по той же причине руками переносим подписку на выброс газа: её ведёт элемент
+	//atmos_sensitive из react_to_move() по COMSIG_MOVABLE_MOVED, которого тут нет,
+	//поэтому запись оставалась в atmos_exposure_listeners покинутого турфа. Список
+	//ключуется слушателем, то есть турф держит на атом жёсткую ссылку, а Detach при
+	//удалении ищет запись на ТЕКУЩЕМ турфе и не находит - улетевшее с шаттлом
+	//стекло, решётка или канистра уходили в харддел на ~240мс каждая. ChangeTurf
+	//ещё и переносит список на замену турфа, так что ScrapeAway() после отлёта
+	//протухшую запись не чистил, а продлевал.
+	var/exposure_handler = LAZYACCESS(oldT.atmos_exposure_listeners, src)
+	if(exposure_handler)
+		unregister_turf_exposure(oldT)
+		register_turf_exposure(newT, exposure_handler)
+		atmos_conditions_changed()
+
 	return TRUE
 
 // Called on atoms after everything has been moved
@@ -175,7 +189,9 @@ All ShuttleMove procs go here
 	return TRUE
 
 // Called on areas after everything has been moved
-/area/proc/afterShuttleMove(new_parallax_dir, speed)
+// Скорость обязана иметь дефолт: летящая область без числовой скорости для держателя
+// параллакса неотличима от стоящей, и полёт перестаёт рисоваться.
+/area/proc/afterShuttleMove(new_parallax_dir, speed = PARALLAX_SHUTTLE_SCROLL_SPEED)
 	if(!new_parallax_dir)
 		parallax_moving = FALSE
 		return
@@ -239,11 +255,6 @@ All ShuttleMove procs go here
 	. = ..()
 	recharging_turf = get_step(loc, dir)
 
-/obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
-	. = ..()
-	if(pipe_vision_img)
-		pipe_vision_img.loc = loc
-
 /obj/machinery/computer/auxillary_base/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	if(is_mining_level(z)) //Avoids double logging and landing on other Z-levels due to badminnery
@@ -262,6 +273,10 @@ All ShuttleMove procs go here
 
 /obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
+	// Картинка обзора труб живёт отдельным image со своим loc, и перелёт двигает
+	// машину присваиванием loc - картинку за собой он не тянет.
+	if(pipe_vision_img)
+		pipe_vision_img.loc = loc
 	var/missing_nodes = FALSE
 	for(var/i in 1 to device_type)
 		if(nodes[i])
@@ -320,6 +335,16 @@ All ShuttleMove procs go here
 /************************************Item move procs************************************/
 
 /obj/item/storage/pod/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
+	. = ..()
+	// If the pod was launched, the storage will always open. The CentCom check
+	// ignores the movement of the shuttle from the staging area on CentCom to
+	// the station as it is loaded in. Only unlock when we've left the station
+	// (pod actually launched), not during initial placement.
+	if (oldT && !is_centcom_level(oldT.z) && !is_station_level(z))
+		var/datum/component/storage/concrete/emergency/STR = GetComponent(/datum/component/storage/concrete/emergency)
+		STR?.unlock_me()
+
+/obj/item/storage/pod_luxury/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	// If the pod was launched, the storage will always open. The CentCom check
 	// ignores the movement of the shuttle from the staging area on CentCom to

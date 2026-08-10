@@ -540,6 +540,27 @@
 	priority_announce("The Emergency Shuttle is preparing for direct jump. Estimate [timeLeft(600)] minutes until the shuttle docks at Central Command.", null, null, "Priority")
 
 
+/// Subtype for escape pod ports so that we can give them trait behaviour
+/obj/docking_port/stationary/escape_pod
+	name = "escape pod loader"
+	height = 5
+	width = 3
+	dwidth = 1
+	roundstart_template = /datum/map_template/shuttle/escape_pod/default
+	/// Set to true if you have a snowflake escape pod dock which needs to always have the normal pod or some other one
+	var/enforce_specific_pod = FALSE
+
+/obj/docking_port/stationary/escape_pod/Initialize(mapload)
+	. = ..()
+	if(enforce_specific_pod)
+		return
+
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_SMALLER_PODS))
+		roundstart_template = /datum/map_template/shuttle/escape_pod/cramped
+		return
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_BIGGER_PODS))
+		roundstart_template = /datum/map_template/shuttle/escape_pod/luxury
+
 /obj/docking_port/mobile/pod
 	name = "escape pod"
 	shuttle_id = "pod"
@@ -671,6 +692,30 @@
 	new /obj/item/pickaxe/emergency(src)
 	new /obj/item/pickaxe/emergency(src)
 	new /obj/item/survivalcapsule(src)
+	new /obj/item/storage/toolbox/emergency(src)
+
+/obj/item/storage/pod_luxury
+	name = "luxury space suits"
+	desc = "A wall mounted safe containing space suits. Will only open in emergencies."
+	anchored = TRUE
+	icon = 'icons/obj/storage.dmi'
+	icon_state = "safe"
+	integrity_failure = 0.2
+	component_type = /datum/component/storage/concrete/emergency
+
+/obj/item/storage/pod_luxury/PopulateContents()
+	new /obj/item/clothing/head/helmet/space/syndicate(src)
+	new /obj/item/clothing/head/helmet/space/syndicate(src)
+	new /obj/item/clothing/suit/space/syndicate(src)
+	new /obj/item/clothing/suit/space/syndicate(src)
+	new /obj/item/clothing/mask/gas/syndicate(src)
+	new /obj/item/clothing/mask/gas/syndicate(src)
+	new /obj/item/tank/internals/oxygen/red(src)
+	new /obj/item/tank/internals/oxygen/red(src)
+	new /obj/item/pickaxe/diamond(src)
+	new /obj/item/pickaxe/diamond(src)
+	new /obj/item/survivalcapsule/luxury(src)
+	new /obj/item/storage/toolbox/emergency(src)
 	new /obj/item/storage/toolbox/emergency(src)
 
 /obj/docking_port/mobile/emergency/backup

@@ -185,6 +185,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -238,6 +240,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
 	/datum/admins/proc/atmos_active_report,
+	/datum/admins/proc/atmos_heat_toggle,
+	/datum/admins/proc/atmos_control_panel,
 	#ifndef TGS
 	/datum/admins/proc/atmos_benchmark,
 	#endif
@@ -313,6 +317,8 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/callproc_datum,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/reload_admins,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/startSinglo, // tg removed this

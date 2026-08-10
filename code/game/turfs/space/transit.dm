@@ -72,12 +72,22 @@
 
 /turf/open/space/transit/Entered(atom/movable/AM, atom/OldLoc)
 	. = ..()
+	// Родитель имеет право утащить пришедшего прямо здесь: дамп в космос уносит его
+	// на другой z, а TRAIT_DEL_ON_SPACE_DUMP - удаляет совсем. Тогда get_turf(AM)
+	// уже null, и SSshuttle.is_in_shuttle_bounds рантаймит по одному разу на КАЖДЫЙ
+	// док станции. Гард ровно тот же, что стоит у /turf/open/space/Entered.
+	if(QDELETED(AM) || AM.loc != src)
+		return
 	init_shuttle_cling(AM)
 
 /turf/open/space/transit/Exited(atom/movable/gone, direction)
 	. = ..()
 	var/turf/location = gone.loc
-	if(istype(location, /turf/open/space) && !istype(location, src.type))
+	// Must check the transit parent path, not src.type: BlueMoon uses directional subtypes
+	// (/transit/south, /transit/border/north, …). Checking src.type dumps anything that crosses
+	// from interior → border (and vice versa), which instantly qdels shuttle-event spawns
+	// (TRAIT_DEL_ON_SPACE_DUMP) and yeets projectiles/debris into realspace.
+	if(istype(location, /turf/open/space) && !istype(location, /turf/open/space/transit))
 		dump_in_space(gone)
 		return
 	if(!istype(gone.loc, /turf/open/space/transit))

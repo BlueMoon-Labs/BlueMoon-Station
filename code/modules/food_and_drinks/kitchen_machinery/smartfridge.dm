@@ -401,6 +401,12 @@
 		return TRUE
 	if(istype(O, /obj/item/slime_cookie))
 		return TRUE
+	// Проверка на подтип обязана идти ПЕРЕД проверкой на родителя. Стабилизированные
+	// экстракты работают только при носителе: в холодильнике get_held_mob() их не находит,
+	// эффект пишет "сила иссякла" и самоудаляется. Их место в сумке, а разгрузка сумки
+	// идёт через этот же accept_check и выгребала их вместе с обычными.
+	if(istype(O, /obj/item/slimecross/stabilized))
+		return FALSE
 	if(istype(O, /obj/item/slimecross))
 		return TRUE
 	return FALSE

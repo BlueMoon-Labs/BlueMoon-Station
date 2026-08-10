@@ -1,0 +1,3810 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ai" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/reagent_containers/food/snacks/bubblegum,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"ao" = (
+/turf/closed/indestructible/wall{
+	opacity = 0
+	},
+/area/hilbertshotel)
+"aO" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 1
+	},
+/obj/structure/bed/pillow_large,
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0;
+	layer = 2.8
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"aS" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"bc" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1;
+	pixel_x = 5;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/siding/yellow{
+	dir = 9;
+	pixel_y = 5;
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	pixel_x = -30;
+	pixel_y = 30
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"bs" = (
+/obj/structure/sign/poster/contraband/yes_erp,
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"bH" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"cg" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"cp" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"cx" = (
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"cB" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"cF" = (
+/obj/machinery/treadmill_monitor,
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"cP" = (
+/obj/machinery/door/morgue,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"cR" = (
+/obj/machinery/telecomms/relay/preset/auto,
+/turf/open/floor/catwalk_floor,
+/area/hilbertshotel)
+"cT" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"cU" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 4.8
+	},
+/obj/structure/railing/corner/end{
+	dir = 4;
+	pixel_x = 2
+	},
+/turf/open/floor/plasteel/stairs/right,
+/area/hilbertshotel)
+"cZ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/chem_dispenser/drinks,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"dn" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	opacity = 0
+	},
+/area/hilbertshotel)
+"dq" = (
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"dr" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-2";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"dv" = (
+/obj/structure/sign/painting/large,
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"dJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/structure/chair/sofa/corp/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ei" = (
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ej" = (
+/turf/open/pool,
+/area/hilbertshotel)
+"es" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ex" = (
+/obj/machinery/light/floor{
+	brightness = 4;
+	bulb_colour = "#4189D1"
+	},
+/obj/structure/urbanismmachines{
+	icon_state = "holograph_on";
+	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
+	pixel_x = -16;
+	wave_explosion_block = 1e+031;
+	name = "holographic table";
+	desc = "Вау, а он довольно красивый";
+	resistance_flags = 64
+	},
+/obj/structure/urbanismmachines{
+	icon_state = "hologram_on";
+	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
+	pixel_x = -16;
+	wave_explosion_block = 1e+031;
+	pixel_y = 18;
+	name = " ";
+	desc = " ";
+	resistance_flags = 64
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"eB" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/dark/corner,
+/obj/structure/chair/sofa/corp/corner{
+	dir = 4
+	},
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"eH" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 1
+	},
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"eN" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	dir = 8
+	},
+/area/hilbertshotel)
+"eU" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"fa" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/hilbertshotel)
+"fb" = (
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"ff" = (
+/obj/structure/urbanismmounted{
+	icon_state = "wallmount";
+	pixel_x = 0;
+	pixel_y = 28
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark/corner,
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_x = 0;
+	pixel_y = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"fi" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 4
+	},
+/obj/structure/fluff/paper/stack{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"fm" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"fo" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"ft" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/obj/structure/bed/pillow_large,
+/obj/structure/bed/pillow_large{
+	pixel_x = -17;
+	layer = 3;
+	pixel_y = 8
+	},
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"fx" = (
+/obj/structure/table/reinforced/brass,
+/obj/machinery/light{
+	dir = 4;
+	bulb_colour = "#CF9B61"
+	},
+/obj/item/reagent_containers/rag/towel,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"fD" = (
+/obj/structure/bed/pillow_large,
+/obj/item/fancy_pillow{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"fQ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/table/wood/fancy/purple,
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"fU" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark/corner,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"gb" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/shower{
+	pixel_y = 16
+	},
+/obj/machinery/pool/drain{
+	pixel_x = -2;
+	pixel_y = -13
+	},
+/obj/structure/pool/ladder{
+	dir = 8;
+	pixel_x = 0;
+	pixel_y = 16;
+	invisibility = 60
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"gh" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"gi" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"gv" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"gE" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/corp,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"gL" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"hh" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_x = 4;
+	pixel_y = 10
+	},
+/obj/item/reagent_containers/food/drinks/beer{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"hk" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/eighties,
+/area/hilbertshotel)
+"hP" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 1
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/obj/structure/urbanismmounted{
+	icon_state = "panelmounted";
+	pixel_x = 0;
+	pixel_y = 28
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"hQ" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"hR" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	opacity = 0
+	},
+/area/hilbertshotel)
+"ix" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	opacity = 0
+	},
+/area/hilbertshotel)
+"iJ" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"jA" = (
+/obj/structure/displaycase{
+	start_showpiece_type = /obj/item/toy/plush/carpplushie
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"jG" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "4-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"jH" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/pool,
+/area/hilbertshotel)
+"jI" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/turf/open/floor/plating/beach/sand,
+/area/hilbertshotel)
+"jX" = (
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"kl" = (
+/obj/structure/table/reinforced/brass,
+/turf/open/floor/plasteel/dark/smooth/half{
+	dir = 1
+	},
+/area/hilbertshotel)
+"kP" = (
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/structure/railing{
+	layer = 5.1
+	},
+/obj/structure/railing{
+	dir = 1;
+	layer = 4.4
+	},
+/obj/structure/flora/tree/jungle,
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"ll" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"lp" = (
+/obj/effect/turf_decal/siding/wideplating_new/light/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 8
+	},
+/obj/structure/sink/kitchen{
+	pixel_y = 27
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"lr" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"lA" = (
+/obj/structure/bed/pillow_large,
+/obj/item/fancy_pillow{
+	pixel_y = -8
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"lH" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"lO" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/effect/turf_decal/siding/purple/corner{
+	pixel_x = -27
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 8;
+	pixel_x = 27
+	},
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"lX" = (
+/obj/effect/turf_decal/siding/wideplating_new/light/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"mg" = (
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 4
+	},
+/area/hilbertshotel)
+"mr" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/personal{
+	icon_state = "cabinet"
+	},
+/turf/open/floor/plasteel/dark/smooth/half{
+	dir = 1
+	},
+/area/hilbertshotel)
+"my" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/chem_dispenser/drinks/beer,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"mB" = (
+/obj/structure/sign/painting/library,
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"mJ" = (
+/obj/machinery/vending/boozeomat/syndicate_access,
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"mM" = (
+/obj/structure/table/reinforced/brass,
+/obj/item/storage/bag/tray,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"nE" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"nM" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	dir = 8;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"nO" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"oc" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/table/wood/fancy/purple,
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"oo" = (
+/obj/structure/railing{
+	dir = 8;
+	layer = 4.8
+	},
+/turf/open/floor/plasteel/stairs/left,
+/area/hilbertshotel)
+"ot" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 8
+	},
+/area/hilbertshotel)
+"oG" = (
+/obj/effect/turf_decal/siding/dark/end{
+	moving_diagonally = 3;
+	dir = 8
+	},
+/obj/structure/toilet/secret/low_loot{
+	dir = 8
+	},
+/turf/open/floor/plasteel/kitchen/diagonal,
+/area/hilbertshotel)
+"oQ" = (
+/obj/machinery/treadmill_monitor{
+	name = "Monitor"
+	},
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"pp" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = -10
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"pr" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "2-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"pM" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/eighties,
+/area/hilbertshotel)
+"pR" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	dir = 1;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"pS" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/structure/chair/sofa/corp/left{
+	pixel_x = 6
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"pY" = (
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"qA" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"qE" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-2";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "0-1";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = -2
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"qI" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"qQ" = (
+/turf/closed/indestructible/rock,
+/area/hilbertshotel)
+"rd" = (
+/obj/effect/turf_decal/siding/purple/end,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"rg" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ru" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"rE" = (
+/turf/template_noop,
+/area/hilbertshotel)
+"rO" = (
+/obj/machinery/jukebox{
+	req_one_access = null
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"rP" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/obj/structure/urbanismmounted{
+	icon_state = "wallmount";
+	pixel_y = 28
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"sd" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/projector/skyscraper{
+	dir = 4;
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_wall.dmi';
+	projection_icon_state = "ugol2";
+	projection_pixel_x_offset = 32;
+	projection_pixel_y_offset = -416
+	},
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"sp" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/plating/beach/sand,
+/area/hilbertshotel)
+"su" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/structure/pool/ladder{
+	dir = 8;
+	pixel_x = 0;
+	pixel_y = 16;
+	invisibility = 60
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"sx" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/purple/corner,
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner,
+/obj/machinery/light/red{
+	dir = 8
+	},
+/obj/structure/fluff/paper/stack{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"sK" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"sS" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/machinery/vending/snack/random{
+	pixel_x = 0
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"sX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"td" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"te" = (
+/obj/structure/closet/secure_closet/personal{
+	icon_state = "cabinet"
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"ti" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	dir = 1;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"tw" = (
+/obj/effect/turf_decal/siding/dark/end{
+	moving_diagonally = 3;
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/recharge_station,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"tA" = (
+/obj/structure/table/reinforced/brass,
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_y = 14
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_x = 9;
+	pixel_y = 14
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"tB" = (
+/obj/structure/dresser,
+/obj/item/camera{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ud" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/obj/structure/chair/sofa/corp/right,
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"uV" = (
+/obj/structure/railing{
+	dir = 4;
+	layer = 4.9
+	},
+/turf/open/floor/plasteel/stairs/right,
+/area/hilbertshotel)
+"va" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/structure/rack,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"ve" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/machinery/light/floor{
+	brightness = 4;
+	pixel_x = 15
+	},
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"vB" = (
+/obj/structure/table/reinforced/brass,
+/obj/structure/desk_bell{
+	pixel_x = 6
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"vJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = -10
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"vN" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"wi" = (
+/obj/effect/turf_decal/siding/dark,
+/turf/open/pool,
+/area/hilbertshotel)
+"wt" = (
+/obj/structure/bed/pillow_large,
+/obj/item/fancy_pillow{
+	pixel_y = 7;
+	pixel_x = -5
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"wu" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/machinery/vending/cola/random,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"wx" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/structure/bed/dogbed{
+	desc = "A comfy-looking pet bed. You can even strap your pet in, in case the gravity turns off.";
+	name = "pet bed"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"wB" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"wD" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"wI" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"wK" = (
+/obj/effect/turf_decal/siding/wood/thin/end,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/washing_machine,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"xh" = (
+/obj/effect/projector/skyscraper{
+	dir = 1;
+	projection_icon_state = "lef";
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_front.dmi';
+	projection_pixel_y_offset = -32;
+	projection_pixel_x_offset = 192
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	dir = 4
+	},
+/area/hilbertshotel)
+"xp" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 8
+	},
+/obj/machinery/light/red{
+	dir = 4
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 1;
+	pixel_x = 0
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"xx" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/stairs/left,
+/area/hilbertshotel)
+"xy" = (
+/obj/effect/projector/skyscraper{
+	dir = 4;
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_wall.dmi';
+	projection_icon_state = "wall2";
+	projection_pixel_y_offset = -192
+	},
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"xC" = (
+/obj/structure/railing/unbreakable{
+	dir = 5;
+	pixel_y = -32
+	},
+/turf/closed/indestructible/wall{
+	opacity = 0
+	},
+/area/hilbertshotel)
+"xL" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	dir = 8;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"xN" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	opacity = 0
+	},
+/area/hilbertshotel)
+"yb" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/structure/table/reinforced/brass,
+/obj/item/kirbyplants{
+	icon_state = "plant-21";
+	pixel_x = 0;
+	pixel_y = 12
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"yf" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	dir = 4
+	},
+/area/hilbertshotel)
+"yh" = (
+/obj/structure/urbanismmachines{
+	pixel_x = -4;
+	pixel_y = 0;
+	layer = 2;
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/obj/structure/urbanismmachines{
+	pixel_x = 11;
+	pixel_y = 0;
+	layer = 2;
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/turf/open/floor/circuit/red,
+/area/hilbertshotel)
+"ys" = (
+/obj/structure/flora/junglebush/large,
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"yy" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"yC" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"yH" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"yL" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"yM" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = 9;
+	pixel_y = -10
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"yQ" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/corp{
+	pixel_x = -5
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"yY" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/eighties,
+/area/hilbertshotel)
+"zk" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/purple/corner,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"zl" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/end,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"zx" = (
+/turf/open/space/bluespace,
+/area/hilbertshotel)
+"zM" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/obj/structure/bed/pillow_large,
+/obj/item/fancy_pillow{
+	pixel_x = 3;
+	pixel_y = -10;
+	layer = 3.1
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"zS" = (
+/obj/effect/projector/skyscraper{
+	dir = 1;
+	projection_icon_state = "mid";
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_front.dmi';
+	projection_pixel_y_offset = -32;
+	projection_pixel_x_offset = 128
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	dir = 8
+	},
+/area/hilbertshotel)
+"zY" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 1;
+	pixel_x = 0
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Aq" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 8
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "2-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_x = -1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Ax" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"AU" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-2";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "0-1";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = -1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"AY" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/railing,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Be" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Bu" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"BS" = (
+/obj/structure/table/wood/fancy/purple,
+/obj/item/pizzabox/margherita{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/turf/open/floor/plasteel/dark/smooth/small,
+/area/hilbertshotel)
+"Ca" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Cc" = (
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Cd" = (
+/obj/item/kirbyplants/hedge{
+	anchored = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.9
+	},
+/obj/structure/window/reinforced,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Cy" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"CH" = (
+/obj/machinery/door/airlock/survival_pod,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"CV" = (
+/obj/item/fancy_pillow{
+	pixel_x = 2;
+	pixel_y = -1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/end,
+/obj/effect/turf_decal/siding/wood/thin/end,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Dy" = (
+/obj/structure/table/reinforced/brass,
+/obj/machinery/light_switch/directional/north,
+/obj/structure/bedsheetbin/towel,
+/obj/structure/mirror/directional/north{
+	pixel_x = 26;
+	pixel_y = -1
+	},
+/obj/item/reagent_containers/spray/cleaner{
+	pixel_x = 5
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"DD" = (
+/obj/effect/turf_decal/siding/wideplating_new/light/end,
+/obj/effect/turf_decal/siding/wood/thin/end,
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"Eb" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/corp/right,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"EJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/flora/junglebush/large,
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/structure/railing{
+	dir = 10
+	},
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"Fn" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Fr" = (
+/obj/structure/flora/junglebush/large{
+	layer = 4.9
+	},
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/structure/railing{
+	dir = 9
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"FI" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"FX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 1
+	},
+/obj/machinery/pool/controller,
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 1
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ga" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/obj/structure/urbanismmounted{
+	pixel_x = -2;
+	pixel_y = 25
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Gp" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "2-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_x = -1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"GC" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"GV" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4;
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/siding/yellow{
+	dir = 5;
+	pixel_y = 5;
+	pixel_x = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8;
+	pixel_x = 30;
+	pixel_y = 30
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"Hd" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/item/fancy_pillow{
+	pixel_x = 7;
+	pixel_y = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Hn" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/bed/dogbed{
+	desc = "A comfy-looking pet bed. You can even strap your pet in, in case the gravity turns off.";
+	name = "pet bed"
+	},
+/obj/item/electropack/shockcollar{
+	pixel_x = 8
+	},
+/obj/item/leash{
+	pixel_x = -9;
+	pixel_y = -9
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Hz" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/eighties,
+/area/hilbertshotel)
+"HG" = (
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 8
+	},
+/area/hilbertshotel)
+"Ia" = (
+/obj/machinery/vending/games{
+	shut_up = 1;
+	pixel_x = 1
+	},
+/obj/effect/turf_decal/siding/dark/end,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"IE" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/obj/machinery/light_switch/directional/south,
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"IF" = (
+/obj/effect/turf_decal/siding/wideplating_new/light{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/light/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/hilbertshotel)
+"IJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/dark/corner,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"IY" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/end{
+	dir = 8
+	},
+/obj/structure/dresser,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ja" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/plating/beach/sand,
+/area/hilbertshotel)
+"Jl" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/structure/table/wood/fancy/purple,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ju" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	opacity = 0
+	},
+/area/hilbertshotel)
+"Jx" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/urbanismmounted{
+	icon_state = "controlunit";
+	pixel_x = -27;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/stairs/left,
+/area/hilbertshotel)
+"JG" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 1
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-2";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Ka" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/structure/pool/ladder{
+	dir = 8;
+	pixel_x = 0
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"Kc" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Kl" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,11";
+	dir = 1;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"Kt" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Ku" = (
+/obj/effect/turf_decal/siding/dark/end{
+	moving_diagonally = 3;
+	dir = 8
+	},
+/obj/item/fancy_pillow{
+	pixel_x = -7;
+	pixel_y = -14
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"Kw" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"KK" = (
+/obj/effect/turf_decal/siding/dark/end,
+/obj/structure/bed/pillow_large,
+/obj/machinery/light{
+	dir = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"KT" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/modular_computer/laptop{
+	icon_state = "laptop"
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"KV" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Lg" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ln" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Lu" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/stationobjs.dmi';
+	icon_state = "blackbox";
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/obj/structure/urbanismmachines{
+	icon_state = "packedmachine";
+	pixel_x = 28;
+	pixel_y = 30;
+	anchored = 0;
+	layer = 3
+	},
+/turf/open/floor/circuit/red,
+/area/hilbertshotel)
+"LO" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/structure/table/wood/fancy/purple,
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"LX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/end,
+/obj/effect/turf_decal/siding/wood/thin/end,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Mg" = (
+/obj/machinery/pool/drain{
+	pixel_x = 0;
+	pixel_y = 17
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"Mr" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/structure/fluff/paper/stack{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Mw" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"My" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/plating/beach/sand,
+/area/hilbertshotel)
+"MB" = (
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	dir = 8
+	},
+/area/hilbertshotel)
+"MD" = (
+/obj/effect/turf_decal/siding/dark/end{
+	moving_diagonally = 3;
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Nm" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_x = 0
+	},
+/obj/structure/urbanismmounted{
+	icon_state = "wallmount";
+	pixel_x = -27;
+	pixel_y = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ns" = (
+/obj/structure/bed/medieval/bed_2x2{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Nt" = (
+/obj/structure/railing/unbreakable{
+	dir = 1;
+	pixel_y = -32
+	},
+/turf/closed/indestructible/wall{
+	opacity = 0
+	},
+/area/hilbertshotel)
+"NG" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Oa" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8;
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/siding/yellow{
+	dir = 10;
+	pixel_y = -5;
+	pixel_x = -4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8;
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4;
+	pixel_x = -29;
+	pixel_y = -30
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/kirbyplants{
+	icon_state = "plant-06";
+	pixel_y = 23
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"OE" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/closet/crate/bin,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"OF" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/structure/chair/sofa/corp/right{
+	pixel_x = -6
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/projector/skyscraper{
+	dir = 4;
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_wall.dmi';
+	projection_icon_state = "wall1";
+	projection_pixel_x_offset = 32;
+	projection_pixel_y_offset = -352
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"OI" = (
+/obj/structure/window/reinforced{
+	dir = 8;
+	pixel_x = -39
+	},
+/obj/structure/window/reinforced/fulltile/indestructable{
+	icon = null;
+	icon_state = null;
+	opacity = 1
+	},
+/turf/open/space/bluespace,
+/area/hilbertshotel)
+"OJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"OM" = (
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Pc" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Pr" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	dir = 1;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"PA" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"PB" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/machinery/computer/slot_machine,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Qo" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"QC" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "15,14";
+	dir = 1;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"QE" = (
+/obj/structure/table/reinforced/brass,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/half{
+	dir = 1
+	},
+/area/hilbertshotel)
+"QP" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/microwave{
+	pixel_y = 7
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Rd" = (
+/obj/effect/turf_decal/siding/dark/end,
+/obj/structure/chair/stool/bar{
+	dir = 8
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"Ro" = (
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/structure/railing,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/grass/grass0,
+/area/hilbertshotel)
+"Rr" = (
+/obj/structure/window/reinforced/fulltile/indestructable{
+	icon = null;
+	icon_state = null;
+	opacity = 1
+	},
+/turf/open/space/bluespace,
+/area/hilbertshotel)
+"Rx" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/right,
+/area/hilbertshotel)
+"RF" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Sa" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"Sx" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"Sy" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/railing/corner/end{
+	dir = 4;
+	pixel_x = 1;
+	pixel_y = -4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Sz" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"SK" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/stationobjs.dmi';
+	icon_state = "blackbox";
+	pixel_x = 15;
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/obj/structure/urbanismmachines{
+	pixel_x = -8;
+	pixel_y = 0;
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/turf/open/floor/circuit/red,
+/area/hilbertshotel)
+"SM" = (
+/obj/structure/curtain{
+	open = 1;
+	color = "#555555";
+	alpha = 255
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	dir = 4;
+	opacity = 0
+	},
+/area/hilbertshotel)
+"SS" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ti" = (
+/obj/structure/railing/unbreakable{
+	dir = 4;
+	pixel_x = -32
+	},
+/turf/closed/indestructible/wall{
+	opacity = 0
+	},
+/area/hilbertshotel)
+"Tl" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/projector/skyscraper{
+	dir = 1;
+	projection_icon_state = "ugol";
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_front.dmi';
+	projection_pixel_y_offset = -32;
+	projection_pixel_x_offset = 32
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/pool,
+/area/hilbertshotel)
+"Tt" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/computer/arcade/tetris{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Tx" = (
+/obj/effect/projector/skyscraper{
+	dir = 1;
+	projection_icon_state = "rig";
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_front.dmi';
+	projection_pixel_y_offset = -32;
+	projection_pixel_x_offset = 64
+	},
+/turf/closed/indestructible/hotelwall{
+	icon = 'modular_bluemoon/icons/turf/evac_shuttle.dmi';
+	icon_state = "1,12";
+	dir = 4
+	},
+/area/hilbertshotel)
+"Ty" = (
+/obj/structure/pole,
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"TV" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/structure/fans/tiny/invisible,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"TX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Uc" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/table/wood,
+/turf/open/floor/plasteel/dark/smooth/half{
+	dir = 1
+	},
+/area/hilbertshotel)
+"UC" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/stationobjs.dmi';
+	icon_state = "blackbox";
+	wave_explosion_block = 1e+031;
+	resistance_flags = 64
+	},
+/turf/open/floor/circuit/red,
+/area/hilbertshotel)
+"UJ" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = -10
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"UP" = (
+/obj/structure/table/wood/fancy/blue,
+/obj/item/kirbyplants{
+	icon_state = "plant-21";
+	pixel_x = 0;
+	pixel_y = 12
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Vi" = (
+/obj/structure/marker_beacon/indigo{
+	pixel_x = -8;
+	pixel_y = -10
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Vk" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"VJ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/structure/closet/crate/bin,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Wa" = (
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Wc" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-4";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Wf" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/table/wood/fancy/purple,
+/obj/machinery/light/floor{
+	pixel_x = 16;
+	pixel_y = -16;
+	brightness = 4;
+	bulb_colour = "#CF9B61"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Ww" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/floor/eighties,
+/area/hilbertshotel)
+"WL" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/effect/light_emitter/podbay{
+	set_luminosity = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/half{
+	dir = 1
+	},
+/area/hilbertshotel)
+"WT" = (
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#CF9B61"
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Xg" = (
+/obj/effect/projector/skyscraper{
+	dir = 4;
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_wall.dmi';
+	projection_icon_state = "wall2";
+	projection_pixel_y_offset = -128
+	},
+/turf/closed/indestructible/wall,
+/area/hilbertshotel)
+"Xh" = (
+/obj/effect/turf_decal/siding/dark,
+/obj/structure/table/wood/fancy/purple,
+/obj/structure/showcase/machinery/tv{
+	pixel_x = -16;
+	pixel_y = 8
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"Xj" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/pool,
+/area/hilbertshotel)
+"XL" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "1-2";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = 0;
+	pixel_x = 0
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "0-1";
+	anchored = 1;
+	name = "cable";
+	color = "#222222";
+	pixel_y = -1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"XN" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/chair/sofa/corp/right{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"XW" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Yf" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/siding/yellow{
+	dir = 6;
+	pixel_y = -5;
+	pixel_x = 5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1;
+	pixel_x = 30;
+	pixel_y = -30
+	},
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"Yi" = (
+/obj/effect/turf_decal/siding/dark/end{
+	moving_diagonally = 3;
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/structure/chair/sofa/corp/left,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"YL" = (
+/obj/machinery/vending/cigarette{
+	shut_up = 1
+	},
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"YR" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/structure/marker_beacon/indigo{
+	pixel_x = 9;
+	pixel_y = -10
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/projector/skyscraper{
+	dir = 4;
+	projection_icon = 'modular_bluemoon/icons/projection/mountains_wall.dmi';
+	projection_icon_state = "wall1";
+	projection_pixel_x_offset = 32;
+	projection_pixel_y_offset = -288
+	},
+/turf/open/floor/carpet/black,
+/area/hilbertshotel)
+"YS" = (
+/obj/item/kirbyplants/hedge{
+	anchored = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"YU" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"YX" = (
+/turf/closed/indestructible/hoteldoor{
+	icon_state = "door_closed";
+	icon = 'icons/obj/doors/puzzledoor/default.dmi'
+	},
+/area/hilbertshotel)
+"YY" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"Zj" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/hilbertshotel)
+"Zr" = (
+/obj/effect/turf_decal/siding/dark/end,
+/turf/open/floor/carpet/purple,
+/area/hilbertshotel)
+"Zx" = (
+/obj/machinery/vending/kink,
+/turf/open/floor/holofloor/chess_black,
+/area/hilbertshotel)
+"ZO" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/structure/decorative{
+	icon = 'icons/obj/power_cond/cables.dmi';
+	icon_state = "2-8";
+	anchored = 1;
+	name = "cable";
+	color = "#222222"
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ZS" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/structure/sink{
+	pixel_x = 45;
+	pixel_y = 13;
+	icon = 'modular_bluemoon/icons/obj/watercloset.dmi';
+	icon_state = "legless_sink";
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ZT" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/machinery/light_switch/directional/north,
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+"ZX" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/hilbertshotel)
+
+(1,1,1) = {"
+rE
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+cR
+"}
+(2,1,1) = {"
+rE
+qQ
+qQ
+fb
+fb
+fb
+fb
+fb
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+qQ
+"}
+(3,1,1) = {"
+zx
+fb
+fb
+fb
+lA
+wt
+fD
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+qQ
+qQ
+qQ
+"}
+(4,1,1) = {"
+zx
+zx
+eN
+eB
+Kc
+RF
+Kt
+Sa
+fb
+YS
+YS
+fb
+zk
+hQ
+sx
+zl
+fa
+rd
+fb
+qQ
+qQ
+qQ
+"}
+(5,1,1) = {"
+rE
+zx
+yf
+ud
+LO
+oc
+wD
+vN
+fU
+Kw
+sX
+fb
+Ga
+SK
+mg
+UC
+Mr
+MD
+fb
+qQ
+qQ
+qQ
+"}
+(6,1,1) = {"
+rE
+zx
+xh
+Mw
+Wf
+ei
+ll
+rg
+yL
+eU
+lH
+lO
+Ca
+yh
+AY
+UC
+KT
+aS
+fb
+qQ
+qQ
+qQ
+"}
+(7,1,1) = {"
+rE
+zx
+yf
+zM
+bH
+fQ
+Jl
+MD
+fm
+gL
+YU
+fb
+rP
+Lu
+HG
+UC
+ai
+fi
+fb
+qQ
+qQ
+qQ
+"}
+(8,1,1) = {"
+zx
+zx
+MB
+ft
+RF
+RF
+RF
+IE
+fb
+YY
+Be
+mB
+Aq
+AU
+xp
+zl
+fa
+rd
+fb
+qQ
+qQ
+qQ
+"}
+(9,1,1) = {"
+zx
+fb
+fb
+fb
+qI
+fb
+qI
+mB
+mB
+YY
+Be
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+fb
+qQ
+qQ
+"}
+(10,1,1) = {"
+zx
+zx
+zS
+cZ
+lX
+WT
+lp
+QP
+fb
+eU
+lH
+UP
+te
+te
+fb
+gb
+su
+wK
+Cd
+fb
+qQ
+qQ
+"}
+(11,1,1) = {"
+zx
+zx
+MB
+my
+IF
+td
+cB
+DD
+fb
+ZT
+Cy
+KV
+yC
+LX
+CH
+Ax
+ZS
+LX
+Cd
+fb
+qQ
+qQ
+"}
+(12,1,1) = {"
+zx
+fb
+fb
+mJ
+tA
+vB
+mM
+FI
+fb
+YY
+pr
+tw
+sK
+va
+fb
+Dy
+fx
+oG
+Cd
+fb
+qQ
+qQ
+"}
+(13,1,1) = {"
+zx
+zx
+eN
+nE
+eH
+yH
+Rd
+qA
+IJ
+YY
+jG
+fb
+Kl
+ti
+bs
+fb
+fb
+fb
+fb
+fb
+qQ
+qQ
+"}
+(14,1,1) = {"
+rE
+zx
+yf
+Yi
+Lg
+KV
+cT
+wB
+yL
+eU
+ZO
+Nm
+xx
+xx
+NG
+nO
+pY
+NG
+nO
+fb
+qQ
+qQ
+"}
+(15,1,1) = {"
+rE
+zx
+Tx
+gE
+Sz
+ex
+qE
+dr
+JG
+zY
+ZX
+Ln
+Rx
+Rx
+Pc
+GC
+pY
+Pc
+GC
+YX
+qQ
+qQ
+"}
+(16,1,1) = {"
+rE
+zx
+yf
+Eb
+Qo
+cg
+cp
+Ln
+fb
+ff
+Zj
+jX
+xN
+hR
+fb
+fb
+fb
+YL
+Ia
+fb
+qQ
+qQ
+"}
+(17,1,1) = {"
+rE
+zx
+yf
+OE
+hk
+BS
+yY
+wu
+fb
+hP
+cT
+wI
+wI
+lr
+es
+dJ
+fb
+fb
+fb
+fb
+qQ
+qQ
+"}
+(18,1,1) = {"
+rE
+zx
+yf
+PB
+Ww
+Hz
+pM
+sS
+mB
+ve
+YY
+dq
+bc
+Vk
+Oa
+XN
+dv
+qQ
+qQ
+qQ
+qQ
+qQ
+"}
+(19,1,1) = {"
+zx
+zx
+MB
+EJ
+Tt
+Tt
+Tt
+Fr
+fb
+Xh
+Wc
+dq
+GV
+iJ
+Yf
+Hn
+fb
+qQ
+qQ
+qQ
+qQ
+qQ
+"}
+(20,1,1) = {"
+Rr
+fb
+fb
+dn
+Pr
+Pr
+Pr
+Ju
+fb
+yb
+Gp
+XL
+aO
+KK
+SS
+VJ
+fb
+qQ
+qQ
+qQ
+qQ
+qQ
+"}
+(21,1,1) = {"
+Rr
+Nt
+tB
+sp
+jI
+jI
+qA
+ys
+fb
+dn
+Ju
+ot
+QC
+fb
+cP
+fb
+mB
+mB
+fb
+fb
+fb
+qQ
+"}
+(22,1,1) = {"
+Rr
+Nt
+TV
+Ja
+My
+My
+XW
+vJ
+Jx
+oo
+Vi
+sX
+rO
+fb
+Kw
+hh
+OM
+Ns
+IY
+jA
+fb
+qQ
+"}
+(23,1,1) = {"
+Rr
+Nt
+jH
+Sx
+Sx
+pp
+YY
+Sy
+cU
+uV
+Ax
+PA
+CV
+xL
+Hd
+Ku
+Wa
+Wa
+TX
+Zx
+fb
+qQ
+"}
+(24,1,1) = {"
+Rr
+Nt
+Tl
+ej
+Mg
+wi
+YY
+Be
+Ro
+oQ
+pS
+yy
+UJ
+SM
+wx
+fo
+Zr
+Fn
+ru
+jA
+fb
+qQ
+"}
+(25,1,1) = {"
+Rr
+Nt
+Xj
+Bu
+Ka
+yM
+YY
+Be
+kP
+oQ
+yQ
+Ty
+Cc
+nM
+mr
+WL
+kl
+QE
+Uc
+fb
+fb
+qQ
+"}
+(26,1,1) = {"
+Rr
+xC
+FX
+gi
+OJ
+gi
+sd
+gv
+cx
+cF
+OF
+gh
+YR
+fb
+pR
+ix
+ix
+ix
+QC
+fb
+qQ
+qQ
+"}
+(27,1,1) = {"
+Rr
+ao
+ao
+Ti
+Ti
+Ti
+Ti
+Ti
+fb
+Rr
+ao
+ao
+ao
+Rr
+fb
+xy
+fb
+Xg
+fb
+zx
+qQ
+qQ
+"}
+(28,1,1) = {"
+Rr
+Rr
+Rr
+Rr
+Rr
+Rr
+Rr
+Rr
+OI
+Rr
+OI
+OI
+OI
+Rr
+zx
+zx
+zx
+zx
+zx
+zx
+zx
+qQ
+"}

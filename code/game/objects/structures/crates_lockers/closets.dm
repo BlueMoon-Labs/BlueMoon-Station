@@ -189,6 +189,13 @@
 	else if(broken)
 		. += span_notice("Замок <b>вкручен</b> внутрь.")
 
+	// Замок на шкаф ставится обычной дверной электроникой, и об этом до сих пор
+	// не было сказано нигде: ни на шкафу, ни на самой электронике.
+	if(secure && !broken && !locked)
+		. += span_notice("Замок можно <b>вывинтить</b> отвёрткой.")
+	else if(!secure && !broken)
+		. += span_notice("Сюда можно поставить замок: приложите <b>дверную электронику</b> с прописанным доступом.")
+
 	if(isobserver(user))
 		. += span_info("Внутри находится: [english_list(contents)].")
 		investigate_log("had its contents examined by [user] as a ghost.", INVESTIGATE_GHOST)
@@ -366,6 +373,13 @@
 /obj/structure/closet/deconstruct(disassembled = TRUE)
 	if(ispath(material_drop) && material_drop_amount && !(flags_1 & NODECONSTRUCT_1))
 		new material_drop(loc, material_drop_amount)
+	// Ссылку надо снять ДО qdel: Destroy() удаляет плату безусловно, поэтому разбор шкафа
+	// её съедал - хотя поставить её туда можно, а снять с закрытого шкафа отвёрткой можно.
+	// Ровно так же поступает шлюз (airlock.dm, ветка с electronics = null перед forceMove).
+	if(disassembled && !QDELETED(lockerelectronics))
+		var/obj/item/electronics/airlock/removed_electronics = lockerelectronics
+		lockerelectronics = null
+		removed_electronics.forceMove(drop_location())
 	qdel(src)
 
 /obj/structure/closet/obj_break(damage_flag)
@@ -756,7 +770,10 @@
 	return TRUE
 
 /obj/structure/closet/proc/handle_lock_removal(mob/user, obj/item/S)
-	if(!S.tool_behaviour == TOOL_SCREWDRIVER)
+	// Было "!S.tool_behaviour == TOOL_SCREWDRIVER" - это разбирается как
+	// "(!S.tool_behaviour) == TOOL_SCREWDRIVER", то есть число против строки, всегда ложь.
+	// Единственный вызывающий и так проверяет отвёртку, так что поведение не меняется.
+	if(S.tool_behaviour != TOOL_SCREWDRIVER)
 		return
 	if(lock_in_use)
 		to_chat(user, span_notice("Wait for work on [src] to be done first!"))

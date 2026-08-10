@@ -108,5 +108,8 @@
 	"vendatray", "space_heater", "electrolyzer", "beaker", "large_beaker", "xlarge_beaker", "spray_bottle", "mop", "bucket", "broom", "hypovial", "large_hypovial", "syringe", "pillbottle",
 	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal",
 	"rglass","plasteel","plastitanium","plasmaglass","plasmareinforcedglass","titaniumglass","plastitaniumglass", "salestagger",
-	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",)
+	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",
+	// Астрометрический сенсор доступен сразу: наблюдать явление за бортом надо в тот
+	// раунд, когда оно идёт, а не после того, как его исследуют.
+	"astro_sensor",)
 	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler" //ещё один add- ammoworkbench staff

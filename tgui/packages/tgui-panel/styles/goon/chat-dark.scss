@@ -1679,7 +1679,7 @@ li {
 	background: linear-gradient(135deg, rgba(24, 30, 42, 0.92), rgba(12, 16, 24, 0.92));
 	margin: 7px 4px;
 	padding: 10px 14px;
-	max-width: 550px;
+	max-width: 640px;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
 	border-radius: 6px;
 }
@@ -1764,8 +1764,8 @@ li {
 }
 
 .vote-name {
-	flex: 0 0 auto;
-	max-width: 200px;
+	flex: 0 1 150px;
+	min-width: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1775,7 +1775,7 @@ li {
 
 .vote-bar-track {
 	flex: 1 1 auto;
-	height: 14px;
+	height: 18px;
 	background: rgba(255, 255, 255, 0.06);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	margin-right: 8px;

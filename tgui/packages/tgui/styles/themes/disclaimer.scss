@@ -51,4 +51,26 @@
   .Layout__content {
     background-image: none;
   }
+
+  .Button.accept-btn {
+    background: linear-gradient(180deg, #2e9e32 0%, #1c6b20 100%);
+    color: #eafff0;
+    border: 1px solid #4cc553;
+    border-radius: 4px;
+    box-shadow: 0 0 14px rgba(60, 190, 90, 0.45), inset 0 0 10px rgba(255, 255, 255, 0.10);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    text-align: center;
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+
+    &:hover,
+    &:focus {
+      background: linear-gradient(180deg, #3fc845 0%, #2e9e32 100%);
+      color: #ffffff;
+      box-shadow: 0 0 24px rgba(90, 225, 120, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.18);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
 }

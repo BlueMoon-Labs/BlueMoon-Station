@@ -140,6 +140,12 @@
 			))
 	else
 		window.send_message("ping")
+	// initialize() спит на отправке ресурсов: логаут за это время успевает
+	// пройти через close() -> qdel(src), и window уже null (клиент, зашедший и
+	// сразу вышедший на ченджлоге, раунд 9875). Гард ниже по коду стоит уже
+	// ПОСЛЕ этих send_asset и опоздал бы.
+	if(QDELETED(src) || !window)
+		return FALSE
 	var/flush_queue = window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/fontawesome))
 	flush_queue |= window.send_asset(get_asset_datum(
@@ -192,7 +198,10 @@
 	if(closing)
 		return
 	closing = TRUE
-	for(var/datum/tgui/child in children)
+	//Обход строго по копии: child.close() снимает себя из этого же children
+	//(и там, и в Destroy), от чего индекс сдвигается и каждый второй ребёнок
+	//оставался открытым - с живыми user и src_object в списках подсистемы.
+	for(var/datum/tgui/child as anything in children.Copy())
 		child.close(can_be_suspended, logout)
 	// If we don't have window_id, open proc did not have the opportunity
 	// to finish, therefore it's safe to skip this whole block.

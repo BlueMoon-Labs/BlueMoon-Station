@@ -20,12 +20,6 @@
 	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
 	required_mobility_flags = NONE
 
-/datum/action/item_action/toggle_welding_screen
-	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
-	required_mobility_flags = NONE
-	icon_icon = 'icons/obj/clothing/hats.dmi'
-	button_icon_state = "weldvisor" 			// for easier indication
-
 /datum/action/item_action/toggle_hood
 	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
 	required_mobility_flags = NONE

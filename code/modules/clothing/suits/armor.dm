@@ -81,33 +81,6 @@
 	item_state = "blueshift"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 
-/obj/item/clothing/suit/armor/vest/knight/military
-	name = "Fluted Plate Armor"
-	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
-	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
-	councilmen that wish to flaunt their opulence towards the unwashed masses."
-	icon_state = "military"
-	dog_fashion = null
-	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
-	allowed = list(
-		/obj/item/banner,
-		/obj/item/claymore/shortsword,
-		/obj/item/nullrod,
-		/obj/item/spear,
-		/obj/item/gun/ballistic/bow
-	)
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/suit/armor/riot/knight/warlord
-	name = "Golden Plate Armor"
-	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
-	icon_state = "warlord"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
-	w_class = WEIGHT_CLASS_BULKY
-	clothing_flags = THICKMATERIAL
-	slowdown = 0.5
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
 /obj/item/clothing/suit/armor/hos
 	name = "armored greatcoat"
 	desc = "A greatcoat enhanced with a special alloy for some extra protection and style for those with a commanding presence."
@@ -152,6 +125,7 @@
 	heat_protection = CHEST|ARMS
 	strip_delay = 80
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 0, RAD = 0, FIRE = 60, ACID = 60, WOUND = 15)
+	slowdown = 0.1
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	unique_reskin = list(
 		"Black" = list("icon_state" = "platecarrier"),
@@ -168,6 +142,14 @@
 	. = ..()
 	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
 	storage.max_items = 5
+
+/obj/item/clothing/suit/armor/hos/platecarrier/makeshift
+	name = "makeshift plate carrier"
+	desc = "A hand-sown combat rig made from armor vests and security belts. Trades some protection for utility."
+	body_parts_covered = CHEST|GROIN|ARMS
+	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	strip_delay = 60
+	slowdown = 0.2
 
 /obj/item/clothing/suit/armor/vest/warden
 	name = "Warden's Jacket"
@@ -279,6 +261,9 @@
 			RESKIN_ITEM_STATE = "riot"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/riot/wm
 	icon_state = "riot-wm"
@@ -315,6 +300,9 @@
 			RESKIN_ITEM_STATE = "armor"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/bulletproof/wm
 	icon_state = "bulletproof-wm"
@@ -433,6 +421,33 @@
 	icon_state = "knight_greyscale"
 	item_state = "knight_greyscale"
 	material_flags = MATERIAL_ADD_PREFIX | MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS //Can change color and add prefix
+
+/obj/item/clothing/suit/armor/vest/knight/military
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
+	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
+	councilmen that wish to flaunt their opulence towards the unwashed masses."
+	icon_state = "military"
+	dog_fashion = null
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	allowed = list(
+		/obj/item/banner,
+		/obj/item/claymore/shortsword,
+		/obj/item/nullrod,
+		/obj/item/spear,
+		/obj/item/gun/ballistic/bow
+	)
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/armor/riot/knight/warlord
+	name = "Golden Plate Armor"
+	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
+	icon_state = "warlord"
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	w_class = WEIGHT_CLASS_BULKY
+	clothing_flags = THICKMATERIAL
+	slowdown = 0.5
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/vest/durathread
 	name = "makeshift vest"

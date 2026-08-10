@@ -37,6 +37,8 @@
 	var/failed_steps
 	var/next_dest
 	var/next_dest_loc
+	///Do not immediately replace one unreachable autonomous target with its neighbour.
+	var/next_path_attempt = 0
 
 	var/obj/item/weapon
 	var/weapon_orig_force = 0
@@ -130,9 +132,16 @@
 
 /mob/living/simple_animal/bot/cleanbot/Destroy()
 	if(weapon)
+		//drop_part ждёт ТИППАТ и делает по нему new(). Живой нож давал рантайм
+		//"new() called with an object of type ... instead of the type path itself"
+		//прямо посередине Destroy (раунд 9859), а дальше разбор бота не выполнялся
+		//вовсе: ни janitor_devices, ни bots_list, ни bot_core, ни родительский
+		//Destroy. Бот оставался вечным мусором с поднятым флагом удаления.
 		var/atom/Tsec = drop_location()
 		weapon.force = weapon_orig_force
-		drop_part(weapon, Tsec)
+		if(Tsec)
+			weapon.forceMove(Tsec)
+		weapon = null
 	GLOB.janitor_devices -= src
 	return ..()
 
@@ -161,6 +170,7 @@
 	ignore_list = list() //Allows the bot to clean targets it previously ignored due to being unreachable.
 	target = null
 	oldloc = null
+	next_path_attempt = 0
 
 /mob/living/simple_animal/bot/cleanbot/set_custom_texts()
 	text_hack = "Вы взломали протоколы уборки у [name]."
@@ -285,21 +295,30 @@
 		if(!length(candidate_filter))
 			return
 
-		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
+		var/list/exposed_atoms = view(DEFAULT_SCAN_RANGE, src)
 		// Grid cells are deliberately broader than the requested range and do
 		// not encode opacity. Keep only candidates BYOND actually exposes.
-		// Множество строится один раз: view() в грязном коридоре это больше тысячи
-		// атомов, и перебирать его на каждого кандидата - квадратичный проход
-		var/list/exposed_by_view = list()
-		for(var/atom/seen as anything in cached_view)
-			exposed_by_view[seen] = TRUE
+		// A live dirty corridor can put more than a thousand atoms in view().
+		// Do not shuffle that whole list or traverse it again after LOS filtering:
+		// only the handful of actual grid candidates need randomized ordering.
 		var/list/visible_candidates = list()
-		for(var/atom/candidate as anything in candidate_filter)
-			if(exposed_by_view[candidate])
-				visible_candidates[candidate] = TRUE
-		candidate_filter = visible_candidates
+		if(length(candidate_filter) <= CLEANBOT_VIEW_FILTER_LINEAR_LIMIT)
+			for(var/atom/candidate as anything in candidate_filter)
+				if(candidate in exposed_atoms)
+					visible_candidates += candidate
+		else
+			var/list/exposed_by_view = list()
+			for(var/atom/seen as anything in exposed_atoms)
+				exposed_by_view[seen] = TRUE
+			for(var/atom/candidate as anything in candidate_filter)
+				if(exposed_by_view[candidate])
+					visible_candidates += candidate
+		candidate_filter = list()
+		for(var/atom/candidate as anything in visible_candidates)
+			candidate_filter[candidate] = TRUE
 		if(!length(candidate_filter))
 			return
+		cached_view = shuffle(visible_candidates)
 	else if(!cached_view)
 		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 
@@ -334,7 +353,7 @@
 				priority = 4
 			else if(trash && istype(candidate, /obj/item/trash))
 				priority = 5
-		if(!priority || candidates[priority] || (REF(candidate) in ignore_list))
+		if(!priority || candidates[priority] || ignore_list[REF(candidate)])
 			continue
 
 		var/atom/scan_result = process_scan(candidate)
@@ -375,7 +394,7 @@
 		if(!process_scan(target))
 			target = null
 
-	if(!target)
+	if(!target && world.time >= next_path_attempt)
 		target = scan_for_target()
 
 	if(!target && auto_patrol) //Search for cleanables it can see.
@@ -400,16 +419,35 @@
 					return
 			else
 				shuffle = TRUE	//Shuffle the list the next time we scan so we dont both go the same way.
-			path = list()
+			// Мы уже стоим на цели. JPS от клетки к ней же всегда отдаёт пустой путь
+			// (search() выходит на start == end), после чего bot_move() гарантированно
+			// возвращал FALSE и код шёл сюда же. Считать этот путь незачем: это захват
+			// семафора пулла путей плюс /datum/pathfind на каждое начало уборки.
+			set_path(null)
+			add_to_ignore(target)
+			target = null
+			return
 
 		if(!path || path.len == 0) //No path, need a new one
 			//Try to produce a path to the target, and ignore airlocks to which it has access.
-			path = get_path_to(src, target, BOT_TARGET_PATH_LIMIT, id=access_card)
-			if(!bot_move(target))
+			path = get_path_to(src, get_turf(target), BOT_TARGET_PATH_LIMIT, id=access_card)
+			// Arm the retry cooldown from the JPS result before bot_move()/set_path(null)
+			// or ignore-list bookkeeping: a runtime there used to leave next_path_attempt at 0.
+			if(!length(path))
+				next_path_attempt = world.time + CLEANBOT_FAILED_PATH_RETRY
 				add_to_ignore(target)
 				target = null
 				path = list()
+				mode = BOT_IDLE
 				return
+			if(!bot_move(target))
+				next_path_attempt = world.time + CLEANBOT_FAILED_PATH_RETRY
+				add_to_ignore(target)
+				target = null
+				path = list()
+				mode = BOT_IDLE
+				return
+			next_path_attempt = 0
 			mode = BOT_MOVING
 		else if(!bot_move(target))
 			target = null

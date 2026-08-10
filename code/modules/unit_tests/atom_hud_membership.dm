@@ -4,41 +4,41 @@
 /// поэтому её z-списки навсегда оставались пустыми, `show_to()` падал на
 /// индексировании пустого списка, а `hide_from()` молча выходил.
 ///
-/// Шлем нанокостюма звал именно эту мёртвую пару и с 2023 года не выдавал ни одного
-/// дата-худа, рантаймя прямо в `equipped()`. Дубль снесён, шлем переведён на живой API.
-/// Тест держит контракт: шлем на голове даёт худы, снятый - забирает.
-/datum/unit_test/nanosuit_helmet_grants_data_huds
+/// Очки нанокостюма зовут живой API combo HUD и с 2023 года не выдавали ни одного
+/// дата-худа, рантаймя прямо в `equipped()`. Дубль снесён, очки переведены на живой API.
+/// Тест держит контракт: очки на глазах дают худы, снятые - забирают.
+/datum/unit_test/nanosuit_goggles_grants_data_huds
 
-/datum/unit_test/nanosuit_helmet_grants_data_huds/Run()
+/datum/unit_test/nanosuit_goggles_grants_data_huds/Run()
 	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
-	var/obj/item/clothing/head/helmet/space/hardsuit/nano/helmet = allocate(/obj/item/clothing/head/helmet/space/hardsuit/nano, run_loc_floor_bottom_left)
+	var/obj/item/clothing/glasses/nano_goggles/goggles = allocate(/obj/item/clothing/glasses/nano_goggles, run_loc_floor_bottom_left)
 
-	TEST_ASSERT(length(helmet.datahuds), "У шлема нанокостюма пустой datahuds - предпосылка теста сломана")
+	TEST_ASSERT(length(goggles.hudlist), "У очков нанокостюма пустой hudlist - предпосылка теста сломана")
 
 	// Снимок исходного членства: /mob/living/Initialize кладёт живых в часть дата-худов
 	// сам, поэтому сравнивать надо дельту, а не абсолютное значение.
 	// Ключ - сам худ-датум, а НЕ hud_type: типы худов это числовые дефайны, и `before[15]`
 	// на пустом списке это позиционное индексирование, то есть index out of bounds
 	var/list/before = list()
-	for(var/hud_type in helmet.datahuds)
+	for(var/hud_type in goggles.hudlist)
 		var/datum/atom_hud/data_hud = GLOB.huds[hud_type]
 		TEST_ASSERT_NOTNULL(data_hud, "Дата-худ [hud_type] не существует")
 		before[data_hud] = data_hud.hudusers[wearer] || 0
 
-	wearer.equip_to_slot_or_del(helmet, ITEM_SLOT_HEAD)
-	TEST_ASSERT_EQUAL(wearer.head, helmet, "Шлем не надет - предпосылка теста сломана")
+	wearer.equip_to_slot_or_del(goggles, ITEM_SLOT_EYES)
+	TEST_ASSERT_EQUAL(wearer.glasses, goggles, "Очки не надеты - предпосылка теста сломана")
 
-	for(var/hud_type in helmet.datahuds)
+	for(var/hud_type in goggles.hudlist)
 		var/datum/atom_hud/data_hud = GLOB.huds[hud_type]
-		TEST_ASSERT_EQUAL(data_hud.hudusers[wearer] || 0, before[data_hud] + 1, "Надетый шлем не выдал носителю худ [hud_type]")
+		TEST_ASSERT_EQUAL(data_hud.hudusers[wearer] || 0, before[data_hud] + 1, "Надетые очки не выдали носителю худ [hud_type]")
 
 	// TRAIT_NODROP навешивается при надевании, поэтому снимаем принудительно
-	wearer.dropItemToGround(helmet, TRUE)
-	TEST_ASSERT_NULL(wearer.head, "Шлем не снялся - предпосылка теста сломана")
+	wearer.dropItemToGround(goggles, TRUE)
+	TEST_ASSERT_NULL(wearer.glasses, "Очки не снялись - предпосылка теста сломана")
 
-	for(var/hud_type in helmet.datahuds)
+	for(var/hud_type in goggles.hudlist)
 		var/datum/atom_hud/data_hud = GLOB.huds[hud_type]
-		TEST_ASSERT_EQUAL(data_hud.hudusers[wearer] || 0, before[data_hud], "Снятый шлем не забрал у носителя худ [hud_type]")
+		TEST_ASSERT_EQUAL(data_hud.hudusers[wearer] || 0, before[data_hud], "Снятые очки не забрали у носителя худ [hud_type]")
 
 /// `join_hud` даёт мобу две роли: носитель значка (`hudatoms`, через `add_to_hud`) и
 /// зритель (`hudusers`, через `add_hud_to`) - причём вторую только при `self_visible`.

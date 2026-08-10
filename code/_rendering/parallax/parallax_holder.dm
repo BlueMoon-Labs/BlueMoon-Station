@@ -41,6 +41,8 @@
 	var/scroll_turn
 	/// override planemaster we manipulate for turning and other effects
 	var/atom/movable/screen/plane_master/parallax/planemaster_override
+	/// timerid плавной смены сцены, если она сейчас идёт
+	var/transition_timer
 
 /datum/parallax_holder/New(client/C, secondary_map, forced_eye, planemaster_override)
 	owner = C
@@ -52,6 +54,9 @@
 	Reset()
 
 /datum/parallax_holder/Destroy()
+	if(transition_timer)
+		deltimer(transition_timer)
+		transition_timer = null
 	if(owner)
 		if(owner.parallax_holder == src)
 			owner.parallax_holder = null
@@ -155,7 +160,7 @@
 /datum/parallax_holder/proc/Sync(auto_z_change, force)
 	layers = parallax?.GetObjects() || list()
 	for(var/atom/movable/screen/parallax_layer/L in layers)
-		L.map_id = secondary_map
+		L.SetMapID(secondary_map)
 	if(!istype(vis_holder))
 		vis_holder = new /atom/movable/screen/parallax_vis
 	var/turf/T = get_turf(cached_eye)
@@ -171,12 +176,22 @@
 		if(scroll_speed || scroll_turn)
 			HardResetAnimations()
 		return
+	// Движение области главнее движения сцены: шаттл в транзите обязан перебивать
+	// собственный дрейф профиля, иначе полёт перестанет читаться как полёт.
+	//
+	// Признак движения - parallax_moving, а НЕ скорость: скорость приезжает из
+	// перелёта и вполне может оказаться нулём или null, а летящий шаттл со
+	// сброшенной в ноль сценой - это ровно тот баг, ради которого здесь стоит
+	// запасное значение.
+	var/area/A = T.loc
+	if(A?.parallax_moving)
+		Animation(A.parallax_move_speed || PARALLAX_SHUTTLE_SCROLL_SPEED, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
+		return
 	var/list/ret = SSparallax.get_parallax_motion(T.z)
 	if(ret)
 		Animation(ret[1], ret[2], auto_z_change? 0 : ret[3], auto_z_change? 0 : ret[4], force)
 	else
-		var/area/A = T.loc
-		Animation(A.parallax_move_speed, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
+		Animation(0, 0, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
 
 /datum/parallax_holder/proc/Apply(client/C = owner)
 	if(QDELETED(C))
@@ -199,6 +214,25 @@
 		if(!L.ShouldSee(C, last))
 			continue
 		L.SetView(C.view, TRUE)
+		// Проявление и мерцание оба живут в alpha, но НЕ исключают друг друга:
+		// ветки независимы, а очерёдность держит сам animate. Проявление идёт с
+		// ANIMATION_END_NOW и обрывает очередь, мерцание же ставится без него и
+		// потому дожидается конца проявления. Через else-if слой, у которого
+		// заданы оба, не замерцал бы никогда: клон при каждом Reset приходит с
+		// faded_in = FALSE, и до второй ветки управление не доходило бы вовсе.
+		var/base_alpha = L.alpha
+		if(L.fade_in_time > 0 && !L.faded_in)
+			L.faded_in = TRUE
+			L.alpha = 0
+			animate(L, alpha = base_alpha, time = L.fade_in_time, flags = ANIMATION_END_NOW)
+		if(L.twinkle_time > 0 && !L.twinkling)
+			// Мерцание не конфликтует ни с глайдом шага, ни с прокруткой сцены:
+			// и то и другое живёт в transform.
+			L.twinkling = TRUE
+			animate(L, alpha = L.twinkle_min_alpha, time = L.twinkle_time, easing = SINE_EASING, loop = -1)
+			animate(alpha = base_alpha, time = L.twinkle_time, easing = SINE_EASING)
+		if(L.drift_time > 0 && !L.drifting)
+			L.StartDrift()
 		. |= L
 	C.screen |= .
 	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))
@@ -221,10 +255,48 @@
 		if(PM)
 			PM.color =  initial(PM.color)
 
-/datum/parallax_holder/proc/SetParallaxType(path)
-	if(!ispath(path, /datum/parallax))
-		CRASH("Invalid path")
-	SetParallax(new path, TRUE, null, null, FALSE)
+/**
+ * Ставит держателю личную сцену по профилю, минуя общий шаблон z.
+ *
+ * Нужно там, где картинка принадлежит одному зрителю, а не уровню: вторичные
+ * карты, админский предпросмотр. Обычный путь - модификатор на z в SSparallax,
+ * он дешевле, потому что шаблон делится всеми клиентами уровня.
+ */
+/datum/parallax_holder/proc/SetProfile(profile_or_id)
+	var/datum/parallax_profile/profile = SSparallax.resolve_profile(profile_or_id)
+	if(!profile)
+		CRASH("Неизвестный профиль параллакса '[profile_or_id]'")
+	SetParallax(new /datum/parallax(profile), TRUE, null, null, FALSE)
+
+/**
+ * Плавно меняет сцену: гасит текущие слои, пересобирается и проявляет новые.
+ *
+ * Это затемнение, а не кросс-фейд: держать оба набора слоёв одновременно значило
+ * бы удвоить число слоёв в самый неудачный момент, а именно их количество и
+ * определяет стоимость каждого шага игрока.
+ */
+/datum/parallax_holder/proc/FadeAndReset(time = 1 SECONDS)
+	if(!length(layers))
+		Reset()
+		return
+	var/half = max(1, round(time * 0.5, 1))
+	for(var/atom/movable/screen/parallax_layer/L as anything in layers)
+		animate(L, alpha = 0, time = half, flags = ANIMATION_END_NOW)
+	if(transition_timer)
+		deltimer(transition_timer)
+	transition_timer = addtimer(CALLBACK(src, PROC_REF(FinishFade), half), half, TIMER_STOPPABLE)
+
+/datum/parallax_holder/proc/FinishFade(half)
+	transition_timer = null
+	Reset()
+	for(var/atom/movable/screen/parallax_layer/L as anything in layers)
+		// Слою с собственным проявлением Apply уже завёл анимацию входа, и его
+		// alpha сейчас не та, к которой надо тянуть. Второй раз его не трогаем.
+		if(L.fade_in_time > 0)
+			continue
+		var/target_alpha = L.alpha
+		L.alpha = 0
+		animate(L, alpha = target_alpha, time = half, flags = ANIMATION_END_NOW)
 
 /datum/parallax_holder/proc/SetParallax(datum/parallax/P, delete_old = TRUE, auto_z_change, force, shared_template = FALSE)
 	if(P == parallax)
@@ -282,19 +354,30 @@
 	scrolling = TRUE
 	// always scroll from north; turn handles everything
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		// Статику прокручивать нечем - она не тайлится. Вместо цикла она один раз
+		// уезжает за край и там остаётся, иначе крупный якорный объект висит на
+		// месте под летящим шаттлом. Скайбокс не двигается намеренно: он
+		// "бесконечно далёкий" фон, и смещать его дальше bleed нельзя - в кадр
+		// войдёт край картинки.
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StartFlyby(speed, turn)
+			continue
 		if(P.absolute)
 			continue
-		var/matrix/translate_matrix = matrix()
-		translate_matrix.Translate(sin(turn) * 480, cos(turn) * 480)
-		var/matrix/target_matrix = matrix()
-		var/move_speed = speed * P.speed
+		var/matrix/translate_matrix = P.BaseTransform()
+		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
+		var/matrix/target_matrix = P.BaseTransform()
+		// Ближний слой обязан проходить экран БЫСТРЕЕ дальнего, поэтому его speed
+		// делит длительность цикла, а не умножает её. С умножением параллакс
+		// получался вывернутым: дальние звёзды обгоняли ближние облака.
+		var/move_speed = speed / max(P.speed, 0.05)
 		// do the first segment by shifting down one screen
 		P.transform = translate_matrix
 		animate(P, transform = target_matrix, time = move_speed, easing = QUAD_EASING|EASE_IN, flags = ANIMATION_END_NOW)
 		// queue up another incase lag makes QueueLoop not fire on time, this time by shifting up
 		animate(transform = translate_matrix, time = 0)
 		animate(transform = target_matrix, time = move_speed)
-		P.QueueLoop(move_speed, speed * P.speed, translate_matrix, target_matrix)
+		P.QueueLoop(move_speed, move_speed, translate_matrix, target_matrix)
 
 /**
  * Smoothly stops the animation, turning to a certain angle as needed.
@@ -315,13 +398,16 @@
 	scroll_speed = 0
 	// someone can do the math for "stop after a smooth iteration" later.
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StopFlyby(time)
+			continue
 		if(P.absolute)
 			continue
 		P.CancelAnimation()
-		var/matrix/translate_matrix = matrix()
-		translate_matrix.Translate(sin(turn) * 480, cos(turn) * 480)
+		var/matrix/translate_matrix = P.BaseTransform()
+		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
 		P.transform = translate_matrix
-		animate(P, transform = matrix(), time = time, easing = QUAD_EASING | EASE_OUT)
+		animate(P, transform = P.BaseTransform(), time = time, easing = QUAD_EASING | EASE_OUT)
 
 /**
  * fully resets animation state
@@ -336,10 +422,13 @@
 		animate(GetPlaneMaster(), transform = matrix(), time = 0, flags = ANIMATION_END_NOW)
 	// reset objects
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StopFlyby()
+			continue
 		if(P.absolute)
 			continue
 		P.CancelAnimation()
-		animate(P, transform = matrix(), time = 0, flags = ANIMATION_END_NOW)
+		animate(P, transform = P.BaseTransform(), time = 0, flags = ANIMATION_END_NOW)
 
 /client/proc/CreateParallax()
 	if(!parallax_holder)

@@ -105,7 +105,7 @@
 	update_inv_internal_storage()
 
 ///inteq mobs
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper
+/mob/living/simple_animal/hostile/inteq/ranged/sniper
 	name = "InteQ Mad Shooter"
 	desc = "Ему очень нравится звук выстрела его винтовки"
 	ranged = 1
@@ -124,12 +124,12 @@
 	speak_chance = 30
 	speak = list("Я попал? Я попал, да?!", "Это там твои мозги вытекают?!", "Да куда я положил магазин, сука где он, где он?!", "Я буду убивать тебя медленно, отстреливая кусочек за кусочком~", "Нужно будет купить себе новые очки", "Да я тебя на сквозь вижу, ХАХ!", "Да я не бузумный стрелок. Я убийца!")
 
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper/Aggro()
+/mob/living/simple_animal/hostile/inteq/ranged/sniper/Aggro()
 	..()
 	summon_backup(25)
 	say("Может мне кто нибудь поможет? У нас тут мишень нарисовалась, работаем!")
 
-/mob/living/simple_animal/hostile/syndicate/melee/ushm
+/mob/living/simple_animal/hostile/inteq/melee/ushm
 	name = "InteQ Breacher"
 	melee_damage_lower = 10
 	melee_damage_upper = 10
@@ -234,7 +234,7 @@
 		return MAP_ERROR
 
 	var/turf/T = get_turf(pick(spawn_locs))
-	var/mob/living/simple_animal/hostile/syndicate/ranged/sniper/S = new(T)
+	var/mob/living/simple_animal/hostile/inteq/ranged/sniper/S = new(T)
 	playsound(S, 'modular_bluemoon/Ren/Sound/rifle-loading.ogg', 150, 1, 1000)
 	message_admins("A mad shooter has been spawned at [COORD(T)][ADMIN_JMP(T)]")
 	log_game("A mad shooter has been spawned at [COORD(T)]")

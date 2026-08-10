@@ -86,6 +86,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// рендерит её следующему жильцу блока (освобождение/выдача резерваций).
 		if(lighting_object)
 			lighting_clear_overlay()
+		// По той же причине снимаем турф с атмоса. Резервации освобождаются
+		// именно этой веткой, и активный транзитный турф оставался бы записью в
+		// SSair.active_turfs, пока новый жилец блока не унаследует её вместе с
+		// протухшей позицией: снятие за O(1) верит своей подсказке, а у свежего
+		// турфа она нулевая, и запись стала бы неудаляемой.
+		if(SSair)
+			SSair.evict_active_turf(src)
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
@@ -106,6 +113,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_exi = explosion_id
 	var/old_bp = blueprint_data
 	blueprint_data = null
+
+	// Exposure listeners survive turf replacement: qdel below cleanly severs
+	// every signal registration, so each listener re-registers on the new datum.
+	var/list/old_exposure_listeners = atmos_exposure_listeners
 
 	var/list/old_baseturfs = baseturfs
 
@@ -130,6 +141,21 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	W.explosion_id = old_exi
 	W.explosion_level = old_exl
+
+	if(old_exposure_listeners)
+		W.atmos_exposure_listeners = old_exposure_listeners
+		// Хард-делит обнуляет запись списка на месте, а Destroy слушателя до неё
+		// уже не доберётся - в ассоциативном списке остаётся ключ null. Обход
+		// идёт с конца по индексу: вырезать запись во время прямого прохода
+		// значит пропустить каждую вторую.
+		for(var/i in length(old_exposure_listeners) to 1 step -1)
+			var/datum/listener = old_exposure_listeners[i]
+			if(QDELETED(listener))
+				old_exposure_listeners.Cut(i, i + 1)
+				continue
+			listener.RegisterSignal(W, COMSIG_TURF_EXPOSE, old_exposure_listeners[listener], override = TRUE)
+		if(!length(old_exposure_listeners))
+			W.atmos_exposure_listeners = null
 
 	if(!(flags & CHANGETURF_DEFER_CHANGE))
 		W.AfterChange(flags)

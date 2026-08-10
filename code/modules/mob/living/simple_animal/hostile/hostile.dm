@@ -25,6 +25,13 @@
 	var/ai_pursuit_speed_capped = TRUE
 	var/list/friends = list()
 	var/list/foes = list()
+	///Может ли моб в принципе завести личную обиду на СВОЮ фракцию. Ботам и
+	///питомцам ставится FALSE: их владелец не должен становиться целью никогда.
+	var/retaliates_against_faction = TRUE
+	///Счёт дружественного урона: REF(обидчик) -> list(накоплено, world.time).
+	///Ключ строковый намеренно - список не держит ссылок на мобов и не создаёт
+	///кандидатов на харддел.
+	var/list/friendly_fire_tally
 	///Троттл группового оповещения союзников об обидчике (см. RetaliateAgainst)
 	var/next_ally_alert = 0
 	var/list/emote_taunt = list()
@@ -90,6 +97,12 @@
 	var/ai_profile_type = /datum/ai_controller/hostile_adapter/melee_chaser
 	///Пауза перед мили-ударом AI; 0 сохраняет мгновенную легаси-атаку.
 	var/melee_telegraph_duration = 0
+	///Пауза перед ЗАЛПОМ дальника; 0 сохраняет мгновенный легаси-выстрел.
+	///Ставится тем, чей залп способен убить с одного захода: точность нового ИИ
+	///сделала такие залпы неотвратимыми, и урон в них никто не пересматривал.
+	var/ranged_telegraph_duration = 0
+	///At most one ranged telegraph may be waiting to fire.
+	var/ranged_telegraph_timer_id
 
 /mob/living/simple_animal/hostile/Initialize(mapload)
 	. = ..()
@@ -126,6 +139,8 @@
 	deltimer(search_objects_timer_id)
 	deltimer(charge_windup_timer)
 	charge_windup_timer = null
+	deltimer(ranged_telegraph_timer_id)
+	ranged_telegraph_timer_id = null
 	cancel_rapid_melee_sequence()
 	cancel_rapid_fire_sequence()
 	targets_from = null
@@ -260,16 +275,100 @@
 		chosen_dir = pick(cardinal_sidestep_directions)
 	if(chosen_dir)
 		chosen_dir = turn(target_dir,chosen_dir)
-		Move(get_step(src,chosen_dir))
+		var/turf/destination = get_step(src, chosen_dir)
+		//Через контроллер, а не голым Move(): уворот обязан стоить обычный шаг
+		//и ехать с glide, иначе он читается телепортом и даёт лишний тайл.
+		if(ai_controller)
+			ai_controller.ai_step_outside_loop(destination)
+		else
+			Move(destination, chosen_dir)
 		face_atom(target) //Looks better if they keep looking at you when dodging
 
 /mob/living/simple_animal/hostile/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(stat == CONSCIOUS && user && has_active_ai() && !client)
-		RetaliateAgainst(user)
-	return ..()
+	//Урон считаем по факту (после брони и модификаторов), поэтому решение об
+	//обиде принимается ПОСЛЕ удара, а не до него: обида на сокомандника по
+	//фракции обнуляет проверку фракции в CanAttack, и цена ошибки тут - бот,
+	//расстреливающий владельца из-за тычка сумкой.
+	var/consider_grudge = (stat == CONSCIOUS && user && has_active_ai() && !client)
+	var/health_before = health
+	. = ..()
+	//Удар мог оказаться смертельным. Мёртвому обида уже не нужна, но его стае -
+	//нужна: RetaliateAgainst докладывает союзникам о контакте, и до переноса
+	//вызова за ..() убийство с одного удара всё равно поднимало стаю - молчаливый
+	//отстрел группы по одному без единой реакции был регрессом. У уничтоженного
+	//(del_on_death) списки сняты - этот случай отсекает гард в RetaliateAgainst.
+	if(consider_grudge && !QDELETED(src))
+		consider_retaliation(user, max(0, health_before - health))
+
+///Заводить ли личную обиду на этого обидчика. Чужак становится врагом с первого
+///касания; сокомандник по фракции получает допуск на случайность - порог по
+///НАКОПЛЕННОМУ урону, а не по числу ударов (три щекотки не равны трём ударам
+///кувалдой). Возвращает TRUE, если обида заведена.
+/mob/living/simple_animal/hostile/proc/consider_retaliation(mob/living/attacker, damage_taken = 0)
+	if(QDELETED(attacker))
+		return FALSE
+	if(!is_faction_accident(attacker))
+		RetaliateAgainst(attacker)
+		return TRUE
+	if(!retaliates_against_faction)
+		return FALSE
+	if(!tally_friendly_fire(attacker, damage_taken))
+		//подпороговый, но реальный урон: обиды ещё нет, а проснуться, запомнить
+		//обидчика и учитывать его в оценке опасности моб обязан уже сейчас -
+		//иначе размеренные удары убивали его спящим без единой реакции
+		if(damage_taken > 0)
+			ai_controller?.note_attacker(attacker)
+		return FALSE
+	RetaliateAgainst(attacker)
+	return TRUE
+
+///Свой ли это по фракции, то есть применима ли толерантность к случайности.
+///Уже записанный враг своим не считается - обида приоритетнее фракции.
+/mob/living/simple_animal/hostile/proc/is_faction_accident(mob/living/attacker)
+	if(!isliving(attacker) || attack_same)
+		return FALSE
+	if(foes && foes[attacker])
+		return FALSE
+	return faction_check_mob(attacker)
+
+///Накопить дружественный урон; TRUE - порог превышен. Счёт НЕ протухает по
+///времени: окно прощения обнуляло его тому, кто бьёт размеренно, и моба можно
+///было убить бесплатно, выдерживая паузу между ударами.
+/mob/living/simple_animal/hostile/proc/tally_friendly_fire(mob/living/attacker, damage_taken)
+	if(damage_taken <= 0 || maxHealth <= 0)
+		return FALSE
+	LAZYINITLIST(friendly_fire_tally)
+	prune_friendly_fire_tally()
+	var/attacker_key = REF(attacker)
+	var/list/entry = friendly_fire_tally[attacker_key]
+	if(!entry)
+		entry = list(0, world.time)
+		friendly_fire_tally[attacker_key] = entry
+	entry[1] += damage_taken
+	entry[2] = world.time
+	return entry[1] >= (maxHealth * AI_FRIENDLY_FIRE_TOLERANCE)
+
+///Выкинуть при переполнении старейшую запись счёта: потолок держит список
+///конечным под очередью из обидчиков
+/mob/living/simple_animal/hostile/proc/prune_friendly_fire_tally()
+	if(length(friendly_fire_tally) < AI_FRIENDLY_FIRE_TALLY_MAX)
+		return
+	var/oldest_key
+	var/oldest_time = INFINITY
+	for(var/attacker_key in friendly_fire_tally)
+		var/list/entry = friendly_fire_tally[attacker_key]
+		if(entry[2] < oldest_time)
+			oldest_time = entry[2]
+			oldest_key = attacker_key
+	if(oldest_key)
+		friendly_fire_tally -= oldest_key
 
 /mob/living/simple_animal/hostile/bullet_act(obj/item/projectile/P)
 	if(stat == CONSCIOUS && has_active_ai() && !client && P.firer)
+		//Что именно в нас прилетело - вход в модель угрозы: от этого зависит,
+		//считать ли стекло и решётку укрытием (см. threat_model.dm). Пишем и для
+		//дружественного огня: знать тип снаряда полезно независимо от обиды.
+		ai_controller?.note_incoming_projectile(P.firer, P)
 		if(get_dist(src, P.firer) <= aggro_vision_range)
 			//A stray allied projectile must not turn an entire squad against itself.
 			//Direct melee attacks still use RetaliateAgainst() and preserve grudges.
@@ -282,6 +381,10 @@
 /mob/living/simple_animal/hostile/proc/RetaliateAgainst(atom/movable/the_attacker)
 	if(!the_attacker || QDELETED(the_attacker))
 		return
+	//Destroy() снимает списки обид: у уничтожаемого моба foes уже null, и запись
+	//в него это "bad index". Обида такому мобу всё равно не нужна.
+	if(QDELETED(src) || isnull(foes))
+		return
 	if(isliving(the_attacker))
 		add_enemy(the_attacker)
 		foes[the_attacker] = 1
@@ -291,6 +394,14 @@
 	if(ai_controller)
 		ai_controller.note_attacker(the_attacker)
 		if(CanAttack(the_attacker))
+			//обида ставит цель МИМО финдера, а точку отсчёта поводка погони ставит
+			//только финдер: без неё погоня стартует с origin прошлой погони и
+			//should_abandon_pursuit бросает её первым же планом. Ставим сами, но
+			//только при СМЕНЕ цели - каждый удар текущей цели не должен обнулять
+			//пройденный поводок, иначе дерущаяся цель отключает усталость погони.
+			if(ai_controller.blackboard[BB_AI_CURRENT_TARGET] != the_attacker)
+				ai_controller.blackboard[BB_AI_PURSUIT_ORIGIN] = get_turf(src)
+				AI_TRACE(ai_controller, "target", "возмездие: цель [the_attacker]")
 			ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, the_attacker)
 			//Групповой агр: retaliate-семейство делится обидчиками через свой
 			//Retaliate(), а обычные отряды (лутеры, синдикат, фауна) без этого
@@ -320,6 +431,10 @@
 	// ячеек, LOS-гейт сохраняет прежнюю границу видимости без нативного скана.
 	for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(targets_from, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, vision_range))
 		if(candidate == src || QDELETED(candidate) || get_dist(targets_from, candidate) > vision_range)
+			continue
+		//пилот в закрытой технике - не отдельная угроза: его представляет сам
+		//мех из реестра машин ниже (паритет с гейтом candidate_passes финдера)
+		if(istype(candidate.loc, /obj/vehicle/sealed))
 			continue
 		AI_METRIC_INC(los_checks)
 		if(can_see(targets_from, candidate, vision_range) && CanAttack(candidate))
@@ -417,14 +532,58 @@
 	if(patience)
 		GainPatience()
 
+///Живой пол задержки шага AI-погони (дс). Пересчитывается от фактического
+///RUN_DELAY при загрузке конфига и при его правке в рантайме, поэтому больше
+///не может разойтись с реальной скоростью игрока (см. AI_PURSUIT_SPEED_RATIO).
+GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
+
+///Пересчитать пол скорости погони. Зовётся из ValidateAndSet конфига RUN_DELAY.
+/proc/update_ai_pursuit_speed_floor()
+	var/player_run_delay = CONFIG_GET(number/movedelay/run_delay)
+	if(!player_run_delay)
+		GLOB.ai_pursuit_min_move_delay = AI_PURSUIT_MIN_MOVE_DELAY
+		return GLOB.ai_pursuit_min_move_delay
+	GLOB.ai_pursuit_min_move_delay = max(world.tick_lag, player_run_delay * AI_PURSUIT_SPEED_RATIO)
+	return GLOB.ai_pursuit_min_move_delay
+
 ///Задержка шага AI-погони (дс) из легаси move_to_delay. Небоссовые мобы
-///клампятся снизу к AI_PURSUIT_MIN_MOVE_DELAY, чтобы не обгонять игрока больше
-///чем на ~1.25x (жалоба "двигаются в x2 / телепортируются"). Боссы отписаны.
+///клампятся снизу полом, который считается от скорости бегущего игрока: уйти по
+///прямой можно, но без права на ошибку. Боссы (megafauna) от пола отписаны -
+///их скорость это дизайн, а не недосмотр.
 /mob/living/simple_animal/hostile/proc/ai_movement_delay()
 	var/delay = AI_LEGACY_MOVE_DELAY_DS(move_to_delay)
 	if(ai_pursuit_speed_capped)
-		return max(delay, AI_PURSUIT_MIN_MOVE_DELAY)
+		return max(delay, GLOB.ai_pursuit_min_move_delay)
 	return delay
+
+///Читаемое окно перед тяжёлым залпом. Точность нового ИИ (проверка реальной
+///трассы снаряда с перестроением до чистого выстрела) сделала залпы дальников
+///неотвратимыми, а урон в них остался легаси: боевой дрон снимал 82 HP тремя
+///лучами за полсекунды, без единого признака, что сейчас выстрелит. Телеграф не
+///трогает ни ум, ни точность - он даёт игроку окно уйти за укрытие, и если тот
+///успел, залпа не будет.
+/mob/living/simple_animal/hostile/proc/telegraphed_open_fire(atom/fire_target)
+	if(QDELETED(fire_target) || stat == DEAD || ranged_telegraph_timer_id)
+		return FALSE
+	//Arm the full cooldown before the timer starts. Even a shot canceled by
+	//lost sight must not let the planner stack another telegraph immediately.
+	ranged_cooldown = world.time + ranged_cooldown_time + ranged_telegraph_duration
+	var/turf/aim_turf = get_turf(fire_target)
+	if(aim_turf)
+		new /obj/effect/temp_visual/telegraphing/ranged_burst(aim_turf, ranged_telegraph_duration)
+	ranged_telegraph_timer_id = addtimer(CALLBACK(src, PROC_REF(finish_telegraphed_open_fire), fire_target), ranged_telegraph_duration, TIMER_STOPPABLE)
+	return TRUE
+
+/mob/living/simple_animal/hostile/proc/finish_telegraphed_open_fire(atom/fire_target)
+	ranged_telegraph_timer_id = null
+	if(QDELETED(src) || QDELETED(fire_target) || stat == DEAD)
+		return FALSE
+	//цель успела разорвать линию - залп отменяется, в этом весь смысл окна
+	if(!ranged_ignores_vision && !can_see(src, fire_target, AI_RANGED_MAX_FIRE_RANGE))
+		return FALSE
+	GiveTarget(fire_target)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living/simple_animal/hostile, OpenFire), fire_target)
+	return TRUE
 
 /mob/living/simple_animal/hostile/proc/cancel_rapid_melee_sequence()
 	if(rapid_melee_timer_id)
@@ -437,6 +596,10 @@
 	//урон только будит контроллер: цель выберет скорер по обиде из note_attacker
 	if(ai_controller && . > 0 && ai_controller.ai_status == AI_STATUS_IDLE)
 		ai_controller.set_ai_status(AI_STATUS_ON)
+	//легаси fight-or-flight: удар временно снимает object search (пчёлы, minebot и т.д.)
+	if(!ckey && !stat && search_objects < 3 && . > 0 && search_objects)
+		target = null
+		LoseSearchObjects()
 
 
 /mob/living/simple_animal/hostile/proc/AttackingTarget()
@@ -546,9 +709,10 @@
 /mob/living/simple_animal/hostile/proc/CheckRangedFireLaneStateFrom(atom/A, atom/origin)
 	return ranged_fire_lane_state(A, origin, !ranged_ignores_vision, !attack_same)
 
-///A blocked lane is one whose real projectile route ends on static geometry or a
-///protected ally. Penetrable cover (sandbags, barricades) does NOT block: the mob
-///fires over/through it just like a real bullet would.
+///A blocked lane is one whose real projectile route ends on static geometry, a
+///protected ally, or an upright corpse buckled to a chair. Penetrable cover
+///(sandbags, barricades) does NOT block: the mob fires over/through it just like
+///a real bullet would.
 /mob/living/simple_animal/hostile/proc/ranged_fire_lane_is_unsafe(atom/A, atom/origin, check_obstacles, protect_allies)
 	return ranged_fire_lane_state(A, origin, check_obstacles, protect_allies) == AI_FIRE_LANE_BLOCKED
 
@@ -627,9 +791,10 @@
 		if(turf_state == AI_FIRE_LANE_COVER)
 			. = AI_FIRE_LANE_COVER
 
-///Classify one lane turf: BLOCKED (static geometry or a protected ally would stop
-///the shot), COVER (only penetrable cover the bullet gets through from range), or
-///CLEAR (nothing, or cover the shooter stands right behind - guaranteed pass).
+///Classify one lane turf: BLOCKED (static geometry, a protected ally, or a seated
+///corpse is in the way), COVER (only penetrable cover the bullet gets through from
+///range), or CLEAR (nothing, or cover the shooter stands right behind - guaranteed
+///pass).
 /mob/living/simple_animal/hostile/proc/ranged_fire_turf_state(turf/lane_turf, atom/A, turf/origin_turf, traversal_flags, no_hit_flags, obj/item/projectile/projectile_path, check_obstacles, protect_allies)
 	if(!lane_turf)
 		return AI_FIRE_LANE_BLOCKED
@@ -642,6 +807,11 @@
 		if(isliving(blocker))
 			var/mob/living/living_blocker = blocker
 			if(protect_allies && living_blocker.stat != DEAD && faction_check_mob(living_blocker) && !(no_hit_flags & living_blocker.pass_flags_self))
+				return AI_FIRE_LANE_BLOCKED
+			//Projectiles normally pass over a corpse on the floor. A corpse held
+			//upright by a chair is visible cover, so controller mobs must reposition
+			//instead of repeatedly firing through its sprite at somebody behind it.
+			if(check_obstacles && living_blocker.stat == DEAD && istype(living_blocker.buckled, /obj/structure/chair) && !(no_hit_flags & living_blocker.pass_flags_self))
 				return AI_FIRE_LANE_BLOCKED
 			continue
 		if(!check_obstacles || !blocker.density || (traversal_flags & blocker.pass_flags_self))
@@ -846,9 +1016,12 @@
 /mob/living/simple_animal/hostile/proc/LoseSearchObjects()
 	if(QDELETED(src))
 		return
+	if(!search_objects)
+		return
+	var/previous_search_mode = search_objects
 	search_objects = 0
 	deltimer(search_objects_timer_id)
-	search_objects_timer_id = addtimer(CALLBACK(src, PROC_REF(RegainSearchObjects)), search_objects_regain_time, TIMER_STOPPABLE)
+	search_objects_timer_id = addtimer(CALLBACK(src, PROC_REF(RegainSearchObjects), previous_search_mode), search_objects_regain_time, TIMER_STOPPABLE)
 
 
 /mob/living/simple_animal/hostile/proc/RegainSearchObjects(value)
