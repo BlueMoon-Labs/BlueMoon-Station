@@ -145,11 +145,11 @@ $fg-map: colors.$fg-map !default;
       rgba(251, 214, 8, 0.1)
     );
     background-size: 200% 100%;
-    animation: TabCustomShimmer 3s linear infinite;
+    animation: tab-custom-shimmer 3s linear infinite;
   }
 }
 
-@keyframes TabCustomShimmer {
+@keyframes tab-custom-shimmer {
   0% {
     background-position: 100% 0;
   }

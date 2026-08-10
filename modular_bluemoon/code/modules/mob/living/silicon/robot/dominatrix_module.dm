@@ -1,37 +1,24 @@
 // Модуль Доминатрикс для киборгов - порт с WhiteMoon на предметах нашего билда
 
 /mob/living/silicon/robot
-	var/hasToys = FALSE
+	var/has_toys = FALSE
+	/// Игрушки, выданные модулем «Доминатрикс», для корректного удаления при деактивации
+	var/list/dominatrix_toys = list()
 
-/obj/item/borg/upgrade/dominatrixmodule
+/obj/item/borg/upgrade/dominatrix_module
 	name = "модуль «Доминатрикс» для киборга"
 	desc = "Модуль, который значительно улучшает способность киборгов проявлять привязанность."
 	icon = 'icons/obj/module.dmi'
 	icon_state = "cyborg_upgrade5"
 
-/obj/item/borg/upgrade/dominatrixmodule/action(mob/living/silicon/robot/borg, mob/living/user)
-	if(borg.hasToys)
-		to_chat(user, span_warning("This unit already has a 'recreational' module installed!"))
+/obj/item/borg/upgrade/dominatrix_module/action(mob/living/silicon/robot/borg, mob/living/user = usr)
+	if(borg.has_toys)
+		to_chat(user, span_warning("На этом юните уже установлен «развлекательный» модуль!"))
 		return FALSE
 	. = ..()
 	if(.)
-		borg.hasToys = TRUE
-		borg.module.add_module(new /obj/item/bdsm_whip(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/bdsm_whip/ridingcrop(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/electropack/vibrator(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/electropack/shockcollar(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/leash(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/dildo/custom(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/buttplug/small(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/fleshlight(src), TRUE, TRUE)
-		borg.module.add_module(new /obj/item/magicwand(src), TRUE, TRUE)
-
-/obj/item/borg/upgrade/dominatrixmodule/deactivate(mob/living/silicon/robot/borg, mob/living/user)
-	. = ..()
-	if(.)
-		if(borg.hasToys)
-			borg.hasToys = FALSE
-		var/static/list/toys = list(
+		borg.has_toys = TRUE
+		var/static/list/toy_paths = list(
 			/obj/item/bdsm_whip,
 			/obj/item/bdsm_whip/ridingcrop,
 			/obj/item/electropack/vibrator,
@@ -42,7 +29,16 @@
 			/obj/item/fleshlight,
 			/obj/item/magicwand,
 		)
-		for(var/toy_path in toys)
-			var/obj/item/toy = locate(toy_path) in borg.module.get_usable_modules()
-			if(toy)
+		for(var/toy_path as anything in toy_paths)
+			var/obj/item/toy = new toy_path(src)
+			borg.module.add_module(toy, TRUE, TRUE)
+			borg.dominatrix_toys += toy
+
+/obj/item/borg/upgrade/dominatrix_module/deactivate(mob/living/silicon/robot/borg, mob/living/user = usr)
+	. = ..()
+	if(.)
+		borg.has_toys = FALSE
+		for(var/obj/item/toy in borg.dominatrix_toys)
+			if(!QDELETED(toy))
 				borg.module.remove_module(toy, TRUE)
+		borg.dominatrix_toys = list()

@@ -19,7 +19,7 @@
 		boolets += magazine.ammo_count(countempties)
 	return boolets
 
-/obj/item/gun/ballistic/derringer/process_chamber(mob/living/user, empty_chamber = 1)
+/obj/item/gun/ballistic/derringer/process_chamber(mob/living/user, empty_chamber = TRUE)
 	return // переломный механизм: гильза остаётся в стволе до раскрытия
 
 /obj/item/gun/ballistic/derringer/attackby(obj/item/A, mob/user, params)
@@ -27,7 +27,7 @@
 	if(.)
 		return
 	if(chambered && !chambered.BB && magazine.ammo_count() < magazine.max_ammo)
-		to_chat(user, "<span class='warning'>You need to break open [src] and eject the spent casing first!</span>")
+		to_chat(user, "<span class='warning'>Нужно раскрыть [src] и извлечь стреляную гильзу!</span>")
 		return
 	var/num_loaded = magazine.attackby(A, user, params, 1)
 	if(num_loaded)
@@ -52,9 +52,14 @@
 		CB.update_icon()
 		num_unloaded++
 	if (num_unloaded)
-		to_chat(user, "<span class='notice'>You break open \the [src] and unload [num_unloaded] bullet\s.</span>")
+		var/unload_msg = "[num_unloaded] гильз"
+		if(num_unloaded % 10 == 1 && num_unloaded % 100 != 11)
+			unload_msg = "[num_unloaded] гильзу"
+		else if(num_unloaded % 10 >= 2 && num_unloaded % 10 <= 4 && (num_unloaded % 100 < 12 || num_unloaded % 100 > 14))
+			unload_msg = "[num_unloaded] гильзы"
+		to_chat(user, "<span class='notice'>Вы раскрываете \the [src] и извлекаете [unload_msg].</span>")
 	else
-		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 	update_icon()
 
 /obj/item/gun/ballistic/derringer/examine(mob/user)

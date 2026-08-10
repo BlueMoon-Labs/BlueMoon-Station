@@ -133,10 +133,7 @@
 	self_orgasm = !!self_orgasm
 	partner_orgasm = !!partner_orgasm
 	scope = sanitize_inlist(scope, CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
-	var/allowed_body_parts = NONE
-	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
-		allowed_body_parts |= requirement
-	required_body_parts = sanitize_integer(required_body_parts, 0, allowed_body_parts, 0) & allowed_body_parts
+	required_body_parts = sanitize_integer(required_body_parts, 0, CUSTOM_INTERACTION_BODY_PART_MASK, 0) & CUSTOM_INTERACTION_BODY_PART_MASK
 	requires_tail = !!requires_tail
 	requires_telekinesis = !!requires_telekinesis
 	max_distance = sanitize_integer(max_distance, 1, 3, 1)
@@ -165,14 +162,14 @@
 	return M.check_mutation(TK) || HAS_TRAIT(M, TRAIT_TK_POTENTIAL)
 
 /datum/interaction/custom/proc/pass_requirement_gate(mob/living/user, mob/living/target)
-	if(requires_tail && !(user.has_tail() || target.has_tail()))
+	if(requires_tail && !(user.has_tail() || (target && target.has_tail())))
 		return FALSE
-	if(requires_telekinesis && !(has_telekinesis(user) || has_telekinesis(target)))
+	if(requires_telekinesis && !(has_telekinesis(user) || (target && has_telekinesis(target))))
 		return FALSE
 	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
 		if(!(required_body_parts & requirement))
 			continue
-		if(!is_body_part_exposed(user, requirement) && !is_body_part_exposed(target, requirement))
+		if(!is_body_part_exposed(user, requirement) && !(target && is_body_part_exposed(target, requirement)))
 			return FALSE
 	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && user != target)
 		return FALSE
@@ -181,9 +178,33 @@
 	return TRUE
 
 /datum/interaction/custom/proc/check_requirements(mob/living/user, mob/living/target, silent = TRUE)
-	if(!pass_requirement_gate(user, target))
+	if(requires_tail && !(user.has_tail() || (target && target.has_tail())))
 		if(!silent)
-			to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
+			to_chat(user, span_warning("Требования для этого действия не выполнены: нужен хвост у кого-то из вас."))
+		return FALSE
+	if(requires_telekinesis && !(has_telekinesis(user) || (target && has_telekinesis(target))))
+		if(!silent)
+			to_chat(user, span_warning("Требования для этого действия не выполнены: нужен телекинез у кого-то из вас."))
+		return FALSE
+	if(required_body_parts)
+		var/all_parts_missing = TRUE
+		for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
+			if(!(required_body_parts & requirement))
+				continue
+			if(is_body_part_exposed(user, requirement) || (target && is_body_part_exposed(target, requirement)))
+				all_parts_missing = FALSE
+				break
+		if(all_parts_missing)
+			if(!silent)
+				to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
+			return FALSE
+	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && user != target)
+		if(!silent)
+			to_chat(user, span_warning("Это действие доступно только на себе."))
+		return FALSE
+	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && user == target)
+		if(!silent)
+			to_chat(user, span_warning("Это действие доступно только на других."))
 		return FALSE
 	if(target.client && !target.client.prefs.custom_verb_consent)
 		if(!silent)
@@ -264,17 +285,17 @@
 		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
 			new /obj/effect/temp_visual/heart(target.loc)
 	var/lust_amount = get_lust_amount()
-	if(lust_amount && !QDELETED(user))
+	if(!QDELETED(user))
 		if(self_orgasm)
 			user.handle_post_sex(lust_amount, null, user == target ? null : target)
-		else
+		else if(lust_amount)
 			user.add_lust(lust_amount)
 			try_moan(user)
 	var/partner_lust_amount = get_lust_amount(partner_arousal_level)
-	if(partner_lust_amount && !QDELETED(target))
+	if(!QDELETED(target))
 		if(partner_orgasm)
 			target.handle_post_sex(partner_lust_amount, null, target == user ? null : user)
-		else
+		else if(partner_lust_amount)
 			target.add_lust(partner_lust_amount)
 			try_moan(target)
 	if(apply_cooldown)

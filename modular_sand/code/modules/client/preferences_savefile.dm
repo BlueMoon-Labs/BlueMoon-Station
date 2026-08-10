@@ -98,6 +98,16 @@
 
 /datum/preferences/proc/sand_character_pref_load(savefile/S)
 	S["custom_interactions"] >> custom_interactions
+	if(isnull(custom_interactions))
+		// Legacy-данные лежали в корне сейвфайла — переносим их в текущий слот персонажа
+		var/current_dir = S.cd
+		S.cd = "/"
+		var/list/legacy_custom_interactions
+		S["custom_interactions"] >> legacy_custom_interactions
+		S.cd = current_dir
+		if(islist(legacy_custom_interactions))
+			custom_interactions = legacy_custom_interactions
+			WRITE_FILE(S["custom_interactions"], custom_interactions)
 	custom_interactions = SANITIZE_LIST(custom_interactions)
 	for(var/i in length(custom_interactions) to 1 step -1)
 		var/datum/interaction/custom/custom = custom_interactions[i]
