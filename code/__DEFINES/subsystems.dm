@@ -99,6 +99,8 @@
 	}\
 }
 
+/* МЫ НЕ ИСПОЛЬЗУЕМ ЭТИ ДЕФАЙНЫ
+При успешной или не успешной инициализации и т.д. вызывайте return ..()
 //! ### SS initialization hints
 /**
  * Negative values incidate a failure or warning of some kind, positive are good.
@@ -116,6 +118,7 @@
 
 /// Successful, but don't print anything. Useful if subsystem was disabled.
 #define SS_INIT_NO_NEED 3
+*/
 
 //! ### SS initialization load orders
 // Subsystem init_order, from highest priority to lowest priority
