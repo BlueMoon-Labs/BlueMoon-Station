@@ -50,10 +50,13 @@
 
 /datum/map_template/ruin/station/forgottenship/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE)
 	. = ..()
-	// The retained parse exists to survive until this one late load. Both ship
-	// variants build it during mapping init and only one of them is ever placed, so
-	// holding a quarter-megabyte DMM and its model cache afterwards buys nothing.
-	if(. && !force_cache)
+	// The retained parse exists to survive until this one late load. The landmark
+	// makes exactly one attempt and qdels itself right after, so there is no retry
+	// to keep the parse for: release it once the attempt is over whether or not
+	// placement succeeded, or a failed load (say, the landmark ending up too close
+	// to the world edge after a map edit) would strand the quarter-megabyte DMM
+	// and its model cache for the rest of the round with no possible consumer.
+	if(!force_cache)
 		cached_map = null
 
 /datum/map_template/ruin/station/forgottenship/sol
