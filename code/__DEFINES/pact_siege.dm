@@ -7,8 +7,8 @@
 
 /// Prep before PACT gates unlock (TZ: 5–10 min)
 #define PACT_SIEGE_PREP_TIME (5 MINUTES)
-/// Full defense window from activation (TZ priority: 30 min)
-#define PACT_SIEGE_TIMER (30 MINUTES)
+/// Full defense window from activation
+#define PACT_SIEGE_TIMER (25 MINUTES)
 /// Warning before the InteQ evac shuttle leaves and the forgotten-ship volume is wiped
 #define PACT_SIEGE_EVAC_WARNING (1 MINUTES)
 
