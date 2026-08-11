@@ -1209,10 +1209,12 @@ GLOBAL_VAR(parked_flicker_watchdog_id)
 /obj/machinery/light/proc/has_z_viewers()
 	var/our_z = z
 	// SSmobs объявлена SS_NO_INIT, её initialized не станет TRUE никогда - раскладку
-	// клиентов по z заполняет первый fire(), по её наличию и проверяем.
+	// клиентов по z хранят эти списки, по их наличию и проверяем.
 	if(!our_z || !length(SSmobs.clients_by_zlevel))
 		return TRUE
-	return our_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[our_z])
+	var/has_living_viewer = our_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[our_z])
+	var/has_dead_viewer = our_z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[our_z])
+	return has_living_viewer || has_dead_viewer
 
 /// One step of the death flicker — rapidly toggles light dim/off
 /obj/machinery/light/proc/death_flicker_tick(step)
