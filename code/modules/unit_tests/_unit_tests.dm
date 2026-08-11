@@ -304,6 +304,7 @@
 #include "ai_tactics.dm"
 #include "ai_targeting.dm"
 #include "simple_animal_environment_gate.dm"
+#include "singularity_containment.dm"
 #include "slime_ai.dm"
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
