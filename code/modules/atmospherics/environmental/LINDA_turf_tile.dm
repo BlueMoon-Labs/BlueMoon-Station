@@ -1452,9 +1452,13 @@
 		for(var/turf/open/T as anything in E.turf_list)
 			T.excited_group = src
 		// Excited groups are disjoint by construction: every turf has exactly one
-		// excited_group. Append the losing list in one operation instead of doing
-		// a linear membership scan for every member. The old |= loop became O(N^2)
-		// when an explosion joined two large atmospheric regions.
+		// excited_group, and every path that unhooks a member also delists it
+		// (evictions, the cancel guard) or tears the whole group down (dismantle,
+		// garbage_collect, turf replacement through either ChangeTurf branch), so a
+		// listed turf always points back at its group. Append the losing list in
+		// one operation instead of doing a linear membership scan for every member.
+		// The old |= loop became O(N^2) when an explosion joined two large
+		// atmospheric regions.
 		turf_list += E.turf_list
 		awake_members += E.awake_members
 		E.awake_members = 0
@@ -1496,12 +1500,18 @@
 	// surviving list into turf_list once it has walked the whole eviction list.
 	// Dropping the partition mid-flight would leave turf_list holding turfs that
 	// already stopped pointing back at us, and both merge_groups() and the write
-	// stages read that pointer as the membership truth. Adopt the finished half of
-	// the partition instead of throwing it away.
+	// stages read that pointer as the membership truth. The partition snapshot is
+	// not that truth either: add_turf() appends to turf_list and only then funnels
+	// through reset_cooldowns() into this very proc, so a turf that joined - or an
+	// already-evicted one that re-joined - during the eviction window exists in
+	// neither partition half and would be silently dropped while still pointing at
+	// us. Filter the live list by the back-pointer instead: it is written before
+	// every cancel and is the one thing all of those paths keep consistent.
 	if(breakdown_stage == EG_BREAKDOWN_EVICT && breakdown_retained_members)
-		var/list/turf/open/still_ours = breakdown_retained_members
-		if(breakdown_cursor <= length(breakdown_to_evict))
-			still_ours += breakdown_to_evict.Copy(breakdown_cursor)
+		var/list/turf/open/still_ours = list()
+		for(var/turf/open/T as anything in turf_list)
+			if(istype(T) && T.excited_group == src)
+				still_ours += T
 		turf_list = still_ours
 	#ifdef ATMOS_HEADLESS_BENCH
 	if(breakdown_stage && SSair)
