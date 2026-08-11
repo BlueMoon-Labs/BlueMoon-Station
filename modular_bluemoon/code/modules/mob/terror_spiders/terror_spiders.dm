@@ -166,7 +166,7 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	. = ..()
 	. += "Intent: [a_intent]"
 	if(stat == CONSCIOUS && degenerate)
-		. += "Hivemind Connection: Severed! Dying..."
+		. += "Связь с ульем: оборвана! Ты умираешь..."
 
 // --------------------------------------------------------------------------------
 // --------------------- TERROR SPIDERS: SHARED ATTACK CODE -----------------------

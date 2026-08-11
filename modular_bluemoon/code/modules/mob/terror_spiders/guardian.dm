@@ -112,17 +112,19 @@
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/guardian/get_status_tab_items()
 	. = ..()
-	if(stat != CONSCIOUS || !spider_myqueen)
+	// Ссылку на матку чистит purple_distance_check(), а он ходит раз в пять Life и
+	// только у невырождающихся - до его прихода ссылка переживает удаление матки.
+	if(stat != CONSCIOUS || QDELETED(spider_myqueen))
 		return
 	var/area/queen_area = get_area(spider_myqueen)
 	if(degenerate)
-		. += "Link: BROKEN"
+		. += "Связь: ОБОРВАНА"
 	else if(queen_visible)
-		. += "Link: [spider_myqueen] is near"
+		. += "Связь: [spider_myqueen] рядом"
 	else if(cycles_noqueen >= 18)
-		. += "Link: Critical - return to [spider_myqueen] in [queen_area]"
+		. += "Связь: критическая - вернись к [spider_myqueen] в [queen_area]"
 	else
-		. += "Link: Warning - return to [spider_myqueen] in [queen_area]"
+		. += "Связь: слабеет - вернись к [spider_myqueen] в [queen_area]"
 
 /obj/structure/spider/terrorweb/purple
 	name = "thick web"
