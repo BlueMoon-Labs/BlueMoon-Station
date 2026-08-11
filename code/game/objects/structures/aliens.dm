@@ -200,16 +200,19 @@
 
 /obj/structure/alien/weeds/node/process()
 	for(var/obj/structure/alien/weeds/W in range(node_range, src))
-		// A mature node can cover dozens of weeds. Let SSobj pause this run as
-		// soon as its tick budget is spent instead of finishing the whole range in
-		// one process() call (observed at 70ms on a 50ms server tick).
-		if(TICK_CHECK)
-			return
 		if(QDELETED(W))
 			continue
 		if(W.last_expand <= world.time)
 			if(W.expand())
 				W.last_expand = world.time + rand(growth_cooldown_low, growth_cooldown_high)
+		// A mature node can cover dozens of weeds, and the whole radius used to be
+		// walked in a single process() call (observed at 70ms on a 50ms server
+		// tick). Hand the tick back to SSobj once the budget is spent; the rest of
+		// the radius is picked up on the next fire. Checked after the work rather
+		// than before it, so a call that already paid for range() never leaves
+		// without expanding anything.
+		if(TICK_CHECK)
+			return
 
 #undef NODERANGE
 
