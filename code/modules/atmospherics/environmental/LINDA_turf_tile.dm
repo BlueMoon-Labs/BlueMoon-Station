@@ -1451,7 +1451,11 @@
 			SSair.excited_groups -= E
 		for(var/turf/open/T as anything in E.turf_list)
 			T.excited_group = src
-			turf_list |= T
+		// Excited groups are disjoint by construction: every turf has exactly one
+		// excited_group. Append the losing list in one operation instead of doing
+		// a linear membership scan for every member. The old |= loop became O(N^2)
+		// when an explosion joined two large atmospheric regions.
+		turf_list += E.turf_list
 		awake_members += E.awake_members
 		E.awake_members = 0
 		turf_reactions |= E.turf_reactions // a burning group keeps its volatile gate through merges
@@ -1463,7 +1467,7 @@
 			SSair.excited_groups -= src
 		for(var/turf/open/T as anything in turf_list)
 			T.excited_group = E
-			E.turf_list |= T
+		E.turf_list += turf_list
 		E.awake_members += awake_members
 		awake_members = 0
 		turf_list.Cut()
