@@ -37,11 +37,11 @@
 	search_objects = 1
 	wanted_objects = list(/obj/item)
 	var/random_retaliate = TRUE
-	/// Keep swallowed items in contents instead of deleting them
-	var/conserve_food = TRUE
+	/// Keep swallowed items in contents instead of deleting them (Birdboat only)
+	var/conserve_food = FALSE
 	/// Choking / mid-vomit: stop hunting snacks
 	var/goose_panicked = FALSE
-	/// Chance (percent) to spontaneously vomit while moving; Birdboat ramps this up
+	/// Chance (percent) to spontaneously vomit while moving while satiated; Birdboat ramps this up
 	var/vomit_chance = 0
 	/// Extra vomit duration from gross snacks
 	var/vomit_extra_duration = 0
@@ -51,9 +51,6 @@
 /mob/living/simple_animal/hostile/retaliate/goose/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
-	vomit_action = new(src)
-	vomit_action.Grant(src)
-	RegisterSignal(src, COMSIG_MOB_ABILITY_STARTED, PROC_REF(on_started_vomiting))
 
 /mob/living/simple_animal/hostile/retaliate/goose/Destroy()
 	QDEL_NULL(vomit_action)
@@ -74,8 +71,6 @@
 	if(stat == DEAD || goose_panicked)
 		return
 	try_eat_floor_scrap()
-	if(vomit_chance && prob(vomit_chance))
-		vomit()
 
 /mob/living/simple_animal/hostile/retaliate/goose/attackby(obj/item/O, mob/user, params)
 	if(can_gobble(O))
@@ -131,16 +126,18 @@
 
 /**
  * Swallow an item. Returns TRUE if something was eaten.
- * Overfill triggers a full vomit instead of another bite.
+ * At critical mass Birdboat refuses another bite and empties the tank.
  */
 /mob/living/simple_animal/hostile/retaliate/goose/proc/try_gobble(obj/item/food, mob/feeder)
 	if(stat == DEAD || goose_panicked || !can_gobble(food))
 		return FALSE
 	if(length(contents) >= GOOSE_SATIATED)
 		if(COOLDOWN_FINISHED(src, eat_fail_feedback_cooldown))
-			visible_message(span_warning("[src] looks too full — and starts heaving!"))
+			visible_message(span_notice("[src] looks too full to eat [food]!"))
 			COOLDOWN_START(src, eat_fail_feedback_cooldown, 5 SECONDS)
-		vomit()
+		// Only the vomit-capable subtype actually chunders from overfill
+		if(vomit_action)
+			vomit()
 		return FALSE
 
 	visible_message(span_notice("[src] hungrily gobbles up [food]!"))
@@ -160,12 +157,7 @@
 	return TRUE
 
 /mob/living/simple_animal/hostile/retaliate/goose/proc/on_gobbled(obj/item/food, mob/feeder)
-	var/foodtypes = get_foodtypes(food)
-	if(foodtypes & GROSS)
-		vomit_chance += 3
-		vomit_extra_duration += 0.2 SECONDS
-	else
-		vomit_chance += 1
+	return
 
 /mob/living/simple_animal/hostile/retaliate/goose/proc/choke(obj/item/not_food_after_all)
 	visible_message(span_boldwarning("[src] is choking on [not_food_after_all]!"))
@@ -179,8 +171,10 @@
 /mob/living/simple_animal/hostile/retaliate/goose/proc/on_started_vomiting(mob/living/owner, datum/action/cooldown/activated)
 	SIGNAL_HANDLER
 	if(activated != vomit_action)
-		return
+		return NONE
+	// Must not return remove_status_effect()'s TRUE — that equals COMPONENT_BLOCK_ABILITY_START
 	remove_status_effect(/datum/status_effect/goose_choking)
+	return NONE
 
 // ===== Birdboat: calmer scavenger, messier guts =====
 
@@ -191,13 +185,33 @@
 	gender = MALE
 	gold_core_spawnable = NO_SPAWN
 	random_retaliate = FALSE
-	vomit_chance = 1
+	conserve_food = TRUE
+	vomit_chance = 0
 
 /mob/living/simple_animal/hostile/retaliate/goose/vomit/Initialize(mapload)
 	. = ..()
+	vomit_action = new(src)
+	vomit_action.Grant(src)
+	RegisterSignal(src, COMSIG_MOB_ABILITY_STARTED, PROC_REF(on_started_vomiting))
 	if(prob(5))
 		desc = "[initial(desc)] It's waddling more than usual. It seems to be possessed."
 		deadchat_plays_goose()
+
+/mob/living/simple_animal/hostile/retaliate/goose/vomit/Moved(atom/OldLoc, Dir, Forced = FALSE)
+	. = ..()
+	if(stat == DEAD || goose_panicked)
+		return
+	// Like Bubber chance ramp, but only after the stomach hits critical mass
+	if(length(contents) >= GOOSE_SATIATED && vomit_chance && prob(vomit_chance))
+		vomit()
+
+/mob/living/simple_animal/hostile/retaliate/goose/vomit/on_gobbled(obj/item/food, mob/feeder)
+	var/foodtypes = get_foodtypes(food)
+	if(foodtypes & GROSS)
+		vomit_chance += 3
+		vomit_extra_duration += 0.2 SECONDS
+	else
+		vomit_chance += 1
 
 /mob/living/simple_animal/hostile/retaliate/goose/vomit/examine(mob/user)
 	. = ..()
@@ -289,6 +303,7 @@
 	name = "Vomit"
 	desc = "Empty your stomach all over the floor. Artistic."
 	check_flags = AB_CHECK_CONSCIOUS
+	required_mobility_flags = NONE
 	icon_icon = 'icons/mob/animal.dmi'
 	button_icon_state = "vomit"
 	cooldown_time = INFINITY
@@ -308,12 +323,16 @@
 	return ..()
 
 /datum/action/cooldown/goose_vomit/IsAvailable(silent = FALSE)
-	. = ..()
-	if(!.)
+	if(!..())
 		return FALSE
-	if(!length(owner.contents))
+	if(!length(owner?.contents))
 		if(!silent)
-			owner.balloon_alert(owner, "stomach empty!")
+			owner?.balloon_alert(owner, "stomach empty!")
+		return FALSE
+	var/mob/living/living_owner = owner
+	if(living_owner?.has_status_effect(/datum/status_effect/goose_vomit))
+		if(!silent)
+			living_owner.balloon_alert(living_owner, "already vomiting!")
 		return FALSE
 	return TRUE
 
@@ -332,7 +351,7 @@
 	return TRUE
 
 /datum/action/cooldown/goose_vomit/proc/start_vomiting()
-	if(QDELETED(owner) || owner.stat == DEAD)
+	if(QDELETED(src) || QDELETED(owner) || owner.stat == DEAD)
 		StartCooldown(0)
 		return
 	var/mob/living/living_owner = owner
