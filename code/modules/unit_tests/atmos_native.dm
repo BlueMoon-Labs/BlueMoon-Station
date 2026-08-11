@@ -898,6 +898,69 @@
 	SSair.remove_from_active(second)
 	SSair.remove_from_active(third)
 
+/// merge_groups() appends member lists without a membership scan, which is only
+/// sound while "listed in turf_list" and "excited_group points back" say the same
+/// thing. The eviction stage unhooks one member per slice and swaps in the surviving
+/// list only after walking the whole eviction list, so a breakdown cancelled inside
+/// that window must not leave the unhooked turfs listed: the next merge would append
+/// one of them a second time and average its air twice.
+/datum/unit_test/atmos_cancelled_eviction_keeps_membership_honest/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/turf/open/members = list(
+		locate(origin.x + 1, origin.y + 1, origin.z),
+		locate(origin.x + 2, origin.y + 1, origin.z),
+		locate(origin.x + 3, origin.y + 1, origin.z),
+	)
+	var/datum/excited_group/group = new
+	for(var/turf/open/member as anything in members)
+		TEST_ASSERT(istype(member), "test location is not an open turf")
+		member.air.copy_from_turf(member)
+		group.add_turf(member)
+		// Identical air plus a resting member is exactly what the write stage sends
+		// to the eviction list. Drop the active listing by hand: remove_from_active()
+		// would garbage collect the very group this test is building.
+		member.excited = FALSE
+		SSair.unlist_active_turf(member)
+
+	var/turf/open/unhooked_member
+	var/slices = 0
+	while(slices < 100)
+		var/finished = group.self_breakdown(slice_budget = 1)
+		slices++
+		var/list/turf/open/unhooked = list()
+		for(var/turf/open/member as anything in members)
+			if(member.excited_group != group)
+				unhooked += member
+		// Stop on the first slice that has unhooked some members but not all: that
+		// is the window this test exists for.
+		if(length(unhooked) && length(unhooked) < length(members))
+			unhooked_member = unhooked[1]
+			break
+		if(finished)
+			break
+	TEST_ASSERT_NOTNULL(unhooked_member, "no slice left the group partly evicted, so the guarded window was never reached")
+
+	group.cancel_breakdown()
+	for(var/turf/open/listed as anything in group.turf_list)
+		TEST_ASSERT_EQUAL(listed.excited_group, group, "a breakdown cancelled mid-eviction left an unhooked turf listed in turf_list")
+
+	// The stale entry only bites on the next merge, once the woken turf has joined
+	// another group and both member lists are appended wholesale.
+	var/datum/excited_group/rejoined_group = new
+	rejoined_group.add_turf(unhooked_member)
+	group.merge_groups(rejoined_group)
+	// Every test turf is accounted for exactly once, whichever side of the merge it
+	// came from. A stale listing shows up here as one member too many.
+	TEST_ASSERT_EQUAL(length(group.turf_list), length(members), "merging after a cancelled eviction listed a member twice")
+
+	group.garbage_collect()
+	rejoined_group.garbage_collect()
+	for(var/turf/open/member as anything in members)
+		member.air.copy_from_turf(member)
+		member.atmos_cooldown = 0
+		SSair.remove_from_active(member)
+
 /// The awake counter is maintained incrementally; exotic paths (a turf type
 /// change under a live group) can strand it. Every breakdown already walks the
 /// whole membership, so it must recount the counter exactly - drift heals

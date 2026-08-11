@@ -1492,6 +1492,17 @@
 	// dozen pointless writes per call, thousands of calls per fire under a fire.
 	if(!breakdown_stage)
 		return
+	// The eviction stage unhooks its turfs one slice at a time and only swaps the
+	// surviving list into turf_list once it has walked the whole eviction list.
+	// Dropping the partition mid-flight would leave turf_list holding turfs that
+	// already stopped pointing back at us, and both merge_groups() and the write
+	// stages read that pointer as the membership truth. Adopt the finished half of
+	// the partition instead of throwing it away.
+	if(breakdown_stage == EG_BREAKDOWN_EVICT && breakdown_retained_members)
+		var/list/turf/open/still_ours = breakdown_retained_members
+		if(breakdown_cursor <= length(breakdown_to_evict))
+			still_ours += breakdown_to_evict.Copy(breakdown_cursor)
+		turf_list = still_ours
 	#ifdef ATMOS_HEADLESS_BENCH
 	if(breakdown_stage && SSair)
 		SSair.atmos_headless_bench_record_breakdown(headless_breakdown_members, world.time - headless_breakdown_started, headless_breakdown_slices, FALSE)
