@@ -345,6 +345,25 @@
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 
+/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier)
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Concord armored top"

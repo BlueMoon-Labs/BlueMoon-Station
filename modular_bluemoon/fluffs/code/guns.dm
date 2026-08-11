@@ -56,7 +56,7 @@
 		else
 			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, span_warning(" You can't modify [target] with this kit!"))
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
