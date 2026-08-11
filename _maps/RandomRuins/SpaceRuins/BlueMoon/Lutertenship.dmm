@@ -871,8 +871,6 @@
 /obj/item/switchblade,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/Luter_Ship/Ship)
-"Ia" = (
-/turf/template_noop)
 "Il" = (
 /obj/structure/closet/crate/secure/gear{
 	req_access = list("syndicate")
@@ -1238,14 +1236,14 @@ as
 as
 aa
 aa
-Ia
-Ia
-Ia
 aa
 aa
-Ia
-Ia
-Ia
+aa
+aa
+aa
+aa
+aa
+aa
 aa
 aa
 aa
@@ -1285,14 +1283,14 @@ as
 as
 aa
 aa
-Ia
-Ia
-Ia
 aa
 aa
-Ia
-Ia
-Ia
+aa
+aa
+aa
+aa
+aa
+aa
 aa
 aa
 aa

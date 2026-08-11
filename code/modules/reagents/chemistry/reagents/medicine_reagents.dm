@@ -867,7 +867,6 @@
 	M.adjustOxyLoss(-3*REM, 0)
 	if(M.losebreath >= 4)
 		M.losebreath -= 2
-	M.Jitter(5)
 	..()
 	. = 1
 

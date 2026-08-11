@@ -23,6 +23,7 @@
 /obj/effect/turf_decal/siding/wideplating/end{
 	dir = 4
 	},
+/turf/open/floor/mineral/titanium/white/airless,
 /area/ruin/space/has_grav/whiteship/box)
 "bB" = (
 /obj/machinery/sleeper{
@@ -191,6 +192,7 @@
 /obj/effect/turf_decal/siding/wideplating/end{
 	dir = 8
 	},
+/turf/open/floor/mineral/titanium/white/airless,
 /area/ruin/space/has_grav/whiteship/box)
 "hf" = (
 /obj/effect/turf_decal/siding/wideplating/corner{
@@ -402,8 +404,6 @@
 "lZ" = (
 /obj/effect/turf_decal/siding/wideplating,
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/whiteship/box)
-"md" = (
 /area/ruin/space/has_grav/whiteship/box)
 "mp" = (
 /obj/effect/turf_decal/trimline/yellow/corner{
@@ -1399,6 +1399,7 @@
 "Xg" = (
 /obj/effect/decal/cleanable/glass,
 /obj/structure/girder/displaced,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/whiteship/box)
 "Xp" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -2046,7 +2047,7 @@ nH
 nH
 nH
 nH
-md
+Vt
 Wc
 aB
 Ov
