@@ -345,7 +345,7 @@
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 
-/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier)
+/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
 	if(istype(target, product))
 		to_chat(user, span_warning("[target] is already modified!"))
 		return TRUE
