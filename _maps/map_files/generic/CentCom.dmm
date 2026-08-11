@@ -14764,6 +14764,14 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/tdome/arena_source)
+"fUy" = (
+/obj/structure/sign/directions/security{
+	name = "SHOOTING RANGE";
+	pixel_x = 1;
+	pixel_y = 23
+	},
+/turf/open/floor/grass/grass0,
+/area/centcom/holding)
 "fVh" = (
 /obj/structure/flora/junglebush/large,
 /turf/open/floor/grass/grass0,
@@ -20338,10 +20346,13 @@
 /turf/closed/wall,
 /area/centcom/arena)
 "lko" = (
-/turf/open/floor/plating/dirt/dark/jungle{
-	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+/obj/structure/sign/directions/security{
+	name = "SHOOTING RANGE";
+	pixel_x = 0;
+	pixel_y = 23
 	},
-/area/space)
+/turf/open/floor/grass/grass0,
+/area/centcom/holding)
 "llb" = (
 /obj/machinery/light/directional/west,
 /turf/open/floor/mineral/abductor,
@@ -22444,6 +22455,12 @@
 "nuh" = (
 /turf/closed/indestructible/fakeglass,
 /area/shuttle/inteq/collosus)
+"nuM" = (
+/obj/effect/portal/permanent{
+	id = "shootingrange"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/centcom/holding)
 "nuN" = (
 /obj/structure/railing{
 	dir = 8;
@@ -32803,7 +32820,9 @@
 /turf/open/floor/grass/grass2,
 /area/centcom/control)
 "xia" = (
-/obj/structure/closet/crate/large/urbanismcratelarge/mil,
+/obj/effect/portal/permanent{
+	id = "shootingrange"
+	},
 /turf/open/floor/plating/ironsand,
 /area/centcom/holding/shootingrange)
 "xiv" = (
@@ -48117,7 +48136,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 ncJ
 iPk
 iPk
@@ -48374,7 +48393,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 ncJ
 iPk
 iUm
@@ -48631,7 +48650,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 iUm
@@ -48888,7 +48907,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 iUm
@@ -49145,7 +49164,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 iUm
@@ -49402,7 +49421,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 iUm
@@ -49659,7 +49678,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 iUm
@@ -49916,7 +49935,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -50173,7 +50192,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -50430,7 +50449,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -50687,7 +50706,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -50944,7 +50963,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -51201,7 +51220,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -51458,7 +51477,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -51715,7 +51734,7 @@ aaa
 aaa
 aaa
 aaa
-ewN
+ncJ
 iPk
 iUm
 ncJ
@@ -51971,8 +51990,8 @@ aaa
 (71,1,1) = {"
 aaa
 aaa
-ewN
-ewN
+ncJ
+ncJ
 iPk
 iUm
 ncJ
@@ -52227,9 +52246,9 @@ aaa
 "}
 (72,1,1) = {"
 aaa
-ewN
-ewN
-lko
+ncJ
+ncJ
+iPk
 iPk
 iUm
 ncJ
@@ -52484,9 +52503,9 @@ aaa
 "}
 (73,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 iPk
 iUm
 ncJ
@@ -52741,9 +52760,9 @@ aaa
 "}
 (74,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 aFe
 aFe
@@ -52998,9 +53017,9 @@ aaa
 "}
 (75,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 itE
 itE
@@ -53255,9 +53274,9 @@ aaa
 "}
 (76,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 dSm
 jDW
@@ -53512,9 +53531,9 @@ aaa
 "}
 (77,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 xfb
 kAR
@@ -53769,9 +53788,9 @@ aaa
 "}
 (78,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 lty
 kAR
@@ -54026,9 +54045,9 @@ aaa
 "}
 (79,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 lty
 kAR
@@ -54283,9 +54302,9 @@ aaa
 "}
 (80,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 wKz
 kjK
@@ -54540,9 +54559,9 @@ aaa
 "}
 (81,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 rRe
 imX
@@ -54797,9 +54816,9 @@ aaa
 "}
 (82,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 aFe
 aFe
 aFe
@@ -55054,9 +55073,9 @@ aaa
 "}
 (83,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 iPk
 iPk
 iUm
@@ -55311,9 +55330,9 @@ aaa
 "}
 (84,1,1) = {"
 aaa
-ewN
-lko
-lko
+ncJ
+iPk
+iPk
 iPk
 iUm
 iUm
@@ -55568,9 +55587,9 @@ aaa
 "}
 (85,1,1) = {"
 aaa
-ewN
-ewN
-lko
+ncJ
+ncJ
+iPk
 iPk
 iUm
 okd
@@ -55826,8 +55845,8 @@ aaa
 (86,1,1) = {"
 aaa
 aaa
-ewN
-lko
+ncJ
+iPk
 iPk
 iUm
 iPk
@@ -56083,8 +56102,8 @@ aaa
 (87,1,1) = {"
 aaa
 aaa
-ewN
-ewN
+ncJ
+ncJ
 ncJ
 iPk
 iPk
@@ -59435,9 +59454,9 @@ iUm
 iUm
 iUm
 ncJ
-ncJ
-ncJ
-fON
+aFe
+aFe
+lko
 fON
 fON
 fON
@@ -59692,8 +59711,8 @@ iPk
 iUm
 iUm
 ncJ
-ncJ
-ncJ
+aFe
+sav
 fON
 fON
 fON
@@ -59949,9 +59968,9 @@ iPk
 iPk
 iUm
 ncJ
-ncJ
+aFe
+nuM
 fON
-vpn
 fON
 fON
 fON
@@ -60206,8 +60225,8 @@ gDM
 iPk
 ncJ
 ncJ
-ncJ
-fON
+aFe
+sav
 fON
 ibg
 fON
@@ -60463,9 +60482,9 @@ gDM
 ncJ
 ncJ
 ncJ
-ncJ
-fON
-fON
+aFe
+aFe
+fUy
 fON
 fON
 fON

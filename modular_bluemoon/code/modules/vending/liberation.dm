@@ -233,6 +233,19 @@
 				/obj/item/book/granter/martial/krav_maga = 2,
 			)
 		),
+		list(
+			"name" = "Медикаменты",
+			"icon" = "plus",
+			"products" = list(
+				/obj/item/storage/firstaid/tactical/nukeop = 5,
+				/obj/item/storage/firstaid/regular = 5,
+				/obj/item/storage/firstaid/brute = 5,
+				/obj/item/storage/firstaid/fire = 5,
+				/obj/item/storage/firstaid/toxin = 5,
+				/obj/item/storage/firstaid/oxygen = 5,
+				/obj/item/gun/magic/wand/resurrection/debug/ghostcafe = 1,
+			)
+		),
 	)
 	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
 	resistance_flags = 115 // INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | UNACIDABLE | FREEZE_PROOF | LAVA_PROOF

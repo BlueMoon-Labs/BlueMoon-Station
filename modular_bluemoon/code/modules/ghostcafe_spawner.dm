@@ -213,3 +213,37 @@
 	backpack_contents = list(/obj/item/gun/ballistic/automatic/pistol/hl9mm, /obj/item/ammo_box/magazine/pistolm9mm, /obj/item/reagent_containers/food/snacks/donut/apple,)
 	ears = null
 	id = /obj/item/card/id/no_banking
+
+// Ghost Cafe specific items
+
+/obj/item/gun/magic/wand/resurrection/debug/ghostcafe
+	name = "Ghost Cafe Resurrection Wand"
+	desc = "Магическая палочка для воскрешения мёртвых в тире. Работает только в тире с кулдауном 10 секунд."
+	max_charges = 50
+	var/cooldown_time = 10 SECONDS
+	var/next_use_time = 0
+
+/obj/item/gun/magic/wand/resurrection/debug/ghostcafe/afterattack(atom/target, mob/user, proximity)
+	if(!proximity)
+		return
+
+	var/area/current_area = get_area(user)
+	if(!istype(current_area, /area/centcom/holding/shootingrange))
+		to_chat(user, span_warning("Эта палочка работает только в тире!"))
+		return
+
+	if(world.time < next_use_time)
+		var/time_left = (next_use_time - world.time) / 10
+		to_chat(user, span_warning("Кулдаун! Осталось [round(time_left)] секунд."))
+		return
+
+	if(ishuman(target))
+		var/mob/living/carbon/human/H = target
+		if(H.stat == DEAD)
+			..()
+			next_use_time = world.time + cooldown_time
+			to_chat(user, span_notice("Вы воскресили [H.name]!"))
+		else
+			to_chat(user, span_warning("[H.name] ещё жив!"))
+	else
+		to_chat(user, span_warning("Можно воскрешать только людей!"))
