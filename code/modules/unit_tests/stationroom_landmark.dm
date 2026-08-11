@@ -35,3 +35,14 @@
 
 	SSmapping.station_room_templates -= template.name
 	GLOB.chosen_station_templates -= template.name
+
+/// The large forgotten-ship room is intentionally inserted after round start. Its
+/// parse and model-cache phases must be paid during mapping init, before clients can
+/// be frozen by the late-load timer.
+/datum/unit_test/forgotten_ship_runtime_cache/Run()
+	for(var/template_name in list("SCSBC-12", "SCSBC-13"))
+		var/datum/map_template/template = SSmapping.station_room_templates[template_name]
+		TEST_ASSERT_NOTNULL(template, "Missing station-room template [template_name]")
+		TEST_ASSERT(template.keep_cached_map, "[template_name] does not retain its startup parse")
+		TEST_ASSERT_NOTNULL(template.cached_map, "[template_name] discarded its parsed DMM before late load")
+		TEST_ASSERT_NOTNULL(template.cached_map.modelCache, "[template_name] deferred model-cache building into the live round")

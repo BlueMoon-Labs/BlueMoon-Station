@@ -36,6 +36,16 @@
 	always_place = FALSE
 	cost = 1000
 	id = "forgottenship"
+	// This 299 KiB DMM is deliberately loaded one minute into the round. Template
+	// construction already parses it during mapping init, so keep that result instead
+	// of repeating the expensive parse while clients are playing.
+	keep_cached_map = TRUE
+
+/datum/map_template/ruin/station/forgottenship/New()
+	. = ..()
+	// build_cache() is the second CPU-heavy text phase normally deferred until load().
+	// The late load always uses normal ChangeTurf semantics, hence FALSE here.
+	cached_map?.build_cache(FALSE)
 
 /datum/map_template/ruin/station/forgottenship/sol
 	name = "SCSBC-13"
