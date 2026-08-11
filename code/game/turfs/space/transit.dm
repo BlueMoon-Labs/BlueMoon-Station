@@ -168,6 +168,7 @@
 	return FALSE
 
 /proc/is_hilbert_hotel_area(area/A)
+	. = FALSE
 	if(istype(A, /area/hilbertshotel) || istype(A, /area/hilbertshotelstorage))
 		return TRUE
 
