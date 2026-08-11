@@ -1,9 +1,12 @@
 import {
+  HubStorageBackend,
+  IMPL_HUB_STORAGE,
   IMPL_LOCAL_STORAGE,
   IMPL_MEMORY,
   LocalStorageBackend,
   MemoryBackend,
   storage,
+  StorageProxy,
 } from './storage';
 
 describe('MemoryBackend', () => {
@@ -187,6 +190,76 @@ describe('LocalStorageBackend', () => {
     backend.set('key', { x: 1 });
     const raw = localStorage.getItem('key');
     expect(raw).toBe('{"x":1}');
+  });
+});
+
+describe('HubStorageBackend', () => {
+  let backend;
+  let hubStore;
+
+  beforeEach(() => {
+    localStorage.clear();
+    hubStore = new Map();
+    window.hubStorage = {
+      clear: jest.fn(async () => hubStore.clear()),
+      getItem: jest.fn(async key => hubStore.get(key)),
+      removeItem: jest.fn(async key => hubStore.delete(key)),
+      setItem: jest.fn(async (key, value) => hubStore.set(key, value)),
+    };
+    backend = new HubStorageBackend();
+  });
+
+  afterEach(() => {
+    delete window.hubStorage;
+  });
+
+  test('uses a BlueMoon namespace and round-trips JSON values', async () => {
+    await backend.set('panel-settings', { theme: 'dark' });
+
+    expect(window.hubStorage.setItem).toHaveBeenCalledWith(
+      'bluemoon-panel-settings',
+      '{"theme":"dark"}',
+    );
+    await expect(backend.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+    expect(backend.impl).toBe(IMPL_HUB_STORAGE);
+  });
+
+  test('set(undefined) removes the persistent value', async () => {
+    await backend.set('chat-state', { visible: true });
+    await backend.set('chat-state', undefined);
+
+    expect(window.hubStorage.removeItem)
+      .toHaveBeenCalledWith('bluemoon-chat-state');
+    await expect(backend.get('chat-state')).resolves.toBeUndefined();
+  });
+
+  test('StorageProxy prefers a working BYOND backend', async () => {
+    const proxy = new StorageProxy();
+    await proxy.set('key', 'value');
+
+    expect(window.hubStorage.getItem)
+      .toHaveBeenCalledWith('bluemoon-__backend-probe__');
+    await expect(proxy.get('key')).resolves.toBe('value');
+  });
+
+  test('StorageProxy lazily migrates settings from pre-516 storage', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    expect(window.hubStorage.setItem).toHaveBeenCalledWith(
+      'bluemoon-panel-settings',
+      '{"theme":"light"}',
+    );
+  });
+
+  test('StorageProxy falls back when hubStorage rejects after selection', async () => {
+    const proxy = new StorageProxy();
+    await proxy.backendPromise;
+    window.hubStorage.setItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+
+    await expect(proxy.set('fallback-key', 'fallback-value')).resolves.toBeUndefined();
+    await expect(proxy.get('fallback-key')).resolves.toBe('fallback-value');
   });
 });
 
