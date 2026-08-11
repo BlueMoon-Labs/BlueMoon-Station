@@ -106,7 +106,11 @@ export const Sleeper = (props) => {
           {chems.map(chem => (
             <Button
               key={chem.name}
-              icon="flask"
+              icon={chem.overdose_threshold || chem.addiction_threshold ? 'triangle-exclamation' : 'flask'}
+              tooltip={[
+                chem.overdose_threshold && `Передозировка: ${chem.overdose_threshold}u`,
+                chem.addiction_threshold && `Зависимость: ${chem.addiction_threshold}u`,
+              ].filter(Boolean).join(' | ')}
               content={chem.name}
               disabled={!occupied || !chem.allowed}
               width="140px"

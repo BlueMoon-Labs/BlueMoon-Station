@@ -339,7 +339,7 @@
 		return NONE
 	use_power(melee_energy_drain)
 	if(M.damtype == BRUTE || M.damtype == BURN)
-		log_combat(user, src, "attacked", M, "(INTENT: [uppertext(user.a_intent)]) (DAMTYPE: [uppertext(M.damtype)])")
+		log_combat(user, src, "attacked", M, "(INTENT: [uppertext(user ? user.a_intent : INTENT_HARM)]) (DAMTYPE: [uppertext(M.damtype)])")
 		. = ..()
 
 /obj/vehicle/sealed/mecha/proc/full_repair(charge_cell)

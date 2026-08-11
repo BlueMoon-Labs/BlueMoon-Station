@@ -343,6 +343,8 @@
 	. = FALSE
 	if(!buckled)
 		return
+	if(istype(buckled, /obj/structure/bed/nest))
+		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
 		// too soon.
 		var/buckle_cd = 600
