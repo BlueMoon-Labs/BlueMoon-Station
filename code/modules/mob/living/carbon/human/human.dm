@@ -107,6 +107,26 @@
 			. += ""
 			. += "Chemical Storage: [changeling.chem_charges]/[changeling.chem_storage]"
 			. += "Absorbed DNA: [changeling.absorbedcount]"
+	if(istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
+		var/obj/item/clothing/suit/space/hardsuit/nano/nanosuit = wear_suit
+		var/datum/gas_mixture/environment = loc?.return_air()
+		. += ""
+		. += "Crynet Protocols: [nanosuit.shutdown ? "Disengaged" : "Engaged"]"
+		. += "Energy Charge: [(nanosuit.cellon && nanosuit.cell) ? "[round(nanosuit.cell.percent())]%" : "offline"]"
+		. += "Mode: [nanosuit.mode]"
+		. += "Overall Status: [nanosuit.healthon ? "[health]% healthy" : "offline"]"
+		. += "Nutrition Status: [nanosuit.healthon ? nutrition : "offline"]"
+		. += "Oxygen Loss: [nanosuit.healthon ? getOxyLoss() : "offline"]"
+		. += "Toxin Levels: [nanosuit.healthon ? getToxLoss() : "offline"]"
+		. += "Burn Severity: [nanosuit.healthon ? getFireLoss() : "offline"]"
+		. += "Brute Trauma: [nanosuit.healthon ? getBruteLoss() : "offline"]"
+		. += "Radiation Levels: [nanosuit.radon ? "[radiation] rads" : "offline"]"
+		. += "Body Temperature: [nanosuit.healthon ? "[bodytemperature - T0C] degrees C ([bodytemperature * 1.8 - 459.67] degrees F)" : "offline"]"
+		. += "Atmospheric Pressure: [(nanosuit.atmoson && environment) ? "[environment.return_pressure()] kPa" : "offline"]"
+		. += "Atmospheric Temperature: [(nanosuit.atmoson && environment) ? "[round(environment.return_temperature() - T0C, 0.01)] degrees C ([round(environment.return_temperature(), 0.01)] K)" : "offline"]"
+	else if(istype(wear_suit, /obj/item/clothing/suit/space/space_ninja))
+		var/obj/item/clothing/suit/space/space_ninja/ninja_suit = wear_suit
+		. += ninja_suit.get_status_readout(src)
 
 
 // called when something steps onto a human

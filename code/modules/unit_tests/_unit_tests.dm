@@ -226,6 +226,7 @@
 #include "bugreports_2026_07.dm"
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
+#include "status_tab_suit_readouts.dm"
 #include "director_beat_cost.dm"
 #include "disposal_holder.dm"
 #include "fov_hearers.dm"

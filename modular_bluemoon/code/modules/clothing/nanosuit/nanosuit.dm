@@ -766,42 +766,6 @@
 	var/obj/item/tank/internals/emergency_oxygen/recharge/I = new(src)
 	H.equip_to_slot_or_del(I, ITEM_SLOT_RPOCKET)
 
-/mob/living/carbon/get_status_tab_items()
-	. = ..()
-	var/obj/item/organ/alien/plasmavessel/vessel = getorgan(/obj/item/organ/alien/plasmavessel)
-	if(vessel)
-		. += "Plasma Stored: [vessel.storedPlasma]/[vessel.max_plasma]"
-	if(locate(/obj/item/assembly/health) in src)
-		. += "Health: [health]"
-	var/obj/item/organ/heart/vampire/darkheart = getorgan(/obj/item/organ/heart/vampire)
-	if(darkheart)
-		. += "Current blood level: [blood_volume]/[BLOOD_VOLUME_MAXIMUM]."
-	if(!ishuman(src))
-		return
-	var/mob/living/carbon/human/H = src
-	if(istype(H.wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
-		var/obj/item/clothing/suit/space/hardsuit/nano/NS = H.wear_suit
-		var/datum/gas_mixture/environment = H.loc?.return_air()
-		var/pressure = environment?.return_pressure() || 0
-		. += ""
-		. += "Crynet Protocols: [!NS.shutdown ? "Engaged" : "Disengaged"]"
-		. += "Energy Charge: [NS.cellon ? "[round(NS.cell.percent())]%" : "offline"]"
-		. += "Mode: [NS.mode]"
-		. += "Overall Status: [NS.healthon ? "[H.health]% healthy" : "offline"]"
-		. += "Nutrition: [NS.healthon ? "[H.nutrition]" : "offline"]"
-		. += "Oxygen Loss: [NS.healthon ? "[H.getOxyLoss()]" : "offline"]"
-		. += "Toxins: [NS.healthon ? "[H.getToxLoss()]" : "offline"]"
-		. += "Burns: [NS.healthon ? "[H.getFireLoss()]" : "offline"]"
-		. += "Brute: [NS.healthon ? "[H.getBruteLoss()]" : "offline"]"
-		. += "Radiation: [NS.radon ? "[H.radiation] rads" : "offline"]"
-		. += "Body Temperature: [NS.healthon ? "[round(H.bodytemperature - T0C, 0.1)] C" : "offline"]"
-		. += "Atmospheric Pressure: [NS.atmoson ? "[pressure] kPa" : "offline"]"
-		if(NS.atmoson && environment)
-			. += "Atmospheric Temperature: [round(environment.return_temperature() - T0C, 0.01)] C"
-	else if(istype(H.wear_suit, /obj/item/clothing/suit/space/space_ninja))
-		var/obj/item/clothing/suit/space/space_ninja/NS = H.wear_suit
-		. += NS.get_status_readout(H)
-
 /mob/living/carbon/human/Move(NewLoc, direct)
 	. = ..()
 	if(.)
