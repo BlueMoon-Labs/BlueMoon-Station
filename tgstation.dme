@@ -5145,6 +5145,7 @@
 #include "modular_bluemoon\code\modules\vehicles\tank.dm"
 #include "modular_bluemoon\code\modules\vehicles\funny_movement\funny_movement.dm"
 #include "modular_bluemoon\code\modules\vehicles\funny_movement\human_rocket.dm"
+#include "modular_bluemoon\code\modules\vehicles\spacepods\poddoor.dm"
 #include "modular_bluemoon\code\modules\vending\_vending.dm"
 #include "modular_bluemoon\code\modules\vending\assist.dm"
 #include "modular_bluemoon\code\modules\vending\autodrobe.dm"
