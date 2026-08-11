@@ -1567,6 +1567,7 @@
 /area/ruin/space/has_grav/Strange_Avanpost)
 "Ep" = (
 /obj/structure/lattice,
+/turf/open/space/basic,
 /area/space)
 "Ey" = (
 /obj/structure/lattice,
@@ -2115,6 +2116,7 @@
 /turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "QA" = (
+/turf/open/space/basic,
 /area/space)
 "QE" = (
 /obj/item/restraints/handcuffs,
