@@ -44,8 +44,18 @@
 /datum/map_template/ruin/station/forgottenship/New()
 	. = ..()
 	// build_cache() is the second CPU-heavy text phase normally deferred until load().
-	// The late load always uses normal ChangeTurf semantics, hence FALSE here.
+	// FALSE matches the late load, which always runs with normal ChangeTurf semantics.
+	// A cache built under the wrong value is rebuilt rather than misapplied, so this
+	// stays a performance choice and not a correctness one - see build_cache().
 	cached_map?.build_cache(FALSE)
+
+/datum/map_template/ruin/station/forgottenship/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE)
+	. = ..()
+	// The retained parse exists to survive until this one late load. Both ship
+	// variants build it during mapping init and only one of them is ever placed, so
+	// holding a quarter-megabyte DMM and its model cache afterwards buys nothing.
+	if(. && !force_cache)
+		cached_map = null
 
 /datum/map_template/ruin/station/forgottenship/sol
 	name = "SCSBC-13"
