@@ -499,12 +499,13 @@
 		var/mob/living/L = AM
 		L.client?.view_size?.zoomIn()
 		L.update_sight(TRUE)
-		RegisterSignal(L, COMSIG_ENTER_AREA, PROC_REF(handler_living_hotel))
+		RegisterSignal(L, COMSIG_ENTER_AREA, PROC_REF(handler_living_hotel), TRUE)
 
 /obj/item/hilbertshotel/proc/handler_living_hotel(mob/living/L, area/A)
 	SIGNAL_HANDLER
 	if(QDELETED(L))
 		UnregisterSignal(L, COMSIG_ENTER_AREA)
+		return
 	if(is_hilbert_hotel_area(A))
 		return
 	L.update_sight(TRUE)
