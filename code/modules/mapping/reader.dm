@@ -28,10 +28,6 @@
 	var/list/gridSets = list()
 
 	var/list/modelCache
-	/// Normalized `no_changeturf` the current [modelCache] was built under. The flag
-	/// decides whether the cache carries a SPACE_KEY entry at all, so a cache built
-	/// under one value cannot serve a load that wants the other.
-	var/cached_no_changeturf
 
 	/// Unoffset bounds. Null on parse failure.
 	var/list/parsed_bounds
@@ -214,7 +210,7 @@
 // Lower/upper here refers to the actual map template's parsed coordinates, NOT ACTUAL COORDINATES! Figure it out yourself my head hurts too much to implement that too.
 /datum/parsed_map/proc/_load_impl(x_offset = 1, y_offset = 1, z_offset = world.maxz + 1, cropMap = FALSE, no_changeturf = FALSE, x_lower = -INFINITY, x_upper = INFINITY, y_lower = -INFINITY, y_upper = INFINITY, placeOnTop = FALSE, orientation = SOUTH, annihilate_tiles = FALSE, datum/map_orientation_pattern/forced_pattern)
 	var/list/areaCache = list()
-	var/list/modelCache = build_cache(no_changeturf)
+	var/list/modelCache = build_cache()
 	var/space_key = modelCache[SPACE_KEY]
 	var/list/bounds
 	var/did_expand = FALSE
@@ -314,18 +310,16 @@
 
 	return TRUE
 
-/datum/parsed_map/proc/build_cache(no_changeturf, bad_paths=null)
-	// The space-key shortcut at the bottom only triggers when no_changeturf is set,
-	// and it deliberately keeps that model key OUT of the cache. Handing such a
-	// cache to a load that does want AfterChange sends _load_impl looking up a key
-	// that was never stored, which CRASHes on an otherwise valid map - so a cache
-	// built under the other value has to be rebuilt rather than reused. Normalize
-	// first: null and FALSE mean the same thing here, but `null == FALSE` is false.
-	no_changeturf = !!no_changeturf
-	if(modelCache && !bad_paths && cached_no_changeturf == no_changeturf)
+/datum/parsed_map/proc/build_cache(bad_paths=null)
+	if(modelCache && !bad_paths)
 		return modelCache
-	cached_no_changeturf = no_changeturf
-	. = modelCache = list()
+	// Built into a local and published only once complete: this proc CHECK_TICKs,
+	// and every consumer treats a non-null modelCache as a finished product. A
+	// half-built list published up front could be handed to a concurrent load of
+	// the same parse (the eager template prebuilds run outside the map-loading
+	// lock) and CRASH it on a model key that simply was not stored yet.
+	var/list/cache = list()
+	. = cache
 	var/list/grid_models = src.grid_models
 	for(var/model_key in grid_models)
 		var/model = grid_models[model_key]
@@ -377,17 +371,14 @@
 
 			CHECK_TICK
 
-		//check and see if we can just skip this turf
-		//So you don't have to understand this horrid statement, we can do this if
-		// 1. no_changeturf is set
-		// 2. the space_key isn't set yet
-		// 3. there are exactly 2 members
-		// 4. with no attributes
-		// 5. and the members are world.turf and world.area
-		// Basically, if we find an entry like this: "XXX" = (/turf/default, /area/default)
-		// We can skip calling this proc every time we see XXX
-		if(no_changeturf \
-			&& !(.[SPACE_KEY]) \
+		// The space-key shortcut: an entry like "XXX" = (/turf/default, /area/default)
+		// with no attributes matches what a fresh z-level is already filled with, so
+		// a load running without AfterChange skips such tiles wholesale. Record the
+		// marker but store the model entry anyway: whether to take the shortcut is
+		// the load's decision (no_afterchange in _load_impl), and keeping the entry
+		// lets one cache serve both kinds of load instead of being rebuilt whenever
+		// a kept template's loads alternate across the SSatoms-init boundary.
+		if(!(cache[SPACE_KEY]) \
 			&& members.len == 2 \
 			&& members_attributes.len == 2 \
 			&& length(members_attributes[1]) == 0 \
@@ -395,11 +386,10 @@
 			&& (world.area in members) \
 			&& (world.turf in members))
 
-			.[SPACE_KEY] = model_key
-			continue
+			cache[SPACE_KEY] = model_key
 
-
-		.[model_key] = list(members, members_attributes)
+		cache[model_key] = list(members, members_attributes)
+	modelCache = cache
 
 /datum/parsed_map/proc/build_coordinate(list/areaCache, list/model, turf/crds, no_changeturf as num, placeOnTop as num, turn_angle as num, annihilate_tiles = FALSE, swap_xy, invert_y, invert_x)
 	// BLUEMOON EDIT START: BAD TURFS

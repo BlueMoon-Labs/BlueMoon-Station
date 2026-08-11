@@ -215,12 +215,12 @@
 	update_blacklist(T, turf_blacklist)
 
 	cached_map = (force_cache || keep_cached_map) ? parsed : is_cached
-	var/no_changeturf = (SSatoms.initialized == INITIALIZATION_INSSATOMS)
-	var/cache_started_ms = SStick_spikes?.now_ms()
-	var/cache_started_world_time = world.time
-	parsed.build_cache(no_changeturf)
-	record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
-	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=no_changeturf, placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
+	if(!parsed.modelCache)
+		var/cache_started_ms = SStick_spikes?.now_ms()
+		var/cache_started_world_time = world.time
+		parsed.build_cache()
+		record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
+	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
 		return
 	var/list/bounds = parsed.bounds
 	if(!bounds)

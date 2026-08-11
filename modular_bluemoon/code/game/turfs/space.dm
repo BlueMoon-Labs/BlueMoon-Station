@@ -43,11 +43,10 @@
 
 /datum/map_template/ruin/station/forgottenship/New()
 	. = ..()
-	// build_cache() is the second CPU-heavy text phase normally deferred until load().
-	// FALSE matches the late load, which always runs with normal ChangeTurf semantics.
-	// A cache built under the wrong value is rebuilt rather than misapplied, so this
-	// stays a performance choice and not a correctness one - see build_cache().
-	cached_map?.build_cache(FALSE)
+	// build_cache() is the second CPU-heavy text phase normally deferred until
+	// load(). The cache is mode-independent (see build_cache()), so this one eager
+	// build serves the +60s late load no matter what state SSatoms is in by then.
+	cached_map?.build_cache()
 
 /datum/map_template/ruin/station/forgottenship/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE)
 	. = ..()
