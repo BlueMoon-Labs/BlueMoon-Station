@@ -943,6 +943,8 @@
 
 	if(see_override)
 		see_invisible = see_override
+	if(is_hilbert_hotel_zlevel(z))
+		sight = initial(sight)
 	sync_lighting_plane_alpha()
 
 /mob/living/silicon/robot/update_stat()
