@@ -30,9 +30,9 @@
 	// normal anomaly has already selected impact_area in start(), but the fake
 	// path still needs a plausible area for its announcement.
 	if(!impact_area)
-		impact_area = spawn_location ? get_area(spawn_location) : placer.findValidArea()
+		impact_area = spawn_location ? get_area(spawn_location) : placer.findValidArea(fail_silently = TRUE)
 	if(!impact_area)
-		message_admins("Anomaly announcement skipped: no valid impact area was found.")
+		message_admins("Объявление аномалии пропущено: подходящей зоны воздействия не нашлось.")
 		return
 	priority_announce("Обнаружен гипер-энергетический поток на [ANOMALY_ANNOUNCE_DANGEROUS_TEXT] [impact_area.name].", "ВНИМАНИЕ: АНОМАЛИЯ", 'sound/announcer/classic/anomaly/anomaly_flux.ogg')
 
