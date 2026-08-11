@@ -497,6 +497,7 @@
 		return
 	if(isliving(AM))
 		var/mob/living/L = AM
+		L.client?.view_size?.zoomIn()
 		L.update_sight(TRUE)
 		RegisterSignal(L, COMSIG_ENTER_AREA, PROC_REF(handler_living_hotel))
 
