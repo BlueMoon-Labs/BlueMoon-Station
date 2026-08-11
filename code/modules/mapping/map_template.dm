@@ -43,7 +43,7 @@
 	if(!SStick_spikes || isnull(started_ms))
 		return
 	var/wall_ms = max(SStick_spikes.now_ms() - started_ms, 0)
-	var/game_clock_ms = max(world.time - started_world_time, 0) * 100
+	var/game_clock_ms = DS2MS(max(world.time - started_world_time, 0))
 	var/stall_ms = ping_server_component(wall_ms, game_clock_ms)
 	if(stall_ms >= SStick_spikes.slow_work_threshold_ms)
 		SStick_spikes.record_slow_work(kind, "[name] ([mappath]), wall [round(wall_ms, 0.01)]ms", round(stall_ms, 0.01))
@@ -204,10 +204,13 @@
 	// Accept cached maps, but don't save them automatically - we don't want
 	// ruins clogging up memory for the whole round.
 	var/is_cached = cached_map
-	var/parse_started_ms = SStick_spikes?.now_ms()
-	var/parse_started_world_time = world.time
-	var/datum/parsed_map/parsed = is_cached || new(file(mappath))
-	if(!is_cached)
+	var/datum/parsed_map/parsed = is_cached
+	if(!parsed)
+		// Sampled only when the parse actually runs: now_ms() is a foreign call,
+		// and the cached path would take then discard both samples on every load.
+		var/parse_started_ms = SStick_spikes?.now_ms()
+		var/parse_started_world_time = world.time
+		parsed = new(file(mappath))
 		record_synchronous_map_phase("map parse", parse_started_ms, parse_started_world_time)
 	parsed.template_host = src
 
