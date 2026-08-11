@@ -45,6 +45,8 @@ const testHubStorage = testGeneric(() => (
   && window.hubStorage.getItem
   && window.hubStorage.setItem
   && window.hubStorage.removeItem
+  && window.hubStorage.key
+  && typeof window.hubStorage.length === 'number'
 ));
 
 export class MemoryBackend {
@@ -131,7 +133,14 @@ export class HubStorageBackend {
   }
 
   async clear() {
-    await window.hubStorage.clear();
+    // hubStorage is shared by every browser control under the same BYOND hub.
+    // Only remove keys owned by this backend instead of wiping unrelated data.
+    for (let index = window.hubStorage.length - 1; index >= 0; index--) {
+      const key = await window.hubStorage.key(index);
+      if (typeof key === 'string' && key.startsWith(HUB_STORAGE_PREFIX)) {
+        await window.hubStorage.removeItem(key);
+      }
+    }
   }
 }
 
@@ -246,24 +255,9 @@ export class StorageProxy {
 
   async run(operation, ...args) {
     const backend = await this.backendPromise;
+    let result;
     try {
-      const result = await backend[operation](...args);
-      if (
-        backend.impl === IMPL_HUB_STORAGE
-        && operation === 'get'
-        && result === undefined
-      ) {
-        // Preserve settings written before the server enabled BYOND 516
-        // storage. Migrate lazily because opening IndexedDB during every TGUI
-        // bootstrap would negate the faster hubStorage path.
-        const legacyBackend = await this.getLegacyBackend();
-        const legacyValue = await legacyBackend.get(...args);
-        if (legacyValue !== undefined) {
-          await backend.set(args[0], legacyValue);
-          return legacyValue;
-        }
-      }
-      return result;
+      result = await backend[operation](...args);
     }
     catch (error) {
       // hubStorage can disappear when WebView2 is recreated or when browser
@@ -276,6 +270,45 @@ export class StorageProxy {
       const fallback = await this.backendPromise;
       return fallback[operation](...args);
     }
+
+    if (backend.impl !== IMPL_HUB_STORAGE) {
+      return result;
+    }
+
+    if (operation === 'get' && result === undefined) {
+      // Preserve settings written before the server enabled BYOND 516
+      // storage. Migrate lazily because opening IndexedDB during every TGUI
+      // bootstrap would negate the faster hubStorage path.
+      const legacyBackend = await this.getLegacyBackend();
+      const legacyValue = await legacyBackend.get(...args);
+      if (legacyValue !== undefined) {
+        try {
+          await backend.set(args[0], legacyValue);
+        }
+        catch {
+          this.backendPromise = this.getLegacyBackend();
+        }
+        return legacyValue;
+      }
+    }
+
+    // Once legacy storage has participated in migration, keep it current so
+    // fallback cannot restore stale values. Destructive operations must always
+    // reach legacy storage, otherwise a later missing hub key resurrects it.
+    if (operation === 'remove' || (operation === 'set' && args[1] === undefined)) {
+      const legacyBackend = await this.getLegacyBackend();
+      await legacyBackend.remove(args[0]);
+    }
+    else if (operation === 'clear') {
+      const legacyBackend = await this.getLegacyBackend();
+      await legacyBackend.clear();
+    }
+    else if (operation === 'set' && this.legacyBackendPromise) {
+      const legacyBackend = await this.legacyBackendPromise;
+      await legacyBackend.set(...args);
+    }
+
+    return result;
   }
 
   getLegacyBackend() {

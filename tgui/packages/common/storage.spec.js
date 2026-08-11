@@ -201,11 +201,15 @@ describe('HubStorageBackend', () => {
     localStorage.clear();
     hubStore = new Map();
     window.hubStorage = {
-      clear: jest.fn(async () => hubStore.clear()),
       getItem: jest.fn(async key => hubStore.get(key)),
+      key: jest.fn(async index => [...hubStore.keys()][index]),
       removeItem: jest.fn(async key => hubStore.delete(key)),
       setItem: jest.fn(async (key, value) => hubStore.set(key, value)),
     };
+    Object.defineProperty(window.hubStorage, 'length', {
+      configurable: true,
+      get: () => hubStore.size,
+    });
     backend = new HubStorageBackend();
   });
 
@@ -233,6 +237,18 @@ describe('HubStorageBackend', () => {
     await expect(backend.get('chat-state')).resolves.toBeUndefined();
   });
 
+  test('clear only removes values owned by the BlueMoon namespace', async () => {
+    hubStore.set('other-project-setting', 'keep me');
+    await backend.set('panel-settings', { theme: 'dark' });
+    await backend.set('chat-state', { visible: true });
+
+    await backend.clear();
+
+    expect(hubStore.get('other-project-setting')).toBe('keep me');
+    await expect(backend.get('panel-settings')).resolves.toBeUndefined();
+    await expect(backend.get('chat-state')).resolves.toBeUndefined();
+  });
+
   test('StorageProxy prefers a working BYOND backend', async () => {
     const proxy = new StorageProxy();
     await proxy.set('key', 'value');
@@ -251,6 +267,63 @@ describe('HubStorageBackend', () => {
       'bluemoon-panel-settings',
       '{"theme":"light"}',
     );
+  });
+
+  test('StorageProxy does not resurrect a removed legacy value', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('panel-settings', { theme: 'dark' });
+
+    await proxy.remove('panel-settings');
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+  });
+
+  test('StorageProxy set(undefined) also removes the legacy value', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+
+    await proxy.set('panel-settings', undefined);
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+  });
+
+  test('StorageProxy clears hub and legacy values without touching foreign keys', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    hubStore.set('other-project-setting', 'keep me');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('chat-state', { visible: true });
+
+    await proxy.clear();
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    await expect(proxy.get('chat-state')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+    expect(hubStore.get('other-project-setting')).toBe('keep me');
+  });
+
+  test('StorageProxy keeps migrated values current for fallback', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('panel-settings', { theme: 'dark' });
+    window.hubStorage.getItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+  });
+
+  test('StorageProxy returns the legacy value when its migration write fails', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    window.hubStorage.setItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    await expect(proxy.backendPromise).resolves.toBeInstanceOf(LocalStorageBackend);
   });
 
   test('StorageProxy falls back when hubStorage rejects after selection', async () => {
