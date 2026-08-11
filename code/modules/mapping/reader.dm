@@ -28,6 +28,10 @@
 	var/list/gridSets = list()
 
 	var/list/modelCache
+	/// Normalized `no_changeturf` the current [modelCache] was built under. The flag
+	/// decides whether the cache carries a SPACE_KEY entry at all, so a cache built
+	/// under one value cannot serve a load that wants the other.
+	var/cached_no_changeturf
 
 	/// Unoffset bounds. Null on parse failure.
 	var/list/parsed_bounds
@@ -311,8 +315,16 @@
 	return TRUE
 
 /datum/parsed_map/proc/build_cache(no_changeturf, bad_paths=null)
-	if(modelCache && !bad_paths)
+	// The space-key shortcut at the bottom only triggers when no_changeturf is set,
+	// and it deliberately keeps that model key OUT of the cache. Handing such a
+	// cache to a load that does want AfterChange sends _load_impl looking up a key
+	// that was never stored, which CRASHes on an otherwise valid map - so a cache
+	// built under the other value has to be rebuilt rather than reused. Normalize
+	// first: null and FALSE mean the same thing here, but `null == FALSE` is false.
+	no_changeturf = !!no_changeturf
+	if(modelCache && !bad_paths && cached_no_changeturf == no_changeturf)
 		return modelCache
+	cached_no_changeturf = no_changeturf
 	. = modelCache = list()
 	var/list/grid_models = src.grid_models
 	for(var/model_key in grid_models)
