@@ -21,7 +21,7 @@
 /// Ридауты приезжают вложенным списком, поэтому сверяем по началу строки, а не
 /// полным совпадением: значения внутри зависят от состояния тела.
 /datum/unit_test/status_tab_suit_readouts/proc/status_tab_has_prefix(mob/living/carbon/human/tester, prefix)
-	for(var/line in tester.get_status_tab_items())
+	for(var/line as anything in tester.get_status_tab_items())
 		if(findtextEx("[line]", prefix) == 1)
 			return TRUE
 	return FALSE
