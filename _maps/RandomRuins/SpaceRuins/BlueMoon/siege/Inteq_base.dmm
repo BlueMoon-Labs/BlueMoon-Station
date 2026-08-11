@@ -736,7 +736,8 @@
 /obj/machinery/button/door{
 	id = "pact_poddurs";
 	name = "poddurs";
-	pixel_y = 32
+	pixel_y = 32;
+	silicon_access = 0
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
@@ -4221,7 +4222,8 @@
 /obj/machinery/button/door{
 	id = "pact_poddurs";
 	name = "poddurs";
-	pixel_x = 32
+	pixel_x = 32;
+	silicon_access = 0
 	},
 /obj/machinery/vending/security/syndicate,
 /turf/open/floor/engine,
@@ -8949,7 +8951,8 @@
 /obj/machinery/button/door{
 	id = "pact_poddurs";
 	name = "poddurs";
-	pixel_x = -32
+	pixel_x = -32;
+	silicon_access = 0
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
@@ -16085,7 +16088,8 @@
 /obj/machinery/button/door{
 	id = "pact_poddurs";
 	name = "poddurs";
-	pixel_y = 32
+	pixel_y = 32;
+	silicon_access = 0
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
