@@ -684,7 +684,10 @@
 		else
 			return "No"
 
-/datum/component/interaction_menu_granter/ui_act(action, params)
+/datum/component/interaction_menu_granter/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
 	return panel_ui_act(null, action, params)
 
 /datum/component/interaction_menu_granter/proc/panel_ui_act(datum/interaction_menu_panel/panel, action, params)
@@ -1150,7 +1153,10 @@
 		return list()
 	return granter.ui_static_data(user)
 
-/datum/interaction_menu_panel/ui_act(action, params)
+/datum/interaction_menu_panel/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
 	if(QDELETED(granter))
 		return FALSE
 	return granter.panel_ui_act(src, action, params)

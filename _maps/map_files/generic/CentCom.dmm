@@ -20529,7 +20529,7 @@
 /turf/open/floor/mineral/abductor,
 /area/centcom/holding)
 "lnl" = (
-/obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic,
+/obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
 /area/centcom/holding/shootingrange)
 "lnq" = (
@@ -31407,14 +31407,6 @@
 /obj/structure/sign/flag/nri,
 /turf/closed/indestructible/fakeglass,
 /area/tdome/arena_source)
-"vHR" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic,
-/turf/open/floor/plating,
-/area/centcom/holding)
 "vIM" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -58720,7 +58712,7 @@ pKy
 tbC
 fON
 fON
-vHR
+tYG
 iOM
 oom
 oom
