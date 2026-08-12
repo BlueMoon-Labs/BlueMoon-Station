@@ -815,7 +815,12 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"ami" = idle_machine_count(),
 		"hbw" = heartbeat_wakes_last,
 		"pnu" = count_dirty_pipenets(),
+		// Кто именно будил турфы с прошлого тика (ATMOS_BENCH_WAKE по сайтам
+		// вызова add_to_active). Массовое пробуждение - событие одного цикла,
+		// армированные tprof-счётчики его почти никогда не застают.
+		"wake" = length(headless_wake_tally) ? headless_wake_tally.Copy() : null,
 	)
+	headless_wake_tally.Cut()
 	var/encoded = json_encode(record)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
 	// Per-type machinery timing armed by the previous snapshot.
