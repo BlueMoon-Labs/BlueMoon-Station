@@ -202,7 +202,7 @@
 	if(T.turf_type == type)
 		return
 	var/obj/item/CB = user.is_holding_tool_quality(TOOL_CROWBAR)
-	if(!CB)
+	if(!CB || user.a_intent != INTENT_HELP)
 		return
 	var/turf/open/floor/plating/P = pry_tile(CB, user, TRUE)
 	if(!istype(P))
