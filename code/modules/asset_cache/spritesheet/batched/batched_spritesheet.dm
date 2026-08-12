@@ -27,6 +27,8 @@
  * шире 32768 px, так что лист режется на шарды с двукратным запасом.
  */
 #define MAX_SHEET_WIDTH 16384
+/// Сколько ненайденных DMI перечислять в сообщении о пустом шарде.
+#define MISSING_DMI_REPORTED 5
 
 /datum/asset/spritesheet_batched
 	_abstract = /datum/asset/spritesheet_batched
@@ -263,7 +265,8 @@
 	if(generated["error"] && !(ignore_dir_errors && findtext(generated["error"], "is not in the set of valid dirs")))
 		CRASH("Спрайтшит [name], шард [shard_index]: ошибка генерации ([generated["error"]])")
 	if(!length(shard_sizes) || !length(shard_sprites))
-		CRASH("Спрайтшит [name], шард [shard_index]: пустой результат")
+		var/list/missing_dmis = missing_dmi_files(shard_entries)
+		CRASH("Спрайтшит [name], шард [shard_index]: пустой результат[length(missing_dmis) ? " - на диске нет DMI: [missing_dmis.Join(", ")]" : ""]")
 
 	for(var/size_id in shard_sizes)
 		var/list/dimensions = splittext(size_id, "x")
@@ -289,6 +292,38 @@
 		"input_hash" = generated["sprites_hash"],
 		"dmi_hashes" = generated["dmi_hashes"],
 	))
+
+/**
+ * DMI из описания шарда, которых нет на диске рядом с сервером.
+ *
+ * rust читает иконки файлами и ищет их относительно рабочего каталога мира, в .rsc он
+ * не заглядывает. Ошибки чтения при этом наверх не приезжают - шард просто выходит
+ * пустым, - поэтому причину ищем сами: обычно это деплой без дерева иконок
+ * (см. tools/deploy.sh). Перечисляем не больше MISSING_DMI_REPORTED штук: если дерева
+ * нет целиком, полный список в рантайме не нужен.
+ */
+/datum/asset/spritesheet_batched/proc/missing_dmi_files(list/shard_entries)
+	RETURN_TYPE(/list)
+	var/list/missing = list()
+	var/list/checked = list()
+	// Вложенные иконки (blend_icon) описаны такими же списками и живут в transform.
+	var/list/pending = list()
+	for(var/sprite_name in shard_entries)
+		pending += list(shard_entries[sprite_name])
+	while(length(pending) && length(missing) < MISSING_DMI_REPORTED)
+		var/list/entry = pending[length(pending)]
+		pending.len--
+		if(!islist(entry))
+			continue
+		var/icon_path = entry["icon_file"]
+		if(istext(icon_path) && !checked[icon_path])
+			checked[icon_path] = TRUE
+			if(!fexists(icon_path))
+				missing += icon_path
+		for(var/list/operation as anything in entry["transform"])
+			if(islist(operation["icon"]))
+				pending += list(operation["icon"])
+	return missing
 
 /**
  * Проверяет кросс-раундовый кэш.
@@ -566,3 +601,4 @@
 #undef SPRITESHEET_BATCHED_VERSION
 #undef SPRITES_PER_SHARD_DEFAULT
 #undef MAX_SHEET_WIDTH
+#undef MISSING_DMI_REPORTED

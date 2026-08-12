@@ -25,6 +25,21 @@ cp -r _maps/* $1/_maps/
 cp -r icons/runtime/* $1/icons/runtime/
 cp -r strings/* $1/strings/
 
+#Спрайтшиты интерфейсов собирает rust-g (IconForge), а он читает .dmi с диска и ищет
+#их относительно рабочего каталога сервера - в .rsc он не заглядывает. Без файлов
+#иконок лист приезжает пустым, поэтому в деплой едут все .dmi всех деревьев кода.
+#config сюда не попадает намеренно: конфиг серверу подкладывают снаружи, а созданный
+#заранее каталог сломал бы тому же CI его собственный mkdir.
+find . \
+    -path ./.git -prune -o \
+    -path ./.claude -prune -o \
+    -path ./config -prune -o \
+    -path ./data -prune -o \
+    -path ./tools -prune -o \
+    -path "./$1" -prune -o \
+    -name "*.dmi" -print0 \
+    | xargs -0 -r cp --parents -t $1/
+
 #remove .dm files from _maps
 
 #this regrettably doesn't work with windows find
