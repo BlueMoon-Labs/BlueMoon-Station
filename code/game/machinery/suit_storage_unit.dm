@@ -233,6 +233,7 @@
 
 /obj/machinery/suit_storage_unit/LateInitialize()
 	. = ..()
+	if(state_open)
 		take_mapload_contents()
 
 /obj/machinery/suit_storage_unit/Destroy()
