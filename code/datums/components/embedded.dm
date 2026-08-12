@@ -103,6 +103,7 @@
 		RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(jostleCheck))
 		RegisterSignal(parent, COMSIG_CARBON_EMBED_RIP, PROC_REF(ripOutCarbon))
 		RegisterSignal(parent, COMSIG_CARBON_EMBED_REMOVAL, PROC_REF(safeRemoveCarbon))
+		RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(examineCarbon))
 	else if(isclosedturf(parent))
 		RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(examineTurf))
 		RegisterSignal(parent, COMSIG_PARENT_QDELETING, PROC_REF(itemMoved))
@@ -162,6 +163,19 @@
 		var/armor = victim.run_armor_check(limb.body_zone, MELEE, "Ваша [limb.ru_name] оказалась защищена благодаря броне.", "Ваша [limb.ru_name] оказалась защищена, удар был смягчен броней.",weapon.armour_penetration)
 		limb.receive_damage(brute=(1-pain_stam_pct) * damage, stamina=pain_stam_pct * damage, blocked=armor, sharpness = weapon.get_sharpness())
 
+	fall_chance *= 0.2 // BLUEMOON ADD - застрявшие предметы выпадают намного реже
+
+/datum/component/embedded/proc/examineCarbon(datum/source, mob/user, list/examine_list)
+	var/mob/living/carbon/victim = parent
+	if(user == victim || !isliving(user) || !user.Adjacent(victim))
+		return
+	if(!user.canUseTopic(victim, BE_CLOSE))
+		return
+	if(harmful)
+		examine_list += "<a href='?src=[REF(victim)];embedded_object=[REF(weapon)];embedded_limb=[REF(limb)]' class='warning'>Вы можете вырвать [weapon] из [limb.ru_name_v]!</a>"
+	else
+		examine_list += "<a href='?src=[REF(victim)];embedded_object=[REF(weapon)];embedded_limb=[REF(limb)]' class='warning'>Вы можете извлечь [weapon] с [limb.ru_name_v]!</a>"
+
 /// Called every time a carbon with a harmful embed moves, rolling a chance for the item to cause pain. The chance is halved if the carbon is crawling or walking.
 /datum/component/embedded/proc/jostleCheck()
 	var/mob/living/carbon/victim = parent
@@ -201,6 +215,54 @@
 		return
 
 	var/mob/living/carbon/victim = parent
+
+	if(iscarbon(usr) && usr != victim)
+		var/mob/living/carbon/puller = usr
+		if(!puller.Adjacent(victim) || !puller.canUseTopic(victim, BE_CLOSE))
+			return
+
+		var/time_taken = rip_time * weapon.w_class * 1.5
+
+		if(harmful)
+			puller.visible_message(
+				span_warning("[puller] пытается вытащить [weapon] из [limb.ru_name_v] [victim.name]."),
+				span_notice("Вы пытаетесь вытащить [weapon] из [limb.ru_name_v] [victim.name]... (займёт [DisplayTimeText(time_taken)])."),
+			)
+		else
+			puller.visible_message(
+				span_warning("[puller] пытается снять [weapon] с [limb.ru_name_v] [victim.name]."),
+				span_notice("Вы пытаетесь снять [weapon] с [limb.ru_name_v] [victim.name]... (займёт [DisplayTimeText(time_taken)])."),
+			)
+
+		if(!do_after(puller, time_taken, target = victim))
+			return
+
+		if(!weapon || !limb || weapon.loc != victim || !(weapon in limb.embedded_objects))
+			qdel(src)
+			return
+
+		if(harmful)
+			var/damage = weapon.w_class * remove_pain_mult
+			limb.receive_damage(brute = (1 - pain_stam_pct) * damage, stamina = pain_stam_pct * damage, wound_bonus = CANT_WOUND)
+			if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+				victim.emote("realagony")
+			victim.visible_message(
+				span_notice("[puller] вытаскивает [weapon] из [limb.ru_name_v] [victim.name]."),
+				span_notice("Вы вытащили [weapon] из [limb.ru_name_v] [victim.name]."),
+				ignored_mobs = victim,
+			)
+			to_chat(victim, span_userdanger("[puller] вытащил [weapon] из вашей [limb.ru_name_v]!"))
+		else
+			victim.visible_message(
+				span_notice("[puller] снимает [weapon] с [limb.ru_name_v] [victim.name]."),
+				span_notice("Вы сняли [weapon] с [limb.ru_name_v] [victim.name]."),
+				ignored_mobs = victim,
+			)
+			to_chat(victim, span_notice("[puller] снял [weapon] с вашей [limb.ru_name_v]."))
+
+		safeRemoveCarbon(TRUE)
+		return
+
 	var/time_taken = rip_time * weapon.w_class
 
 	victim.visible_message("<span class='warning'>[victim] пытается удалить [weapon] из [victim.ru_ego()] конечности -  [limb.ru_name].</span>","<span class='notice'>Вы пытаетесь удалить [weapon] из вашей конечности - [limb.ru_name]... (It will take [DisplayTimeText(time_taken)].)</span>")
@@ -225,6 +287,10 @@
 /// Pass TRUE for to_hands if we want it to go to the victim's hands when they pull it out
 /datum/component/embedded/proc/safeRemoveCarbon(to_hands)
 	var/mob/living/carbon/victim = parent
+	var/mob/living/carbon/receiver = victim
+	if(to_hands && iscarbon(usr) && usr != victim)
+		receiver = usr
+
 	limb.embedded_objects -= weapon
 
 	UnregisterSignal(weapon, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING)) // have to unhook these here so they don't also register as having disappeared
@@ -245,7 +311,7 @@
 		return
 
 	if(to_hands)
-		victim.put_in_hands(weapon)
+		receiver.put_in_hands(weapon)
 	else
 		weapon.forceMove(get_turf(victim))
 

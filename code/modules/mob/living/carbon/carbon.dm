@@ -343,6 +343,8 @@
 	. = FALSE
 	if(!buckled)
 		return
+	if(istype(buckled, /obj/structure/bed/nest))
+		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
 		// too soon.
 		var/buckle_cd = 600
@@ -890,6 +892,16 @@
 		overlay_fullscreen("brute", /atom/movable/screen/fullscreen/scaled/brute, severity)
 	else
 		clear_fullscreen("brute")
+
+	var/blood_effect_volume = blood_volume + integrating_blood
+	var/blood_threshold_high = BLOOD_VOLUME_OKAY * blood_ratio
+	var/blood_threshold_low = BLOOD_VOLUME_SURVIVE * blood_ratio
+	if(blood_effect_volume < blood_threshold_high)
+		var/blood_range = blood_threshold_high - blood_threshold_low
+		var/severity = clamp(round(10 * (1 - (blood_effect_volume - blood_threshold_low) / blood_range)), 1, 10)
+		overlay_fullscreen("bloodloss", /atom/movable/screen/fullscreen/scaled/bloodloss, severity)
+	else
+		clear_fullscreen("bloodloss")
 
 /mob/living/carbon/update_health_hud(shown_health_amount)
 	if(!client || !hud_used)

@@ -1,0 +1,76 @@
+@use 'sass:color';
+@use 'sass:meta';
+
+@use '../colors.scss' with (
+  $primary: #d90404,
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #2a0606,
+  $color-bg-grad-spread: 6%,
+  $border-radius: 2px,
+);
+
+.theme-disclaimer {
+  // Atomic classes
+  @include meta.load-css('../atomic/color.scss');
+
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': colors.$primary,
+    'color-disabled': #571515,
+    'color-selected': #8f0000,
+    'color-caution': #ff5c33,
+    'color-danger': #a30000,
+  ));
+  @include meta.load-css('../components/Input.scss', $with: (
+    'border-color': colors.$primary,
+  ));
+  @include meta.load-css('../components/NoticeBox.scss', $with: (
+    'background-color': #7a1a1a,
+  ));
+  @include meta.load-css('../components/NumberInput.scss', $with: (
+    'border-color': colors.$primary,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'background-color': rgba(0, 0, 0, 0.5),
+  ));
+  @include meta.load-css('../components/Section.scss');
+  @include meta.load-css('../components/Tooltip.scss', $with: (
+    'background-color': #7a1a1a,
+  ));
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': #a30000,
+  ));
+
+  .Layout__content {
+    background-image: none;
+  }
+
+  .Button.accept-btn {
+    background: linear-gradient(180deg, #2e9e32 0%, #1c6b20 100%);
+    color: #eafff0;
+    border: 1px solid #4cc553;
+    border-radius: 4px;
+    box-shadow: 0 0 14px rgba(60, 190, 90, 0.45), inset 0 0 10px rgba(255, 255, 255, 0.10);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    text-align: center;
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+
+    &:hover,
+    &:focus {
+      background: linear-gradient(180deg, #3fc845 0%, #2e9e32 100%);
+      color: #ffffff;
+      box-shadow: 0 0 24px rgba(90, 225, 120, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.18);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+}

@@ -52,7 +52,7 @@
 /obj/item/clothing/head/helmet/biker
 	name = "biker helmet"
 	desc = "A durable biker helmet. You suddenly get unusual subtle neon retrowave vibes with a smell of blood."
-	armor = list("melee" = 25, "bullet" = 10, "laser" = 30, "energy" = 30, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 30, "acid" = 0)
+	armor = list("melee" = 40, "bullet" = 25, "laser" = 15, "energy" = 10, "bomb" = 20, "bio" = 0, "rad" = 0, "fire" = 20, "acid" = 20)
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon_state = "biker"

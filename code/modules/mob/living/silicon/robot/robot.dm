@@ -210,14 +210,30 @@
 		return //won't work if dead
 	alert_control.ui_interact(src)
 
-/mob/living/silicon/robot/proc/ionpulse()
+/**
+ * Ионные двигатели борга. `charge = FALSE` отвечает "потянем ли", ничего не тратя.
+ *
+ * Заряд снимался на каждый вызов, а зовут их за один шаг дважды - с ручного пути и с
+ * ньютоновского - плюс на каждую проверку неподвижности из do_after. Расход выходил вдвое
+ * с лишним против заявленного; та же болезнь, что и у джетпаков.
+ */
+/mob/living/silicon/robot/proc/ionpulse(charge = TRUE)
 	if(!ionpulse_on)
+		return
+
+	// Ячейку у борга вынимают на ходу, а сюда заходят с каждой проверки Process_Spacemove -
+	// без этого дальше был бы рантайм на каждом тике.
+	if(!cell)
 		return
 
 	if(cell.charge <= 10)
 		toggle_ionpulse()
 		return
 
+	if(!charge || last_ionpulse_time == world.time)
+		return TRUE
+
+	last_ionpulse_time = world.time
 	cell.charge -= 10
 	return TRUE
 

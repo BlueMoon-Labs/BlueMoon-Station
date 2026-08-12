@@ -133,3 +133,12 @@
 	item = /obj/item/device/fingerprinter
 	cost = 5
 	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
+
+/datum/uplink_item/stealthy_tools/adv_pinpointer
+	name = "Advanced Pinpointer"
+	desc = "Усовершенствованный трекер с квантовым детектором сигнатур. \
+		Отслеживает персонал без датчиков, киборгов, ИИ и предметы. \
+		ALT-ЛКМ переключает режим. Точнее контрактного пинпоинтера."
+	item = /obj/item/pinpointer/adv
+	cost = 10
+	purchasable_from = UPLINK_TRAITORS

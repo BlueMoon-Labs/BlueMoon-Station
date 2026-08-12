@@ -48,12 +48,28 @@
 		CHECK_TICK
 	photo_queue_running = FALSE
 
-/// Собственно генерация фото: рендер манекена по префам и джобе с подменой
-/// плейсхолдеров в записях (general: два /obj/item/photo, locked: сырая иконка).
+/// Снимает кадр для записей персонала. К моменту вызова настоящий моб уже полностью
+/// экипирован: и на роундстарте (equip_characters отрабатывает до manifest()), и на
+/// латеджойне (SSjob.EquipRank стоит до manifest_inject). Поэтому кадр снимается
+/// прямо с моба, а не с манекена: постройка манекена - это второй полный билд
+/// персонажа (copy_to с пересборкой конечностей и органов плюс экипировка аутфита
+/// джоба), в проде это 120-220 мс синхронно на каждое фото.
+///
+/// Манекен остаётся запасным путём: если моб лежит или невидим, снимать с него
+/// нечего, и лучше показать канонический аутфит должности, чем пустой кадр.
+/datum/datacore/proc/capture_record_photo(mob/living/carbon/human/H, assigned_role, datum/preferences/prefs, list/show_directions)
+	// no_anim: фотография в записи статична, а без флага getFlatIcon тянет все кадры
+	// анимации каждого оверлея - это самая дорогая часть съёмки.
+	if(!QDELETED(H) && H.body_position == STANDING_UP && H.alpha >= 255)
+		return build_flat_multidir_icon(H, show_directions, no_anim = TRUE, force_dir = TRUE)
+	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
+	return get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions, no_anim = TRUE)
+
+/// Собственно генерация фото: съёмка кадра с подменой плейсхолдеров в записях
+/// (general: два /obj/item/photo, locked: сырая иконка).
 /datum/datacore/proc/generate_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
 	var/static/list/show_directions = list(SOUTH, WEST)
-	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
-	var/icon/photo_icon = get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	var/icon/photo_icon = capture_record_photo(H, assigned_role, prefs, show_directions)
 	if(!photo_icon)
 		return
 	if(!QDELETED(general_record))
@@ -304,14 +320,20 @@
 // BLUEMOON ADD END
 
 /datum/datacore/proc/manifest()
+	// Обход списка идёт по снапшоту, снятому на входе в цикл, а CHECK_TICK усыпляет
+	// прок: к следующей итерации игрок мог отключиться, а его моб - уйти в qdel.
+	// Поэтому валидность проверяется заново на каждой итерации, иначе рантайм на
+	// N.client.prefs роняет манифест всем, кто стоит в списке дальше.
 	for(var/mob/dead/new_player/N in GLOB.player_list)
-		if(!N?.client)
-			continue
-		if(N.new_character)
-			log_manifest(N.ckey,N.new_character.mind,N.new_character)
-		if(ishuman(N.new_character))
-			manifest_inject(N.new_character, N.client, N.client.prefs)
 		CHECK_TICK
+		if(QDELETED(N) || !N.client)
+			continue
+		var/mob/living/character = N.new_character
+		if(QDELETED(character))
+			continue
+		log_manifest(N.ckey, character.mind, character)
+		if(ishuman(character) && N.client.prefs)
+			manifest_inject(character, N.client, N.client.prefs)
 
 /datum/datacore/proc/manifest_modify(name, assignment, real_rank)
 	if(!name || !assignment && !real_rank)
@@ -632,10 +654,6 @@
 /datum/datacore/proc/get_id_photo(mob/living/carbon/human/H, client/C, show_directions = list(SOUTH))
 	if(!istype(H) || QDELETED(H) || !H.mind)
 		return icon('icons/effects/effects.dmi', "nothing")
-	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
-	var/datum/preferences/P
 	if(!C)
 		C = H.client
-	if(C)
-		P = C.prefs
-	return get_flat_human_icon(null, J, P, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	return capture_record_photo(H, H.mind.assigned_role, C?.prefs, show_directions)

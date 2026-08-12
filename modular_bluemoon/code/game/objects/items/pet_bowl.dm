@@ -164,7 +164,6 @@
 		empty_bowl()
 	else
 		if(!reagents?.has_reagent(/datum/reagent/consumable/nutriment))
-			cut_overlays()
 			var/datum/reagent/r = reagents.get_master_reagent()
 			name = "[initial(name)] of [replacetext(r.glass_name, "glass of ", "")]"
 	update_icon()

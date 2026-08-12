@@ -93,7 +93,17 @@
 		user.say("[war_cry]", forced="spear warcry")
 		explosive.prime()
 
-/obj/item/spear/grenade_prime_react(obj/item/grenade/nade) //Citadel edit, removes throw_impact because memes
+/obj/item/spear/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	. = ..()
+	if(.)
+		return // caught
+	if(!explosive)
+		return
+	// Thrown explosive lance detonates on living targets with the attached grenade's yield
+	if(isliving(hit_atom))
+		explosive.prime()
+
+/obj/item/spear/grenade_prime_react(obj/item/grenade/nade)
 	nade.forceMove(get_turf(src))
 	qdel(src)
 
@@ -110,35 +120,52 @@
 
 /obj/item/spear/CheckParts(list/parts_list)
 	var/obj/item/shard/tip = locate() in parts_list
-	if(!tip)
-		return ..()
+	if(tip)
+		switch(tip.type)
+			if(/obj/item/shard/plasma)
+				force = 11
+				throwforce = 41
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plasmaglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				icon_prefix = "spearplasma"
+				AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=19, icon_wielded="[icon_prefix]1")
+			if(/obj/item/shard/titanium)
+				force = 13
+				throwforce = 43
+				throw_range = 8
+				throw_speed = 5
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/titaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				wound_bonus = 8
+				icon_prefix = "speartitanium"
+				AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=18, icon_wielded="[icon_prefix]1")
+			if(/obj/item/shard/plastitanium)
+				force = 13
+				throwforce = 43
+				throw_range = 9
+				throw_speed = 5
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plastitaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				wound_bonus = 12
+				bare_wound_bonus = 10
+				icon_prefix = "spearplastitanium"
+				AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=20, icon_wielded="[icon_prefix]1")
+		parts_list -= tip
+		qdel(tip)
 
-	switch(tip.type)
-		if(/obj/item/shard/plasma)
-			force = 11
-			throwforce = 41
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plasmaglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			icon_prefix = "spearplasma"
-			AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=19, icon_wielded="[icon_prefix]1")
-		if(/obj/item/shard/titanium)
-			force = 13
-			throwforce = 43
-			throw_range = 8
-			throw_speed = 5
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/titaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			wound_bonus = 8
-			icon_prefix = "speartitanium"
-			AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=18, icon_wielded="[icon_prefix]1")
-		if(/obj/item/shard/plastitanium)
-			force = 13
-			throwforce = 43
-			throw_range = 9
-			throw_speed = 5
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plastitaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			wound_bonus = 12
-			bare_wound_bonus = 10
-			icon_prefix = "spearplastitanium"
-			AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=20, icon_wielded="[icon_prefix]1")
+	// Explosive Lance craft: spear + grenade → keep the source spear's stats, attach that grenade
+	var/obj/item/spear/lancePart = locate() in parts_list
+	if(lancePart)
+		throwforce = lancePart.throwforce
+		icon_prefix = lancePart.icon_prefix
+		wound_bonus = lancePart.wound_bonus
+		bare_wound_bonus = lancePart.bare_wound_bonus
+		armour_penetration = lancePart.armour_penetration
+		custom_materials = lancePart.custom_materials
+		var/datum/component/two_handed/TH = lancePart.GetComponent(/datum/component/two_handed)
+		if(TH)
+			AddComponent(/datum/component/two_handed, force_unwielded = TH.force_unwielded, force_wielded = TH.force_wielded, icon_wielded = "[icon_prefix]1")
+		parts_list -= lancePart
+		qdel(lancePart)
+
+	. = ..() // moves remaining parts (the grenade) into contents
 
 	var/obj/item/grenade/G = locate() in contents
 	if(G)
@@ -148,11 +175,7 @@
 		updateEmbedding()
 		desc = "A makeshift spear with \a [G] attached to it."
 	update_icon()
-
 	update_appearance()
-	parts_list -= tip
-	qdel(tip)
-	return ..()
 
 /obj/item/spear/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, quickstart, params)
 	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback)

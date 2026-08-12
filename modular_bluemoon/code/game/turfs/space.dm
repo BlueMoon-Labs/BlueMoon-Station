@@ -64,3 +64,84 @@
 	allow_duplicates = FALSE
 	always_place = TRUE
 	id = "abductorcrush"
+
+/datum/map_template/ruin/space/allamericandiner
+	name = "Space Cafe"
+	description = "Космическое кафе. Ничего необычного"
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "allamericandiner.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "allamericandiner"
+
+/datum/map_template/ruin/space/anomaly_research
+	name = "Anomaly Reserch"
+	description = "Здесь изучали что то аномальное."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "anomaly_research.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "anomaly_research"
+
+/datum/map_template/ruin/space/atmosasteroidruin
+	name = "Atmo Asteroid"
+	description = "Сварите темной материи. Чт?."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "atmosasteroidruin.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "atmosasteroidruin"
+
+/datum/map_template/ruin/space/commsbuoy_nt
+	name = "Comsboy"
+	description = "Обнаружена незаонная трансляция фурри комиксов."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "commsbuoy_nt.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "commsbuoy_nt"
+
+/datum/map_template/ruin/space/dangerous_research
+	name = "Dangerous Research"
+	description = "Мне кажеться здесь изучали что то плохое."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "dangerous_research.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "dangerous_research"
+
+/datum/map_template/ruin/space/hilbertresearchfacility
+	name = "Hilbertresearchfacility"
+	description = "Was?."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "hilbertresearchfacility.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "hilbertresearchfacility"
+
+/datum/map_template/ruin/space/Lutertenship
+	name = "Lutertenship"
+	description = "Мы вольные торговцы. Определенно."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "Lutertenship.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "Lutertenship"
+
+/datum/map_template/ruin/space/piratefort
+	name = "Piratefort"
+	description = "Вы кто такие? Мы вас не звали. Идите нахуй."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "piratefort.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "piratefort"
+
+/datum/map_template/ruin/space/whiteshipruin_box
+	name = "Whiteshipruin Box"
+	description = "Я не помню что тут."
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
+	suffix = "whiteshipruin_box.dmm"
+	allow_duplicates = FALSE
+	always_place = TRUE
+	id = "whiteshipruin_box"

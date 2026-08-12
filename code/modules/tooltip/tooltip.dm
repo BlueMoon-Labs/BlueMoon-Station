@@ -31,12 +31,21 @@ Notes:
 */
 
 
+/// Сколько ждём загрузки browse()-страницы окна, прежде чем слать в неё первый показ.
+/// Страница едет клиенту асинхронно, а output() в ещё не загруженный документ теряется молча.
+#define TOOLTIP_PAGE_LOAD_GRACE (1 SECONDS)
+
 /datum/tooltip
 	var/client/owner
 	var/control = "mainwindow.tooltip"
 	var/showing = 0
 	var/queueHide = 0
-	var/init = 0
+	/// world.time момента, когда странице окна отправили browse()
+	var/page_sent_at = 0
+	/// Готовая строка показа, придержанная на время загрузки страницы
+	var/pending_payload
+	/// Таймер, который отправит придержанный показ
+	var/pending_timer
 
 
 /datum/tooltip/New(client/C)
@@ -51,17 +60,24 @@ Notes:
 			file2send = replacetext(file2text('code/modules/tooltip/tooltip.html'), "THE_FONT_GOES_HERE!!!!!!!!!!!!!!!", SSassets.transport.get_asset_url("fonts.css"))
 
 		owner << browse(file2send, "window=[control]")
+		page_sent_at = world.time
 
 	..()
+
+
+/datum/tooltip/Destroy(force)
+	//Незакрытый таймер держит на датуме жёсткую ссылку через CALLBACK и пережил бы владельца
+	if (pending_timer)
+		deltimer(pending_timer)
+		pending_timer = null
+	owner = null
+	pending_payload = null
+	return ..()
 
 
 /datum/tooltip/proc/show(atom/movable/thing, params = null, title = null, content = null, theme = "default", special = "none")
 	if (!thing || !params || (!title && !content) || !owner || !isnum(world.icon_size))
 		return FALSE
-	if (!init)
-		//Initialize some vars
-		init = 1
-		owner << output(list2params(list(world.icon_size, control)), "[control]:tooltip.init")
 
 	showing = 1
 
@@ -82,7 +98,7 @@ Notes:
 
 	//Send stuff to the tooltip
 	var/view_size = getviewsize(owner.view)
-	owner << output(list2params(list(params, view_size[1] , view_size[2], "[title][content]", theme, special)), "[control]:tooltip.update")
+	send_update(list2params(list(params, view_size[1] , view_size[2], "[title][content]", theme, special)))
 
 	//If a hide() was hit while we were showing, run hide() again to avoid stuck tooltips
 	showing = 0
@@ -92,7 +108,47 @@ Notes:
 	return TRUE
 
 
+/**
+ * Отправляет клиенту готовую строку показа, придерживая её, пока грузится страница окна.
+ *
+ * tooltip.init задаёт JS-стороне размер тайла и id скин-элемента, без которого её winset
+ * уходит в никуда. Раньше init отправлялся ровно один раз, и флаг взводился независимо от
+ * того, дошло ли сообщение: одной потери хватало, чтобы тултипы умерли на всю сессию.
+ * Теперь init идёт перед каждым показом (это две сотни байт), а показы, выпавшие на окно
+ * загрузки страницы, придерживаются и уезжают одной пачкой, когда документ уже готов.
+ */
+/datum/tooltip/proc/send_update(payload)
+	if (world.time < page_sent_at + TOOLTIP_PAGE_LOAD_GRACE)
+		pending_payload = payload
+		if (!pending_timer)
+			pending_timer = addtimer(CALLBACK(src, PROC_REF(flush_pending)), (page_sent_at + TOOLTIP_PAGE_LOAD_GRACE) - world.time, TIMER_STOPPABLE)
+		return
+
+	deliver(payload)
+
+
+/datum/tooltip/proc/flush_pending()
+	pending_timer = null
+	var/payload = pending_payload
+	pending_payload = null
+	if (payload)
+		deliver(payload)
+
+
+/// Собственно отправка. init идёт перед каждым показом, потому что доставку output() подтвердить нечем.
+/datum/tooltip/proc/deliver(payload)
+	if (!owner)
+		return
+
+	owner << output(list2params(list(world.icon_size, control)), "[control]:tooltip.init")
+	owner << output(payload, "[control]:tooltip.update")
+
+
 /datum/tooltip/proc/hide()
+	//Курсор уже ушёл: придержанный показ больше не нужен, иначе он вылезет после того,
+	//как наведение кончилось, и повиснет до следующего MouseExited
+	pending_payload = null
+
 	queueHide = showing ? TRUE : FALSE
 
 	if (queueHide)
@@ -103,6 +159,8 @@ Notes:
 	return TRUE
 
 /datum/tooltip/proc/do_hide()
+	if (!owner)
+		return
 	winshow(owner, control, FALSE)
 
 /* TG SPECIFIC CODE */
@@ -113,6 +171,12 @@ Notes:
 //Includes sanity.checks
 /proc/openToolTip(mob/user = null, atom/movable/tip_src = null, params = null,title = "",content = "",theme = "")
 	if(istype(user))
+		// Ленивое создание: датум тянет за собой jquery и html, и платить за это
+		// на каждом логине незачем - подавляющее большинство сессий тултипов не
+		// открывает вовсе. Цена - первый показ за сессию придерживается на время
+		// загрузки страницы окна, см. send_update().
+		if(user.client && !user.client.tooltips)
+			user.client.tooltips = new /datum/tooltip(user.client)
 		if(user.client && user.client.tooltips)
 			if(!theme && user.client.prefs && user.client.prefs.UI_style)
 				theme = lowertext(user.client.prefs.UI_style)
@@ -171,3 +235,5 @@ Notes:
 	closeToolTip(usr)
 
 // Break my stuff again and i'll kill you, kisses
+
+#undef TOOLTIP_PAGE_LOAD_GRACE

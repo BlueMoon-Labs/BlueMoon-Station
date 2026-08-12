@@ -10,7 +10,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "bv" = (
-/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer2{
 	dir = 4
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -222,7 +222,7 @@
 /area/lavaland/surface/outdoors)
 "yv" = (
 /obj/structure/window/reinforced/spawner,
-/obj/machinery/atmospherics/components/unary/outlet_injector/layer1,
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer2,
 /obj/effect/mapping_helpers/no_lava,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission/challenge)
@@ -237,7 +237,7 @@
 "AW" = (
 /obj/structure/window/reinforced/spawner,
 /obj/structure/window/reinforced/spawner/east,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4,
 /obj/effect/mapping_helpers/no_lava,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission/challenge)
@@ -284,7 +284,7 @@
 "ER" = (
 /obj/structure/window/reinforced/spawner/east,
 /obj/structure/window/reinforced/spawner,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/layer1{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer2{
 	anchored = 0;
 	dir = 8
 	},
@@ -327,7 +327,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission/challenge)
 "Jb" = (
-/obj/machinery/atmospherics/pipe/simple/brown/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 5
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -417,7 +417,7 @@
 	},
 /area/awaymission/challenge)
 "SS" = (
-/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer2{
 	dir = 9
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -467,11 +467,11 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission/challenge)
 "We" = (
-/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer1{
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer2{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/brown/visible/layer1,
-/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/brown/visible/layer2,
+/obj/machinery/atmospherics/pipe/simple/cyan/visible/layer2{
 	dir = 4
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,

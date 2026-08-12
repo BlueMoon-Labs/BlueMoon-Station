@@ -133,8 +133,11 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 			qdel(H.ears)
 		H.equip_to_slot_or_del(new ears(H),ITEM_SLOT_EARS_LEFT) // Sandstorm edit
 
-	var/obj/item/card/id/W = H.wear_id
-	W.access |= dep_access
+	// В слоте ID может лежать кошелёк или КПК - у них нет var/access, зато GetID() отдаёт
+	// вложенную карту. Мягкий каст на wear_id ловил рантайм и оставлял офицера без доступов.
+	var/obj/item/card/id/worn_id = H.wear_id?.GetID()
+	if(dep_access && istype(worn_id))
+		worn_id.access |= dep_access
 
 	var/teleport = 0
 	if(!CONFIG_GET(flag/sec_start_brig))

@@ -91,7 +91,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/powered/prison_shuttle)
 "io" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/prison_shuttle)
 "is" = (
