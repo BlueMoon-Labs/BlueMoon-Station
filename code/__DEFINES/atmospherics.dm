@@ -847,6 +847,18 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 /// For sites whose only statement would be a count: an empty macro must not
 /// leave a bodyless `if` behind in production builds.
 #define ATMOS_TPROF_COUNT_IF(condition, slot) if(GLOB.atmos_tprof_active && (condition)) { GLOB.atmos_tprof_counts[slot] += 1 }
+/// Wake-source tally: every mid-round add_to_active call site names itself, the
+/// harvest lands in the per-cycle `hb` record ("wake") and resets. Unlike the
+/// armed tprof counters this runs every cycle - mass-wake events are single
+/// cycles, and the one that matters never lines up with the armed one.
+/// Считаются только настоящие переходы "спал -> проснулся": тычок в уже бодрый
+/// турф (вент кормит комнату каждый фаер) - не пробуждение, и без этого фильтра
+/// ровный фон gas_write маскировал бы реальные волны.
+/proc/atmos_bench_tally_wake(turf/open/target, reason)
+	if(!istype(target) || target.excited || !SSair)
+		return
+	SSair.headless_wake_tally[reason] += 1
+#define ATMOS_BENCH_WAKE(target, reason) if(SSair) { atmos_bench_tally_wake(target, reason) }
 #else
 #define ATMOS_TPROF_VARS
 #define ATMOS_TPROF_MARK
@@ -855,6 +867,7 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 #define ATMOS_TPROF_ADD_INNER(slot)
 #define ATMOS_TPROF_COUNT(slot)
 #define ATMOS_TPROF_COUNT_IF(condition, slot)
+#define ATMOS_BENCH_WAKE(target, reason)
 #endif
 
 /// Давление выхода, выше которого объёмный насос перестаёт качать. Выше ворот

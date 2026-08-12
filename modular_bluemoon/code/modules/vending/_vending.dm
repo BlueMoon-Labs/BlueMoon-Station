@@ -246,6 +246,7 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	set_wires(new /datum/wires/vending(src))
 
 	if(build_inv) //non-constructable vending machine
+		build_products_from_categories()
 		build_inventories()
 
 	slogan_list = splittext(product_slogans, ";")

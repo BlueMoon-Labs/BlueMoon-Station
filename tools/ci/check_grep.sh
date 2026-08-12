@@ -54,6 +54,10 @@ if grep -P '\W\/turf\s*[,\){]' _maps/**/*.dmm; then
     echo "ERROR: base /turf path use detected in maps, please replace with proper paths."
     st=1
 fi;
+if grep -P '^/obj/effect/spawner/structure/window/\S*electrochromatic,$' _maps/**/*.dmm; then
+    echo "ERROR: electrochromatic window spawner without electrochromatic_id detected in maps, it runtimes on every round start. Set the id or use the plain tinted spawner."
+    st=1
+fi;
 if grep -P '^/*var/' code/**/*.dm; then
     echo "ERROR: Unmanaged global var use detected in code, please use the helpers."
     st=1

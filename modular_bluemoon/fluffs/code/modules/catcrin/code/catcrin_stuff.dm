@@ -593,9 +593,16 @@
 	icon_state = "syndicate_cool"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	actions_types = list(/datum/action/item_action/maskhalt)
+	var/static/list/halt_sounds = list(
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt0.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt1.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt2.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt3.ogg'
+	)
 
-/datum/action/item_action/maskhalt
-	name = "HALT!"
+/obj/item/clothing/mask/gas/syndicate/cool_version/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/maskhalt))
+		maskhalt()
 
 /obj/item/clothing/mask/gas/syndicate/cool_version/verb/maskhalt()
 	set category = "Object"
@@ -606,24 +613,18 @@
 	if(!can_use(usr))
 		return
 
-	var/frase
-	frase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
+	var/phrase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
+	phrase = reject_bad_text(phrase)
+	if(!phrase)
+		return
 
-	if(frase)
-		usr.audible_message("<b>[usr]</b> exclaims, \"<font color='red' size='4'><b>[frase]</b></font>\"")
-		switch(rand(0,3))
-			if(0)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt0.ogg', 100, 1)
-			if(1)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt1.ogg', 100, 1)
-			if(2)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt2.ogg', 100, 1)
-			if(3)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt3.ogg', 100, 1)
+	usr.say(message = phrase, spans = list("big warning"))
+	playsound(src.loc, pick(halt_sounds), 100, 1)
 
-/obj/item/clothing/mask/gas/syndicate/cool_version/ui_action_click(mob/user, action)
-	if(istype(action, /datum/action/item_action/maskhalt))
-		maskhalt()
+/datum/action/item_action/maskhalt
+	name = "HALT!"
+
+///////////////////////////////////////////////////
 
 /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_one
 	name = "Tactical combat Catcrin gasmask"

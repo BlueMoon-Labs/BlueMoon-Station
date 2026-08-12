@@ -239,6 +239,64 @@
 
 /// Возврат резервации в исходное состояние: газ по шаблону турфа, штампы
 /// сброшены, группы распущены, ничего не осталось активным.
+/// Небо для обхода - стена. Планетарный турф прибит к шаблону: любую дельту,
+/// которую зона в него сведёт, шаблон сотрёт за пару фаеров, и следующий обход
+/// найдёт её снова - самоподкармливающийся эквалайзер раунда 9929 (зональный
+/// клапан погнал обходы через границу в планетарку и будил по 20 тысяч турфов
+/// каждый фаер до конца раунда, c_eq 0 -> 950мс).
+/datum/unit_test/atmos_zone_walk_skips_planetary/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/left = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/middle = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/right = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(left) && istype(middle) && istype(right), "the three test locations are not all open turfs")
+
+	var/cycle = SSair.times_fired + 1
+	var/list/turf/open/zone = list(left, middle, right)
+	var/list/turf/open/stamped = stamp_zone_walk_surroundings(origin, zone, cycle)
+
+	for(var/turf/open/member as anything in zone)
+		member.air.clear()
+		member.air.set_temperature(T20C)
+		SSair.remove_from_active(member)
+	left.air.set_moles(GAS_O2, 60)
+	middle.air.set_moles(GAS_O2, 100)
+	// Правый - небо с бросающимся в глаза запасом: попади он в зону, среднее
+	// уехало бы с 80 на 220 молей.
+	right.planetary_atmos = TRUE
+	var/right_mix_backup = right.initial_gas_mix
+	right.initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	TEST_ASSERT_NOTNULL(SSair.get_planetary_template(right), "planetary template failed to build")
+	right.air.set_moles(GAS_O2, 500)
+
+	var/datum/atmos_zone_walk/seed_probe = new
+	var/planetary_seed_accepted = seed_probe.begin(right, cycle)
+
+	var/datum/atmos_zone_walk/walk = new
+	var/started = walk.begin(left, cycle)
+	var/slices = 0
+	var/finished = FALSE
+	if(started)
+		while(slices < TEST_ZONE_WALK_MAX_SLICES)
+			slices++
+			if(walk.advance(1))
+				finished = TRUE
+				break
+	var/left_moles = left.air.total_moles()
+	var/middle_moles = middle.air.total_moles()
+	var/right_moles = right.air.total_moles()
+	right.planetary_atmos = FALSE
+	right.initial_gas_mix = right_mix_backup
+	restore_zone_walk_turfs(zone, stamped)
+
+	TEST_ASSERT(!planetary_seed_accepted, "the walk accepted a planetary seed turf")
+	TEST_ASSERT(started, "the walk refused a valid non-planetary seed")
+	TEST_ASSERT(finished, "the walk did not finish within [TEST_ZONE_WALK_MAX_SLICES] slices")
+	TEST_ASSERT(abs(left_moles - 80) < TEST_ZONE_WALK_EPSILON, "the zone average leaked across the planetary border: left=[left_moles]")
+	TEST_ASSERT(abs(middle_moles - 80) < TEST_ZONE_WALK_EPSILON, "the zone average leaked across the planetary border: middle=[middle_moles]")
+	TEST_ASSERT(abs(right_moles - 500) < TEST_ZONE_WALK_EPSILON, "the walk touched planetary air: right=[right_moles]")
+
 /proc/restore_zone_walk_turfs(list/turf/open/zone, list/turf/open/stamped)
 	for(var/turf/open/member as anything in stamped)
 		member.equalize_cycle = 0

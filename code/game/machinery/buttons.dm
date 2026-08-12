@@ -197,6 +197,98 @@
 	..()
 	update_icon()
 
+/obj/machinery/button/door/casings_cleanup
+	name = "Casings Cleanup Button"
+	desc = "Удаляет все гильзы из тира при нажатии. Работает только в зоне тира."
+	skin = "doorctrl"
+	var/cooldown_time = 1 MINUTES
+	var/next_use_time = 0
+
+/obj/machinery/button/door/casings_cleanup/on_attack_hand(mob/user)
+	. = ..()
+	if(.)
+		return
+
+	var/area/current_area = get_area(src)
+	if(!istype(current_area, /area/centcom/holding/shootingrange))
+		to_chat(user, "<span class='danger'>Эта кнопка работает только в тире!</span>")
+		flick("[skin]-denied", src)
+		return
+
+	if(world.time < next_use_time)
+		var/time_left = (next_use_time - world.time) / 10
+		to_chat(user, "<span class='warning'>Кнопка перезаряжается! Осталось [round(time_left)] секунд.</span>")
+		flick("[skin]-denied", src)
+		return
+
+	var/casings_cleaned = 0
+
+	for(var/turf/T in current_area)
+		for(var/obj/item/ammo_casing/casing in T)
+			qdel(casing)
+			casings_cleaned++
+
+	if(casings_cleaned > 0)
+		to_chat(user, "<span class='notice'>Удалено [casings_cleaned] гильз из тира.</span>")
+		playsound(src, 'sound/machines/click.ogg', 50, 1)
+	else
+		to_chat(user, "<span class='notice'>В тире нет гильз для удаления.</span>")
+
+	next_use_time = world.time + cooldown_time
+	icon_state = "[skin]1"
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 1.5 SECONDS)
+
+/obj/machinery/button/door/gore_cleanup
+	name = "Gore Cleanup Button"
+	desc = "Удаляет всю кровь и внутренности из тира при нажатии. Работает только в зоне тира."
+	skin = "doorctrl"
+	var/cooldown_time = 1 MINUTES
+	var/next_use_time = 0
+
+/obj/machinery/button/door/gore_cleanup/on_attack_hand(mob/user)
+	. = ..()
+	if(.)
+		return
+
+	var/area/current_area = get_area(src)
+	if(!istype(current_area, /area/centcom/holding/shootingrange))
+		to_chat(user, "<span class='danger'>Эта кнопка работает только в тире!</span>")
+		flick("[skin]-denied", src)
+		return
+
+	if(world.time < next_use_time)
+		var/time_left = (next_use_time - world.time) / 10
+		to_chat(user, "<span class='warning'>Кнопка перезаряжается! Осталось [round(time_left)] секунд.</span>")
+		flick("[skin]-denied", src)
+		return
+
+	var/cleaned_count = 0
+
+	for(var/turf/T in current_area)
+		for(var/obj/effect/decal/cleanable/cleanable in T)
+			qdel(cleanable)
+			cleaned_count++
+
+		for(var/obj/item/organ/organ in T)
+			qdel(organ)
+			cleaned_count++
+		for(var/obj/item/bodypart/bodypart in T)
+			qdel(bodypart)
+			cleaned_count++
+		for(var/obj/effect/decal/remains/human/remains in T)
+			qdel(remains)
+			cleaned_count++
+
+	if(cleaned_count > 0)
+		to_chat(user, "<span class='notice'>Удалено [cleaned_count] объектов крови и внутренностей из тира.</span>")
+		playsound(src, 'sound/machines/click.ogg', 50, 1)
+	else
+		to_chat(user, "<span class='notice'>В тире нет крови и внутренностей для удаления.</span>")
+
+	next_use_time = world.time + cooldown_time
+	icon_state = "[skin]1"
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 1.5 SECONDS)
+
 /obj/machinery/button/vv_edit_var(vname, vval)
 	. = ..()
 	if(vname == NAMEOF(src, id))
