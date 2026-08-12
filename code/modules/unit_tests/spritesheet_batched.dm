@@ -315,3 +315,41 @@
 		var/rendered_alpha = hex2num(copytext(opacity_operation["color"], -2))
 		// Допуск в единицу - это округление доли обратно в 0..255 внутри change_opacity.
 		TEST_ASSERT(abs(rendered_alpha - expected_alpha) <= 1, "превью [sprite_name] нарисовано с альфой [rendered_alpha] вместо [expected_alpha]")
+
+/// Меню крафта не имеет права возить иконки внутри нагрузки. На инлайновом base64
+/// статика меню весила 3.03 МБ (2.71 МБ из них - картинки), и каждое открытие просило
+/// у 32-битного DreamDaemon непрерывный кусок такого размера. На нём процесс и умирал:
+/// раунды 9941 и 9948, обвал ровно в tgui_window.dm на сборке сообщения.
+/datum/unit_test/crafting_payload_size
+	requires_full_map = FALSE
+
+/// Со спрайтшитом нагрузка укладывается в ~350 КБ. Порог держим с запасом, но заведомо
+/// ниже мегабайта - смысл проверки в том, чтобы иконки не вернулись в нагрузку.
+#define CRAFTING_PAYLOAD_LIMIT (900 * 1024)
+
+/datum/unit_test/crafting_payload_size/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/datum/component/personal_crafting/crafting = user.GetComponent(/datum/component/personal_crafting)
+	TEST_ASSERT_NOTNULL(crafting, "у человека нет компонента крафта - проверять нечего")
+
+	var/list/static_data = crafting.ui_static_data(user)
+	var/encoded = json_encode(static_data)
+	log_test("CRAFTING PAYLOAD: [num2text(length(encoded), 12)] Б json, [num2text(length(url_encode(encoded)), 12)] Б после url_encode")
+	TEST_ASSERT(length(encoded) < CRAFTING_PAYLOAD_LIMIT, "статика меню крафта весит [num2text(length(encoded), 12)] Б при пороге [num2text(CRAFTING_PAYLOAD_LIMIT, 12)] Б")
+
+	// Классы спрайтов обязаны доехать: иначе интерфейс молча покажет пустые рамки.
+	var/checked_recipes = 0
+	for(var/category in static_data["crafting_recipes"])
+		var/list/entries = static_data["crafting_recipes"][category]
+		for(var/entry in entries)
+			if(!islist(entry))
+				continue
+			var/list/recipe_data = entry
+			if(!recipe_data["name"])
+				continue
+			checked_recipes++
+			if(recipe_data["icon"])
+				TEST_ASSERT(findtext(recipe_data["icon"], "crafting"), "класс спрайта у рецепта [recipe_data["name"]] не от листа крафта: [recipe_data["icon"]]")
+	TEST_ASSERT(checked_recipes > 0, "в статике меню крафта не оказалось ни одного рецепта")
+
+#undef CRAFTING_PAYLOAD_LIMIT

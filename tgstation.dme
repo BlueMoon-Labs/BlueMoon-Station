@@ -2272,6 +2272,7 @@
 #include "code\modules\asset_cache\assets\circuits.dm"
 #include "code\modules\asset_cache\assets\common.dm"
 #include "code\modules\asset_cache\assets\condiments.dm"
+#include "code\modules\asset_cache\assets\crafting.dm"
 #include "code\modules\asset_cache\assets\fish.dm"
 #include "code\modules\asset_cache\assets\font.dm"
 #include "code\modules\asset_cache\assets\fontawesome.dm"
