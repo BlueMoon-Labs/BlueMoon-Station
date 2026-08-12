@@ -348,13 +348,28 @@
 	else if((target && current_button.appearance_cache != item_target.appearance) || force) //replace with /ref comparison if this is not valid.
 		var/old_layer = item_target.layer
 		var/old_plane = item_target.plane
+		var/old_pixel_x = item_target.pixel_x
+		var/old_pixel_y = item_target.pixel_y
+		var/old_pixel_z = item_target.pixel_z
+		var/old_pixel_w = item_target.pixel_w
+
 		item_target.layer = FLOAT_LAYER //AAAH
 		item_target.plane = FLOAT_PLANE //^ what that guy said
+		item_target.pixel_x = 0
+		item_target.pixel_y = 0
+		item_target.pixel_z = 0
+		item_target.pixel_w = 0
+
 		current_button.filters = null
 		current_button.cut_overlays()
 		current_button.add_overlay(item_target)
+
 		item_target.layer = old_layer
 		item_target.plane = old_plane
+		item_target.pixel_x = old_pixel_x
+		item_target.pixel_y = old_pixel_y
+		item_target.pixel_z = old_pixel_z
+		item_target.pixel_w = old_pixel_w
 		current_button.appearance_cache = item_target.appearance
 
 /datum/action/item_action/toggle_light

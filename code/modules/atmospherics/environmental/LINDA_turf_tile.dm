@@ -77,6 +77,7 @@
 		if(SSair)
 			// Losing a neighbor changes who they can share with, not what they
 			// hold: one cycle to re-compare, no fresh stall budget.
+			ATMOS_BENCH_WAKE(T, "turf_destroy")
 			SSair.add_to_active(T, FALSE, reset_stall = FALSE)
 	update_air_ref(-1)
 	air = null
@@ -97,6 +98,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -110,6 +112,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -120,6 +123,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -130,6 +134,7 @@
 		return FALSE
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return TRUE
 
@@ -138,6 +143,7 @@
 	var/datum/gas_mixture/removed = ours.remove(amount)
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return removed
 
@@ -146,6 +152,7 @@
 	var/datum/gas_mixture/removed = ours.remove_ratio(ratio)
 	update_visuals()
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "gas_write")
 		SSair.add_to_active(src)
 	return removed
 
@@ -239,6 +246,7 @@
 		if(abs(air.return_temperature() - other.return_temperature()) < MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 			return
 		temperature_share_open_to_solid(other)
+	ATMOS_BENCH_WAKE(src, "conduct")
 	SSair.add_to_active(src)
 
 /turf/proc/super_conduct()
@@ -347,6 +355,7 @@
 	// a no-op for the fast path there, leaving a turf that claims to be active
 	// while never appearing in the list.
 	if(SSair)
+		ATMOS_BENCH_WAKE(src, "set_excited")
 		SSair.add_to_active(src, FALSE)
 
 /////////////////////////GAS OVERLAYS//////////////////////////////
@@ -467,6 +476,7 @@
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
+			ATMOS_BENCH_WAKE(enemy_tile, "pair_share") \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
 	} else if(last_share > our_move_threshold) { \
@@ -474,6 +484,7 @@
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
+			ATMOS_BENCH_WAKE(enemy_tile, "pair_share") \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
 	}
@@ -571,6 +582,14 @@
 	// дешевле шести Cut() по спискам.
 	if(!istype(seed) || seed.blocks_air || !seed.air)
 		return FALSE
+	// Небо не эквализится: планетарный турф прибит к своему шаблону, и любой
+	// сдвинутый в него газ шаблон сотрёт за пару фаеров - обход найдёт ту же
+	// дельту снова, и так до бесконечности. Раунд 9929: группа у пробоины
+	// доросла до порога зонального клапана, клапан погнал обходы через границу
+	// в планетарку, и самоподкармливающийся эквалайзер будил по 20 тысяч
+	// турфов КАЖДЫЙ фаер (c_eq 0 -> 950мс) до конца раунда.
+	if(seed.planetary_atmos)
+		return FALSE
 	if(seed.equalize_cycle >= walk_cycle)
 		return FALSE
 	reset()
@@ -657,6 +676,11 @@
 						var/turf/open/open_neighbor = neighbor
 						if(!istype(open_neighbor) || open_neighbor.blocks_air || !open_neighbor.air)
 							continue
+						// Граница с небом - стена для обхода (см. гард затравки в
+						// begin()): пару "член зоны - спящее небо" обслуживает
+						// sky-ветка LINDA, а не усреднение зоны.
+						if(open_neighbor.planetary_atmos)
+							continue
 						if(seen[open_neighbor])
 							continue
 						seen[open_neighbor] = TRUE
@@ -737,6 +761,7 @@
 							if(abs(group_air.temperature - temperature_before[index]) <= MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
 								continue
 					if(SSair)
+						ATMOS_BENCH_WAKE(group_turf, "equalize")
 						SSair.add_to_active(group_turf, FALSE)
 				if(cursor <= zone_turfs.len)
 					return FALSE
@@ -1106,6 +1131,7 @@
 		else if(our_air.compare(enemy_air))
 			ATMOS_TPROF_COUNT("group_creates")
 			if(!enemy_tile.excited && SSair)
+				ATMOS_BENCH_WAKE(enemy_tile, "pair_new_group")
 				SSair.add_to_active(enemy_tile)
 			var/datum/excited_group/EG = our_excited_group || enemy_excited_group || new
 			if(!our_excited_group)
@@ -1451,7 +1477,15 @@
 			SSair.excited_groups -= E
 		for(var/turf/open/T as anything in E.turf_list)
 			T.excited_group = src
-			turf_list |= T
+		// Excited groups are disjoint by construction: every turf has exactly one
+		// excited_group, and every path that unhooks a member also delists it
+		// (evictions, the cancel guard) or tears the whole group down (dismantle,
+		// garbage_collect, turf replacement through either ChangeTurf branch), so a
+		// listed turf always points back at its group. Append the losing list in
+		// one operation instead of doing a linear membership scan for every member.
+		// The old |= loop became O(N^2) when an explosion joined two large
+		// atmospheric regions.
+		turf_list += E.turf_list
 		awake_members += E.awake_members
 		E.awake_members = 0
 		turf_reactions |= E.turf_reactions // a burning group keeps its volatile gate through merges
@@ -1463,7 +1497,7 @@
 			SSair.excited_groups -= src
 		for(var/turf/open/T as anything in turf_list)
 			T.excited_group = E
-			E.turf_list |= T
+		E.turf_list += turf_list
 		E.awake_members += awake_members
 		awake_members = 0
 		turf_list.Cut()
@@ -1488,6 +1522,23 @@
 	// dozen pointless writes per call, thousands of calls per fire under a fire.
 	if(!breakdown_stage)
 		return
+	// The eviction stage unhooks its turfs one slice at a time and only swaps the
+	// surviving list into turf_list once it has walked the whole eviction list.
+	// Dropping the partition mid-flight would leave turf_list holding turfs that
+	// already stopped pointing back at us, and both merge_groups() and the write
+	// stages read that pointer as the membership truth. The partition snapshot is
+	// not that truth either: add_turf() appends to turf_list and only then funnels
+	// through reset_cooldowns() into this very proc, so a turf that joined - or an
+	// already-evicted one that re-joined - during the eviction window exists in
+	// neither partition half and would be silently dropped while still pointing at
+	// us. Filter the live list by the back-pointer instead: it is written before
+	// every cancel and is the one thing all of those paths keep consistent.
+	if(breakdown_stage == EG_BREAKDOWN_EVICT && breakdown_retained_members)
+		var/list/turf/open/still_ours = list()
+		for(var/turf/open/T as anything in turf_list)
+			if(istype(T) && T.excited_group == src)
+				still_ours += T
+		turf_list = still_ours
 	#ifdef ATMOS_HEADLESS_BENCH
 	if(breakdown_stage && SSair)
 		SSair.atmos_headless_bench_record_breakdown(headless_breakdown_members, world.time - headless_breakdown_started, headless_breakdown_slices, FALSE)
@@ -1676,6 +1727,22 @@
 					if(breakdown_space_is_all_consuming && istype(T.air, /datum/gas_mixture/immutable/space))
 						breakdown_space_in_group = TRUE
 					snap_vented_wisp(T)
+					// ОСЕВШИЙ планетарный член в усреднении не участвует: его уже
+					// держит собственный шаблонный шер, а запись среднего в него -
+					// это air_changed, то есть вечное удержание в turf_list. Ровно
+					// так умер раунд 9929: пробоина у командного коридора держала
+					// группу живой, группа кольцо за кольцом впитывала осевшее небо
+					// (тепло насоса размазывалось по нему каждые 4 фаера - отсюда
+					// спаны 150-318 K по всей поверхности), а первый же мердж с
+					// новым событием (хлопок в медбее) вылился в breakdown_poke на
+					// всю накопленную группу: 19 тысяч турфов проснулись за один
+					// цикл, 32-40 тысяч активных не оседали до конца раунда.
+					// БОДРЫЙ планетарный член усредняется по-прежнему (в бакете
+					// своего неба): выравнивание - это то, что гасит парные дельты
+					// внутри бодрого фронта и укладывает его спать пачкой; без
+					// него фронт у живой пробоины расползался вдвое-втрое шире.
+					if(T.planetary_atmos && !T.excited)
+						continue
 					var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 					var/datum/gas_mixture/bucket_mix = breakdown_bucket_mixes[bucket_key]
 					if(!bucket_mix)
@@ -1722,8 +1789,22 @@
 					if(!T.air)
 						breakdown_retained_members += T
 						continue
+					// Осевшее небо среднее не получает (см. стадию сбора) и
+					// выселяется: его уже держит шаблон, а членство в группе
+					// означало бы вечное удержание с poke-волной на каждый
+					// брейкдаун. Выселенный возвращается обычными путями
+					// пробуждения, как любой спящий планетарный турф. Бодрое небо
+					// идёт дальше в запись среднего своего бакета.
+					if(T.planetary_atmos && !T.excited)
+						breakdown_to_evict += T
+						continue
 					var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 					var/datum/gas_mixture/bucket_mix = breakdown_bucket_mixes[bucket_key]
+					// Смесь могла не собраться (турф сменил тип или обрёл воздух
+					// между слайсами возобновляемого брейкдауна) - без неё записи нет.
+					if(!bucket_mix)
+						breakdown_retained_members += T
+						continue
 					var/air_changed = T.air.compare(bucket_mix)
 					T.air.copy_from(bucket_mix)
 					T.update_visuals()
@@ -1748,6 +1829,11 @@
 					var/turf/open/T = breakdown_members[breakdown_cursor++]
 					remaining--
 					if(!istype(T) || T.excited_group != src || !T.air)
+						continue
+					// Небо космосом не выедается: шаблон восстановит любой унос за
+					// пару фаеров, а обнуление планетарного турфа - это волна
+					// шаблонной регенерации на всю округу.
+					if(T.planetary_atmos)
 						continue
 					T.air.copy_from(breakdown_space_mix)
 					T.update_visuals()
@@ -1787,6 +1873,13 @@
 					remaining--
 					if(!istype(T) || !T.air || T.excited)
 						continue
+					// Осевшее небо не пробуждается поуком: среднее оно не получало,
+					// значит сверять ему с соседями нечего - проснулся бы, сравнил
+					// себя с шаблоном и лёг обратно, холостой цикл на сотни турфов.
+					// (Обычный путь выселяет его ещё до поука; сюда оно доживает
+					// только через space-ветку, идущую без выселения.)
+					if(T.planetary_atmos)
+						continue
 					for(var/turf/open/neighbor as anything in T.atmos_adjacent_turfs)
 						if(!istype(neighbor) || neighbor.excited_group == src)
 							continue
@@ -1804,6 +1897,7 @@
 					var/turf/open/T = breakdown_to_poke[breakdown_cursor++]
 					remaining--
 					if(SSair)
+						ATMOS_BENCH_WAKE(T, "breakdown_poke")
 						SSair.add_to_active(T, FALSE, wake_machines = FALSE)
 					T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 				if(breakdown_cursor <= length(breakdown_to_poke))

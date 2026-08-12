@@ -93,6 +93,16 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// турфа она нулевая, и запись стала бы неудаляемой.
 		if(SSair)
 			SSair.evict_active_turf(src)
+			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
+			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
+			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись
+			// в turf_list группы молча стала бы ссылкой на новый турф с нулевым
+			// обратным указателем, а merge_groups() доверяет спискам групп как
+			// непересекающимся и склеивает их без проверки вхождения. Хороним
+			// группу явно - живые соседи пересоберут её следующим циклом.
+			var/turf/open/open_self = src
+			if(istype(open_self) && open_self.excited_group)
+				open_self.excited_group.garbage_collect()
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount

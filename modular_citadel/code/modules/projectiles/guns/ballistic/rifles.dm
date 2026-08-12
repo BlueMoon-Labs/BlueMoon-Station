@@ -92,7 +92,7 @@
 /obj/item/projectile/bullet/cflechetteap	//shreds armor but no wounds
 	name = "flechette (armor piercing)"
 	damage = 15
-	armour_penetration = 100
+	armour_penetration = BULLET_BR5
 	wound_bonus = 10
 
 /obj/item/projectile/bullet/cflechettes		//causes wounds fast but is heavily countered by armor
@@ -100,6 +100,7 @@
 	damage = 15
 	dismemberment = 10
 	wound_bonus = 15
+	armour_penetration = BULLET_BR0
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 
@@ -174,7 +175,7 @@
 	damage = 10
 	dismemberment = 15
 	wound_bonus = 20
-	armour_penetration = 100
+	armour_penetration = BULLET_BR6
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 

@@ -35,7 +35,8 @@
 	desc = "A lightweight vest with a blueshield on it."
 	icon_state = "guard_armor"
 	item_state = "guard_armor"
-	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
+	armor = list("melee" = 35, "bullet" = 35, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
+	brc_mitigation_bonus = 10
 
 /obj/item/clothing/suit/armor/vest/blueshield/spacecoat
 	name = "Blueshield Peacekeeper Spacecoat"

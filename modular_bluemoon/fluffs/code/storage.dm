@@ -279,6 +279,8 @@
 	new /obj/item/modkit/pulsar_kit(src)
 	new /obj/item/modkit/lapkee_arm_shield_kit(src)
 	new /obj/item/modkit/white_belt_kit(src)
+	new /obj/item/modkit/lapkee_carrier_kit(src)
+	new /obj/item/modkit/concord_riot_helmet_kit(src)
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
@@ -336,3 +338,40 @@
 		/obj/item/modkit/warder_9r,
 	)
 	generate_items_inside(items_inside, src)
+
+/obj/item/modkit/lapkee_carrier_kit
+	name = "Concord armored top Kit"
+	desc = "A modkit for making a plate carrier into a Concord armored top."
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Concord armored top"
+	desc = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "lapkee-carrier-top"
+	unique_reskin = list(
+		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
+		"Coat" = list("icon_state" = "lapkee-carrier-coat", "desc" = " Альтернативный стильный вариант переработанных бронежилетов, оформленный на манер бронехалата. Обычно - используется научными и медицинскими бригадами, служа цели защиты конечностей от биологических, бактериологических, радиационных угроз. В меньшей степени от вражеского огня, но как повезло, что это именно вариант с повышенной защитой, да? В комплекте два смешных подсумка для мелочёвки.", "name" = "Concord armored coat")
+	)
