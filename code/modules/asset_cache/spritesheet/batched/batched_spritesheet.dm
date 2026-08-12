@@ -39,8 +39,6 @@
 	var/list/sheet_files = list()
 	/// "foo_bar" -> описание иконки в списочном виде (см. /datum/universal_icon/to_list)
 	var/list/entries = list()
-	/// entries в JSON - то, что уезжает в rust-g.
-	var/entries_json
 	/// Сколько спрайтов кладём в один шард.
 	var/sprites_per_shard = SPRITES_PER_SHARD_DEFAULT
 
@@ -51,6 +49,12 @@
 	/// Не считать ошибкой жалобы rust-g на невалидный dir: бывает, что набор дирсов
 	/// у стейта заранее неизвестен (см. pipes.dm).
 	var/ignore_dir_errors = FALSE
+	/// Отсортировать описание перед нарезкой на шарды. Нужно листу, чьи спрайты
+	/// приходят из списка, который наполняет сам мир по ходу инициализации: порядок
+	/// там пляшет от раунда к раунду, шарды разъезжаются, и кросс-раундовый кэш
+	/// промахивается, хотя набор спрайтов тот же. Сортировка стоит один проход по
+	/// именам, поэтому включаем её только там, где порядок действительно нестабилен.
+	var/sort_sprites = FALSE
 
 	/// Идентификатор текущей асинхронной задачи сборки, если есть.
 	var/job_id
@@ -91,11 +95,30 @@
 
 	// Сначала описание спрайтов - его же хэш сверяется с кэшем.
 	create_spritesheets()
+	if(sort_sprites)
+		sort_entries()
 
 	if(should_load_immediately())
 		realize_spritesheets(yield = FALSE)
 	else
 		SSasset_loading.queue_asset(src)
+
+/**
+ * Раскладывает описание по именам спрайтов.
+ *
+ * Нарезка на шарды идёт по порядку записей, поэтому нестабильный порядок на входе
+ * означает разные шарды в каждом раунде - и полную пересборку листа вместо подъёма
+ * из кэша, хотя ни один спрайт не изменился.
+ */
+/datum/asset/spritesheet_batched/proc/sort_entries()
+	var/list/sprite_names = list()
+	for(var/sprite_name in entries)
+		sprite_names += sprite_name
+	sortTim(sprite_names, GLOBAL_PROC_REF(cmp_text_asc))
+	var/list/sorted_entries = list()
+	for(var/sprite_name in sprite_names)
+		sorted_entries[sprite_name] = entries[sprite_name]
+	entries = sorted_entries
 
 /// Здесь зови insert_icon()/insert_all_icons() - и ничего тяжелее.
 /datum/asset/spritesheet_batched/proc/create_spritesheets()
@@ -157,13 +180,10 @@
 	if(sprites_per_shard <= 0)
 		CRASH("Спрайтшит [name] ([type]): невалидный sprites_per_shard [sprites_per_shard]")
 
-	if(isnull(entries_json))
-		entries_json = json_encode(entries)
-
 	if(isnull(cache_result))
 		cache_result = should_refresh(yield)
 
-	if(cache_result == CACHE_VALID && read_from_cache())
+	if(cache_result == CACHE_VALID && read_from_cache(yield))
 		SSasset_loading.dequeue_asset(src)
 		finish_generation()
 		return
@@ -187,6 +207,10 @@
 			continue
 		generate_shard(shard_index++, shard_entries, generated_cache_shards, yield)
 		shard_entries = list()
+		// Задача rust-g может вернуться в том же тике, и тогда UNTIL внутри не уснёт
+		// ни разу: на листе панели спавна это полсотни шардов подряд в одном прогоне МК.
+		if(yield)
+			CHECK_TICK
 	if(length(shard_entries))
 		generate_shard(shard_index, shard_entries, generated_cache_shards, yield)
 	if(!length(sizes) || !length(sprites) || !length(sheet_files))
@@ -195,11 +219,16 @@
 	var/list/png_hashes = list()
 	for(var/png_name in sheet_files)
 		var/png_path = "[SPRITESHEET_CACHE_DIR][png_name]"
+		// Хэш считает rust. Без него транспорт зовёт md5asfile(), а тот читает файл
+		// движком BYOND и морозит весь процесс - на листах выходит под 15 МБ за раунд.
+		var/png_hash = rustg_hash_file(RUSTG_HASH_MD5, png_path)
 		// fcopy_rsc снимает неизменяемый слепок: имя ассета несёт хэш содержимого и
 		// считается один раз, а без слепка байты читались бы лениво - любая
 		// перезапись файла в data/ разошлась бы с уже разосланным именем.
-		var/datum/asset_cache_item/png_item = SSassets.transport.register_asset(png_name, fcopy_rsc(file(png_path)))
-		png_hashes[png_name] = png_item.hash
+		SSassets.transport.register_asset(png_name, fcopy_rsc(file(png_path)), png_hash)
+		png_hashes[png_name] = png_hash
+		if(yield)
+			CHECK_TICK
 
 	register_css()
 	write_cache_meta(generated_cache_shards, png_hashes)
@@ -285,7 +314,11 @@
 			log_asset("Кэш spritesheet_[name] неполный. Правили руками или оборвалась запись.")
 			return CACHE_INVALID
 
-	if(!cache_shards_match(yield))
+	// Без этой строки промах кэша не видно в логе вообще: лист просто молча
+	// пересобирается каждый раунд, и понять, почему это происходит, нельзя.
+	var/mismatch_reason = cache_shards_mismatch_reason(yield)
+	if(mismatch_reason)
+		log_asset("Кэш spritesheet_[name] сброшен: [mismatch_reason]")
 		return CACHE_INVALID
 	sizes = cache_sizes_data
 	sprites = cache_sprites_data
@@ -293,28 +326,39 @@
 	log_asset("Кэш spritesheet_[name] подтверждён.")
 	return CACHE_VALID
 
-/// Режет описание на шарды тем же способом, что и сборка, и сверяет каждый с кэшем.
-/datum/asset/spritesheet_batched/proc/cache_shards_match(yield)
+/**
+ * Режет описание на шарды тем же способом, что и сборка, и сверяет каждый с кэшем.
+ *
+ * Отдаёт причину промаха строкой (её пишут в лог) или null, если кэш сошёлся.
+ */
+/datum/asset/spritesheet_batched/proc/cache_shards_mismatch_reason(yield)
 	var/list/shard_entries = list()
 	var/shard_index = 1
 	for(var/sprite_name in entries)
 		shard_entries[sprite_name] = entries[sprite_name]
 		if(length(shard_entries) < sprites_per_shard)
 			continue
-		if(shard_index > length(cache_shards_data) || !cache_shard_matches(cache_shards_data[shard_index], shard_entries, yield))
-			return FALSE
+		var/reason = shard_mismatch_reason(shard_index, shard_entries, yield)
+		if(reason)
+			return reason
 		shard_index++
 		shard_entries = list()
 	if(length(shard_entries))
-		if(shard_index > length(cache_shards_data) || !cache_shard_matches(cache_shards_data[shard_index], shard_entries, yield))
-			return FALSE
+		var/reason = shard_mismatch_reason(shard_index, shard_entries, yield)
+		if(reason)
+			return reason
 		shard_index++
 	// Шардов в кэше больше, чем у нас - раскладка поехала, кэшу верить нельзя.
-	return shard_index - 1 == length(cache_shards_data)
+	if(shard_index - 1 != length(cache_shards_data))
+		return "шардов стало [shard_index - 1] вместо [length(cache_shards_data)]"
+	return null
 
-/datum/asset/spritesheet_batched/proc/cache_shard_matches(list/cache_shard, list/shard_entries, yield)
+/datum/asset/spritesheet_batched/proc/shard_mismatch_reason(shard_index, list/shard_entries, yield)
+	if(shard_index > length(cache_shards_data))
+		return "шардов стало больше, чем в метаданных"
+	var/list/cache_shard = cache_shards_data[shard_index]
 	if(!islist(cache_shard) || !length(cache_shard["input_hash"]) || !length(cache_shard["dmi_hashes"]))
-		return FALSE
+		return "метаданные шарда [shard_index] битые"
 	var/input_hash = cache_shard["input_hash"]
 	var/dmi_hashes_json = json_encode(cache_shard["dmi_hashes"])
 	var/shard_json = json_encode(shard_entries)
@@ -327,10 +371,14 @@
 	else
 		data_out = rustg_iconforge_cache_valid(input_hash, dmi_hashes_json, shard_json)
 	if(data_out == RUSTG_JOB_ERROR || !findtext(data_out, "{", 1, 2))
-		log_asset("Проверка кэша spritesheet_[name] не удалась: [data_out]")
-		return FALSE
+		return "проверка шарда [shard_index] не удалась ([data_out])"
 	var/list/result = safe_json_decode(data_out)
-	return islist(result) && result["result"] == "1"
+	if(!islist(result))
+		return "rust вернул на шард [shard_index] не JSON"
+	if(result["result"] == "1")
+		return null
+	// Причину знает rust: изменилось описание спрайтов, DMI или набор файлов.
+	return "шард [shard_index] - [result["fail_reason"] || "причина не указана"]"
 
 /**
  * Поднимает лист из кэша: png берутся с диска, css пересобирается.
@@ -339,7 +387,7 @@
  * от конфига (browse_rsc против webroot, адрес CDN). Пересборка строки стоит
  * копейки, а вот отданный из прошлого раунда css указывал бы в пустоту.
  */
-/datum/asset/spritesheet_batched/proc/read_from_cache()
+/datum/asset/spritesheet_batched/proc/read_from_cache(yield)
 	var/list/png_snapshots = list()
 	for(var/png_name in sheet_files)
 		var/png_path = "[SPRITESHEET_CACHE_DIR][png_name]"
@@ -348,14 +396,16 @@
 		var/expected_hash = cache_png_hashes_data?[png_name]
 		if(!expected_hash)
 			return FALSE
-		var/png_snapshot = fcopy_rsc(file(png_path))
 		// Хэш из метаданных - обещание о содержимом. Не сошлось - в каталог писал
 		// кто-то ещё (второй мир, правка руками), и раскладке из кэша верить нельзя:
-		// молча отдать клиенту чужие байты хуже, чем пересобрать.
-		if(md5asfile(png_snapshot) != expected_hash)
+		// молча отдать клиенту чужие байты хуже, чем пересобрать. Считает rust:
+		// md5asfile() на тех же файлах морозит процесс каждый раунд.
+		if(rustg_hash_file(RUSTG_HASH_MD5, png_path) != expected_hash)
 			log_asset("Кэш spritesheet_[name] сброшен: [png_name] на диске не совпал с хэшем из метаданных.")
 			return FALSE
-		png_snapshots[png_name] = png_snapshot
+		png_snapshots[png_name] = fcopy_rsc(file(png_path))
+		if(yield)
+			CHECK_TICK
 
 	for(var/png_name in sheet_files)
 		SSassets.transport.register_asset(png_name, png_snapshots[png_name], cache_png_hashes_data[png_name], null)
@@ -369,7 +419,8 @@
 	var/css_path = "[SPRITESHEET_CACHE_DIR][css_name]"
 	fdel(css_path)
 	rustg_file_write(generate_css(), css_path)
-	SSassets.transport.register_asset(css_name, fcopy_rsc(file(css_path)))
+	// Хэш опять же за rust: css панели спавна - это полтора мегабайта.
+	SSassets.transport.register_asset(css_name, fcopy_rsc(file(css_path)), rustg_hash_file(RUSTG_HASH_MD5, css_path))
 
 /datum/asset/spritesheet_batched/proc/write_cache_meta(list/cache_shards, list/png_hashes)
 	rustg_file_write(json_encode(list(
@@ -392,7 +443,6 @@
  */
 /datum/asset/spritesheet_batched/proc/finish_generation()
 	entries = list()
-	entries_json = null
 	cache_data = null
 	cache_shards_data = null
 	cache_sizes_data = null

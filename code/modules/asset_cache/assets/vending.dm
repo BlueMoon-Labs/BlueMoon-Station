@@ -1,5 +1,9 @@
 /datum/asset/spritesheet_batched/vending
 	name = "vending"
+	// GLOB.vending_products наполняют сами вендоматы при инициализации, и порядок
+	// там зависит от порядка инициализации мира: набор товаров тот же, а шарды
+	// каждый раунд разные. Без сортировки лист пересобирается всегда.
+	sort_sprites = TRUE
 
 /datum/asset/spritesheet_batched/vending/create_spritesheets()
 	// Один и тот же DMI обслуживает сотни товаров - разобранные наборы стейтов

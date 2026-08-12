@@ -33,7 +33,6 @@
 /datum/asset/spritesheet_batched/test_batched/proc/reset_state()
 	unregister()
 	entries = list()
-	entries_json = null
 	sprites = list()
 	sizes = list()
 	sheet_files = list()
@@ -124,6 +123,77 @@
 		fdel("[SPRITESHEET_CACHE_DIR][leftover]")
 	fdel(meta_path)
 	fdel(css_path)
+
+/**
+ * Тот же лист, но по отложенному пути (yield = TRUE) - так его собирает
+ * SSasset_loading в лобби. Под UNIT_TESTS отложенная сборка выключена, поэтому в
+ * раунде работает путь, который иначе не проверялся бы ничем.
+ *
+ * Имя своё: тесты делят каталог кэша, и общий лист они бы затирали друг у друга.
+ */
+/datum/asset/spritesheet_batched/test_batched/deferred
+	_abstract = /datum/asset/spritesheet_batched/test_batched/deferred
+	name = "test_batched_deferred"
+
+/datum/unit_test/spritesheet_batched_deferred
+
+/datum/unit_test/spritesheet_batched_deferred/Run()
+	var/datum/asset/spritesheet_batched/test_batched/deferred/sheet = new()
+	var/meta_path = sheet.cache_meta_path()
+	var/css_path = "[SPRITESHEET_CACHE_DIR]spritesheet_[sheet.name].css"
+	sheet.reset_state()
+	fdel(meta_path)
+	fdel(css_path)
+
+	// register() собрал бы лист синхронно, поэтому описание и сборку зовём врозь.
+	sheet.create_spritesheets()
+	sheet.realize_spritesheets(yield = TRUE)
+
+	TEST_ASSERT(sheet.fully_generated, "лист не собрался по отложенному пути")
+	TEST_ASSERT(sheet.cache_result, "кэш признан валидным, хотя метаданные только что удалили")
+	TEST_ASSERT(length(sheet.sheet_files) > 1, "лист не нарезался на шарды: [json_encode(sheet.sheet_files)]")
+	for(var/png_name in sheet.sheet_files)
+		TEST_ASSERT_NOTNULL(SSassets.cache[png_name], "png [png_name] не зарегистрирован в транспорте")
+
+	var/list/first_sprites = sheet.sprites.Copy()
+	var/list/first_files = sheet.sheet_files.Copy()
+
+	// Второй заход - подъём из кэша тем же асинхронным путём.
+	sheet.reset_state()
+	sheet.create_spritesheets()
+	sheet.realize_spritesheets(yield = TRUE)
+
+	TEST_ASSERT(sheet.fully_generated, "лист не поднялся из кэша по отложенному пути")
+	TEST_ASSERT(!sheet.cache_result, "кэш признан невалидным, хотя вход не менялся")
+	TEST_ASSERT_EQUAL(json_encode(sheet.sprites), json_encode(first_sprites), "раскладка спрайтов из кэша не совпала с собранной")
+	TEST_ASSERT_EQUAL(json_encode(sheet.sheet_files), json_encode(first_files), "набор png из кэша не совпал с собранным")
+
+	var/list/files_to_drop = sheet.sheet_files.Copy()
+	sheet.unregister()
+	for(var/leftover in files_to_drop)
+		fdel("[SPRITESHEET_CACHE_DIR][leftover]")
+	fdel(meta_path)
+	fdel(css_path)
+
+/**
+ * Каждый батчёвый лист обязан быть собран к концу инициализации.
+ *
+ * Под UNIT_TESTS отложенная сборка выключена (DO_NOT_DEFER_ASSETS), поэтому после
+ * SSassets готовы все листы. Тест ловит лист, который молча не зарегистрировался или
+ * не собрался: в логе такое не видно, а на проде это пустая витрина у интерфейса.
+ */
+/datum/unit_test/spritesheet_batched_all_generated
+
+/datum/unit_test/spritesheet_batched_all_generated/Run()
+	for(var/sheet_type in subtypesof(/datum/asset/spritesheet_batched))
+		var/datum/asset/spritesheet_batched/sheet = sheet_type
+		if(sheet_type == initial(sheet._abstract))
+			continue
+		var/datum/asset/spritesheet_batched/loaded = GLOB.asset_datums[sheet_type]
+		TEST_ASSERT_NOTNULL(loaded, "лист [sheet_type] не зарегистрирован в SSassets")
+		TEST_ASSERT(loaded.fully_generated, "лист [loaded.name] ([sheet_type]) не собран после инициализации")
+		TEST_ASSERT(length(loaded.sheet_files), "у листа [loaded.name] ([sheet_type]) нет ни одного png")
+		TEST_ASSERT(length(loaded.sprites), "у листа [loaded.name] ([sheet_type]) нет ни одного спрайта")
 
 /// Описание иконки должно выживать сериализацию: именно в этом виде оно уезжает в rust.
 /datum/unit_test/universal_icon_serialization
