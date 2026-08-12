@@ -293,6 +293,31 @@
 		"dmi_hashes" = generated["dmi_hashes"],
 	))
 
+	warn_on_unread_dmis(shard_index, shard_entries, generated["dmi_hashes"])
+
+/**
+ * Жалуется на DMI, которые rust не смог прочитать.
+ *
+ * Ошибки чтения наружу не приезжают: rust просто не кладёт такой файл в dmi_hashes, а
+ * спрайты из него молча пропадают с листа. Заодно из-за нехватки хэшей кросс-раундовый
+ * кэш шарда не сходится НИКОГДА ("more DMIs exist than DMI hashes provided"), и лист
+ * пересобирается каждый раунд. Обычная причина - регистр пути в коде, не совпадающий с
+ * именем файла: BYOND такой путь находит, файловая система боевого сервера - нет.
+ */
+/datum/asset/spritesheet_batched/proc/warn_on_unread_dmis(shard_index, list/shard_entries, list/dmi_hashes)
+	if(!islist(dmi_hashes))
+		return
+	var/list/referenced = shard_dmi_paths(shard_entries)
+	if(length(referenced) <= length(dmi_hashes))
+		return
+	var/list/unread = list()
+	for(var/icon_path in referenced)
+		if(isnull(dmi_hashes[icon_path]) && length(unread) < MISSING_DMI_REPORTED)
+			unread += icon_path
+	if(!length(unread))
+		return
+	log_asset("Лист spritesheet_[name], шард [shard_index]: rust не прочитал [length(referenced) - length(dmi_hashes)] DMI - спрайты из них пропали, а кэш шарда больше не сойдётся. Не прочитаны: [unread.Join(", ")]")
+
 /**
  * DMI из описания шарда, которых нет на диске рядом с сервером.
  *
@@ -305,25 +330,33 @@
 /datum/asset/spritesheet_batched/proc/missing_dmi_files(list/shard_entries)
 	RETURN_TYPE(/list)
 	var/list/missing = list()
-	var/list/checked = list()
+	for(var/icon_path in shard_dmi_paths(shard_entries))
+		if(length(missing) >= MISSING_DMI_REPORTED)
+			break
+		if(!fexists(icon_path))
+			missing += icon_path
+	return missing
+
+/// Все DMI, на которые ссылается описание шарда, включая вложенные в blend_icon.
+/datum/asset/spritesheet_batched/proc/shard_dmi_paths(list/shard_entries)
+	RETURN_TYPE(/list)
+	var/list/paths = list()
 	// Вложенные иконки (blend_icon) описаны такими же списками и живут в transform.
 	var/list/pending = list()
 	for(var/sprite_name in shard_entries)
 		pending += list(shard_entries[sprite_name])
-	while(length(pending) && length(missing) < MISSING_DMI_REPORTED)
+	while(length(pending))
 		var/list/entry = pending[length(pending)]
 		pending.len--
 		if(!islist(entry))
 			continue
 		var/icon_path = entry["icon_file"]
-		if(istext(icon_path) && !checked[icon_path])
-			checked[icon_path] = TRUE
-			if(!fexists(icon_path))
-				missing += icon_path
+		if(istext(icon_path))
+			paths[icon_path] = TRUE
 		for(var/list/operation as anything in entry["transform"])
 			if(islist(operation["icon"]))
 				pending += list(operation["icon"])
-	return missing
+	return paths
 
 /**
  * Проверяет кросс-раундовый кэш.
@@ -506,7 +539,14 @@
 
 /datum/asset/spritesheet_batched/ensure_ready()
 	if(!fully_generated)
+		// Досборка на месте идёт СИНХРОННО, без MC_TICK_CHECK: мир стоит, пока rust
+		// считает лист. У панели спавна это 47 шардов и 12 тысяч спрайтов, и такая
+		// пауза посреди раунда выглядит снаружи как зависший сервер. Штатно листы
+		// собирает SSasset_loading в лобби, поэтому попадание сюда - само по себе
+		// новость: пишем, кого и надолго ли пришлось ждать.
+		var/started_at = REALTIMEOFDAY
 		realize_spritesheets(yield = FALSE)
+		log_asset("Лист spritesheet_[name] дособран синхронно, мир стоял [(REALTIMEOFDAY - started_at) / 10] с - очередь SSasset_loading до него не дошла.")
 	return ..()
 
 /datum/asset/spritesheet_batched/send(client/client)

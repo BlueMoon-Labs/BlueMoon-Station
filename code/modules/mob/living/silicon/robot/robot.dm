@@ -1215,7 +1215,7 @@
 			if(A.client?.prefs?.custom_holoform_icon)
 				A.holo_icon = A.client.prefs.get_filtered_holoform(HOLOFORM_FILTER_AI)
 			else
-				A.holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"))
+				A.holo_icon = getHologramIcon(icon('icons/mob/AI.dmi', "female"))
 
 	return TRUE
 

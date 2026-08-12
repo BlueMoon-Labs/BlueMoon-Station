@@ -1335,7 +1335,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ai_core_icon_state = "ai-random"
 						else
 							ai_core_icon_state = resolve_ai_icon(preferred_ai_core_display, TRUE)
-						var/icon/ai_core_preview_icon = icon('icons/mob/ai.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
+						var/icon/ai_core_preview_icon = icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
 						var/ai_core_preview_html = icon2base64html(ai_core_preview_icon)
 						if(!ai_core_preview_html)
 							ai_core_preview_html = ""
