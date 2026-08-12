@@ -320,7 +320,7 @@
 	if(prob(80))
 		playsound(get_turf(owner), 'sound/effects/screech.ogg', 100, TRUE)
 	else
-		var/static/list/sounds = list(
+		var/static/list/temp_sounds = list(
 			'sound/hallucinations/im_here1.ogg',
 			'sound/hallucinations/im_here2.ogg',
 			'sound/hallucinations/behind_you1.ogg',
@@ -335,7 +335,7 @@
 			'sound/hallucinations/turn_around1.ogg',
 			'sound/hallucinations/turn_around2.ogg',
 		)
-		playsound(get_turf(owner), pick(sounds), 100, FALSE)
+		playsound(get_turf(owner), pick(temp_sounds), 100, FALSE)
 
 #undef HEART_SPECIAL_SHADOWIFY
 #undef HEART_RESPAWN_THRESHHOLD
