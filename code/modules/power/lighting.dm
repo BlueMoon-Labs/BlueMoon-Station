@@ -959,7 +959,7 @@
 
 /obj/machinery/light/proc/break_light_tube(skip_sound_and_sparks = 0)
 	if(status == LIGHT_EMPTY || status == LIGHT_BROKEN)
-		return
+		return FALSE
 	stop_damage_flicker()
 	if(!skip_sound_and_sparks)
 		if(status == LIGHT_OK || status == LIGHT_BURNED)
@@ -968,6 +968,7 @@
 			do_sparks(3, TRUE, src)
 	status = LIGHT_BROKEN
 	update()
+	return TRUE
 
 /obj/machinery/light/proc/fix()
 	if(status == LIGHT_OK)
