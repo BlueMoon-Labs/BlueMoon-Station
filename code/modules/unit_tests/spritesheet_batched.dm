@@ -290,6 +290,12 @@
 	var/datum/asset/spritesheet_batched/decals/tiles/test_alpha/sheet = new()
 	drop_spritesheet_artifacts(sheet)
 
+	// Описывает лист само создание датума (New -> register -> create_spritesheets).
+	// Проверяем это явно: пустое описание превратило бы цикл ниже в тест, который
+	// проходит вхолостую, ничего не проверив.
+	TEST_ASSERT(length(sheet.expected_alphas), "лист не описал себя при создании - перебирать нечего")
+	TEST_ASSERT_EQUAL(length(sheet.captured_entries), length(sheet.expected_alphas), "описание спрайтов снялось не целиком")
+
 	for(var/color in sheet.expected_alphas)
 		var/expected_alpha = sheet.expected_alphas[color]
 		var/sprite_name = "tile_corner_[SOUTH]_[replacetext(color, "#", "")]"
