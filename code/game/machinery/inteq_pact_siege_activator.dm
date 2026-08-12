@@ -100,6 +100,11 @@
 		to_chat(L, span_warning("Консоль не реагирует: нет авторизации InteQ."))
 		return TRUE
 
+	var/mode_block = siege.siege_mode_blocked_reason()
+	if(mode_block)
+		to_chat(L, span_warning(mode_block))
+		return TRUE
+
 	var/ask = tgui_alert(
 		L,
 		"Инициировать запуск БС-двигателей эвакуации? Станция получит объявление ЦК, через [DisplayTimeText(PACT_SIEGE_PREP_TIME)] откроется красный канал врат для ПАКТ. Окно удержания: [DisplayTimeText(PACT_SIEGE_TIMER)].",

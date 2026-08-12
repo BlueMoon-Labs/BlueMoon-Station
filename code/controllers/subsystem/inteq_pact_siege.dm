@@ -52,6 +52,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return FALSE
 	return (ROLE_INTEQ in user.faction)
 
+/datum/inteq_pact_siege/proc/siege_mode_available()
+	return bm_get_round_chaos() >= CONFIG_GET(number/chaos_for_a_hard_dynamic)
+
+/datum/inteq_pact_siege/proc/siege_mode_blocked_reason()
+	var/required = CONFIG_GET(number/chaos_for_a_hard_dynamic)
+	var/chaos = bm_get_round_chaos()
+	if(chaos < required)
+		return "Недостаточный уровень хаоса для активации протокола ([chaos]/[required])."
+	return null
+
 /datum/inteq_pact_siege/proc/is_battle_area(area/A)
 	return istype(A, /area/InteQ_ship)
 
@@ -317,6 +327,11 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(active)
 		if(user)
 			to_chat(user, span_warning("Протокол осады уже активен."))
+		return FALSE
+	var/mode_block = siege_mode_blocked_reason()
+	if(mode_block)
+		if(user)
+			to_chat(user, span_warning(mode_block))
 		return FALSE
 	if(!role_check_inteq(user))
 		to_chat(user, span_warning("Только персонал InteQ может задействовать этот протокол."))
