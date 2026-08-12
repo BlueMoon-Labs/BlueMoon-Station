@@ -127,6 +127,8 @@
 	playsound(src, "sparks", 100, FALSE)
 
 /mob/living/simple_animal/bot/mulebot/update_icon()
+	if(QDELETED(src) || !wires)
+		return
 	if(open)
 		icon_state="[base_icon]-hatch"
 	else

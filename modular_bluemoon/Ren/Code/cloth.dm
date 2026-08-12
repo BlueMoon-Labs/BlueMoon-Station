@@ -101,7 +101,7 @@
 	slowdown = 0.3
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/iron_tombstone
 	actions_types = list(/datum/action/item_action/toggle_helmet)
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 // -----------------------------------------------[Космодесантник]-------------------------------------------
 // Взрыв при экипировке
@@ -212,6 +212,7 @@
 	ADD_TRAIT(owner, TRAIT_NOHARDCRIT, GENETIC_MUTATION)
 	ADD_TRAIT(owner, TRAIT_STUNIMMUNE, GENETIC_MUTATION)
 	ADD_TRAIT(owner, TRAIT_PUSHIMMUNE, GENETIC_MUTATION)
+	ADD_TRAIT(owner, TRAIT_HEAVY_MELEE, GENETIC_MUTATION)
 	var/size = get_size(owner)
 	owner.update_size(size * 1.35)
 	owner.visible_message("<span class='danger'>[owner] Внезапно становится больше!</span>", "<span class='notice'>Всё вокруг неожиданно уменьшается..</span>")
@@ -222,6 +223,7 @@
 		REMOVE_TRAIT(owner, TRAIT_NOHARDCRIT, GENETIC_MUTATION)
 		REMOVE_TRAIT(owner, TRAIT_STUNIMMUNE, GENETIC_MUTATION)
 		REMOVE_TRAIT(owner, TRAIT_PUSHIMMUNE, GENETIC_MUTATION)
+		REMOVE_TRAIT(owner, TRAIT_HEAVY_MELEE, GENETIC_MUTATION)
 	return ..()
 
 /obj/item/autosurgeon/syndicate/inteq/astartes
@@ -330,6 +332,8 @@
 	darkness_view = 3
 	flash_protect = -3
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_HIGH
+	color_cutoffs = list(30, 20, 5)
 	vision_flags = SEE_TURFS|SEE_MOBS|SEE_OBJS
 	glass_colour_type = /datum/client_colour/glass_colour/orange
 
@@ -340,6 +344,8 @@
 		return
 	vision_flags = NONE
 	darkness_view = 0
+	lighting_cutoff = 0
+	color_cutoffs = null
 	flash_protect = 0
 	thermal_overload()
 

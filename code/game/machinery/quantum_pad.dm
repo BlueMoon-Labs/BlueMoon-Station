@@ -39,9 +39,44 @@
 	if(map_pad_id)
 		mapped_quantum_pads[map_pad_id] = src
 
+#define QUANTUMPAD_ALERT_CATEGORY "quantumpad"
+
+/obj/machinery/quantumpad/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.throw_alert(QUANTUMPAD_ALERT_CATEGORY, /atom/movable/screen/alert/object_master, new_master = src)
+
+/obj/machinery/quantumpad/Uncrossed(atom/movable/AM)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
+
 /obj/machinery/quantumpad/Destroy()
 	mapped_quantum_pads -= map_pad_id
+	for(var/mob/living/M in get_turf(src))
+		M.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
 	return ..()
+
+/// Линк односторонний и хранится у НАС на чужой пад: без подписки на его удаление
+/// снесённый пад вечно висел бы в linked_pad всех, кто на него линкован
+/obj/machinery/quantumpad/proc/set_linked_pad(obj/machinery/quantumpad/new_pad)
+	if(linked_pad == new_pad)
+		return
+	if(linked_pad)
+		UnregisterSignal(linked_pad, COMSIG_PARENT_QDELETING)
+	linked_pad = new_pad
+	if(linked_pad)
+		RegisterSignal(linked_pad, COMSIG_PARENT_QDELETING, PROC_REF(on_linked_pad_qdeleting))
+
+/obj/machinery/quantumpad/proc/on_linked_pad_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	linked_pad = null
+
+#undef QUANTUMPAD_ALERT_CATEGORY
 
 /obj/machinery/quantumpad/examine(mob/user)
 	. = ..()
@@ -65,6 +100,9 @@
 	teleport_cooldown -= (E * 100)
 
 /obj/machinery/quantumpad/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/riding_offhand))
+		_try_interact(user)
+		return TRUE
 	if(default_deconstruction_screwdriver(user, "pad-idle-o", "qpad-idle", I))
 		return
 
@@ -79,7 +117,7 @@
 				to_chat(user, "<span class='warning'>You cannot link a pad to itself!</span>")
 				return TRUE
 			else
-				linked_pad = I.buffer
+				set_linked_pad(I.buffer)
 				to_chat(user, "<span class='notice'>You link [src] to the one in [I]'s buffer.</span>")
 				return TRUE
 		else
@@ -95,7 +133,7 @@
 			to_chat(user, "<span class='notice'>You insert [K] into [src]'s card slot, initiating the link procedure.</span>")
 			if(do_after(user, 40, target = src))
 				to_chat(user, "<span class='notice'>You complete the link between [K] and [src].</span>")
-				K.qpad = src
+				K.set_qpad(src)
 
 	if(default_deconstruction_crowbar(I))
 		return
@@ -140,60 +178,85 @@
 		return TRUE // Don't call parent - prevents attack_ai and ui_interact, so no teleport effect for ghosts
 	return ..()
 
+#define TELEPORT_SOMETHING(what_teleport) do_teleport(what_teleport, get_turf(target_pad),null,TRUE,null,null,null,null,TRUE, channel = TELEPORT_CHANNEL_QUANTUM)
+
 /obj/machinery/quantumpad/proc/doteleport(mob/user, obj/machinery/quantumpad/target_pad = linked_pad)
-	if(target_pad)
-		playsound(get_turf(src), 'sound/weapons/flash.ogg', 25, TRUE)
-		teleporting = TRUE
+	if(!target_pad)
+		return
+	playsound(get_turf(src), 'sound/weapons/flash.ogg', 25, TRUE)
+	teleporting = TRUE
 
-		spawn(teleport_speed)
-			if(!src || QDELETED(src))
-				teleporting = FALSE
-				return
-			if(machine_stat & NOPOWER)
-				to_chat(user, "<span class='warning'>[src] is unpowered!</span>")
-				teleporting = FALSE
-				return
-			if(!target_pad || QDELETED(target_pad) || target_pad.machine_stat & NOPOWER)
-				to_chat(user, "<span class='warning'>Linked pad is not responding to ping. Teleport aborted.</span>")
-				teleporting = FALSE
-				return
-
+	spawn(teleport_speed)
+		if(!src || QDELETED(src))
 			teleporting = FALSE
-			last_teleport = world.time
+			return
+		if(machine_stat & NOPOWER)
+			to_chat(user, "<span class='warning'>[src] is unpowered!</span>")
+			teleporting = FALSE
+			return
+		if(!target_pad || QDELETED(target_pad) || target_pad.machine_stat & NOPOWER)
+			to_chat(user, "<span class='warning'>Linked pad is not responding to ping. Teleport aborted.</span>")
+			teleporting = FALSE
+			return
 
-			// use a lot of power
-			use_power(10000 / power_efficiency)
-			sparks()
-			target_pad.sparks()
+		teleporting = FALSE
+		last_teleport = world.time
 
-			flick("qpad-beam", src)
-			playsound(get_turf(src), 'sound/weapons/emitter2.ogg', 25, TRUE)
-			flick("qpad-beam", target_pad)
-			playsound(get_turf(target_pad), 'sound/weapons/emitter2.ogg', 25, TRUE)
-			for(var/atom/movable/ROI in get_turf(src))
-				if(QDELETED(ROI))
-					continue //sleeps in CHECK_TICK
+		// use a lot of power
+		use_power(10000 / power_efficiency)
+		sparks()
+		target_pad.sparks()
 
-				// if is anchored, don't let through
-				if(ROI.anchored)
-					if(isliving(ROI))
-						var/mob/living/L = ROI
-						//only TP living mobs buckled to non anchored items
-						if(!L.buckled || L.buckled.anchored)
-							continue
+		flick("qpad-beam", src)
+		playsound(get_turf(src), 'sound/weapons/emitter2.ogg', 25, TRUE)
+		flick("qpad-beam", target_pad)
+		playsound(get_turf(target_pad), 'sound/weapons/emitter2.ogg', 25, TRUE)
+		var/list/ignored_atoms = list()
+		for(var/atom/movable/ROI in get_turf(src))
+			if(QDELETED(ROI) || (ROI in ignored_atoms))
+				continue //sleeps in CHECK_TICK
+
+			var/mob/living/L = (isliving(ROI) && ROI) || null
+
+			// if is anchored, don't let through
+			if(ROI.anchored)
+				//only TP living mobs buckled to non anchored items
+				if(L?.buckled && L.buckled.anchored)
+					continue
+				//Don't TP camera mobs
+				else if(!isobserver(ROI))
+					continue
+
+			if(L)
+				if(L?.buckled && isliving(L.buckled))
+					continue
+				if(LAZYLEN(L.buckled_mobs))
+					var/datum/component/riding/human/riding_datum_human = L.GetComponent(/datum/component/riding/human)
+					var/list/buckl_mobs = list()
+					for(var/mob/living/I in L.buckled_mobs)
+						buckl_mobs += I
+						ignored_atoms += I
+						TELEPORT_SOMETHING(I)
+					L.unbuckle_all_mobs(TRUE)
+					TELEPORT_SOMETHING(L)
+					for(var/mob/living/buckled_mob in buckl_mobs)
+						if(riding_datum_human && ishuman(L))
+							var/mob/living/carbon/human/H = L
+							H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
 						else
-							continue
-					//Don't TP camera mobs
-					else if(!isobserver(ROI))
-						continue
-				do_teleport(ROI, get_turf(target_pad),null,TRUE,null,null,null,null,TRUE, channel = TELEPORT_CHANNEL_QUANTUM)
-				CHECK_TICK
+							L.buckle_mob(buckled_mob, TRUE, TRUE)
+					continue
+
+			TELEPORT_SOMETHING(ROI)
+			CHECK_TICK
+
+#undef TELEPORT_SOMETHING
 
 /obj/machinery/quantumpad/proc/initMappedLink()
 	. = FALSE
 	var/obj/machinery/quantumpad/link = mapped_quantum_pads[map_pad_link_id]
 	if(link)
-		linked_pad = link
+		set_linked_pad(link)
 		. = TRUE
 
 /obj/item/paper/guides/quantumpad

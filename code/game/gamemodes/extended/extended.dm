@@ -9,6 +9,12 @@
 	announce_text = "Just have fun and enjoy the game!"
 
 /datum/game_mode/extended/pre_setup()
+	// Профиль директора поднимает dynamic, но Extended - отдельный геймод (master_mode "Extended"
+	// матчится на config_tag в pick_mode), поэтому поднимаем сами - иначе директор стоит весь раунд.
+	// Форс/секрет-пути могли оставить round_type от прошлого выбора - без этого setup_profile()
+	// взял бы чужой профиль, а контент-гейты Extended (аплинк, гост-роли) не сработали бы.
+	GLOB.round_type = ROUNDTYPE_EXTENDED
+	SSdirector.setup_profile()
 	return TRUE
 
 /datum/game_mode/extended/generate_report()

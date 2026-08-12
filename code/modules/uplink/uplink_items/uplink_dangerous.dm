@@ -104,6 +104,7 @@
 			метательное оружие. Бола сбивают цель с ног, а сюрикены застревают в конечностях."
 	item = /obj/item/storage/box/syndie_kit/throwing_weapons
 	cost = 3
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/dangerous/shotgun
 	name = "Bulldog Shotgun"
@@ -175,7 +176,7 @@
 	item = /obj/item/plasmascythe
 	player_minimum = 25
 	cost = 16
-	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/plasmascythe/get_discount()
@@ -208,7 +209,7 @@
 			прорезает броню и плоть, а достаточно ловкие оперативники могут сжечь им пулю на лету."
 	item = /obj/item/melee/transforming/plasmasword
 	cost = 8
-	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_CLOWN_OPS |UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/dangerous/shield
 	name = "Energy Shield"
@@ -250,7 +251,7 @@
 	name = "Flamethrower"
 	desc = "Огнемёт, заправленный высокогорючими биотоксинами, крадеными со станций Nanotrasen. \
 			Поджарьте мерзавцев в их же жадности. Используйте осторожно."
-	item = /obj/item/flamethrower/full/tank
+	item = /obj/item/gun/energy/m2a100
 	cost = 4
 	surplus = 40
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
@@ -284,7 +285,7 @@
 	refundable = TRUE
 	cant_discount = TRUE
 	surplus = 0
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 	player_minimum = 25
 	restricted = TRUE
 	refund_path = /obj/item/guardiancreator/tech/choose/traitor
@@ -325,7 +326,8 @@
 	и можете вбивать людей в столы с нечеловеческой силой. \
 	К сожалению, из-за размера перчаток вы не сможете пользоваться огнестрельным оружием."
 	item = /obj/item/clothing/gloves/fingerless/pugilist/mauler
-	cost = 8
+	cost = 4
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/dangerous/powerfist
 	name = "Power Fist"
@@ -334,13 +336,14 @@
 		Гаечным ключом можно регулировать расход газа для дополнительного урона и отбрасывания целей. \
 		Отвёрткой можно извлечь присоединённый баллон."
 	item = /obj/item/melee/powerfist
-	cost = 5
+	cost = 4
 
 /datum/uplink_item/dangerous/death_lipstick
 	name = "Kiss of Death"
 	desc = "Невероятно ядовитый тюбик помады, сделанный из яда ужасной Жёлтой Пятнистой Космической Ящерицы — смертельно и стильно. Постарайтесь не размазать!"
 	item = /obj/item/lipstick/black/death
-	cost = 12
+	cost = 4
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/dangerous/sniper
 	name = "Sniper Rifle"
@@ -396,3 +399,4 @@
 	item = /obj/item/seeds/kudzu
 	cost = 4
 	surplus = 10
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW

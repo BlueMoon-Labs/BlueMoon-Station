@@ -47,6 +47,7 @@
 	icon_state = "cbrnsuitmed"
 	item_state = "cbrnsuitmed"
 	slowdown = 0.25
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/tank/internals/emergency_nitrogen_ext, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid, /obj/item/analyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray)
 
 /obj/item/clothing/suit/cbrn/cargo
 	name = "cargo CBRN suit"
@@ -115,6 +116,7 @@
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for ERT Medical members."
 	icon_state = "moppsuitertmed"
 	item_state = "moppsuitertmed"
+	allowed = list(/obj/item/flashlight, /obj/item/gun/ballistic/revolver, /obj/item/gun/ballistic/automatic, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/energy, /obj/item/gun/ballistic/shotgun,  /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid, /obj/item/analyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray)
 
 /obj/item/clothing/suit/cbrn/mopp/advance/engi
 	name = "advance MOPP suit 'Engineer'"

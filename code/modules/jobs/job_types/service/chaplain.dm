@@ -196,15 +196,16 @@
 	uniform = /obj/item/clothing/under/rank/civilian/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/chaplain)
+	accessory = list(/obj/item/clothing/accessory/permit/special/chaplain, /obj/item/clothing/accessory/permit/special/syndie_station)
 	backpack_contents = list(/obj/item/storage/briefcase/crafted/chap_stuff = 1,
 							/obj/item/stamp/chap = 1,
-							/obj/item/syndicate_uplink=1,
+							/obj/item/syndicate_uplink/station=1,
 							)
 /obj/item/storage/briefcase/crafted/chap_stuff
 	name = "\improper Chaplain Case"

@@ -75,7 +75,17 @@
 	scan_things()
 
 /obj/machinery/pool/controller/Destroy()
-	STOP_PROCESSING(SSprocessing, src)
+	// Initialize регистрирует нас в SSfastprocess - снимать надо оттуда же,
+	// иначе контроллер остаётся в processing/currentrun и уходит в харддел
+	STOP_PROCESSING(SSfastprocess, src)
+	// Обратные ссылки: турфы и машины держат нас, пока сами их не обнулим
+	for(var/turf/open/pool/linked_turf as anything in linked_turfs)
+		if(linked_turf.controller == src)
+			linked_turf.controller = null
+	if(linked_drain?.controller == src)
+		linked_drain.controller = null
+	if(linked_filter?.controller == src)
+		linked_filter.controller = null
 	linked_drain = null
 	linked_filter = null
 	linked_turfs.Cut()
@@ -267,6 +277,10 @@
 	if(drained)
 		return
 	for(var/mob/living/M in mobs_in_pool)
+		// Если персонаж не на водном тайле — удаляем и пропускаем
+		if(!istype(M.loc, /turf/open/pool))
+			mobs_in_pool -= M
+			continue
 		switch(temperature) //Apply different effects based on what the temperature is set to.
 			if(POOL_SCALDING) //Scalding
 				M.adjust_bodytemperature(50,0,500)
@@ -313,7 +327,7 @@
 				else
 					drownee.adjustOxyLoss(4)
 					if(prob(35))
-						to_chat(drownee, "<span class='danger'>You're drowning!</span>")
+						to_chat(drownee, "<span class='danger'>Вы тонете!!</span>")
 
 /obj/machinery/pool/controller/proc/set_bloody(state)
 	if(bloody == state)
@@ -401,7 +415,7 @@
 			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
 			mist_off()
 			interact_delay = world.time + 60
-			linked_drain.active = TRUE
+			linked_drain.set_active(TRUE)
 			linked_drain.cycles_left = 75
 			if(!linked_drain.filling)
 				new /obj/effect/whirlpool(linked_drain.loc)

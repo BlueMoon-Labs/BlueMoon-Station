@@ -141,7 +141,7 @@
 		abilities = shuffle(abilities)
 	for(var/ab in abilities)
 		var/datum/action/boss/AB = ab
-		if(!boss.client && (!AB.req_statuses || (boss.AIStatus in AB.req_statuses)) && prob(AB.usage_probability) && AB.Trigger())
+		if(!boss.client && (!AB.req_statuses || (boss.get_effective_ai_status() in AB.req_statuses)) && prob(AB.usage_probability) && AB.Trigger())
 			break
 		AB.UpdateButtons(TRUE)
 

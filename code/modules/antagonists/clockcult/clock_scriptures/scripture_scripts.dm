@@ -5,74 +5,77 @@
 
 //Replica Fabricator: Creates a replica fabricator, used to convert objects and repair clockwork structures.
 /datum/clockwork_scripture/create_object/replica_fabricator
-	descname = "Creates Brass and Converts Objects"
+	descname = "Конвертер вещей"
 	name = "Replica Fabricator"
-	desc = "Forms a device that, when used on certain objects, replaces them with their Ratvarian equivalents. It requires power to function."
-	invocations = list("With this device...", "...his presence shall be made known.")
+	desc = "Создает устройство, которое при применении к определённым объектам заменяет их на их ратварские аналоги. Для работы устройства требуется питание."
+	invocations = list("С помощью этого устройства...", "...о его присутствии станет известно.")
 	channel_time = 20
 	power_cost = 250
 	whispered = TRUE
 	object_path = /obj/item/clockwork/replica_fabricator
-	creator_message = "<span class='brass'>You form a replica fabricator.</span>"
-	usage_tip = "Clockwork Walls cause nearby Tinkerer's Caches to generate components passively, making this a vital tool. Clockwork Floors heal toxin damage in Servants standing on them."
+	creator_message = "<span class='brass'>Вы создаете фабрикатор реплик.</span>"
+	usage_tip = "Часовые стены заставляют расположенные поблизости тайники мастера пассивно генерировать компоненты, что делает их незаменимым инструментом. Часовые полы восстанавливают урон от токсинов у слуг, стоящих на них."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	space_allowed = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 1
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Creates a Replica Fabricator, which can convert various objects to Ratvarian variants."
+	quickbind_desc = "Replica Fabricator."
 
 
 //Ocular Warden: Creates an ocular warden, which defends a small area near it.
 /datum/clockwork_scripture/create_object/ocular_warden
-	descname = "Structure, Turret"
+	descname = "Турель"
 	name = "Ocular Warden"
-	desc = "Forms an automatic short-range turret which will automatically attack nearby unrestrained non-Servants that can see it."
-	invocations = list("Guardians of Engine...", "...judge those who would harm us.")
+	desc = "Создает автоматическую турель ближнего действия, которая будет автоматически атаковать находящихся поблизости свободных от оков не-Слуг, которых она видит."
+	invocations = list("Стражи Двигателя...", "...судите тех, кто хочет причинить нам вред.")
 	channel_time = 100
-	power_cost = 250
+	power_cost = 2500
 	object_path = /obj/structure/destructible/clockwork/ocular_warden
-	creator_message = "<span class='brass'>You form an ocular warden, which will automatically attack nearby unrestrained non-Servants that can see it.</span>"
-	observer_message = "<span class='warning'>A brass eye takes shape and slowly rises into the air, its red iris glaring!</span>"
-	usage_tip = "Although powerful, the warden is very fragile and should optimally be placed behind barricades."
+	creator_message = "<span class='brass'>Вы создаете глазного стража, который будет автоматически атаковать находящихся поблизости свободных существ, не являющихся Слугами, которых он может видеть.</span>"
+	observer_message = "<span class='warning'>Латунная глазница обретает форму и медленно поднимается в воздух, а её красная радужка сверкает!</span>"
+	usage_tip = "Несмотря на свою мощь, страж очень уязвим, и в идеале его следует размещать за баррикадами."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	space_allowed = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 2
 	quickbind = TRUE
-	quickbind_desc = "Creates an Ocular Warden, which will automatically attack nearby unrestrained non-Servants that can see it."
+	quickbind_desc = "Создаёт глазного стража, который будет автоматически атаковать находящихся поблизости свободных существ, не являющихся Слугами, которых он может видеть."
 
 /datum/clockwork_scripture/create_object/ocular_warden/check_special_requirements()
 	for(var/obj/structure/destructible/clockwork/ocular_warden/W in range(OCULAR_WARDEN_EXCLUSION_RANGE, invoker))
-		to_chat(invoker, "<span class='neovgre'>You sense another ocular warden too near this location. Placing another this close would cause them to fight.</span>" )
+		to_chat(invoker, "<span class='neovgre'>Вы чувствуете присутствие ещё одного глазного стража, находящегося слишком близко к этому месту. Если разместить ещё одного так близко, между ними начнётся битва.</span>" )
 		return FALSE
 	return ..()
 
 //Vitality Matrix: Creates a sigil which will drain health from nonservants and can use that health to heal or even revive servants.
 /datum/clockwork_scripture/create_object/vitality_matrix
-	descname = "Trap, Damage to Healing"
+	descname = "Сигил жизни"
 	name = "Vitality Matrix"
-	desc = "Places a sigil that drains life from any living non-Servants that cross it, producing Vitality. Servants that cross it, however, will be healed using existing Vitality. \
-	Dead Servants can be revived by this sigil at a cost of 150 Vitality."
-	invocations = list("Divinity, siphon their essence...", "...for this shell to consume.")
+	desc = "Создаёт печать, которая поглощает жизнь у всех живых существ, не являющихся Слугами, пересекающих её, и генерирует жизненную силу. Однако Слуги, пересекающие эту печать, будут исцелены за счёт имеющейся жизненной силы. \
+    Мёртвых Слуг можно воскресить с помощью этой печати за 150 единиц жизненной силы."
+	invocations = list("Божественность, впитай их эссенцию...", "...чтобы эта оболочка поглотила её.")
 	channel_time = 60
 	power_cost = 1000
 	whispered = TRUE
 	object_path = /obj/effect/clockwork/sigil/vitality
-	creator_message = "<span class='brass'>A vitality matrix appears below you. It will drain life from non-Servants and heal Servants that cross it.</span>"
-	usage_tip = "The sigil will be consumed upon reviving a Servant."
+	creator_message = "<span class='brass'>Под вами появляется матрица жизненной силы. Она будет поглощать жизнь у существ, не являющихся Слугами, и восстанавливать здоровье Слугам, пересекающим её.</span>"
+	usage_tip = "Сигил исчезнет при воскрешении Слуги."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 3
 	quickbind = TRUE
-	quickbind_desc = "Creates a Vitality Matrix, which drains non-Servants on it to heal Servants that cross it."
+	quickbind_desc = "Создаёт матрицу жизненной силы, которая поглощает энергию всех существ, не являющихся Слугами, находящихся на ней, чтобы исцелить Слуг, пересекающих её."
 
 /datum/clockwork_scripture/create_object/vitality_matrix/check_special_requirements()
 	if(locate(object_path) in range(1, invoker))
-		to_chat(invoker, "<span class='danger'>Vitality matrices placed next to each other could interfere and cause a feedback loop! Move away from the other ones!</span>")
+		to_chat(invoker, "<span class='danger'>Матрицы жизненной энергии, расположенные рядом друг с другом, могут создавать помехи и вызывать петлю обратной связи! Отодвиньте их подальше друг от друга!</span>")
 		return FALSE
 	return ..()
 
@@ -83,105 +86,123 @@
 
 //Sigil of Rites: Creates a sigil that allows to perform certain rites on it. More information on these can be found in clock_rites.dm, they usually require power, materials and sometimes a target.
 /datum/clockwork_scripture/create_object/sigil_of_rites
-	descname = "Sigil, Access to rites"
+	descname = "Доступ к ритуалам"
 	name = "Sigil of Rites"
-	desc = "Places a sigil that, when interacted with, will allow for a variety of rites to be performed on the sigil. These usually require power cells, clockwork power, and some other components."
-	invocations = list("Engine, allow us..", ".. to be blessed with your rites.")
+	desc = "Размещает сигил, при взаимодействии с которым на нём можно проводить различные ритуалы. Для этого обычно требуются батарейки, часовая энергия и некоторые другие компоненты."
+	invocations = list("Двигатель, позволь нам...", "...получить благословение твоих обрядов")
 	channel_time = 80
 	power_cost = 1400
 	invokers_required = 2
 	multiple_invokers_used = TRUE
 	whispered = TRUE
 	object_path = /obj/effect/clockwork/sigil/rite
-	creator_message = "<span class='brass'>A sigil of Rites appears beneath you. It will allow you to perform certain rites, given sufficient materials and power.</span>"
-	usage_tip = "It may be useful to coordinate to acquire needed materials quickly."
+	creator_message = "<span class='brass'>Под вами появляется сигил Ритуалов. При наличии достаточного количества материалов и силы он позволит вам проводить определённые ритуалы.</span>"
+	usage_tip = "Возможно, будет полезно скоординировать свои действия, чтобы быстро приобрести необходимые материалы."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 4
 
 //Judicial Visor: Creates a judicial visor, which can smite an area.
 /datum/clockwork_scripture/create_object/judicial_visor
-	descname = "Delayed Area Knockdown Glasses"
+	descname = "Отложенный удар по зоне очками"
 	name = "Judicial Visor"
-	desc = "Creates a visor that can smite an area, applying Belligerent and briefly stunning. The smote area will explode after 3 seconds."
-	invocations = list("Grant me the flames of Engine.")
+	desc = "Создает визор, который может поразить пространство, придавая ему Воинственность и ненадолго ошеломляя. Пораженная область взорвется через 3 секунды."
+	invocations = list("Даруй мне пламя Двигателя.")
 	channel_time = 10
 	power_cost = 400
 	whispered = TRUE
 	object_path = /obj/item/clothing/glasses/judicial_visor
-	creator_message = "<span class='brass'>You form a judicial visor, which is capable of smiting a small area.</span>"
-	usage_tip = "The visor has a thirty-second cooldown once used."
+	creator_message = "<span class='brass'>Вы формируете судебный визор, который способен поражать небольшую область.</span>"
+	usage_tip = "После использования визор перезаряжается в течение тридцати секунд."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	space_allowed = TRUE
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 5
 	quickbind = TRUE
-	quickbind_desc = "Creates a Judicial Visor, which can smite an area, applying Belligerent and briefly stunning."
+	quickbind_desc = "Создает cудебный визор, который может поразить область, применив Воинственность и на короткое время оглушив противника."
 
 //Nezbere's shield: Creates a ratvarian shield which absorbs attacks, see ratvarian_shield.dm for details.
 /datum/clockwork_scripture/create_object/nezberes_shield
-	descname = "Shield with empowerable bashes"
+	descname = "Щит"
 	name = "Nezbere's shield"
-	desc = "Creates a shield which generates charge from blocking damage, using it to empower its bashes tremendously. It is repaired with brass, and while very durable, extremely weak to lasers and, even more so, to energy weaponry."
-	invocations = list("Shield me...", "... from the coming dark.")
+	desc = "Создает щит, который накапливает энергию, блокируя урон, и использует ее для усиления своих ударов. Щит сделан из латуни и, несмотря на свою прочность, крайне уязвим для лазеров и тем более для энергетического оружия."
+	invocations = list("Защити меня...", "...от надвигающейся тьмы.")
 	channel_time = 20
 	power_cost = 600 //Shouldn't be too spammable but not too hard to get either
 	whispered = TRUE
-	creator_message = "You form a ratvarian shield, which is capable of absorbing blocked attacks to empower its bashes."
+	creator_message = "Вы создаете ратварский щит, который способен поглощать заблокированные атаки, чтобы усилить свои удары."
 	object_path = /obj/item/shield/riot/ratvarian
-	usage_tip = "Bashes will only use charge when performed with intent to harm."
+	usage_tip = "Удары будут использовать заряд только в том случае, если они выполняются с намерением причинить вред(harm/4ый intent)."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	space_allowed = TRUE
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 7
 	quickbind = TRUE
-	quickbind_desc = "Creates a Ratvarian shield, which can absorb energy from attacks for use in powerful bashes."
+	quickbind_desc = "Создает ратварский щит, который может поглощать энергию атак и использовать ее для нанесения мощных ударов."
 
 /datum/clockwork_scripture/create_object/station_clock_curse
-	descname = "Частичка Ратварской освободительной Армии"
-	name = "Ратварское Подкрепление"
-	desc = "Создаёт предмет, который необходимо разбить для призыва Портального Шторма."
+	descname = "Портальный шторм"
+	name = "Station Reinforcement"
+	desc = "Создаёт сферу, при разбитии вызывающую портальный шторм, что создаёт множество других враждебных культистов."
 	invocations = list("Я прошу, пришли подкрепление...", "...мы в тебе нуждаемся.")
 	channel_time = 20
-	power_cost = 55000 //Shouldn't be too spammable but not too hard to get either
+	power_cost = 50000
 	whispered = TRUE
-	creator_message = "Вы сформировали Сферу с Проклятием для Станции."
+	creator_message = "Вы сформировали сферу с проклятием для станции."
 	object_path = /obj/item/station_clock_curse
-	usage_tip = "Разбейте это путём использования."
+	usage_tip = "Максимум 3 раза за раунд."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_MOBS
 	space_allowed = TRUE
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 7
 	quickbind = TRUE
-	quickbind_desc = "Создаёт предмет, который необходимо разбить для призыва Портального Шторма."
+	quickbind_desc = "Создаёт сферу, при разбитии создающую портальный шторм на станции"
+
+/datum/clockwork_scripture/create_object/station_clock_curse/creation_update()
+	var/should_hide = /obj/item/station_clock_curse::curse_uses >= STATION_CLOCK_CURSE_MAX_USES
+	if(hidden_from_ui != should_hide)
+		hidden_from_ui = should_hide
+		return TRUE
+	return FALSE
+
+/datum/clockwork_scripture/create_object/station_clock_curse/check_special_requirements()
+	if(/obj/item/station_clock_curse::curse_uses >= STATION_CLOCK_CURSE_MAX_USES)
+		to_chat(invoker, "<span class='notice'>Мы исчерпали свою способность проклинать Космическую Станцию.</span>")
+		return FALSE
+	return ..()
 
 //Clockwork Armaments: Grants the invoker the ability to call forth a Ratvarian spear and clockwork armor.
 /datum/clockwork_scripture/clockwork_armaments
-	descname = "Summonable Armor and Weapons"
+	descname = "Броня и копьё"
 	name = "Clockwork Armaments"
-	desc = "Allows the invoker to summon clockwork armor and a Ratvarian spear at will. The spear's attacks will generate Vitality, used for healing."
-	invocations = list("Grant me armaments...", "...from the forge of Armorer.")
+	desc = "Позволяет заклинателю по желанию вызывать часовую броню и ратварское копье. Атаки копьем будут генерировать жизненную силу, используемую для исцеления."
+	invocations = list("Даруй мне оружие...", "...из кузницы Оружейника.")
 	channel_time = 20
 	power_cost = 250
 	whispered = TRUE
-	usage_tip = "Throwing the spear at a mob will do massive damage and knock them down, but break the spear. You will need to wait for 30 seconds before resummoning it."
+	usage_tip = "Метание копья в моба нанесет огромный урон и собьет его с ног, но сломает копье. Вам нужно будет подождать 30 секунд, прежде чем вызвать его повторно."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 8
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Permanently binds clockwork armor and a Ratvarian spear to you."
+	quickbind_desc = "Навсегда привязывает к вам заводную броню и ратварское копье."
 
 /datum/clockwork_scripture/clockwork_armaments/check_special_requirements()
 	for(var/datum/action/innate/clockwork_armaments/F in invoker.actions)
-		to_chat(invoker, "<span class='warning'>You have already bound a Ratvarian spear to yourself!</span>")
+		to_chat(invoker, "<span class='warning'>Вы уже привязали к себе ратварское копье!</span>")
 		return FALSE
 	return invoker.can_hold_items()
 
 /datum/clockwork_scripture/clockwork_armaments/scripture_effects()
-	invoker.visible_message("<span class='warning'>A shimmer of yellow light infuses [invoker]!</span>", \
-	"<span class='brass'>You bind clockwork equipment to yourself. Use Clockwork Armaments and Call Spear to summon them.</span>")
+	invoker.visible_message("<span class='warning'>Мерцание желтого света проникает в [invoker]!</span>", \
+	"<span class='brass'>Вы привязываете к себе часовое снаряжение. Используйте Clockwork Armaments и призыв Копье, чтобы вызвать его.</span>")
 	var/datum/action/innate/call_weapon/ratvarian_spear/S = new()
 	S.Grant(invoker)
 	var/datum/action/innate/clockwork_armaments/A = new()
@@ -191,7 +212,7 @@
 //Clockwork Armaments: Equips a set of clockwork armor. Three-minute cooldown.
 /datum/action/innate/clockwork_armaments
 	name = "Clockwork Armaments"
-	desc = "Outfits you in a full set of Ratvarian armor."
+	desc = "Наденьте на себя полный комплект ратварских доспехов."
 	icon_icon = 'icons/mob/actions/actions_clockcult.dmi'
 	button_icon_state = "clockwork_armor"
 	background_icon_state = "bg_clock"
@@ -231,11 +252,13 @@
 	if(remove_item_if_better(I, owner))
 		do_message += owner.equip_to_slot_or_del(new/obj/item/clothing/shoes/clockwork(null), ITEM_SLOT_FEET)
 	if(do_message)
-		owner.visible_message("<span class='warning'>Strange armor appears on [owner]!</span>", "<span class='heavy_brass'>A bright shimmer runs down your body, equipping you with Ratvarian armor.</span>")
+		owner.visible_message("<span class='warning'>Странная броня появляется на [owner]!</span>", "<span class='heavy_brass'>Яркое сияние струится по вашему телу, одевая на вас ратварскую броню.</span>")
 		playsound(owner, 'sound/magic/clockwork/fellowship_armory.ogg', 15 * do_message, TRUE) //get sound loudness based on how much we equipped
-	cooldown = CLOCKWORK_ARMOR_COOLDOWN + world.time
-	owner.update_action_buttons_icon()
-	addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), CLOCKWORK_ARMOR_COOLDOWN)
+		cooldown = CLOCKWORK_ARMOR_COOLDOWN + world.time //no cooldown if nothing was equipped, so a failed attempt (e.g. undroppable equipment) can be retried
+		owner.update_action_buttons_icon()
+		addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), CLOCKWORK_ARMOR_COOLDOWN)
+	else
+		to_chat(owner, "<span class='warning'>Ваше снаряжение невозможно заменить бронёй Ратвара! Снимите его и попробуйте снова.</span>")
 	return TRUE
 
 /datum/action/innate/clockwork_armaments/proc/remove_item_if_better(obj/item/I, mob/user)
@@ -250,31 +273,32 @@
 //Call Spear: Calls forth a powerful Ratvarian spear.
 /datum/action/innate/call_weapon/ratvarian_spear
 	name = "Call Spear"
-	desc = "Calls a Ratvarian spear into your hands to fight your enemies."
+	desc = "Призывает ратварское копье в ваши руки, чтобы сразиться с вашими врагами."
 	weapon_type = /obj/item/clockwork/weapon/ratvarian_spear
 
 
 //Mending Mantra: Channeled for up to ten times over twenty seconds to repair structures and heal allies
 /datum/clockwork_scripture/channeled/mending_mantra
-	descname = "Channeled, Area Healing and Repair"
+	descname = "Ремонт и лечение"
 	name = "Mending Mantra"
-	desc = "Repairs nearby structures and constructs. Servants wearing clockwork armor will also be healed. Channeled every two seconds for a maximum of twenty seconds."
-	chant_invocations = list("Mend our dents!", "Heal our scratches!", "Repair our gears!")
+	desc = "Восстанавливает близлежащие строения и конструкции. Слуги, одетые в часовую броню, также будут исцелены. Произносится каждые две секунды в течение максимум двадцати секунд."
+	chant_invocations = list("Залатайте наши раны!", "Залечите наши царапины!", "Почините наши шестерни!")
 	chant_amount = 10
 	chant_interval = 20
 	power_cost = 400
-	usage_tip = "This is a very effective way to rapidly reinforce a base after an attack."
+	usage_tip = "Это очень эффективный способ быстро укрепить базу после атаки."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 9
 	quickbind = TRUE
-	quickbind_desc = "Repairs nearby structures and constructs. Servants wearing clockwork armor will also be healed.<br><b>Maximum 10 chants.</b>"
+	quickbind_desc = "Восстанавливает близлежащие строения и конструкциии. Слуги, одетые в часовую броню, также будут исцелены.<br><b>Максимум 10 заклинаний."
 	var/heal_attempts = 4
-	var/heal_amount = 2.5
+	var/heal_amount = 5
 	var/static/list/damage_heal_order = list(BRUTE, BURN, OXY)
-	var/static/list/heal_finish_messages = list("There, all mended!", "Try not to get too damaged.", "No more dents and scratches for you!", "Champions never die.", "All patched up.", \
-	"Ah, child, it's okay now.", "Pain is temporary.", "What you do for the Justiciar is eternal.", "Bear this for me.", "Be strong, child.", "Please, be careful!", \
-	"If you die, you will be remembered.")
+	var/static/list/heal_finish_messages = list("Ну вот, все починено!", "Старайтесь не слишком сильно пострадать.", "У вас больше не будет ран и царапин!", "Чемпионы никогда не умирают.", "Все подлатано.", \
+	"Ах, дитя мое, теперь все в порядке.", "Боль временно.", "То, что вы делаете для Юстициара, вечно.", "Потерпи это ради меня.", "Будь сильным, дитя.", "Пожалуйста, будьте осторожны!", \
+	"Если ты умрешь, тебя будут помнить.")
 	var/static/list/heal_target_typecache = typecacheof(list(
 	/obj/structure/destructible/clockwork,
 	/obj/machinery/door/airlock/clockwork,
@@ -286,6 +310,15 @@
 	/obj/item/clothing/head/helmet/clockwork,
 	/obj/item/clothing/gloves/clockwork,
 	/obj/item/clothing/shoes/clockwork))
+
+/datum/clockwork_scripture/channeled/mending_mantra/proc/is_synthetic_servant(mob/living/L)
+	if(L.stat == DEAD || !is_servant_of_ratvar(L))
+		return FALSE
+	if(isrobotic(L))
+		return TRUE
+	if(issilicon(L) && !istype(L, /mob/living/silicon/ai))
+		return TRUE
+	return FALSE
 
 /datum/clockwork_scripture/channeled/mending_mantra/chant_effects(chant_number)
 	var/turf/T
@@ -306,20 +339,20 @@
 					else
 						to_chat(S, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
 						break
-			else if(issilicon(M))
-				var/mob/living/silicon/S = M
-				if(S.health == S.maxHealth || S.stat == DEAD || !is_servant_of_ratvar(S))
+			else if(is_synthetic_servant(M))
+				var/mob/living/L = M
+				if(!L.getBruteLoss() && !L.getFireLoss() && L.health >= L.maxHealth)
 					continue
 				T = get_turf(M)
 				for(var/i in 1 to heal_attempts)
-					if(S.health < S.maxHealth)
-						S.heal_ordered_damage(heal_amount, damage_heal_order)
+					if(L.getBruteLoss() || L.getFireLoss() || L.health < L.maxHealth)
+						L.heal_overall_damage(heal_amount, heal_amount, only_robotic = FALSE, only_organic = FALSE)
 						new /obj/effect/temp_visual/heal(T, "#1E8CE1")
-						if(i == heal_attempts && S.health >= S.maxHealth)
-							to_chat(S, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
+						if(i == heal_attempts && !L.getBruteLoss() && !L.getFireLoss() && L.health >= L.maxHealth)
+							to_chat(L, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
 							break
 					else
-						to_chat(S, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
+						to_chat(L, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
 						break
 			else if(ishuman(M))
 				var/mob/living/carbon/human/H = M
@@ -350,6 +383,23 @@
 						else
 							to_chat(H, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
 							break
+		else if(istype(M, /obj/vehicle/sealed/mecha/combat/neovgre))
+			var/obj/vehicle/sealed/mecha/combat/neovgre/N = M
+			if(N.obj_integrity >= N.max_integrity && (!N.cell || N.cell.charge >= N.cell.maxcharge))
+				continue
+			T = get_turf(M)
+			for(var/i in 1 to heal_attempts)
+				var/needs_more = FALSE
+				if(N.obj_integrity < N.max_integrity)
+					N.obj_integrity = min(N.obj_integrity + heal_amount, N.max_integrity)
+					needs_more = TRUE
+				if(N.cell && N.cell.charge < N.cell.maxcharge)
+					N.cell.charge = min(N.cell.charge + heal_amount * 10, N.cell.maxcharge)
+					needs_more = TRUE
+				if(needs_more)
+					new /obj/effect/temp_visual/heal(T, "#1E8CE1")
+				else
+					break
 		else if(is_type_in_typecache(M, heal_target_typecache))
 			var/obj/structure/destructible/clockwork/C = M
 			if(C.obj_integrity == C.max_integrity || (istype(C) && !C.can_be_repaired))
@@ -367,23 +417,24 @@
 
 //Volt Blaster: Channeled for up to five times over ten seconds to fire up to five rays of energy at target locations.
 /datum/clockwork_scripture/channeled/volt_blaster
-	descname = "Channeled, Targeted Energy Blasts"
+	descname = "Энерголучи"
 	name = "Volt Blaster"
-	desc = "Allows you to fire five energy rays at target locations. Channeled every fourth of a second for a maximum of ten seconds."
+	desc = "Позволяет вам стрелять пятью энергетическими лучами по целям. Произносится каждые четверть секунды в течение максимум десяти секунд."
 	channel_time = 30
-	invocations = list("Amperage...", "...grant me your power!")
-	chant_invocations = list("Use charge to kill!", "Slay with power!", "Hunt with energy!")
+	invocations = list("Сила тока...", "...даруй мне свою силу!")
+	chant_invocations = list("Используй заряд, чтобы убивать!", "Убивай силой!", "Охотьтесь с энергией!")
 	chant_amount = 5
 	chant_interval = 4
 	power_cost = 500
-	usage_tip = "Though it requires you to stand still, this scripture can do massive damage."
+	usage_tip = "Хотя это требует, чтобы вы стояли неподвижно, это Писания может нанести огромный урон."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_ATTACK
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 6
 	quickbind = TRUE
-	quickbind_desc = "Allows you to fire energy rays at target locations.<br><b>Maximum 5 chants.</b>"
-	var/static/list/nzcrentr_insults = list("You're not very good at aiming.", "You hunt badly.", "What a waste of energy.", "Almost funny to watch.",
-	"Boss says </span><span class='heavy_brass'>\"Click something, you idiot!\"</span><span class='nzcrentr'>.", "Stop wasting power if you can't aim.")
+	quickbind_desc = "Позволяет вам стрелять энергетическими лучами по целям.<br><b>Максимум 5 заклинаний.</b>"
+	var/static/list/nzcrentr_insults = list("Ты не очень хорошо целишься.", "Ты плохо охотишься.", "Какая пустая трата энергии.", "Почти забавно наблюдать за этим.",
+	"Босс говорит </span><span class='heavy_brass'>\"Нажми куда-то, идиот!\"</span><span class='nzcrentr'>.", "Перестань тратить энергию впустую, если не можешь прицелиться.")
 
 /datum/clockwork_scripture/channeled/volt_blaster/chant_effects(chant_number)
 	slab.busy = null
@@ -407,30 +458,31 @@
 	slab_overlay = "volt"
 	allow_mobility = FALSE
 	ranged_type = /obj/effect/proc_holder/slab/volt
-	ranged_message = "<span class='nzcrentr_small'><i>You charge the clockwork slab with shocking might.</i>\n\
-	<b>Left-click a target to fire, quickly!</b></span>"
+	ranged_message = "<span class='nzcrentr_small'><i>Вы заряжаете часовую плиту шокирующей мощью.</i>\n\
+	<b>Щелкните левой кнопкой мыши на цель, чтобы выстрелить, быстро!</b></span>"
 	timeout_time = 20
 
 /datum/clockwork_scripture/void_volt
-	descname = "Pulse, Power Drain"
+	descname = "ЕМП-взрыв"
 	name = "Void Volt"
-	desc = "A spell that releases a pulse which drains the power of anything in a radius of eight tiles, but burns the invoker. \
-	Can be used with more servants to increase range and split the caused damage evenly among all invokers. \
-	Also charges clockwork power by a small percentage of the drained power amount, which can help offset this scriptures powercost."
-	invocations = list("Take the energy...", "...of their inventions...", "...and grant it to Engine...",  "...for they already live in utter darkness!")
+	desc = "Заклинание, высвобождающее импульс, который вытягивает энергию из всего в радиусе восьми клеток, но обжигает заклинателя.\
+	Может быть использовано совместно с другими Слугами для увеличения радиуса действия и равномерного распределения получаемого урона между всеми заклинателями.\
+	Кроме того, восполняет запас энергии Ратвара на небольшую долю от количества поглощённой энергии, что позволяет частично компенсировать энергетические затраты этого писания."
+	invocations = list("Возьмите энергию...", "...их изобретений...", "...и даруйте ее Двигателю...",  "...ибо они и так живут в кромешной тьме!")
 	channel_time = 130 //You need alot of time, but it pays off. - ten times as powerful as a regular drain (done by transmission sigils) and recurses + affects weapons - incredibly useful if you can pull this off before a big fight.
 	power_cost = 500 //Relatively medium powercost, but can be offset due to it adding a part of drained power to the power pool.
 	multiple_invokers_used = TRUE
 	multiple_invokers_optional = TRUE
-	usage_tip = "Be sure to not be injured when using this, or the power channeled through you may overwhelm your body."
+	usage_tip = "Следите за тем, чтобы не получить травму при использовании этого устройства, иначе сила, проходящая через вас, может подавить ваше тело."
 	tier = SCRIPTURE_SCRIPT
+	category = SCRIPTURE_CATEGORY_ATTACK
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 11
 	quickbind = TRUE
-	quickbind_desc = "Quickly drains power in an area around the invoker, causing burns proportional to the amount of energy drained."
+	quickbind_desc = "Быстро истощает энергию в области вокруг вызывающего, вызывая ожоги, пропорциональные количеству израсходованной энергии."
 
 /datum/clockwork_scripture/void_volt/chant()
-	invoker.visible_message("<span class='warning'>[invoker] glows in a brilliant golden light!</span>")
+	invoker.visible_message("<span class='warning'>[invoker] светится ярким золотистым светом!</span>")
 	invoker.add_atom_colour("#FFD700", ADMIN_COLOUR_PRIORITY)
 	invoker.light_power = 2
 	invoker.light_range = 4
@@ -440,7 +492,7 @@
 	..()//Do the timer & Chant
 
 /mob/proc/stop_void_volt_glow() //Needed so the scripture being qdel()d doesn't prevent it.
-	visible_message("<span class='warning'>[src] stops glowing...</span>")
+	visible_message("<span class='warning'>[src] перестает светиться...</span>")
 	remove_atom_colour(ADMIN_COLOUR_PRIORITY)
 	light_power = 0
 	light_range = 0

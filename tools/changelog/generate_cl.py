@@ -24,7 +24,7 @@ from pathlib import Path
 from ruamel import yaml
 from github import Github, InputGitAuthor
 
-CL_BODY = re.compile(r":cl:(.+)?\r?\n((.|\n|\r)+?)\r?\n\/:cl:", re.MULTILINE)
+CL_BODY = re.compile(r":cl:([^\r\n]+)?\r?\n((.|\n|\r)+?)\r?\n\/:cl:", re.MULTILINE)
 CL_SPLIT = re.compile(r"(^\w+):\s+(\w.+)", re.MULTILINE)
 
 git_email = os.getenv("GIT_EMAIL")
@@ -59,10 +59,8 @@ except AttributeError:
     exit(0) # Change to '0' if you do not want the action to fail when no CL is provided
 
 
-if cl.group(1) is not None:
-    write_cl['author'] = cl.group(1).lstrip()
-else:
-    write_cl['author'] = pr_author
+author = cl.group(1).strip() if cl.group(1) is not None else ""
+write_cl['author'] = author if author else pr_author
 
 write_cl['delete-after'] = True
 

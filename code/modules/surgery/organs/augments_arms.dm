@@ -37,6 +37,7 @@
 	// Убираем возможность класть предметы на стол и в инвентарь
 	I.item_flags |= ABSTRACT
 	I.w_class = WEIGHT_CLASS_HUGE
+	ADD_TRAIT(I, TRAIT_NODROP, IMPLANT_NODROP)
 
 	items_list += I
 	// ayy only dropped signal for performance, we can't possibly have shitcode that doesn't call it when removing items from a mob, right?
@@ -44,6 +45,7 @@
 	RegisterSignal(I, COMSIG_ITEM_DROPPED, PROC_REF(magnetic_catch))
 
 /obj/item/organ/cyberimp/arm/proc/magnetic_catch(datum/source, mob/user)
+	SIGNAL_HANDLER
 	. = COMPONENT_DROPPED_RELOCATION
 	var/obj/item/I = source			//if someone is misusing the signal, just runtime
 	if(I in items_list)
@@ -88,9 +90,9 @@
 	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
 	update_icon()
 
-/obj/item/organ/cyberimp/arm/Remove(special = FALSE)
+/obj/item/organ/cyberimp/arm/deactivate(removing)
+	. = ..()
 	Retract()
-	..()
 
 /obj/item/organ/cyberimp/arm/emp_act(severity)
 	. = ..()
@@ -150,9 +152,6 @@
 	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/ui_action_click(mob/user, actiontype)
-	if(!is_operational(FALSE))
-		return
-
 	if(!holder || (holder in src))
 		holder = null
 		if(contents.len == 1)
@@ -168,12 +167,14 @@
 	else
 		Retract()
 
-/obj/item/organ/cyberimp/arm/proc/is_operational(silent = TRUE)
+/obj/item/organ/cyberimp/arm/activate_allowed(datum/action/action, mob/user, silent)
+	. = ..()
+	if(!.)
+		return
 	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
 		if(!silent)
-			to_chat(owner, span_warning("The implant doesn't respond. It seems to be broken..."))
+			to_chat(owner, span_warning("The [src] doesn't respond. It seems to be broken..."))
 		return FALSE
-	return TRUE
 
 /obj/item/organ/cyberimp/arm/medibeam
 	name = "integrated medical beamgun"
@@ -349,6 +350,10 @@
 	var/obj/item/assembly/flash/armimplant/F = new
 	add_item(F)
 	F.I = src
+
+/obj/item/organ/cyberimp/arm/shield/sec_level
+	name = "Corporate arm-mounted riot shield"
+	active_security_level = RIOT_SHIELD_SEC_LEVEL
 
 /////////////////
 

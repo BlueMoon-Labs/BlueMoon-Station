@@ -14,6 +14,10 @@
 
 	var/maximum_pressure = 90 * ONE_ATMOSPHERE
 
+	///TRUE while something is going on (reaction, open valve, armed timer, working pump);
+	///FALSE lets process_atmos() drop the portable from SSair until excite() is called.
+	var/excited = TRUE
+
 /obj/machinery/portable_atmospherics/New()
 	..()
 	SSair.start_processing_machine(src)
@@ -31,11 +35,63 @@
 
 	return ..()
 
-/obj/machinery/portable_atmospherics/process_atmos()
-	if(!connected_port) // Pipe network handles reactions if connected.
-		air_contents.react(src)
+///Общая часть ui_data всех переносных: раньше окна показывали одно давление,
+///и о температуре с составом содержимого приходилось догадываться.
+/obj/machinery/portable_atmospherics/proc/ui_contents_data()
+	var/list/data = list(
+		"connected" = connected_port ? TRUE : FALSE,
+		"pressure" = round(air_contents.return_pressure(), 0.01),
+		"temperature" = round(air_contents.return_temperature(), 0.01),
+		"max_pressure_allowed" = round(maximum_pressure),
+		"gases" = gas_composition(air_contents),
+	)
+	if(holding)
+		data["holding"] = list(
+			"name" = holding.name,
+			"pressure" = round(holding.air_contents.return_pressure(), 0.01),
+			"temperature" = round(holding.air_contents.return_temperature(), 0.01),
+			"gases" = gas_composition(holding.air_contents),
+		)
 	else
-		update_icon()
+		data["holding"] = null
+	return data
+
+///Состав смеси в процентах, отсортированный не важно как: интерфейс сам решает.
+/obj/machinery/portable_atmospherics/proc/gas_composition(datum/gas_mixture/mixture)
+	var/list/composition = list()
+	if(!mixture)
+		return composition
+	var/total_moles = mixture.total_moles()
+	if(total_moles <= 0)
+		return composition
+	for(var/gas_id in mixture.get_gases())
+		var/share = mixture.get_moles(gas_id) / total_moles * 100
+		if(share < 0.01)
+			continue
+		composition += list(list(
+			"id" = gas_id,
+			"name" = GLOB.gas_data.names[gas_id],
+			"percent" = round(share, 0.01),
+		))
+	return composition
+
+/obj/machinery/portable_atmospherics/process_atmos()
+	if(connected_port) // Pipe network handles reactions if connected.
+		// The pipenet reshapes our mix without any interaction on this machine,
+		// so a docked portable never sleeps.
+		excited = FALSE
+		return
+	excited = excited || air_contents.react(src)
+	if(!excited)
+		// Settled and untouched: leave SSair until excite() is called by an
+		// interaction (or a subtype keeps setting excited while it works).
+		return PROCESS_KILL
+	excited = FALSE
+
+///Wake the portable up for SSair processing and keep it awake for at least one full pass.
+/obj/machinery/portable_atmospherics/proc/excite()
+	excited = TRUE
+	SSair.start_processing_machine(src)
 
 /obj/machinery/portable_atmospherics/return_air()
 	return air_contents
@@ -52,15 +108,27 @@
 	if(new_port.loc != get_turf(src))
 		return FALSE
 
+	var/datum/pipeline/connected_port_parent = new_port.parents[1]
+	if(!connected_port_parent)
+		return FALSE
+
 	//Perform the connection
 	connected_port = new_port
 	connected_port.connected_device = src
-	var/datum/pipeline/connected_port_parent = connected_port.parents[1]
 	connected_port_parent.reconcile_air()
 
 	anchored = TRUE //Prevent movement
 	pixel_x = new_port.pixel_x
 	pixel_y = new_port.pixel_y
+	// Both sides sleep while unused: the docked portable must process again and
+	// the connector must resume dirtying its pipenet.
+	excite()
+	SSair.start_processing_machine(connected_port)
+	// Оверлей коннектора рисуется по connected_port, а перерисовку раньше делал
+	// process_atmos() безусловно каждый фаер. Теперь он перерисовывает только на
+	// смене полосы давления, а осевшая канистра вдобавок уходит в PROCESS_KILL -
+	// без явного вызова стыковка могла не отобразиться вообще.
+	update_icon()
 	return TRUE
 
 /obj/machinery/portable_atmospherics/Move()
@@ -71,11 +139,22 @@
 /obj/machinery/portable_atmospherics/proc/disconnect()
 	if(!connected_port)
 		return FALSE
+	var/obj/machinery/atmospherics/components/unary/portables_connector/old_port = connected_port
+	var/datum/pipeline/old_parent = old_port.parents[1]
+	if(old_parent)
+		// Flush last pending portable<->pipenet changes before detaching.
+		old_parent.reconcile_air()
 	anchored = FALSE
-	connected_port.connected_device = null
+	old_port.connected_device = null
 	connected_port = null
 	pixel_x = 0
 	pixel_y = 0
+	// Undocked with possibly fresh gas inside: reevaluate before sleeping again
+	// (the connector kills itself on its next pass).
+	excite()
+	// Симметрично connect(): без этого отстыкованная канистра продолжала носить
+	// оверлей коннектора.
+	update_icon()
 	return TRUE
 
 /obj/machinery/portable_atmospherics/portableConnectorReturnAir()
@@ -95,6 +174,11 @@
 	if(holding)
 		. += "<span class='notice'>\The [src] contains [holding]. Alt-click [src] to remove it.</span>"
 		. += "<span class='notice'>Click [src] with another gas tank to hot swap [holding].</span>"
+	if(connected_port)
+		// Пристыкованное устройство обменивается газом с трубопроводом мимо
+		// клапана - process_atmos() уходит в ветку connected_port до всякой
+		// проверки. Со стороны это выглядит как содержимое, утекающее само.
+		. += span_notice("Пристыковано к порту: содержимое идёт в трубопровод независимо от клапана. Открутите ключом, чтобы отсоединить.")
 
 /obj/machinery/portable_atmospherics/proc/replace_tank(mob/living/user, close_valve, obj/item/tank/new_tank)
 	if(holding)
@@ -103,8 +187,12 @@
 			user.put_in_hands(holding)
 	if(new_tank)
 		holding = new_tank
+		// portables pump into holding.air_contents directly (canister valve, pump,
+		// scrubber), bypassing the tank's own mutators - a docked tank must not sleep
+		holding.excite_tank()
 	else
 		holding = null
+	excite()
 	update_icon()
 	return TRUE
 
@@ -144,6 +232,11 @@
 				update_icon()
 	else
 		return ..()
+
+/obj/machinery/portable_atmospherics/rad_act(pulse_strength)
+	. = ..()
+	if(air_contents?.react_to_radiation(pulse_strength))
+		excite()
 
 /obj/machinery/portable_atmospherics/analyzer_act(mob/living/user, obj/item/I)
 	atmosanalyzer_scan(air_contents, user, src)

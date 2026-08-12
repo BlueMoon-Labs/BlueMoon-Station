@@ -20,6 +20,9 @@
 		if(T == /datum/metadollar_shop_item/item)
 			continue
 		var/datum/metadollar_shop_item/item/I = new T()
+		if(!I.is_visible(src))
+			qdel(I)
+			continue
 		if(I.catalog != catalog_key)
 			qdel(I)
 			continue
@@ -41,9 +44,10 @@
 
 /datum/metadollar_shop/ui_data(mob/user)
 	var/list/data = list()
-	data["balance"] = owner?.prefs?.metadollars || 0
+	data["balance"] = owner?.ckey ? SSmetadollars.get_metadollars(owner.ckey) : 0
 	data["inteqMode"] = inteq_mode
 	data["onlinePlayers"] = length(GLOB.player_list)
+	data["leaderboard"] = SSmetadollars?.get_leaderboard_ui_data() || list()
 	return data
 
 /datum/metadollar_shop/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

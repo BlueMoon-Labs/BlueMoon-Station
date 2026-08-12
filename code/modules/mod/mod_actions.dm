@@ -39,7 +39,7 @@
 
 /datum/action/item_action/mod/deploy
 	name = "Deploy MODsuit"
-	desc = "Deploy/Conceal a part of the MODsuit."
+	desc = "Развернуть/Скрыть часть MOD-костюма."
 	button_icon_state = "deploy"
 
 /datum/action/item_action/mod/deploy/Trigger()
@@ -53,7 +53,7 @@
 
 /datum/action/item_action/mod/activate
 	name = "Activate MODsuit"
-	desc = "Activate/Deactivate the MODsuit."
+	desc = "Активировать/Деактивировать MOD-костюм."
 	button_icon_state = "activate"
 
 /datum/action/item_action/mod/activate/Trigger()
@@ -67,7 +67,7 @@
 
 /datum/action/item_action/mod/module
 	name = "Toggle Module"
-	desc = "Toggle a MODsuit module."
+	desc = "Переключить модуль MOD-костюма."
 	button_icon_state = "module"
 
 /datum/action/item_action/mod/module/Trigger()
@@ -81,7 +81,7 @@
 
 /datum/action/item_action/mod/panel
 	name = "MODsuit Panel"
-	desc = "Open the MODsuit's panel."
+	desc = "Открыть панель MOD-костюма."
 	button_icon_state = "panel"
 
 /datum/action/item_action/mod/panel/Trigger()

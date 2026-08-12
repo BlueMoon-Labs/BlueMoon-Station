@@ -1,3 +1,5 @@
+#define HEALER_IMPLANT_HEAL_AMOUNT 0.4
+
 /obj/item/organ/internal/cyberimp/chest/scanner //Ported from skyrat
 	name = "internal health analyzer"
 	desc = "An advanced health analyzer implant, designed to directly interface with a host's body and relay scan information to the brain on command."
@@ -27,8 +29,9 @@
 	var/thrist_threshold = THIRST_LEVEL_BIT_THIRSTY
 	var/hunger_threshold = NUTRITION_LEVEL_HUNGRY
 
-/obj/item/organ/cyberimp/chest/nutrimentextreme/on_life()	// Check if this user can process thrist/hunger at all. Yes this is a total mess, but works fine, doesn't cause any runtimes.
-	if(HAS_TRAIT(owner, TRAIT_NO_PROCESS_FOOD))
+/obj/item/organ/cyberimp/chest/nutrimentextreme/on_life(seconds, times_fired)	// Check if this user can process thrist/hunger at all. Yes this is a total mess, but works fine, doesn't cause any runtimes.
+	. = ..()
+	if(!. || HAS_TRAIT(owner, TRAIT_NO_PROCESS_FOOD))
 		return
 
 	if(owner.thirst <= thrist_threshold)
@@ -47,61 +50,70 @@
 	to_chat(owner, "<span class='warning'>You feel like your insides are burning.</span>")
 
 /obj/item/organ/cyberimp/chest/healer
+	name = "Broken Healer implant"
+	desc = "Implant is broken and useless."
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "healerbrute"
+	slot = ORGAN_SLOT_HEART_AID
+	var/brute_heal = 0
+	var/fire_heal = 0
+	var/tox_heal = 0
+	var/oxy_heal = 0
+
+/obj/item/organ/cyberimp/chest/healer/on_life()
+	. = ..()
+	if(!.)
+		return
+	heal(FALSE)
+
+#define HEAL_FORMULA(amount) round((kill ? amount : -amount)*multiplier, 0.1)
+
+/obj/item/organ/cyberimp/chest/healer/proc/heal(kill = FALSE, multiplier = 1)
+	if(brute_heal)
+		owner.adjustBruteLoss(HEAL_FORMULA(brute_heal), FALSE)
+	if(fire_heal)
+		owner.adjustFireLoss(HEAL_FORMULA(fire_heal), FALSE)
+	if(tox_heal)
+		owner.adjustToxLoss(HEAL_FORMULA(tox_heal), FALSE, TRUE) // don't kill slimes
+	if(oxy_heal)
+		owner.adjustOxyLoss(HEAL_FORMULA(oxy_heal), FALSE)
+
+#undef HEAL_FORMULA
+
+/obj/item/organ/cyberimp/chest/healer/emp_act(severity)
+	. = ..()
+	if(!owner || (. & EMP_PROTECT_SELF))
+		return
+	to_chat(owner, span_warning("Вы чувствуете жжение от [src] в вашей груди!"))
+	heal(TRUE, severity*0.2)
+
+/obj/item/organ/cyberimp/chest/healer/bruteburn
 	name = "Healer-BB implant"
 	desc = "This implant will slowly mend localized damage that it can find. This version mends only brute and fire injures!"
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "healerbrute"
-	slot = ORGAN_SLOT_HEART_AID
+	brute_heal = HEALER_IMPLANT_HEAL_AMOUNT
+	fire_heal = HEALER_IMPLANT_HEAL_AMOUNT
 
-/obj/item/organ/cyberimp/chest/healer/on_life()
-	owner.adjustBruteLoss(-0.4, FALSE) //Provides slow heal for both brute and burn damage.
-	owner.adjustFireLoss(-0.4, FALSE)
-
-/obj/item/organ/cyberimp/chest/healer/emp_act(severity)
-	. = ..()
-	if(!owner || . & EMP_PROTECT_SELF)
-		return
-	if(prob(0.6*severity))
-		to_chat(owner, "<span class='warning'>Your breathing suddenly collapses!</span>")
-		owner.losebreath += 8
-
-/obj/item/organ/cyberimp/chest/healertoxoxy
+/obj/item/organ/cyberimp/chest/healer/toxoxy
 	name = "Healer-TO implant"
 	desc = "This implant will slowly mend localized damage that it can find. This version filters out toxins, as well as considers any lack of oxygen in the bloodstream!"
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "healertox"
 	slot = ORGAN_SLOT_HEART_AID
-
-/obj/item/organ/cyberimp/chest/healertoxoxy/on_life()
-	owner.adjustToxLoss(-0.4, FALSE) //Provides slow heal for toxin and oxy damage
-	owner.adjustOxyLoss(-0.4, FALSE)
-
-/obj/item/organ/cyberimp/chest/healertoxoxy/emp_act(severity)
-	. = ..()
-	if(!owner || . & EMP_PROTECT_SELF)
-		return
-	if(prob(0.6*severity))
-		to_chat(owner, "<span class='warning'>Your breathing suddenly collapses!</span>")
-		owner.losebreath += 8
+	tox_heal = HEALER_IMPLANT_HEAL_AMOUNT
+	oxy_heal = HEALER_IMPLANT_HEAL_AMOUNT
 
 //Ultimate version of healer
-/obj/item/organ/cyberimp/chest/revitilzer
+/obj/item/organ/cyberimp/chest/healer/revitilzer
 	name = "Revitalizing Cortex"
 	desc = "This attachable to the torso cortex optimizes the body's processes in order to preserve the body. Provides overall basic mending."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "revitilizer"
 	slot = ORGAN_SLOT_HEART_AID
+	brute_heal = HEALER_IMPLANT_HEAL_AMOUNT
+	fire_heal = HEALER_IMPLANT_HEAL_AMOUNT
+	tox_heal = HEALER_IMPLANT_HEAL_AMOUNT
+	oxy_heal = HEALER_IMPLANT_HEAL_AMOUNT
 
-/obj/item/organ/cyberimp/chest/revitilzer/on_life()
-	owner.adjustToxLoss(-0.4, TRUE) //Provides *very* slow heal to all basic damage. Buffed due to being basically useless against other versions
-	owner.adjustOxyLoss(-0.4, FALSE)
-	owner.adjustBruteLoss(-0.4, FALSE)
-	owner.adjustFireLoss(-0.4, FALSE)
-
-/obj/item/organ/cyberimp/chest/revitilzer/emp_act(severity)
-	. = ..()
-	if(!owner || . & EMP_PROTECT_SELF)
-		return
-	if(prob(0.6*severity))
-		to_chat(owner, "<span class='warning'>Your breathing suddenly collapses!</span>")
-		owner.losebreath += 8
+#undef HEALER_IMPLANT_HEAL_AMOUNT

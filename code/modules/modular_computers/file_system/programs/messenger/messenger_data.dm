@@ -8,9 +8,11 @@
 
 	var/messenger_ref = REF(messenger)
 	if(messenger_ref in GLOB.pda_messengers)
-		return
+		GLOB.pda_messengers_by_job -= messenger
+		GLOB.pda_messengers_by_name -= messenger
+	else
+		GLOB.pda_messengers[messenger_ref] = messenger
 
-	GLOB.pda_messengers[messenger_ref] = messenger
 	BINARY_INSERT_PROC_COMPARE(messenger, GLOB.pda_messengers_by_job, /datum/computer_file/program/messenger, messenger, compare_job, COMPARE_KEY)
 	BINARY_INSERT_PROC_COMPARE(messenger, GLOB.pda_messengers_by_name, /datum/computer_file/program/messenger, messenger, compare_name, COMPARE_KEY)
 
@@ -138,7 +140,7 @@
 	data["message"] = message
 	data["outgoing"] = outgoing
 	if(photo_name)
-		if(findtext(photo_name, "http://", 1) || findtext(photo_name, "https://", 1) || findtext(photo_name, "data:image", 1))
+		if(findtext(photo_name, "http://", 1) || findtext(photo_name, "https://", 1) || findtext(photo_name, "data:", 1))
 			data["photo_path"] = photo_name
 		else
 			data["photo_path"] = SSassets.transport.get_asset_url(photo_name)

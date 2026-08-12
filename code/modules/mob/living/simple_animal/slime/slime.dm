@@ -5,6 +5,7 @@
 	pass_flags = PASSTABLE
 	mob_size = MOB_SIZE_SMALL
 	gender = NEUTER
+	uses_custom_environment_handling = TRUE //свой handle_environment() (стазис от BZ, температурные стан/урон)
 	var/is_adult = 0
 	var/docile = 0
 	faction = list("slime","neutral")
@@ -107,23 +108,22 @@
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_SLIME, 7.5)
 	set_nutrition(rand(650, 800))
 
+	//Событийная погоня/кормёжка вместо блокирующего AIprocess-цикла;
+	//мозг приобретения целей остаётся в handle_targets (Life)
+	new /datum/ai_controller/slime(src)
+
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
 /mob/living/simple_animal/slime/Destroy()
 	deltimer(atkcool_timer_id)
-	AIproc = 0
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	for (var/A in actions)
-		var/datum/action/AC = A
-		AC.Remove(src)
 	Target = null
 	Leader = null
-	AIproc = 0
 	for(var/friend in Friends)
 		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	Friends.Cut()
-	speech_buffer.Cut()
+	Friends = null
+	speech_buffer = null
+	for(var/datum/action/innate/slime/A in actions)
+		A.Remove(src)
 	return ..()
 
 /mob/living/simple_animal/slime/proc/initialize_mutations()
@@ -174,7 +174,8 @@
 
 /mob/living/simple_animal/slime/updatehealth()
 	. = ..()
-	remove_movespeed_modifier(/datum/movespeed_modifier/slime_healthmod)
+	// No remove_movespeed_modifier() here: add_or_update below overwrites the value
+	// in place, and this proc runs every Life tick via handle_environment().
 	var/mod = 0
 	if(!HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
 		var/health_deficiency = (maxHealth - health)
@@ -189,7 +190,11 @@
 	var/mod = 0
 	if(bodytemperature >= 330.23) // 135 F or 57.08 C
 		mod = -1	// slimes become supercharged at high temperatures
-	else if(bodytemperature < 183.222)
+	// Порог обязан совпадать с точкой отсчёта формулы ниже. С опечаткой 183.222
+	// замедление включалось на 40 K ХОЛОДНЕЕ, чем начинает убивать урон от холода
+	// (223.15 K), то есть слайм успевал умереть, ни разу не притормозив, и на
+	// морозе бегал на полной скорости.
+	else if(bodytemperature < 283.222)
 		mod = min(15, (283.222 - bodytemperature) / 10 * 1.75)
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_tempmod, multiplicative_slowdown = mod)
 
@@ -429,11 +434,13 @@
 
 /mob/living/simple_animal/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
-	if(!client)
-		if(Target) // Like cats
-			Target = null
-			++Discipline
-	return
+	// Вода обязана не только жечь, но и срывать слайма с жертвы. Раньше здесь
+	// стоял только сброс Target, да и тот у НЕигровых слаймов: присосавшегося
+	// слайма нельзя было смыть огнетушителем вообще - он держал захват и просто
+	// медленно умирал на жертве, а игровой слайм не замечал воду совсем.
+	// discipline_slime() снимает захват через Feedstop, сбрасывает цель и
+	// коротко оглушает - это и есть штатная реакция слайма на воду.
+	discipline_slime()
 
 /mob/living/simple_animal/slime/examine(mob/user)
 	. = list("<span class='info'>This is [icon2html(src, user)] \a <EM>[src]</EM>!")

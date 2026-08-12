@@ -141,10 +141,14 @@
 	client.images |= current_image
 
 /mob/camera/imaginary_friend/Destroy()
+	// В client.images лежит current_image (image с loc=src), а не human_image (это /icon).
+	// Удаление не той переменной оставляло image в client.images живого владельца,
+	// и тот навсегда держал этого моба (утечка imaginary_friend).
 	if(owner?.client)
-		owner.client.images.Remove(human_image)
+		owner.client.images.Remove(current_image)
 	if(client)
-		client.images.Remove(human_image)
+		client.images.Remove(current_image)
+	current_image = null
 	return ..()
 
 /mob/camera/imaginary_friend/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
@@ -205,13 +209,18 @@
 
 /mob/camera/imaginary_friend/forceMove(atom/destination)
 	dir = get_dir(get_turf(src), destination)
-	loc = destination
+	//голое loc= не звало Moved(): ячейка спатиал-грида слуха оставалась на месте
+	//спавна, и друг перманентно глох - база /mob/camera двигает через Moved
+	..()
 	Show()
 
 /mob/camera/imaginary_friend/proc/recall()
-	if(!owner || loc == owner)
+	//на турф владельца, не в contents: внутри владельца без Entered-пропагации
+	//грид не узнаёт, что владелец носит слушателя, и друг снова глохнет
+	var/turf/owner_turf = get_turf(owner)
+	if(!owner_turf || loc == owner_turf)
 		return FALSE
-	forceMove(owner)
+	forceMove(owner_turf)
 
 /datum/action/innate/imaginary_join
 	name = "Join"

@@ -17,6 +17,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/list/baseturfs = /turf/baseturf_bottom
 
 	var/initial_temperature = T20C
+	/// Heat stored in the turf frame itself (walls, windows, solid plating).
+	/// Carried by the superconduction pass in LINDA_turf_tile.dm; open turfs
+	/// keep their authoritative temperature in the air mixture instead.
+	var/temperature = T20C
 	var/to_be_destroyed = 0 //Used for fire, if a melting temperature was reached, it will be destroyed
 	var/max_fire_temperature_sustained = 0 //The max temperature of the fire which it was subjected to
 
@@ -39,6 +43,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	/// If there's a tile over a basic floor that can be ripped out
 	var/overfloor_placed = FALSE
 
+	///ухо спатиал-грида, назначенное на этот турф текущим запросом
+	///get_hearers_in_view(); живёт только внутри одного вызова
+	var/mob/oranges_ear/assigned_oranges_ear
+
 /turf/vv_edit_var(var_name, new_value)
 	var/static/list/banned_edits = list("x", "y", "z")
 	if(var_name in banned_edits)
@@ -58,10 +66,16 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	// by default, vis_contents is inherited from the turf that was here before
 	vis_contents.Cut()
+	// Маплоадер (initTemplateBounds) инициализирует турфы ПОСЛЕ того, как ChangeTurf
+	// привязал lighting_object к vis_contents - возвращаем ссылку, чтобы vis-канал
+	// гибридного рендера (loc + vis_contents) оставался согласованным на шаблонных турфах
+	if(lighting_object)
+		vis_contents += lighting_object
 
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
+	temperature = initial_temperature
 	assemble_baseturfs()
 
 	levelupdate()
@@ -110,8 +124,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/__auxtools_update_turf_temp_info()
 
 /turf/return_temperature()
+	return temperature
 
-/turf/proc/set_temperature()
+/turf/proc/set_temperature(new_temperature)
+	temperature = new_temperature
 
 /turf/proc/Initalize_Atmos(times_fired)
 	CALCULATE_ADJACENT_TURFS(src)
@@ -339,6 +355,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		firstbump = src
 	if(firstbump)
 		mover.Bump(firstbump)
+		if(QDELETED(mover) || mover.loc != oldloc)
+			return FALSE
 		return (mover.movement_type & PHASING)
 	return TRUE
 
@@ -346,10 +364,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	. = ..()
 	if(!. || QDELETED(mover))
 		return FALSE
-	for(var/i in contents)
-		if(i == mover)
+	// Only atoms that declare blocks_exit_checks can refuse an exit. Skipping the
+	// rest matters because this loop used to run Uncross() on every single thing
+	// standing in the turf - 553k calls in 78 seconds of a crowded round.
+	for(var/atom/movable/thing as anything in contents)
+		if(thing == mover || !thing.blocks_exit_checks)
 			continue
-		var/atom/movable/thing = i
 		if(!thing.Uncross(mover, newloc))
 			if(thing.flags_1 & ON_BORDER_1)
 				mover.Bump(thing)
@@ -517,14 +537,11 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/proc/visibilityChanged()
 	GLOB.cameranet.updateVisibility(src)
-	// The cameranet usually handles this for us, but if we've just been
-	// recreated we should make sure we have the cameranet vis_contents.
-	var/datum/camerachunk/C = GLOB.cameranet.chunkGenerated(x, y, z)
-	if(C)
-		if(C.obscuredTurfs[src])
-			vis_contents += GLOB.cameranet.vis_contents_objects
-		else
-			vis_contents -= GLOB.cameranet.vis_contents_objects
+	// Обычно за статику отвечает сама сеть камер, но турф мог быть только что
+	// пересоздан (ChangeTurf) - перевешиваем образ статики на новый турф.
+	var/datum/camerachunk/chunk = GLOB.cameranet.chunkGenerated(x, y, z)
+	if(chunk)
+		chunk.reattach_static(src)
 
 /turf/proc/burn_tile()
 
@@ -733,7 +750,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /// Called when attempting to set fire to a turf
 /turf/proc/IgniteTurf(power, fire_color="red")
-	return
+	return FALSE
 
 /// Returns adjacent turfs in cardinal directions that are reachable via atmos
 /turf/proc/reachableAdjacentAtmosTurfs()

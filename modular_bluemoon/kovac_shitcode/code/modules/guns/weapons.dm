@@ -356,7 +356,7 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	armour_penetration = 0
-	attack_speed = CLICK_CD_MELEE * 0.5
+	attack_speed = CLICK_CD_MELEE * 1.5
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/inteq_sledgehammer/toy/ComponentInitialize()
@@ -373,6 +373,8 @@
 	return
 
 /obj/item/inteq_sledgehammer/toy/pre_attack(atom/A, mob/living/user, params, attackchain_flags, damage_multiplier)
+	if(!(attackchain_flags & ATTACK_IGNORE_CLICKDELAY) && !CheckAttackCooldown(user, A))
+		return STOP_ATTACK_PROC_CHAIN
 	return NONE
 
 /obj/item/inteq_sledgehammer/toy/suicide_act(mob/user)
@@ -430,7 +432,7 @@
 	desc = "A high powered chainsaw for cutting up ...you know...."
 	item = /obj/item/chainsaw/doomslayer/inteq_chainsaw
 	cost = 16
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /// Clown Ops Uplink additions
 /datum/uplink_item/suits/hardsuit/elite_clown
@@ -468,7 +470,7 @@
 			Additionally the suit is collapsible, making it small enough to fit within a backpack."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi
 	cost = 8
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_elite
 	name = "Syndicate Elite Hardsuit"
@@ -476,7 +478,7 @@
 			provides the user with superior armor and mobility compared to the standard Syndicate hardsuit."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	cost = 12
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_shield
 	name = "Syndicate Shielded Hardsuit"

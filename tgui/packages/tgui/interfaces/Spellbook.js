@@ -61,8 +61,8 @@ const BUYWORD2ICON = {
   Cast: 'meteor',
 };
 
-const EnscribedName = (props, context) => {
-  const { act, data } = useBackend(context);
+const EnscribedName = (props) => {
+  const { act, data } = useBackend();
   const { owner } = data;
   return (
     <>
@@ -82,12 +82,12 @@ const EnscribedName = (props, context) => {
 
 const lineHeightToc = "34.6px";
 
-const TableOfContents = (props, context) => {
-  const { act, data } = useBackend(context);
+const TableOfContents = (props) => {
+  const { act, data } = useBackend();
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState(context, 'tab-index', 1);
+  ] = useLocalState('tab-index', 1);
   return (
     <Box textAlign="center">
       <Button
@@ -158,8 +158,8 @@ const TableOfContents = (props, context) => {
   );
 };
 
-const LockedPage = (props, context) => {
-  const { act, data } = useBackend(context);
+const LockedPage = (props) => {
+  const { act, data } = useBackend();
   const { owner } = data;
   return (
     <Dimmer>
@@ -179,8 +179,8 @@ const LockedPage = (props, context) => {
   );
 };
 
-const PointLocked = (props, context) => {
-  const { act, data } = useBackend(context);
+const PointLocked = (props) => {
+  const { act, data } = useBackend();
   const { owner } = data;
   return (
     <Dimmer>
@@ -211,8 +211,8 @@ const PointLocked = (props, context) => {
   );
 };
 
-const SingleLoadout = (props, context) => {
-  const { act } = useBackend(context);
+const SingleLoadout = (props) => {
+  const { act } = useBackend();
   const { author, name, blurb, icon, loadoutId, loadoutColor } = props;
   return (
     <Stack.Item grow>
@@ -238,8 +238,8 @@ const SingleLoadout = (props, context) => {
 
 const LoadoutWidth = 19.17;
 
-const Loadouts = (props, context) => {
-  const { act, data } = useBackend(context);
+const Loadouts = (props) => {
+  const { act, data } = useBackend();
   const { points } = data;
   return (
     <Stack ml={0.5} mt={-0.5} vertical fill>
@@ -308,8 +308,8 @@ const Loadouts = (props, context) => {
 
 const lineHeightRandomize = 6;
 
-const Randomize = (props, context) => {
-  const { act, data } = useBackend(context);
+const Randomize = (props) => {
+  const { act, data } = useBackend();
   const { points } = data;
   return (
     <Stack fill vertical>
@@ -353,8 +353,8 @@ const Randomize = (props, context) => {
 const widthSection = "466px";
 const heightSection = "456px";
 
-export const Spellbook = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Spellbook = (props) => {
+  const { act, data } = useBackend();
   const {
     entries,
     points,
@@ -362,7 +362,7 @@ export const Spellbook = (props, context) => {
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState(context, 'tab-index', 1);
+  ] = useLocalState('tab-index', 1);
   const ScrollableCheck = TAB2NAME[tabIndex-1].noScrollable ? false : true;
   const ScrollableNextCheck = TAB2NAME[tabIndex-1].noScrollable !== 2;
   const TabComponent = TAB2NAME[tabIndex-1].component

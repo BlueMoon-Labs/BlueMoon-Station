@@ -36,12 +36,7 @@
 	write_log_target = "TKtailpulled by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/TKhug/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+	hearts_effect = TRUE
 
 /datum/interaction/lewd/slap/TKslap
 	description = "Телекинез. Шлёпнуть по заднице."
@@ -127,7 +122,7 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/simplified_interaction/TK_interaction/penis/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = partner.has_penis()
+	var/has_penis = partner.has_penis(TRUE)
 	start_text = "Что-то обхватывает [has_penis ? "член" : "дилдо"] TARGET."
 	help_text = "Что-то проходится по [has_penis ? "член" : "дилдо"] TARGET, [has_penis ? "" : "безуспешно "]стараясь доставить удовольствие."
 	grab_text = "Что-то бодро скользит по [has_penis ? "член" : "дилдо"] TARGET."

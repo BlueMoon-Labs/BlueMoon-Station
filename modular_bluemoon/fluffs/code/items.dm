@@ -24,7 +24,7 @@
 ////////////////////////
 
 /obj/item/modkit/hahun_jukebox
-	name = "Irrelian Jukebox"
+	name = "Irellian jukebox"
 	desc = "A modkit for making a jukebox into an acradorian version."
 	product = /obj/item/jukebox/hahun
 	fromitem = list(/obj/item/jukebox)

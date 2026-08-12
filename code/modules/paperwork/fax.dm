@@ -299,9 +299,26 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			history_add("Send", params["name"])
 
 			GLOB.requests.fax_request(usr.client, "sent a fax message from [fax_name]/[fax_id] to [params["name"]]", fax_paper)
+			var/mob/living/sender_mob = usr.client?.mob
+			var/sender_real_name = sender_mob?.real_name || usr.client?.ckey || "Unknown"
+			var/sender_job = sender_mob?.mind?.assigned_role || null
+			var/list/message_log = list()
+			message_log["id"] = GLOB.next_command_message_id++
+			message_log["message"] = "Факс от [sender_real_name]"
+			message_log["sender_name"] = sender_real_name
+			message_log["sender_job"] = sender_job
+			message_log["sender_ckey"] = usr.client?.ckey
+			message_log["time_sent"] = world.time
+			message_log["handled"] = FALSE
+			message_log["paper_name"] = fax_paper.name
+			message_log["paper_text"] = fax_paper.get_raw_text()
+			message_log["paper_html"] = get_paper_html(fax_paper)
+			LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
 			for(var/client/staff as anything in GLOB.admins)
-				SEND_SOUND(staff, sound('sound/misc/server-ready.ogg'))
+				if(staff.prefs?.toggles & SOUND_FAX)
+					var/fax_vol = staff.prefs?.get_sound_volume("fax")
+					SEND_SOUND(staff, sound('sound/misc/server-ready.ogg', volume = fax_vol))
 			log_fax(fax_paper, params["id"], params["name"])
 			loaded_item_ref = null
 			update_appearance()
@@ -318,11 +335,14 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * name - The friendly name of the fax machine, but these can be spoofed so the ID is also required
  */
 /obj/machinery/fax/proc/log_fax(obj/item/sent, destination_id, name)
+	// key_name, а не [usr]: голая интерполяция даёт только имя персонажа, и в paper.log
+	// отправки на "DS-2 Syndicate Fax" лежали без ckey - рядом с обычными записями бумаги,
+	// у которых ckey есть. Факс - админ-чувствительный канал, атрибуция обязательна.
 	if (istype(sent, /obj/item/paper))
 		var/obj/item/paper/sent_paper = sent
-		log_paper("[usr] has sent a fax with the message \"[sent_paper.get_raw_text()]\" to [name]/[destination_id].")
+		log_paper("[key_name(usr)] has sent a fax with the message \"[sent_paper.get_raw_text()]\" to [name]/[destination_id].")
 		return
-	log_game("[usr] has faxed [sent] to [name]/[destination_id].]")
+	log_game("[key_name(usr)] has faxed [sent] to [name]/[destination_id].")
 
 /**
  * The procedure for sending a paper to another fax machine.
@@ -363,6 +383,37 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "receive"))
 	say("Received correspondence from [sender_name].")
 	history_add("Receive", sender_name)
+
+	// Добавляем в лог сообщений для панели тикетов
+	var/paper_text
+	var/paper_name = loaded.name
+	var/obj/item/paper/paper = loaded
+	if(istype(paper))
+		paper_text = paper.get_raw_text()
+	else
+		paper_text = loaded.name
+	var/list/message_log = list()
+	message_log["id"] = GLOB.next_command_message_id++
+	message_log["message"] = "Факс от [sender_name]"
+	message_log["sender_name"] = sender_name
+	message_log["sender_job"] = null
+	message_log["sender_ckey"] = null
+	message_log["time_sent"] = world.time
+	message_log["handled"] = FALSE
+	message_log["paper_name"] = paper_name
+	message_log["paper_text"] = paper_text
+	message_log["paper_html"] = istype(paper) ? get_paper_html(paper) : null
+	LAZYADD(GLOB.centcom_communications_messages, list(message_log))
+
+	// Уведомление администрации
+	to_chat(GLOB.admins, span_adminnotice("<b><font color=green>ПОЛУЧЕН ФАКС: </font>[sender_name]</b>: [loaded.name]"))
+	for(var/client/staff as anything in GLOB.admins)
+		if(staff.prefs?.toggles & SOUND_FAX)
+			var/fax_vol = staff.prefs?.get_sound_volume("fax")
+			SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg', volume = fax_vol))
+		if(staff.prefs?.adminhelp_windowflash)
+			window_flash(staff, ignorepref = TRUE)
+
 	addtimer(CALLBACK(src, PROC_REF(vend_item), loaded), 1.9 SECONDS)
 
 /**
@@ -551,4 +602,45 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	else
 		return FALSE
 	return TRUE
+
+/proc/get_paper_html(obj/item/paper/paper)
+	if(!istype(paper))
+		return ""
+	var/html = "<div style='padding:8px; font-family:\"Times New Roman\",serif; font-size:14px; line-height:1.5; color:#000; background:#fff;'>"
+	var/list/field_data_map = list()
+	var/list/sorted_field_indices = list()
+	if(LAZYLEN(paper.raw_field_input_data))
+		for(var/datum/paper_field/field in paper.raw_field_input_data)
+			field_data_map["[field.field_index]"] = field.field_data?.raw_text || ""
+			sorted_field_indices += field.field_index
+		sorted_field_indices = sortTim(sorted_field_indices, GLOBAL_PROC_REF(cmp_numeric_asc))
+	var/field_data_pos = 1
+	for(var/datum/paper_input/input as anything in paper.raw_text_inputs)
+		var/text = input.raw_text
+		// Заполнение документов между []
+		if(LAZYLEN(field_data_map))
+			var/search_pos = 1
+			var/start
+			var/end
+			while(search_pos && field_data_pos <= sorted_field_indices.len)
+				start = findtext(text, "\[", search_pos)
+				end = findtext(text, "\]", start)
+				if(!start || !end || end <= start + 1)
+					break
+				var/replacement = field_data_map["[sorted_field_indices[field_data_pos]]"]
+				text = copytext(text, 1, start) + replacement + copytext(text, end + 1)
+				search_pos = start + length(replacement)
+				field_data_pos++
+		if(!input.advanced_html)
+			text = html_encode(text)
+			text = replacetext(text, "\n", "<br>")
+		if(input.bold)
+			text = "<b>[text]</b>"
+		if(input.font)
+			text = "<span style='font-family:[input.font];'>[text]</span>"
+		if(input.colour)
+			text = "<span style='color:[input.colour];'>[text]</span>"
+		html += text
+	html += "</div>"
+	return html
 

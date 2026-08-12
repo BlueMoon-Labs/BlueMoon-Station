@@ -26,6 +26,9 @@
 	for(var/mob/living/l in flashed)
 		flash(l, source)
 
+/obj/item/grenade/flashbang/proc/flashbang_target_in_defense(mob/living/M)
+	return M.parrying || (M.combat_flags & (COMBAT_FLAG_ACTIVE_BLOCKING | COMBAT_FLAG_ACTIVE_BLOCK_STARTING))
+
 /obj/item/grenade/flashbang/proc/bang(mob/living/M, turf/source)
 	if(M.stat == DEAD)	//They're dead!
 		return
@@ -34,10 +37,12 @@
 	if(!distance || loc == M || loc == M.loc)	//Stop allahu akbarring rooms with this.
 		M.DefaultCombatKnockdown(200)
 		M.soundbang_act(1, 200, 10, 15)
-		M.AdjustConfused(40 SECONDS, 15, 80 SECONDS)
+		if(!flashbang_target_in_defense(M))
+			M.AdjustConfused(40 SECONDS, 15, 80 SECONDS)
 	else
 		M.soundbang_act(1, max(200/max(1,distance), 60), rand(0, 5))
-		M.AdjustConfused(max(20 SECONDS / max(1, distance), 6 SECONDS), 5, 40 SECONDS)
+		if(!flashbang_target_in_defense(M))
+			M.AdjustConfused(max(20 SECONDS / max(1, distance), 6 SECONDS), 5, 40 SECONDS)
 
 /obj/item/grenade/flashbang/proc/flash(mob/living/M, turf/source)
 	if(M.stat == DEAD)	//They're dead!

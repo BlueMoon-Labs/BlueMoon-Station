@@ -62,8 +62,7 @@ SUBSYSTEM_DEF(title_bm)
 
 	_build_static_html()
 
-	initialized = TRUE
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/title_bm/Destroy()
 	UnregisterSignal(SSticker, list(COMSIG_TICKER_ENTER_PREGAME, COMSIG_TICKER_ENTER_SETTING_UP))
@@ -98,6 +97,7 @@ SUBSYSTEM_DEF(title_bm)
 	parts += {"<div id=\"bm-overlay\"></div>"}
 	parts += {"<div id=\"bm-toasts\"></div>"}
 	parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9654;</div>"}
+	parts += {"<div id=\"bm-disclaimer-btn\" onclick=\"bmShowDisclaimer()\" title=\"Правила сервера\">&#9888;</div>"}
 	cached_static_html = parts.Join("")
 
 /datum/controller/subsystem/title_bm/proc/_load_images_from_dir(dir_path, list/target_list)

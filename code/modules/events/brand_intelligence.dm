@@ -32,6 +32,22 @@
 	)
 
 
+/datum/round_event/brand_intelligence/Destroy()
+	vendingMachines = null
+	infectedMachines = null
+	originMachine = null
+	return ..()
+
+/// Выбрасывает из обоих списков вендоматы, которые уже удалены или помечены на удаление.
+/// Итерируем снапшоты: правка списка по ходу for() сдвигает индекс и пропускает элементы.
+/datum/round_event/brand_intelligence/proc/drop_dead_machines()
+	for(var/obj/machinery/vending/machine as anything in vendingMachines.Copy())
+		if(QDELETED(machine))
+			vendingMachines -= machine
+	for(var/obj/machinery/vending/machine as anything in infectedMachines.Copy())
+		if(QDELETED(machine))
+			infectedMachines -= machine
+
 /datum/round_event/brand_intelligence/announce(fake)
 	var/source = "unknown machine"
 	if(fake)
@@ -53,6 +69,8 @@
 	vendingMachines.Remove(originMachine)
 	originMachine.shut_up = 0
 	originMachine.shoot_inventory = 1
+	originMachine.machine_wake() // item-flinging happens in process()
+	originMachine.schedule_slogan()
 	announce_to_ghosts(originMachine)
 
 
@@ -65,11 +83,15 @@
 			originMachine.visible_message("[originMachine] бипает в последний раз и выглядит безжизненным.")
 		kill()
 		return
-	listclearnulls(vendingMachines)
+	// listclearnulls() выбивает только настоящий null, а уже помеченный на удаление вендомат
+	// в списке остаётся - и событие держит его до конца раунда. В прод-раунде это дало пять
+	// хардделов вендоматов, все после срабатывания события и ни одного до него.
+	drop_dead_machines()
 	if(!vendingMachines.len)	//if every machine is infected
 		for(var/obj/machinery/vending/upriser in infectedMachines)
 			if(prob(70) && !QDELETED(upriser))
-				var/mob/living/simple_animal/hostile/mimic/copy/M = new(upriser.loc, upriser, null, 1) // it will delete upriser on creation and override any machine checks
+				upriser.shoot_inventory = FALSE
+				var/mob/living/simple_animal/hostile/mimic/copy/vending/M = new(upriser.loc, upriser)
 				M.faction = list("profit")
 				M.speak = rampant_speeches.Copy()
 				M.speak_chance = 7
@@ -85,6 +107,8 @@
 		infectedMachines.Add(rebel)
 		rebel.shut_up = 0
 		rebel.shoot_inventory = 1
+		rebel.machine_wake() // item-flinging happens in process()
+		rebel.schedule_slogan()
 
 		if(ISMULTIPLE(activeFor, 8))
 			originMachine.speak(pick(rampant_speeches))

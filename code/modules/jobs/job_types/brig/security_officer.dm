@@ -16,15 +16,20 @@
 	alt_titles = list(
 		"Gorlex Marauders Trainee", //Триглав выше, для удобства
 		"Combatant", //Синди выше, для удобства
+		"Training Officer", //Инструктор выше, для удобства
+		"Security Training Officer", //Инструктор выше, для удобства
+		"Field Training Officer", //Инструктор выше, для удобства
 		"AC Specialist",
 		"Cerberus",
 		"Civil Protection",
 		"Defense Contractor",
+		"Deputy Sheriff",
 		"Explosives Specialist",
 		"Guard",
 		"Guardsman",
 		"Police Officer",
 		"Probation Officer",
+		"Parole Officer",
 		"Riot Control Officer",
 		"SAARE Operator",
 		"Safeguard Agent",
@@ -128,8 +133,11 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 			qdel(H.ears)
 		H.equip_to_slot_or_del(new ears(H),ITEM_SLOT_EARS_LEFT) // Sandstorm edit
 
-	var/obj/item/card/id/W = H.wear_id
-	W.access |= dep_access
+	// В слоте ID может лежать кошелёк или КПК - у них нет var/access, зато GetID() отдаёт
+	// вложенную карту. Мягкий каст на wear_id ловил рантайм и оставлял офицера без доступов.
+	var/obj/item/card/id/worn_id = H.wear_id?.GetID()
+	if(dep_access && istype(worn_id))
+		worn_id.access |= dep_access
 
 	var/teleport = 0
 	if(!CONFIG_GET(flag/sec_start_brig))
@@ -197,13 +205,16 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	l_pocket = /obj/item/restraints/handcuffs
 	r_pocket = /obj/item/assembly/flash/handheld
-	backpack_contents = list(/obj/item/storage/ifak, /obj/item/syndicate_uplink_high=1)
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
+						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
+						/obj/item/ammo_box/magazine/e45/taser=3, /obj/item/syndicate_uplink/station=1)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /obj/item/radio/headset/headset_sec/alt/department/Initialize(mapload)

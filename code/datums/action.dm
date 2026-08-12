@@ -58,6 +58,12 @@
 /datum/action/Destroy()
 	if(owner)
 		Remove(owner)
+	// Обнулить свой target было мало: сам предмет продолжал держать нас в actions, а его
+	// собственный Destroy() до нас мог и не дойти (действие переживало предмет, если
+	// удалялось отдельно). Вычёркиваемся сами.
+	if(isitem(target))
+		var/obj/item/item_target = target
+		LAZYREMOVE(item_target.actions, src)
 	target = null
 	QDEL_LIST_ASSOC_VAL(viewers) // Qdel the buttons in the viewers list **NOT THE HUDS**
 	return ..()
@@ -96,11 +102,17 @@
 /datum/action/proc/Remove(mob/remove_from)
 	SHOULD_CALL_PARENT(TRUE)
 
-	for(var/datum/hud/hud in viewers)
+	// Снимок обязателен: qdel кнопки внутри цикла зовёт action_button/Destroy, а тот
+	// делает `linked_action.viewers -= our_hud`. Правка списка прямо во время
+	// `for(... in viewers)` сдвигает индекс и пропускает следующий hud - его кнопка
+	// остаётся жить с linked_action на нас и держит экшен до конца раунда.
+	for(var/datum/hud/hud in viewers.Copy())
 		var/atom/movable/screen/movable/action_button/button = viewers[hud]
 		if(hud.mymob)
 			HideFrom(hud.mymob)
-		else if(button)
+		// HideFrom ищет кнопку по mymob.hud_used; если HUD мобу успели заменить,
+		// поиск промахнётся и кнопка переживёт экшен. Добиваем по снимку.
+		if(!QDELETED(button))
 			qdel(button) // Mob destroyed; remove orphaned button to prevent GC failure
 	LAZYREMOVE(remove_from?.actions, src) // We aren't always properly inserted into the viewers list, gotta make sure that action's cleared
 	viewers = list()
@@ -125,7 +137,7 @@
 /datum/action/proc/Trigger()
 	if(!IsAvailable())
 		return FALSE
-	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target) & COMPONENT_ACTION_BLOCK_TRIGGER)
+	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target, owner) & COMPONENT_ACTION_BLOCK_TRIGGER)
 		return FALSE
 	return TRUE
 
@@ -161,6 +173,8 @@
 	if(check_flags & AB_CHECK_ALIVE)
 		if(owner.stat == DEAD)
 			return FALSE
+	if(SEND_SIGNAL(src, COMSIG_ACTION_ISAVAILABLE, target, owner, silent) & COMPONENT_ACTION_NOT_AVAILABLE)
+		return FALSE
 	return TRUE
 
 /datum/action/proc/UpdateButtons(status_only, force)
@@ -334,13 +348,28 @@
 	else if((target && current_button.appearance_cache != item_target.appearance) || force) //replace with /ref comparison if this is not valid.
 		var/old_layer = item_target.layer
 		var/old_plane = item_target.plane
+		var/old_pixel_x = item_target.pixel_x
+		var/old_pixel_y = item_target.pixel_y
+		var/old_pixel_z = item_target.pixel_z
+		var/old_pixel_w = item_target.pixel_w
+
 		item_target.layer = FLOAT_LAYER //AAAH
 		item_target.plane = FLOAT_PLANE //^ what that guy said
+		item_target.pixel_x = 0
+		item_target.pixel_y = 0
+		item_target.pixel_z = 0
+		item_target.pixel_w = 0
+
 		current_button.filters = null
 		current_button.cut_overlays()
 		current_button.add_overlay(item_target)
+
 		item_target.layer = old_layer
 		item_target.plane = old_plane
+		item_target.pixel_x = old_pixel_x
+		item_target.pixel_y = old_pixel_y
+		item_target.pixel_z = old_pixel_z
+		item_target.pixel_w = old_pixel_w
 		current_button.appearance_cache = item_target.appearance
 
 /datum/action/item_action/toggle_light
@@ -415,6 +444,10 @@
 
 /datum/action/item_action/toggle_welding_screen
 	name = "Toggle Welding Screen"
+	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
+	required_mobility_flags = NONE
+	icon_icon = 'icons/obj/clothing/hats.dmi'
+	button_icon_state = "weldvisor" 			// for easier indication
 
 /datum/action/item_action/toggle_welding_screen/Trigger()
 	var/obj/item/clothing/head/hardhat/weldhat/H = target
@@ -516,6 +549,65 @@
 	..()
 	var/obj/item/item_target = target
 	name = "Toggle [item_target.name]"
+
+/datum/action/item_action/toggle_nv
+	name = "Toggle Night Vision"
+	var/stored_cutoffs
+	var/stored_colour
+	var/stored_darkness_view
+	var/stored_lighting_alpha
+
+/datum/action/item_action/toggle_nv/New(obj/item/clothing/glasses/target)
+	. = ..()
+	target.AddElement(/datum/element/update_icon_updates_onmob)
+	if(length(target.color_cutoffs))
+		stored_cutoffs = target.color_cutoffs
+		target.color_cutoffs = list()
+	if(target.darkness_view)
+		stored_darkness_view = target.darkness_view
+		target.darkness_view = 0
+	if(!isnull(target.lighting_alpha))
+		stored_lighting_alpha = target.lighting_alpha
+		target.lighting_alpha = null
+	stored_colour = target.glass_colour_type
+	target.flash_protect = 0
+	target.update_icon()
+
+/datum/action/item_action/toggle_nv/Trigger(trigger_flags)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!istype(target, /obj/item/clothing/glasses))
+		return
+	var/obj/item/clothing/glasses/goggles = target
+	var/mob/living/carbon/holder = goggles.loc
+	if(!istype(holder) || holder.glasses != goggles)
+		holder = null
+	if(stored_cutoffs)
+		goggles.color_cutoffs = stored_cutoffs
+		goggles.darkness_view = stored_darkness_view
+		goggles.lighting_alpha = stored_lighting_alpha
+		goggles.flash_protect = initial(goggles.flash_protect)
+		stored_cutoffs = null
+		stored_darkness_view = null
+		stored_lighting_alpha = null
+		if(stored_colour && ishuman(holder))
+			goggles.change_glass_color(holder, stored_colour)
+		playsound(goggles, 'sound/items/night_vision_on.ogg', 30, TRUE, -3)
+	else
+		stored_cutoffs = goggles.color_cutoffs
+		stored_darkness_view = goggles.darkness_view
+		stored_lighting_alpha = goggles.lighting_alpha
+		stored_colour = goggles.glass_colour_type
+		goggles.color_cutoffs = list()
+		goggles.darkness_view = 0
+		goggles.lighting_alpha = null
+		goggles.flash_protect = 0
+		if(stored_colour && ishuman(holder))
+			goggles.change_glass_color(holder, null)
+		playsound(goggles, 'sound/machines/click.ogg', 30, TRUE, -3)
+	holder?.update_sight()
+	goggles.update_icon()
 
 /datum/action/item_action/halt
 	name = "HALT!"
@@ -997,10 +1089,6 @@
 	var/small_icon
 	var/small_icon_state
 
-/datum/action/small_sprite/queen
-	small_icon = 'icons/Xeno/castes/queen.dmi'
-	small_icon_state = "Queen Walking"
-
 /datum/action/small_sprite/drake
 	small_icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
 	small_icon_state = "ash_whelp"
@@ -1016,6 +1104,8 @@
 
 /datum/action/small_sprite/Trigger()
 	..()
+	if(!owner)
+		return
 	if(!small)
 		var/image/I = image(icon = small_icon, icon_state = small_icon_state, loc = owner)
 		I.override = TRUE

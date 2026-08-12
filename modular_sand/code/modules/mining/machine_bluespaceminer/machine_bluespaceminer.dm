@@ -515,7 +515,12 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 
 	if(bs_core)
 		if(I.use_tool(src, user, 2 SECONDS, volume = 50))
-			user.put_in_hands(bs_core)
+			if(!bs_core || QDELETED(bs_core))
+				return
+			if(ishuman(user))	// put_in_hands proc fails silently if user has no hands, leaving bs cores inside the machine. This check makes sure it's only called for human users.
+				user.put_in_hands(bs_core)
+			else
+				bs_core.forceMove(get_turf(user))
 			on_core_remove()
 			to_chat(user, span_notice("Вы извлекли Bluespace ядро из машины."))
 		return

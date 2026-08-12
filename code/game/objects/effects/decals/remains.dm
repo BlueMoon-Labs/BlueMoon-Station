@@ -3,6 +3,15 @@
 	gender = PLURAL
 	icon = 'icons/effects/blood.dmi'
 
+/obj/effect/decal/remains/Initialize(mapload)
+	. = ..()
+	if(isturf(loc))
+		become_cleanbot_targetable()
+
+/obj/effect/decal/remains/Destroy()
+	lose_cleanbot_targetable()
+	return ..()
+
 /obj/effect/decal/remains/acid_act()
 	visible_message("<span class='warning'>[src] dissolve[gender==PLURAL?"":"s"] into a puddle of sizzling goop!</span>")
 	playsound(src, 'sound/items/welder.ogg', 150, 1)

@@ -29,12 +29,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// /datum/looping_sound/hypertorus
-// 	mid_sounds = list('sound/machines/hypertorus/loops/hypertorus_nominal.ogg' = 1)
-// 	mid_length = 60
-// 	volume = 55
-// 	extra_range = 15
-// 	vary = TRUE
+/datum/looping_sound/hypertorus
+	mid_sounds = list('sound/machines/sm/supermatter1.ogg'=1,'sound/machines/sm/supermatter2.ogg'=1,'sound/machines/sm/supermatter3.ogg'=1)
+	mid_length = 10
+	volume = 5
+	extra_range = 15
+	vary = TRUE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

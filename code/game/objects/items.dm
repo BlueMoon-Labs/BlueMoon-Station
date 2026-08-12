@@ -16,6 +16,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	name = "item"
 	icon = 'icons/obj/items_and_weapons.dmi'
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+	blocks_exit_checks = FALSE // no item type overrides CheckExit() or Uncross()
 
 	attack_hand_speed = 0
 	attack_hand_is_action = FALSE
@@ -136,6 +137,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/heat = 0
 	///All items with sharpness of SHARP_EDGED or higher will automatically get the butchering component.
 	var/sharpness = SHARP_NONE
+	var/can_dismember = TRUE
 
 	var/tool_behaviour = NONE
 	var/toolspeed = 1
@@ -232,8 +234,11 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
-	for(var/X in actions)
-		qdel(X)
+	// QDEL_LIST, а не ручной цикл: /datum/action/Destroy() вычёркивает себя из actions, и
+	// обход живого списка пропускал каждое второе действие. Плюс сам список обязан
+	// обнулиться - иначе предмет держит ссылки на уже удалённые датумы действий.
+	QDEL_LIST(actions)
+	actions = null
 	return ..()
 
 /obj/item/ComponentInitialize()
@@ -568,9 +573,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(over == src)
 		return usr.client.Click(src, src_location, src_control, params)
-	var/list/directaccess = usr.DirectAccess()	//This, specifically, is what requires the copypaste. If this were after the adjacency check, then it'd be impossible to use items in your inventory, among other things.
-												//If this were before the above checks, then trying to click on items would act a little funky and signal overrides wouldn't work.
-	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || (src in directaccess)) && (usr.CanReach(over) || (over in directaccess))))
+	//The direct-access check is what requires the copypaste. If it were after the adjacency check, then it'd be impossible
+	//to use items in your inventory, among other things. If it were before the above checks, then trying to click on items
+	//would act a little funky and signal overrides wouldn't work.
+	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || usr.in_direct_access(src)) && (usr.CanReach(over) || usr.in_direct_access(over))))
 		if(!usr.get_active_held_item())
 			usr.UnarmedAttack(src, TRUE)
 			if(usr.get_active_held_item() == src)
@@ -751,7 +757,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if (prob(eyes.damage - 10 + 1))
 			M.become_blind(EYE_DAMAGE)
 			to_chat(M, "<span class='danger'>You go blind!</span>")
-
+		// Bleeding eye puncture wound + overlay (r_eye / l_eye)
+		if(affecting && is_human_victim && prob(eyes.damage - 10 + 1))
+			var/picked_right = prob(50)
+			to_chat(M, "<span class='userdanger'>Вы чувствуете жгучую боль в [picked_right ? "правом" : "левом"] глазу!</span>")
+			var/datum/wound/pierce/severe/eye/eye_puncture = new
+			eye_puncture.apply_wound(affecting, right_side = picked_right)
 /obj/item/clean_blood()
 	. = ..()
 	// Quick fix for shoes being clean but the blood splatter was still on them, I suspect it is blood_dna on shoes were setting to null before the if (maybe it is a racing condition)
@@ -784,16 +795,16 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			var/volume = get_volume_by_throwforce_and_or_w_class()
 			if (throwforce > 0 || HAS_TRAIT(src, TRAIT_CUSTOM_TAP_SOUND))
 				if (mob_throw_hit_sound)
-					playsound(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
 				else if(hitsound)
-					playsound(hit_atom, hitsound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, hitsound, volume, TRUE, -1)
 				else
-					playsound(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
 			else
-				playsound(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
+				SSthrowing.playsound_capped(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
 
 		else if (drop_sound)
-			playsound(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
+			SSthrowing.playsound_capped(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
 		return hit_atom.hitby(src, 0, itempush, throwingdatum=throwingdatum)
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, messy_throw = TRUE, quickstart = TRUE)
@@ -812,6 +823,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		transform = M
 		pixel_x = rand(-8, 8)
 		pixel_y = rand(-8, 8)
+
+/obj/item/proc/randomize_pixel_position(atom/movable/dropped_by)
+	if(item_flags & NO_PIXEL_RANDOM_DROP)
+		return
+	pixel_x = base_pixel_x + dropped_by?.pixel_x + rand(-6, 6)
+	pixel_y = base_pixel_y + dropped_by?.pixel_y + rand(-6, 6)
 
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)
@@ -874,10 +891,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/get_sharpness()
 	return sharpness
 
-/obj/item/proc/get_dismemberment_chance(obj/item/bodypart/affecting)
-	if(affecting.can_dismember(src))
-		if((sharpness || damtype == BURN) && w_class >= WEIGHT_CLASS_NORMAL && force >= 10)
-			. = force * (affecting.get_damage() / affecting.max_damage)
+/obj/item/proc/can_dismember()
+	return can_dismember
 
 /obj/item/proc/get_dismember_sound()
 	if(damtype == BURN)
@@ -1136,8 +1151,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if(hand_index)
 			M.held_items[hand_index] = null
 			M.update_inv_hands()
-			if(M.client)
-				M.client.screen -= src
+			M.remove_from_hud_screens(src)
 			layer = initial(layer)
 			plane = initial(plane)
 			appearance_flags &= ~NO_CLIENT_COLOR

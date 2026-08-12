@@ -24,6 +24,8 @@
 	var/regen = chargerate * diff
 	charge = clamp(charge + regen, 0, chargemax)
 	last_tick = world.time
+	if(charge >= chargemax)
+		return PROCESS_KILL //полный бак: спим, спринт в relaymove разбудит
 
 /obj/vehicle/ridden/secway/relaymove(mob/user, direction)
 	var/new_speed = normalspeed
@@ -32,6 +34,9 @@
 		if((L.combat_flags & COMBAT_FLAG_SPRINT_TOGGLED) && charge)
 			charge--
 			new_speed = chargespeed
+			if(!(datum_flags & DF_ISPROCESSING))
+				last_tick = world.time //не засчитывать проспанное время в регэн
+				START_PROCESSING(SSfastprocess, src)
 	var/datum/component/riding/D = GetComponent(/datum/component/riding)
 	D.vehicle_move_delay = new_speed
 	for(var/i in progressbars_by_rider)

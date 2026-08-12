@@ -94,7 +94,7 @@
 	var/atom/A = target
 	if(!proximity && prox_check || !(isobj(A) || issilicon(A) || isbot(A) || isdrone(A)))
 		return
-	if(istype(A, /obj/item/storage) && !(istype(A, /obj/item/storage/lockbox) || istype(A, /obj/item/storage/pod)))
+	if(istype(A, /obj/item/storage) && !(istype(A, /obj/item/storage/lockbox) || istype(A, /obj/item/storage/pod) || istype(A, /obj/item/storage/pod_luxury)))
 		return
 	if(!uses)
 		user.visible_message("<span class='warning'>[src] вспыхивает с небольшой искрой. Карта сожжена!</span>")

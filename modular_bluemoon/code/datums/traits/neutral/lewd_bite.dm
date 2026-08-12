@@ -165,7 +165,7 @@
 
 	var/target_zone_name = "flesh"
 	var/target_zone_effects = FALSE
-	var/target_zone_check = bite_bodypart?.can_dismember() || TRUE
+	var/target_zone_check = bite_bodypart?.can_dismembered() || TRUE
 
 	switch(target_zone)
 		if(BODY_ZONE_HEAD)

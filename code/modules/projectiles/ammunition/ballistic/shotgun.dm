@@ -26,6 +26,7 @@
 	caliber = "shotgun"
 	projectile_type = /obj/item/projectile/bullet/breach_slug
 	custom_materials = list(/datum/material/iron=4000)
+	can_be_printed = FALSE
 	pellets = 2
 	variance = 1
 	stress_added = 25

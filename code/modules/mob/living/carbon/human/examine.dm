@@ -60,10 +60,10 @@
 			var/obj/item/clothing/under/U = w_uniform
 			// Аксессуары
 			var/accessory_msg
-			if(length(U.attached_accessories) && !(U.flags_inv & HIDEACCESSORY))
+			if(length(U.accessories_attached) && !(U.flags_inv & HIDEACCESSORY))
 				var/list/metioned_accessories_list = list()
 				// Фильтруем неспрятанные аксессуары
-				for(var/obj/item/clothing/accessory/attached_accessory in U.attached_accessories)
+				for(var/obj/item/clothing/accessory/attached_accessory in U.accessories_attached)
 					if(attached_accessory.flags_inv & HIDEACCESSORY)
 						continue
 					metioned_accessories_list += attached_accessory
@@ -109,7 +109,7 @@
 			var/obj/item/clothing/gloves/worn_thing = gloves
 			if(!CHECK_BITFIELD(worn_thing.flags_inv, HIDEACCESSORY))
 				var/list/accessory_preparation
-				for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in worn_thing.attached_accessories)
+				for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in worn_thing.accessories_attached)
 					if(CHECK_BITFIELD(attached_accessory.flags_inv, HIDEACCESSORY))
 						continue
 					LAZYADD(accessory_preparation, "[icon2html(attached_accessory, user)] [attached_accessory]")
@@ -148,6 +148,8 @@
 	if(!(ITEM_SLOT_EYES in obscured))
 		if(glasses)
 			. += "[t_on] носит [glasses.get_examine_string(user)]."
+		else if(HAS_TRAIT(src, TRAIT_UNNATURAL_RED_GLOWY_EYES))
+			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза горят неестественным красным свечением!</B></span>"
 		else if((left_eye_color == BLOODCULT_EYE || right_eye_color == BLOODCULT_EYE) && iscultist(src) && HAS_TRAIT(src, TRAIT_CULT_EYES))
 			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза ярко-красные и они горят!</B></span>"
 		else if(HAS_TRAIT(src, TRAIT_HIJACKER))

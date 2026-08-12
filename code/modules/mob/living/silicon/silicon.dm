@@ -400,18 +400,18 @@
 // (ADD) Pe4henika bluemoon -- end
 /mob/living/silicon/proc/set_autosay() //For allowing the AI and borgs to set the radio behavior of auto announcements (state laws, arrivals).
 	if(!radio)
-		to_chat(src, "Radio not detected.")
+		to_chat(src, span_alert("Радио не обнаружено."))
 		return
 
 	//Ask the user to pick a channel from what it has available.
-	var/Autochan = input("Select a channel:") as null|anything in list("Default","None") + radio.channels
+	var/Autochan = input("Выберите канал:") as null|anything in list("По умолчанию","Никакой") + radio.channels
 
 	if(!Autochan)
 		return
-	if(Autochan == "Default") //Autospeak on whatever frequency to which the radio is set, usually Common.
+	if(Autochan == "По умолчанию") //Autospeak on whatever frequency to which the radio is set, usually Common.
 		radiomod = ";"
 		Autochan += " ([radio.frequency])"
-	else if(Autochan == "None") //Prevents use of the radio for automatic annoucements.
+	else if(Autochan == "Никакой") //Prevents use of the radio for automatic annoucements.
 		radiomod = ""
 	else	//For department channels, if any, given by the internal radio.
 		for(var/key in GLOB.department_radio_keys)
@@ -419,7 +419,7 @@
 				radiomod = ":" + key
 				break
 
-	to_chat(src, "<span class='notice'>Automatic announcements [Autochan == "None" ? "will not use the radio." : "set to [Autochan]."]</span>")
+	to_chat(src, span_notice("Автоматические объявления [Autochan == "Никакой" ? "не будут использовать радио." : "установлены на [Autochan]."]"))
 
 /mob/living/silicon/put_in_hand_check() // This check is for borgs being able to receive items, not put them in others' hands.
 	return FALSE
@@ -454,11 +454,11 @@
 		return
 	sensors_on = !sensors_on
 	if (!sensors_on)
-		to_chat(src, "Sensor overlay deactivated.")
+		to_chat(src, span_notice("Наложение датчиков отключено."))
 		remove_sensors()
 		return
 	add_sensors()
-	to_chat(src, "Sensor overlay activated.")
+	to_chat(src, span_notice("Активировано наложение датчиков."))
 
 /mob/living/silicon/proc/GetPhoto(mob/user)
 	if (aicamera)

@@ -24,7 +24,15 @@ export const SPAWN_LOCATION_ICONS: Record<string, string> = {
   'В сумке выбранного существа': 'backpack',
 };
 
+// Значения приходят из spawnpanel_atom_data.json и используются как ключи
+// фильтрации, поэтому на экран идут через отдельные подписи.
 export const TAB_TYPES = ['Objects', 'Turfs', 'Mobs'] as const;
+
+export const TAB_TYPE_LABELS: Record<string, string> = {
+  Objects: 'Объекты',
+  Turfs: 'Турфы',
+  Mobs: 'Мобы',
+};
 
 export const TAB_TYPE_COLORS: Record<string, string> = {
   Objects: '#4a9fd4',
@@ -41,8 +49,8 @@ export const TAB_TYPE_LETTERS: Record<string, string> = {
 // BYOND direction constants (bitmask)
 export const DIR_SOUTH = 1;
 export const DIR_NORTH = 2;
-export const DIR_EAST  = 4;
-export const DIR_WEST  = 8;
+export const DIR_EAST = 4;
+export const DIR_WEST = 8;
 
 // Order for slider: index 0=South, 1=North, 2=East, 3=West
 export const DIR_SLIDER_ORDER = [DIR_SOUTH, DIR_NORTH, DIR_EAST, DIR_WEST];
@@ -61,9 +69,9 @@ export const DIR_ICONS: Record<number, string> = {
   [DIR_WEST]:  'arrow-left',
 };
 
-export const PRECISE_MODE_OFF    = 'Off';
+export const PRECISE_MODE_OFF = 'Off';
 export const PRECISE_MODE_TARGET = 'Target';
-export const PRECISE_MODE_COPY   = 'Copy';
+export const PRECISE_MODE_COPY = 'Copy';
 
 export const OFFSET_ABSOLUTE = 'Absolute offset';
 export const OFFSET_RELATIVE = 'Relative offset';

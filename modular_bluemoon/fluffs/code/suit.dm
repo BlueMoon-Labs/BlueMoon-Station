@@ -12,6 +12,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
+/obj/item/clothing/suit/donator/bm/krieg_shinel
+	name = "Шенель Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "krieg_shinel"
+	item_state = "krieg_shinel"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/donator/bm/lightning_holocloak
 	name = "lightning holo-cloak"
 	desc = "When equipped, a strange hologram is activated, and the fabric of the cloak itself disappears, and lightning starts projecting all over the body."
@@ -208,6 +217,28 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/acrador_helmet_32x48.dmi'
 	icon_state = "rhsa12"
 	item_state = "rhsa12"
+
+/obj/item/clothing/suit/donator/bm/mark40k_armor
+	name = "Mark40k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark40k_armor"
+	item_state = "mark40k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/mark50k_armor
+	name = "Mark50k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark50k_armor"
+	item_state = "mark50k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/rank/security/officer/acradorsuit
 	name = "Underarmor suit"
@@ -770,3 +801,14 @@
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	icon_state = "blood_shinel"
 	item_state = "blood_shinel"
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/torn_veil
+	name = "Shimmering torn veil"
+	desc = "Голубая, с переливом в тёмный оттенок, вуаль. Немного порванная."
+	icon_state = "torn_veil"
+	item_state = "torn_veil"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

@@ -252,7 +252,7 @@
 	mob_overlay_icon = 'icons/mob/clothing/custom_w.dmi'
 	item_state = "singer"
 	fitted = NO_FEMALE_UNIFORM
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	alternate_worn_layer = DRESS_LAYER
 	can_adjust = 0
 	mutantrace_variation = NONE
 

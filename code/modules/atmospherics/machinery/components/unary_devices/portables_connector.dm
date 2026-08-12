@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/components/unary/portables_connector
-	icon_state = "connector_map-2"
+	icon_state = "connector_map-3"
 	name = "connector port"
 	desc = "Для соединения переносных устройств, связанных с атмосферным делом."
 	icon = 'icons/obj/atmospherics/components/unary_devices.dmi'
@@ -33,7 +33,8 @@
 
 /obj/machinery/atmospherics/components/unary/portables_connector/process_atmos()
 	if(!connected_device)
-		return
+		// Nothing docked, nothing to reconcile; connect() re-adds us to SSair.
+		return PROCESS_KILL
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/portables_connector/can_unwrench(mob/user)
@@ -53,9 +54,17 @@
 	piping_layer = 1
 	icon_state = "connector_map-1"
 
-/obj/machinery/atmospherics/components/unary/portables_connector/layer3
-	piping_layer = 3
-	icon_state = "connector_map-3"
+/obj/machinery/atmospherics/components/unary/portables_connector/layer2
+	piping_layer = 2
+	icon_state = "connector_map-2"
+
+/obj/machinery/atmospherics/components/unary/portables_connector/layer4
+	piping_layer = 4
+	icon_state = "connector_map-4"
+
+/obj/machinery/atmospherics/components/unary/portables_connector/layer5
+	piping_layer = 5
+	icon_state = "connector_map-5"
 
 /obj/machinery/atmospherics/components/unary/portables_connector/visible
 	level = 2
@@ -64,6 +73,14 @@
 	piping_layer = 1
 	icon_state = "connector_map-1"
 
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer3
-	piping_layer = 3
-	icon_state = "connector_map-3"
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer2
+	piping_layer = 2
+	icon_state = "connector_map-2"
+
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4
+	piping_layer = 4
+	icon_state = "connector_map-4"
+
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer5
+	piping_layer = 5
+	icon_state = "connector_map-5"

@@ -9,8 +9,8 @@
 	action_icon_state = "r_transmit"
 	action_background_icon_state = "bg_spell"
 	antimagic_allowed = TRUE
-	var/notice = "notice"
-	var/boldnotice = "boldnotice"
+	var/notice = "telepathy"
+	var/boldnotice = "telepathybold"
 	var/magic_check = FALSE
 	var/holy_check = FALSE
 	var/tinfoil_check = TRUE
@@ -24,6 +24,8 @@
 		log_directed_talk(user, M, msg, LOG_SAY, "[name]")
 		to_chat(user, "<span class='[boldnotice]'>You transmit to [M]:</span> <span class='[notice]'>[msg]</span>")
 		if(!M.anti_magic_check(magic_check, holy_check, tinfoil_check, 0)) //hear no evil
+			M.balloon_alert(M, "Голос в голове")
+			SEND_SOUND(M, sound('sound/effects/ghost2.ogg'))
 			to_chat(M, "<span class='[boldnotice]'>You hear something behind you talking...</span> <span class='[notice]'>[msg]</span>")
 		for(var/mob/observer in GLOB.dead_mob_list)
 			if(!observer.client || !isobserver(observer))

@@ -234,6 +234,8 @@
 	if(get_dist(shooter, target) <= 0)
 		target = get_step(shooter, shooter.dir) //Shoot in the direction faced if the mouse is on the same tile as we are.
 		target_loc = target
+	if(shooter.incapacitated())
+		return FALSE
 	else if(!in_view_range(shooter, target))
 		stop_autofiring() //Elvis has left the building.
 		return FALSE

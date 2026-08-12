@@ -949,3 +949,10 @@
 			playsound(C, pick('sound/voice/frenzy/psychotic/femalepsychoticshort.ogg', 'sound/voice/frenzy/psychotic/femalepsychoticshort2.ogg'), 70, FALSE)
 		else
 			playsound(C, pick('sound/voice/frenzy/psychotic/malepsychoticshort.ogg', 'sound/voice/frenzy/psychotic/malepsychoticshort2.ogg'), 70, FALSE)
+/datum/emote/sound/human/yummers
+	name = "Краснеть"
+	key = "yummers"
+	key_third_person = "yummers"
+	message = "видит вкусняшку."
+	sound = 'sound/voice/yummers.ogg'
+	stat_allowed = SOFT_CRIT

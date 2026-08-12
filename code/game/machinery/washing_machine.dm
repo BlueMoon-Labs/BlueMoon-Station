@@ -268,6 +268,10 @@ GLOBAL_LIST_INIT(dye_registry, list(
 	if(WM.color_source)
 		dye_item(WM.color_source.dye_color)
 
+/obj/item/clothing/machine_wash(obj/machinery/washing_machine/WM)
+	plasma_contamination = 0
+	return ..()
+
 /obj/item/clothing/under/dye_item(dye_color, dye_key)
 	. = ..()
 	if(.)
@@ -481,7 +485,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 /obj/machinery/washing_machine/proc/handle_unbuckling(mob/living/carbon/human/H, mob/living/user)
 	if(H == user)
 		H.visible_message(span_danger("[H] is trying to get out of \the [src]..."), span_notice("It might take a while..."))
-		return do_after(user, 1 MINUTES, src)
+		return do_after(user, 1 MINUTES, src, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED | IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE)
 	else
 		user.visible_message("[user] is trying to help [H]. It might take a while...")
 		return do_after(user, 10 SECONDS, src)
@@ -521,7 +525,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 
 /obj/machinery/washing_machine/shove_act(mob/living/target, mob/living/user)
 	. = ..()
-	if(target.y <= y && buckle_mob(target)) // изначально планировалось "target.y < y", но на половине карт стиралки "смотрят" в стену, поэтому увы во имя механа.
+	if(target.y <= y && prob(50) && buckle_mob(target)) // изначально планировалось "target.y < y", но на половине карт стиралки "смотрят" в стену, поэтому увы во имя механа.
 		user.visible_message(span_danger("[user.name] заталкивает [target.name] внутрь \the [src]!"),
 							span_danger("Вы впихиваете [target.name] внутрь \the [src]!"), null, COMBAT_MESSAGE_RANGE)
 		log_combat(user, target, "shoved", "into [src] (washing machine)")

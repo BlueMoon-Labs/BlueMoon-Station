@@ -6,4 +6,7 @@
 
 /mob/living/carbon/monkey/death(gibbed)
 	walk(src,0) // Stops dead monkeys from fleeing their attacker or climbing out from inside His Grace
+	// Труп не гоняет handle_combat, так что рекрутский target (без записи в enemies
+	// и без сигнала) держал бы удалённого моба до переработки тушки
+	target = null
 	. = ..()

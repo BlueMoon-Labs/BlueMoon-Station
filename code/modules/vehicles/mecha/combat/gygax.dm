@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/gygax
-	desc = "A lightweight, security exosuit. Popular among private and corporate security."
+	desc = "Лёгкий охранный экзокостюм. Популярен среди частной и корпоративной охраны."
 	name = "\improper Gygax"
 	icon_state = "gygax"
 	allow_diagonal_movement = TRUE
@@ -18,7 +18,7 @@
 	normal_step_energy_drain = 3
 
 /obj/vehicle/sealed/mecha/combat/gygax/dark
-	desc = "A lightweight exosuit, painted in a dark scheme. This model appears to have some modifications."
+	desc = "Лёгкий экзокостюм, окрашенный в тёмную схему. Эта модель, похоже, имеет некоторые модификации."
 	name = "\improper Dark Gygax"
 	icon_state = "darkgygax"
 	max_integrity = 300

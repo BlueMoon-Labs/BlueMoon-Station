@@ -4,7 +4,7 @@
 	ui_header = "alarm_green.gif"
 	program_icon_state = "alert-green"
 	extended_desc = "Предоставляет визуальный интерфейс для системы оповещений станции."
-	requires_ntnet = 1
+	requires_ntnet = TRUE
 	size = 5
 	tgui_id = "NtosStationAlertConsole"
 	program_icon = "bell"

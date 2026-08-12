@@ -1,7 +1,9 @@
 // Bluemoon Edit:  Vending Update
+import { useState } from 'react';
+
 import { BooleanLike, classes } from '../../common/react';
 import { capitalizeAll, createSearch } from '../../common/string';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Icon, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -13,7 +15,8 @@ type VendingData = {
   coin_records: CoinRecord[];
   hidden_records: HiddenRecord[];
   user?: UserData;
-  stock: Record<string, StockItem>;
+  stock: Record<string, number>;
+  free_stock: Record<string, BooleanLike>;
   extended_inventory: boolean;
   access: boolean;
   vending_machine_input?: CustomInput[];
@@ -29,6 +32,7 @@ type ProductRecord = {
   name: string;
   price: number;
   max_amount: number;
+  colorable: boolean;
   ref: string;
   category: string;
 };
@@ -48,21 +52,14 @@ type UserData = {
   department: string;
 };
 
-type StockItem = {
-  name: string;
-  amount: number;
-  colorable: boolean;
-  free?: BooleanLike;
-};
-
 type CustomInput = {
   name: string;
   price: number;
   img: string;
 };
 
-export const Vending = (props, context) => {
-  const { data } = useBackend<VendingData>(context);
+export const Vending = (props) => {
+  const { data } = useBackend<VendingData>();
   const categories = data.categories || {};
 
   const {
@@ -73,9 +70,7 @@ export const Vending = (props, context) => {
     stock,
   } = data;
 
-  const [selectedCategory, setSelectedCategory] = useLocalState<string | null>(
-    context,
-    'selectedCategory',
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
     Object.keys(categories)[0] || null
   );
 
@@ -143,8 +138,8 @@ export const Vending = (props, context) => {
 };
 
 /** Displays user details if an ID is present and the user is on the station */
-export const UserDetails = (props, context) => {
-  const { data } = useBackend<VendingData>(context);
+export const UserDetails = (props) => {
+  const { data } = useBackend<VendingData>();
   const { user } = data;
 
   if (!user) {
@@ -178,14 +173,12 @@ const ProductDisplay = (
     custom: boolean;
     selectedCategory: string | null;
     inventory: (ProductRecord | CustomInput)[];
-  },
-  context
-) => {
-  const { data } = useBackend<VendingData>(context);
+  }) => {
+  const { data } = useBackend<VendingData>();
   const { custom, inventory, selectedCategory } = props;
-  const { stock, onstation, user } = data;
+  const { stock, free_stock, onstation, user } = data;
 
-  const [stockSearch, setStockSearch] = useLocalState<string>(context, 'stockSearch', '');
+  const [stockSearch, setStockSearch] = useState<string>('');
   const stockSearchFn = createSearch(stockSearch, (item: ProductRecord | CustomInput) => item.name);
 
   let filteredInventory = inventory;
@@ -203,7 +196,10 @@ const ProductDisplay = (
   if (stockSearch.length >= 2) {
     filteredInventory = filteredInventory.filter(stockSearchFn);
   }
-  const stockByName = stock || {};
+  // Ключ - ref записи автомата: имена товаров могут совпадать, и остаток
+  // одного товара перекрывал другой (цифра в UI замирала до "распродано").
+  const stockByRef = stock || {};
+  const freeStockByRef = free_stock || {};
 
   return (
     <Section
@@ -232,10 +228,11 @@ const ProductDisplay = (
       <Table>
           {filteredInventory.map((product) => (
             <VendingRow
-              key={product.name}
+              key={'ref' in product ? product.ref : product.name}
               custom={custom}
               product={product}
-              productStock={stockByName[product.name]}
+              productStock={'ref' in product ? stockByRef[product.ref] : undefined}
+              productIsFree={'ref' in product ? freeStockByRef[product.ref] : false}
             />
           ))}
       </Table>
@@ -247,13 +244,13 @@ const ProductDisplay = (
  * Uses a table layout. Labeledlist might be better,
  * but you cannot use item icons as labels currently.
  */
-const VendingRow = (props, context) => {
-  const { data } = useBackend<VendingData>(context);
-  const { custom, product, productStock } = props;
+const VendingRow = (props) => {
+  const { data } = useBackend<VendingData>();
+  const { custom, product, productStock, productIsFree } = props;
   const { access, department, jobDiscount, onstation, user } = data;
-  const free = !onstation || product.price === 0 || (productStock?.free ?? false);
+  const free = !onstation || product.price === 0 || productIsFree;
   const discount = !product.premium && department === user?.department;
-  const remaining = custom ? product.amount : (productStock?.amount ?? 0);
+  const remaining = custom ? product.amount : (productStock ?? 0);
   const redPrice = Math.round(product.price * jobDiscount);
   const disabled =
     remaining === 0 ||
@@ -269,7 +266,7 @@ const VendingRow = (props, context) => {
       </Table.Cell>
       <Table.Cell bold>{capitalizeAll(product.name)}</Table.Cell>
       <Table.Cell>
-        {!!productStock?.colorable && (
+        {!!('colorable' in product && product.colorable) && (
           <ProductColorSelect disabled={disabled} product={product} />
         )}
       </Table.Cell>
@@ -298,15 +295,15 @@ const ProductImage = (props) => {
     <img
       src={`data:image/png;base64,${product.img}`}
       style={{
-        'vertical-align': 'middle',
-        'image-rendering': 'pixelated',
+        verticalAlign: 'middle',
+        imageRendering: 'pixelated',
       }}
     />
   ) : (
     <span
       className={classes(['vending32x32', product.path])}
       style={{
-        'vertical-align': 'middle',
+        verticalAlign: 'middle',
       }}
     />
   );
@@ -315,8 +312,8 @@ const ProductImage = (props) => {
 /** In the case of customizable items, ie: shoes,
  * this displays a color wheel button that opens another window.
  */
-const ProductColorSelect = (props, context) => {
-  const { act } = useBackend<VendingData>(context);
+const ProductColorSelect = (props) => {
+  const { act } = useBackend<VendingData>();
   const { disabled, product } = props;
 
   return (
@@ -346,8 +343,8 @@ const ProductStock = (props) => {
 };
 
 /** The main button to purchase an item. */
-const ProductButton = (props, context) => {
-  const { act, data } = useBackend<VendingData>(context);
+const ProductButton = (props) => {
+  const { act, data } = useBackend<VendingData>();
   const { access } = data;
   const { custom, discount, disabled, free, product, redPrice } = props;
   const customPrice = access ? 'FREE' : product.price + ' cr';

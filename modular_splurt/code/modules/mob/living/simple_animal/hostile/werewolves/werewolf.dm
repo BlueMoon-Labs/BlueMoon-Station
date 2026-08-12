@@ -79,9 +79,9 @@
 	if(!charging)
 		return ..()
 
-/mob/living/simple_animal/hostile/werewolf/Goto(target, delay, minimum_distance)
-	if(!charging)
-		..()
+///Свой чардж (реактивный, из bullet_act): на время полёта контроллер не шагает.
+/mob/living/simple_animal/hostile/werewolf/can_ai_controller_move()
+	return !charging
 
 /mob/living/simple_animal/hostile/werewolf/Move()
 	if(charging)
@@ -106,9 +106,7 @@
 	throw_at(T, get_dist(src, T), 1, src, 0, callback = CALLBACK(src, PROC_REF(charge_end)))
 
 /mob/living/simple_animal/hostile/werewolf/charge_end(list/effects_to_destroy)
-	charging = FALSE
-	if(target)
-		Goto(target, move_to_delay, minimum_distance)
+	charging = FALSE //преследование возобновляет штатный мувер контроллера
 
 /mob/living/simple_animal/hostile/werewolf/Bump(atom/A)
 	if(charging)

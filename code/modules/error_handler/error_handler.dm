@@ -127,8 +127,12 @@ GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 
 #ifdef UNIT_TESTS
 	if(GLOB.current_test)
-		//good day, sir
-		GLOB.current_test.Fail("[main_line]\n[desclines.Join("\n")]", file = E.file, line = E.line)
+		if(GLOB.current_test.runtime_allowed(E))
+			// Ожидаемая канарейка теста: не валим тест и не портим clean_run-счётчик.
+			GLOB.total_runtimes--
+		else
+			//good day, sir
+			GLOB.current_test.Fail("[main_line]\n[desclines.Join("\n")]", file = E.file, line = E.line)
 #endif
 
 

@@ -321,7 +321,7 @@
 			to_chat(target, "<span class='danger'><b>A spike of pain drives into your head and scrambles your thoughts!</b></span>")
 			target.AdjustConfused(20 SECONDS, 10, 20)
 			target.Slowed(2 SECONDS)
-			target.Jitter(600 SECONDS)
+			target.Jitter(60)
 
 		if(issilicon(target))
 			var/mob/living/silicon/robot/R = target
@@ -358,7 +358,7 @@
 			to_chat(target, "<span class='danger'><b>A spike of pain drives into your head and scrambles your thoughts!</b></span>")
 			target.adjustStaminaLoss(30)
 			target.Slowed(10 SECONDS)
-			target.Jitter(30 SECONDS)
+			target.Jitter(30)
 
 		if(issilicon(target))
 			var/mob/living/silicon/robot/R = target
@@ -479,7 +479,7 @@
 				to_chat(target, "<span class='danger'><b>A spike of pain drives into your head and scrambles your thoughts!</b></span>")
 				target.adjustStaminaLoss(50)
 				target.Paralyze(2 SECONDS)
-				target.Jitter(40 SECONDS)
+				target.Jitter(40)
 				target.Slowed(14 SECONDS)
 
 			if(issilicon(target))

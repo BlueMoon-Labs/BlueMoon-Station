@@ -447,6 +447,14 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/structure/cable/proc/auto_propogate_cut_cable(obj/O)
 	if(O && !QDELETED(O))
+		// Массовая резка (взрыв/сингуло) ставит по отложенному колбеку на каждый
+		// кабель, но выжившие концы часто лежат в ОДНОМ фрагменте: первый колбек
+		// перестраивает его целиком, остальным пересборка не нужна. Без этого
+		// гейта взрыв давал серию полных BFS по уже перестроенной сети в одном
+		// тике SStimer (~200мс каждый на станционной сетке).
+		var/obj/structure/cable/cut_end = O //P_list собирается с cable_only = 1
+		if(istype(cut_end) && cut_end.powernet && cut_end.powernet.created_at == world.time)
+			return
 		var/datum/powernet/newPN = new()// creates a new powernet...
 		propagate_network(O, newPN)//... and propagates it to the other side of the cable
 

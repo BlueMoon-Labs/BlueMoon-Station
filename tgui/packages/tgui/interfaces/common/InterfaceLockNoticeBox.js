@@ -14,14 +14,21 @@ import { Button, Flex, NoticeBox } from '../../components';
  *
  * All props can be redefined if you want custom behavior, but
  * it's preferred to stick to defaults.
+ *
+ * Тексты вынесены в пропсы с английскими значениями по умолчанию: переведённые
+ * интерфейсы задают свои, не трогая остальных потребителей компонента.
  */
-export const InterfaceLockNoticeBox = (props, context) => {
-  const { act, data } = useBackend(context);
+export const InterfaceLockNoticeBox = (props) => {
+  const { act, data } = useBackend();
   const {
     siliconUser = data.siliconUser,
     locked = data.locked,
     onLockStatusChange = () => act('lock'),
     accessText = 'an ID card',
+    lockLabel = 'Interface lock status:',
+    lockedText = 'Locked',
+    unlockedText = 'Unlocked',
+    swipeText = `Swipe ${accessText} to ${locked ? 'unlock' : 'lock'} this interface.`,
   } = props;
   // For silicon users
   if (siliconUser) {
@@ -29,7 +36,7 @@ export const InterfaceLockNoticeBox = (props, context) => {
       <NoticeBox color="grey">
         <Flex align="center">
           <Flex.Item>
-            Interface lock status:
+            {lockLabel}
           </Flex.Item>
           <Flex.Item grow={1} />
           <Flex.Item>
@@ -37,7 +44,7 @@ export const InterfaceLockNoticeBox = (props, context) => {
               m={0}
               color={locked ? 'red' : 'green'}
               icon={locked ? 'lock' : 'unlock'}
-              content={locked ? 'Locked' : 'Unlocked'}
+              content={locked ? lockedText : unlockedText}
               onClick={() => {
                 if (onLockStatusChange) {
                   onLockStatusChange(!locked);
@@ -51,8 +58,7 @@ export const InterfaceLockNoticeBox = (props, context) => {
   // For everyone else
   return (
     <NoticeBox>
-      Swipe {accessText}{' '}
-      to {locked ? 'unlock' : 'lock'} this interface.
+      {swipeText}
     </NoticeBox>
   );
 };

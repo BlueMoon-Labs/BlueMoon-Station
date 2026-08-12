@@ -1,7 +1,7 @@
 
 /obj/item/borg/upgrade/xwelding
 	name = "engineering cyborg experimental welding tool"
-	desc = "An experimental welding tool replacement for the engineering module's standard welding tool."
+	desc = "Экспериментальный сварочный аппарат для замены стандартного сварочного аппарата инженерного модуля."
 	icon_state = "cyborg_upgrade3"
 	require_module = TRUE
 	module_type = list(/obj/item/robot_module/engineering)
@@ -61,7 +61,7 @@
 /* Shit doesnt work, work on it later
 /obj/item/borg/upgrade/plasma
 	name = "engineering cyborg plasma resource upgrade"
-	desc = "An upgrade that allows cyborgs the ability to use plasma and assorted plasma products."
+	desc = "Улучшение, позволяющее киборгам использовать плазму и различные плазменные продукты."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/engineering)
@@ -92,7 +92,7 @@
 
 /obj/item/borg/upgrade/bsrpd
 	name = "engineering cyborg bluespace RPD"
-	desc = "A bluespace RPD replacement for the engineering module's standard RPD."
+	desc = "Блюспейс-РПД для замены стандартного РПД инженерного модуля."
 	icon_state = "cyborg_upgrade3"
 	require_module = TRUE
 	module_type = list(/obj/item/robot_module/engineering)
@@ -194,7 +194,7 @@
 
 /obj/item/borg/upgrade/shrink
 	name = "borg shrinker"
-	desc = "A cyborg resizer, it makes a cyborg small."
+	desc = "Изменитель размера киборга, делает киборга маленьким."
 	icon_state = "cyborg_upgrade3"
 
 /obj/item/borg/upgrade/shrink/action(mob/living/silicon/robot/R, user = usr)
@@ -291,8 +291,8 @@
 
 /obj/item/borg/upgrade/shuttlemaking
 	name = "engineering cyborg rapid shuttle designator"
-	desc = "A device used to define the area required for custom ships. Uses bluespace crystals to create bluespace-capable ships.\n\
-			It appears to be a rough adaptation for cyborgs."
+	desc = "Устройство для определения области, необходимой для пользовательских кораблей. Использует блюспейс-кристаллы для создания блюспейс-способных кораблей.\n\
+			Похоже, это грубая адаптация для киборгов."
 	icon_state = "cyborg_upgrade5"
 	require_module = TRUE
 	module_type = list(/obj/item/robot_module/engineering)

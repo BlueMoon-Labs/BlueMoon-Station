@@ -2,6 +2,7 @@
 	name = "station intercom"
 	desc = "Talk through this."
 	icon_state = "intercom"
+	var/icon_off = "intercom-p"
 	plane = ABOVE_WALL_PLANE
 	anchored = TRUE
 	w_class = WEIGHT_CLASS_BULKY
@@ -9,7 +10,6 @@
 	var/number = 0
 	var/anyai = 1
 	var/mob/living/silicon/ai/ai = list()
-	var/last_tick //used to delay the powercheck
 	dog_fashion = null
 	var/unfastened = FALSE
 
@@ -20,6 +20,39 @@
 
 /obj/item/radio/intercom/unscrewed
 	unfastened = TRUE
+
+/obj/item/radio/intercom/command
+	name = "command intercom"
+	desc = "The command's special free-frequency intercom."
+	icon_state = "intercom_command"
+	icon_off = "intercom_command-p"
+	freerange = TRUE
+	command = TRUE
+
+/obj/item/radio/intercom/prison
+	name = "receive-only intercom"
+	desc = "A station intercom. It looks like it has been modified to not broadcast."
+	icon_state = "intercom_prison"
+	icon_off = "intercom_prison-p"
+	prison_radio = TRUE
+
+/obj/item/radio/intercom/syndicate
+	name = "syndicate intercom"
+	desc = "Talk smack through this."
+	icon_state = "intercom_syndicate"
+	icon_off = "intercom_syndicate-p"
+	syndie = TRUE
+	command = TRUE
+
+/obj/item/radio/intercom/inteq
+	name = "inteq intercom"
+	desc = "A hardened intercom tuned for InteQ frequencies."
+	icon_state = "intercom_inteq"
+	icon_off = "intercom_inteq-p"
+
+/obj/item/radio/intercom/inteq/Initialize(mapload)
+	. = ..()
+	make_inteq()
 
 /obj/item/radio/intercom/ratvar
 	name = "hierophant intercom"
@@ -33,6 +66,16 @@
 		return //no unfastening!
 	. = ..()
 
+//ратварный интерком - поллер по своей природе: он следит за режимом игры,
+//на это нет события, поэтому только он и остаётся на SSobj
+/obj/item/radio/intercom/ratvar/Initialize(mapload, ndir, building)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/radio/intercom/ratvar/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
 /obj/item/radio/intercom/ratvar/process()
 	if(!istype(SSticker.mode, /datum/game_mode/clockwork_cult))
 		invisibility = INVISIBILITY_OBSERVER
@@ -42,17 +85,16 @@
 		invisibility = initial(invisibility)
 		alpha = initial(alpha)
 		emped = FALSE
-	..()
+	AreaPowerCheck()
 
 /obj/item/radio/intercom/Initialize(mapload, ndir, building)
 	. = ..()
 	if(building)
 		setDir(ndir)
-	START_PROCESSING(SSobj, src)
-
-/obj/item/radio/intercom/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	return ..()
+	var/area/current_area = get_area(src)
+	if(current_area)
+		RegisterSignal(current_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(AreaPowerCheck))
+	AreaPowerCheck()
 
 /obj/item/radio/intercom/examine(mob/user)
 	. = ..()
@@ -124,20 +166,37 @@
 		return
 	..()
 
-/obj/item/radio/intercom/process()
-	if(((world.timeofday - last_tick) > 30) || ((world.timeofday - last_tick) < 0))
-		last_tick = world.timeofday
+///Событийная замена старого поллинга по SSobj: зовётся сигналом
+///COMSIG_AREA_POWER_CHANGE области, переездом, ЭМИ и его окончанием.
+/obj/item/radio/intercom/proc/AreaPowerCheck(datum/source)
+	SIGNAL_HANDLER
+	var/area/current_area = get_area(src)
+	if(!current_area || emped)
+		on = FALSE
+	else
+		on = current_area.powered(EQUIP)
+	icon_state = on ? initial(icon_state) : icon_off
 
-		var/area/A = get_area(src)
-		if(!A || emped)
-			on = FALSE
-		else
-			on = A.powered(EQUIP) // set "on" to the power status
+/obj/item/radio/intercom/emp_act(severity)
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF))
+		AreaPowerCheck() //emped уже выставлен родителем - гасим иконку сразу
 
-		if(!on)
-			icon_state = "intercom-p"
-		else
-			icon_state = initial(icon_state)
+/obj/item/radio/intercom/end_emp_effect(curremp)
+	. = ..()
+	AreaPowerCheck() //не включаемся вслепую - сверяемся с питанием области
+
+/obj/item/radio/intercom/Moved(atom/OldLoc, Dir, Forced = FALSE)
+	. = ..()
+	var/area/old_area = get_area(OldLoc)
+	var/area/new_area = get_area(src)
+	if(old_area == new_area)
+		return
+	if(old_area)
+		UnregisterSignal(old_area, COMSIG_AREA_POWER_CHANGE)
+	if(new_area)
+		RegisterSignal(new_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(AreaPowerCheck))
+	AreaPowerCheck()
 
 /obj/item/radio/intercom/add_blood_DNA(list/blood_dna)
 	return FALSE

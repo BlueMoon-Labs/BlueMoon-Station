@@ -42,6 +42,8 @@ other types of metals and chemistry for reagents).
 	var/research_icon					//Replaces the item icon in the research console
 	var/research_icon_state
 	var/icon_cache
+	/// Этот дизайн будет виден только на взломанном протолате (в том числе, скрыт из консоли исследований)
+	var/hacked_only = FALSE
 
 /datum/design/error_design
 	name = "ERROR"
@@ -61,6 +63,15 @@ other types of metals and chemistry for reagents).
 		else
 			temp_list[i] = amount
 	materials = temp_list
+
+/// Whether a design disk can expose this design to an autolathe.
+/datum/design/proc/is_autolathe_compatible()
+	if(length(reagents_list))
+		return FALSE
+	for(var/material in materials)
+		if(!istype(material, /datum/material/iron) && !istype(material, /datum/material/glass))
+			return FALSE
+	return TRUE
 
 /datum/design/proc/icon_html(client/user)
 	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/research_designs)

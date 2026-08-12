@@ -22,7 +22,7 @@
 		"Field Surgeon",
 		"Para-Slut",
 		"Para-Stud",
-		"Searh and Rescue Technician",
+		"Search and Rescue Technician",
 		)
 
 	outfit = /datum/outfit/job/paramedic
@@ -100,9 +100,11 @@
 
 	r_pocket = /obj/item/pinpointer/crew
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/roller=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/roller=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)

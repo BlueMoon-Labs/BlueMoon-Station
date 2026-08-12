@@ -98,9 +98,19 @@
 	name = "statue of a xenomorph"
 	icon_state = "xeno"
 
+/obj/structure/statue/plasma/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/structure/statue/plasma/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		PlasmaBurn(exposed_temperature)
+
+/obj/structure/statue/plasma/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/statue/plasma/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	PlasmaBurn(exposed_temperature)
 
 /obj/structure/statue/plasma/bullet_act(obj/item/projectile/Proj)
 	var/burn = FALSE
@@ -279,6 +289,18 @@
 	icon_state = "marx"
 	art_type = /datum/element/art/rev
 
+/////////// Elder Atmosian (craft: metal_hydrogen + zaukerite + metal) ///////////
+/obj/structure/statue/elder_atmosian
+	name = "Elder Atmosian"
+	desc = "A statue of an Elder Atmosian, capable of bending the laws of thermodynamics to their will."
+	icon_state = "eng"
+	custom_materials = list(
+		/datum/material/metalhydrogen = SHEET_MATERIAL_AMOUNT * 20,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 30,
+	)
+	max_integrity = 1000
+	impressiveness = 100
+
 /obj/item/chisel
 	name = "chisel"
 	desc = "Breaking and making art since 4000 BC. This one uses advanced technology to allow creation of lifelike moving statues."
@@ -416,6 +438,7 @@ Moving interrupts
 	desc = "Ready for sculpting."
 	icon = 'icons/obj/statue.dmi'
 	icon_state = "block"
+	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
 	material_flags = MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS | MATERIAL_ADD_PREFIX // MATERIAL_EFFECTS
 	density = TRUE
 	material_modifier = 0.5 //50% effectiveness of materials

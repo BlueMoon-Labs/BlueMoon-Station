@@ -36,6 +36,8 @@
 #define SCARY_BATS 		3
 #define INSANE_CLOWN	4
 #define HOWLING_GHOST	5
+#define EVILL_HUNTER    6
+#define SPOOKY_SKELETON_DELETE_DELAY (9 SECONDS)
 
 //Spookoween variables
 /obj/structure/closet
@@ -51,9 +53,26 @@
 	..()
 	trigger_spooky_trap()
 
+/obj/structure/closet/proc/set_trapped_mob(mob/new_trapped_mob)
+	if(trapped_mob == new_trapped_mob)
+		return
+	if(trapped_mob)
+		UnregisterSignal(trapped_mob, COMSIG_PARENT_QDELETING)
+	trapped_mob = new_trapped_mob
+	if(trapped_mob)
+		RegisterSignal(trapped_mob, COMSIG_PARENT_QDELETING, PROC_REF(on_trapped_mob_qdeleting))
+
+/obj/structure/closet/proc/on_trapped_mob_qdeleting(mob/source)
+	SIGNAL_HANDLER
+	if(source == trapped_mob)
+		set_trapped_mob(null)
+
 /obj/structure/closet/proc/set_spooky_trap()
 	if(prob(5))
 		trapped = INSANE_CLOWN
+		return
+	if(prob(8))
+		trapped = EVILL_HUNTER
 		return
 	if(prob(10))
 		trapped = ANGRY_FAITHLESS
@@ -69,7 +88,7 @@
 		H.makeSkeleton()
 		H.health = 1e5
 		insert(H)
-		trapped_mob = H
+		set_trapped_mob(H)
 		trapped = SPOOKY_SKELETON
 		return
 
@@ -81,7 +100,9 @@
 		visible_message("<span class='userdanger'><font size='5'>БУУ!</font></span>")
 		playsound(loc, 'sound/spookoween/girlscream.ogg', 500, 1)
 		trapped = 0
-		QDEL_IN(trapped_mob, 90)
+		var/mob/doomed_mob = trapped_mob
+		set_trapped_mob(null)
+		QDEL_IN(doomed_mob, SPOOKY_SKELETON_DELETE_DELAY)
 
 	else if(trapped == HOWLING_GHOST)
 		visible_message("<span class='userdanger'><font size='5'>[pick("OooOOooooOOOoOoOOooooOOOOO", "БуУууУуУУУУ", "БУУ!", "УуУУуУ	уУ")]</font></span>")
@@ -110,6 +131,13 @@
 		playsound(loc, 'sound/spookoween/scary_clown_appear.ogg', 500, 1)
 		spawn_atom_to_turf(/mob/living/simple_animal/hostile/retaliate/clown/insane, loc, 1, FALSE)
 		trapped = 0
+	else if(trapped == EVILL_HUNTER)
+		visible_message("<span class='userdanger'>Комод с треском открывается!</span>")
+		visible_message("<span class='userdanger'><font size='5'>ЭТО СУЩЕСТВО ВООРУЖЕНО КОПЬЁМ! БЕГИТЕ!!!</font></span>")
+		playsound(loc, 'sound/hallucinations/wail.ogg', 50, 1)
+		var/mob/living/simple_animal/hostile/slugcat_hunter/H = new(loc)
+		trapped = 0
+		QDEL_IN(H, 120)
 
 //don't spawn in crates
 /obj/structure/closet/crate/trigger_spooky_trap()
@@ -206,30 +234,31 @@
 /mob/living/simple_animal/hostile/retaliate/clown/insane/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	return power
 
-/mob/living/simple_animal/hostile/retaliate/clown/insane/FindTarget()
-	. = ..()
-	timer--
-	if(target)
-		stalk()
+///Смех и растворение над трупом закреплённой жертвы. Отдельный прок, потому что
+///к моменту отложенного вызова src.target мог быть сброшен LoseTarget() при
+///очистке BB_AI_CURRENT_TARGET (труп не проходит retaliate CanAttack).
+/mob/living/simple_animal/hostile/retaliate/clown/insane/proc/dissolve_over_dead_victim(mob/living/victim)
+	if(QDELETED(victim) || victim.stat != DEAD)
+		return
+	target = victim
+	playsound(victim.loc, 'sound/spookoween/insane_low_laugh.ogg', 500, 1)
+	qdel(src)
 
 /mob/living/simple_animal/hostile/retaliate/clown/insane/proc/stalk()
 	var/mob/living/M = target
 	if(!M)
 		return
 	if(M.stat == DEAD)
-		playsound(M.loc, 'sound/spookoween/insane_low_laugh.ogg', 500, 1)
-		qdel(src)
+		dissolve_over_dead_victim(M)
+		return
 	if(timer == 0)
 		timer = rand(5,15)
 		playsound(M.loc, pick('sound/spookoween/scary_horn.ogg','sound/spookoween/scary_horn2.ogg', 'sound/spookoween/scary_horn3.ogg'), 500, 1)
 		spawn(12)
 			forceMove(M.loc)
 
-/mob/living/simple_animal/hostile/retaliate/clown/insane/MoveToTarget()
-	stalk(target)
-
+///Клоун никогда не бьёт: его "атака" - телепорт-сталкинг сабтри insane_clown_stalk
 /mob/living/simple_animal/hostile/retaliate/clown/insane/AttackingTarget()
-	FindTarget()
 	return
 
 /mob/living/simple_animal/hostile/retaliate/clown/insane/adjustHealth()
@@ -251,6 +280,75 @@
 /mob/living/simple_animal/hostile/retaliate/clown/insane/handle_temperature_damage()
 	return
 
+// ===== Адаптер-профиль =====
+// Сценарный телепорт-сталкер (curseblob-паттерн): целей сам не ищет, пока не
+// ударят (Retaliate() пуст, обиды копит только RetaliateAgainst - гейт закрывает
+// базовая retaliate-стратегия), НИКОГДА не ходит и не бьёт - его "движение" =
+// телепорт из легаси stalk(). Профиль закрепляет жертву в BB_AI_STALK_VICTIM
+// (закрепление переживает потерю LOS и смерть жертвы: труп клоун обязан
+// "оплакать" смехом и раствориться) и гоняет stalk() делегатом с легаси-каденсом
+// NPC-пула; растворение над трупом уходит на таймер - qdel пауна из
+// собственного perform рвёт цикл контроллера.
+
+///Клоун не ходит: перемещение - только телепорт из легаси stalk()
+/mob/living/simple_animal/hostile/retaliate/clown/insane/can_ai_controller_move()
+	return FALSE
+
+///Профиль безумного клоуна: retaliate-гейт целей + сабтри-делегат сталкинга
+/datum/ai_controller/hostile_adapter/insane_clown
+	can_idle = FALSE //жертва может уйти за окно интересности - сталкинг не спит
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/insane_clown_stalk,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
+
+///Закрепление жертвы + делегат легаси-цикла сталкинга
+/datum/ai_planning_subtree/insane_clown_stalk
+
+/datum/ai_planning_subtree/insane_clown_stalk/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/retaliate/clown/insane/stalker = controller.pawn
+	if(!istype(stalker))
+		return
+	//свежий обидчик (машина обид retaliate) перебивает закрепление, как легаси
+	//GiveTarget из RetaliateAgainst; смерть жертвы закрепление НЕ снимает
+	var/atom/current_target = controller.blackboard[BB_AI_CURRENT_TARGET]
+	if(isliving(current_target) && current_target != controller.blackboard[BB_AI_STALK_VICTIM])
+		controller.set_blackboard_key(BB_AI_STALK_VICTIM, current_target)
+	var/mob/living/victim = controller.blackboard[BB_AI_STALK_VICTIM]
+	if(QDELETED(victim))
+		return
+	controller.queue_behavior(/datum/ai_behavior/insane_clown_stalk)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Шаг сталкинга: тикает легаси-таймер и гоняет легаси stalk() (хонк-телепорт,
+///смех над трупом). Контроллерное движение не используется вовсе.
+/datum/ai_behavior/insane_clown_stalk
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+///Каденс легаси-цикла: декремент таймера жил в FindTarget раз в тик NPC-пула
+/datum/ai_behavior/insane_clown_stalk/get_cooldown(datum/ai_controller/cooldown_for)
+	return SSnpcpool.wait
+
+/datum/ai_behavior/insane_clown_stalk/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/retaliate/clown/insane/stalker = controller.pawn
+	if(!istype(stalker))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/mob/living/victim = controller.blackboard[BB_AI_STALK_VICTIM]
+	if(QDELETED(victim))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	stalker.target = victim //легаси stalk() читает src.target
+	stalker.timer-- //легаси-каденс: декремент жил в FindTarget
+	if(victim.stat == DEAD)
+		//смех и растворение легаси-проком, но отложенно: qdel пауна из
+		//perform небезопасен (curseblob-паттерн). Жертву передаём явно: target
+		//к этому моменту мог быть сброшен при очистке BB_AI_CURRENT_TARGET.
+		addtimer(CALLBACK(stalker, TYPE_PROC_REF(/mob/living/simple_animal/hostile/retaliate/clown/insane, dissolve_over_dead_victim), victim), 0)
+		return AI_BEHAVIOR_DELAY
+	stalker.stalk()
+	return AI_BEHAVIOR_DELAY
+
 /////////////////////////
 // Spooky Uplink Items //
 /////////////////////////
@@ -261,6 +359,7 @@
 	category = "Holiday"
 	item = /obj/item/gun/energy/kinetic_accelerator/crossbow/halloween
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/device_tools/emag/hack_o_lantern
 	name = "Hack-o'-Lantern"
@@ -268,6 +367,7 @@
 	category = "Holiday"
 	item = /obj/item/card/emag/halloween
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /////////////////////////
 // Ball map Items      //

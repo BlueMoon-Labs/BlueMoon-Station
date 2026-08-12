@@ -32,7 +32,8 @@
 					H.death(FALSE)
 					Zombify(H)
 					break
-		if(times_fired % 4 == 0)
+		var/feeding_phase = client ? times_fired : times_fired + life_periodic_phase
+		if(feeding_phase % 4 == 0)
 			for(var/mob/living/simple_animal/K in oview(src, 1)) //Only for corpse right next to/on same tile
 				if(K.stat == DEAD)
 					visible_message("<span class='danger'>[src] пожирает [K]!</span>")
@@ -97,7 +98,10 @@
 /mob/living/simple_animal/hostile/headcrab/Destroy()
 	if(contents)
 		for(var/mob/M in contents)
-			M.loc = get_turf(src)
+			//именно forceMove: голое присваивание loc не зовёт Exited/Moved,
+			//и наш же force_remove_from_grid ниже по ..() снёс бы жертву из
+			//ячеек спатиал-грида (слух/радио) до пересечения границы 17х17
+			M.forceMove(get_turf(src))
 	return ..()
 
 /mob/living/simple_animal/hostile/headcrab/update_icons()

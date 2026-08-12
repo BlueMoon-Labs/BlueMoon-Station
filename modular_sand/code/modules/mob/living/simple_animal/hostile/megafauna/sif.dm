@@ -46,8 +46,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/sif
 	name = "Great Brown Wolf Sif"
 	desc = "Guardian of the abyss. Looks pretty pissed that you're here."
-	health = 2000
-	maxHealth = 2000
+	health = 2400
+	maxHealth = 2400
 	movement_type = GROUND
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
@@ -59,15 +59,14 @@ Difficulty: Medium
 	friendly_verb_simple = "stare down"
 	icon = 'modular_sand/icons/mob/lavaland/sif.dmi'
 	speak_emote = list("growls")
-	armour_penetration = 50
-	melee_damage_lower = 35
-	melee_damage_upper = 35
+	armour_penetration = 60
+	melee_damage_lower = 42
+	melee_damage_upper = 42
 	speed = 1.5
 	pixel_x = -32 //Hit box perfectly centered
 	pixel_y = -16
 	move_to_delay = 3
 	rapid_melee = 2
-	melee_queue_distance = 10
 	ranged = FALSE
 	del_on_death = 1
 	loot = list(/obj/structure/closet/crate/necropolis/sif)
@@ -177,11 +176,11 @@ Difficulty: Medium
 			src.currentPower += 2
 
 		//Sets sif's anger status.
-		if(src.health <= 1000 && src.stageTwo == FALSE)
+		if(src.health <= 1200 && src.stageTwo == FALSE)
 			angered()
 
 		//Sets sifs enrage status.
-		if(src.health <= 400 && src.stageThree == FALSE)
+		if(src.health <= 480 && src.stageThree == FALSE)
 			enraged()
 
 		//Whenever Sif moves he destroys walls in his way.
@@ -243,8 +242,8 @@ Difficulty: Medium
 	shake_camera(L, 4, 3)
 	src.speed = 6
 	src.move_to_delay = 2
-	src.melee_damage_lower = 25
-	src.melee_damage_upper = 25
+	src.melee_damage_lower = 32
+	src.melee_damage_upper = 32
 	src.rapid_melee = 3
 
 //Sets Sif's enraged stats
@@ -257,8 +256,8 @@ Difficulty: Medium
 	shake_camera(L, 8, 6)
 	src.speed = 3
 	src.move_to_delay = 4
-	src.melee_damage_lower = 30
-	src.melee_damage_upper = 30
+	src.melee_damage_lower = 38
+	src.melee_damage_upper = 38
 	src.rapid_melee = 4
 	src.dodge_prob = 50
 
@@ -293,14 +292,6 @@ Difficulty: Medium
 		. = ..()
 		if(.)
 			recovery_time = world.time + 10
-
-/mob/living/simple_animal/hostile/megafauna/sif/Goto(target, delay, minimum_distance)
-	if(charging == FALSE)
-		..()
-
-/mob/living/simple_animal/hostile/megafauna/sif/MoveToTarget(list/possible_targets)
-	if(charging == FALSE)
-		..()
 
 //Immune to explosions when spinning or charging
 /mob/living/simple_animal/hostile/megafauna/sif/ex_act(severity, target, origin)
@@ -361,7 +352,7 @@ Difficulty: Medium
 			var/mob/living/L = A
 			L.visible_message("<span class='danger'>[src] stomps on [L]!</span>", "<span class='userdanger'>[src] stomps on you!</span>")
 			src.forceMove(get_turf(L))
-			L.apply_damage(20, BRUTE)
+			L.apply_damage(26, BRUTE)
 			playsound(get_turf(L), 'modular_sand/sound/sif/sif_stomp.ogg', 400, 1)
 			shake_camera(L, 4, 3)
 			shake_camera(src, 2, 3)

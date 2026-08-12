@@ -53,10 +53,22 @@
 #define ELECTRIFIED_PERMANENT -1
 #define AI_ELECTRIFY_DOOR_TIME 30
 
+/// Пауза перед первой повторной попыткой автозакрытия, когда проём занят плотным объектом
+#define AIRLOCK_OBSTRUCTED_RETRY_DELAY (6 SECONDS)
+/// Потолок этой паузы: она удваивается на каждой неудаче, дальше шлюз почти целиком
+/// полагается на сигнал об освобождении турфа, а не крутит таймер каждые шесть секунд.
+/// Опрос не убран совсем: подписка висит только на турфе самого шлюза, а плотность
+/// объекта в проёме может измениться и без ухода с турфа (упавший моб перестаёт быть
+/// плотным), да и у широких шлюзов вторая половина проёма остаётся неподписанной
+#define AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX (30 SECONDS)
+/// Пауза перед закрытием после того, как плотный объект покинул проём
+#define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
+
 /obj/machinery/door/airlock
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
+	opens_with_door_remote = TRUE
 	max_integrity = 300
 	var/normal_integrity = AIRLOCK_INTEGRITY_N
 	integrity_failure = 0.25
@@ -108,6 +120,10 @@
 	var/obj/machinery/door/airlock/cyclelinkedairlock
 	var/shuttledocked = 0
 	var/delayed_close_requested = FALSE // TRUE means the door will automatically close the next time it's opened.
+	/// Текущая пауза перед следующей попыткой автозакрытия при занятом проёме, 0 - проём был свободен
+	var/obstructed_close_delay = 0
+	/// Турф, на котором висит подписка на освобождение проёма
+	var/turf/obstruction_watched_turf
 
 	air_tight = FALSE
 	var/prying_so_hard = FALSE
@@ -1261,7 +1277,13 @@
 			src.closeOther.close()
 	else
 		playsound(src.loc, 'sound/machines/airlockforced.ogg', 30, 1)
+	//шлюз, открытый игроком вплотную, слышен AI-мобам совсем рядом; автоматика,
+	//циклы и удалённые открытия (стоящий вдали usr) шум не рассылают
+	if(isliving(usr) && usr.client && usr.z == z && get_dist(usr, src) <= 1)
+		ai_broadcast_noise(get_turf(src), AI_NOISE_DOOR_RANGE, usr)
 
+	// Открытие - внешнее событие: разгон паузы автозакрытия начинается заново
+	clear_obstructed_close()
 	if(autoclose)
 		autoclose_in(normalspeed ? 15 SECONDS : 15 DECISECONDS)
 
@@ -1298,6 +1320,54 @@
 		if(M.density) // something is blocking the door
 			return TRUE	// BLUEMOON ADD END
 
+/// Проём занят: взводим следующую попытку автозакрытия с растущей паузой и подписываемся
+/// на уход плотного объекта, чтобы закрыться сразу, а не ждать конца паузы.
+/obj/machinery/door/airlock/proc/handle_obstructed_close()
+	if(!autoclose) // autoclose() всё равно ничего не сделает, таймер был бы холостым
+		return
+	watch_obstruction()
+	obstructed_close_delay = obstructed_close_delay ? min(obstructed_close_delay * 2, AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX) : AIRLOCK_OBSTRUCTED_RETRY_DELAY
+	autoclose_in(obstructed_close_delay)
+
+/// Проём свободен: сбрасываем разгон паузы и снимаем подписку
+/obj/machinery/door/airlock/proc/clear_obstructed_close()
+	obstructed_close_delay = 0
+	unwatch_obstruction()
+
+/obj/machinery/door/airlock/proc/watch_obstruction()
+	var/turf/our_turf = get_turf(src)
+	if(obstruction_watched_turf == our_turf)
+		return
+	unwatch_obstruction()
+	if(!our_turf)
+		return
+	obstruction_watched_turf = our_turf
+	RegisterSignal(our_turf, COMSIG_ATOM_EXITED, PROC_REF(on_obstruction_exited))
+	// ChangeTurf делает qdel старому турфу: без этой подписки шлюз держал бы на него
+	// жёсткую ссылку и не давал собраться
+	RegisterSignal(our_turf, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_turf_deleted))
+
+/obj/machinery/door/airlock/proc/unwatch_obstruction()
+	if(!obstruction_watched_turf)
+		return
+	UnregisterSignal(obstruction_watched_turf, list(COMSIG_ATOM_EXITED, COMSIG_PARENT_QDELETING))
+	obstruction_watched_turf = null
+
+/obj/machinery/door/airlock/proc/on_watched_turf_deleted(datum/source)
+	SIGNAL_HANDLER
+	// Подписку перевесит следующая неудачная попытка автозакрытия - она уже взведена
+	obstruction_watched_turf = null
+
+/obj/machinery/door/airlock/proc/on_obstruction_exited(datum/source, atom/movable/gone)
+	SIGNAL_HANDLER
+	if(density || !autoclose)
+		clear_obstructed_close()
+		return
+	if(!gone?.density) // ушло что-то непреграждающее - проём как был занят, так и остался
+		return
+	clear_obstructed_close()
+	autoclose_in(AIRLOCK_OBSTRUCTION_CLEARED_DELAY)
+
 
 /obj/machinery/door/airlock/close(forced=0)
 	if(operating || welded || locked)
@@ -1315,8 +1385,10 @@
 
 	// BLUEMOON ADD START - ModernTG Wide Airlocks.
 	if(safe && sensor_obstacle_check())
-		autoclose_in(6 SECONDS)
+		handle_obstructed_close()
 		return	// BLUEMOON ADD END
+
+	clear_obstructed_close()
 
 	if(forced < 2)
 		if(obj_flags & EMAGGED)
@@ -1391,8 +1463,9 @@
 	update_icon()
 
 /obj/machinery/door/airlock/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
-	//Airlock is passable if it is open (!density), bot has access, and is not bolted shut or powered off)
-	return !density || (check_access(ID) && !locked && hasPower())
+	//Match the non-human parts of allowed(): emergency access and an unrestricted
+	//exit side are just as usable by a pathing mob as an ID card.
+	return !density || (!locked && !welded && hasPower() && (emergency || (unres_sides & to_dir) || check_access(ID)))
 
 /obj/machinery/door/airlock/emag_act(mob/user)
 	. = ..()
@@ -1824,3 +1897,7 @@
 #undef NOT_ELECTRIFIED
 #undef ELECTRIFIED_PERMANENT
 #undef AI_ELECTRIFY_DOOR_TIME
+
+#undef AIRLOCK_OBSTRUCTED_RETRY_DELAY
+#undef AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX
+#undef AIRLOCK_OBSTRUCTION_CLEARED_DELAY

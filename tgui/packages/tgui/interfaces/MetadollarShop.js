@@ -2,17 +2,23 @@ import { useBackend } from '../backend';
 import { Box, Button, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const MetadollarShop = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MetadollarShop = (props) => {
+  const { act, data } = useBackend();
   const {
     balance = 0,
     inteqMode = false,
     legit = [],
     smuggle = [],
     onlinePlayers = 0,
+    leaderboard = [],
   } = data;
   const theme = inteqMode ? 'inteq' : 'ntos';
   const catalog = inteqMode ? smuggle : legit;
+  const leaderboardTip = leaderboard.length
+    ? leaderboard.map((entry, index) => (
+      `${index + 1}. ${entry.name} — ${entry.amount} M$`
+    )).join('\n')
+    : 'Пока нет данных';
   return (
     <Window
       width={520}
@@ -29,6 +35,12 @@ export const MetadollarShop = (props, context) => {
                   <Box color="label">
                     {balance} M$
                   </Box>
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="trophy"
+                    tooltip={leaderboardTip}
+                    content="ТОП-5" />
                 </Stack.Item>
                 <Stack.Item>
                   <Button

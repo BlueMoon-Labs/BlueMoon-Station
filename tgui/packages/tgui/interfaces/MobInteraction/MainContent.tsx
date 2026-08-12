@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
 import {
@@ -15,15 +17,15 @@ type MainTypes = {
   is_auto_target_self: boolean;
 }
 
-export const MainContent = (props, context) => {
-  const { act, data } = useBackend<MainTypes>(context);
+export const MainContent = (props) => {
+  const { act, data } = useBackend<MainTypes>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
+  ] = useLocalState('searchText', '');
+  const [tabIndex, setTabIndex] = useState(0);
 
-  const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
+  const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
 
   const interaction_speeds = (data.interaction_speeds || []) as number[];
   const { auto_interaction_pace, auto_interaction_target, currently_active_interaction, is_auto_target_self } = data;
@@ -42,6 +44,13 @@ export const MainContent = (props, context) => {
                   tooltip={`Click here to ${inFavorites ? "show all" : "show favorites"}`} />
               }>
               Interactions
+            </Tabs.Tab>
+            <Tabs.Tab
+              className="Tab--custom"
+              icon="sliders"
+              color="yellow"
+              onClick={() => act('open_customs_window')}>
+              Custom
             </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 1} onClick={() => setTabIndex(1)}>
               Genital Options

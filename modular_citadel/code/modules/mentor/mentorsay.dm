@@ -20,4 +20,4 @@
 		message = "<span class='mentorsay_admin filter_MSAY'><span class='prefix'>MENTOR:</span> <EM>[key_name(src, 0, 0)]</EM>: <span class='message'>[message]</span></span>"
 	else
 		message = "<span class='mentorsay filter_MSAY'><span class='prefix'>MENTOR:</span> <EM>[key_name(src, 0, 0)]</EM>: <span class='message'>[message]</span></span>"
-	to_chat(GLOB.admins | GLOB.mentors, message, confidential = TRUE)
+	to_chat(mentor_traffic_recipients(), message, confidential = TRUE)

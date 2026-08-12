@@ -1,8 +1,8 @@
 //The base clockwork effect. Can have an alternate desc and will show up in the list of clockwork objects.
 /obj/effect/clockwork
 	name = "meme machine"
-	desc = "Still don't know what it is."
-	var/clockwork_desc = "A fabled artifact from beyond the stars. Contains concentrated meme essence." //Shown to clockwork cultists instead of the normal description
+	desc = "До сих пор не знаю, что это такое."
+	var/clockwork_desc = "Легендарный артефакт из-за пределов звезд. Содержит концентрированную мемную эссенцию." //Shown to clockwork cultists instead of the normal description
 	icon = 'icons/effects/clockwork_effects.dmi'
 	icon_state = "ratvars_flame"
 	anchored = TRUE

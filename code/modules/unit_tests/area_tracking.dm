@@ -60,10 +60,18 @@
 	TEST_ASSERT(new_area in GLOB.all_areas, "Newly-created area must be enrolled in GLOB.all_areas")
 	TEST_ASSERT_EQUAL(GLOB.all_areas.len, initial + 1, "GLOB.all_areas must grow by exactly 1 after creating one area (got [GLOB.all_areas.len - initial])")
 
+	// Прод-сценарий null в GLOB.sortedAreas: область попала в список (репопуляция при
+	// mid-round загрузке шаблона), затем её qdel-нули. Destroy обязан выписать её из
+	// sortedAreas — иначе список держит реф (гарантированный харддел), а после дела
+	// в списке остаётся null и валит get_area_turfs/dead_tele по всему раунду.
+	new_area.addSorted()
+	TEST_ASSERT(new_area in GLOB.sortedAreas, "addSorted must enroll the area in GLOB.sortedAreas")
+
 	// force=TRUE so Destroy runs immediately AND the atom is removed from world — otherwise the
 	// area lingers in `for(area in world)` and pollutes the parity test that runs after this one.
 	qdel(new_area, force = TRUE)
 	TEST_ASSERT(!(new_area in GLOB.all_areas), "Destroyed area must be removed from GLOB.all_areas")
+	TEST_ASSERT(!(new_area in GLOB.sortedAreas), "Destroyed area must be removed from GLOB.sortedAreas")
 	TEST_ASSERT_EQUAL(GLOB.all_areas.len, initial, "GLOB.all_areas must return to initial length after qdel")
 
 /// Side-by-side benchmark: repopulate_sorted_areas() through the GLOB list vs the
@@ -217,12 +225,14 @@
 		end = length(source) + 1
 	var/body = copytext(source, start, end)
 
-	// The collection loop `for(var/turf/open/floor/T in world)` must contain a CHECK_TICK
-	// (or stoplag) before the work that follows — otherwise on a real station this freezes a tick.
-	var/loop_pos = findtext(body, "for(var/turf/open/floor/T in world)")
+	// The collection loop (per-station-z block() walk since the perf fix) must contain a
+	// CHECK_TICK (or stoplag) before the work that follows - otherwise on a real station
+	// this freezes a tick.
+	var/loop_pos = findtext(body, "for(var/turf/open/floor/T in block(")
 	TEST_ASSERT(loop_pos, "wormholes.start() must still iterate floor turfs (test needs updating if the iterator changed)")
 	var/loop_tail = copytext(body, loop_pos)
 	TEST_ASSERT(findtext(loop_tail, "CHECK_TICK") || findtext(loop_tail, "stoplag"), "wormholes.start() floor-turf loop must contain CHECK_TICK or stoplag to avoid freezing a tick on full stations")
+	TEST_ASSERT(!findtext(body, " in world)"), "wormholes.start() must not walk the whole world - collect turfs per station z-level")
 
 // Synthetic area for the lifecycle test — needs no map placement, just a fresh allocation.
 /area/test_area

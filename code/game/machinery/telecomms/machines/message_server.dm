@@ -129,6 +129,7 @@
 	if(istype(signal, /datum/signal/subspace/messaging/tablet_message))
 		var/datum/signal/subspace/messaging/tablet_message/tablet_signal = signal
 		if(!tablet_signal.data["message"] && !tablet_signal.data["photo"])
+			tablet_signal.mark_done()
 			return
 		var/datum/data_pda_msg/M = new(tablet_signal.format_target(), tablet_signal.format_sender(), tablet_signal.format_message())
 		pda_msgs += M

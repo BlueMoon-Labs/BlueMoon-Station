@@ -29,7 +29,7 @@
 
 	//These are always reachable.
 	//User itself, current loc, and user inventory
-	if(A in DirectAccess())
+	if(in_direct_access(A))
 		if(W)
 			return W.rightclick_melee_attack_chain(src, A, params)
 		else

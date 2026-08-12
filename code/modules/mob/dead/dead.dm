@@ -15,6 +15,15 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
 
+	//дальний слух мёртвых ведёт dead-chat путь say() с префами, но потребители
+	//get_hearers_in_view (LOOC, его рунчат) находят слушателей только через грид,
+	//а до порта грида view() с турфа-источника видел призраков несмотря на
+	//invisibility. Пропуск родителя теряет общий хук - регистрируем слух сами;
+	//в CLIENTS-канал обсерверов с клиентом кладёт Login. new_player (flags_1 =
+	//NONE) сюда не попадает
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
+
 	prepare_huds()
 
 	if(length(CONFIG_GET(keyed_list/cross_server)))
@@ -111,6 +120,11 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		if (client)
 			if (new_z)
 				SSmobs.dead_players_by_zlevel[new_z] += src
+				// Ghosts get on-demand lighting init too: /mob/living/update_z does this for the living;
+				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
+				// living player arrives or background init crawls there.
+				if(should_ondemand_init_zlevel(new_z))
+					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
 			registered_z = new_z
 		else
 			registered_z = null

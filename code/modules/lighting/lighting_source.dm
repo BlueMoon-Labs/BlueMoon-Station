@@ -59,7 +59,7 @@
 	UPDATE_APPROXIMATE_PIXEL_TURF
 
 	light_power = source_atom.light_power
-	light_range = min(source_atom.light_range, LIGHTING_MAX_RANGE)
+	light_range = min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom))
 	light_color = source_atom.light_color
 	light_height = source_atom.light_height
 	light_cone_angle = source_atom.light_cone_angle
@@ -407,9 +407,9 @@
 		light_power = source_atom.light_power
 		update = TRUE
 
-	if (min(source_atom.light_range, LIGHTING_MAX_RANGE) != light_range)
+	if (min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom)) != light_range)
 		var/old_range = light_range
-		light_range = min(source_atom.light_range, LIGHTING_MAX_RANGE)
+		light_range = min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom))
 		if(light_range < old_range && applied && CEILING(old_range, 1) <= CEILING(light_range, 1) + 1)
 			// Small range decrease: shrink path can skip view() — just remove out-of-range corners
 			// Only used when decrease is ≤1 integer step; larger decreases iterate too many old corners
@@ -623,6 +623,11 @@
 	var/datum/lighting_corner/C
 	var/thing
 
+	var/datum/lighting_corner/corner_tr
+	var/datum/lighting_corner/corner_br
+	var/datum/lighting_corner/corner_bl
+	var/datum/lighting_corner/corner_tl
+
 	if (source_turf)
 		var/oldlum = source_turf.luminosity
 		source_turf.luminosity = CEILING(light_range, 1)
@@ -630,12 +635,27 @@
 		for(var/turf/T in _view_result)
 			if((!IS_DYNAMIC_LIGHTING(T) && !T.light_sources) || T.has_opaque_atom )
 				continue
-			if(!T.lighting_corners_initialised)
+			corner_tr = T.lc_topright
+			corner_br = T.lc_bottomright
+			corner_bl = T.lc_bottomleft
+			corner_tl = T.lc_topleft
+			// Флаг инициализации не гарантирует четырёх углов: хард-делит обнуляет
+			// ссылку на месте, и турф остаётся "инициализированным" с дырой. Дыра
+			// уезжала в corners ключом null, а дальше падала на C.active. Тот же
+			// расклад уже обрабатывают руками в SSlighting (см. lighting.dm),
+			// здесь его чиним - generate_missing_corners() досоздаёт недостающие.
+			if(!T.lighting_corners_initialised || !corner_tr || !corner_br || !corner_bl || !corner_tl)
 				T.generate_missing_corners()
-			corners[T.lc_topright] = 0
-			corners[T.lc_bottomright] = 0
-			corners[T.lc_bottomleft] = 0
-			corners[T.lc_topleft] = 0
+				corner_tr = T.lc_topright
+				corner_br = T.lc_bottomright
+				corner_bl = T.lc_bottomleft
+				corner_tl = T.lc_topleft
+				if(!corner_tr || !corner_br || !corner_bl || !corner_tl)
+					continue
+			corners[corner_tr] = 0
+			corners[corner_br] = 0
+			corners[corner_bl] = 0
+			corners[corner_tl] = 0
 		source_turf.luminosity = oldlum
 
 	SETUP_CORNERS_CACHE(src)

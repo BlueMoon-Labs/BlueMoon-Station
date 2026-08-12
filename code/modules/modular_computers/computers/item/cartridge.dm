@@ -219,7 +219,7 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	var/datum/computer_file/program/messenger/app = locate() in target.get_all_files()
+	var/datum/computer_file/program/messenger/app = locate(/datum/computer_file/program/messenger) in target.get_all_files()
 	if(!app)
 		to_chat(user, span_notice("ERROR: Target does not have messenger installed."))
 		return FALSE
@@ -251,8 +251,8 @@
 	if(!fakejob || source != original_host || !user.canUseTopic(source, BE_CLOSE))
 		return
 
-	var/datum/computer_file/program/messenger/app = locate() in source.get_all_files()
-	var/datum/computer_file/program/messenger/target_app = locate() in target.get_all_files()
+	var/datum/computer_file/program/messenger/app = locate(/datum/computer_file/program/messenger) in source.get_all_files()
+	var/datum/computer_file/program/messenger/target_app = locate(/datum/computer_file/program/messenger) in target.get_all_files()
 	if(!app || charges <= 0 || !app.send_rigged_message(user, message, list(target_app), fakename, fakejob))
 		return FALSE
 	charges--

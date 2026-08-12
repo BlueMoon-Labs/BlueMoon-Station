@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Icon, LabeledList, NoticeBox, Section } from '../components';
 import { Window } from '../layouts';
 
-export const SuitStorageUnit = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SuitStorageUnit = (props) => {
+  const { act, data } = useBackend();
   const {
     locked,
     open,
@@ -39,7 +39,7 @@ export const SuitStorageUnit = (props, context) => {
             title="Storage"
             minHeight="260px"
             buttons={(
-              <Fragment>
+              <>
                 {!open && (
                   <Button
                     icon={locked ? 'unlock' : 'lock'}
@@ -52,7 +52,7 @@ export const SuitStorageUnit = (props, context) => {
                     content={open ? 'Close' : 'Open'}
                     onClick={() => act('door')} />
                 )}
-              </Fragment>
+              </>
             )}>
             {locked && (
               <Box

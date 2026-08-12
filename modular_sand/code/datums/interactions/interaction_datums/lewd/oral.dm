@@ -19,18 +19,21 @@
 	p13user_emote = PLUG13_EMOTE_MOUTH
 	p13target_emote = PLUG13_EMOTE_PENIS
 
-/datum/interaction/lewd/oral/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/oral/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	var/obj/item/organ/genital/genital = null
 	var/lust_increase = NORMAL_LUST
-	var/has_penis = partner.has_penis() // BLUEMOON ADD
-	var/is_hidden = ..()
+	var/has_penis = partner.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
+	var/dirty_user = user.wants_dirty_text()
+	var/dirty_partner = partner.wants_dirty_text()
+	var/dirty = dirty_user || dirty_partner
+
 	if(partner.is_fucking(user, CUM_TARGET_MOUTH))
 		if(prob(partner.get_sexual_potency()))
 			user.adjustOxyLoss(1)
@@ -60,16 +63,20 @@
 				if("penis")
 				//BLUEMOON EDIT START
 					if(has_penis || partner.has_strapon())
-						message = pick(
-							"довольно отсасывает [has_penis ? "мясо" : "дилдо"] \the <b>[partner]</b>, крепко удерживая [has_penis ? "орган" : "его"] рукой.",
-							"нежно проводит своим язычком вдоль всего [has_penis ? "органа" : "дилдо"] \the <b>[partner]</b>.",
-							"обводит [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> своим горячим язычком.",
-							"обхватывает головку [has_penis ? "члена" : "дилдо"] \the <b>[partner]</b> своими губками и с нежностью производит круговые движения язычком.",
-							"медленно погружает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> в своё горло вплоть до тугого вздоха и резко вытаскивает его, громко вдыхая",
-							"ласково целует [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и миловидно улыбается.",
-							"с силой обхватывает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и пару раз бьёт им себя по рту.",
+						if(dirty)
+							var/penis_word = has_penis ? "член" : "дилдо"
+							message = replacetext(replacetext(pick(GLOB.dirty_blowjob_cont_messages), "$PENIS", penis_word), "$PARTNER", "\the <b>[partner]</b>")
+						else
+							message = pick(
+								"довольно отсасывает [has_penis ? "мясо" : "дилдо"] \the <b>[partner]</b>, крепко удерживая [has_penis ? "орган" : "его"] рукой.",
+								"нежно проводит своим язычком вдоль всего [has_penis ? "органа" : "дилдо"] \the <b>[partner]</b>.",
+								"обводит [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> своим горячим язычком.",
+								"обхватывает головку [has_penis ? "члена" : "дилдо"] \the <b>[partner]</b> своими губками и с нежностью производит круговые движения язычком.",
+								"медленно погружает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> в своё горло вплоть до тугого вздоха и резко вытаскивает его, громко вдыхая",
+								"ласково целует [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и миловидно улыбается.",
+								"с силой обхватывает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и пару раз бьёт им себя по рту.",
+							)
 				//BLUEMOON EDIT END
-						)
 					else
 						improv = TRUE
 			if(improv)
@@ -99,16 +106,20 @@
 			if("penis")
 			//BLUEMOON EDIT START
 				if(has_penis || partner.has_strapon())
-					message = pick(
-						"довольно отсасывает [has_penis ? "мясо" : "дилдо"] \the <b>[partner]</b>, крепко удерживая [has_penis ? "орган" : "его"] рукой.",
-						"нежно проводит своим язычком вдоль всего [has_penis ? "органа" : "дилдо"] \the <b>[partner]</b>.",
-						"обводит [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> своим горячим язычком.",
-						"обхватывает головку [has_penis ? "члена" : "дилдо"] \the <b>[partner]</b> своими губками и с нежностью производит круговые движения язычком.",
-						"медленно погружает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> в своё горло вплоть до тугого вздоха и резко вытаскивает его, громко вдыхая",
-						"ласково целует [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и миловидно улыбается.",
-						"с силой обхватывает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и пару раз бьёт им себя по рту.",
-			//BLUEMOON EDIT END
-					)
+					if(dirty)
+						var/penis_word = has_penis ? "член" : "дилдо"
+						message = replacetext(replacetext(pick(GLOB.dirty_blowjob_first_messages), "$PENIS", penis_word), "$PARTNER", "\the <b>[partner]</b>")
+					else
+						message = pick(
+							"довольно отсасывает [has_penis ? "мясо" : "дилдо"] \the <b>[partner]</b>, крепко удерживая [has_penis ? "орган" : "его"] рукой.",
+							"нежно проводит своим язычком вдоль всего [has_penis ? "органа" : "дилдо"] \the <b>[partner]</b>.",
+							"обводит [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> своим горячим язычком.",
+							"обхватывает головку [has_penis ? "члена" : "дилдо"] \the <b>[partner]</b> своими губками и с нежностью производит круговые движения язычком.",
+							"медленно погружает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> в своё горло вплоть до тугого вздоха и резко вытаскивает его, громко вдыхая",
+							"ласково целует [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и миловидно улыбается.",
+							"с силой обхватывает [has_penis ? "орган" : "дилдо"] \the <b>[partner]</b> и пару раз бьёт им себя по рту.",
+						)
+				//BLUEMOON EDIT END
 				else
 					improv = TRUE
 		if(improv)
@@ -140,8 +151,8 @@
 									'modular_sand/sound/interactions/bj8.ogg',
 									'modular_sand/sound/interactions/bj9.ogg',
 									'modular_sand/sound/interactions/bj10.ogg',
-									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, -1)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, extrarange)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 //BLUEMOON EDIT START
 //SPLURT EDIT START
 	if(fucktarget == "penis" && partner.can_penetrating_genital_cum())

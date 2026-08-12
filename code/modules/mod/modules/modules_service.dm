@@ -3,8 +3,8 @@
 ///Bike Horn - Plays a bike horn sound.
 /obj/item/mod/module/bikehorn
 	name = "MOD bike horn module"
-	desc = "A shoulder-mounted piece of heavy sonic artillery, this module uses the finest femto-manipulator technology to \
-		precisely deliver an almost lethal squeeze to... a bike horn, producing a significantly memorable sound."
+	desc = "Установленное на плече тяжёлое звуковое орудие, этот модуль использует лучшую фемтоманипуляторную технологию, чтобы \
+		точно доставить почти смертельное сжатие... велосипедному гудку, производя крайне запоминающийся звук."
 	icon_state = "bikehorn"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -16,15 +16,15 @@
 	. = ..()
 	if(!.)
 		return
-	playsound(src, 'sound/items/bikehorn.ogg', 100, FALSE)
+	playsound(mod, 'sound/items/bikehorn.ogg', 100, FALSE)
 	drain_power(use_power_cost)
 
 ///Microwave Beam - Microwaves items instantly.
 /obj/item/mod/module/microwave_beam
 	name = "MOD microwave beam module"
-	desc = "An oddly domestic device, this module is installed into the user's palm, \
-		hooking up with culinary scanners located in the helmet to blast food with precise microwave radiation, \
-		allowing them to cook food from a distance, with the greatest of ease. Not recommended for use against grapes."
+	desc = "Удивительно бытовое устройство, этот модуль устанавливается в ладонь пользователя, \
+		подключаясь к кулинарным сканерам, расположенным в шлеме, чтобы облучать еду точной микроволновой радиацией, \
+		позволяя готовить еду на расстоянии с наибольшей лёгкостью. Не рекомендуется использовать против винограда."
 	icon_state = "microwave_beam"
 	module_type = MODULE_ACTIVE
 	complexity = 2
@@ -48,7 +48,7 @@
 	if(!isitem(target))
 		return
 	if(!isturf(target.loc))
-		balloon_alert(mod.wearer, "must be on the floor!")
+		mod.balloon_alert(mod.wearer, "должно быть на полу!")
 		return
 	var/obj/item/microwave_target = target
 	var/turf/microwave_target_loc = target.loc
@@ -57,9 +57,9 @@
 	spark_effect.start()
 	mod.wearer.Beam(target,icon_state="lightning[rand(1,12)]", time = 5)
 	if(microwave_target.microwave_act(microwave))
-		playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50, FALSE)
+		playsound(mod, 'sound/machines/microwave/microwave-end.ogg', 50, FALSE)
 	else
-		balloon_alert(mod.wearer, "can't be microwaved!")
+		mod.balloon_alert(mod.wearer, "не может быть облучено микроволнами!")
 	var/datum/effect_system/spark_spread/spark_effect_two = new()
 	spark_effect_two.set_up(2, 1, microwave_target_loc)
 	spark_effect_two.start()

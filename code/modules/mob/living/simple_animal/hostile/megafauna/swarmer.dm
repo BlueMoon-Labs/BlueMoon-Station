@@ -122,16 +122,6 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 	return GetUncappedAISwarmerType()
 
 
-/mob/living/simple_animal/hostile/swarmer/ai/resource/handle_automated_action()
-	. = ..()
-	if(.)
-		if(!stop_automated_movement)
-			if(health < maxHealth*0.25)
-				StartAction(100)
-				RepairSelf()
-				return
-
-
 /mob/living/simple_animal/hostile/swarmer/ai/Move(atom/newloc)
 	if(newloc)
 		if(newloc.z == z) //so these actions are Z-specific
@@ -151,13 +141,13 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 
 /mob/living/simple_animal/hostile/swarmer/ai/proc/StartAction(deci = 0)
 	stop_automated_movement = TRUE
-	AIStatus = AI_OFF
+	toggle_ai(AI_OFF)
 	addtimer(CALLBACK(src, PROC_REF(EndAction)), deci)
 
 
 /mob/living/simple_animal/hostile/swarmer/ai/proc/EndAction()
 	stop_automated_movement = FALSE
-	AIStatus = AI_ON
+	toggle_ai(AI_ON)
 
 
 
@@ -207,25 +197,6 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 	else
 		add_type_to_ignore(target.type)
 		return FALSE
-
-
-/mob/living/simple_animal/hostile/swarmer/ai/resource/handle_automated_action()
-	. = ..()
-	if(.)
-		if(!stop_automated_movement)
-			if(GLOB.AISwarmers.len < GetTotalAISwarmerCap() && resources >= 50)
-				StartAction(100) //so they'll actually sit still and use the verbs
-				CreateSwarmer()
-				return
-
-			if(resources > 5)
-				if(prob(5)) //lower odds, as to prioritise reproduction
-					StartAction(10) //not a typo
-					CreateBarricade()
-					return
-				if(prob(5))
-					CreateTrap()
-					return
 
 
 //So swarmers can learn what is and isn't food

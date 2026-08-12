@@ -105,13 +105,13 @@
 	var/new_tox = getToxLoss(TOX_OMNI)
 	if(world.time < next_tox_vomit)
 		return .
-	if(new_tox >= 30)
+	if(new_tox >= 60)
 		vomit(30, blood = TRUE, stun = TRUE, distance = 3, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
 		next_tox_vomit = world.time + (12 SECONDS)
-	else if(new_tox >= 20)
+	else if(new_tox >= 40)
 		vomit(20, blood = FALSE, stun = TRUE, distance = 2, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
 		next_tox_vomit = world.time + (12 SECONDS)
-	else if(new_tox >= 10)
+	else if(new_tox >= 20)
 		vomit(10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
 		next_tox_vomit = world.time + (12 SECONDS)
 	return .

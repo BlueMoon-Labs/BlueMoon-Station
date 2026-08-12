@@ -13,6 +13,13 @@
 	var/id_tag
 	var/frequency = FREQ_ATMOS_STORAGE
 	var/datum/radio_frequency/radio_connection
+	///Показания последнего бродкаста: без изменений эфир не засоряем,
+	///фан-аут receive_signal по всем консолям не бесплатный
+	var/last_report_pressure
+	var/last_report_temperature
+	var/last_report_moles
+	///Крайний срок следующего обязательного бродкаста (heartbeat)
+	var/next_forced_report = 0
 
 /obj/machinery/air_sensor/atmos/toxin_tank
 	name = "plasma tank gas sensor"
@@ -46,24 +53,48 @@
 		icon_state = "gsensor[on]"
 
 /obj/machinery/air_sensor/process_atmos()
+	// Pure telemetry for the atmos monitoring computers: a 2s report cadence is
+	// plenty and skips the per-fire signal allocation and radio dispatch.
+	if(SSair.times_fired % ATMOS_TELEMETRY_INTERVAL)
+		return
 	if(on)
-		var/datum/gas_mixture/air_sample = return_air()
+		try_report()
 
-		var/datum/signal/signal = new(list(
-			"sigtype" = "status",
-			"id_tag" = id_tag,
-			"timestamp" = world.time,
-			"pressure" = air_sample.return_pressure(),
-			"temperature" = air_sample.return_temperature(),
-			"gases" = list()
-		))
-		var/total_moles = air_sample.total_moles()
-		if(total_moles)
-			for(var/gas_id in air_sample.get_gases())
-				var/gas_name = GLOB.gas_data.names[gas_id]
-				signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
+///Бродкаст показаний, если они изменились с прошлого отчёта или настал
+///heartbeat: у осевшего танка показания стоят на месте, и сигнал зря
+///разбегался по receive_signal всех консолей частоты.
+/obj/machinery/air_sensor/proc/try_report()
+	var/datum/gas_mixture/air_sample = return_air()
 
-		radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	var/pressure = air_sample.return_pressure()
+	var/temperature = air_sample.return_temperature()
+	var/total_moles = air_sample.total_moles()
+	if(world.time < next_forced_report \
+		&& !isnull(last_report_pressure) \
+		&& abs(pressure - last_report_pressure) < 0.1 \
+		&& abs(temperature - last_report_temperature) < 0.1 \
+		&& abs(total_moles - last_report_moles) < 0.05)
+		return FALSE
+	last_report_pressure = pressure
+	last_report_temperature = temperature
+	last_report_moles = total_moles
+	next_forced_report = world.time + ATMOS_TELEMETRY_HEARTBEAT
+
+	var/datum/signal/signal = new(list(
+		"sigtype" = "status",
+		"id_tag" = id_tag,
+		"timestamp" = world.time,
+		"pressure" = pressure,
+		"temperature" = temperature,
+		"gases" = list()
+	))
+	if(total_moles)
+		for(var/gas_id in air_sample.get_gases())
+			var/gas_name = GLOB.gas_data.names[gas_id]
+			signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
+
+	radio_connection?.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	return TRUE
 
 
 /obj/machinery/air_sensor/proc/set_frequency(new_frequency)
@@ -96,13 +127,13 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 
 	var/frequency = FREQ_ATMOS_STORAGE
 	var/list/sensors = list(
-		ATMOS_GAS_MONITOR_SENSOR_N2 = "Nitrogen Tank",
-		ATMOS_GAS_MONITOR_SENSOR_O2 = "Oxygen Tank",
-		ATMOS_GAS_MONITOR_SENSOR_CO2 = "Carbon Dioxide Tank",
-		ATMOS_GAS_MONITOR_SENSOR_TOX = "Plasma Tank",
-		ATMOS_GAS_MONITOR_SENSOR_N2O = "Nitrous Oxide Tank",
-		ATMOS_GAS_MONITOR_SENSOR_AIR = "Mixed Air Tank",
-		ATMOS_GAS_MONITOR_SENSOR_MIX = "Mix Tank",
+		ATMOS_GAS_MONITOR_SENSOR_N2 = "Бак азота",
+		ATMOS_GAS_MONITOR_SENSOR_O2 = "Бак кислорода",
+		ATMOS_GAS_MONITOR_SENSOR_CO2 = "Бак углекислоты",
+		ATMOS_GAS_MONITOR_SENSOR_TOX = "Бак плазмы",
+		ATMOS_GAS_MONITOR_SENSOR_N2O = "Бак веселящего газа",
+		ATMOS_GAS_MONITOR_SENSOR_AIR = "Бак воздушной смеси",
+		ATMOS_GAS_MONITOR_SENSOR_MIX = "Бак смеси",
 		// ATMOS_GAS_MONITOR_SENSOR_BZ = "BZ Tank",
 		// ATMOS_GAS_MONITOR_SENSOR_FREON = "Freon Tank",
 		// ATMOS_GAS_MONITOR_SENSOR_HALON = "Halon Tank",
@@ -117,10 +148,10 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 		// ATMOS_GAS_MONITOR_SENSOR_TRITIUM = "Tritium Tank",
 		// ATMOS_GAS_MONITOR_SENSOR_H2O = "Water Vapor Tank",
 		// ATMOS_GAS_MONITOR_SENSOR_ZAUKER = "Zauker Tank",
-		ATMOS_GAS_MONITOR_LOOP_DISTRIBUTION = "Distribution Loop",
-		ATMOS_GAS_MONITOR_LOOP_ATMOS_WASTE = "Atmos Waste Loop",
-		ATMOS_GAS_MONITOR_SENSOR_INCINERATOR = "Incinerator Chamber",
-		ATMOS_GAS_MONITOR_SENSOR_TOXINS_LAB = "Toxins Mixing Chamber"
+		ATMOS_GAS_MONITOR_LOOP_DISTRIBUTION = "Раздающий контур",
+		ATMOS_GAS_MONITOR_LOOP_ATMOS_WASTE = "Контур отходов",
+		ATMOS_GAS_MONITOR_SENSOR_INCINERATOR = "Камера сжигания",
+		ATMOS_GAS_MONITOR_SENSOR_TOXINS_LAB = "Камера смешивания токсинов"
 	)
 	var/list/sensor_information = list()
 	var/datum/radio_frequency/radio_connection
@@ -149,16 +180,41 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 	for(var/id_tag in sensors)
 		var/long_name = sensors[id_tag]
 		var/list/info = sensor_information[id_tag]
+		// Молчащий сенсор раньше просто исчезал из списка, и понять, что бак
+		// потерян, а не пуст, по консоли было нельзя.
 		if(!info)
+			data["sensors"] += list(list(
+				"id_tag" = id_tag,
+				"long_name" = sanitize(long_name),
+				"online" = FALSE,
+			))
 			continue
+		var/reported_at = info["timestamp"]
 		data["sensors"] += list(list(
 			"id_tag"		= id_tag,
 			"long_name" 	= sanitize(long_name),
+			"online"		= TRUE,
 			"pressure"		= info["pressure"],
 			"temperature"	= info["temperature"],
-			"gases"			= info["gases"]
+			"gases"			= info["gases"],
+			// Сенсор шлёт отчёты редко и только при изменениях: возраст показаний
+			// отличает "давление стабильно" от "сенсор отвалился".
+			"stale"			= isnull(reported_at) || (world.time - reported_at > ATMOS_TELEMETRY_STALE_AFTER),
+			"age"			= isnull(reported_at) ? null : DisplayTimeText(world.time - reported_at),
 		))
 	return data
+
+/obj/machinery/computer/atmos_control/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	// Точка входа в справочник. Консоль мониторинга - первое, куда идёт инженер
+	// в начале смены, и до этой кнопки справочник открывался только из
+	// приложения на КПК, то есть попадался на глаза лишь тому, кто и так знал,
+	// что он есть.
+	if(action == "handbook")
+		open_atmos_handbook(usr)
+		return TRUE
 
 /obj/machinery/computer/atmos_control/receive_signal(datum/signal/signal)
 	if(!signal)
@@ -178,11 +234,11 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 //Incinerator sensor only
 /obj/machinery/computer/atmos_control/incinerator
 	name = "Incinerator Air Control"
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_INCINERATOR = "Incinerator Chamber")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_INCINERATOR = "Камера сжигания")
 //Toxins mix sensor only
 /obj/machinery/computer/atmos_control/toxinsmix
 	name = "Toxins Mixing Air Control"
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_TOXINS_LAB = "Toxins Mixing Chamber")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_TOXINS_LAB = "Камера смешивания токсинов")
 
 /////////////////////////////////////////////////////////////
 // LARGE TANK CONTROL
@@ -200,43 +256,43 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 	name = "Oxygen Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_O2
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_O2
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_O2 = "Oxygen Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_O2 = "Бак кислорода")
 
 /obj/machinery/computer/atmos_control/tank/toxin_tank
 	name = "Plasma Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_TOX
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_TOX
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_TOX = "Plasma Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_TOX = "Бак плазмы")
 
 /obj/machinery/computer/atmos_control/tank/air_tank
 	name = "Mixed Air Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_AIR
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_AIR
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_AIR = "Air Mix Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_AIR = "Бак воздушной смеси")
 
 /obj/machinery/computer/atmos_control/tank/mix_tank
 	name = "Gas Mix Tank Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_MIX
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_MIX
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_MIX = "Gas Mix Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_MIX = "Бак газовой смеси")
 
 /obj/machinery/computer/atmos_control/tank/nitrous_tank
 	name = "Nitrous Oxide Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_N2O
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_N2O
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_N2O = "Nitrous Oxide Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_N2O = "Бак веселящего газа")
 
 /obj/machinery/computer/atmos_control/tank/nitrogen_tank
 	name = "Nitrogen Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_N2
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_N2
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_N2 = "Nitrogen Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_N2 = "Бак азота")
 
 /obj/machinery/computer/atmos_control/tank/carbon_tank
 	name = "Carbon Dioxide Supply Control"
 	input_tag = ATMOS_GAS_MONITOR_INPUT_CO2
 	output_tag = ATMOS_GAS_MONITOR_OUTPUT_CO2
-	sensors = list(ATMOS_GAS_MONITOR_SENSOR_CO2 = "Carbon Dioxide Tank")
+	sensors = list(ATMOS_GAS_MONITOR_SENSOR_CO2 = "Бак углекислоты")
 
 // This hacky madness is the evidence of the fact that a lot of machines were never meant to be constructable, im so sorry you had to see this
 /obj/machinery/computer/atmos_control/tank/proc/reconnect(mob/user)

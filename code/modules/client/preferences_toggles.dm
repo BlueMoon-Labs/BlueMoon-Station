@@ -12,12 +12,18 @@
 		C.prefs.menuoptions[type] = !checked
 		winset(C, "[verbpath]", "is-checked = [!checked]")
 
+/datum/verbs/menu/Settings/verb/setup_character_appearance()
+	set name = "Character Preferences"
+	set category = "Preferences.Game"
+	set desc = "Open Character Preferences Window"
+	usr.client.prefs.current_tab = 0
+	usr.client.prefs.ShowChoices(usr)
+
 /datum/verbs/menu/Settings/verb/setup_character()
 	set name = "Game Preferences"
 	set category = "Preferences.Game"
 	set desc = "Open Game Preferences Window"
-	usr.client.prefs.current_tab = 1
-	usr.client.prefs.ShowChoices(usr)
+	usr.client.prefs.ui_interact(usr)
 
 //toggles
 /datum/verbs/menu/Settings/Ghost/chatterbox
@@ -178,6 +184,20 @@ TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_jukeboxes)()
 /datum/verbs/menu/Settings/Sound/toggle_jukeboxes/Get_checked(client/C)
 	return C.prefs.toggles & SOUND_JUKEBOXES
 
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_personal_jukeboxes)()
+	set name = "Hear/Silence Personal Music Boxes"
+	set category = "Preferences.Sounds"
+	set desc = "Hear personal music boxes playing custom tracks"
+	usr.client.prefs.toggles ^= SOUND_PERSONAL_JUKEBOXES
+	usr.client.prefs.save_preferences()
+	if(usr.client.prefs.toggles & SOUND_PERSONAL_JUKEBOXES)
+		to_chat(usr, "You will now hear personal music boxes.")
+	else
+		to_chat(usr, "You will no longer hear personal music boxes.")
+	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle Personal Music Boxes", "[usr.client.prefs.toggles & SOUND_PERSONAL_JUKEBOXES ? "Enabled" : "Disabled"]"))
+/datum/verbs/menu/Settings/Sound/toggle_personal_jukeboxes/Get_checked(client/C)
+	return C.prefs.toggles & SOUND_PERSONAL_JUKEBOXES
+
 TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, Toggle_Soundscape)()
 	set name = "Hear/Silence Ambience"
 	set category = "Preferences.Sounds"
@@ -250,6 +270,42 @@ TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_bark)()
 /datum/verbs/menu/Settings/Sound/toggle_bark/Get_checked(client/C)
 	return C.prefs.toggles & SOUND_BARK
 
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggleeatingnoise)()
+	set name = "Toggle Eating Noises"
+	set category = "Preferences.Sounds"
+	set desc = "Hear Eating noises"
+	usr.client.prefs.cit_toggles ^= EATING_NOISES
+	usr.client.prefs.save_preferences()
+	usr.stop_sound_channel(CHANNEL_PRED)
+	to_chat(usr, "You will [(usr.client.prefs.cit_toggles & EATING_NOISES) ? "now" : "no longer"] hear eating noises.")
+/datum/verbs/menu/Settings/Sound/toggleeatingnoise/Get_checked(client/C)
+	return C.prefs.cit_toggles & EATING_NOISES
+
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggledigestionnoise)()
+	set name = "Toggle Digestion Noises"
+	set category = "Preferences.Sounds"
+	set desc = "Hear digestive noises"
+	usr.client.prefs.cit_toggles ^= DIGESTION_NOISES
+	usr.client.prefs.save_preferences()
+	usr.stop_sound_channel(CHANNEL_DIGEST)
+	to_chat(usr, "You will [(usr.client.prefs.cit_toggles & DIGESTION_NOISES) ? "now" : "no longer"] hear digestion noises.")
+/datum/verbs/menu/Settings/Sound/toggledigestionnoise/Get_checked(client/C)
+	return C.prefs.cit_toggles & DIGESTION_NOISES
+
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, togglehoundsleeper)()
+	set name = "Toggle Voracious Hound Sleepers"
+	set category = "Preferences.Game"
+	set desc = "Toggles Voracious MediHound Sleepers"
+	usr.client.prefs.cit_toggles ^= MEDIHOUND_SLEEPER
+	usr.client.prefs.save_preferences()
+	if(usr.client.prefs.cit_toggles & MEDIHOUND_SLEEPER)
+		to_chat(usr, "You have opted in for voracious medihound sleepers.")
+	else
+		to_chat(usr, "Medihound sleepers will no longer be voracious when you're involved.")
+	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle MediHound Sleeper", "[usr.client.prefs.cit_toggles & MEDIHOUND_SLEEPER ? "Enabled" : "Disabled"]"))
+/datum/verbs/menu/Settings/Sound/togglehoundsleeper/Get_checked(client/C)
+	return C.prefs.cit_toggles & MEDIHOUND_SLEEPER
+
 /datum/verbs/menu/Settings/Sound/verb/stop_client_sounds()
 	set name = "Stop Sounds"
 	set category = "Preferences.Sounds"
@@ -308,7 +364,9 @@ GLOBAL_LIST_INIT(ghost_forms, list("ghost", "ghost1", "ghost2", "ghostking","gho
 		prefs.save_preferences()
 		if(isobserver(mob))
 			var/mob/dead/observer/O = mob
-			O.update_icon(new_form)
+			// Форма - второй аргумент: строка первым шла в битовое поле updates
+			// (рантайм "ghost" &= у обсерверов). Конвенция как в observer/login.dm.
+			O.update_icon(null, new_form)
 
 GLOBAL_LIST_INIT(ghost_orbits, list(GHOST_ORBIT_CIRCLE,GHOST_ORBIT_TRIANGLE,GHOST_ORBIT_SQUARE,GHOST_ORBIT_HEXAGON,GHOST_ORBIT_PENTAGON))
 
@@ -380,18 +438,6 @@ GLOBAL_LIST_INIT(ghost_orbits, list(GHOST_ORBIT_CIRCLE,GHOST_ORBIT_TRIANGLE,GHOS
 	to_chat(src, "[(prefs.toggles & INTENT_STYLE) ? "Clicking directly on intents selects them." : "Clicking on intents rotates selection clockwise."]")
 	prefs.save_preferences()
 	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle Intent Selection", "[prefs.toggles & INTENT_STYLE ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-/client/verb/toggle_ghost_hud_pref()
-	set name = "Toggle Ghost HUD"
-	set category = "Preferences.Ghost"
-	set desc = "Hide/Show Ghost HUD"
-
-	prefs.ghost_hud = !prefs.ghost_hud
-	to_chat(src, "Ghost HUD will now be [prefs.ghost_hud ? "visible" : "hidden"].")
-	prefs.save_preferences()
-	if(isobserver(mob))
-		mob.hud_used.show_hud()
-	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle Ghost HUD", "[prefs.ghost_hud ? "Enabled" : "Disabled"]"))
 
 /client/verb/toggle_inquisition() // warning: unexpected inquisition
 	set name = "Toggle Inquisitiveness"

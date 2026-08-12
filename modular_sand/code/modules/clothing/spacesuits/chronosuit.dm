@@ -1,6 +1,6 @@
 /obj/item/clothing/head/helmet/space/chronos //Gandalf was here!
 	name = "Chronosuit Helmet"
-	desc = "A white helmet with an opaque blue visor."
+	desc = "Белый шлем с непрозрачным синим забралом."
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "chronohelmet"
@@ -21,7 +21,7 @@
 
 /obj/item/clothing/suit/space/chronos
 	name = "Chronosuit"
-	desc = "An advanced spacesuit equipped with time-bluespace teleportation and anti-compression technology."
+	desc = "Продвинутый скафандр, оснащённый временно-блюспейс-телепортацией и антикомпрессионной технологией."
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "chronosuit"

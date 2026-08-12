@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -86,8 +88,8 @@ function shuffleArray<T>(arr: T[]): T[] {
 // ============================================
 // Main Component
 // ============================================
-export const ProblemComputer = (props, context) => {
-  const { data } = useBackend<ProblemComputerData>(context);
+export const ProblemComputer = (props) => {
+  const { data } = useBackend<ProblemComputerData>();
   const { screen } = data;
 
   return (
@@ -111,8 +113,8 @@ export const ProblemComputer = (props, context) => {
 // ============================================
 // Charge Bar
 // ============================================
-const ChargeBar = (props, context) => {
-  const { data } = useBackend<ProblemComputerData>(context);
+const ChargeBar = (props) => {
+  const { data } = useBackend<ProblemComputerData>();
   const { charges, maxCharges, rewardType } = data;
 
   return (
@@ -137,7 +139,7 @@ const ChargeBar = (props, context) => {
               py={0.5}
               backgroundColor={rewardType === 'Science' ? '#8e44ad' : '#d35400'}
               color="white"
-              style={{ 'border-radius': '4px' }}>
+              style={{ borderRadius: '4px' }}>
               <Icon
                 name={rewardType === 'Science' ? 'flask' : 'boxes'}
                 mr={1}
@@ -152,13 +154,9 @@ const ChargeBar = (props, context) => {
 };
 
 // Menu Screen
-const MenuScreen = (props, context) => {
-  const { act } = useBackend<ProblemComputerData>(context);
-  const [selectedGame, setSelectedGame] = useLocalState<string | null>(
-    context,
-    'selectedGame',
-    null
-  );
+const MenuScreen = (props) => {
+  const { act } = useBackend<ProblemComputerData>();
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
   return (
     <Section title="Выберите мини-игру" fill>
@@ -175,11 +173,11 @@ const MenuScreen = (props, context) => {
                     'border': selectedGame === game.id
                       ? '2px solid ' + game.color
                       : '2px solid rgba(255,255,255,0.1)',
-                    'border-radius': '8px',
+                    borderRadius: '8px',
                     'padding': '10px',
-                    'text-align': 'center',
-                    'min-height': '90px',
-                    'background-color': selectedGame === game.id
+                    textAlign: 'center',
+                    minHeight: '90px',
+                    backgroundColor: selectedGame === game.id
                       ? game.color + '33'
                       : 'rgba(255,255,255,0.05)',
                   }}>
@@ -213,8 +211,8 @@ const MenuScreen = (props, context) => {
                       content={diff.name}
                       style={{
                         'padding': '8px 16px',
-                        'font-size': '13px',
-                        'border-radius': '6px',
+                        fontSize: '13px',
+                        borderRadius: '6px',
                       }}
                       onClick={() =>
                         act('select_game', {
@@ -235,8 +233,8 @@ const MenuScreen = (props, context) => {
 };
 
 // Game Screen
-const GameScreen = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const GameScreen = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const { currentGame } = data;
   const diffLabel = data.difficulty === 'Easy'
     ? 'Лёгкая' : data.difficulty === 'Medium'
@@ -266,9 +264,9 @@ const GameScreen = (props, context) => {
 };
 
 // Math Game
-const MathGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
-  const [answer, setAnswer] = useLocalState(context, 'mathAnswer', '');
+const MathGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
+  const [answer, setAnswer] = useState('');
   const gameData = data.gameData;
 
   if (!gameData) return <NoticeBox>Загрузка...</NoticeBox>;
@@ -292,7 +290,7 @@ const MathGame = (props, context) => {
             m={1}
             backgroundColor="rgba(0,0,0,0.3)"
             style={{
-              'border-radius': '8px',
+              borderRadius: '8px',
               'border': '1px solid rgba(52,152,219,0.5)',
             }}>
             {gameData.question}
@@ -310,9 +308,9 @@ const MathGame = (props, context) => {
                   setAnswer('');
                 }}
                 style={{
-                  'font-size': '18px',
+                  fontSize: '18px',
                   'width': '200px',
-                  'text-align': 'center',
+                  textAlign: 'center',
                 }}
               />
             </Stack.Item>
@@ -337,16 +335,13 @@ const MathGame = (props, context) => {
 let _wireCache: { key: string; left: number[]; right: number[] } | null = null;
 
 // Wire Connect
-const WireGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const WireGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
 
-  const [connections, setConnections] = useLocalState<Record<number, boolean>>(
-    context, 'wireConnections', {});
-  const [selectedSide, setSelectedSide] = useLocalState<string | null>(
-    context, 'wireSide', null);
-  const [selectedId, setSelectedId] = useLocalState<number | null>(
-    context, 'wireId', null);
+  const [connections, setConnections] = useState<Record<number, boolean>>({});
+  const [selectedSide, setSelectedSide] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   if (!gameData || !gameData.pairs || !Array.isArray(gameData.pairs)) {
     return <NoticeBox>Загрузка...</NoticeBox>;
@@ -427,14 +422,14 @@ const WireGame = (props, context) => {
         style={{
           'width': '110px',
           'height': nodeH + 'px',
-          'border-radius': side === 'L' ? '6px 0 0 6px' : '0 6px 6px 0',
+          borderRadius: side === 'L' ? '6px 0 0 6px' : '0 6px 6px 0',
           'background': connected ? clr + '55' : active ? clr + 'CC' : clr + '44',
           'border': active ? '2px solid #fff' : '2px solid ' + clr,
           'cursor': connected ? 'default' : 'pointer',
-          'text-align': align,
-          'line-height': nodeH + 'px',
+          textAlign: align,
+          lineHeight: nodeH + 'px',
           'padding': '0 10px',
-          'box-shadow': active ? '0 0 8px ' + clr : 'none',
+          boxShadow: active ? '0 0 8px ' + clr : 'none',
         }}>
         {connected && <Icon name="check" color="white" />}
         <Box
@@ -443,10 +438,10 @@ const WireGame = (props, context) => {
           style={{
             'width': '14px',
             'height': '14px',
-            'border-radius': '50%',
+            borderRadius: '50%',
             'background': clr,
             'display': 'inline-block',
-            'vertical-align': 'middle',
+            verticalAlign: 'middle',
           }}
         />
       </Box>
@@ -539,10 +534,10 @@ const WireGame = (props, context) => {
 };
 
 // Signal Decode Game
-const SignalGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const SignalGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
-  const [answer, setAnswer] = useLocalState(context, 'signalAnswer', '');
+  const [answer, setAnswer] = useState('');
 
   if (!gameData || !gameData.sequence) {
     return <NoticeBox>Загрузка...</NoticeBox>;
@@ -580,12 +575,12 @@ const SignalGame = (props, context) => {
                       textAlign="center"
                       bold
                       style={{
-                        'min-width': '50px',
+                        minWidth: '50px',
                         'height': '50px',
-                        'line-height': '50px',
-                        'border-radius': '8px',
-                        'font-size': '20px',
-                        'background-color': 'rgba(155,89,182,0.3)',
+                        lineHeight: '50px',
+                        borderRadius: '8px',
+                        fontSize: '20px',
+                        backgroundColor: 'rgba(155,89,182,0.3)',
                         'border': '2px solid rgba(155,89,182,0.6)',
                         'padding': '0 8px',
                       }}>
@@ -612,12 +607,12 @@ const SignalGame = (props, context) => {
                     textAlign="center"
                     bold
                     style={{
-                      'min-width': '50px',
+                      minWidth: '50px',
                       'height': '50px',
-                      'line-height': '50px',
-                      'border-radius': '8px',
-                      'font-size': '24px',
-                      'background-color': 'rgba(231,76,60,0.3)',
+                      lineHeight: '50px',
+                      borderRadius: '8px',
+                      fontSize: '24px',
+                      backgroundColor: 'rgba(231,76,60,0.3)',
                       'border': '2px dashed rgba(231,76,60,0.6)',
                       'padding': '0 8px',
                     }}>
@@ -638,8 +633,8 @@ const SignalGame = (props, context) => {
               italic
               style={{
                 'padding': '6px 12px',
-                'background-color': 'rgba(255,255,255,0.05)',
-                'border-radius': '4px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderRadius: '4px',
               }}>
               <Icon name="lightbulb" mr={1} />
               Подсказка: {hint}
@@ -660,9 +655,9 @@ const SignalGame = (props, context) => {
                   setAnswer('');
                 }}
                 style={{
-                  'font-size': '18px',
+                  fontSize: '18px',
                   'width': '200px',
-                  'text-align': 'center',
+                  textAlign: 'center',
                 }}
               />
             </Stack.Item>
@@ -671,7 +666,7 @@ const SignalGame = (props, context) => {
                 icon="check"
                 color="good"
                 content="Ответить"
-                style={{ 'font-size': '14px', 'padding': '6px 16px' }}
+                style={{ fontSize: '14px', 'padding': '6px 16px' }}
                 onClick={() => {
                   act('submit_answer', { answer: answer });
                   setAnswer('');
@@ -686,8 +681,8 @@ const SignalGame = (props, context) => {
 };
 
 // Result Screen
-const ResultScreen = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const ResultScreen = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const { lastResult, lastPoints, lastMessage } = data;
   const isCorrect = lastResult === 'correct';
 
@@ -716,14 +711,14 @@ const ResultScreen = (props, context) => {
             fontSize={1.1}
             p={1}
             style={{
-              'background-color': isCorrect
+              backgroundColor: isCorrect
                 ? 'rgba(46,204,113,0.15)'
                 : 'rgba(231,76,60,0.15)',
-              'border-radius': '8px',
+              borderRadius: '8px',
               'border': isCorrect
                 ? '1px solid rgba(46,204,113,0.4)'
                 : '1px solid rgba(231,76,60,0.4)',
-              'max-width': '400px',
+              maxWidth: '400px',
             }}>
             {lastMessage}
           </Box>
@@ -738,14 +733,14 @@ const ResultScreen = (props, context) => {
             icon="redo"
             color="good"
             content="Играть ещё"
-            style={{ 'font-size': '14px', 'padding': '8px 20px' }}
+            style={{ fontSize: '14px', 'padding': '8px 20px' }}
             onClick={() => act('play_again')}
           />
           <Button
             icon="home"
             content="В меню"
             ml={1}
-            style={{ 'font-size': '14px', 'padding': '8px 20px' }}
+            style={{ fontSize: '14px', 'padding': '8px 20px' }}
             onClick={() => act('back_to_menu')}
           />
         </Stack.Item>

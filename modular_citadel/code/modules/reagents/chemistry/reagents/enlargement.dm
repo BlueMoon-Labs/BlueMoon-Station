@@ -74,7 +74,7 @@
 		H.reagents.remove_reagent(type, 5)
 		B.Insert(H)
 
-	
+
 	B.modify_size(0.1)
 	M.reagents.remove_reagent(/datum/reagent/fermi/penis_enlarger, 5000) // BLUEMOON ADD
 	return ..()
@@ -221,7 +221,7 @@
 		H.reagents.remove_reagent(type, 5)
 		P.Insert(H)
 
-	P.modify_size(0.1)
+	P.modify_size(0.5)
 	M.reagents.remove_reagent(/datum/reagent/fermi/breast_enlarger, 5000) // BLUEMOON ADD
 	return ..()
 

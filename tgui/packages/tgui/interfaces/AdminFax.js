@@ -1,8 +1,10 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Divider, Dropdown, Input, Knob, NumberInput, Section, TextArea, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-export const AdminFax = (props, context) => {
+export const AdminFax = (props) => {
   return (
     <Window title="Admin Fax Panel" width={400} height={675} theme="admin">
       <Window.Content>
@@ -12,26 +14,18 @@ export const AdminFax = (props, context) => {
   );
 };
 
-export const FaxMainPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const FaxMainPanel = (props) => {
+  const { act, data } = useBackend();
 
-  const [fax, setFax] = useLocalState(context, 'fax', '');
-  const [saved, setSaved] = useLocalState(context, 'saved', false);
-  const [paperName, setPaperName] = useLocalState(context, 'paperName', '');
-  const [fromWho, setFromWho] = useLocalState(context, 'fromWho', '');
-  const [rawText, setRawText] = useLocalState(context, 'rawText', '');
-  const [stamp, setStamp] = useLocalState(context, 'stampType', '');
-  const [stampCoordX, setStampCoordX] = useLocalState(
-    context,
-    'stampCoordX',
-    0
-  );
-  const [stampCoordY, setStampCoordY] = useLocalState(
-    context,
-    'stampCoordY',
-    0
-  );
-  const [stampAngle, setStampAngle] = useLocalState(context, 'stampAngle', 0);
+  const [fax, setFax] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [paperName, setPaperName] = useState('');
+  const [fromWho, setFromWho] = useState('');
+  const [rawText, setRawText] = useState('');
+  const [stamp, setStamp] = useState('');
+  const [stampCoordX, setStampCoordX] = useState(0);
+  const [stampCoordY, setStampCoordY] = useState(0);
+  const [stampAngle, setStampAngle] = useState(0);
   if (stamp && data.stamps[0] !== 'None') {
     data.stamps.unshift('None');
   }

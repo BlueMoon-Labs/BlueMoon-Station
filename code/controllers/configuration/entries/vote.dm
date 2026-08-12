@@ -20,6 +20,11 @@
 	min_val = 0
 	max_val = 24
 
+/datum/config_entry/number/dynamic_light_vote_multiplier
+	default = 1
+	min_val = 0
+	integer = FALSE
+
 /// Length of time before the first autotransfer vote is called (deciseconds, default 2 hours)
 /// Set to 0 to disable the subsystem altogether.
 /datum/config_entry/number/vote_autotransfer_initial

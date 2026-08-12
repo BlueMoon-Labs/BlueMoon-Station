@@ -24,7 +24,7 @@
 	if(!usr.mind.genitals_menu_holder)
 		usr.mind.genitals_menu_holder= new(usr.mind)
 
-	usr.mind.genitals_menu_holder.target = src
+	usr.mind.genitals_menu_holder.set_target(src)
 	usr.mind.genitals_menu_holder.ui_interact(usr)
 
 /datum/mind
@@ -36,6 +36,30 @@
 
 /datum/genitals_menu
 	var/mob/living/carbon/target
+
+/// Держатель живёт на майнде весь раунд, поэтому голое присвоение target
+/// вечно держало удалённого моба (прод: warnfail по human). Сеттер снимает
+/// цель по её qdel, а ui_close отпускает при закрытии меню.
+/datum/genitals_menu/proc/set_target(mob/living/carbon/new_target)
+	if(target == new_target)
+		return
+	if(target)
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
+	target = new_target
+	if(target)
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_deleted))
+
+/datum/genitals_menu/proc/on_target_deleted(datum/source)
+	SIGNAL_HANDLER
+	target = null
+
+/datum/genitals_menu/ui_close(mob/user)
+	. = ..()
+	set_target(null)
+
+/datum/genitals_menu/Destroy()
+	set_target(null)
+	return ..()
 
 /datum/genitals_menu/ui_state(mob/user)
 	return GLOB.conscious_state

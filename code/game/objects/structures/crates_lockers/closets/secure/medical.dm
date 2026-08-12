@@ -55,23 +55,46 @@
 	return
 
 /obj/structure/closet/secure_closet/paramedic
-    name = "paramedic's locker"
-    req_access = list(ACCESS_MEDICAL)
-    icon_state = "emt_secure"
+	name = "paramedic's locker"
+	req_access = list(ACCESS_MEDICAL)
+	icon_state = "emt_secure"
 
 /obj/structure/closet/secure_closet/paramedic/PopulateContents()
-    ..()
-    new /obj/item/clothing/suit/toggle/labcoat/paramedic(src)
-    new /obj/item/clothing/under/rank/medical/paramedic(src)
-    new /obj/item/clothing/under/rank/medical/paramedic/skirt(src)
-    new /obj/item/radio/headset/headset_med(src)
-    new /obj/item/defibrillator/loaded(src)
-    new /obj/item/clothing/gloves/color/latex/nitrile(src)
-    new /obj/item/storage/belt/medical(src)
-    new /obj/item/clothing/glasses/hud/health(src)
-    new /obj/item/pinpointer/crew(src)
-    new /obj/item/sensor_device(src)
-    return
+	..()
+	new /obj/item/clothing/suit/toggle/labcoat/paramedic(src)
+	new /obj/item/clothing/under/rank/medical/paramedic(src)
+	new /obj/item/clothing/under/rank/medical/paramedic/skirt(src)
+	new /obj/item/radio/headset/headset_med(src)
+	new /obj/item/defibrillator/loaded(src)
+	new /obj/item/clothing/gloves/color/latex/nitrile(src)
+	new /obj/item/storage/belt/medical(src)
+	new /obj/item/clothing/glasses/hud/health(src)
+	new /obj/item/pinpointer/crew(src)
+	new /obj/item/sensor_device(src)
+	return
+
+/obj/structure/closet/secure_closet/paramedic_mine
+	name = "Emergency rescue locker"
+	desc = "Защищенный шкафчик с аварийно-спасательным оборудованием для поисков и эвакуации шахтеров."
+	req_access = list(ACCESS_MEDICAL)
+	icon_state = "emt_secure"
+	max_integrity = 300
+
+/obj/structure/closet/secure_closet/paramedic_mine/PopulateContents()
+	. = ..()
+	var/static/list/items_inside = list(
+		/obj/item/gun/energy/plasmacutter/med,
+		/obj/item/gps/medical,
+		/obj/item/pinpointer/crew,
+		/obj/item/survivalcapsule,
+		/obj/item/clothing/glasses/meson,
+		/obj/item/tank/internals/oxygen,
+		/obj/item/clothing/mask/breath,
+		/obj/item/defibrillator/loaded,
+		/obj/item/roller,
+		/obj/item/roller/heavy,
+	)
+	generate_items_inside(items_inside, src)
 
 /obj/structure/closet/secure_closet/CMO
 	name = "\proper chief medical officer's locker"

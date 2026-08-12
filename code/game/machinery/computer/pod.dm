@@ -1,5 +1,6 @@
 /obj/machinery/computer/pod
 	name = "mass driver launch control"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "A combined blastdoor and mass driver control unit."
 	unique_icon = TRUE
 	// processing_flags = START_PROCESSING_MANUALLY

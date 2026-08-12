@@ -17,6 +17,9 @@ GLOBAL_PROTECT(world_victim_log)
 // GLOBAL_PROTECT(world_econ_log)
 GLOBAL_VAR(world_href_log)
 GLOBAL_PROTECT(world_href_log)
+///Трассировка решений hostile AI (пишется только в TESTING-сборках, см. AI_TRACE)
+GLOBAL_VAR(ai_trace_log)
+GLOBAL_PROTECT(ai_trace_log)
 GLOBAL_VAR(round_id)
 GLOBAL_PROTECT(round_id)
 GLOBAL_VAR(config_error_log)
@@ -99,10 +102,8 @@ GLOBAL_PROTECT(picture_logging_id)
 GLOBAL_VAR(picture_logging_prefix)
 GLOBAL_PROTECT(picture_logging_prefix)
 /////
-#ifdef REFERENCE_DOING_IT_LIVE
-GLOBAL_LIST_EMPTY(harddel_log)
+GLOBAL_VAR(harddel_log)
 GLOBAL_PROTECT(harddel_log)
-#endif
 
 
 //// cit logging

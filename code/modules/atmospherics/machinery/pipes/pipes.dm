@@ -6,6 +6,8 @@
 
 	use_power = NO_POWER_USE
 	can_unwrench = 1
+	///FALSE on the pipes that join every colour by design, where paint would mean nothing.
+	var/paintable = TRUE
 	var/datum/pipeline/parent = null
 
 	//Buckling
@@ -43,16 +45,16 @@
 				continue
 			if(src in P.members)
 				P.members -= src
-				P.update = TRUE
+				P.mark_dirty()
 
-/obj/machinery/atmospherics/pipe/build_network()
+/obj/machinery/atmospherics/pipe/build_network(blocking = FALSE)
 	if(QDELETED(src))
 		return // Pipe was destroyed, don't rebuild
 	if(QDELETED(parent))
 		if(parent && QDESTROYING(parent))
 			investigate_log("[type] at [COORD(src)] rebuilding network while parent pipeline is being destroyed", INVESTIGATE_ATMOS)
 		parent = new
-		parent.build_pipeline(src)
+		parent.build_pipeline(src, blocking)
 
 /obj/machinery/atmospherics/pipe/atmosinit()
 	var/turf/T = loc			// hide if turf is not intact
@@ -67,6 +69,8 @@
 /obj/machinery/atmospherics/pipe/proc/releaseAirToTurf()
 	if(air_temporary)
 		var/turf/T = loc
+		if(!isturf(T))
+			return
 		T.assume_air(air_temporary)
 		air_update_turf()
 
@@ -145,10 +149,34 @@
 	. = ..()
 
 /obj/machinery/atmospherics/pipe/proc/paint(paint_color)
+	if(!paintable)
+		return FALSE
+	if(pipe_color == paint_color)
+		return TRUE
 	add_atom_colour(paint_color, FIXED_COLOUR_PRIORITY)
 	pipe_color = paint_color
+	// Paint decides who this pipe is allowed to touch, so a repaint has to cut
+	// the connections it no longer qualifies for and look for the ones it just
+	// gained. Without this a pipe keeps feeding a network it can no longer
+	// reach, right up until something unrelated rebuilds the pipenet.
+	reconnect_nodes()
 	update_node_icon()
 	return TRUE
+
+/// Drops every node this pipe currently holds and runs the search again, the
+/// same way construction does. Used when something that decides connections -
+/// paint, for now - changes on an already placed pipe.
+/obj/machinery/atmospherics/pipe/proc/reconnect_nodes()
+	for(var/i in 1 to device_type)
+		nullifyNode(i)
+	destroy_network()
+	if(!SSair.initialized)
+		return
+	atmosinit()
+	for(var/obj/machinery/atmospherics/neighbour in pipeline_expansion())
+		neighbour.atmosinit()
+		neighbour.addMember(src)
+	build_network()
 
 /obj/machinery/atmospherics/pipe/attack_ghost(mob/dead/observer/O)
 	. = ..()

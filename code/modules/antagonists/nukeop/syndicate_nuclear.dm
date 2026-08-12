@@ -50,7 +50,7 @@
 
 /datum/antagonist/syndicate_op/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ops.ogg',100,0)
-	to_chat(owner, "<span class='notice'>Вы Оперативник Синдиката!</span>")
+	to_chat(owner, "<span class='syndicate_big'>Вы Оперативник Синдиката!</span>")
 	owner.announce_objectives()
 
 /datum/antagonist/syndicate_op/on_gain()

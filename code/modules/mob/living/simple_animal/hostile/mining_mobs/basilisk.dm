@@ -85,6 +85,8 @@
 	a_intent = INTENT_HARM
 	speak_emote = list("telepathically cries")
 	attack_sound = 'sound/weapons/bladeslice.ogg'
+	retreat_distance = 3
+	minimum_distance = 5
 	stat_attack = UNCONSCIOUS
 	movement_type = FLYING
 	robust_searching = 1

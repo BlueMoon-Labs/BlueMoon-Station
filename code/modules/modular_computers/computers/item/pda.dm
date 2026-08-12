@@ -37,6 +37,7 @@
 	comp_light_color = "#FFCC66"
 	looping_sound = FALSE
 	long_ranged = TRUE
+	allow_chunky = TRUE
 
 	///The item currently inserted into the PDA, starts with a pen.
 	var/obj/item/inserted_item = /obj/item/pen
@@ -154,6 +155,10 @@
 		cell = new cell(src)
 	else
 		cell = new /obj/item/stock_parts/cell/high(src)
+	if(inserted_disk)
+		inserted_disk = new inserted_disk(src)
+		if(istype(inserted_disk, /obj/item/cartridge))
+			install_cartridge_programs(inserted_disk)
 	// Sync legacy aliases
 	owner = saved_identification
 	ownjob = saved_job
@@ -513,6 +518,8 @@
 	if(new_alert)
 		new_alert = FALSE
 		update_appearance()
+	if(user.client && !equipped)
+		update_pda_prefs(user.client)
 	. = ..()
 	if(HAS_TRAIT(src, TRAIT_PDA_MESSAGE_MENU_RIGGED))
 		explode(user, from_message_menu = TRUE)
@@ -601,7 +608,7 @@
 			to_chat(user, "<span class='warning'>[src] отвергает ID-карту!</span>")
 			playsound(src, 'sound/machines/terminal_error.ogg', 15, TRUE)
 			return
-		if(user.canUseTopic(src, BE_CLOSE))
+		if(user.canUseTopic(src, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
 			if(!stored_id)
 				if(!owner && !saved_identification)
 					owner = idcard.registered_name
@@ -766,7 +773,7 @@
 		qdel(P)
 	cartridge_programs.Cut()
 	if(istype(inserted_disk, /obj/item/cartridge/lawyer))
-		var/datum/computer_file/program/messenger/messenger_app = locate() in get_all_files()
+		var/datum/computer_file/program/messenger/messenger_app = locate(/datum/computer_file/program/messenger) in get_all_files()
 		if(messenger_app)
 			messenger_app.spam_mode = FALSE
 
@@ -776,7 +783,7 @@
 		return
 	var/obj/item/computer_hardware/hard_drive/hdd = all_components[MC_HDD]
 	var/list/search_files = hdd ? hdd.stored_files : stored_files
-	var/datum/computer_file/program/messenger/messenger_app = locate() in search_files
+	var/datum/computer_file/program/messenger/messenger_app = locate(/datum/computer_file/program/messenger) in search_files
 	if(messenger_app)
 		messenger_app.ringtone = new_ringtone
 
@@ -858,7 +865,7 @@
 			to_chat(M, span_notice("[src] installs new programs from the cartridge: [installed_text]"))
 		SStgui.update_uis(src)
 	if(istype(C, /obj/item/cartridge/lawyer))
-		var/datum/computer_file/program/messenger/messenger_app = locate() in get_all_files()
+		var/datum/computer_file/program/messenger/messenger_app = locate(/datum/computer_file/program/messenger) in get_all_files()
 		if(messenger_app)
 			messenger_app.spam_mode = TRUE
 
@@ -878,7 +885,7 @@
 
 /obj/item/modular_computer/pda/nukeops/Initialize(mapload)
 	. = ..()
-	var/datum/computer_file/program/messenger/msg = locate() in get_all_files()
+	var/datum/computer_file/program/messenger/msg = locate(/datum/computer_file/program/messenger) in get_all_files()
 	if(istype(msg))
 		msg.invisible = TRUE
 
@@ -894,6 +901,14 @@
 		/datum/computer_file/program/contract_uplink,
 		/datum/computer_file/program/secureye,
 	)
+
+/obj/item/modular_computer/pda/ui_state(mob/user)
+	return GLOB.human_adjacent_state_no_view
+
+/mob/living/Adjacent(atom/neighbor)
+	if(istype(neighbor, /obj/item/modular_computer) && src.contains(neighbor))
+		return TRUE
+	return ..()
 
 /**
  * Silicon PDA — built-in to Silicons.
@@ -925,6 +940,7 @@
 /obj/item/modular_computer/pda/silicon/cyborg
 	starting_programs = list(
 		/datum/computer_file/program/filemanager,
+		/datum/computer_file/program/ntnetdownload,
 		/datum/computer_file/program/robotact,
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/messenger,
@@ -947,7 +963,7 @@
 
 /obj/item/modular_computer/pda/silicon/turn_on(mob/user, open_ui = FALSE)
 	if(silicon_owner?.stat != DEAD)
-		return ..()
+		return ..(user, open_ui)
 	return FALSE
 
 // pAI PDA
@@ -991,12 +1007,12 @@
 		return FALSE
 	var/mob/living/silicon/robot/cyborg_check = silicon_owner
 	if(!istype(cyborg_check))
-		return ..()
+		return SSnetworks.station_network?.check_function() || ..()
 	if(cyborg_check.locked_down)
 		return FALSE
 	if(!cyborg_check.cell || cyborg_check.cell.charge == 0)
 		return FALSE
-	return ..()
+	return SSnetworks.station_network?.check_function() || ..()
 
 /obj/item/modular_computer/pda/silicon/cyborg/ui_data(mob/user)
 	. = ..()
@@ -1005,6 +1021,28 @@
 		var/mob/living/silicon/robot/robo = silicon_owner
 		.["light_on"] = robo.lamp_enabled
 		.["comp_light_color"] = robo.lamp_color
+
+/obj/item/modular_computer/pda/silicon/cyborg/proc/get_department_access()
+	if(!iscyborg(silicon_owner))
+		return list()
+	var/mob/living/silicon/robot/robo = silicon_owner
+	if(!robo.module)
+		return list()
+	var/static/list/module_access_map = list(
+		/obj/item/robot_module/engineering = list(ACCESS_ENGINE),
+		/obj/item/robot_module/medical = list(ACCESS_MEDICAL),
+		/obj/item/robot_module/security = list(ACCESS_SECURITY),
+		/obj/item/robot_module/butler = list(ACCESS_JANITOR), // Service/Janitor
+		/obj/item/robot_module/miner = list(ACCESS_MINING),
+		/obj/item/robot_module/cargo = list(ACCESS_CARGO),
+		/obj/item/robot_module/syndicate = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/syndicate_medical = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/saboteur = list(ACCESS_SYNDICATE),
+	)
+	for(var/module_type in module_access_map)
+		if(istype(robo.module, module_type))
+			return module_access_map[module_type]
+	return list()
 
 /obj/item/modular_computer/pda/silicon/toggle_flashlight(mob/user)
 	if(!silicon_owner || QDELETED(silicon_owner))
@@ -1079,8 +1117,8 @@
 	if(incapacitated())
 		return
 
-	var/datum/computer_file/program/messenger/ai_messenger = locate() in aiPDA.get_all_files()
-	var/datum/computer_file/program/messenger/target_messenger = locate() in selected.get_all_files()
+	var/datum/computer_file/program/messenger/ai_messenger = locate(/datum/computer_file/program/messenger) in aiPDA.get_all_files()
+	var/datum/computer_file/program/messenger/target_messenger = locate(/datum/computer_file/program/messenger) in selected.get_all_files()
 	if(!ai_messenger || !target_messenger)
 		to_chat(user, span_notice("Мессенджер недоступен."))
 		return
@@ -1113,7 +1151,7 @@
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/datum/computer_file/program/messenger/ai_messenger = locate() in aiPDA.get_all_files()
+		var/datum/computer_file/program/messenger/ai_messenger = locate(/datum/computer_file/program/messenger) in aiPDA.get_all_files()
 		if(!ai_messenger)
 			to_chat(user, span_notice("Мессенджер недоступен."))
 			return
@@ -1154,8 +1192,8 @@
 	if(incapacitated())
 		return
 
-	var/datum/computer_file/program/messenger/borg_messenger = locate() in aiPDA.get_all_files()
-	var/datum/computer_file/program/messenger/target_messenger = locate() in selected.get_all_files()
+	var/datum/computer_file/program/messenger/borg_messenger = locate(/datum/computer_file/program/messenger) in aiPDA.get_all_files()
+	var/datum/computer_file/program/messenger/target_messenger = locate(/datum/computer_file/program/messenger) in selected.get_all_files()
 	if(!borg_messenger || !target_messenger)
 		to_chat(user, span_notice("Мессенджер недоступен."))
 		return
@@ -1166,7 +1204,7 @@
 	if(incapacitated())
 		return
 	if(!isnull(aiPDA))
-		var/datum/computer_file/program/messenger/borg_messenger = locate() in aiPDA.get_all_files()
+		var/datum/computer_file/program/messenger/borg_messenger = locate(/datum/computer_file/program/messenger) in aiPDA.get_all_files()
 		if(!borg_messenger)
 			to_chat(user, span_notice("Мессенджер недоступен."))
 			return

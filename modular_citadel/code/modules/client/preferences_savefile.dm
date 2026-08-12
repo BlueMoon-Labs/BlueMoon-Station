@@ -7,6 +7,19 @@
 	features["ipc_antenna"] 	= sanitize_inlist(features["ipc_antenna"], GLOB.ipc_antennas_list)
 	//Citadel
 	features["flavor_text"]		= sanitize_text(features["flavor_text"], initial(features["flavor_text"]))
+	features["allow_emissives"] = sanitize_integer(S["feature_allow_emissives"], 0, 1, FALSE)
+	var/legacy_emissive_eyes = sanitize_integer(S["feature_emissive_eyes"], 0, 1, FALSE)
+	var/legacy_emissive_parts = safe_json_decode(S["feature_emissive_parts"])
+	var/list/emissive_parts = list()
+	if(islist(legacy_emissive_parts))
+		for(var/part in legacy_emissive_parts)
+			if(part in GLOB.emissive_parts_list)
+				emissive_parts += part
+	if(legacy_emissive_eyes)
+		emissive_parts |= "eyes"
+		features["allow_emissives"] = TRUE
+	if(length(emissive_parts))
+		features["emissive_parts"] = emissive_parts
 	if(!features["mcolor2"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
 		features["mcolor2"] = pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F")
 	if(!features["mcolor3"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
@@ -24,9 +37,9 @@
 	nonconpref = sanitize_inlist(S["noncon_pref"], GLOB.lewd_prefs_choices, "Ask")
 	vorepref = sanitize_inlist(S["vore_pref"], GLOB.lewd_prefs_choices, "Ask")
 	mobsexpref = sanitize_inlist(S["mobsex_pref"], GLOB.lewd_prefs_choices, "No") //Hentai
-	hornyantagspref = sanitize_inlist(S["hornyantags_pref"], GLOB.lewd_prefs_choices, "No") //Hentai
 	tattoopref = sanitize_inlist(S["tattoo_pref"], GLOB.lewd_prefs_choices, "Ask") //BLUEMOON ADD - tattoo consent
 	unholypref = sanitize_inlist(S["unholypref"], GLOB.lewd_prefs_choices, "Ask") //I AM MENTAL I AM MAD I AM INSANE
+	unholyhardpref = sanitize_inlist(S["unholyhard_pref"], GLOB.lewd_prefs_choices, "No") // https://youtu.be/DCC6w9pAn3k?si=YIKRdkT_wwQr-V8U
 	extremepref = sanitize_inlist(S["extreme_pref"], GLOB.lewd_prefs_choices, "No") //god has forsaken me
 	extremeharm = sanitize_inlist(S["extreme_harm"], (GLOB.lewd_prefs_choices - "Ask"), "No") //hacky for not saving "Ask"
 	if(extremepref == "No")
@@ -56,6 +69,9 @@
 	WRITE_FILE(S["feature_mam_tail_animated"], features["mam_tail_animated"])
 	WRITE_FILE(S["feature_taur"], features["taur"])
 	WRITE_FILE(S["feature_mam_snouts"],	features["mam_snouts"])
+	WRITE_FILE(S["feature_allow_emissives"], features["allow_emissives"])
+	WRITE_FILE(S["feature_emissive_eyes"], FALSE)
+	WRITE_FILE(S["feature_emissive_parts"], safe_json_encode(features["emissive_parts"]))
 	//Xeno features
 	WRITE_FILE(S["feature_xeno_tail"], features["xenotail"])
 	WRITE_FILE(S["feature_xeno_dors"], features["xenodorsal"])
@@ -71,9 +87,9 @@
 	WRITE_FILE(S["noncon_pref"], nonconpref)
 	WRITE_FILE(S["vore_pref"], vorepref)
 	WRITE_FILE(S["mobsex_pref"], mobsexpref) //Hentai
-	WRITE_FILE(S["hornyantags_pref"], hornyantagspref) //Hentai
 	WRITE_FILE(S["tattoo_pref"], tattoopref) //BLUEMOON ADD - tattoo consent
 	WRITE_FILE(S["unholypref"], unholypref)
+	WRITE_FILE(S["unholyhard_pref"], unholyhardpref)
 	WRITE_FILE(S["extreme_pref"], extremepref)
 	WRITE_FILE(S["extreme_harm"], extremeharm)
 	WRITE_FILE(S["enable_personal_chat_color"], enable_personal_chat_color)

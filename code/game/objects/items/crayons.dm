@@ -132,7 +132,7 @@
 
 /obj/item/toy/crayon/proc/use_charges(mob/user, amount = 1, requires_full = TRUE)
 	// Returns number of charges actually used
-	if(charges == -1)
+	if(charges == -1 || flags_1 & HOLOGRAM_1)
 		. = amount
 		refill()
 	else
@@ -354,6 +354,11 @@
 
 	if(!isValidSurface(target))
 		return
+
+	if(flags_1 & HOLOGRAM_1)
+		if(!istype(target, /turf/open/floor/holofloor))
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
+			return
 
 	var/drawing = drawtype
 	switch(drawtype)
@@ -654,7 +659,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 7
-	STR.can_hold = typecacheof(list(/obj/item/toy/crayon))
+	var/static/list/crayons_can_hold = typecacheof(list(/obj/item/toy/crayon))
+	STR.can_hold = crayons_can_hold
 
 /obj/item/storage/crayons/PopulateContents()
 	new /obj/item/toy/crayon/red(src)
@@ -715,7 +721,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/hydroponics_righthand.dmi'
 	desc = "A metallic container containing tasty paint."
 
-	instant = TRUE
+	instant = FALSE
 	edible = FALSE
 	has_cap = TRUE
 	is_capped = TRUE
@@ -776,6 +782,12 @@
 		. += "It is empty."
 	. += "<span class='notice'>Alt-click [src] to [ is_capped ? "take the cap off" : "put the cap on"].</span>"
 
+/obj/item/toy/crayon/spraycan/afterattack(atom/target, mob/user, proximity, params)
+	if(LAZYLEN(user.do_afters))
+		to_chat(user, span_warning("Вы заняты и не можете использовать баллончик сейчас."))
+		return
+	return ..()
+
 /obj/item/toy/crayon/spraycan/draw_on(atom/target, mob/user, proximity, params)
 	if(!proximity)
 		return
@@ -787,7 +799,7 @@
 	if(check_empty(user))
 		return
 
-	if(iscarbon(target))
+	if(iscarbon(target) && !(flags_1 & HOLOGRAM_1))
 		if(pre_noise || post_noise)
 			playsound(user.loc, 'sound/effects/spray.ogg', 25, 1, 5)
 
@@ -813,6 +825,11 @@
 		reagents.reaction(C, VAPOR, fraction * volume_multiplier)
 
 		return
+
+	if(flags_1 & HOLOGRAM_1)
+		if(!istype(target, /turf/open/floor/holofloor))
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
+			return FALSE
 
 	if(isobj(target) && !istype(target, /obj/effect/decal/cleanable/crayon/gang))
 		if(actually_paints)

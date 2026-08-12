@@ -180,7 +180,10 @@
 // Say that A in the absolute (rectangular) bounds of this shuttle or no.
 /obj/docking_port/proc/is_in_shuttle_bounds(atom/A)
 	var/turf/T = get_turf(A)
-	if(T.z != z)
+	// Атом в нульспейсе не находится в границах никакого шаттла. Проверка стоит
+	// здесь, а не только у вызывающих: прок перебирается по всем докам разом, и один
+	// удалённый моб давал полсотни рантаймов на каждое обращение.
+	if(!T || T.z != z)
 		return FALSE
 	var/list/bounds = return_coords()
 	var/x0 = bounds[1]
@@ -250,7 +253,10 @@
 	SSshuttle.stationary -= src
 
 /obj/docking_port/stationary/Destroy(force)
-	if(force)
+	// Одноразовую кастомную точку посадки навигационная консоль разрегистрирует сразу
+	// при переназначении, а удаляется порт позже, в enterTransit(). Повторный
+	// unregister() на нём выдавал "docking_port unregistered multiple times".
+	if(force && registered)
 		unregister()
 	. = ..()
 
@@ -384,7 +390,7 @@
 	var/list/hidden_turfs = list()
 
 	/// parallax speed in seconds per loop
-	var/parallax_speed = 25
+	var/parallax_speed = PARALLAX_SHUTTLE_SCROLL_SPEED
 	/// In-flight hyperspace events (tg-style; processed while docked to a transit Z-level)
 	var/list/datum/shuttle_event/event_list = list()
 

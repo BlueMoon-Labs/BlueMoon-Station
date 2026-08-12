@@ -1769,11 +1769,15 @@
 	text_lose_indication = span_notice("Теперь ты передвигаешься нормально.")
 
 /datum/mutation/human/bm/waddle/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
+	if(..())
+		return
+	ADD_TRAIT(owner, TRAIT_WADDLING, GENETIC_MUTATION)
 	owner.LoadComponent(/datum/component/waddling)
 
 /datum/mutation/human/bm/waddle/on_losing(mob/living/carbon/human/owner)
-	. = ..()
+	if(..())
+		return
+	REMOVE_TRAIT(owner, TRAIT_WADDLING, GENETIC_MUTATION)
 	if(!HAS_TRAIT(owner, TRAIT_WADDLING))
-		var/datum/component/waddling = GetComponent(/datum/component/waddling)
-		waddling?.RemoveComponent()
+		var/datum/component/waddling/waddle_component = owner.GetComponent(/datum/component/waddling)
+		waddle_component?.RemoveComponent()

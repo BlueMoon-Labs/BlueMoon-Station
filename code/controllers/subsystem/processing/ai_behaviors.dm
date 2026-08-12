@@ -8,6 +8,12 @@ PROCESSING_SUBSYSTEM_DEF(ai_behaviors)
 	wait = 1
 	///List of all ai_behavior singletons, key is the typepath while assigned value is a newly created instance of the typepath. See SetupAIBehaviors()
 	var/list/ai_behaviors
+	///Синглтоны targeting strategy: типпас -> инстанс
+	var/list/targeting_strategies
+	///Синглтоны target scorer: типпас -> инстанс
+	var/list/target_scorers
+	///Синглтоны obstacle policy: типпас -> инстанс
+	var/list/obstacle_policies
 
 /datum/controller/subsystem/processing/ai_behaviors/Initialize()
 	. = ..()
@@ -18,3 +24,12 @@ PROCESSING_SUBSYSTEM_DEF(ai_behaviors)
 	for(var/behavior_type in subtypesof(/datum/ai_behavior))
 		var/datum/ai_behavior/ai_behavior = new behavior_type
 		ai_behaviors[behavior_type] = ai_behavior
+	targeting_strategies = list()
+	for(var/strategy_type in typesof(/datum/targeting_strategy))
+		targeting_strategies[strategy_type] = new strategy_type
+	target_scorers = list()
+	for(var/scorer_type in typesof(/datum/target_scorer))
+		target_scorers[scorer_type] = new scorer_type
+	obstacle_policies = list()
+	for(var/policy_type in typesof(/datum/obstacle_policy))
+		obstacle_policies[policy_type] = new policy_type

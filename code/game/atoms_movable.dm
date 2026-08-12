@@ -5,6 +5,11 @@
 	var/last_move = null
 	var/last_move_time = 0
 	var/anchored = FALSE
+	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
+	/// Only border structures can actually refuse an exit, by overriding CheckExit()
+	/// or Uncross(). Anything that gains such an override, or a component listening
+	/// on COMSIG_MOVABLE_UNCROSS, has to set this - see /turf/Exit().
+	var/blocks_exit_checks = TRUE
 	var/move_resist = MOVE_RESIST_DEFAULT
 	var/move_force = MOVE_FORCE_DEFAULT
 	var/pull_force = PULL_FORCE_DEFAULT
@@ -39,6 +44,12 @@
 	var/inertia_force_weight = 1
 	/// Species / vehicle modifiers
 	var/inertia_move_multiplier = 1
+	/// How much drift one voluntary step in weightlessness adds. See [/atom/movable/proc/register_thrust_source]
+	var/self_thrust_force = INERTIA_THRUST_FORCE_DEFAULT
+	/// Ceiling that self-thrust may accelerate the drift to. External impulses (explosions, recoil) ignore it.
+	var/self_thrust_cap = INERTIA_THRUST_CAP_UNAIDED
+	/// Lazy assoc of thrust source -> list(force, cap). Null while nothing but bare limbs is pushing.
+	var/list/thrust_sources
 	/// Things we can pass through while moving. If any of this matches the thing we're trying to pass's [pass_flags_self], then we can pass through.
 	var/pass_flags = NONE
 	/// If false makes CanPass call CanPassThrough on this type instead of using default behaviour
@@ -54,6 +65,10 @@
 	/// acts as a key to the list of spatial grid contents types we exist in via SSspatial_grid.spatial_grid_categories.
 	/// We do it like this to prevent people trying to mutate them and to save memory on holding the lists ourselves
 	var/spatial_grid_key
+	///каналы важного рекурсивного содержимого: канал -> список movables.
+	///мы числимся в своих каналах сами и в каналах каждого вложенного loc,
+	///поэтому шкаф со слышащим мобом внутри двигает моба по ячейкам грида
+	var/list/important_recursive_contents
 	var/list/acted_explosions	//for explosion dodging
 	var/datum/forced_movement/force_moving = null	//handled soley by forced_movement.dm
 
@@ -79,6 +94,12 @@
 	var/blocks_emissive = FALSE
 	///Internal holder for emissive blocker object, do not use directly use blocks_emissive
 	var/atom/movable/emissive_blocker/em_block
+
+	/// Лэйзи-список оверлейных источников света, освещающих нас: компонент -> ранг люминосити.
+	/// См. update_dynamic_luminosity() в movable_luminosity.dm.
+	var/list/affected_dynamic_lights
+	/// Самый яркий оверлейный свет на нас - наша текущая добавка к luminosity.
+	var/affecting_dynamic_lumi = 0
 
 	/// Should we use tooltips, if the thing does not have the code implemented `get_tooltip_data()`, it will default to examine(src)
 	var/tooltips = FALSE
@@ -110,12 +131,32 @@
 			render_target = ref(src)
 			em_block = new(src, render_target)
 			vis_contents += em_block
+	switch(light_system)
+		if(OVERLAY_LIGHT)
+			AddComponent(/datum/component/overlay_lighting)
+		if(OVERLAY_LIGHT_DIRECTIONAL)
+			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE)
+		if(OVERLAY_LIGHT_BEAM)
+			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE, is_beam = TRUE)
+
+	//центральная регистрация слышащих в спатиал-гриде: у нас слышимость
+	//задаётся флагом HEAR_1, а не вызовами become_hearing_sensitive по месту.
+	//если тип выставляет флаг динамически после Initialize - он обязан сам
+	//позвать become_hearing_sensitive() (см. passworddoor, cellphone)
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
 
 
 /atom/movable/Destroy(force)
+	//вычищаем свои ссылки из ячеек грида; записи в important_recursive_contents
+	//вложенных locs вычистит Exited при moveToNullspace ниже
+	if(spatial_grid_key)
+		SSspatial_grid.force_remove_from_grid(src)
+
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
+	thrust_sources = null
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null
@@ -161,6 +202,10 @@
 		qdel(movable_content)
 
 	moveToNullspace()
+
+	//только после moveToNullspace: Exited чистил записи о нас в контейнерах
+	//по этому списку
+	LAZYNULL(important_recursive_contents)
 
 	vis_locs = null //clears this atom out of all viscontents
 	vis_contents.Cut()
@@ -325,7 +370,11 @@
 	pulling.set_pulledby(null)
 	var/mob/living/ex_pulled = pulling
 	setGrabState(GRAB_PASSIVE)
+	// Отпущенный в невесомости уносит наш вектор, а не тормозит до своего потолка тяги.
+	// Иначе разжатая рука читается как рывок: буксир идёт на крейсерской, буксируемый
+	// мгновенно проседает до скорости голого толчка.
 	pulling = null
+	hand_off_drift(ex_pulled)
 	if(isliving(ex_pulled))
 		var/mob/living/L = ex_pulled
 		L.update_mobility()// mob gets up if it was lyng down in a chokehold
@@ -391,7 +440,9 @@
 /atom/movable/proc/set_glide_size(target = 8)
 #ifdef SMOOTH_MOVEMENT
 	SEND_SIGNAL(src, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE, target)
-	glide_size = target
+	// Cap the upper bound: fast space drift feeds glide via the unclamped MOVEMENT_ADJUSTED_GLIDE_SIZE, and under MC lag the
+	// inflated visual_delay makes the sprite slide past one tile per render -> "teleport" look. Don't raise the floor: 0 means an instant move.
+	glide_size = min(target, MAX_GLIDE_SIZE)
 
 	for(var/mob/buckled_mob as anything in buckled_mobs)
 		buckled_mob.set_glide_size(target)
@@ -743,6 +794,8 @@
 
 /// Returns selected language, if it can be spoken, or finds, sets and returns a new selected language if possible.
 /atom/movable/proc/get_selected_language()
+	if(QDELING(src))
+		return
 	return get_language_holder().get_selected_language()
 
 /// Gets a random understood language, useful for hallucinations and such.
@@ -833,6 +886,9 @@
 	set waitfor = FALSE
 	if(!istype(loc, /turf))
 		return
+	// image(icon = src) клонирует полную внешность вместе с underlays: оверлейный свет
+	// обязан спрятать маску до снимка, иначе призрак подбора мигает дублем света.
+	SEND_SIGNAL(src, COMSIG_ITEM_BEFORE_PICKUP_ANIMATION)
 	var/image/I = image(icon = src, loc = loc, layer = layer + 0.1)
 	I.plane = GAME_PLANE
 	I.transform *= 0.75
@@ -906,3 +962,156 @@
 */
 /atom/movable/proc/keybind_face_direction(direction)
 	setDir(direction)
+
+// ===== Спатиал-грид: важное рекурсивное содержимое (порт tg) =====
+//
+// movable из грид-канала (слышащий атом, моб с клиентом) числится в
+// important_recursive_contents у себя и у каждого вложенного loc. Когда
+// контейнер пересекает границу ячеек грида, он перекладывает содержимое
+// своих каналов между ячейками (см. Moved в atoms_movement.dm).
+
+/atom/movable/Exited(atom/movable/gone, atom/newLoc)
+	. = ..()
+
+	if(!LAZYLEN(gone.important_recursive_contents))
+		return
+	var/list/nested_locs = get_nested_locs(src) + src
+	for(var/channel in gone.important_recursive_contents)
+		for(var/atom/movable/location as anything in nested_locs)
+			LAZYINITLIST(location.important_recursive_contents)
+			var/list/recursive_contents = location.important_recursive_contents
+			LAZYINITLIST(recursive_contents[channel])
+			recursive_contents[channel] -= gone.important_recursive_contents[channel]
+			//все важные recursive-каналы здесь также являются грид-каналами
+			//с совпадающими строковыми ключами, поэтому
+			//опустевший канал сразу снимает и грид-осведомлённость
+			if(!length(recursive_contents[channel]))
+				SSspatial_grid.remove_grid_awareness(location, channel)
+			ASSOC_UNSETEMPTY(recursive_contents, channel)
+			UNSETEMPTY(location.important_recursive_contents)
+
+/atom/movable/Entered(atom/movable/arrived, atom/oldLoc)
+	. = ..()
+
+	if(!LAZYLEN(arrived.important_recursive_contents))
+		return
+	var/list/nested_locs = get_nested_locs(src) + src
+	for(var/channel in arrived.important_recursive_contents)
+		for(var/atom/movable/location as anything in nested_locs)
+			LAZYINITLIST(location.important_recursive_contents)
+			var/list/recursive_contents = location.important_recursive_contents
+			LAZYINITLIST(recursive_contents[channel])
+			if(!length(recursive_contents[channel]))
+				SSspatial_grid.add_grid_awareness(location, channel)
+			recursive_contents[channel] |= arrived.important_recursive_contents[channel]
+
+///стать слышащим: попасть в HEARING-канал ячейки грида и в
+///important_recursive_contents всех вложенных locs
+/atom/movable/proc/become_hearing_sensitive(trait_source = TRAIT_GENERIC)
+	var/already_hearing_sensitive = HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE)
+	ADD_TRAIT(src, TRAIT_HEARING_SENSITIVE, trait_source)
+	if(already_hearing_sensitive) //повторная регистрация продублирует нас в каналах
+		return
+
+	for(var/atom/movable/location as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(location.important_recursive_contents)
+		var/list/recursive_contents = location.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE]))
+			SSspatial_grid.add_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE] += list(src)
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.add_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+
+/**
+ * Перестать быть слышащим, если не осталось других источников трейта.
+ *
+ * * trait_source - источник трейта или ALL для принудительного снятия
+ */
+/atom/movable/proc/lose_hearing_sensitivity(trait_source = TRAIT_GENERIC)
+	if(!HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE))
+		return
+	REMOVE_TRAIT(src, TRAIT_HEARING_SENSITIVE, trait_source)
+	if(HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE))
+		return
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.remove_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+
+	for(var/atom/movable/location as anything in get_nested_locs(src) + src)
+		var/list/recursive_contents = location.important_recursive_contents
+		if(!recursive_contents)
+			continue
+		recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE]))
+			SSspatial_grid.remove_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_HEARING_SENSITIVE)
+		UNSETEMPTY(location.important_recursive_contents)
+
+///Register a cleanable/remains/ground-trash atom in the service-bot grid.
+/atom/movable/proc/become_cleanbot_targetable()
+	if(important_recursive_contents && (src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.add_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS])
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] |= src
+
+	SSspatial_grid.add_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+///Remove a service-bot target from both its cell and nested-loc bookkeeping.
+/atom/movable/proc/lose_cleanbot_targetable()
+	if(!important_recursive_contents || !(src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	SSspatial_grid.remove_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!recursive_contents)
+			continue
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.remove_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_CLEANBOT_TARGETS)
+		UNSETEMPTY(movable_loc.important_recursive_contents)
+
+///при логине: прописать моба в CLIENTS-канал грида и вложенных locs
+/mob/proc/enable_client_mobs_in_contents()
+	//идемпотентно: повторный Login на том же мобе не должен дублировать записи
+	if(important_recursive_contents && (src in important_recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+		return
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+			SSspatial_grid.add_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS])
+		recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS] |= src
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.add_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+
+///при логауте: убрать моба из CLIENTS-канала грида и вложенных locs
+/mob/proc/clear_important_client_contents()
+	//Logout бывает и у мобов, которые в канал не попадали
+	if(!important_recursive_contents || !(src in important_recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+		return
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.remove_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS])
+		recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+			SSspatial_grid.remove_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_CLIENT_MOBS)
+		UNSETEMPTY(movable_loc.important_recursive_contents)

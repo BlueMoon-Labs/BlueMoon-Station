@@ -114,6 +114,7 @@
 #define TRAIT_DUMB				"dumb"
 #define TRAIT_MONKEYLIKE		"monkeylike" //sets IsAdvancedToolUser to FALSE
 #define TRAIT_PACIFISM			"pacifism"
+#define TRAIT_RELAYING_ATTACKER	"relaying_attacker" //на цели висит элемент relay_attackers (гард от двойной подписки)
 #define TRAIT_IGNORESLOWDOWN	"ignoreslow"
 #define TRAIT_IGNOREDAMAGESLOWDOWN "ignoredamageslowdown"
 #define TRAIT_DEATHCOMA			"deathcoma" //Causes death-like unconsciousness
@@ -164,6 +165,8 @@
 #define TRAIT_NOHARDCRIT		"nohardcrit"
 #define TRAIT_NOSOFTCRIT		"nosoftcrit"
 #define TRAIT_MINDSHIELD		"mindshield"
+/// Носитель проецирует фальшивую сигнатуру импланта защиты разума на секхуды. Не даёт никакой реальной защиты.
+#define TRAIT_FAKE_MINDSHIELD	"fake_mindshield"
 #define TRAIT_ANCHOR			"anchor"
 #define TRAIT_HIJACKER			"hijacker"
 #define TRAIT_SIXTHSENSE		"sixthsense"
@@ -196,6 +199,8 @@
 #define TRAIT_MESON_VISION "meson_vision"
 /// Gives us Night vision
 #define TRAIT_TRUE_NIGHT_VISION "true_night_vision"
+/// Небольшой найт вижн
+#define TRAIT_MINOR_NIGHT_VISION "minor_night_vision"
 /// Lets us scan reagents
 #define TRAIT_REAGENT_SCANNER "reagent_scanner"
 #define TRAIT_ABDUCTOR_TRAINING "abductor-training"
@@ -306,7 +311,9 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
-#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+#define TRAIT_COMPATIBLE_WITH_NANITES "compatible_with_nanites"
+#define TRAIT_NANITES_IMMUNITY "nanites_immunity"
+#define NANITES_IMMUNITY_FROM_REAGENT "nanite_protector"
 
 
 // mobility flag traits
@@ -400,6 +407,7 @@
 #define EYES_COVERED "eyes_covered"
 #define CLOWN_NUKE_TRAIT "clown-nuke"
 #define STICKY_MOUSTACHE_TRAIT "sticky-moustache"
+#define OVERDOSE_TRAIT "overdose"
 #define CHAINSAW_FRENZY_TRAIT "chainsaw-frenzy"
 #define CHRONO_GUN_TRAIT "chrono-gun"
 #define REVERSE_BEAR_TRAP_TRAIT "reverse-bear-trap"
@@ -439,7 +447,9 @@
 /// This trait is added by the parry system.
 #define ACTIVE_PARRY_TRAIT				"active_parry"
 #define STICKY_NODROP "sticky-nodrop" //sticky nodrop sounds like a bad soundcloud rapper's name
+#define IMPLANT_NODROP "implant-nodrop" // for items in /obj/item/organ/cyberimp/arm
 #define TRAIT_SACRIFICED "sacrificed" //Makes sure that people cant be cult sacrificed twice.
+#define TRAIT_VITALITY_MATRIX_CONSUMED "vitality_matrix_consumed" //Prevents farming clockwork vitality from the same corpse.
 #define TRAIT_SPACEWALK "spacewalk"
 #define TRAIT_SALT_SENSITIVE "salt_sensitive"
 
@@ -459,9 +469,12 @@
 #define STATION_TRAIT_RANDOM_ARRIVALS "station_trait_random_arrivals"
 #define STATION_TRAIT_HANGOVER "station_trait_hangover"
 #define STATION_TRAIT_RADIATION_CONTAMINATION "station_trait_radiation_contamination"
+#define STATION_TRAIT_APERTURE_SCIENCE "station_trait_aperture_science"
 #define STATION_TRAIT_FILLED_MAINT "station_trait_filled_maint"
 #define STATION_TRAIT_EMPTY_MAINT "station_trait_empty_maint"
 #define STATION_TRAIT_PDA_GLITCHED "station_trait_pda_glitched"
+#define STATION_TRAIT_BIGGER_PODS "station_trait_bigger_pods"
+#define STATION_TRAIT_SMALLER_PODS "station_trait_smaller_pods"
 
 #define SIGNAL_ADDTRAIT(trait_ref) "addtrait [trait_ref]"
 
@@ -585,6 +598,10 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_HOPELESSLY_ADDICTED "hopelessly_addicted"
 /// Special examine if eyes are visible
 #define TRAIT_BLOODSHOT_EYES "bloodshot_eyes"
+/// Трейт на описание
+#define TRAIT_UNNATURAL_RED_GLOWY_EYES "unnatural_red_glowy_eyes"
+/// Свечение от глаз трейт химии
+#define TRAIT_LUMINESCENT_EYES "luminescent_eyes"
 /// This mob should never close UI even if it doesn't have a client
 #define TRAIT_PRESERVE_UI_WITHOUT_CLIENT "preserve_ui_without_client"
 #define HOSTAGE_REVIVED_TRAIT "hostage_revived_trait"

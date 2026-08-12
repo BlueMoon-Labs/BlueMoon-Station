@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Grid, LabeledList, NoticeBox, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 
-export const NaniteDiskBox = (props, context) => {
-  const { data } = useBackend(context);
+export const NaniteDiskBox = (props) => {
+  const { data } = useBackend();
   const {
     has_disk,
     has_program,
@@ -30,7 +30,7 @@ export const NaniteDiskBox = (props, context) => {
   );
 };
 
-export const NaniteInfoBox = (props, context) => {
+export const NaniteInfoBox = (props) => {
   const { program } = props;
   const {
     name,
@@ -72,14 +72,14 @@ export const NaniteInfoBox = (props, context) => {
               {use_rate}
             </LabeledList.Item>
             {!!can_trigger && (
-              <Fragment>
+              <>
                 <LabeledList.Item label="Trigger Cost">
                   {trigger_cost}
                 </LabeledList.Item>
                 <LabeledList.Item label="Trigger Cooldown">
                   {trigger_cooldown}
                 </LabeledList.Item>
-              </Fragment>
+              </>
             )}
           </LabeledList>
         </Grid.Column>
@@ -121,14 +121,14 @@ export const NaniteInfoBox = (props, context) => {
                 {timer_shutdown} s
               </LabeledList.Item>
               {!!can_trigger && (
-                <Fragment>
+                <>
                   <LabeledList.Item label="Trigger">
                     {timer_trigger} s
                   </LabeledList.Item>
                   <LabeledList.Item label="Trigger Delay">
                     {timer_trigger_delay} s
                   </LabeledList.Item>
-                </Fragment>
+                </>
               )}
             </LabeledList>
           </Section>
@@ -140,7 +140,7 @@ export const NaniteInfoBox = (props, context) => {
         <LabeledList>
           {extra_settings.map(setting => {
             const naniteTypesDisplayMap = {
-              number: <Fragment>{setting.value}{setting.unit}</Fragment>,
+              number: <>{setting.value}{setting.unit}</>,
               text: setting.value,
               type: setting.value,
               boolean: (setting.value ? setting.true_text : setting.false_text),
@@ -157,8 +157,8 @@ export const NaniteInfoBox = (props, context) => {
   );
 };
 
-export const NaniteCloudBackupList = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteCloudBackupList = (props) => {
+  const { act, data } = useBackend();
   const cloud_backups = data.cloud_backups || [];
   return cloud_backups.map(backup => (
     <Button
@@ -172,8 +172,8 @@ export const NaniteCloudBackupList = (props, context) => {
   ));
 };
 
-export const NaniteCloudBackupDetails = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteCloudBackupDetails = (props) => {
+  const { act, data } = useBackend();
   const {
     current_view,
     disk,
@@ -270,8 +270,8 @@ export const NaniteCloudBackupDetails = (props, context) => {
   );
 };
 
-export const NaniteCloudControl = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteCloudControl = (props) => {
+  const { act, data } = useBackend();
   const {
     has_disk,
     current_view,
@@ -305,7 +305,7 @@ export const NaniteCloudControl = (props, context) => {
                   view: 0,
                 })} />
             ) : (
-              <Fragment>
+              <>
                 {"New Backup: "}
                 <NumberInput
                   value={new_backup_id}
@@ -319,7 +319,7 @@ export const NaniteCloudControl = (props, context) => {
                 <Button
                   icon="plus"
                   onClick={() => act('create_backup')} />
-              </Fragment>
+              </>
             )
           )}>
           {!data.current_view ? (

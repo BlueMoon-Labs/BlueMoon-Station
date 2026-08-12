@@ -42,9 +42,25 @@
 		C.put_in_hands(B2)
 		C.regenerate_icons()
 	src.mob_transforming = TRUE
-	spawn(0)
-		bloodpool_sink(B)
+	B.visible_message("<span class='warning'>[src] begins sinking into the pool of blood...</span>")
+	if(!do_after(src, 1 SECONDS, target = B))
 		src.mob_transforming = FALSE
+		if(iscarbon(src))
+			var/mob/living/carbon/C = src
+			for(var/obj/item/bloodcrawl/BC in C)
+				qdel(BC)
+			C.regenerate_icons()
+		return FALSE
+	if(!B || !B.can_bloodcrawl_in())
+		src.mob_transforming = FALSE
+		if(iscarbon(src))
+			var/mob/living/carbon/C = src
+			for(var/obj/item/bloodcrawl/BC in C)
+				qdel(BC)
+			C.regenerate_icons()
+		return FALSE
+	bloodpool_sink(B)
+	src.mob_transforming = FALSE
 	return TRUE
 
 /mob/living/proc/bloodpool_sink(obj/effect/decal/cleanable/B)
@@ -164,7 +180,7 @@
 		to_chat(src, "<span class='warning'>Finish eating first!</span>")
 		return FALSE
 	B.visible_message("<span class='warning'>[B] starts to bubble...</span>")
-	if(!do_after(src, 20, target = B))
+	if(!do_after(src, 1 SECONDS, target = B))
 		return
 	if(!B)
 		return

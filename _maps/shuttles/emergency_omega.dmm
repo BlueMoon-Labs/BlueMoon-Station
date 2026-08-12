@@ -67,6 +67,9 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "security on the Emergency Omega Shuttle"
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ai" = (
@@ -154,6 +157,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ap" = (
@@ -860,6 +864,20 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plating/airless,
 /area/shuttle/escape)
+"zl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
 
 (1,1,1) = {"
 aa
@@ -990,7 +1008,7 @@ br
 (7,1,1) = {"
 aa
 ag
-an
+zl
 as
 ab
 aA
@@ -1032,7 +1050,7 @@ bv
 (9,1,1) = {"
 ab
 ai
-an
+zl
 at
 ab
 aA

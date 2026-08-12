@@ -1,4 +1,5 @@
 /obj/effect/decal/cleanable/Destroy()
+	lose_cleanbot_targetable()
 	blood_DNA = null
 	GLOB.cleanable_decals -= src
 	return ..()
@@ -40,7 +41,12 @@
 		if(LAZYLEN(diseases_to_add))
 			AddComponent(/datum/component/infective, diseases_to_add)
 
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, _AddElement), list(/datum/element/beauty, beauty)), 0)
+	// Прямое добавление как у tg: нулевой таймер на каждую декаль давал залп из
+	// 2000+ addtimer одним тиком при загрузке дебриса персистенса (TIMER BURST 9746).
+	if(beauty)
+		AddElement(/datum/element/beauty, beauty)
+	if(isturf(loc))
+		become_cleanbot_targetable()
 
 /**
  * A data list is passed into this.

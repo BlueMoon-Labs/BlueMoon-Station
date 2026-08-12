@@ -1,7 +1,8 @@
 import { createPopper } from '@popperjs/core';
-import { BooleanLike } from 'common/react';
+import { BooleanLike, canDirectlyRef } from 'common/react';
 import { classes } from 'common/react';
-import { Component, findDOMFromVNode, render } from 'inferno';
+import { cloneElement, Component, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 import { Box, Button, Flex } from '../../components';
 import { BoxProps } from '../../components/Box';
@@ -57,7 +58,7 @@ const getSheetsFloat = (material: Material) => {
 const MaterialEjectDock = (props: {
   readonly material: Material;
   readonly onEject: (amount: number) => void;
-}, context) => {
+}) => {
   const { material, onEject } = props;
 
   const sheetsFloat = getSheetsFloat(material);
@@ -126,7 +127,7 @@ const MaterialEjectDock = (props: {
 );
 
   return (
-    <div style={{ width: '100%', 'text-align': 'center' }}>
+    <div style={{ width: '100%', textAlign: 'center' }}>
       <MaterialDockTooltip content={dockContent} position="bottom">
         <Button
           color="transparent"
@@ -156,7 +157,7 @@ export const Materials = (props: {
   readonly materials: Material[];
   readonly onEject: (ref: string, amount: number) => void;
   readonly formatting?: MaterialFormatting;
-}, context) => {
+}) => {
   const formatting = props.formatting ?? MaterialFormatting.SIUnits;
 
   return (
@@ -232,9 +233,12 @@ export const MaterialAmount = (props: {
 type DockTooltipProps = {
   readonly content: any;
   readonly position?: any; // Placement
+  readonly children?: ReactNode;
 };
 
-type DockTooltipState = {};
+type DockTooltipState = {
+  open: boolean;
+};
 
 const DOCK_DEFAULT_OPTIONS = {
   modifiers: [{
@@ -256,6 +260,7 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
   static renderedDock: HTMLDivElement | undefined;
   static singletonPopper: ReturnType<typeof createPopper> | undefined;
   static currentAnchor: Element | undefined;
+  static currentInstance: MaterialDockTooltip | undefined;
   static dockHovered = false;
 
   static virtualElement = {
@@ -266,8 +271,40 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
     },
   };
 
-  getDOMNode() {
-    return findDOMFromVNode(this.$LI, true);
+  state: DockTooltipState = {
+    open: false,
+  };
+
+  domNode: Element | null = null;
+
+  handleRef = (node: unknown) => {
+    this.domNode = node instanceof Element ? node : null;
+  };
+
+  // The element used for positioning. A display:contents wrapper has
+  // a zero-sized rect, so measure its first child instead.
+  getAnchor(): Element | null {
+    const node = this.domNode;
+    if (!node) {
+      return null;
+    }
+    if (node instanceof HTMLElement && node.style.display === 'contents') {
+      return node.firstElementChild ?? node;
+    }
+    return node;
+  }
+
+  static hideDock() {
+    MaterialDockTooltip.currentAnchor = undefined;
+    if (MaterialDockTooltip.currentInstance) {
+      MaterialDockTooltip.currentInstance.setState({ open: false });
+      MaterialDockTooltip.currentInstance = undefined;
+    }
+    const el = MaterialDockTooltip.renderedDock;
+    if (el) {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none'; // ВАЖНО
+    }
   }
 
   ensureDockEl() {
@@ -288,7 +325,7 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
       document.documentElement.appendChild(el);
 
       el.addEventListener('mouseenter', () => {
-        // если док закрыт (нет якоря) — вообще не реагируем
+        // если док закрыт (нет якоря) - вообще не реагируем
         if (!MaterialDockTooltip.currentAnchor) return;
 
         MaterialDockTooltip.dockHovered = true;
@@ -302,20 +339,11 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
 
         MaterialDockTooltip.dockHovered = false;
 
-        // Если ушли с дока обратно на якорь — НЕ закрываем
+        // Если ушли с дока обратно на якорь - НЕ закрываем
         if (anchor && to && anchor.contains(to)) return;
 
-        if (!MaterialDockTooltip.currentAnchor) {
-          el!.style.opacity = '0';
-          el!.style.pointerEvents = 'none';
-        } else {
-          // якорь есть, но мы не на доке — закрываем
-          MaterialDockTooltip.currentAnchor = undefined;
-          el!.style.opacity = '0';
-          el!.style.pointerEvents = 'none';
-        }
+        MaterialDockTooltip.hideDock();
       });
-
 
       MaterialDockTooltip.renderedDock = el;
     }
@@ -324,91 +352,129 @@ class MaterialDockTooltip extends Component<DockTooltipProps, DockTooltipState> 
 
   open(anchor: Element) {
     const el = this.ensureDockEl();
+    const prev = MaterialDockTooltip.currentInstance;
+    if (prev && prev !== this) {
+      prev.setState({ open: false });
+    }
+    MaterialDockTooltip.currentInstance = this;
     MaterialDockTooltip.currentAnchor = anchor;
 
     el.style.opacity = '1';
     el.style.pointerEvents = 'auto';
 
-    this.renderDock();
+    this.setState({ open: true });
   }
 
   close(anchor: Element) {
     if (MaterialDockTooltip.currentAnchor !== anchor) return;
     if (MaterialDockTooltip.dockHovered) return;
 
-    MaterialDockTooltip.currentAnchor = undefined;
+    MaterialDockTooltip.hideDock();
+  }
 
+  updatePopper() {
     const el = MaterialDockTooltip.renderedDock;
-    if (el) {
-      el.style.opacity = '0';
-      el.style.pointerEvents = 'none'; // ВАЖНО
+    if (!el) return;
+
+    let pop = MaterialDockTooltip.singletonPopper;
+    if (!pop) {
+      pop = createPopper(
+        MaterialDockTooltip.virtualElement as any,
+        el,
+        {
+          ...DOCK_DEFAULT_OPTIONS,
+          placement: this.props.position || 'bottom',
+        }
+      );
+      MaterialDockTooltip.singletonPopper = pop;
+    } else {
+      pop.setOptions({
+        ...DOCK_DEFAULT_OPTIONS,
+        placement: this.props.position || 'bottom',
+      });
+      pop.forceUpdate();
     }
   }
 
-  renderDock() {
-    const el = MaterialDockTooltip.renderedDock;
-    if (!el) return;
+  handleMouseEnter = () => {
+    const anchor = this.getAnchor();
+    if (anchor) this.open(anchor);
+  };
+
+  handleMouseLeave = (e: Event) => {
+    const to = (e as MouseEvent).relatedTarget as Node | null;
+    const dock = MaterialDockTooltip.renderedDock;
+
+    // Если ушли курсором в док - НЕ закрываем
+    if (dock && to && dock.contains(to)) return;
+
+    const anchor = this.getAnchor();
+    if (anchor) this.close(anchor);
+  };
+
+  componentDidMount() {
+    const node = this.domNode;
+    if (!node) return;
+
+    node.addEventListener('mouseenter', this.handleMouseEnter);
+    node.addEventListener('mouseleave', this.handleMouseLeave);
+  }
+
+  componentDidUpdate() {
+    if (
+      this.state.open
+      && MaterialDockTooltip.currentAnchor === this.getAnchor()
+    ) {
+      // The portal content has just been committed, so the popper
+      // can measure it.
+      this.updatePopper();
+    }
+  }
+
+  componentWillUnmount() {
+    const node = this.domNode;
+    if (node) {
+      node.removeEventListener('mouseenter', this.handleMouseEnter);
+      node.removeEventListener('mouseleave', this.handleMouseLeave);
+    }
+    MaterialDockTooltip.dockHovered = false;
+    const anchor = this.getAnchor();
+    if (anchor) this.close(anchor);
+    if (MaterialDockTooltip.currentInstance === this) {
+      MaterialDockTooltip.currentInstance = undefined;
+    }
+  }
+
+  render() {
+    const { children, content } = this.props;
+    const { open } = this.state;
+
+    let target: ReactNode;
+    if (canDirectlyRef(children)) {
+      target = cloneElement(children as any, { ref: this.handleRef });
+    } else {
+      target = (
+        <span ref={this.handleRef} style={{ display: 'contents' }}>
+          {children}
+        </span>
+      );
+    }
 
     // DPI fix: apply body zoom to content so it matches the rest of the UI,
     // since the container is outside body zoom (appended to <html>).
     const zoom = document.body.style.zoom || '100%';
-    render(
-      <div style={{ zoom }}>{this.props.content}</div>,
-      el,
-      () => {
-        let pop = MaterialDockTooltip.singletonPopper;
-        if (!pop) {
-          pop = createPopper(
-            MaterialDockTooltip.virtualElement as any,
-            el,
-            {
-              ...DOCK_DEFAULT_OPTIONS,
-              placement: this.props.position || 'bottom',
-            }
-          );
-          MaterialDockTooltip.singletonPopper = pop;
-        } else {
-          pop.setOptions({
-            ...DOCK_DEFAULT_OPTIONS,
-            placement: this.props.position || 'bottom',
-          });
-          pop.forceUpdate();
-        }
-      },
-      this.context,
+    const portal = (open && MaterialDockTooltip.renderedDock)
+      ? createPortal(
+        <div style={{ zoom }}>{content}</div>,
+        MaterialDockTooltip.renderedDock,
+      )
+      : null;
+
+    return (
+      <>
+        {target}
+        {portal}
+      </>
     );
-  }
-
-  componentDidMount() {
-    const anchor = this.getDOMNode();
-    if (!anchor) return;
-
-    anchor.addEventListener('mouseenter', () => this.open(anchor));
-
-    anchor.addEventListener('mouseleave', (e: MouseEvent) => {
-      const to = e.relatedTarget as Node | null;
-      const dock = MaterialDockTooltip.renderedDock;
-
-      // Если ушли курсором в док — НЕ закрываем
-      if (dock && to && dock.contains(to)) return;
-
-      this.close(anchor);
-    });
-  }
-
-  componentDidUpdate() {
-    const anchor = this.getDOMNode();
-    if (MaterialDockTooltip.currentAnchor !== anchor) return;
-    this.renderDock();
-  }
-
-  componentWillUnmount() {
-    MaterialDockTooltip.dockHovered = false;
-    const anchor = this.getDOMNode();
-    if (anchor) this.close(anchor);
-  }
-
-  render() {
-    return this.props.children;
   }
 }

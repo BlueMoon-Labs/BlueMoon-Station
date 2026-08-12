@@ -1,6 +1,6 @@
 /obj/item/clothing/head/mod
 	name = "MOD helmet"
-	desc = "A helmet for a MODsuit."
+	desc = "Шлем для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -26,6 +26,7 @@
 	visor_flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
 	visor_flags_cover = HEADCOVERSMOUTH|HEADCOVERSEYES
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/alternate_layer = NECK_LAYER
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
@@ -48,7 +49,7 @@
 
 /obj/item/clothing/suit/mod
 	name = "MOD chestplate"
-	desc = "A chestplate for a MODsuit."
+	desc = "Нагрудник для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -72,6 +73,7 @@
 	visor_flags = STOPSPRESSUREDAMAGE
 	visor_flags_inv = HIDEJUMPSUIT
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/device/cooler)
 	resistance_flags = NONE
 	var/obj/item/mod/control/mod
@@ -95,7 +97,7 @@
 
 /obj/item/clothing/gloves/mod
 	name = "MOD gauntlets"
-	desc = "A pair of gauntlets for a MODsuit."
+	desc = "Пара рукавиц для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -115,6 +117,7 @@
 	clothing_flags = THICKMATERIAL
 	resistance_flags = NONE
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
@@ -137,7 +140,7 @@
 
 /obj/item/clothing/shoes/mod
 	name = "MOD boots"
-	desc = "A pair of boots for a MODsuit."
+	desc = "Пара ботинок для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -157,6 +160,7 @@
 	clothing_flags = THICKMATERIAL
 	resistance_flags = NONE
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_DIGITIGRADE

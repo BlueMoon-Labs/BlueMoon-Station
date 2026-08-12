@@ -5,7 +5,7 @@
  */
 
 import { shallowDiffers } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { chatRenderer } from './renderer';
 

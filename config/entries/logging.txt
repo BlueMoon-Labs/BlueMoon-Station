@@ -22,9 +22,6 @@ LOG_GAME
 ## log mecha actions
 LOG_MECHA
 
-## log uplink purchase
-LOG_APLINK
-
 ## log player votes
 LOG_VOTE
 
@@ -67,6 +64,11 @@ LOG_SHUTTLE
 ## Log economy-related actions
 LOG_ECON
 
+## Log per-reagent metabolism events (MOB ADD/DELETE/TRANSFER) into reagents.log.
+## Отладочный лог: курительная химия пересоздаёт датум реагента каждый тик метаболизма,
+## и на полном раунде это полтора мегабайта пар add/delete. Включать под задачу.
+# LOG_REAGENTS
+
 ## log all world.Topic() calls
 LOG_WORLD_TOPIC
 
@@ -84,7 +86,7 @@ PICTURE_LOGGING_CAMERA
 LOG_VIRUS
 
 ## Log all raw hrefs of tgui, rather than letting tgui logging handle it. KEEP THIS OFF UNLESS YOU KNOW WHAT YOU ARE DOING.
-EMERGENCY_TGUI_LOGGING
+# EMERGENCY_TGUI_LOGGING
 
 ## Cooldown time for each occurance of a unique runtime in deciseconds
 ERROR_COOLDOWN 600
@@ -95,7 +97,7 @@ ERROR_LIMIT 50
 ## How long an unique runtime will be silenced for when reaching limit in deciseconds
 ERROR_SILENCE_TIME 6000
 
-How long to wait between messaging admins about an unique runtime
+## How long to wait between messaging admins about an unique runtime
 ERROR_MSG_DELAY 50
 
 ## DEV ONLY. Когда задан, tgui грузит JS/CSS бандлы живьём с локального dev-сервера (http://<ip>:3000) для hot-reload. В проде держать закомментированным.

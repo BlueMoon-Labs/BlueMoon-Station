@@ -46,7 +46,7 @@
 
 /mob/living/simple_animal/pet/cat/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/wuv, "purrs!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "hisses!", EMOTE_AUDIBLE)
+	AddElement(/datum/element/pet_bonus, "purrs!", EMOTE_AUDIBLE)
 	AddElement(/datum/element/mob_holder, held_icon)
 
 /mob/living/simple_animal/pet/cat/update_mobility()

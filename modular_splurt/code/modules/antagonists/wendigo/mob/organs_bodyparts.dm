@@ -23,6 +23,9 @@
 /obj/item/organ/eyes/night_vision/wendigo
 	sight_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	low_light_cutoff = list(10, 20, 10)
+	medium_light_cutoff = list(20, 40, 20)
+	high_light_cutoff = list(35, 60, 35)
 
 /obj/item/bodypart/head/wendigo
 	dismemberable = FALSE

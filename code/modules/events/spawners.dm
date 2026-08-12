@@ -3,15 +3,19 @@
 	typepath = /datum/round_event/spawners
 
 	min_players = 1
-	max_occurrences = 0 // base type, no spawn
+	// Шаблонная база: сама не запускается. enabled наследуется, поэтому каждый
+	// конкретный подтип обязан явно ставить enabled = TRUE.
+	enabled = FALSE
 	weight = 5
 	earliest_start = 25 MINUTES
 	category = EVENT_CATEGORY_SPAWNERS
+	severity = DIRECTOR_SEVERITY_MODERATE // портал с угрозами из иных планов - не просто бюрократическая мелочь
 	description = "Don't spawn."
 	admin_setup = list(/datum/event_admin_setup/set_location/spawners)
 
 /datum/round_event_control/spawners/nether
 	name = "Portal in netherworld"
+	enabled = TRUE // база выключена, подтипы включаются явно
 	max_occurrences = 1
 
 /datum/round_event/spawners
@@ -29,9 +33,11 @@
 
 /datum/round_event/spawners/proc/do_announce()
 	set waitfor = FALSE
+	if(isnull(impact_area))
+		impact_area = placer.findValidArea()
 	sound_to_playing_players('sound/magic/lightning_chargeup.ogg')
 	sleep(80)
-	priority_announce("На [station_name()] зафиксирован разрыв в пространстве. Приготовьтесь к столкновению с угрозами из иных планов.", "Центральное Командование, Отдел Работы с Реальностью", triggersound)
+	priority_announce("На [station_name()] зафиксирован разрыв в пространстве на [ANOMALY_ANNOUNCE_DANGEROUS_TEXT] [impact_area.name]. Приготовьтесь к столкновению с угрозами из иных планов.", "Центральное Командование, Отдел Работы с Реальностью", triggersound)
 
 /datum/round_event/spawners/start()
     var/turf/T

@@ -813,11 +813,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					grad_color = H.grad_color
 					if(grad_style)
 						var/datum/sprite_accessory/gradient = GLOB.hair_gradients_list[grad_style]
-						var/icon/temp = icon(gradient.icon, gradient.icon_state)
-						var/icon/temp_hair = icon(hair_file, hair_state)
-						temp.Blend(temp_hair, ICON_ADD)
-						gradient_overlay.icon = temp
-						gradient_overlay.color = "#" + grad_color
+						// Битый преф (стиль, которого больше нет в списке) без гарда
+						// роняет весь handle_hair на каждом апдейте иконки моба.
+						if(gradient)
+							var/icon/temp = icon(gradient.icon, gradient.icon_state)
+							var/icon/temp_hair = icon(hair_file, hair_state)
+							temp.Blend(temp_hair, ICON_ADD)
+							gradient_overlay.icon = temp
+							gradient_overlay.color = "#" + grad_color
+						else
+							grad_style = null
+							H.grad_style = null
 
 				else
 					hair_overlay.color = forced_colour
@@ -889,6 +895,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					right_eye.pixel_y += offset_features[OFFSET_EYES][2]
 				standing += left_eye
 				standing += right_eye
+				// Свечение глаз
+				if(has_emissive_part(H.dna.features, "eyes"))
+					standing += emissive_copy(left_eye)
+					standing += emissive_copy(right_eye)
 
 	/* skyrat edit
 	//Underwear, Undershirts & Socks
@@ -1178,6 +1188,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 			standing += accessory_overlay
 
+			if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+				standing += emissive_copy(accessory_overlay)
+
 			if(S.extra) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra_accessory_overlay.category = S.mutable_category
@@ -1225,6 +1238,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				standing += extra_accessory_overlay
 
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra_accessory_overlay)
+
 			if(S.extra2) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra2_accessory_overlay.category = S.mutable_category
@@ -1266,6 +1282,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					extra2_accessory_overlay.pixel_y += H.dna.species.offset_features[OFFSET_MUTPARTS][2]
 
 				standing += extra2_accessory_overlay
+
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing
 
@@ -1554,7 +1573,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			if(istype(I, /obj/item/clothing/accessory/ring))
 				if(istype(H.gloves))
 					var/obj/item/clothing/gloves/attaching_target = H.gloves
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -1570,7 +1589,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			else
 				if(istype(H.w_uniform, /obj/item/clothing/under))
 					var/obj/item/clothing/under/attaching_target = H.w_uniform
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -1800,6 +1819,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			to_chat(user, "<span class='notice'>You do not breathe, so you cannot perform CPR.</span>")
 
 /datum/species/proc/grab(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	// BLUEMOON ADD START отстегавание с опер стола.
+	if(target.buckled && (istype(target.buckled, /obj/structure/table/optable) || istype(target.buckled, /obj/machinery/stasis)))
+		target.buckled.user_unbuckle_mob(target, user)
+	// BLUEMOON ADD END
 	if(target.check_martial_melee_block())
 		target.visible_message("<span class='warning'>[target] blocks [user]'s grab attempt!</span>", target = user, \
 			target_message = "<span class='warning'>[target] blocks your grab attempt!</span>")
@@ -2186,7 +2209,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		Iwound_bonus = CANT_WOUND
 
 	var/weakness = H.check_weakness(I, user)
-	apply_damage(totitemdamage * weakness, I.damtype, def_zone, armor_block, H, wound_bonus = Iwound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness())
+	apply_damage(totitemdamage * weakness, I.damtype, def_zone, armor_block, H, wound_bonus = Iwound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness(), can_dismember = I.can_dismember())
 
 
 	H.send_item_attack_message(I, user, hit_area, affecting, totitemdamage)
@@ -2432,7 +2455,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		target.ShoveOffBalance(SHOVE_OFFBALANCE_DURATION + user.dna.species.disarm_bonus) // BLUEMOON EDIT - xenohybrids_improvements - добавлено "+ disarm_bonus"
 		log_combat(user, target, "shoved", append_message)
 
-/datum/species/proc/apply_damage(damage, damagetype = BRUTE, def_zone = null, blocked, mob/living/carbon/human/H, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE)
+/datum/species/proc/apply_damage(damage, damagetype = BRUTE, def_zone = null, blocked, mob/living/carbon/human/H, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE, can_dismember = TRUE)
 	// BLUEMOON EDIT START - sanity check
 	if(!H)
 		return
@@ -2471,9 +2494,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			// BLUEMOON EDIT END
 			if(!forced && damage > 0 && HAS_TRAIT(H, TRAIT_TOUGHT) && damage <= TRAIT_TOUGHT_DAMAGE) // проверка на трейт стойкости
 				apply_damage(damage, damagetype = STAMINA)
-				return			
+				return
 			if(BP)
-				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
+				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
 			//BLUEMOON EDIT START
 			else//no bodypart, we deal damage with a more general method.
@@ -2483,7 +2506,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			H.damageoverlaytemp = 20
 			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod
 			if(BP)
-				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
+				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
 			else
 				H.adjustFireLoss(damage_amount)
@@ -2640,16 +2663,23 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "cold", /datum/mood_event/cold)
 		//Apply cold slowdown
 		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/cold, multiplicative_slowdown = (((BODYTEMP_COLD_DAMAGE_LIMIT + cold_offset) - H.bodytemperature) / COLD_SLOWDOWN_FACTOR))
-		switch(H.bodytemperature)
-			if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 1)
-				H.apply_damage(COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod, BURN)
-			if(120 to 200)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 2)
-				H.apply_damage(COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod, BURN)
-			else
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 3)
-				H.apply_damage(COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod, BURN)
+		// For dead mobs, stop cold damage once body is frozen
+		if(H.stat != DEAD || H.bodytemperature > BODYTEMP_FROZEN_THRESHOLD)
+			var/cold_damage = 0
+			var/shiver_level = 0
+			switch(H.bodytemperature)
+				if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
+					shiver_level = 1
+					cold_damage = COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod
+				if(120 to 200)
+					shiver_level = 2
+					cold_damage = COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod
+				else
+					shiver_level = 3
+					cold_damage = COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod
+			if(shiver_level)
+				H.throw_alert("temp", /atom/movable/screen/alert/shiver, shiver_level)
+				H.apply_damage(cold_damage, BURN)
 
 	else
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/cold)
@@ -2719,7 +2749,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		//
 		if(H.w_uniform)
 			chest_clothes = H.w_uniform
-		if(H.wear_suit)
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & CHEST))
 			chest_clothes = H.wear_suit
 
 		if(chest_clothes)
@@ -2737,10 +2767,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(H.w_shirt && (H.w_shirt.body_parts_covered & ARMS))
 			arm_clothes = H.w_shirt
 		//
-		if(H.gloves)
-			arm_clothes = H.gloves
 		if(H.w_uniform && ((H.w_uniform.body_parts_covered & HANDS) || (H.w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = H.w_uniform
+		if(H.gloves && ((H.gloves.body_parts_covered & HANDS) || (H.gloves.body_parts_covered & ARMS)))
+			arm_clothes = H.gloves //gloves (incl. MOD gauntlets) are worn over the uniform's arms, so they are the outer layer that takes the fire
 		if(H.wear_suit && ((H.wear_suit.body_parts_covered & HANDS) || (H.wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = H.wear_suit
 		if(arm_clothes)
@@ -2756,10 +2786,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(H.w_shirt && (H.w_shirt.body_parts_covered & LEGS))
 			leg_clothes = H.w_shirt
 		//
-		if(H.shoes)
-			leg_clothes = H.shoes
 		if(H.w_uniform && ((H.w_uniform.body_parts_covered & FEET) || (H.w_uniform.body_parts_covered & LEGS)))
 			leg_clothes = H.w_uniform
+		if(H.shoes && ((H.shoes.body_parts_covered & FEET) || (H.shoes.body_parts_covered & LEGS)))
+			leg_clothes = H.shoes //shoes (incl. MOD boots) are worn over the uniform's legs, so they are the outer layer that takes the fire
 		if(H.wear_suit && ((H.wear_suit.body_parts_covered & FEET) || (H.wear_suit.body_parts_covered & LEGS)))
 			leg_clothes = H.wear_suit
 		if(leg_clothes)
@@ -2839,24 +2869,38 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/is_wagging_tail(mob/living/carbon/human/H)
 	return mutant_bodyparts[wagging_type]
 
+/// Replaces an associative key in mutant_bodyparts in-place, keeping its original position.
+/// handle_mutant_bodyparts decides intra-layer overlay draw order from the iteration order of
+/// mutant_bodyparts (every part in a layer shares the same numeric layer, so later entries draw
+/// on top). A plain delete+add would move the tail entry to the end of the list, past insect_wings,
+/// flipping the wagging tail in front of the wings. Renaming in place preserves draw order.
+/// Returns TRUE if the key was found and replaced.
+/datum/species/proc/swap_mutant_bodypart_key(old_key, new_key)
+	if(!(old_key in mutant_bodyparts))
+		return FALSE
+	var/list/rebuilt = list()
+	for(var/key in mutant_bodyparts)
+		if(key == old_key)
+			rebuilt[new_key] = mutant_bodyparts[old_key]
+		else
+			rebuilt[key] = mutant_bodyparts[key]
+	mutant_bodyparts = rebuilt
+	return TRUE
+
 /datum/species/proc/start_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
 		if(mutant_bodyparts[tail_type])
-			mutant_bodyparts[wagging_type] = mutant_bodyparts[tail_type]
-			mutant_bodyparts -= tail_type
+			swap_mutant_bodypart_key(tail_type, wagging_type)
 			if(tail_type == "tail_lizard") //special lizard thing
-				mutant_bodyparts["waggingspines"] = mutant_bodyparts["spines"]
-				mutant_bodyparts -= "spines"
+				swap_mutant_bodypart_key("spines", "waggingspines")
 			H.update_body()
 
 /datum/species/proc/stop_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
 		if(mutant_bodyparts[wagging_type])
-			mutant_bodyparts[tail_type] = mutant_bodyparts[wagging_type]
-			mutant_bodyparts -= wagging_type
+			swap_mutant_bodypart_key(wagging_type, tail_type)
 			if(tail_type == "tail_lizard") //special lizard thing
-				mutant_bodyparts["spines"] = mutant_bodyparts["waggingspines"]
-				mutant_bodyparts -= "waggingspines"
+				swap_mutant_bodypart_key("waggingspines", "spines")
 			H.update_body()
 
 ///////////////

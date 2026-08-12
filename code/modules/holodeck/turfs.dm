@@ -156,6 +156,15 @@
 	icon_state = "asteroid"
 	tiled_dirt = FALSE
 
+/turf/open/floor/holofloor/chess_white
+	icon_state = "floor_large"
+
+/turf/open/floor/holofloor/chess_black
+	icon_state = "dark_large"
+
+/turf/open/floor/holofloor/pure_white
+	icon_state = "whitespace"
+
 /turf/open/floor/holofloor/ice
 	name = "ice sheet"
 	desc = "A sheet of solid ice. Looks slippery."

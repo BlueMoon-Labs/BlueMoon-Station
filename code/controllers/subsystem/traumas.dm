@@ -205,4 +205,24 @@ SUBSYSTEM_DEF(traumas)
 
 	return ..()
 
+/// Проверка сохранённого в префах типа фобии. Возвращает выбор как есть, если он валиден,
+/// и null, если такого типа больше нет в пуле.
+/// Клиент может подключиться и загрузить персонажа задолго до того, как подсистема
+/// поднимется (Master.Initialize идёт с waitfor = 0), поэтому пустой список типов означает
+/// "проверить нечем", а не "выбор невалиден" - иначе санитайзер стирает живую настройку.
+/datum/controller/subsystem/traumas/proc/sanitize_phobia_type(phobia_type)
+	if(!phobia_type || !length(phobia_types))
+		return phobia_type
+	if(phobia_type in phobia_types)
+		return phobia_type
+	return null
+
+/// Тип фобии для выдачи: выбор игрока, если он валиден, иначе случайный из пула.
+/datum/controller/subsystem/traumas/proc/pick_phobia_type(preferred)
+	if(!length(phobia_types))
+		return preferred
+	if(preferred && (preferred in phobia_types))
+		return preferred
+	return pick(phobia_types)
+
 #undef PHOBIA_FILE

@@ -278,7 +278,7 @@
 			var/datum/antagonist/magic_servant/A = servant_mind.add_antag_datum(/datum/antagonist/magic_servant)
 			A?.setup_master(user)
 
-			var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [user.real_name] Servant?", ROLE_WIZARD, null, ROLE_WIZARD, 20 SECONDS, H, priority_check = FALSE)
+			var/list/mob/candidates = pollCandidatesForMob("[user.real_name] ищет себе дворецкого. Хотите ли вы сыграть за него?", ROLE_WIZARD, null, ROLE_WIZARD, 20 SECONDS, H, priority_check = FALSE)
 			if(LAZYLEN(candidates))
 				var/mob/C = pick(candidates)
 				message_admins("[ADMIN_LOOKUPFLW(C)] was spawned as Dice Servant")

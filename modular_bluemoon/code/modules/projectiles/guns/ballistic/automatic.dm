@@ -58,6 +58,7 @@
 	name = "\improper tactical M16A4 rifle"
 	desc = "A Solar Federation automatic rifle chambered for the 5.56 round, designed for use by Special Ops."
 	icon_state = "m16_tactical"
+	item_state = "m16"
 	burst_size = 3 // EDIT - was "burst_size = 5"
 	fire_delay = 2 // EDIT - was "fire_delay = 3"
 
@@ -72,6 +73,7 @@
 	name = "\improper stock M16A4 rifle"
 	desc = "A Solar Federation automatic rifle chambered for the 5.56 round, just bought from nearest gun-shop."
 	icon_state = "m16_stock"
+	item_state = "m16_stock"
 	burst_size = 3
 	fire_delay = 4
 
@@ -115,6 +117,7 @@
 	name = "\improper AKM rifle"
 	desc = "A timeless human design of a carbine chambered for the 7.62 ammo. Imported from far-far-away frontier spaces."
 	icon_state = "akm"
+	item_state = "akm"
 
 /obj/item/gun/ballistic/automatic/ak47/akm/update_icon_state()
 	if(magazine)
@@ -127,6 +130,7 @@
 	name = "\improper HomeMade AK-47 rifle"
 	desc = "Kalak-12 with zatvornaya zaderjka like M16. Karch not included."
 	icon_state = "ak47_hm"
+	item_state = "ak47_hm"
 	burst_size = 3
 	fire_delay = 5
 

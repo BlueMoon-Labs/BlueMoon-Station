@@ -19,17 +19,19 @@
   */
 /obj/vehicle/sealed/mecha
 	name = "mecha"
-	desc = "Exosuit"
+	desc = "Экзокостюм"
 	icon = 'icons/mecha/mecha.dmi'
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	flags_1 = HEAR_1
 	max_integrity = 300
 	armor = list(MELEE = 20, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	movedelay = 1 SECONDS
+	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
+	var/turn_delay = 0.4 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	COOLDOWN_DECLARE(mecha_bump_smash)
-	var/light_on = FALSE
+	COOLDOWN_DECLARE(cooldown_vehicle_turn)
 	///What direction will the mech face when entered/powered on? Defaults to South.
 	var/dir_in = SOUTH
 	///How much energy the mech will consume each time it moves. This variable is a backup for when leg actuators affect the energy drain.
@@ -68,6 +70,8 @@
 	var/allow_diagonal_movement = TRUE
 	///Whether or not the mech destroys walls by running into it.
 	var/bumpsmash = FALSE
+	/// Mobs currently entering via mob_enter (ignore in Entered for swapper teleports).
+	var/list/entering_mobs
 
 	///////////ATMOS
 	///Whether we are currrently drawing from the internal tank
@@ -157,6 +161,15 @@
 	///Wether we are strafing
 	var/strafe = FALSE
 
+	///Whether thruster stabilizers are engaged (cancels space drift to hold position, like a jetpack's). Needs functional, powered thrusters.
+	var/stabilizers = FALSE
+
+	// Space-drift mass model: a multi-ton exosuit should resist being nudged and should not reach human EVA drift speeds.
+	/// Higher = harder for impulses (steps, recoil, push-off) to build drift.
+	inertia_force_weight = 8
+	/// Multiplies the drift move delay, capping the mech's top drift speed well below a human's.
+	inertia_move_multiplier = 3
+
 	///Cooldown length between bumpsmashes
 	var/smashcooldown = 3
 
@@ -189,6 +202,7 @@
 	add_capacitor()
 	START_PROCESSING(SSobj, src)
 	GLOB.poi_list |= src
+	AddComponent(/datum/component/hostile_machine_registry)
 	log_message("[src.name] created.", LOG_MECHA)
 	GLOB.mechas_list += src //global mech list
 	prepare_huds()
@@ -265,7 +279,10 @@
 		if(internal_tank)
 			WR.crowbar_salvage += internal_tank
 			internal_tank.forceMove(WR)
-			cell = null
+			// Копипаста из блока про cell выше обнуляла cell повторно, а internal_tank
+			// оставался ссылкой на уехавшую в обломки канистру - разобранная меха держала её
+			// до конца раунда.
+			internal_tank = null
 	return ..()
 
 /obj/vehicle/sealed/mecha/update_icon()
@@ -380,34 +397,35 @@
 	var/integrity = obj_integrity*100/max_integrity
 	switch(integrity)
 		if(85 to 100)
-			. += "It's fully intact."
+			. += "Он полностью цел."
 		if(65 to 85)
-			. += "It's slightly damaged."
+			. += "Он слегка повреждён."
 		if(45 to 65)
-			. += "It's badly damaged."
+			. += "Он сильно повреждён."
 		if(25 to 45)
-			. += "It's heavily damaged."
+			. += "Он находится в критическом состоянии."
 		else
-			. += "It's falling apart."
+			. += "Он разваливается на части."
 	var/hide_weapon = locate(/obj/item/mecha_parts/concealed_weapon_bay) in contents
 	var/hidden_weapon = hide_weapon ? (locate(/obj/item/mecha_parts/mecha_equipment/weapon) in equipment) : null
 	var/list/visible_equipment = equipment - hidden_weapon
 	if(visible_equipment.len)
-		. += "It's equipped with:"
+		. += "Установлено оборудование:"
 		for(var/obj/item/mecha_parts/mecha_equipment/ME in visible_equipment)
 			. += "[icon2html(ME, user)] \A [ME]."
 	if(!enclosed)
 		if(mecha_flags & SILICON_PILOT)
-			. += "[src] appears to be piloting itself..."
+			. += "[src], кажется, пилотирует себя сам..."
 		else
 			for(var/occupante in occupants)
-				. += "You can see [occupante] inside."
+				. += "Вы можете видеть [occupante] внутри."
 			if(ishuman(user))
 				var/mob/living/carbon/human/H = user
 				for(var/O in H.held_items)
 					if(istype(O, /obj/item/gun))
-						. += "<span class='warning'>It looks like you can hit the pilot directly if you target the center or above.</span>"
+						. += "<span class='warning'>Похоже, вы можете попасть в пилота, если прицелитесь в центр или выше.</span>"
 						break //in case user is holding two guns
+	. += "<span class='notice'>Для обслуживания используйте отвёртку, чтобы открыть техническую панель. Ломом можно извлечь батарею или экипировку при открытой панели.</span>"
 
 //processing internal damage, temperature, air regulation, alert updates, lights power use.
 /obj/vehicle/sealed/mecha/process()
@@ -504,10 +522,8 @@
 			// such as brainmob inside brainitem inside MMI inside mecha
 			while(!isnull(checking))
 				if(isturf(checking))
-					// hit a turf before hitting the mecha, seems like they have been moved out
-					occupant.clear_alert("charge")
-					occupant.clear_alert("mech damage")
-					occupant = null
+					// Displaced (teleport, swapper, etc.) — strip mech control without shoving them back outside.
+					remove_occupant(occupant)
 					break
 				else if (checking == src)
 					break  // all good
@@ -516,6 +532,13 @@
 	if(mecha_flags & LIGHTS_ON)
 		var/lights_energy_drain = 2
 		use_power(lights_energy_drain)
+
+	for(var/mob/living/stowaway in src)
+		if(is_occupant(stowaway))
+			continue
+		if(mecha_flags & SILICON_PILOT && (isAI(stowaway) || isbrain(stowaway)))
+			continue
+		stowaway.forceMove(get_turf(src))
 
 	for(var/b in occupants)
 		var/mob/living/occupant = b
@@ -578,10 +601,7 @@
 		if(!target)
 			return
 	var/mob/living/L = user
-	if(selected)
-		if(!(L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
-			to_chat(user, "You can't control mech equipment from here!")
-			return
+	if(selected && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
 		if(!Adjacent(target) && (selected.range & MECHA_RANGED))
 			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
 				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
@@ -623,8 +643,15 @@
 ///Plays the mech step sound effect. Split from movement procs so that other mechs (HONK) can override this one specific part.
 /obj/vehicle/sealed/mecha/proc/play_stepsound()
 	SIGNAL_HANDLER
+	// step_silent is set for thrust / push-off; inertia_moving is set while the drift loop is carrying us.
+	// Neither is a footstep, so don't play the walk sound (it was firing on every space-drift tick).
+	if(step_silent)
+		step_silent = FALSE
+		return
+	if(inertia_moving)
+		return
 	if(stepsound)
-		playsound(src,stepsound,40,1)
+		playsound(src, stepsound, 40, TRUE)
 
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
@@ -632,14 +659,32 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
 		log_message("Lost connection to gas port.", LOG_MECHA)
 
+/obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
+	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
+
 /obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	. = ..(movement_dir, continuous_move)
 	if(.)
 		return TRUE
+
+	// Jetpack-style thrusters: stabilizers = cell-by-cell movement with no drift; thrust handles voluntary moves.
+	if(has_functional_thrusters())
+		var/thruster_assist = continuous_move ? stabilizers : (movement_dir || stabilizers)
+		if(thruster_assist)
+			if(continuous_move)
+				return TRUE
+			if(active_thrusters.thrust(movement_dir))
+				step_silent = TRUE
+				return TRUE
+		if(continuous_move)
+			return FALSE
+		return FALSE
+
 	if(continuous_move)
 		return FALSE
 
-	var/atom/movable/backup = get_spacemove_backup()
+	// Mechs without a thruster package can still push off nearby objects.
+	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
 			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
@@ -648,11 +693,14 @@
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
 		return TRUE
 
-	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
-		step_silent = TRUE
-		return TRUE
-
 	return FALSE
+
+// Мех НЕ переопределяет Moved(). Раньше стабилизаторы с рабочими двигателями
+// уводили нас в обход /atom/movable/Moved() ради отмены дрейфа, а вместе с
+// дрейфом терялась и перекладка спатиал-грида: пилот навсегда оставался
+// прописан в ячейке, где сел в меха, и переставал слышать всё за её пределами.
+// Отменять дрейф здесь и не нужно - newtonian_move() сам зовёт
+// Process_Spacemove(dir, TRUE), а тот при стабилизаторах возвращает TRUE.
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
@@ -663,13 +711,56 @@
 
 
 /obj/vehicle/sealed/mecha/vehicle_move(direction, forcerotate = FALSE)
-	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
-		return FALSE
-	COOLDOWN_START(src, cooldown_vehicle_move, movedelay)
 	if(completely_disabled)
 		return FALSE
 	if(!direction)
 		return FALSE
+
+	// Cleared each call: Process_Spacemove sets this when we thrust / push off, and play_stepsound consumes it.
+	// Resetting here keeps a thrust that didn't end in a step from silencing the next genuine footstep.
+	step_silent = FALSE
+
+	if(internal_damage & MECHA_INT_CONTROL_LOST)
+		direction = pick(GLOB.alldirs)
+
+	//only mechs with diagonal movement may move/turn diagonally
+	if(!allow_diagonal_movement && ISDIAGONALDIR(direction))
+		return TRUE
+
+	// In strafe mode, a driver holding Alt turns directional input into a PURE in-place rotation: the mech turns
+	// toward the input and must never step - not even once it already faces that way (otherwise it walks off after turning).
+	var/strafe_rotate = FALSE
+	if(strafe && !forcerotate)
+		for(var/mob/driver in return_drivers())
+			if(driver.client?.keys_held["Alt"])
+				strafe_rotate = TRUE
+				break
+
+	// Rotation is decoupled from movement: turning must NOT be blocked by the inability to move (zero-g, no power)
+	// nor share/consume the move cooldown, otherwise the mech "can't turn" in space and Alt-strafe turns get eaten.
+	if((dir != direction || forcerotate) && (forcerotate || !strafe || strafe_rotate))
+		if(!COOLDOWN_FINISHED(src, cooldown_vehicle_turn))
+			return FALSE
+		COOLDOWN_START(src, cooldown_vehicle_turn, turn_delay)
+		setDir(direction)
+		if(turnsound)
+			playsound(src, turnsound, 40, TRUE)
+		return TRUE
+
+	// Alt-strafe is rotation-only: if we already face the requested direction, hold position instead of stepping forward.
+	if(strafe_rotate)
+		return TRUE
+
+	// In strafe mode, a direction != facing without Alt means strafe-move: travel that way while keeping our facing.
+	var/strafing = strafe && (dir != direction)
+
+	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
+		return FALSE
+	// Шаг меха живёт на собственном кулдауне, мимо /client/Move(), поэтому цену
+	// выравнивать по тику приходится здесь же. Дробный movedelay набегает от
+	// сканмодулей и капаситоров, а кулдаун всё равно проверяется только на тике.
+	var/step_cost = movement_quantize_delay(movedelay, world.tick_lag)
+	COOLDOWN_START(src, cooldown_vehicle_move, step_cost)
 	if(internal_tank?.connected_port)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
 			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while connected to the air system port!</span>")
@@ -703,32 +794,7 @@
 
 	var/olddir = dir
 
-	if(internal_damage & MECHA_INT_CONTROL_LOST)
-		direction = pick(GLOB.alldirs)
-
-	//only mechs with diagonal movement may move diagonally
-	if(!allow_diagonal_movement && ISDIAGONALDIR(direction))
-		return TRUE
-
-	//if we're not facing the way we're going rotate us
-	var/no_strafe = FALSE
-	if(dir != direction || forcerotate)
-		if(strafe)
-			for(var/D in return_drivers())
-				var/mob/driver = D
-				if(driver.client?.keys_held["Alt"])
-					no_strafe = TRUE
-					setDir(direction)
-					if(turnsound)
-						playsound(src,turnsound,40,TRUE)
-					return TRUE
-		else
-			setDir(direction)
-			if(turnsound)
-				playsound(src,turnsound,40,TRUE)
-			return TRUE
-
-	set_glide_size(DELAY_TO_GLIDE_SIZE(movedelay))
+	set_glide_size(DELAY_TO_GLIDE_SIZE(step_cost))
 	use_power(step_energy_drain)
 
 	var/turf/current_loc = get_turf(src)
@@ -736,7 +802,7 @@
 		//Otherwise just walk normally
 		. = step(src,direction, dir)
 
-	if(strafe && !no_strafe)
+	if(strafing)
 		setDir(olddir)
 
 
@@ -942,6 +1008,9 @@
 	LAZYREMOVE(occupants, pilot_mob)
 	if(pilot_mob.mecha == src)
 		pilot_mob.mecha = null
+	//пилот-контроллер водил мех мув-лупами SSai_movement: без пилота лупы
+	//не нужны на любом пути выхода (эвакуация, смерть, гиб)
+	SSmove_manager.stop_looping(src, SSai_movement)
 	pilot_mob.forceMove(get_turf(src))
 	update_icon()
 
@@ -1014,8 +1083,12 @@
 		else if(M.has_buckled_mobs())
 			to_chat(M, "<span class='warning'>You can't enter the exosuit with other creatures attached to you!</span>")
 		else
-			moved_inside(M)
-			return ..()
+			// Только moved_inside(): он сам делает forceMove и add_occupant. Прежний
+			// "return ..()" сразу после него уводил в /obj/vehicle/sealed/mob_try_enter,
+			// то есть во ВТОРОЙ do_after и второй mob_enter -> add_occupant по тому же
+			// мобу. На одноместных это гасил гард по max_occupants, а на двухместной
+			// Savannah-Ivanov проходило и дублировало подписки на моба.
+			return moved_inside(M)
 	else
 		to_chat(M, "<span class='warning'>You stop entering the exosuit!</span>")
 
@@ -1027,6 +1100,7 @@
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
+	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
 		initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/swap_seat)
 
@@ -1036,8 +1110,10 @@
 		return
 	if(ishuman(H) && !Adjacent(H))
 		return
+	LAZYADD(entering_mobs, H)
 	H.forceMove(src)
 	add_occupant(H)
+	LAZYREMOVE(entering_mobs, H)
 	add_fingerprint(H)
 	log_message("[H] moved in as pilot.", LOG_MECHA)
 	setDir(dir_in)
@@ -1166,11 +1242,39 @@
 	return ..()
 
 
+/obj/vehicle/sealed/mecha/mob_enter(mob/M, silent = FALSE)
+	LAZYADD(entering_mobs, M)
+	. = ..()
+	LAZYREMOVE(entering_mobs, M)
+
+/obj/vehicle/sealed/mecha/proc/on_occupant_displaced(mob/living/occupant, channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	if(!occupant || !is_occupant(occupant))
+		return
+	var/atom/checking = occupant.loc
+	while(!isnull(checking))
+		if(isturf(checking))
+			remove_occupant(occupant)
+			occupant.update_mouse_pointer()
+			return
+		if(checking == src)
+			return
+		checking = checking.loc
+
 /obj/vehicle/sealed/mecha/add_occupant(mob/M, control_flags)
+	// Сначала родитель, и только по его успеху - подписки. Родитель отказывает по
+	// is_occupant(M) (/obj/vehicle/sealed/add_occupant), а прежний порядок вешал четыре
+	// сигнала ДО отказа: на повторном заходе они перевешивались вторым слоем и в лог летели
+	// четыре "&lt;signal&gt; overridden". Снимает их remove_occupant ровно один раз, поэтому
+	// лишний слой держал меху у моба и после высадки. Видно это было только на
+	// двухместной Savannah-Ivanov: одноместные отсекает гард по max_occupants.
+	. = ..()
+	if(!.)
+		return
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
-	return ..()
+	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
 	. = ..()
@@ -1181,6 +1285,7 @@
 	UnregisterSignal(M, COMSIG_MOB_DEATH)
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
+	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
 	if(M.client)

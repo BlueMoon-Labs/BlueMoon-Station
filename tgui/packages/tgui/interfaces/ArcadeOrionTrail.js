@@ -117,8 +117,8 @@ const CrewList = (props) => {
 };
 
 // ---- Event buttons based on event type ----
-const EventButtons = (props, context) => {
-  const { act } = useBackend(context);
+const EventButtons = (props) => {
+  const { act } = useBackend();
   const { event, canContinueEvent, engine, hull, electronics } = props;
 
   const buttons = [];
@@ -210,8 +210,8 @@ const EventButtons = (props, context) => {
 };
 
 // ---- Start Screen ----
-const StartScreen = (props, context) => {
-  const { act } = useBackend(context);
+const StartScreen = (props) => {
+  const { act } = useBackend();
   return (
     <Section
       className="ArcadeOrionTrail__start"
@@ -245,8 +245,8 @@ const StartScreen = (props, context) => {
 };
 
 // ---- Game Over Screen ----
-const GameOverScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const GameOverScreen = (props) => {
+  const { act, data } = useBackend();
   const { gameover_reasons = [], emagged } = data;
   return (
     <Section
@@ -275,8 +275,8 @@ const GameOverScreen = (props, context) => {
 };
 
 // ---- Event Panel ----
-const EventPanel = (props, context) => {
-  const { data } = useBackend(context);
+const EventPanel = (props) => {
+  const { data } = useBackend();
   const {
     event,
     event_text = [],
@@ -309,8 +309,8 @@ const EventPanel = (props, context) => {
 };
 
 // ---- Normal Journey Screen ----
-const JourneyScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const JourneyScreen = (props) => {
+  const { act, data } = useBackend();
   const {
     food = 0,
     fuel = 0,
@@ -424,8 +424,8 @@ const JourneyScreen = (props, context) => {
 };
 
 // ---- Spaceport Market Screen ----
-const MarketScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MarketScreen = (props) => {
+  const { act, data } = useBackend();
   const {
     food = 0,
     fuel = 0,
@@ -612,8 +612,8 @@ const MarketScreen = (props, context) => {
 };
 
 // ---- Main Component ----
-export const ArcadeOrionTrail = (props, context) => {
-  const { data } = useBackend(context);
+export const ArcadeOrionTrail = (props) => {
+  const { data } = useBackend();
   const { gameStatus = STATUS_START, emagged } = data;
 
   const windowClass = emagged

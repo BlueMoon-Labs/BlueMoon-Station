@@ -1,13 +1,66 @@
 // Maps browser event.key values to BYOND direction names.
-const BYOND_DIRECTION_MAP: Record<string, string> = {
-  'ArrowLeft': 'West',
-  'ArrowUp': 'North',
-  'ArrowRight': 'East',
-  'ArrowDown': 'South',
-  'PageUp': 'Northeast',
-  'PageDown': 'Southeast',
-  'End': 'Southwest',
-  'Home': 'Northwest',
+const CODE_MAP: Record<string, string> = {
+  // Symbol keys
+  Backquote: "`",
+  Minus: "-",
+  Equal: "=",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  Semicolon: ";",
+  Quote: "'",
+  Comma: ",",
+  Period: ".",
+  Slash: "/",
+
+  // Navigation
+  ArrowUp: "North",
+  ArrowDown: "South",
+  ArrowLeft: "West",
+  ArrowRight: "East",
+
+  Home: "Northwest",
+  PageUp: "Northeast",
+  End: "Southwest",
+  PageDown: "Southeast",
+
+  // Special
+  Enter: "Return",
+  Backspace: "Back",
+  Space: "Space",
+  Tab: "Tab",
+  Escape: "Escape",
+
+  Insert: "Insert",
+  Delete: "Delete",
+  Pause: "Pause",
+  PrintScreen: "Snapshot",
+
+  // Windows
+  MetaLeft: "LWin",
+  MetaRight: "RWin",
+  ContextMenu: "Apps",
+
+  // Numpad
+  Numpad0: "Numpad0",
+  Numpad1: "Numpad1",
+  Numpad2: "Numpad2",
+  Numpad3: "Numpad3",
+  Numpad4: "Numpad4",
+  Numpad5: "Numpad5",
+  Numpad6: "Numpad6",
+  Numpad7: "Numpad7",
+  Numpad8: "Numpad8",
+  Numpad9: "Numpad9",
+
+  NumpadAdd: "Add",
+  NumpadSubtract: "Subtract",
+  NumpadMultiply: "Multiply",
+  NumpadDivide: "Divide",
+
+  // NumLock-specific
+  NumpadDecimal: "Delete",
+  NumpadEnter: "Return",
 };
 
 type ByondKeyEvent = {
@@ -24,14 +77,10 @@ type ByondKeyEvent = {
 export const keyToByond = (keyEvent: ByondKeyEvent): string | undefined => {
   const { key, code } = keyEvent;
 
-  // Numpad digits: distinguish via event.code.
-  if (/^Numpad\d$/.test(code)) {
-    return 'Numpad' + code.slice(6);
-  }
-
-  // Direction/navigation keys are layout-independent in event.key.
-  if (BYOND_DIRECTION_MAP[key]) {
-    return BYOND_DIRECTION_MAP[key];
+  // Symbol keys: use physical key code.
+  const mapped = CODE_MAP[code];
+  if (mapped) {
+    return mapped;
   }
 
   // Modifier and special keys are layout-independent in event.key.
@@ -53,11 +102,6 @@ export const keyToByond = (keyEvent: ByondKeyEvent): string | undefined => {
 
   // F-keys are layout-independent in event.key.
   if (/^F\d+$/.test(key)) return key;
-
-  // Symbol keys: use physical key code.
-  if (code === 'Comma') return ',';
-  if (code === 'Minus') return '-';
-  if (code === 'Period') return '.';
 
   return undefined;
 };

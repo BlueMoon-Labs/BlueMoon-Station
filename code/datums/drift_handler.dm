@@ -13,6 +13,8 @@
 	var/delayed = FALSE
 	/// How much force is behind this drift (used for impulse math and braking)
 	var/drift_force = 1
+	/// Уже сообщали о выходе на крейсерскую тягу — строка не должна повторяться каждый шаг
+	var/announced_cruise = FALSE
 
 /datum/drift_handler/New(atom/movable/parent, inertia_angle, instant = FALSE, start_delay = 0, drift_force = 1)
 	. = ..()
@@ -50,6 +52,7 @@
 		visual_delay = start_delay
 
 	apply_initial_visuals(visual_delay)
+	refresh_pilot_alert()
 	if(drifting_loop.timer <= world.time)
 		var/rate_loop_delay = get_loop_delay(parent)
 		var/next_allowed_move = parent.last_drift_time + rate_loop_delay
@@ -71,7 +74,34 @@
 		if(parent.drift_handler == src)
 			parent.drift_handler = null
 		parent.inertia_moving = FALSE
+		refresh_pilot_alert()
 	return ..()
+
+/**
+ * Однократная строка при выходе на крейсерскую тягу.
+ *
+ * Игроку надо понимать, что дальше его не разгонят — раньше разгон просто не кончался, и
+ * единственным сигналом было то, что станция превратилась в полоску. Молчим, когда потолок
+ * пришёл не от собственного двигателя (взрыв, отдача) или когда двигателя вовсе нет.
+ */
+/datum/drift_handler/proc/report_cruise(controlled_cap)
+	if(isnull(controlled_cap) || controlled_cap != parent.self_thrust_cap || !LAZYLEN(parent.thrust_sources))
+		return
+	if(drift_force < controlled_cap - 0.01)
+		announced_cruise = FALSE
+		return
+	if(announced_cruise)
+		return
+	announced_cruise = TRUE
+	var/mob/pilot = parent
+	if(ismob(pilot) && pilot.client)
+		to_chat(pilot, "<span class='notice'>Двигатели вышли на крейсерскую тягу - дальше вас не разгонят.</span>")
+
+/// Табличка режима полёта показывает скорость и курс, а они меняются только при импульсе.
+/datum/drift_handler/proc/refresh_pilot_alert()
+	var/mob/pilot = parent
+	if(ismob(pilot))
+		pilot.update_flight_alert()
 
 /datum/drift_handler/proc/apply_initial_visuals(visual_delay)
 	if(SEND_SIGNAL(parent, COMSIG_MOVABLE_DRIFT_VISUAL_ATTEMPT) & DRIFT_VISUAL_FAILED)
@@ -91,11 +121,14 @@
 	var/force_y = cos(drifting_loop.angle) * drift_force + cos(inertia_angle) * applied_force / parent.inertia_force_weight
 
 	var/uncapped_force = sqrt(force_x * force_x + force_y * force_y)
-	var/effective_cap = !isnull(controlled_cap) ? controlled_cap : INERTIA_FORCE_CAP
+	// controlled_cap (recoil/click sources) is a top-up ceiling: it can add drift up to the cap but must never clamp away
+	// drift the parent already built from movement, otherwise firing would become a free brake / reverse exploit.
+	var/effective_cap = isnull(controlled_cap) ? INERTIA_FORCE_CAP : max(drift_force, controlled_cap)
 	drift_force = clamp(uncapped_force, 0, effective_cap)
 	if(drift_force < 0.1)
 		qdel(src)
 		return TRUE
+	report_cruise(controlled_cap)
 
 	drifting_loop.set_angle(delta_to_angle(force_x, force_y))
 	var/rate_loop_delay = get_loop_delay(parent)
@@ -107,6 +140,7 @@
 			drifting_loop.pause_for(pause_time)
 		else
 			SSnewtonian_movement.fire_moveloop(drifting_loop)
+	refresh_pilot_alert()
 	return TRUE
 
 /datum/drift_handler/proc/moveloop_began()
@@ -144,6 +178,8 @@
 	parent.last_drift_time = world.time
 	parent.setDir(old_dir)
 	parent.inertia_moving = FALSE
+	if(!drifting_loop)
+		return
 	if(parent.Process_Spacemove(angle2dir(drifting_loop.angle), continuous_move = TRUE))
 		glide_to_halt(visual_delay)
 		return
@@ -176,6 +212,12 @@
 		return
 	if(ignore_next_glide)
 		ignore_next_glide = FALSE
+		return
+	// Defer the drift at most once per loop cycle. A held thrust/move key fires a glide update on every step
+	// (vehicle_move's set_glide_size, plus Move()'s glide_size_override from step()); re-pausing on each one keeps
+	// shoving the loop's next fire past the key-repeat interval, so the drift never advances and the mech "freezes"
+	// in place until the key is released. before_move clears `delayed` on every real fire, so this self-resets.
+	if(delayed)
 		return
 	var/glide_delay = round(world.icon_size / max(glide_size, 1), 1) * world.tick_lag
 	drifting_loop.pause_for(glide_delay)

@@ -27,6 +27,7 @@
 		"Chief of Security",
 		"Chief Security Officer",
 		"Commander of the Guard",
+		"Commissioner of Security",
 		"Division Leader",
 		"Head of Slutcurity",
 		"Head of Studcurity",
@@ -110,13 +111,14 @@
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 	l_pocket = /obj/item/assembly/flash/handheld
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec)
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/syndicate_uplink_high=1, /obj/item/restraints/handcuffs)
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1,/obj/item/syndicate_uplink/station=1, /obj/item/restraints/handcuffs)
 
 /datum/outfit/job/hos/hardsuit
 	name = "Head of Security (Hardsuit)"

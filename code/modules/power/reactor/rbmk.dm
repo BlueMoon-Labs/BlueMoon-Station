@@ -665,6 +665,7 @@ BLUEMOON REMOVAL END */
 
 /obj/machinery/computer/reactor/stats
 	name = "Reactor Statistics Console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "A console for monitoring the statistics of a nuclear reactor."
 	icon_screen = "rbmk_stats"
 	var/next_stat_interval = 0

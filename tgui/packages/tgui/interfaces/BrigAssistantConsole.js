@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, NoticeBox, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const BrigAssistantConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BrigAssistantConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     wanted = [],
     remove = [],

@@ -2149,12 +2149,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -3079,12 +3077,8 @@
 /turf/open/floor/plasteel,
 /area/construction)
 "IV" = (
-/obj/docking_port/stationary{
-	dir = 1;
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)
@@ -3477,7 +3471,7 @@
 /turf/open/floor/plasteel,
 /area/service/bar)
 "Sj" = (
-/obj/structure/table/optable,
+/obj/structure/table/optable/loaded,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},

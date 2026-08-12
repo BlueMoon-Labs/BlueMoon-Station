@@ -69,6 +69,11 @@
 	description = "<span class='inteqradio'>Оружие и тело двигаются как единый механизм! В бой!</span>\n"
 	mood_change = 50 //А кто сказал что странный психостимулятор не меняет восприятие мира?
 
+/datum/mood_event/badass_antag
+	description = "<span class='nicegreen'>I'm a fucking badass and everyone around me knows it.</span>\n"
+	mood_change = 8
+	hidden = TRUE
+
 /datum/mood_event/revolution
 	description = "<span class='nicegreen'>НАШЕ ДЕЛО ПРАВОЕ! ПОБЕДА БУДЕТ ЗА РЕВОЛЮЦИЕЙ!</span>\n"
 	mood_change = 3

@@ -6,6 +6,14 @@
 	dirt_buildup_allowed = FALSE
 
 	initial_temperature = TCMB
+	// Собственная температура турфа тоже обязана быть космической. Обычным турфам
+	// её выставляет /turf/Initialize() из initial_temperature, но у космоса свой
+	// Initialize без вызова родителя - значение по умолчанию (T20C) оставалось
+	// навсегда. Пока /turf/return_temperature() был пустой заглушкой эпохи
+	// auxmos, этого никто не видел; с живым проком тёплый вар начали читать
+	// get_temperature() мобов (isspaceturf-ветка) и теплообмен - "космос тёплый",
+	// слаймы и фауна перестали замерзать в открытом космосе.
+	temperature = TCMB
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	wave_explosion_multiply = EXPLOSION_DAMPEN_SPACE
@@ -41,7 +49,12 @@
 	if(!space_gas)
 		space_gas = new
 	air = space_gas
-	update_air_ref(0)
+	// Fresh mapload space has never been registered with SSair. Removing every
+	// default space turf from both atmos lists here used to do two no-op list
+	// searches almost a million times during world startup. Keep the existing
+	// runtime path unchanged; ChangeTurf may initialize a turf after SSair is live.
+	if(!mapload)
+		update_air_ref(0)
 	vis_contents.Cut() //removes inherited overlays
 	visibilityChanged()
 
@@ -196,7 +209,16 @@
 
 		var/atom/movable/pulling = A.pulling
 		var/atom/movable/puller = A
+		// Перенос через край - продолжение того же полёта, а не новый шаг. Без флага вложенный
+		// forceMove приходит в Moved() с нулевым направлением, а нулевое направление в
+		// newtonian_move означает "остановись" - обработчик дрейфа глох на каждой смене уровня.
+		// Флаг обязательно возвращаем на место: раньше он оставался взведённым навсегда, Moved()
+		// после этого больше никогда не звал newtonian_move, и полёт выглядел так, будто
+		// стабилизация включена намертво (баг-репорт 29.07.2026).
+		var/was_inertia_moving = A.inertia_moving
+		A.inertia_moving = TRUE
 		A.forceMove(DT)
+		A.inertia_moving = was_inertia_moving
 
 		while (pulling != null)
 			var/next_pulling = pulling.pulling
@@ -214,8 +236,11 @@
 
 		//now we're on the new z_level, proceed the space drifting
 		stoplag()//Let a diagonal move finish, if necessary
-		A.newtonian_move(A.inertia_dir)
-		A.inertia_moving = TRUE
+		// Плавный дрейф переживает смену z сам: smooth_move берёт z из самого движимого.
+		// Голый вызов доливал по единице силы на каждом переходе, и путешествие через
+		// несколько уровней само по себе разгоняло. Он нужен только легаси-пути без обработчика.
+		if(!A.drift_handler)
+			A.newtonian_move(A.inertia_dir)
 
 
 /turf/open/space/Exited(atom/movable/AM, atom/OldLoc)
@@ -223,7 +248,7 @@
 	var/turf/old = get_turf(OldLoc)
 	if(!isspaceturf(old) && ismob(AM))
 		var/mob/M = AM
-		M.update_gravity(M.mob_has_gravity())
+		M.refresh_gravity()
 
 /turf/open/space/MakeSlippery(wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)
 	return

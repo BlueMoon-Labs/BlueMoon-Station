@@ -141,6 +141,7 @@
 			"belly_name" = selected.name,
 			"is_wet" = selected.is_wet,
 			"wet_loop" = selected.wet_loop,
+			"can_victim_see" = selected.can_victim_see,
 			"mode" = selected.digest_mode,
 			"verb" = selected.vore_verb,
 			"desc" = selected.desc,
@@ -222,7 +223,7 @@
 			if(host.vore_organs.len >= BELLIES_MAX)
 				return FALSE
 
-			var/new_name = html_encode(input(usr,"New belly's name:","New Belly") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"New belly's name:","New Belly") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
@@ -496,7 +497,7 @@
 	var/attr = params["attribute"]
 	switch(attr)
 		if("b_name")
-			var/new_name = html_encode(input(usr,"Belly's new name:","New Name") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"Belly's new name:","New Name") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
@@ -520,6 +521,12 @@
 			. = TRUE
 		if("b_wetloop")
 			host.vore_selected.wet_loop = !host.vore_selected.wet_loop
+			. = TRUE
+		if("b_can_victim_see")
+			var/obj/belly/belly = host.vore_selected
+			belly.can_victim_see = !belly.can_victim_see
+			for(var/mob/living/L in belly.contents)
+				belly.set_blinding(L)
 			. = TRUE
 		if("b_mode")
 			var/list/menu_list = host.vore_selected.digest_modes.Copy()

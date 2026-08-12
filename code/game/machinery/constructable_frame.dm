@@ -7,6 +7,14 @@
 	var/obj/item/circuitboard/machine/circuit = null
 	var/state = 1
 
+// Плата физически лежит в contents фрейма, и её удалит /atom/movable/Destroy - здесь
+// только снимаем ссылку. qdel'ить нельзя: сборка машины (state 3, отвёртка) перекладывает
+// плату в новую машину, но circuit у фрейма остаётся указывать на неё, и удаление здесь
+// снесло бы плату уже собранной машины.
+/obj/structure/frame/Destroy()
+	circuit = null
+	return ..()
+
 /obj/structure/frame/examine(user)
 	. = ..()
 	if(circuit)
@@ -32,6 +40,14 @@
 	var/list/components = null
 	var/list/req_components = null
 	var/list/req_component_names = null // user-friendly names of components
+
+// Те же правила, что и у родителя: детали живут в contents (или уже переехали в собранную
+// машину / на пол через deconstruct), поэтому списки только обнуляем, ничего не удаляя.
+/obj/structure/frame/machine/Destroy()
+	components = null
+	req_components = null
+	req_component_names = null
+	return ..()
 
 /obj/structure/frame/machine/examine(user)
 	. = ..()

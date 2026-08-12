@@ -31,7 +31,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/image/ghostimage_simple = null //this mob with the simple white ghost sprite
 	var/ghostvision = 1 //is the ghost able to see things humans can't?
 	var/mob/observetarget = null	//The target mob that the ghost is observing. Used as a reference in logout()
-	var/ghost_hud_enabled = 1 //did this ghost disable the on-screen HUD?
 	var/data_huds_on = 0 //Are data HUDs currently enabled?
 	var/health_scan = FALSE //Are health scans currently enabled?
 	var/list/datahuds = list(DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC_ADVANCED) //list of data HUDs shown to ghosts.
@@ -160,6 +159,9 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/Destroy()
+	// Initialize() starts an infinite floating animation. End it with a real
+	// zero-time animation so BYOND releases its internal reference on qdel.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	//BLUEMOON ADD проверяем клиента на все болячки и ссылаем его в лобби при наличии его в госте или удаляем сикей, чтобы при заходе его отправило в лобби (fix undeleting ghosts)
 	if(client)
 		transfer_to_lobby()
@@ -216,6 +218,12 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
+	// Обнуление mind ДО ..() съедало проверку `if(mind?.current == src)` в /mob/Destroy:
+	// родитель видел уже пустой mind и не звал set_current(null), так что mind.current
+	// навсегда указывал на удалённого обсервера. Разумы живут в SSticker.minds весь
+	// раунд - это ровно те хардделы гостов с одной ссылкой (раунд 9813, 10 штук).
+	if(mind?.current == src)
+		mind.set_current(null)
 	mind = null
 	return ..()
 
@@ -386,7 +394,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(stat == DEAD || sig_flags & COMPONENT_FREE_GHOSTING)
 		ghostize(1)
 	else
-		var/response = alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)","Are you sure you want to ghost?","Ghost","Stay in body")
+		var/response = tgui_alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)", "Are you sure you want to ghost?", list("Ghost", "Stay in body"))
 		if(response != "Ghost")
 			return	//didn't want to ghost after-all
 		if(istype(loc, /obj/machinery/cryopod))
@@ -422,7 +430,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(sig_flags & COMPONENT_FREE_GHOSTING)
 		ghostize(1)
 	else
-		var/response = alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)","Are you sure you want to ghost?","Ghost","Stay in body")
+		var/response = tgui_alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)", "Are you sure you want to ghost?", list("Ghost", "Stay in body"))
 		if(response != "Ghost")
 			return
 		ghostize(0, penalize = TRUE)
@@ -465,10 +473,18 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "<span class='warning'>Another consciousness is in your body...It is resisting you.</span>")
 		return
 	client.view_size.setDefault(getScreenSize(client.prefs.widescreenpref))//Let's reset so people can't become allseeing gods
-	transfer_ckey(mind.current, FALSE)
-	SStgui.on_transfer(src, mind.current) // Transfer NanoUIs.
-	mind.current.client.init_verbs()
-	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures
+	return do_reenter_corpse()
+
+/// Ядро возврата в тело. Вербы проверяют входные условия, здесь только сам перенос.
+/mob/dead/observer/proc/do_reenter_corpse()
+	// После transfer_ckey() Logout() призрака ставит spawn(0) qdel(src), который успевает
+	// сработать до возврата сюда: Destroy() зануляет mind. Поэтому тело кешируем заранее,
+	// tgui переносим до переноса ключа (как в tg), а src после переноса не трогаем.
+	var/mob/living/body = mind.current
+	SStgui.on_transfer(src, body) // Transfer NanoUIs.
+	transfer_ckey(body, FALSE)
+	body.client?.init_verbs()
+	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures; no-op, если Logout уже удалил призрака
 	return TRUE
 
 /mob/dead/observer/verb/stay_dead()
@@ -630,9 +646,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		var/list/views = list()
 		for(var/i in 7 to max_view)
 			views |= i
-		var/new_view = input("Choose your new view", "Modify view range", 0) as null|anything in views
+		// tgui вместо нативного input: BYOND держит нативный промпт (и фрейм с ним)
+		// до ответа даже после дисконнекта - брошенный диалог вечно пинит призрака
+		var/new_view = tgui_input_list(src, "Choose your new view", "Modify view range", views)
 		if(new_view)
-			client.view_size.setTo(clamp(new_view, 7, max_view) - 7)
+			client?.view_size.setTo(clamp(new_view, 7, max_view) - 7)
 	else
 		client.view_size.resetToDefault()
 
@@ -669,11 +687,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/verb/toggle_ghostsee()
 	set name = "Toggle Ghost Vision"
-	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts"
+	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts."
 	set category = "Ghost"
 	ghostvision = !(ghostvision)
 	update_sight()
-	to_chat(usr, "You [(ghostvision?"now":"no longer")] have ghost vision.")
+	to_chat(usr, span_notice("You [(ghostvision?"now":"no longer")] have ghost vision."))
+
+/mob/dead/observer/verb/toggle_self_sprite()
+	set name = "Toggle Ghost Sprite"
+	set desc = "Делает ваш спрайт прозрачным (остальные все еще будут видеть вашего призрака)."
+	set category = "Ghost"
+
+	var/const/key_name = "self_ghost_invisible"
+	var/msg
+	if(!remove_alt_appearance(key_name))
+		var/image/I = image(loc = src)
+		I.appearance = mutable_appearance()
+		I.override = TRUE
+		add_alt_appearance(/datum/atom_hud/alternate_appearance/basic, key_name, I)
+		msg = "Ваш спрайт стал прозрачным для вас, но остальные все ещё будут его видеть."
+	else
+		msg = "Вы снова видите свой спрайт."
+	to_chat(usr, span_notice(msg))
 
 /mob/dead/observer/verb/toggle_darkness()
 	set name = "Toggle Darkness"
@@ -691,7 +726,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	update_sight()
 
 /mob/dead/observer/update_sight(forced = TRUE)
-	if(client)
+	if(client?.prefs)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 
 	if (!ghostvision)
@@ -745,9 +780,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		if(!(L in GLOB.player_list) && !L.mind)
 			possessible += L
 
-	var/mob/living/target = input("Your new life begins today!", "Possess Mob", null, null) as null|anything in possessible
+	var/mob/living/target = tgui_input_list(src, "Your new life begins today!", "Possess Mob", possessible)
 
-	if(!target)
+	if(!target || QDELETED(target))
 		return FALSE
 
 	if(ismegafauna(target))
@@ -755,7 +790,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return FALSE
 
 	if(can_reenter_corpse && mind && mind.current)
-		if(alert(src, "Your soul is still tied to your former life as [mind.current.name], if you go forward there is no going back to that life. Are you sure you wish to continue?", "Move On", "Yes", "No") == "No")
+		if(tgui_alert(src, "Your soul is still tied to your former life as [mind.current.name], if you go forward there is no going back to that life. Are you sure you wish to continue?", "Move On", list("Yes", "No")) != "Yes")
 			return FALSE
 	if(target.key)
 		to_chat(src, "<span class='warning'>Someone has taken this body while you were choosing!</span>")
@@ -913,13 +948,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				remove_verb(src, /mob/dead/observer/verb/possess)
 
 /mob/dead/observer/reset_perspective(atom/A)
-	if(client)
-		if(ismob(client.eye) && (client.eye != src))
-			var/mob/target = client.eye
-			observetarget = null
-			if(target.observers)
-				target.observers -= src
-				UNSETEMPTY(target.observers)
+	// Отвязываемся по observetarget, а не по client.eye. Прежнее условие требовало, чтобы
+	// eye всё ещё был мобом и не был нами самими, а к моменту сброса вида eye мог уже уехать
+	// на турф, на самого госта или обнулиться - тогда прежняя цель навсегда оставалась с
+	// записью о нас в observers. observetarget - единственная авторитетная запись о связи,
+	// и снимать её надо независимо от наличия клиента.
+	if(observetarget)
+		var/mob/previous_target = observetarget
+		observetarget = null
+		if(previous_target.observers)
+			previous_target.observers -= src
+			UNSETEMPTY(previous_target.observers)
 	if(..())
 		if(hud_used)
 			client.clear_screen()
@@ -935,7 +974,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	var/eye_name = null
 
-	eye_name = input("Please, select a player!", "Observe", null, null) as null|anything in creatures
+	eye_name = tgui_input_list(src, "Please, select a player!", "Observe", creatures)
 
 	if (!eye_name)
 		return
@@ -943,8 +982,19 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	do_observe(creatures[eye_name])
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
+	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,
+	// которую не снимет ни reset_perspective, ни Logout, ни Destroy.
+	if(mob_eye == src)
+		return
 	//Istype so we filter out points of interest that are not mobs
 	if(client && mob_eye && istype(mob_eye))
+		// Отвязка от прошлой цели: путь toggle_observe зовёт do_observe без
+		// reset_perspective, иначе мы навечно остаёмся в observers старой цели.
+		if(observetarget && observetarget != mob_eye)
+			// Канарейка как у tg: любой путь, попавший сюда, раньше стрэндил госта
+			// в observers старой цели (класс утечек обсерверов). Лечим, но логируем.
+			stack_trace("do_observe у [src] при уже занятой цели (была: [observetarget], новая: [mob_eye])")
+			reset_perspective(null)
 		client.eye = mob_eye
 		if(mob_eye.hud_used)
 			client.clear_screen()

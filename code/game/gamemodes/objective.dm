@@ -24,9 +24,12 @@ GLOBAL_LIST_EMPTY(objectives)
 
 /datum/objective/Destroy(force, ...)
 	GLOB.objectives -= src
-	if(owner)
-		for(var/datum/antagonist/A in owner.antag_datums)
-			A.objectives -= src
+	//отвязка шла только по текущему owner: цель, которой owner переназначили до
+	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
+	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
+	//Идём по фактическим держателям, а не по одному предполагаемому.
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+		holder.objectives -= src
 	if(team)
 		team.objectives -= src
 	. = ..()
@@ -86,11 +89,36 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/check_midround_completion()
 	return check_completion()
 
+/proc/bm_assassinate_target_eliminated(datum/mind/M)
+	if(!M)
+		return FALSE
+	var/mob/current = M.current
+	if(!current)
+		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
+		// rerolled by cryo_handle_objectives() before their body is deleted.
+		return TRUE
+	if(isobserver(current))
+		return TRUE
+	if(isbrain(current))
+		var/mob/living/brain/B = current
+		if(B.onCentCom() || B.onSyndieBase())
+			return FALSE // мозг спасён и доставлен на ЦК — цель провалена
+		return B.stat == DEAD
+	if(isliving(current))
+		var/mob/living/L = current
+		return L.stat == DEAD
+	return FALSE
+
 /datum/objective/proc/is_unique_objective(possible_target)
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/M in owners)
 		for(var/datum/objective/O in M.get_all_objectives()) //This scope is debatable, probably should be passed in by caller.
-			if(istype(O, type) && O.get_target() == possible_target)
+			if(O.get_target() != possible_target)
+				continue
+			if(istype(O, type))
+				return FALSE
+			// Убийство (once) и уничтожение (assassinate) — разные подтипы, но одна цель недопустима.
+			if(istype(src, /datum/objective/assassinate) && istype(O, /datum/objective/assassinate))
 				return FALSE
 	return TRUE
 
@@ -116,7 +144,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(O.late_joiner)
 			try_target_late_joiners = TRUE
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role())
 			if(!(possible_target in blacklist))
 				// BLUEMOON ADD START - если персонаж сверхтяжёлый и установлена настройка, что сверхтяжёлые персонажи не могут быть по заданию, персонажа не добавляет в пулл
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
@@ -140,7 +168,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/find_target_by_role(role, role_type=0, invert=0)//Option sets either to check assigned role or special role. Default to assigned., invert inverts the check, eg: "Don't choose a Ling"
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role())
 			var/is_role = 0
 			if(role_type)
 				if(possible_target.special_role == role)
@@ -188,11 +216,23 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	target_amount = rand(2,6)
 	return target
 
+/datum/objective/assassinate/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			var/datum/mind/conflict_target = obj.get_target()
+			if(!conflict_target)
+				continue
+			if(istype(obj, /datum/objective/protect) || istype(obj, /datum/objective/assassinate))
+				blacklist |= conflict_target
+	return ..(dupe_search_range, blacklist)
+
 /datum/objective/assassinate/check_completion()
-	return FALSE || ..()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
 
 /datum/objective/assassinate/check_midround_completion()
-	return FALSE
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/assassinate/update_explanation_text()
 	..()
@@ -238,6 +278,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	..()
 	if(target && !target.current)
 		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Уничтожь эту цель! Кто бы это не был, эта станция будет ему могилой."
+
+/datum/objective/assassinate/internal/check_completion()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
+
+/datum/objective/assassinate/internal/check_midround_completion()
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/mutiny
 	name = "mutiny"
@@ -337,6 +383,15 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	..()
 	return target
 
+/datum/objective/protect/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/assassinate) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
+
 /datum/objective/protect/check_completion()
 	return !target || considered_alive(target, enforce_human = human_check)
 
@@ -373,6 +428,10 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(!considered_alive(M) || !SSshuttle.emergency.shuttle_areas[get_area(M.current)])
 			return FALSE
 	return SSshuttle.emergency.is_hijacked()
+
+/datum/objective/hijack/syndicate
+	name = "hijack syndicate"
+	explanation_text = "Захватите аварийный шаттл, взломав его навигационные протоколы через консоль управления (ALT-ЛКМ по консоли аварийного шаттла)! Отведите уцелевших на Синди-Аванпост."
 
 /datum/objective/block
 	name = "no organics on shuttle"

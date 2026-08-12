@@ -34,7 +34,7 @@ Nothing else in the console has ID requirements.
 	req_access = list(ACCESS_TOX)	//lA AND SETTING MANIPULATION REQUIRES SCIENTIST ACCESS.
 
 	var/locked = FALSE
-	var/id_cache = list()
+	var/list/id_cache = list()
 	var/id_cache_seq = 1
 	var/compact = TRUE
 
@@ -362,6 +362,7 @@ Nothing else in the console has ID requirements.
 		var/size = spritesheet.icon_size_id(design.id)
 		design_cache[compressed_id] = list(
 			design.name,
+			design.hacked_only,
 			"[size == size32x32 ? "" : "[size] "][design.id]"
 		)
 
@@ -422,15 +423,9 @@ Nothing else in the console has ID requirements.
 			var/slot = text2num(params["slot"])
 			var/datum/design/design = SSresearch.techweb_design_by_id(params["selectedDesign"])
 			if(design)
-				var/autolathe_friendly = TRUE
-				if(design.reagents_list.len)
-					autolathe_friendly = FALSE
+				var/autolathe_friendly = design.is_autolathe_compatible()
+				if(!autolathe_friendly)
 					design.category -= "Imported"
-				else
-					for(var/material in design.materials)
-						if( !(material in list(/datum/material/iron, /datum/material/glass)))
-							autolathe_friendly = FALSE
-							design.category -= "Imported"
 
 				if(design.build_type & (AUTOLATHE|PROTOLATHE)) // Specifically excludes circuit imprinter and mechfab
 					design.build_type = autolathe_friendly ? (design.build_type | AUTOLATHE) : design.build_type

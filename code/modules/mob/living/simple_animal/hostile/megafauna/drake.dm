@@ -33,8 +33,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/dragon
 	name = "ash drake"
 	desc = "Guardians of the necropolis."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	spacewalk = TRUE
 	attack_verb_continuous = "chomps"
 	attack_verb_simple = "chomp"
@@ -47,8 +47,8 @@ Difficulty: Medium
 	friendly_verb_simple = "stare down"
 	speak_emote = list("roars")
 	armour_penetration = 40
-	melee_damage_lower = 40
-	melee_damage_upper = 40
+	melee_damage_lower = 50
+	melee_damage_upper = 50
 	speed = 1
 	move_to_delay = 5
 	ranged = 1
@@ -99,10 +99,6 @@ Difficulty: Medium
 	if(!swooping)
 		..()
 
-/mob/living/simple_animal/hostile/megafauna/dragon/Goto(target, delay, minimum_distance)
-	if(!swooping)
-		..()
-
 /mob/living/simple_animal/hostile/megafauna/dragon/OpenFire()
 	if(swooping)
 		return
@@ -146,12 +142,12 @@ Difficulty: Medium
 		if(!range || (J != previousturf && (!previousturf.atmos_adjacent_turfs || !previousturf.atmos_adjacent_turfs[J])))
 			break
 		range--
-		new /obj/effect/hotspot(J)
+		J.ensure_hotspot()
 		J.hotspot_expose(700,50,1)
 		for(var/mob/living/L in J.contents - hit_things)
 			if(istype(L, /mob/living/simple_animal/hostile/megafauna/dragon))
 				continue
-			L.adjustFireLoss(20)
+			L.adjustFireLoss(28)
 			to_chat(L, "<span class='userdanger'>You're hit by the drake's fire breath!</span>")
 			hit_things += L
 		previousturf = J
@@ -166,7 +162,7 @@ Difficulty: Medium
 	if(stat || swooping)
 		return
 	if(manual_target)
-		target = manual_target
+		GiveTarget(manual_target)
 	if(!target)
 		return
 	swoop_cooldown = world.time + 200
@@ -205,8 +201,8 @@ Difficulty: Medium
 	sleep(7)
 	var/list/flame_hit = list()
 	while(swoop_duration > 0)
-		if(!target && !FindTarget())
-			break //we lost our target while chasing it down and couldn't get a new one
+		if(!target)
+			break //we lost our target while chasing it down; the controller reacquires after the swoop
 		if(swoop_duration < 7)
 			fire_rain = FALSE //stop raining fire near the end of the swoop
 		if(loc == get_turf(target))
@@ -250,7 +246,7 @@ Difficulty: Medium
 			visible_message("<span class='warning'>[src] slams down on [L], crushing [L.ru_na()]!</span>")
 			L.gib()
 		else
-			L.adjustBruteLoss(75)
+			L.adjustBruteLoss(95)
 			if(L && !QDELETED(L)) // Some mobs are deleted on death
 				var/throw_dir = get_dir(src, L)
 				if(L.loc == loc)
@@ -382,7 +378,7 @@ Difficulty: Medium
 	for(var/turf/T in turfs)
 		if(istype(T, /turf/closed))
 			break
-		new /obj/effect/hotspot(T)
+		T.ensure_hotspot()
 		T.hotspot_expose(700,50,1)
 		for(var/mob/living/L in T.contents)
 			if(L in hit_list || L == source)

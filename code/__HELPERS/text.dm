@@ -113,6 +113,47 @@
 	if(non_whitespace)
 		return text		//only accepts the text if it has some non-spaces
 
+/// Removes the ASCII C0 control characters and DEL (0x7F) from `text`, EXCEPT tab,
+/// line feed and carriage return (0x09/0x0A/0x0D). The kept whitespace has proper
+/// JSON escapes and round-trips fine; the rest of the C0 range can only be escaped
+/// as \uXXXX, which the DM<->TGUI json/topic bridge does not reliably preserve, so
+/// any value TGUI echoes back as a lookup key (such as a custom emote panel name)
+/// is silently corrupted by them. Multi-byte Unicode (e.g. Cyrillic) is preserved.
+/// Returns the cleaned text.
+/proc/strip_control_chars(text)
+	if(!length(text))
+		return text
+	var/lenbytes = length(text)
+	var/char = ""
+	var/list/cleaned = list()
+	for(var/i = 1, i <= lenbytes, i += length(char))
+		char = text[i]
+		var/ascii = text2ascii(char)
+		if((ascii < 32 && ascii != 9 && ascii != 10 && ascii != 13) || ascii == 127)
+			continue
+		cleaned += char
+	return jointext(cleaned, "")
+
+/// Rebuilds a flat associative list with control characters stripped from every
+/// text key, so saved data keyed by user text cannot be made permanently
+/// unmatchable/undeletable by a control character that breaks the DM<->TGUI or
+/// savefile round-trip. Entries whose key cleans to empty, or collides with an
+/// already-cleaned key, are dropped (first one wins). Non-text keys (e.g. typepaths)
+/// pass through untouched. Returns a list.
+/proc/sanitize_assoc_keys(list/input)
+	if(!islist(input))
+		return list()
+	var/list/cleaned = list()
+	for(var/key in input)
+		if(!istext(key))
+			cleaned[key] = input[key]
+			continue
+		var/clean_key = strip_control_chars(key)
+		if(!length(clean_key) || (clean_key in cleaned))
+			continue
+		cleaned[clean_key] = input[key]
+	return cleaned
+
 /// html_encode that keeps " and ' as raw readable characters (safe in HTML
 /// text contexts). Dangerous chars (<, >, &) remain encoded. Use for free-form
 /// user-entered text displayed in chat, names, flavor descriptions, etc.
@@ -124,6 +165,9 @@
 /proc/finalize_stripped_input(name, max_length, no_trim)
 	if(isnull(name))
 		return null
+	// Control characters survive html_encode but cannot round-trip through the
+	// DM<->TGUI/json bridge or savefile keys - strip them at the source.
+	name = strip_control_chars(name)
 	name = html_encode_readable(name)
 	//trim is "outside" because html_encode can expand single symbols into multiple symbols (such as turning < into &lt;)
 	return no_trim ? copytext(name, 1, max_length) : trim(name, max_length)
@@ -131,11 +175,25 @@
 // Used to get a properly sanitized input, of max_length
 // no_trim is self explanatory but it prevents the input from being trimed if you intend to parse newlines or whitespace.
 /proc/stripped_input(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
-	return finalize_stripped_input(input(user, message, title, default) as text|null, max_length, no_trim)
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/user_input = input(user, message, title, default) as text|null
+	end_native_prompt(prompt_mob)
+	return finalize_stripped_input(user_input, max_length, no_trim)
+
+/**
+  * stripped_input but reflects to the user instead if it's too big and returns null.
+  */
+/proc/stripped_input_or_reflect(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/user_input = input(user, message, title, default) as text|null
+	end_native_prompt(prompt_mob)
+	return stripped_text_or_reflect(user, user_input, max_length, no_trim)
 
 // Used to get a properly sanitized multiline input, of max_length
 /proc/stripped_multiline_input(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
 	var/name = input(user, message, title, default) as message|null
+	end_native_prompt(prompt_mob)
 	if(isnull(name)) // Return null if canceled.
 		return null
 	return finalize_stripped_input(name, max_length, no_trim)
@@ -144,14 +202,53 @@
   * stripped_multiline_input but reflects to the user instead if it's too big and returns null.
   */
 /proc/stripped_multiline_input_or_reflect(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
 	var/name = input(user, message, title, default) as message|null
-	if(isnull(name)) // Return null if canceled.
+	end_native_prompt(prompt_mob)
+	return stripped_text_or_reflect(user, name, max_length, no_trim)
+
+/proc/stripped_text_or_reflect(mob/user, message = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	if(!length(message)) // Return null if canceled.
 		return null
-	if(length(name) > max_length)
-		to_chat(user, name)
-		to_chat(user, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^</span>")
+	if(length(message) > max_length)
+		reflect_discarded_message(user, message, max_length)
 		return null
-	return finalize_stripped_input(name, max_length, no_trim)
+	return finalize_stripped_input(message, max_length, no_trim)
+
+/// Echoes a rejected over-long message back so the sender can copy it out, then explains
+/// why it was dropped. The echo is always encoded: it is raw player text going straight
+/// into a chat window, so an unencoded copy would let the sender inject markup at himself.
+/proc/reflect_discarded_message(mob/user, message, max_length)
+	to_chat(user, html_encode(message))
+	to_chat(user, span_danger("^^^----- The preceding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
+
+/// Length guard for text whose sink sanitizes on its own - say() and whisper() call
+/// sanitize() internally, so encoding here as well would escape the message twice
+/// ("<" -> "&lt;" -> "&amp;lt;") and the player would read literal entities in chat.
+/// Control characters are still stripped, since those survive html_encode() and break
+/// the DM<->TGUI round-trip. Returns null when there is nothing left to send.
+/proc/raw_text_or_reflect(mob/user, message = "", max_length = MAX_MESSAGE_LEN)
+	if(!length(message)) // Return null if canceled.
+		return null
+	message = strip_control_chars(message)
+	if(!length(message))
+		return null
+	if(length(message) > max_length)
+		reflect_discarded_message(user, message, max_length)
+		return null
+	return message
+
+/// raw_text_or_reflect() fed by a native BYOND prompt, for callers that must not encode.
+/// multiline picks `as message` over `as text`, matching stripped_multiline_input().
+/proc/raw_input_or_reflect(mob/user, message = "", title = "", default = "", max_length = MAX_MESSAGE_LEN, multiline = FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/user_input
+	if(multiline)
+		user_input = input(user, message, title, default) as message|null
+	else
+		user_input = input(user, message, title, default) as text|null
+	end_native_prompt(prompt_mob)
+	return raw_text_or_reflect(user, user_input, max_length)
 
 #define NO_CHARS_DETECTED 0
 #define SPACES_DETECTED 1

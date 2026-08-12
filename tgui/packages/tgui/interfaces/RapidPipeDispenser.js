@@ -1,6 +1,7 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, ColorBox, Flex, LabeledList, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -19,21 +20,6 @@ const ICON_BY_CATEGORY_NAME = {
   'Devices': 'microchip',
   'Heat Exchange': 'thermometer-half',
   'Station Equipment': 'microchip',
-};
-
-const PAINT_COLORS = {
-  grey: '#bbbbbb',
-  amethyst: '#a365ff',
-  blue: '#4466ff',
-  brown: '#b26438',
-  cyan: '#48eae8',
-  dark: '#808080',
-  green: '#1edd00',
-  orange: '#ffa030',
-  purple: '#b535ea',
-  red: '#ff3333',
-  violet: '#6e00f6',
-  yellow: '#ffce26',
 };
 
 const TOOLS = [
@@ -55,12 +41,13 @@ const TOOLS = [
   },
 ];
 
-export const RapidPipeDispenser = (props, context) => {
-  const { act, data } = useBackend(context);
+export const RapidPipeDispenser = (props) => {
+  const { act, data } = useBackend();
   const {
     category: rootCategoryIndex,
     categories = [],
     selected_color,
+    paint_colors = {},
     piping_layer,
     mode,
   } = data;
@@ -68,7 +55,7 @@ export const RapidPipeDispenser = (props, context) => {
   const [
     categoryName,
     setCategoryName,
-  ] = useLocalState(context, 'categoryName');
+  ] = useState();
   const shownCategory = categories
     .find(category => category.cat_name === categoryName)
     || categories[0];
@@ -108,15 +95,15 @@ export const RapidPipeDispenser = (props, context) => {
               <Box
                 inline
                 width="64px"
-                color={PAINT_COLORS[selected_color]}>
+                color={paint_colors[selected_color]}>
                 {selected_color}
               </Box>
-              {Object.keys(PAINT_COLORS)
+              {Object.keys(paint_colors)
                 .map(colorName => (
                   <ColorBox
                     key={colorName}
                     ml={1}
-                    color={PAINT_COLORS[colorName]}
+                    color={paint_colors[colorName]}
                     onClick={() => act('color', {
                       paint_color: colorName,
                     })} />
@@ -129,7 +116,7 @@ export const RapidPipeDispenser = (props, context) => {
             <Section>
               {rootCategoryIndex === 0 && (
                 <Box mb={1}>
-                  {[1, 2, 3].map(layer => (
+                  {[1, 2, 3, 4, 5].map(layer => (
                     <Button.Checkbox
                       key={layer}
                       fluid

@@ -26,10 +26,10 @@
 
 /datum/antagonist/heretic/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)//subject to change
-	to_chat(owner, "<span class='boldannounce'>Ты Еретик!</span><br>\
+	to_chat(owner, "<span class='eldritch_big'>Ты Еретик!</span><br>\
 	<B>Забытые боги дали вам следующие задания:</B>")
 	owner.announce_objectives()
-	to_chat(owner, "<span class='cult'>Книга шепчет мне, её запретные знания вновь появились в этом мире!<br>\
+	to_chat(owner, "<span class='eldritch'>Книга шепчет мне, её запретные знания вновь появились в этом мире!<br>\
 	Книга позволит мне исследовать новые способности. Нужно читать очень внимательно, ибо то что сделано уже не вернуть!<br>\
 	Я получу нужные мне знания собирая их из разломов или принося в жертву цели которое укажет мне живое сердце.<br> \
 	Основное руководство : https://tgstation13.org/wiki/Heresy_101 </span>")
@@ -118,6 +118,17 @@
 	for(var/X in researched_knowledge)
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
 		EK.on_death(owner.current)
+
+/// Returns the heretic's codex whether it is carried or hidden via Summon Codex.
+/datum/antagonist/heretic/proc/get_forbidden_book()
+	var/mob/living/owner_mob = owner?.current
+	if(owner_mob)
+		for(var/obj/item/forbidden_book/FB in owner_mob.GetAllContents(/obj/item/forbidden_book))
+			return FB
+	for(var/obj/item/I in summon_items)
+		if(istype(I, /obj/item/forbidden_book))
+			return I
+	return null
 
 // needs to be refactored to base /datum/antagonist sometime..
 /datum/antagonist/heretic/proc/add_objective(datum/objective/O)

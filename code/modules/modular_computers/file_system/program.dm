@@ -25,7 +25,7 @@
 	var/requires_ntnet_feature = 0
 	/// NTNet status, updated every tick by computer running this program. Don't use this for checks if NTNet works, computers do that. Use this for calculations, etc.
 	var/ntnet_status = 1
-	/// Bitflags (PROGRAM_CONSOLE, PROGRAM_LAPTOP, PROGRAM_TABLET combination) or PROGRAM_ALL
+	/// Bitflags (PROGRAM_CONSOLE, PROGRAM_LAPTOP, PROGRAM_TABLET, PROGRAM_PDA combination) or PROGRAM_ALL
 	var/usage_flags = PROGRAM_ALL
 	/// Whether the program can be downloaded from NTNet. Set to FALSE to disable.
 	var/available_on_ntnet = TRUE
@@ -252,7 +252,7 @@
 
 				if(user && istype(user))
 					computer.ui_interact(user) // Re-open the UI on this computer. It should show the main screen now.
-
+				return TRUE
 
 /datum/computer_file/program/ui_host()
 	if(!computer)

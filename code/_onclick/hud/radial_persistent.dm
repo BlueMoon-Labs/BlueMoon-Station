@@ -42,7 +42,7 @@
 	set_choices(newchoices,tooltips)
 
 /datum/radial_menu/persistent/Destroy()
-	QDEL_NULL(select_proc_callback)
+	select_proc_callback = null //Колбек принадлежит вызывающему, не удалять
 	GLOB.radial_menus -= uniqueid
 	Reset()
 	hide()

@@ -164,6 +164,15 @@
 	if(master)
 		return
 
+	// Пока идёт отсчёт шаттла, меняется только вторая строка - короткий таймер вида
+	// "5:32". У короткой строки нет ни маски-фильтра, ни бесконечной анимации бегущей
+	// строки, поэтому весь оверлей-объект (qdel + new + vis_contents) пересоздавался
+	// ради одного maptext раз в секунду на каждом дисплее. Переписываем текст на месте:
+	// итоговый вид тот же - тот же maptext_y, тот же maptext_x = 0, тот же generate_text.
+	if(overlay && length_char(overlay.message) <= CHARS_PER_LINE && length_char(message) <= CHARS_PER_LINE)
+		overlay.set_centered_message(message)
+		return null
+
 	if(overlay)
 		qdel(overlay)
 
@@ -247,7 +256,7 @@
 			. += "\t<tt>[html_encode(message1_overlay.message)]</tt>"
 		if (message2_overlay.message)
 			. += "\t<tt>[html_encode(message2_overlay.message)]</tt>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 // Helper procs for child display types.
 /obj/machinery/status_display/proc/display_shuttle_status(obj/docking_port/mobile/shuttle)
@@ -319,6 +328,18 @@
 		// Centered text
 		maptext = generate_text(line, center = TRUE)
 		maptext_x = 0
+
+/**
+ * Переписывает текст короткой (центрированной) строки на месте.
+ *
+ * Вызывать можно только когда и старое, и новое сообщение укладываются в CHARS_PER_LINE:
+ * у длинной строки на объекте висят alpha_mask_filter и бесконечная animate() бегущей
+ * строки, которые здесь не снимаются.
+ */
+/obj/effect/overlay/status_display_text/proc/set_centered_message(line)
+	message = line
+	maptext = generate_text(line, center = TRUE)
+	maptext_x = 0
 
 /obj/effect/overlay/status_display_text/proc/generate_text(text, center)
 	return {"<div style="font-size:[FONT_SIZE];color:[FONT_COLOR];font:'[FONT_STYLE]'[center ? ";text-align:center" : ""]" valign="top">[text]</div>"}

@@ -27,7 +27,10 @@
 			return
 	/// Client does NOT have tgui_input on: Returns regular input
 	if(!user.client.prefs.tgui_input_mode && !strict_modern)
-		return input(user, message, title, default) as null|anything in items
+		var/mob/prompt_mob = begin_native_prompt(user)
+		var/native_answer = input(user, message, title, default) as null|anything in items
+		end_native_prompt(prompt_mob)
+		return native_answer
 	var/datum/tgui_list_input/input = new(user, message, title, items, default, timeout)
 	input.ui_interact(user)
 	input.wait()
@@ -103,7 +106,10 @@
  * the window was closed by the user.
  */
 /datum/tgui_list_input/proc/wait()
-	while (!choice && !closed)
+	//QDELETED обязателен: если open() отвалился до того, как SStgui выставил DF_HAS_OPEN_UI,
+	//то close_uis() выйдет сразу, ui_close() не отработает, closed останется FALSE - и цикл
+	//будет крутиться на уже удалённом датуме вечно. У alert/number/checkboxes гард есть.
+	while (!choice && !closed && !QDELETED(src))
 		stoplag(1)
 
 /datum/tgui_list_input/ui_interact(mob/user, datum/tgui/ui)

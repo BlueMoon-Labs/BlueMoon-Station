@@ -148,6 +148,12 @@
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
 
+/atom/movable/screen/fullscreen/scaled/bloodloss
+	icon_state = "passage"
+	layer = UI_DAMAGE_LAYER
+	plane = FULLSCREEN_PLANE
+	severity_max = 10
+
 /atom/movable/screen/fullscreen/scaled/crit
 	icon_state = "passage"
 	layer = CRIT_LAYER
@@ -185,6 +191,21 @@
 	icon = 'icons/mob/screen_gen.dmi'
 	screen_loc = "WEST,SOUTH to EAST,NORTH"
 	icon_state = "flash"
+
+/atom/movable/screen/fullscreen/flash
+	icon = 'icons/mob/screen_gen.dmi'
+	screen_loc = "WEST,SOUTH to EAST,NORTH"
+	icon_state = "flash"
+	layer = FLASH_LAYER
+
+/atom/movable/screen/fullscreen/flash/infernal
+	color = "#CC4400"
+	alpha = 200
+	blend_mode = BLEND_OVERLAY
+
+/atom/movable/screen/fullscreen/flash/infernal/SetSeverity(severity)
+	src.severity = severity
+	icon_state = initial(icon_state)
 
 /atom/movable/screen/fullscreen/tiled/flash/static
 	icon = 'icons/mob/screen_gen.dmi'

@@ -10,7 +10,7 @@
 	req_access = list(ACCESS_ROBOTICS)
 	state_open = TRUE
 	circuit = /obj/item/circuitboard/machine/cyborgrecharger
-	occupant_typecache = list(/mob/living/silicon/robot, /mob/living/carbon/human)
+	occupant_typecache = list(/mob/living/silicon/robot, /mob/living/carbon/human, /mob/living/silicon/pai)
 	var/recharge_speed
 	var/repairs
 
@@ -107,13 +107,13 @@
 
 /obj/machinery/recharge_station/open_machine()
 	. = ..()
-	if(iscyborg(occupant))
+	if(iscyborg(occupant) || ispAI(occupant))
 		use_power = IDLE_POWER_USE
 
 /obj/machinery/recharge_station/close_machine()
 	. = ..()
 	if(occupant)
-		if(iscyborg(occupant))
+		if(iscyborg(occupant) || ispAI(occupant))
 			use_power = ACTIVE_POWER_USE
 		add_fingerprint(occupant)
 

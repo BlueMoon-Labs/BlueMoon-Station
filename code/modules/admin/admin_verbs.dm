@@ -6,6 +6,7 @@ GLOBAL_PROTECT(admin_verbs_default)
 	return list(
 	/client/proc/deadmin,				/*destroys our own admin datum so we can play as a regular player*/
 	/client/proc/cmd_admin_say,			/*admin-only ooc chat*/
+	/client/proc/cmd_loud_admin_say,	/*admin-only ooc chat with sound + flash*/
 	/client/proc/hide_verbs,			/*hides all our adminverbs*/
 	/client/proc/hide_most_verbs,		/*hides all our hideable adminverbs*/
 	/client/proc/debug_variables,		/*allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify*/
@@ -51,6 +52,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/toggle_view_range,		/*changes how far we can see*/
 	/client/proc/getserverlogs,		/*for accessing server logs*/
 	/client/proc/getcurrentlogs,		/*for accessing server logs for the current round*/
+	/client/proc/log_viewer,		/*open log viewer*/
 	/client/proc/cmd_admin_subtle_message,	/*send a message to somebody as a 'voice in their head'*/
 	/client/proc/cmd_admin_delete,		/*delete an instance/object/mob/etc*/
 	/client/proc/cmd_admin_check_contents,	/*displays the contents of an instance*/
@@ -58,6 +60,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/access_news_network,	/*allows access of newscasters*/
 	/client/proc/admin_jump_to,			/*jump to interface*/
+	/client/proc/jumptoturf,			/*right-click jump to turf*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
 	/client/proc/fax_panel, /*send a paper to fax*/
@@ -101,6 +104,9 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/datum/admins/proc/display_tags,
 	/client/proc/cmd_admin_set_starlight,	//BLUEMOON ADD dynamic starlight color
 	/client/proc/cmd_admin_toggle_falloff,	//BLUEMOON ADD runtime falloff toggle
+	/client/proc/reload_director_config,	/*горячая перезагрузка config/director.json*/
+	/client/proc/director_simulate_verb,	/*оффлайн-прогон битов директора без ожидания реального времени*/
+	/client/proc/director_panel_verb,	/*TGUI-панель директора*/
 	)
 GLOBAL_LIST_INIT(admin_verbs_ban, list(/client/proc/DB_ban_panel, /client/proc/stickybanpanel))
 GLOBAL_PROTECT(admin_verbs_ban)
@@ -179,6 +185,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -191,6 +199,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/test_movable_UI,
 	/client/proc/test_snap_UI,
 	/client/proc/debugNatureMapGenerator,
+	/client/proc/movement_probe_toggle,
 	/client/proc/check_bomb_impacts,
 	/proc/machine_upgrade,
 	/client/proc/populate_world,
@@ -211,6 +220,10 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/view_runtimes,
 	/client/proc/view_gc_failures,
 	/client/proc/pump_random_event,
+	/client/proc/tick_spikes_report,
+	/client/proc/tick_spikes_capture,
+	/client/proc/tick_spikes_simulate,
+	/client/proc/lag_switch_panel,
 	/client/proc/cmd_display_init_log,
 	/client/proc/cmd_display_overlay_log,
 	/client/proc/reload_configuration,
@@ -226,11 +239,20 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	#endif
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
+	/datum/admins/proc/atmos_active_report,
+	/datum/admins/proc/atmos_heat_toggle,
+	/datum/admins/proc/atmos_control_panel,
+	#ifndef TGS
+	/datum/admins/proc/atmos_benchmark,
+	#endif
 	// /client/proc/check_timer_sources,
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	#ifdef TESTING
+	/datum/admins/proc/machines_benchmark,
+	#endif
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, /proc/release))
 GLOBAL_PROTECT(admin_verbs_possess)
@@ -295,6 +317,8 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/callproc_datum,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/reload_admins,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/startSinglo, // tg removed this

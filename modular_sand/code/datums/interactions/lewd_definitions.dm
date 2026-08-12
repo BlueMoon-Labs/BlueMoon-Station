@@ -8,6 +8,10 @@
 /proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs)
 	if(!turf_source || !soundin)
 		return
+	// Защита от эффекта "колодца" у звуков. Если вам нужен такой эффект, используйте pressure_affected = FALSE
+	if(!istype(turf_source))
+		turf_source = get_turf(turf_source)
+
 	var/sound/sound_to_play = sound(get_sfx(soundin))
 	var/max_distance = SOUND_RANGE + extrarange
 	var/falloff_distance = 3 // Full volume within 3 tiles (lewd sounds are close-range)
@@ -113,7 +117,10 @@
 				return HAS_UNEXPOSED_GENITAL
 	return FALSE
 
-/mob/living/proc/has_penis()
+/mob/living/proc/has_penis(strapon_over_penis = FALSE)
+	// нужно для тех ситуаций/механик/интеракций, когда при наличии страпона мы игнорируем наличие пениса.
+	if(strapon_over_penis && (has_strapon() == HAS_EXPOSED_GENITAL))
+		return FALSE
 	var/mob/living/carbon/C = src
 	if(has_penis && !istype(C))
 		return TRUE
@@ -138,10 +145,10 @@
 	return null
 
 /mob/living/proc/can_penetrating_genital_cum()
-	return has_penis()
+	return has_penis(TRUE)
 
 /mob/living/proc/get_penetrating_genital_name(long = FALSE)
-	return has_penis() ? (long ? pick(GLOB.dick_nouns) : pick("член", "пенис")) : "страпон"
+	return has_penis(TRUE) ? (long ? pick(GLOB.dick_nouns) : pick("член", "пенис")) : "страпон"
 
 /mob/living/proc/has_balls()
 	var/mob/living/carbon/C = src
@@ -328,7 +335,7 @@
 	if(isalien(src))
 		sound = 'sound/voice/hiss6.ogg'
 
-	playlewdinteractionsound(loc, sound, 80, 0, 0)
+	playlewdinteractionsound(get_turf(src), sound, 80, 0, 0)
 	lastmoan = sound
 
 /mob/living/proc/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE)
@@ -366,7 +373,7 @@
 			// BLUEMOON ADD END
 			if(!last_genital)
 				if(has_penis())
-					if(!istype(partner))
+					if(!istype(partner) || has_strapon())
 						target_orifice = null
 					switch(target_orifice)
 						if(CUM_TARGET_MOUTH)
@@ -423,8 +430,8 @@
 							else
 								silicon_sex = src
 								silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
-
-							if(partner.has_breasts(REQUIRE_EXPOSED))
+							var/partner_has_breasts = partner.has_breasts()
+							if(partner_has_breasts == HAS_EXPOSED_GENITAL || partner_has_breasts == TRUE)
 								message = "кончает на грудь [partner_name]."
 							else
 								message = "кончает на грудину и торс [partner_name]."
@@ -596,7 +603,7 @@
 			else
 				switch(last_genital.type)
 					if(/obj/item/organ/genital/penis)
-						if(!istype(partner))
+						if(!istype(partner) || has_strapon())
 							target_orifice = null
 
 						switch(target_orifice)
@@ -848,13 +855,13 @@
 			if(CUM_TARGET_MOUTH)	//Why wasn't it here?! - Gardelin0
 				target_gen = c_partner.getorganslot(ORGAN_SLOT_STOMACH)
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
-		playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/final_m1.ogg',
+		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',
 							'modular_sand/sound/interactions/final_m3.ogg',
 							'modular_sand/sound/interactions/final_m4.ogg',
 							'modular_sand/sound/interactions/final_m5.ogg'), 90, 1, 0)
 	else if(gender != MALE || (gender == PLURAL && isfeminine(src)))
-		playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/final_f1.ogg',
+		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',
 							'modular_sand/sound/interactions/final_f3.ogg'), 70, 1, 0)
 	// BLUEMOON ADD хвостики!

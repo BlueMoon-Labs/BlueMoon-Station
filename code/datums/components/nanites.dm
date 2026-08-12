@@ -9,6 +9,7 @@
 	var/cloud_id = 0 			//0 if not connected to the cloud, 1-100 to set a determined cloud backup to draw from
 	var/cloud_active = TRUE		//if false, won't sync to the cloud
 	var/next_sync = 0
+	var/need_sync = TRUE
 	var/list/datum/nanite_program/programs = list()
 	var/max_programs = NANITE_PROGRAM_LIMIT
 
@@ -55,8 +56,11 @@
 	/// minor shock deletion upper
 	var/minor_shock_deletion_upper = 15
 
+	// cache icon
+	var/last_nanite_percent_bar = 0
+
 /datum/component/nanites/Initialize(amount = 100, cloud = 0)
-	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup))
+	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup) && !istype(parent, /obj/item/implant/nanite_pump))
 		return COMPONENT_INCOMPATIBLE
 
 	nanite_volume = amount
@@ -65,12 +69,12 @@
 	//Nanites without hosts are non-interactive through normal means
 	if(isliving(parent))
 		host_mob = parent
-
-		if(!(host_mob.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)) && !HAS_TRAIT(host_mob, TRAIT_COMPATIBLE_WITH_NANOMACHINES)) //Shouldn't happen, but this avoids HUD runtimes in case a silicon gets them somehow.
+		if(HAS_TRAIT(host_mob, TRAIT_NANITES_IMMUNITY) || (!(host_mob.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)) && !HAS_TRAIT(host_mob, TRAIT_COMPATIBLE_WITH_NANITES))) //Shouldn't happen, but this avoids HUD runtimes in case a silicon gets them somehow.
 			return COMPONENT_INCOMPATIBLE
 
 		start_time = world.time
 
+		SSnanites.nanite_host_mobs |= host_mob
 		host_mob.hud_set_nanite_indicator()
 		START_PROCESSING(SSnanites, src)
 
@@ -83,16 +87,19 @@
 	RegisterSignal(parent, COMSIG_NANITE_DELETE, PROC_REF(delete_nanites))
 	RegisterSignal(parent, COMSIG_NANITE_UI_DATA, PROC_REF(nanite_ui_data))
 	RegisterSignal(parent, COMSIG_NANITE_GET_PROGRAMS, PROC_REF(get_programs))
+	RegisterSignal(parent, COMSIG_NANITE_GET_VOLUME, PROC_REF(get_volume))
 	RegisterSignal(parent, COMSIG_NANITE_SET_VOLUME, PROC_REF(set_volume))
 	RegisterSignal(parent, COMSIG_NANITE_ADJUST_VOLUME, PROC_REF(adjust_nanites))
 	RegisterSignal(parent, COMSIG_NANITE_SET_MAX_VOLUME, PROC_REF(set_max_volume))
 	RegisterSignal(parent, COMSIG_NANITE_SET_CLOUD, PROC_REF(set_cloud))
 	RegisterSignal(parent, COMSIG_NANITE_SET_CLOUD_SYNC, PROC_REF(set_cloud_sync))
+	RegisterSignal(parent, COMSIG_NANITE_GET_CLOUD, PROC_REF(get_cloud))
 	RegisterSignal(parent, COMSIG_NANITE_SET_SAFETY, PROC_REF(set_safety))
 	RegisterSignal(parent, COMSIG_NANITE_SET_REGEN, PROC_REF(set_regen))
 	RegisterSignal(parent, COMSIG_NANITE_ADD_PROGRAM, PROC_REF(add_program))
 	RegisterSignal(parent, COMSIG_NANITE_SCAN, PROC_REF(nanite_scan))
 	RegisterSignal(parent, COMSIG_NANITE_SYNC, PROC_REF(sync))
+	RegisterSignal(parent, COMSIG_NANITE_SET_NEED_SYNC, PROC_REF(set_need_sync))
 	RegisterSignal(parent, COMSIG_NANITE_CHECK_CONSOLE_LOCK, PROC_REF(check_console_locking))
 	RegisterSignal(parent, COMSIG_NANITE_CHECK_HOST_LOCK, PROC_REF(check_host_lockout))
 	RegisterSignal(parent, COMSIG_NANITE_CHECK_VIRAL_PREVENTION, PROC_REF(check_viral_prevention))
@@ -107,6 +114,9 @@
 		RegisterSignal(parent, COMSIG_NANITE_SIGNAL, PROC_REF(receive_signal))
 		RegisterSignal(parent, COMSIG_NANITE_COMM_SIGNAL, PROC_REF(receive_comm_signal))
 
+	if(istype(parent, /obj/item/implant/nanite_pump))
+		RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp))
+
 /datum/component/nanites/UnregisterFromParent()
 	UnregisterSignal(parent, list(COMSIG_HAS_NANITES,
 								COMSIG_NANITE_IS_STEALTHY,
@@ -114,15 +124,18 @@
 								COMSIG_NANITE_UI_DATA,
 								COMSIG_NANITE_GET_PROGRAMS,
 								COMSIG_NANITE_SET_VOLUME,
+								COMSIG_NANITE_GET_VOLUME,
 								COMSIG_NANITE_ADJUST_VOLUME,
 								COMSIG_NANITE_SET_MAX_VOLUME,
 								COMSIG_NANITE_SET_CLOUD,
 								COMSIG_NANITE_SET_CLOUD_SYNC,
+								COMSIG_NANITE_GET_CLOUD,
 								COMSIG_NANITE_SET_SAFETY,
 								COMSIG_NANITE_SET_REGEN,
 								COMSIG_NANITE_ADD_PROGRAM,
 								COMSIG_NANITE_SCAN,
 								COMSIG_NANITE_SYNC,
+								COMSIG_NANITE_SET_NEED_SYNC,
 								COMSIG_ATOM_EMP_ACT,
 								COMSIG_MOB_DEATH,
 								COMSIG_MOB_ALLOWED,
@@ -137,6 +150,7 @@
 	STOP_PROCESSING(SSnanites, src)
 	QDEL_LIST(programs)
 	if(host_mob)
+		SSnanites.nanite_host_mobs -= host_mob
 		set_nanite_bar(TRUE)
 		host_mob.hud_set_nanite_indicator()
 	host_mob = null
@@ -150,6 +164,8 @@
 
 /datum/component/nanites/process()
 	adjust_nanites(null, regen_rate)
+	if(!host_mob)
+		return
 	add_research()
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
@@ -234,6 +250,8 @@
 		var/datum/nanite_program/SNP = X
 		add_program(null, SNP.copy())
 
+	set_need_sync(null, FALSE)
+
 ///Syncs the nanites to their assigned cloud copy, if it is available. If it is not, there is a small chance of a software error instead.
 /datum/component/nanites/proc/cloud_sync()
 	if(cloud_id)
@@ -241,12 +259,18 @@
 		if(backup)
 			var/datum/component/nanites/cloud_copy = backup.nanites
 			if(cloud_copy)
-				sync(null, cloud_copy)
+				if(need_sync)
+					sync(null, cloud_copy)
 				return
 	//Without cloud syncing nanites can accumulate errors and/or defects
 	if(prob(8) && programs.len && requires_cloud_sync)
 		var/datum/nanite_program/NP = pick(programs)
 		NP.software_error()
+
+/datum/component/nanites/proc/set_need_sync(datum/source, _need_sync = TRUE)
+	SIGNAL_HANDLER
+
+	need_sync = _need_sync
 
 ///Adds a nanite program, replacing existing unique programs of the same type. A source program can be specified to copy its programming onto the new one.
 /datum/component/nanites/proc/add_program(datum/source, datum/nanite_program/new_program, datum/nanite_program/source_program)
@@ -263,6 +287,7 @@
 		source_program.copy_programming(new_program)
 	programs += new_program
 	new_program.on_add(src)
+	set_need_sync(null, TRUE)
 	return COMPONENT_PROGRAM_INSTALLED
 
 /datum/component/nanites/proc/consume_nanites(amount, force = FALSE)
@@ -333,14 +358,21 @@
 
 ///Updates the nanite volume bar visible in diagnostic HUDs
 /datum/component/nanites/proc/set_nanite_bar(remove = FALSE)
+	if(!host_mob || !host_mob.hud_list)
+		return
 	var/image/holder = host_mob.hud_list[DIAG_NANITE_FULL_HUD]
-	var/icon/I = icon(host_mob.icon, host_mob.icon_state, host_mob.dir)
-	holder.pixel_y = I.Height() - world.icon_size
-	holder.icon_state = null
+	if(!holder)
+		return
 	if(remove || stealth)
-		return //bye icon
+		holder.icon_state = null
+		return
 	var/nanite_percent = (nanite_volume / max_nanites) * 100
 	nanite_percent = clamp(CEILING(nanite_percent, 10), 10, 100)
+	if(nanite_percent == last_nanite_percent_bar)
+		return
+	last_nanite_percent_bar = nanite_percent
+	holder.pixel_y = get_hud_pixel_offset(host_mob.icon, host_mob.icon_state, host_mob.dir)
+	holder.icon_state = null
 	holder.icon_state = "nanites[nanite_percent]"
 
 /datum/component/nanites/proc/on_emp(datum/source, severity)
@@ -352,6 +384,7 @@
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
 		NP.on_emp(severity)
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/on_shock(datum/source, shock_damage, siemens_coeff = 1, flags = NONE)
 	if(shock_damage < 1)
@@ -363,12 +396,14 @@
 		for(var/X in programs)
 			var/datum/nanite_program/NP = X
 			NP.on_shock(shock_damage)
+		set_need_sync(TRUE)
 
 /datum/component/nanites/proc/on_minor_shock(datum/source)
 	adjust_nanites(null, -(rand(minor_shock_deletion_lower, minor_shock_deletion_upper)))			//Lose 5-15 flat nanite volume
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
 		NP.on_minor_shock()
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/check_stealth(datum/source)
 	return stealth
@@ -404,15 +439,30 @@
 /datum/component/nanites/proc/set_volume(datum/source, amount)
 	nanite_volume = clamp(amount, 0, max_nanites)
 
+/datum/component/nanites/proc/get_volume(datum/source)
+	SIGNAL_HANDLER
+
+	return nanite_volume
+
 /datum/component/nanites/proc/set_max_volume(datum/source, amount)
 	SIGNAL_HANDLER
 
 	max_nanites = max(1, amount)
 
 /datum/component/nanites/proc/set_cloud(datum/source, amount)
+	SIGNAL_HANDLER
+
 	cloud_id = clamp(amount, 0, 100)
+	set_need_sync(TRUE)
+
+/datum/component/nanites/proc/get_cloud(datum/source)
+	SIGNAL_HANDLER
+
+	return cloud_id
 
 /datum/component/nanites/proc/set_cloud_sync(datum/source, method)
+	SIGNAL_HANDLER
+
 	switch(method)
 		if(NANITE_CLOUD_TOGGLE)
 			cloud_active = !cloud_active
@@ -420,6 +470,7 @@
 			cloud_active = FALSE
 		if(NANITE_CLOUD_ENABLE)
 			cloud_active = TRUE
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/set_safety(datum/source, amount)
 	safety_threshold = clamp(amount, 0, max_nanites)
@@ -540,3 +591,10 @@
 /datum/component/nanites/permanent
 	qdel_self_on_depletion = FALSE
 	can_be_deleted = FALSE
+
+/datum/component/nanites/nanite_pump
+	qdel_self_on_depletion = FALSE
+	cloud_active = FALSE
+	requires_cloud_sync = FALSE
+	regen_rate = 2
+	safety_threshold = 0

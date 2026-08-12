@@ -2,7 +2,7 @@
 /mob/living/silicon/ai/verb/announcement_help()
 
 	set name = "Announcement Help"
-	set desc = "Display a list of vocal words to announce to the crew."
+	set desc = "Отобразить список голосовых слов для объявления экипажу."
 	set category = "AI Commands"
 
 	if(incapacitated())

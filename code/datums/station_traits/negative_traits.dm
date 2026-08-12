@@ -17,6 +17,15 @@
 /datum/station_trait/distant_supply_lines/on_round_start()
 	SSeconomy.pack_price_modifier *= 3
 
+/datum/station_trait/cramped_escape_pods
+	name = "Cramped Escape Pods"
+	trait_type = STATION_TRAIT_NEGATIVE
+	weight = 5
+	show_in_report = TRUE
+	report_message = "Due to budget cuts, we have downsized your escape pods."
+	trait_to_give = STATION_TRAIT_SMALLER_PODS
+	blacklist = list(/datum/station_trait/luxury_escape_pods)
+
 /datum/station_trait/late_arrivals
 	name = "Late Arrivals"
 	trait_type = STATION_TRAIT_NEGATIVE
@@ -58,6 +67,13 @@
 	SIGNAL_HANDLER
 
 	if(prob(15))
+		return
+	// Силиконовые должности выдаются через Robotize() прямо внутри EquipRank, а сигнал
+	// прилетает уже на исходного человека - он к этому моменту qdel'нут, dna и held_items
+	// обнулены, и can_equip падает с "Cannot read null.species".
+	if(job?.departments & DEPARTMENT_BITFLAG_SILICON)
+		return
+	if(QDELETED(spawned_mob))
 		return
 	if(!iscarbon(spawned_mob)) // don't want silicons or similar to be counted here
 		return
@@ -257,7 +273,7 @@
 
 /datum/station_trait/random_event_weight_modifier/on_round_start()
 	. = ..()
-	var/datum/round_event_control/modified_event = locate(event_control_path) in SSevents.control
+	var/datum/round_event_control/modified_event = locate(event_control_path) in SSdirector.event_controls()
 	if(!modified_event)
 		CRASH("[type] could not find a round event controller to modify on round start (likely has an invalid event_control_path set)!")
 
@@ -298,7 +314,7 @@
 
 /datum/station_trait/constant_ion_storms/proc/ion_storm_cycle()
 	if(prob(60))
-		var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSevents.control
+		var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSdirector.event_controls()
 		if(E)
 			E.runEvent()
 	timer_id = addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)

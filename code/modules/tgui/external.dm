@@ -25,7 +25,7 @@
  * since it calls on process rather than instantly which handles spamming.
  */
 /datum/proc/ui_update()
-	for(var/datum/tgui/ui as() in SStgui.get_all_open_uis(src))
+	for(var/datum/tgui/ui as anything in SStgui.get_all_open_uis(src))
 		ui.needs_update = TRUE
 
 /**
@@ -80,9 +80,9 @@
  * Should be done manually whenever something happens to
  * change static data.
  */
-/datum/proc/update_static_data_for_all_viewers()
+/datum/proc/update_static_data_for_all_viewers(force, ignore_cooldown)
 	for (var/datum/tgui/window as anything in SStgui.open_uis_by_src[REF(src)])
-		window.send_full_update()
+		window.send_full_update(force = force, ignore_cooldown = ignore_cooldown)
 
 /**
  * public
@@ -141,6 +141,9 @@
  * This is a proc over a var for memory reasons
  */
 /datum/proc/ui_state(mob/user)
+	var/datum/host = ui_host(user)
+	if(host && host != src)
+		return host.ui_state(user)
 	return GLOB.default_state
 
 /**
@@ -209,8 +212,7 @@
 	if(!href_list["tgui"])
 		return FALSE
 	var/type = href_list["type"]
-	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
-		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
 	if(log_handshake)
 		log_tgui(usr,
 			"type=[type], window_id=[href_list["window_id"]], has_payload=[!isnull(href_list["payload"])]",
