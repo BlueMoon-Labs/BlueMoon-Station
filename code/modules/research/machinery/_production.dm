@@ -234,8 +234,8 @@
 
 /obj/machinery/rnd/production/ui_assets(mob/user)
 	. = list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials),
 	)
 
 /obj/machinery/rnd/production/ui_data(mob/user)
