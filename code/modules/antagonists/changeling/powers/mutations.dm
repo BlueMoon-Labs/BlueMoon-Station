@@ -176,6 +176,7 @@
 	w_class = WEIGHT_CLASS_HUGE
 	tool_behaviour = TOOL_CROWBAR
 	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 	force = 35
 	throwforce = 0 //Just to be on the safe side
 	throw_range = 0

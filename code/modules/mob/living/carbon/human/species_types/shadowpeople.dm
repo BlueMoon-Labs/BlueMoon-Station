@@ -191,6 +191,7 @@
 	resistance_flags = FIRE_PROOF | ON_FIRE | UNACIDABLE | ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
 	hitsound = 'sound/weapons/bladeslice.ogg'
+	usesound = 'sound/items/crowbar.ogg'
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT

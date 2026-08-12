@@ -22,6 +22,7 @@
 	bare_wound_bonus = 12
 	tool_behaviour = TOOL_CROWBAR
 	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 	var/wielded = FALSE // track wielded status on item
 
 /obj/item/fireaxe/Initialize(mapload)
