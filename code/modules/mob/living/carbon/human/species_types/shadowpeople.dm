@@ -295,7 +295,7 @@
 	name = "Great Darkness"
 	desc = "Восславь Тьму и уничтожь извечного врага её."
 	button_icon_state = "vampire_extinguish"
-	cooldown_time = 1 SECONDS
+	cooldown_time = 60 SECONDS
 	var/const/aoe_radius = 7
 
 /datum/action/cooldown/nightmare/darkness/Activate(atom/target)
