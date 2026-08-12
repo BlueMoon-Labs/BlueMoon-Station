@@ -331,7 +331,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_combined_w_class = 6
-	STR.cant_hold = typecacheof(list(/obj/item/storage/backpack/satchel/flat)) //muh recursive backpacks
+	var/static/list/flat_cant_hold = typecacheof(list(/obj/item/storage/backpack/satchel/flat)) //muh recursive backpacks
+	STR.cant_hold = flat_cant_hold
 
 /obj/item/storage/backpack/satchel/flat/hide(intact)
 	if(intact)

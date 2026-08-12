@@ -3,6 +3,7 @@
 /datum/unit_test/mapload_space_verification
 	// This test is quite taxing time-wise, so let's run it later than other faster tests.
 	priority = TEST_LONGER
+	requires_full_map = TRUE
 
 /datum/unit_test/mapload_space_verification/Run()
 	// Get the datum associated with our currently running map.

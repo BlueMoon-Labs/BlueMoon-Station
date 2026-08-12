@@ -48,7 +48,7 @@
 */
 
 /datum/quirk/restorative_nanobots
-	name = BLUEMOON_TRAIT_NAME_RESTORATIVE_NANOBOTS
+	name = "Восстановительные Наноботы"
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! У вас установлена сложная ремонтная система из наноботов, которая со временем ремонтирует ваши повреждения, однако при этом потребляет много энергии и уменьшает вашу защиту от ЭМИ. Восстановление прошивки в сделку не входит."
 	gain_text = span_warning("% dkms status \n nanomachines, 4.2, 3.2.0-33-generic-pae, x540/512: installed... сынок")
 	lose_text = span_notice("Your dream dies with you, Senator.")

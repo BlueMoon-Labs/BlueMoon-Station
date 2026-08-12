@@ -3,6 +3,7 @@
 #define STATE_COUNT_NORMAL				4
 #define STATE_COUNT_ROTATION_STRICT		5
 #define STATE_COUNT_DIAGONAL			7
+#define STATE_COUNT_DIAGONAL_STRICT		8
 
 
 /mob/verb/ChooseDMI(dmi as file)
@@ -29,7 +30,9 @@
 			world << "[STATE_COUNT_ROTATION_STRICT] States, running in Non-Diagonal mode without line rotation"
 		if(STATE_COUNT_DIAGONAL)
 			world << "[STATE_COUNT_DIAGONAL] States, running in Diagonal mode"
-		if((STATE_COUNT_DIAGONAL + 1) to A_BIG_NUMBER)
+		if(STATE_COUNT_DIAGONAL_STRICT)
+			world << "[STATE_COUNT_DIAGONAL] States, running in Diagonal mode without line rotation"
+		if((STATE_COUNT_DIAGONAL_STRICT + 1) to A_BIG_NUMBER)
 			var/cont = alert(usr, "Too many states: [states.len],  expected [STATE_COUNT_NORMAL] (Non-Diagonal) or [STATE_COUNT_DIAGONAL] (Diagonal), Continue?", "Unexpected Amount of States", "Yes", "No")
 			if(cont == "No")
 				return
@@ -37,7 +40,7 @@
 
 	var/icon/outputIcon = new /icon()
 
-	var/filename = "[copytext("[dmifile]", 1, -4)]-smooth.dmi"
+	var/filename = "done/[copytext("[dmifile]", 1, -4)].dmi"
 	fdel(filename) //force refresh
 
 	var/list/orig_states = list()
@@ -260,23 +263,24 @@
 				var/icon/diag_corner_b = icon(sourceIcon, state)
 
 				var/icon/diagse1 = icon(diag_corner_b) //No work
-				outputIcon.Insert(diagse1, "d-se-0")
+				outputIcon.Insert(diagse1, "d-se-1")
 
 				var/icon/diagsw1 = icon(diag_corner_b)
 				diagsw1.Turn(90)
-				outputIcon.Insert(diagsw1, "d-sw-0")
+				outputIcon.Insert(diagsw1, "d-sw-1")
 
 				var/icon/diagne1 = icon(diag_corner_b)
 				diagne1.Turn(-90)
-				outputIcon.Insert(diagne1, "d-ne-0")
+				outputIcon.Insert(diagne1, "d-ne-1")
 
 				var/icon/diagnw1 = icon(diag_corner_b)
 				diagnw1.Turn(180)
-				outputIcon.Insert(diagnw1, "d-nw-0")
+				outputIcon.Insert(diagnw1, "d-nw-1")
 
 				world << "Diag_Corner_B: \icon[diag_corner_b] -> \icon[diagse1] \icon[diagsw1] \icon[diagne1] \icon[diagnw1]"
 			else
 				orig_states -= statename
+				continue
 
 		fcopy(outputIcon, filename)	//Update output icon each iteration
 

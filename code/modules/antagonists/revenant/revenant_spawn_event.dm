@@ -3,9 +3,13 @@
 /datum/round_event_control/revenant
 	name = "Spawn Revenant" // Did you mean 'griefghost'?
 	typepath = /datum/round_event/ghost_role/revenant
-	weight = 10
+	weight = 7 // прижат к середине пула: веса 10 у ранних дешёвых гост-ролей делали их дефолтом раунда
 	max_occurrences = 1
 	min_players = 5
+	// Единственный гост-антаг без earliest_start: до 20-й минуты копилка лочилась на нём
+	// безальтернативно (логи 9766-9775). Ранняя волна пула открывается с 20-й минуты
+	// (см. Spawn Morph/Sentient Disease), плюс до 10 трупов его спавн всё равно ждёт.
+	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 8

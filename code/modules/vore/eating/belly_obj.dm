@@ -41,6 +41,7 @@
 	var/vore_capacity = 1					// simple animal nom capacity
 	var/is_wet = TRUE						// Is this belly inside slimy parts?
 	var/wet_loop = TRUE						// Does this belly have a slimy internal loop?
+	var/can_victim_see = FALSE				// Can victim see from inside
 
 	//I don't think we've ever altered these lists. making them static until someone actually overrides them somewhere.
 	var/tmp/static/list/digest_modes = list(DM_HOLD,DM_DIGEST,DM_HEAL,DM_NOISY,DM_ABSORB,DM_UNABSORB)	// Possible digest modes
@@ -142,7 +143,8 @@
 		"examine_messages",
 		"emote_lists",
 		"is_wet",
-		"wet_loop"
+		"wet_loop",
+		"can_victim_see",
 		)
 
 		//ommitted list
@@ -173,7 +175,7 @@
 	var/mob/living/L //for chat messages and blindness
 	if(isliving(thing))
 		L = thing
-		L.become_blind("belly_[REF(src)]")
+		set_blinding(L)
 	if(OldLoc in contents)
 		return //Someone dropping something (or being stripdigested)
 
@@ -204,8 +206,20 @@
 /obj/belly/Exited(atom/movable/AM, atom/newloc)
 	. = ..()
 	if(isliving(AM))
-		var/mob/living/L = AM
-		L.cure_blind("belly_[REF(src)]")
+		set_blinding(AM, TRUE)
+
+/obj/belly/get_remote_view_fullscreens(mob/user)
+	user.overlay_fullscreen("remote_view", /atom/movable/screen/fullscreen/scaled/impaired, 1)
+
+/obj/belly/proc/set_blinding(mob/living/target, clear)
+	if(!istype(target))
+		return
+	if(isnull(clear))
+		clear = can_victim_see
+	if(clear)
+		target.cure_blind("belly_[REF(src)]")
+	else
+		target.become_blind("belly_[REF(src)]")
 
 // Release all contents of this belly into the owning mob's location.
 // If that location is another mob, contents are transferred into whichever of its bellies the owning mob is in.
@@ -702,6 +716,7 @@
 	dupe.vore_capacity = vore_capacity
 	dupe.is_wet = is_wet
 	dupe.wet_loop = wet_loop
+	dupe.can_victim_see = can_victim_see
 
 	//// Object-holding variables
 	//struggle_messages_outside - strings

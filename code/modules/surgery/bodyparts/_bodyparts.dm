@@ -147,6 +147,10 @@
 	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
+		//qdel присоединённой руки мимо drop_limb оставлял протухшую ссылку:
+		//put_in_hand дальше рантаймил на is_disabled с owner=null
+		if(held_index && length(owner.hand_bodyparts) >= held_index && owner.hand_bodyparts[held_index] == src)
+			owner.hand_bodyparts[held_index] = null
 		owner = null
 	return ..()
 
@@ -194,6 +198,8 @@
 		playsound(T, 'sound/misc/splort.ogg', 50, 1, -1)
 	if(current_gauze)
 		QDEL_NULL(current_gauze)
+		if(owner)
+			owner.update_bandage_overlays()
 	for(var/obj/item/organ/drop_organ in get_organs())
 		drop_organ.transfer_to_limb(src, owner)
 
@@ -224,7 +230,7 @@
 //Applies brute and burn damage to the organ. Returns 1 if the damage-icon states changed at all.
 //Damage will not exceed max_damage using this proc
 //Cannot apply negative damage
-/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
+/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE, can_dismember = TRUE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
 	if(owner && (owner.status_flags & GODMODE))
 		return FALSE	//godmode
 	var/dmg_mlt = CONFIG_GET(number/damage_multiplier)
@@ -277,7 +283,7 @@
 				wounding_type = WOUND_BLUNT
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// if we're flesh only, all blunt attacks become weakened slashes in terms of wound damage
 		if(BIO_JUST_FLESH)
@@ -285,7 +291,7 @@
 				wounding_type = WOUND_SLASH
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (paper_skin ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// standard humanoids
 		if(BIO_FLESH_BONE)
@@ -302,13 +308,18 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	// now we have our wounding_type and are ready to carry on with wounds and dealing the actual damage
 	if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
 		check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
 
+	// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
+	// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
+	// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
+	// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
+	// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
 	for(var/i in wounds)
 		var/datum/wound/iter_wound = i
 		iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
@@ -357,7 +368,7 @@
 	return update_bodypart_damage_state()
 
 /// Allows us to roll for and apply a wound without actually dealing damage. Used for aggregate wounding power with pellet clouds
-/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE)
+/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE, can_dismember = TRUE)
 	if(!owner || phantom_wounding_dmg <= WOUND_MINIMUM_DAMAGE || wound_bonus == CANT_WOUND)
 		return
 
@@ -381,7 +392,7 @@
 			else if(wounding_type == WOUND_PIERCE)
 				wounding_type = WOUND_BLUNT
 				phantom_wounding_dmg *= (easy_dismember ? 1 : 0.75)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// note that there's no handling for BIO_JUST_FLESH since we don't have any that are that right now (slimepeople maybe someday)
 		// standard humanoids
@@ -395,7 +406,7 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					phantom_wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	check_wounding(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus)
@@ -525,9 +536,19 @@
 	if(only_organic && !is_organic_limb(FALSE)) //This makes robolimbs and hybridlimbs not healable by chems.
 		return
 
+	var/brute_was = brute_dam
+	var/burn_was = burn_dam
+	var/stamina_was = stamina_dam
+
 	brute_dam	= round(max(brute_dam - brute, 0), DAMAGE_PRECISION)
 	burn_dam	= round(max(burn_dam - burn, 0), DAMAGE_PRECISION)
 	stamina_dam = round(max(stamina_dam - stamina, 0), DAMAGE_PRECISION)
+
+	// Healing an already-whole limb is the common case for regeneration effects
+	// and used to drag the entire owner.updatehealth() cascade along with it.
+	if(brute_dam == brute_was && burn_dam == burn_was && stamina_dam == stamina_was)
+		return FALSE
+
 	if(owner && updating_health)
 		owner.updatehealth()
 	consider_processing()
@@ -769,11 +790,12 @@
 					else
 						marking_value = "plain"
 					var/list/color_values
-					if(length(marking) == 3)
+					if(length(marking) >= 3 && islist(marking[3]))
 						color_values = marking[3]
 					else
 						color_values = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
-					body_markings_list += list(list(body_markings_icon, marking_value, color_values))
+					var/emissive_value = (length(marking) >= 4 && marking[4]) ? TRUE : FALSE
+					body_markings_list += list(list(body_markings_icon, marking_value, color_values, emissive_value))
 
 			markings_color = list(colorlist)
 		else
@@ -876,17 +898,26 @@
 		if(!isnull(body_markings) && is_organic_limb(FALSE))
 			for(var/list/marking_list in body_markings_list)
 				// marking stores icon and value for the specific bodypart
+				var/image/mark
 				if(!use_digitigrade)
 					if(body_zone == BODY_ZONE_CHEST)
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
 					else
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 				else
-					. += image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+					mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				if(islist(marking_list[3]))
+					mark.color = marking_list[3]
+				. += mark
+				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+					var/image/mark_emissive = emissive_copy(mark)
+					mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+					. += mark_emissive
 
 	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
 	var/image/second_limb
 	var/list/aux = list()
+	var/list/marking_emissives = list()
 
 	. += limb
 
@@ -949,9 +980,15 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
-					if(color_src && length(marking_list) == 3)
+					if(islist(marking_list[3]))
 						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
 
 		// Citadel End
 
@@ -967,11 +1004,18 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
+		. += marking_emissives
 
 	else
 		limb.icon = icon
@@ -1011,9 +1055,15 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
 
@@ -1037,7 +1087,16 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
+					if(islist(marking_list[3]))
+						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
+		. += marking_emissives
 		return
 
 	if(color_src) //TODO - add color matrix support for base species limbs (or dont because color matrixes suck)
@@ -1110,8 +1169,12 @@
 		if(!embeddies.isEmbedHarmless())
 			bleed_rate += 0.8
 
-	for(var/thing in wounds)
-		var/datum/wound/W = thing
+	// Та же страховка, что строкой выше у embedded_objects: рана, которую добил del(), оставляет
+	// в списке null, и без чистки каждый тик SSmobs давал бы рантайм на W.blood_flow.
+	// Гард обязателен: wounds ленивый и обычно null, а listclearnulls читает .len сразу.
+	if(wounds)
+		listclearnulls(wounds)
+	for(var/datum/wound/W as anything in wounds)
 		bleed_rate += W.blood_flow
 	if(owner.mobility_flags & ~MOBILITY_STAND)
 		bleed_rate *= 1.2
@@ -1215,8 +1278,10 @@
 	if(!current_gauze || !owner)
 		return FALSE
 	var/obj/item/stack/medical/gauze/removed = current_gauze
+	var/mob/living/carbon/gauze_owner = owner
 	current_gauze = null
-	removed.forceMove(user || owner)
+	removed.forceMove(user || gauze_owner)
 	if(to_hands && user)
 		user.put_in_hands(removed)
+	gauze_owner.update_bandage_overlays()
 	return TRUE

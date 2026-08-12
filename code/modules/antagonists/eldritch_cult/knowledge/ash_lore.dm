@@ -202,6 +202,7 @@
 	cost = 5
 	sacs_needed = 5
 	route = PATH_ASH
+	parallax_scene = ANTAG_SCENE_HERETIC_ASH
 	var/list/trait_list = list(TRAIT_NOBREATH,TRAIT_RESISTCOLD,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE)
 
 /datum/eldritch_knowledge/final_eldritch/ash_final/on_finished_recipe(mob/living/user, list/atoms, loc)

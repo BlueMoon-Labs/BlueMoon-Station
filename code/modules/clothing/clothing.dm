@@ -38,6 +38,9 @@
 	var/list/user_vars_remembered //Auto built by the above + dropped() + equipped()
 
 	var/pocket_storage_component_path
+	/// Adsorbed plasma. Only worn clothing is checked, so contaminated items do
+	/// not need their own processing loop.
+	var/plasma_contamination = 0
 
 	//These allow head/mask items to dynamically alter the user's hair
 	// and facial hair, checking hair_extensions.dmi and facialhair_extensions.dmi
@@ -67,9 +70,21 @@
 	var/reinforced = FALSE
 	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
 	var/obj/item/clothing/reinforcement_path
+	// Наборы брони присваивают защитные переменные с прототипа, а не сливают их.
+	// Для одежды, чья защита собирается снаружи (части МОДа), это стирает
+	// герметичность и холодозащиту без шанса восстановить - такие вещи отписываются.
+	var/can_be_reinforced = TRUE
 	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
 	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
 	var/keep_genitals_below = TRUE
+
+
+	var/max_accessories = 7 // BLUEMOON EDIT - расширено возможное количество аксессуаров с 3 до 7
+	var/max_restricted_accessories = 3 // BLUEMOON ADD - максимальное количество особых (боевых) аксессуаров
+	var/list/obj/item/clothing/accessory/accessories_attached = list()
+	// Отдельно 2 типа оверлея: один применяется на одежду, второй - на спрайт моба. Хранить нужно оба и отдельно.
+	var/list/mutable_appearance/accessory_item_overlays = list()
+	var/list/mutable_appearance/accessory_mob_overlays = list()
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()
@@ -77,6 +92,11 @@
 		actions_types += /datum/action/item_action/toggle_voice_box
 	if(ispath(pocket_storage_component_path))
 		LoadComponent(pocket_storage_component_path)
+
+/obj/item/clothing/worn_overlays(isinhands, icon_file, used_state, style_flags)
+	. = ..()
+	if(length(accessory_mob_overlays))
+		. += accessory_mob_overlays
 
 /obj/item/clothing/MouseDrop(atom/over_object)
 	. = ..()
@@ -234,6 +254,9 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	update_clothes_damaged_state(CLOTHING_DAMAGED)
 
 /obj/item/clothing/Destroy()
+	QDEL_LIST(accessories_attached)
+	QDEL_LIST(accessory_item_overlays)
+	QDEL_LIST(accessory_mob_overlays)
 	user_vars_remembered = null //Oh god somebody put REFERENCES in here? not to worry, we'll clean it up
 	return ..()
 
@@ -253,6 +276,10 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	..()
 	if (!istype(user))
 		return
+	// Wearing pre-contaminated gear must re-arm the wearer's cheap Life gate.
+	if(plasma_contamination >= 1 && ishuman(user))
+		var/mob/living/carbon/human/wearer = user
+		wearer.plasma_gear_dirty = TRUE
 	if(slot_flags & slot) //Was equipped to a valid slot for this item?
 		if(iscarbon(user) && LAZYLEN(zones_disabled))
 			RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(bristle), TRUE)
@@ -264,6 +291,8 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/examine(mob/user)
 	. = ..()
+	if(plasma_contamination >= 1)
+		. += "<span class='warning'>Резко пахнет плазмой. Стиральная машина может обеззаразить.</span>"
 	if(damaged_clothes == CLOTHING_SHREDDED)
 		. += "<span class='warning'><b>Эта вещь больше походит на лохмотья и требует ремонта!</b></span>"
 		return
@@ -314,6 +343,14 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 	if(LAZYLEN(armor_list) || LAZYLEN(durability_list))
 		. += "<span class='notice'>Видно <a href='?src=[REF(src)];list_armor=1'>бирку</a> со списком классов защиты.</span>"
+
+/// Adds contamination in proportion to fabric permeability. Properly sealed
+/// gear remains useful protection and never becomes a hidden poison source.
+/obj/item/clothing/proc/absorb_plasma(partial_pressure)
+	if(partial_pressure < PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE || permeability_coefficient <= PLASMA_CLOTHING_SEALED_PERMEABILITY)
+		return
+	var/exposure = (partial_pressure - PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE) * 0.01 * clamp(permeability_coefficient, 0, 1)
+	plasma_contamination = min(PLASMA_CLOTHING_MAX_CONTAMINATION, plasma_contamination + exposure)
 
 /obj/item/clothing/Topic(href, href_list)
 	. = ..()
@@ -594,8 +631,11 @@ BLIND     // can't see anything
 /obj/item/clothing/proc/attack_reaction(mob/living/L, reaction_type, mob/living/carbon/human/T = null)
 	return
 
-/obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
-	return
+/obj/item/clothing/proc/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	return FALSE
+
+/obj/item/clothing/proc/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	return FALSE
 
 /obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to)
 	if(!ispath(reinforced_to, /obj/item/clothing))

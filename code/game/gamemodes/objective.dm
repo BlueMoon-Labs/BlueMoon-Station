@@ -24,9 +24,12 @@ GLOBAL_LIST_EMPTY(objectives)
 
 /datum/objective/Destroy(force, ...)
 	GLOB.objectives -= src
-	if(owner)
-		for(var/datum/antagonist/A in owner.antag_datums)
-			A.objectives -= src
+	//отвязка шла только по текущему owner: цель, которой owner переназначили до
+	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
+	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
+	//Идём по фактическим держателям, а не по одному предполагаемому.
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+		holder.objectives -= src
 	if(team)
 		team.objectives -= src
 	. = ..()
@@ -91,9 +94,16 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		return FALSE
 	var/mob/current = M.current
 	if(!current)
-		return FALSE
+		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
+		// rerolled by cryo_handle_objectives() before their body is deleted.
+		return TRUE
 	if(isobserver(current))
 		return TRUE
+	if(isbrain(current))
+		var/mob/living/brain/B = current
+		if(B.onCentCom() || B.onSyndieBase())
+			return FALSE // мозг спасён и доставлен на ЦК — цель провалена
+		return B.stat == DEAD
 	if(isliving(current))
 		var/mob/living/L = current
 		return L.stat == DEAD
@@ -103,7 +113,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/M in owners)
 		for(var/datum/objective/O in M.get_all_objectives()) //This scope is debatable, probably should be passed in by caller.
-			if(istype(O, type) && O.get_target() == possible_target)
+			if(O.get_target() != possible_target)
+				continue
+			if(istype(O, type))
+				return FALSE
+			// Убийство (once) и уничтожение (assassinate) — разные подтипы, но одна цель недопустима.
+			if(istype(src, /datum/objective/assassinate) && istype(O, /datum/objective/assassinate))
 				return FALSE
 	return TRUE
 
@@ -206,8 +221,11 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/O in owners)
 		for(var/datum/objective/obj in O.get_all_objectives())
-			if(istype(obj, /datum/objective/protect) && obj.get_target())
-				blacklist |= obj.get_target()
+			var/datum/mind/conflict_target = obj.get_target()
+			if(!conflict_target)
+				continue
+			if(istype(obj, /datum/objective/protect) || istype(obj, /datum/objective/assassinate))
+				blacklist |= conflict_target
 	return ..(dupe_search_range, blacklist)
 
 /datum/objective/assassinate/check_completion()
@@ -410,6 +428,10 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(!considered_alive(M) || !SSshuttle.emergency.shuttle_areas[get_area(M.current)])
 			return FALSE
 	return SSshuttle.emergency.is_hijacked()
+
+/datum/objective/hijack/syndicate
+	name = "hijack syndicate"
+	explanation_text = "Захватите аварийный шаттл, взломав его навигационные протоколы через консоль управления (ALT-ЛКМ по консоли аварийного шаттла)! Отведите уцелевших на Синди-Аванпост."
 
 /datum/objective/block
 	name = "no organics on shuttle"

@@ -134,11 +134,12 @@
 /obj/item/gun/ballistic/rebarxbow/syndie
 	name = "syndicate rebar crossbow"
 	desc = "The syndicate liked the bootleg rebar crossbow NT engineers made, so they showed what it could be if properly developed. \
-		Holds three shots without a chance of exploding, and features a built in scope. Compatible with all known crossbow ammunition."
+		Holds six shots without a chance of exploding, and features a high-quality built-in scope. Compatible with all known crossbow ammunition."
 	icon_state = "rebarxbowsyndie"
 	item_state = "rebarxbowsyndie"
 	w_class = WEIGHT_CLASS_NORMAL
 	mag_type = /obj/item/ammo_box/magazine/internal/boltaction/rebarxbow/syndie
 	draw_time = 1 SECONDS // syndicate model: near-instant draw
 	zoomable = TRUE
-	zoom_amt = 2
+	zoom_amt = 8
+	zoom_out_amt = 5

@@ -664,6 +664,7 @@
 		/obj/item/clothing/gloves,
 		/obj/item/melee/flyswatter,
 		/obj/item/broom,
+		/obj/item/wirebrush,
 		/obj/item/mop,
 		/obj/item/paint/paint_remover,
 		/obj/item/assembly/mousetrap,

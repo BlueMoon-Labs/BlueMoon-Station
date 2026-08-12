@@ -205,6 +205,10 @@
 
 	if(!(x_move == 0 && y_move == 0))
 		var/turf/T = get_offset_target_turf(src, x_move, y_move)
+		if(!T) // край карты - отскакиваем, как от стены
+			ricochet()
+			tile_loc = cached_tile
+			return FALSE
 		for(var/atom/A in T.contents)
 			Bump(A)
 			if(A.density)
@@ -215,9 +219,11 @@
 			ricochet()
 			tile_loc = cached_tile
 			return FALSE
+		//голое x+=/y+= телепортировало машину мимо Moved()/Entered(): ячейка
+		//спатиал-грида слуха не переезжала за машиной, и пассажиры глохли -
+		//причём насовсем, пока сами не пересекут границу ячейки после выхода
+		forceMove(T)
 
-	x += x_move
-	y += y_move
 	pixel_x = round(tile_loc["x"], 1)
 	pixel_y = round(tile_loc["y"], 1)
 	if(driver && driver.client)

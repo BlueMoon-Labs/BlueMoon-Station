@@ -45,6 +45,8 @@
 
 ///Prepares a footstep. Determines if it should get played. Returns the turf it should get played on. Note that it is always a /turf/open
 /datum/component/footstep/proc/prepare_step()
+	if(SSlag_switch.measures[DISABLE_FOOTSTEPS] && !HAS_TRAIT(parent, TRAIT_BYPASS_MEASURES))
+		return
 	var/turf/open/T = get_turf(parent)
 	if(!istype(T))
 		return

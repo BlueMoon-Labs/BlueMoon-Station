@@ -35,6 +35,46 @@
 
 	return ..()
 
+///Общая часть ui_data всех переносных: раньше окна показывали одно давление,
+///и о температуре с составом содержимого приходилось догадываться.
+/obj/machinery/portable_atmospherics/proc/ui_contents_data()
+	var/list/data = list(
+		"connected" = connected_port ? TRUE : FALSE,
+		"pressure" = round(air_contents.return_pressure(), 0.01),
+		"temperature" = round(air_contents.return_temperature(), 0.01),
+		"max_pressure_allowed" = round(maximum_pressure),
+		"gases" = gas_composition(air_contents),
+	)
+	if(holding)
+		data["holding"] = list(
+			"name" = holding.name,
+			"pressure" = round(holding.air_contents.return_pressure(), 0.01),
+			"temperature" = round(holding.air_contents.return_temperature(), 0.01),
+			"gases" = gas_composition(holding.air_contents),
+		)
+	else
+		data["holding"] = null
+	return data
+
+///Состав смеси в процентах, отсортированный не важно как: интерфейс сам решает.
+/obj/machinery/portable_atmospherics/proc/gas_composition(datum/gas_mixture/mixture)
+	var/list/composition = list()
+	if(!mixture)
+		return composition
+	var/total_moles = mixture.total_moles()
+	if(total_moles <= 0)
+		return composition
+	for(var/gas_id in mixture.get_gases())
+		var/share = mixture.get_moles(gas_id) / total_moles * 100
+		if(share < 0.01)
+			continue
+		composition += list(list(
+			"id" = gas_id,
+			"name" = GLOB.gas_data.names[gas_id],
+			"percent" = round(share, 0.01),
+		))
+	return composition
+
 /obj/machinery/portable_atmospherics/process_atmos()
 	if(connected_port) // Pipe network handles reactions if connected.
 		// The pipenet reshapes our mix without any interaction on this machine,
@@ -84,6 +124,11 @@
 	// the connector must resume dirtying its pipenet.
 	excite()
 	SSair.start_processing_machine(connected_port)
+	// Оверлей коннектора рисуется по connected_port, а перерисовку раньше делал
+	// process_atmos() безусловно каждый фаер. Теперь он перерисовывает только на
+	// смене полосы давления, а осевшая канистра вдобавок уходит в PROCESS_KILL -
+	// без явного вызова стыковка могла не отобразиться вообще.
+	update_icon()
 	return TRUE
 
 /obj/machinery/portable_atmospherics/Move()
@@ -107,6 +152,9 @@
 	// Undocked with possibly fresh gas inside: reevaluate before sleeping again
 	// (the connector kills itself on its next pass).
 	excite()
+	// Симметрично connect(): без этого отстыкованная канистра продолжала носить
+	// оверлей коннектора.
+	update_icon()
 	return TRUE
 
 /obj/machinery/portable_atmospherics/portableConnectorReturnAir()
@@ -126,6 +174,11 @@
 	if(holding)
 		. += "<span class='notice'>\The [src] contains [holding]. Alt-click [src] to remove it.</span>"
 		. += "<span class='notice'>Click [src] with another gas tank to hot swap [holding].</span>"
+	if(connected_port)
+		// Пристыкованное устройство обменивается газом с трубопроводом мимо
+		// клапана - process_atmos() уходит в ветку connected_port до всякой
+		// проверки. Со стороны это выглядит как содержимое, утекающее само.
+		. += span_notice("Пристыковано к порту: содержимое идёт в трубопровод независимо от клапана. Открутите ключом, чтобы отсоединить.")
 
 /obj/machinery/portable_atmospherics/proc/replace_tank(mob/living/user, close_valve, obj/item/tank/new_tank)
 	if(holding)

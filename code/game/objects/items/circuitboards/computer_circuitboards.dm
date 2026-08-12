@@ -480,6 +480,44 @@
 	name = "Security Cameras (Computer Board)"
 	icon_state = "security"
 	build_path = /obj/machinery/computer/security
+	/// Сети камер, прошитые в плату. Пусто - собранная консоль оставит свои заводские сети.
+	var/list/network
+
+/// Копия прошитого набора сетей: пустой список означает "заводскую настройку не трогать".
+/obj/item/circuitboard/computer/security/proc/get_configured_network()
+	return network ? network.Copy() : list()
+
+/obj/item/circuitboard/computer/security/examine(mob/user)
+	. = ..()
+	if(length(network))
+		. += span_notice("Плата прошита на сети камер: [jointext(network, ", ")].")
+	else
+		. += span_notice("Плата ни на одну сеть камер не прошита - консоль соберётся с заводскими.")
+	. += span_notice("Набор сетей меняется мультитулом.")
+
+/obj/item/circuitboard/computer/security/multitool_act(mob/living/user, obj/item/tool)
+	. = ..()
+	var/list/current_network = get_configured_network()
+	var/input = stripped_input(user, "На какие сети камер прошить плату? Несколько сетей разделяются запятой.", "Настройка сетей камер", jointext(current_network, ","))
+	if(!input || !user.canUseTopic(src, BE_CLOSE))
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	var/list/new_network = list()
+	for(var/entry in splittext(input, ","))
+		var/network_name = trim(lowertext(entry))
+		if(!length(network_name))
+			continue
+		new_network |= network_name
+	if(!length(new_network))
+		to_chat(user, span_warning("Ни одной сети распознать не удалось, прошивка платы осталась прежней."))
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	network = new_network
+	to_chat(user, span_notice("Теперь плата соберёт консоль на сети: [jointext(network, ", ")]."))
+	return TOOL_ACT_TOOLTYPE_SUCCESS
+
+/obj/item/circuitboard/computer/security/configure_machine(obj/machinery/computer/security/machine)
+	if(!istype(machine) || !length(network))
+		return
+	machine.network = network.Copy()
 
 /obj/item/circuitboard/computer/advanced_camera
 	name = "Advanced Camera Console (Computer Board)"

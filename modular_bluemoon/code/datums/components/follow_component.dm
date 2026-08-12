@@ -58,7 +58,7 @@
 		if(follow_sounds)
 			playsound(parent_mob, pick(follow_sounds), 100)
 		INVOKE_ASYNC(parent_mob, TYPE_PROC_REF(/atom/movable, say), "Следую!")
-		parent_mob.Goto(living_user, follow_speed, follow_distance)
+		walk_to(parent_mob, living_user, follow_distance, follow_speed)
 	else
 		if(unfollow_sounds)
 			playsound(parent_mob, pick(unfollow_sounds), 100)

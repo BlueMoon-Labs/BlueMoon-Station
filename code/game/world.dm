@@ -84,11 +84,16 @@ GLOBAL_LIST(topic_status_cache)
 	CONFIG_SET(number/round_end_countdown, 0)
 	var/datum/callback/cb
 #ifdef UNIT_TESTS
-	cb = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTests))
+	// Unit tests exercise Dynamic/Director state and must not depend on an
+	// unattended lobby vote picking the right mode. force_gamemode also marks
+	// the vote as complete, so ticker can enter setup immediately.
+	SSticker.force_gamemode("dynamic")
+	cb = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady))
+	SSticker.OnRoundstart(cb)
 #else
 	cb = VARSET_CALLBACK(SSticker, force_ending, TRUE)
-#endif
 	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_addtimer), cb, 10 SECONDS))
+#endif
 
 /world/proc/SetupLogs()
 	var/override_dir = params[OVERRIDE_LOG_DIRECTORY_PARAMETER]
@@ -142,6 +147,10 @@ GLOBAL_LIST(topic_status_cache)
 #ifdef UNIT_TESTS
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
 	start_log(GLOB.test_log)
+#endif
+#ifdef TESTING
+	GLOB.ai_trace_log = "[GLOB.log_directory]/ai_trace.log"
+	start_log(GLOB.ai_trace_log)
 #endif
 	GLOB.harddel_log = "[GLOB.log_directory]/harddels.log"
 	start_log(GLOB.harddel_log)
@@ -428,6 +437,13 @@ GLOBAL_LIST(topic_status_cache)
 
 /world/proc/on_tickrate_change()
 	SStimer?.reset_buckets()
+	// Цена шага выравнивается по тику, а тик только что сменился - самое время
+	// сказать, если конфиг движения с новой сеткой не согласуется.
+	movement_audit_config_delays()
+	// Пол скорости AI-погони тоже кратен тику: fps из конфига применяется ПОСЛЕ
+	// инициализации подсистем (master.dm), и без пересчёта здесь GLOB держал бы
+	// значение, испечённое на старом tick_lag.
+	update_ai_pursuit_speed_floor()
 
 /world/proc/init_byond_tracy()
 	var/library

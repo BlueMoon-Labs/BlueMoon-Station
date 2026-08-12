@@ -68,9 +68,14 @@
 		"<span class='notice'>Вы выбираетесь из [src]!</span>")
 	open_machine()
 
-/obj/machinery/sleeper/Exited(atom/movable/user)
+/obj/machinery/sleeper/Exited(atom/movable/user, atom/newloc)
+	//резист до родителя: machinery/Exited обнуляет occupant, по которому мы
+	//понимаем, что из закрытой машины кто-то исчез (телепорт и т.п.)
 	if (!state_open && user == occupant)
 		container_resist(user)
+	//..() обязателен: без него atom/movable/Exited не вычищал ушедшего из
+	//important_recursive_contents, и слипер вечно держал каждого посетителя
+	return ..()
 
 /obj/machinery/sleeper/relaymove(mob/user)
 	if (!state_open)
@@ -86,8 +91,10 @@
 		// flick("[initial(icon_state)]-anim", src)
 		..(user)
 		var/mob/living/mob_occupant = occupant
-		if(mob_occupant && mob_occupant.stat != DEAD)
-			to_chat(occupant, "[enter_message]")
+		if(mob_occupant)
+			machine_wake() // process() owns nap-violation checks while occupied
+			if(mob_occupant.stat != DEAD)
+				to_chat(occupant, "[enter_message]")
 
 /obj/machinery/sleeper/emp_act(severity)
 	. = ..()
@@ -173,7 +180,8 @@
 		- Эффективность дозировок: <b>[efficiency*100]%</b>.</span>"
 
 /obj/machinery/sleeper/process()
-	..()
+	if(!occupant)
+		return machine_sleep()
 	check_nap_violations()
 
 /obj/machinery/sleeper/nap_violation(mob/violator)
@@ -190,7 +198,9 @@
 		var/chem_name = R.name
 		if(istype(R, /datum/reagent/medicine/salglu_solution))
 			chem_name = "Saline-Glucose"
-		data["chems"] += list(list("name" = chem_name, "id" = R.type, "allowed" = chem_allowed(chem)))
+		data["chems"] += list(list("name" = chem_name, "id" = R.type, "allowed" = chem_allowed(chem),
+									"overdose_threshold" = R.overdose_threshold ? R.overdose_threshold : null,
+									"addiction_threshold" = R.addiction_threshold ? R.addiction_threshold : null))
 
 	data["occupant"] = list()
 	var/mob/living/mob_occupant = occupant
@@ -366,7 +376,9 @@
 	fair_market_price = 0 //it's free
 
 /obj/machinery/sleeper/clockwork/process()
-	..()
+	. = ..()
+	if(. == PROCESS_KILL)
+		return
 	if(occupant && isliving(occupant))
 		var/mob/living/L = occupant
 		if(GLOB.clockwork_vitality) //If there's Vitality, the sleeper has passive healing

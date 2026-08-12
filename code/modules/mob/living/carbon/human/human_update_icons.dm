@@ -58,8 +58,21 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_hair(src)
 
+///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
+///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
+///(regenerate_icons) трогает семь слотов одежды подряд, и каждый честно гнал
+///handle_mutant_bodyparts - самый дорогой по self проц в профиле раунда
+///(226мкс на вызов), то есть ~1.6мс мусора на каждую перерисовку. Счётчик, а не
+///флаг, чтобы вложенный regenerate_icons не снимал отсрочку внешнего.
+/mob/living/carbon/human/var/defer_mutant_bodyparts_update = 0
+///Была ли за время отсрочки хоть одна заявка на пересборку мутантных частей.
+/mob/living/carbon/human/var/pending_mutant_bodyparts_update = FALSE
+
 //used when putting/removing clothes that hide certain mutant body parts to just update those and not update the whole body.
 /mob/living/carbon/human/proc/update_mutant_bodyparts(block_recursive_calls = FALSE)
+	if(defer_mutant_bodyparts_update)
+		pending_mutant_bodyparts_update = TRUE
+		return
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_mutant_bodyparts(src, null, block_recursive_calls)
 
@@ -80,6 +93,11 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		if(!..())
 			icon_render_key = null //invalidate bodyparts cache
+			//Все update_inv_* ниже дёргают update_mutant_bodyparts(), и без
+			//отсрочки полная перерисовка гоняла handle_mutant_bodyparts восемь
+			//раз подряд на одном мобе. Копим заявки и выполняем одну в конце,
+			//когда все слои одежды уже на месте.
+			defer_mutant_bodyparts_update++
 			update_body(TRUE, block_recursive_calls)
 			update_hair()
 			update_inv_w_uniform(block_recursive_calls)
@@ -103,6 +121,10 @@ There are several things that need to be remembered:
 			update_inv_wear_suit(block_recursive_calls)
 			update_inv_pockets()
 			update_inv_neck()
+			defer_mutant_bodyparts_update--
+			if(!defer_mutant_bodyparts_update && pending_mutant_bodyparts_update)
+				pending_mutant_bodyparts_update = FALSE
+				update_mutant_bodyparts(block_recursive_calls)
 			update_transform()
 			//mutations
 			update_mutations_overlay()
@@ -116,6 +138,7 @@ There are several things that need to be remembered:
 				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
 				if(V.stealth_active && V.disguise)
 					V.ReapplyDisguise()
+			update_small_sprite()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
@@ -741,7 +764,7 @@ There are several things that need to be remembered:
 
 			if(S.mutantrace_variation)
 
-				if(T?.taur_mode)
+				if(T?.taur_mode && isemptylist(S.taur_types_icon_whitelist))
 					var/init_worn_icon = worn_icon
 					variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
 					switch(variation_flag)
@@ -763,6 +786,16 @@ There are several things that need to be remembered:
 				else if((DIGITIGRADE in dna.species.species_traits) && S.mutantrace_variation & STYLE_DIGITIGRADE && !(S.mutantrace_variation & STYLE_NO_ANTHRO_ICON)) //not a taur, but digitigrade legs.
 					worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
 					variation_flag |= STYLE_DIGITIGRADE
+
+			if(!isemptylist(S.taur_types_icon_whitelist))
+				for(var/special_taur_icon in S.taur_types_icon_whitelist)
+					if(dna.features["taur"] in S.taur_types_icon_whitelist[special_taur_icon])
+						worn_icon = 'modular_bluemoon/icons/mob/clothing/taur_custom_clothing.dmi'
+						worn_state += special_taur_icon
+						center = !isnull(T) ? T.center : TRUE
+						dimension_x = T?.dimension_x || 64
+						dimension_y = T?.dimension_y || 32
+						break
 
 			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE)
 			var/mutable_appearance/suit_overlay = overlays_standing[SUIT_LAYER]
@@ -1048,7 +1081,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		. += "-husk"
 
 	if(dna?.features)
-		. += "-emissive_eyes=[dna.features["emissive_eyes"]]"
+		. += "-allow_emissives=[dna.features["allow_emissives"]]"
+		. += "-emissive_parts=[safe_json_encode(dna.features["emissive_parts"])]"
 
 /mob/living/carbon/human/load_limb_from_cache()
 	..()

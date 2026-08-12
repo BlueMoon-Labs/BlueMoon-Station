@@ -47,14 +47,23 @@
 	if(. && (var_name == NAMEOF(src, config_entry_value)))
 		update_mob_config_movespeeds()
 
+//Дефолты = значения репозиторного config/entries/movespeed.txt. Без них мир,
+//чей конфиг не задаёт строку (CI, чистый деплой), бегал с задержкой 0: базовый
+///datum/config_entry/number несёт default = 0, а ValidateAndSet без строки в
+//конфиге не зовётся вовсе.
 /datum/config_entry/number/movedelay/run_delay
+	default = 1.5
 
 /datum/config_entry/number/movedelay/run_delay/ValidateAndSet()
 	. = ..()
 	var/datum/movespeed_modifier/config_walk_run/M = get_cached_movespeed_modifier(/datum/movespeed_modifier/config_walk_run/run)
 	M.sync()
+	//Скорость погони фауны привязана к скорости бегущего игрока, а не к отдельной
+	//константе - иначе они расходятся молча (см. AI_PURSUIT_SPEED_RATIO).
+	update_ai_pursuit_speed_floor()
 
 /datum/config_entry/number/movedelay/walk_delay
+	default = 3
 
 /datum/config_entry/number/movedelay/walk_delay/ValidateAndSet()
 	. = ..()
@@ -74,14 +83,22 @@
 		for(var/mob/living/L in world)
 			L.disable_intentional_sprint_mode()
 
+// Все три - множители замедления, и все три дробные. /datum/config_entry/number по
+// умолчанию несёт integer = TRUE, а ValidateAndSet() прогоняет значение через round(),
+// который в DM округляет вниз: 0.5 и 0.85 из конфига приезжали нулём, и замедления от
+// стаггера с потерей равновесия в проде не было вовсе. Что это баг, а не задумка, видно
+// по дробному дефолту 0.85 ниже - код умел его, сконфигурировать было нельзя.
 /datum/config_entry/number/sprintless_stagger_slowdown
 	default = 0
+	integer = FALSE
 
 /datum/config_entry/number/sprintless_off_balance_slowdown
 	default = 0.85
+	integer = FALSE
 
 /datum/config_entry/number/melee_stagger_factor
 	default = 1
+	integer = FALSE
 
 /datum/config_entry/number/movedelay/sprint_speed_increase
 	default = 1

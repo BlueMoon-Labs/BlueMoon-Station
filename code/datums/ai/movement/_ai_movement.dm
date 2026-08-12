@@ -6,9 +6,10 @@
 	var/max_pathing_attempts
 
 //Override this to setup the moveloop you want to use
-/datum/ai_movement/proc/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target)
+/datum/ai_movement/proc/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target, min_distance)
 	SHOULD_CALL_PARENT(TRUE)
 	controller.pathing_attempts = 0
+	controller.blackboard[BB_CURRENT_MIN_MOVE_DISTANCE] = min_distance
 	moving_controllers[controller] = current_movement_target
 
 /datum/ai_movement/proc/stop_moving_towards(datum/ai_controller/controller)
@@ -17,7 +18,14 @@
 	SSmove_manager.stop_looping(controller.pawn, SSai_movement)
 
 /datum/ai_movement/proc/increment_pathing_failures(datum/ai_controller/controller)
+	AI_METRIC_INC(failed_moves)
+	controller.note_move_failure()
 	controller.pathing_attempts++
 	if(controller.pathing_attempts >= max_pathing_attempts)
 		controller.CancelActions()
+		controller.on_pathing_attempts_exhausted()
+
+///Hook for controller families which need to release an unreachable target.
+/datum/ai_controller/proc/on_pathing_attempts_exhausted()
+	return
 

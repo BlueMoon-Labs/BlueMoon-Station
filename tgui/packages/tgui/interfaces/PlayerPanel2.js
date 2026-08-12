@@ -262,6 +262,14 @@ const PhysicalActions = (props) => {
             tooltip={!has_loadout ? "Player has no loadout data" : "Apply player's loadout"}
             onClick={() => act("apply_loadout")}
           />
+          <Button
+            width="100%"
+            icon="user-cog"
+            content="Appearance"
+            disabled={!mob_type.includes("/mob/living/carbon/human")}
+            tooltip="Apply saved character appearance"
+            onClick={() => act("update_appearance")}
+          />
         </Flex>
       </Section>
 
@@ -539,7 +547,7 @@ const QuirkCategory = (props) => {
               checked={active_quirks && active_quirks.includes(quirk.name)}
               content={quirk.name}
               tooltip={quirk.desc}
-              color={color}
+              color={active_quirks?.includes(quirk.name) ? color : null}
               disabled={!mob_type.includes("/mob/living/carbon/human")}
               onClick={() => act("toggle_quirk_direct", { quirk_name: quirk.name })}
             />
@@ -845,7 +853,7 @@ const FeatureBans = (props) => {
 
 const GeneralActions = (props) => {
   const { act, data } = useBackend();
-  const { client_ckey, mob_type, admin_mob_type } = data;
+  const { client_ckey, client_hearted, mob_type, admin_mob_type } = data;
   return (
     <Section>
       <Section title="Damage">
@@ -909,6 +917,19 @@ const GeneralActions = (props) => {
             height="100%"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("strip")}
+          />
+        </Flex>
+        <Flex mt={1}>
+          <Button
+            width="100%"
+            icon="heart"
+            color={client_hearted ? 'pink' : 'default'}
+            content={client_hearted ? 'Сердечко активно' : 'Выдать сердечко'}
+            disabled={!client_ckey}
+            tooltip={client_hearted
+              ? 'У игрока уже есть активное OOC-сердечко'
+              : 'Выдать OOC-сердечко на 24 часа'}
+            onClick={() => act('commend')}
           />
         </Flex>
         <Flex>

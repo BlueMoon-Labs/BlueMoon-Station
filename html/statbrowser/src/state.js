@@ -30,6 +30,9 @@ var State = {
 	interviewManager: { status: "", interviews: [] },
 	// SDQL2
 	sdql2: [],
+	// Ready players (lobby)
+	readyPlayers: [],
+	readyPlayersVisible: false,
 	// Turf
 	turfName: "",
 	turfContents: [],

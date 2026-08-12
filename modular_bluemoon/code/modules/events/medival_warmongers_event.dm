@@ -1,7 +1,9 @@
 /datum/round_event_control/medieval_warmongers
 	name = "Medieval Warmongers"
 	typepath = /datum/round_event/medieval_warmongers
-	weight = 15
+	// Вес 15 был диким выбросом для тяжёлого командного асолта: любой поздний ролл цели
+	// гост-копилки почти гарантированно уходил в вармонгеров. Теперь тир прочих heavy.
+	weight = 6
 	max_occurrences = 1
 	min_players = 35
 	earliest_start = 40 MINUTES
@@ -64,6 +66,7 @@
 		if(D && D.adjust_money(-payoff))
 			priority_announce("ЭТОГО БУДЕТ ДОСТАТОЧНО, ПОМНИ, КОМУ ТЫ ПРИНАДЛЕЖИШЬ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
 			return
 		priority_announce("ТЫ СЧИТАЕШЬ МЕНЯ ШУТОМ? ТЕБЕ КОНЕЦ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
@@ -79,6 +82,12 @@
 	if(length(space_zlevels))
 		return pick(space_zlevels)
 	return SSmapping.station_start
+
+/datum/round_event/medieval_warmongers/proc/resolve_threat_peacefully()
+	warmongers_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 /// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
 /// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
@@ -172,7 +181,7 @@
 	icon_state = "bodybag"
 	mob_name = "a medieval warmonger"
 	job_description = "Medieval Warmonger"
-	mob_species = /datum/species/human
+	mob_species = /datum/species/skeleton/space
 	outfit = /datum/outfit/medieval
 	roundstart = FALSE
 	death = FALSE
@@ -190,7 +199,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		ADD_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		to_chat(H, "<span class='notice'>You feel robust.</span>")
 		var/datum/species/S = H.dna.species
 		S.brutemod *= 0.5
@@ -219,7 +227,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		REMOVE_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		H.dna.add_mutation(/datum/mutation/human/hulk/superhuman)
 		H.dna.add_mutation(/datum/mutation/human/gigantism)
 	new_spawn.mind.add_antag_datum(/datum/antagonist/warmonger)
@@ -247,13 +254,16 @@
 
 // Medieval Outfits
 
+/obj/item/flashlight/flare/torch/pocket
+	w_class = WEIGHT_CLASS_SMALL
+
 /datum/outfit/medieval
 	name = "Medieval Warmonger"
 	id = null
 	glasses = null
 
 	uniform = /obj/item/clothing/under/costume/gamberson/military
-	suit = /obj/item/clothing/suit/armor/vest/military
+	suit = /obj/item/clothing/suit/armor/vest/knight/military
 	suit_store = /obj/item/spear/military
 	back = /obj/item/storage/backpack/satchel/leather
 	gloves = /obj/item/clothing/gloves/color/brown
@@ -262,7 +272,7 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	belt = /obj/item/storage/belt/iron_tasset
 	l_hand = /obj/item/claymore/cerberus
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 	backpack_contents = list(/obj/item/stack/sheet/cloth, /obj/item/feather)
 
@@ -278,7 +288,7 @@
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
 	belt = /obj/item/storage/belt/gold_tasset
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 
 // Medieval Belts
@@ -294,9 +304,10 @@
 /obj/item/storage/belt/iron_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/iron_tasset/PopulateContents()
 	for(var/i in 1 to 5)
@@ -305,17 +316,18 @@
 /obj/item/storage/belt/gold_tasset
 	name = "tasseted gold belt"
 	desc = "A fine leather belt that's been sleeved within many segments of steel, and further reinforced with the tassets of a fluted cuirass."
-	icon_state = "steeltasset"
-	item_state = "steeltasset"
+	icon_state = "goldtasset"
+	item_state = "goldtasset"
 	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/belt/gold_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/gold_tasset/PopulateContents()
 	for(var/i in 1 to 5)

@@ -11,7 +11,7 @@
 	exp_type = EXP_TYPE_CREW
 	exp_requirements = 60
 	alt_titles = list(
-		"Genetist Intern", //Стажер выше, для удобства
+		"Geneticist Intern", //Стажер выше, для удобства
 		"Bioengineer",
 		"Gene Tailor",
 		"Gene Therapist",
@@ -74,6 +74,7 @@
 	suit_store =  /obj/item/flashlight/pen
 	l_pocket = /obj/item/sequence_scanner
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med

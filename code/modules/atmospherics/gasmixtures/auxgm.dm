@@ -47,6 +47,14 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 	var/id = ""
 	var/specific_heat = 0
 	var/name = ""
+	/// Текст для внутриигрового справочника. Пишется по единой схеме: что это,
+	/// как получить, зачем нужен, чем опасен - иначе тексты разъезжаются по
+	/// объёму и полезности, и половина газов остаётся без ответа на "а зачем".
+	var/description = ""
+	/// Уровень сложности синтеза, GAS_TIER_*. Объявляется явно у каждого газа,
+	/// потому что по нему калибруются цена продажи и разовая награда науки за
+	/// первый синтез, а вывести его из цепочки реакций глазами нельзя.
+	var/tier = GAS_TIER_RAW
 	var/gas_overlay = "generic" //icon_state in icons/effects/atmospherics.dmi
 	var/color = "#ffff" // Tints the overlay by this color. Use instead of gas_overlay, usually (but not necessarily).
 	var/odor = null // Odor string. Null means none; if not null, anyone who breathes the gas will smell it.

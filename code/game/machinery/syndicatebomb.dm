@@ -207,6 +207,8 @@
 			activate()
 			update_icon()
 			add_fingerprint(user)
+			if(payload)
+				payload.primed_by = user
 
 			var/turf/bombturf = get_turf(src)
 			if(payload && !istype(payload, /obj/item/bombcore/training))
@@ -265,6 +267,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE //Burnable (but the casing isn't)
 	var/adminlog = null
+	var/mob/living/primed_by
 	var/range_heavy = 3
 	var/range_medium = 9
 	var/range_light = 17
@@ -282,7 +285,7 @@
 	if(adminlog)
 		message_admins(adminlog)
 		log_game(adminlog)
-	explosion(src, range_heavy, range_medium, range_light, flame_range = range_flame)
+	explosion(src, range_heavy, range_medium, range_light, flame_range = range_flame, attacker = primed_by)
 	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
 		qdel(loc)
 	qdel(src)
@@ -379,7 +382,7 @@
 	if(adminlog)
 		message_admins(adminlog)
 		log_game(adminlog)
-	explosion(src, range_heavy, range_medium, range_light, range_light, adminlog = TRUE, ignorecap = TRUE, flame_range = range_flame)
+	explosion(src, range_heavy, range_medium, range_light, range_light, adminlog = TRUE, ignorecap = TRUE, flame_range = range_flame, attacker = primed_by)
 	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
 		qdel(loc)
 	qdel(src)

@@ -263,6 +263,17 @@
 	nocell_state = "defibcompact-nocell"
 	emagged_state = "defibcompact-emagged"
 
+/// Награда кристаллизатора за хилиум. Встроенное лечебное улучшение помогает
+/// стабилизировать пациента после реанимации, но прочие ограничения обычного
+/// компактного дефибриллятора сохраняются.
+/obj/item/defibrillator/compact/loaded/crystallizer
+	name = "healium defibrillator"
+	desc = "Компактный дефибриллятор, выращенный в кристаллизаторе. Хилиумная решётка смягчает повреждения при успешной реанимации."
+	icon_state = "defibcompact_healium"
+	item_state = "defibcompact_healium"
+	paddle_state = "defibcompact_healium-paddles"
+	healdisk = TRUE
+
 /obj/item/defibrillator/compact/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == user.getBeltSlot())
 		return TRUE

@@ -4,12 +4,14 @@
 /mob/living/carbon/proc/apply_overlay(cache_index)
 	if((. = overlays_standing[cache_index]))
 		add_overlay(.)
+	update_small_sprite()
 
 /mob/living/carbon/proc/remove_overlay(cache_index)
 	var/I = overlays_standing[cache_index]
 	if(I)
 		cut_overlay(I)
 		overlays_standing[cache_index] = null
+	update_small_sprite()
 
 /mob/living/carbon/regenerate_icons()
 	if(mob_transforming)
@@ -29,7 +31,7 @@
 	var/list/hands = list()
 	for(var/obj/item/I in held_items)
 		if(client && hud_used && hud_used.hud_version != HUD_STYLE_NOHUD)
-			I.screen_loc = ui_hand_position(get_held_index_of_item(I))
+			I.screen_loc = ui_hand_position(get_held_index_of_item(I), I.base_pixel_x, I.base_pixel_y)
 			client.screen += I
 			if(observers && observers.len)
 				for(var/M in observers)

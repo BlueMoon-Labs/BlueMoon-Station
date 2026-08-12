@@ -34,7 +34,12 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 6
-	STR.can_hold |= typecacheof(list( // Extra items that can go in tailbags, on top of common wallet list
+	// The parent wallet whitelist is a shared static now: never mutate it in
+	// place (the old `can_hold |=` poisoned every wallet). Build the merged
+	// tailbag whitelist once and reuse it for every tailbag.
+	var/static/list/tailbag_can_hold
+	if(isnull(tailbag_can_hold))
+		tailbag_can_hold = STR.can_hold | typecacheof(list( // Extra items that can go in tailbags, on top of common wallet list
 	/obj/item/restraints/handcuffs,
 	/obj/item/assembly/flash,
 	/obj/item/laser_pointer,
@@ -56,9 +61,10 @@
 	/obj/item/clothing/accessory/ac_patch,
 	/obj/item/clothing/accessory/monolith_patch,
 	/obj/item/clothing/accessory/tratch_patch,
-	/obj/item/clothing/accessory/paws_patch,
-	/obj/item/buttplug,
-	))
+		/obj/item/clothing/accessory/paws_patch,
+		/obj/item/buttplug,
+		))
+	STR.can_hold = tailbag_can_hold
 
 /obj/item/storage/wallet/tailbag/xtralg
 	name = "XL Tailbag"

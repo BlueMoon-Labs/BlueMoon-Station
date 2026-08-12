@@ -591,3 +591,43 @@
 /area/ruin/space/has_grav/syndiederelict/virology
 	name = "Syndicate Derelict Virology"
 	icon_state = "virology"
+
+/area/ruin/space/has_grav/contobandbase
+	name = "Controbandist base"
+	icon_state = "red"
+
+/area/ruin/space/has_grav/InteQship
+	name = "InteQ broken Ship"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/InteQship
+	name = "InteQ broken Ship"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/MimicResrch
+	name = "Reserch Avanpost"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/Space_cafe
+	name = "Space Cafe"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/AtmosAsteroid
+	name = "Atmos Asteroid"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/Sidi_pidor
+	name = "Sidi ComsBoy"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/Luter_Ship/Ship
+	name = "Cargo Ship"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship
+	name = "Base_Ship"
+	icon_state = "Orange"
+
+/area/ruin/space/has_grav/Strange_Avanpost
+	name = "??? Avanpost"
+	icon_state = "Orange"

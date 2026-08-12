@@ -27,6 +27,7 @@
 		"Chief of Security",
 		"Chief Security Officer",
 		"Commander of the Guard",
+		"Commissioner of Security",
 		"Division Leader",
 		"Head of Slutcurity",
 		"Head of Studcurity",
@@ -110,6 +111,7 @@
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 	l_pocket = /obj/item/assembly/flash/handheld
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo

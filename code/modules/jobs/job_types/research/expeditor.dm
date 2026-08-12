@@ -25,6 +25,8 @@
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
 	threat = 2
 	alt_titles = list(
+		"Junior Expeditor", //Стажер выше, для удобства
+		"Expeditor Trainee", //Стажер выше, для удобства
 		"Space Explorer",
 		"Space Expeditor",
 		"Sexplorer",
@@ -70,6 +72,7 @@
 	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

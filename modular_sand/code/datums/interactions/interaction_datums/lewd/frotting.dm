@@ -17,7 +17,7 @@
 	//var/t_His = user.ru_ego()
 	var/genital_name = user.get_penetrating_genital_name()
 
-	message = "потирает свой [genital_name] о [genital_name] <b>[partner]</b>."
+	message = "потирает свой [genital_name] о [partner.get_penetrating_genital_name()] <b>[partner]</b>."
 	user.set_is_fucking(partner, CUM_TARGET_PENIS, user.getorganslot(ORGAN_SLOT_PENIS))
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())

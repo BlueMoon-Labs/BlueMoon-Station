@@ -3,6 +3,7 @@ import { Button, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
   verb_consent: boolean,
+  custom_verb_consent: boolean,
   ranged_verb_pref : boolean,
   lewd_verb_sounds: boolean,
   arousable: boolean,
@@ -36,6 +37,7 @@ export const ContentPreferencesTab = (props) => {
   const { act, data } = useBackend<ContentPrefsInfo>();
   const {
     verb_consent,
+    custom_verb_consent,
     ranged_verb_pref,
     lewd_verb_sounds,
     arousable,
@@ -75,6 +77,19 @@ export const ContentPreferencesTab = (props) => {
           selected={verb_consent}
           onClick={() => act('pref', {
             pref: 'verb_consent',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Allow custom verbs"
+          icon={custom_verb_consent ? "toggle-on" : "toggle-off"}
+          selected={custom_verb_consent}
+          tooltip="Разрешить другим использовать твои/направленные на тебя кастомные интеракты"
+          onClick={() => act('pref', {
+            pref: 'custom_verb_consent',
           })}
         />
       </Stack.Item>

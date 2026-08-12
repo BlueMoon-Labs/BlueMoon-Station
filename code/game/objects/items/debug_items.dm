@@ -125,57 +125,60 @@
 		ERASER_MODE_ALL = "all",
 	)
 	var/punish_process = FALSE
+	var/mass_mode = FALSE
 
 /obj/item/debug/eraser/examine(mob/user)
 	. = ..()
 	. += span_notice("<b>Erasing mode: [mode_desc[mode]].</b>")
+	. += span_notice("<b>Mass erase mode is [mass_mode ? "ON" : "OFF"]</b>")
 
 /obj/item/debug/eraser/afterattack(atom/target, mob/user, proximity)
 	. = ..()
-	if(!user.client?.holder)
-		if(punish_process)
-			return
-		to_chat(user, span_userdanger("У ТЕБЯ НЕТ МОГУЩЕСТВА!"))
-		punish_process = TRUE
-		lightningbolt(user)
-		punish_process = FALSE
+	if(!rights_check(user))
 		return
-	if(user == target)
-		to_chat(user, span_warning("Ты правда хотел стереть себя?"))
-		return
-	if(istype(target, /atom/movable/screen))
-		return
-	if(mode == ERASER_MODE_MOB && !ismob(target))
-		return
-	if(mode == ERASER_MODE_OBJ && !isobj(target))
-		return
-	if(mode == ERASER_MODE_TURF && (!isturf(target) || isspaceturf(target)))
-		return
-
-	var/atom/A = target
-	var/coords = ""
-	var/jmp_coords = ""
-	if(istype(A))
-		var/turf/T = get_turf(A)
+	var/list/list_to_erase = list()
+	if(mass_mode)
+		var/turf/T = get_turf(target)
 		if(T)
-			coords = "at [COORD(T)]"
-			jmp_coords = "at [ADMIN_COORDJMP(T)]"
+			list_to_erase += T.contents
+			list_to_erase += T
+	list_to_erase |= target
+	var/succes_erase = FALSE
+	for(var/atom/to_erase as anything in list_to_erase)
+		if(user == to_erase)
+			to_chat(user, span_warning("Ты правда хотел стереть себя?"))
+			continue
+		if(istype(to_erase, /atom/movable/screen))
+			continue
+		if(mode == ERASER_MODE_MOB && !ismob(to_erase))
+			continue
+		if(mode == ERASER_MODE_OBJ && !isobj(to_erase))
+			continue
+		if(mode == ERASER_MODE_TURF && (!isturf(to_erase) || isspaceturf(to_erase)))
+			continue
+
+		succes_erase = TRUE
+
+		var/atom/A = to_erase
+		var/coords = ""
+		if(istype(A))
+			var/turf/T = get_turf(A)
+			if(T)
+				coords = "at [COORD(T)]"
+
+		log_admin("[key_name(user)] deleted [to_erase] [coords] with [src]")
+		if(isturf(to_erase))
+			var/turf/T = to_erase
+			T.ScrapeAway()
 		else
-			jmp_coords = coords = "in nullspace"
-
-	playsound(user, 'sound/magic/wandodeath.ogg', 50, 1)
-
-	log_admin("[key_name(user)] deleted [target] [coords] with [src]")
-	message_admins("[key_name_admin(user)] deleted [target] [jmp_coords] with [src]")
-	SSblackbox.record_feedback("tally", "eraser", 1, "Delete")  //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	if(isturf(target))
-		var/turf/T = target
-		T.ScrapeAway()
-	else
-		qdel(target)
+			qdel(to_erase)
+	if(succes_erase)
+		playsound(user, 'sound/magic/wandodeath.ogg', 35, TRUE)
 
 /obj/item/debug/eraser/attack_self(mob/user)
 	. = ..()
+	if(!rights_check(user))
+		return
 	switch(mode)
 		if(ERASER_MODE_MOB)
 			mode = ERASER_MODE_OBJ
@@ -186,6 +189,24 @@
 		else
 			mode = ERASER_MODE_MOB
 	user.balloon_alert(user, "Now erase only: [mode_desc[mode]]")
+
+/obj/item/debug/eraser/AltClick(mob/user)
+	. = ..()
+	if(!rights_check(user) || !Adjacent(user))
+		return
+	mass_mode = !mass_mode
+	user.balloon_alert(user, "Mass erase: [mass_mode ? "ON" : "OFF"]")
+
+/obj/item/debug/eraser/proc/rights_check(mob/user)
+	if(!user.client?.holder)
+		if(punish_process)
+			return FALSE
+		to_chat(user, span_userdanger("У ТЕБЯ НЕТ МОГУЩЕСТВА!"))
+		punish_process = TRUE
+		lightningbolt(user)
+		punish_process = FALSE
+		return FALSE
+	return TRUE
 
 #undef ERASER_MODE_MOB
 #undef ERASER_MODE_OBJ

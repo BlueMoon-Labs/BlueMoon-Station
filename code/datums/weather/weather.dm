@@ -81,6 +81,14 @@
 	var/next_hit_time = 0
 	/// This causes the weather to only end if forced to
 	var/perpetual = FALSE
+	/**
+	 * id профиля параллакса, который стоит на затронутых z, пока идёт погода.
+	 *
+	 * Погода уже знает, где и когда она идёт, поэтому отдельное событие ради
+	 * смены картинки за бортом заводить незачем: пепельная буря сама включает
+	 * пепел в небе и сама его выключает. null - погода параллакс не трогает.
+	 */
+	var/parallax_profile
 
 /datum/weather/New(z_levels)
 	..()
@@ -136,6 +144,7 @@
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_START(type))
 	stage = MAIN_STAGE
 	update_areas()
+	apply_parallax()
 	for(var/z_level in impacted_z_levels)
 		for(var/mob/player as anything in SSmobs.clients_by_zlevel[z_level])
 			var/turf/mob_turf = get_turf(player)
@@ -182,6 +191,27 @@
 	stage = END_STAGE
 	STOP_PROCESSING(SSweather, src)
 	update_areas()
+	clear_parallax()
+
+/// Токен модификатора параллакса. Один на тип погоды: две бури одного типа на
+/// одном z система и так не допускает.
+/datum/weather/proc/parallax_token()
+	return "weather_[type]"
+
+/// Ставит профиль погоды на затронутых z. Перебить его может только админ.
+/datum/weather/proc/apply_parallax()
+	if(!parallax_profile)
+		return
+	for(var/z_level in impacted_z_levels)
+		SSparallax.set_profile(z_level, parallax_profile, parallax_token(), PARALLAX_PRIORITY_WEATHER, 2 SECONDS)
+
+/// Снимает профиль погоды. Зовётся из end(), который отрабатывает и по таймеру
+/// затухания, и при принудительной остановке бури.
+/datum/weather/proc/clear_parallax()
+	if(!parallax_profile)
+		return
+	for(var/z_level in impacted_z_levels)
+		SSparallax.restore_profile(z_level, parallax_token(), 3 SECONDS)
 
 /datum/weather/process()
 	if(aesthetic || (stage != MAIN_STAGE))
@@ -204,6 +234,12 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
+	// get_turf() already resolved containment. Reading its area directly avoids
+	// a second loc-chain traversal for every mob in every weather cycle, and the
+	// area rejection belongs before the more expensive trait walk.
+	if(!(mob_turf.loc in impacted_areas))
+		return
+
 	if((immunity_type && HAS_TRAIT(mob_to_check, immunity_type)) || HAS_TRAIT(mob_to_check, TRAIT_WEATHER_IMMUNE))
 		return
 
@@ -212,9 +248,6 @@
 		if((immunity_type && HAS_TRAIT(loc_to_check, immunity_type)) || HAS_TRAIT(loc_to_check, TRAIT_WEATHER_IMMUNE))
 			return
 		loc_to_check = loc_to_check.loc
-
-	if(!(get_area(mob_to_check) in impacted_areas))
-		return
 
 	return TRUE
 

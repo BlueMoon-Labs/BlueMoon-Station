@@ -98,6 +98,8 @@
 	var/list/managed_vis_overlays
 	///overlays managed by [update_overlays][/atom/proc/update_overlays] to prevent removing overlays that weren't added by the same proc
 	var/list/managed_overlays
+	///Connected-cluster datums currently tracking this atom.
+	var/list/datum/merger/mergers
 
 	///Proximity monitor associated with this atom
 	var/datum/proximity_monitor/proximity_monitor
@@ -183,6 +185,15 @@
  *
  * We also generate a tag here if the DF_USE_TAG flag is set on the atom
  */
+/// Gets the merger datum representing this atom's connected cluster.
+/atom/proc/GetMergeGroup(id, list/allowed_types)
+	RETURN_TYPE(/datum/merger)
+	var/datum/merger/candidate = mergers?[id]
+	if(!candidate)
+		new /datum/merger(id, allowed_types, src)
+		candidate = mergers?[id]
+	return candidate
+
 /atom/New(loc, ...)
 	//atom creation method that preloads variables at creation
 	if(GLOB.use_preloader && (src.type == GLOB._preloader.target_path))//in case the instanciated atom is creating other atoms in New()
@@ -319,8 +330,10 @@
 
 	if(GLOB.lighting_deferred_atoms.Remove(src)) // кэш отложенных z протухает только если атом реально был запаркован
 		GLOB.lighting_deferred_z_cache = null
-	QDEL_NULL(light)
-	QDEL_NULL(proximity_monitor)
+	if(light)
+		QDEL_NULL(light)
+	if(proximity_monitor)
+		QDEL_NULL(proximity_monitor)
 
 	return ..()
 
@@ -360,8 +373,11 @@
 	//SHOULD_CALL_PARENT(TRUE)
 	if(mover.pass_flags & pass_flags_self)
 		return TRUE
-	if(mover.throwing && (pass_flags_self & LETPASSTHROW))
-		return TRUE
+	if(mover.throwing)
+		if(pass_flags_self & LETPASSTHROW)
+			return TRUE
+		if(mover.throwing.thrower == src)
+			return TRUE
 	return !density
 
 /**
@@ -699,16 +715,64 @@
 		if(LAZYLEN(managed_vis_overlays))
 			SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 
+		// Normalize everything to interned appearances up front so the identity
+		// compare below works: BYOND interns appearances, so equal content means
+		// equal instance. Strings/icons are normalized here too (tg leaves them
+		// raw and never short-circuits string overlays).
 		var/list/new_overlays = update_overlays(updates)
-		if(managed_overlays)
-			cut_overlay(managed_overlays)
-			managed_overlays = null
-		if(length(new_overlays))
-			if (length(new_overlays) == 1)
-				managed_overlays = new_overlays[1]
+		// Some legacy overrides call ..() without `. = ..()` and return a bare
+		// string/appearance instead of a list; the old code fed that straight to
+		// add_overlay(), so wrap it to keep the same result instead of indexing it.
+		if(!islist(new_overlays))
+			new_overlays = new_overlays ? list(new_overlays) : list()
+		var/nulls = 0
+		for(var/i in 1 to length(new_overlays))
+			var/atom/entry = new_overlays[i]
+			if(isnull(entry))
+				nulls++
+				continue
+			if(istext(entry))
+				new_overlays[i] = iconstate2appearance(icon, entry)
+			else if(isicon(entry))
+				new_overlays[i] = icon2appearance(entry)
 			else
-				managed_overlays = new_overlays
-			add_overlay(new_overlays)
+				new_overlays[i] = entry.appearance
+		if(nulls)
+			for(var/i in 1 to nulls)
+				new_overlays -= null
+
+		var/identical = FALSE
+		var/new_length = length(new_overlays)
+		if(!managed_overlays && !new_length)
+			identical = TRUE
+		else if(!islist(managed_overlays))
+			if(new_length == 1 && managed_overlays == new_overlays[1])
+				identical = TRUE
+		else if(length(managed_overlays) == new_length)
+			identical = TRUE
+			for(var/i in 1 to new_length)
+				if(managed_overlays[i] != new_overlays[i])
+					identical = FALSE
+					break
+
+		if(!identical)
+			var/full_control = FALSE
+			if(managed_overlays)
+				full_control = length(overlays) == (islist(managed_overlays) ? length(managed_overlays) : 1)
+				if(full_control)
+					overlays = null
+				else
+					cut_overlay(managed_overlays)
+
+			switch(new_length)
+				if(0)
+					managed_overlays = null
+				if(1)
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays[1]
+				else
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays
 		. |= UPDATE_OVERLAYS
 
 	. |= SEND_SIGNAL(src, COMSIG_ATOM_UPDATED_ICON, updates, .)
@@ -792,6 +856,8 @@
  */
 /atom/proc/hitby(atom/movable/hitting_atom, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
 	SEND_SIGNAL(src, COMSIG_ATOM_HITBY, hitting_atom, skipcatch, hitpush, blocked, throwingdatum)
+	if(QDELETED(src))
+		return FALSE
 	if(density && !has_gravity(hitting_atom)) //thrown stuff bounces off dense stuff in no grav, unless the thrown stuff ends up inside what it hit(embedding, bola, etc...).
 		addtimer(CALLBACK(src, PROC_REF(hitby_react), hitting_atom), 0.2 SECONDS)
 	return FALSE
@@ -1225,9 +1291,16 @@
 	SEND_SIGNAL(AM, COMSIG_ATOM_ENTERING, src, oldLoc)
 
 /atom/Exit(atom/movable/AM, atom/newLoc)
-	. = ..()
+	// Намеренно НЕ зовём ..(): нативный Exit() обходит contents и дёргает
+	// Uncross() на каждом атоме в турфе. /turf/Exit ниже делает ровно этот обход
+	// сам - с гейтом blocks_exit_checks и с обработкой Bump/PHASING, - так что
+	// нативный проход был вторым, негейтящимся и полностью дублирующим: 553k
+	// вызовов Uncross() за 78 секунд раунда 9800. Апстрим tg выпилил его по той
+	// же причине. Чтобы что-то могло запретить выход, есть COMSIG_ATOM_EXIT
+	// (через /datum/element/connect_loc) либо blocks_exit_checks + Uncross().
 	if(SEND_SIGNAL(src, COMSIG_ATOM_EXIT, AM, newLoc) & COMPONENT_ATOM_BLOCK_EXIT)
 		return FALSE
+	return TRUE
 
 /atom/Exited(atom/movable/AM, atom/newLoc)
 	SEND_SIGNAL(src, COMSIG_ATOM_EXITED, AM, newLoc)
@@ -1254,7 +1327,7 @@
 	return
 
 // Generic logging helper
-/atom/proc/log_message(message, message_type, color=null, log_globally=TRUE)
+/atom/proc/log_message(message, message_type, color=null, log_globally=TRUE, atom/target = null)
 	if(!log_globally)
 		return
 
@@ -1356,11 +1429,11 @@
 	var/postfix = "[sobject][saddition][hp]"
 
 	var/message = "[what_done] [starget][postfix]"
-	user.log_message(message, LOG_ATTACK, color="red")
+	user.log_message(message, LOG_ATTACK, color="red", target = target)
 
 	if(user != target)
 		var/reverse_message = "has been [what_done] by [ssource][postfix]"
-		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE)
+		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE, target = user)
 
 /**
   * log_wound() is for when someone is *attacked* and suffers a wound. Note that this only captures wounds from damage, so smites/forced wounds aren't logged, as well as demotions like cuts scabbing over
@@ -1457,10 +1530,15 @@
 
 	var/list/names = islist(name_or_names) ? name_or_names : list(name_or_names)
 
+	var/removed_any = FALSE
 	for(var/name in names)
 		if(filter_data[name])
 			filter_data -= name
-	update_filters()
+			removed_any = TRUE
+	// update_filters() sorts and rebuilds the whole list — pointless if we
+	// removed nothing, which is the common case for speculative removals.
+	if(removed_any)
+		update_filters()
 
 /atom/proc/clear_filters()
 	filter_data = null
@@ -1527,29 +1605,31 @@
 	if(!T)
 		return FALSE
 
-	var/list/forced_gravity = list()
-	SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
-	if(!forced_gravity.len)
-		SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
-	if(forced_gravity.len)
-		var/max_grav
-		for(var/i in forced_gravity)
-			max_grav = max(max_grav, i)
-		return max_grav
+	// Проверяется на каждый шаг каждого моба: аллокация списка и сигналы -
+	// только когда на src или турфе действительно есть подписчик forced gravity
+	if(comp_lookup?[COMSIG_ATOM_HAS_GRAVITY] || T.comp_lookup?[COMSIG_TURF_HAS_GRAVITY])
+		var/list/forced_gravity = list()
+		SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
+		if(!forced_gravity.len)
+			SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
+		if(forced_gravity.len)
+			var/max_grav
+			for(var/i in forced_gravity)
+				max_grav = max(max_grav, i)
+			return max_grav
 
 	if(isspaceturf(T)) // Turf never has gravity
 		return FALSE
 
-	var/area/A = get_area(T)
+	var/area/A = T.loc
 	if(A.has_gravity) // Areas which always has gravity
 		return A.has_gravity
-	else
-		// There's a gravity generator on our z level
-		if(GLOB.gravity_generators["[T.z]"])
-			var/max_grav = 0
-			for(var/obj/machinery/gravity_generator/main/G in GLOB.gravity_generators["[T.z]"])
-				max_grav = max(G.setting,max_grav)
-			return max_grav
+
+	// Кэш по z вместо обхода генераторов и цепочки level_trait->get_level;
+	// уровень новее кэша (окно инита нового z) - читаем трейт напрямую
+	var/list/gravity_cache = SSmapping.gravity_by_z_level
+	if(T.z <= length(gravity_cache))
+		return gravity_cache[T.z]
 	return SSmapping.level_trait(T.z, ZTRAIT_GRAVITY)
 
 /**
@@ -1579,14 +1659,21 @@
 ///Called when something resists while this atom is its loc
 /atom/proc/container_resist_act(mob/living/user)
 
-//Update the screentip to reflect what we're hoverin over
+//Record the hover; SSmouse_entered runs the screentip update for the LAST
+//hovered atom once per tick instead of on every input event (tg port).
 /atom/MouseEntered(location, control, params)
 	. = ..()
-
-	var/mob/user = usr
-	if(isnull(user))
+	if(isnull(usr) || !usr.client)
 		return
-	if(!GET_CLIENT(user))
+	SSmouse_entered.hovers[usr.client] = src
+
+///Deferred hover handler: called by SSmouse_entered at most once per tick per
+///client, with the most recently hovered atom. Updates the screentip.
+/atom/proc/on_mouse_enter(client/hovering_client)
+	SHOULD_NOT_SLEEP(TRUE)
+
+	var/mob/user = hovering_client?.mob
+	if(isnull(user) || user.client != hovering_client)
 		return
 
 	// Screentips

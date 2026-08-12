@@ -8,6 +8,10 @@
 #define PLANETARY_CHURN_TEMPLATE_A "o2=14;n2=23;TEMP=320"
 #define PLANETARY_CHURN_TEMPLATE_B "o2=22;n2=82;TEMP=293.15"
 #define PLANETARY_CHURN_MAX_CYCLES 400
+/// Температура бодрой кромки в breakdown_evicts_settled_planetary: на ~107 K
+/// выше шаблона B, чтобы бакет-среднее девяти членов (старое поведение) ушло от
+/// шаблона дальше 4K-порога compare() и удержало осевших.
+#define PLANETARY_CHURN_WARM_EDGE_TEMPERATURE 400
 
 /datum/unit_test/planetary_churn
 	priority = TEST_LONGER
@@ -302,6 +306,54 @@
 	TEST_ASSERT_EQUAL(sky_a_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_a_diff]')")
 	TEST_ASSERT_EQUAL(sky_b_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_b_diff]')")
 
+/// Брейкдаун не копит осевшее небо. Болезнь раунда 9929: пробоина держала
+/// группу живой, бодрая кромка неба грела бакет-среднее, и каждый брейкдаун
+/// удерживал (air_changed) и перезаписывал ВСЕХ осевших планетарных членов -
+/// группа кольцами впитала 19 тысяч спящих турфов, а первый же мердж с новым
+/// событием разбудил их поуком за один цикл, и 32-40 тысяч активных не оседали
+/// до конца раунда. Теперь планетарные члены в усреднении не участвуют:
+/// осевшие выселяются нетронутыми (их держит шаблон), бодрые живут своим
+/// process_cell.
+/datum/unit_test/planetary_churn/breakdown_evicts_settled_planetary/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	build_room()
+	for(var/turf/open/T as anything in room)
+		make_planetary(T, PLANETARY_CHURN_TEMPLATE_B)
+	settle_room()
+	var/turf/base = run_loc_floor_bottom_left
+	var/turf/open/warm_edge = locate(base.x + 2, base.y + 2, base.z)
+	var/datum/gas_mixture/template = SSair.get_planetary_template(warm_edge)
+	var/datum/excited_group/group = new
+	for(var/turf/open/T as anything in room)
+		SSair.add_to_active(T, FALSE)
+		group.add_turf(T)
+	// Кромка у пробоины: заметно теплее неба, чтобы бакет-среднее (старое
+	// поведение) ушло от шаблона дальше порога compare() и удержало всех.
+	warm_edge.air.set_temperature(PLANETARY_CHURN_WARM_EDGE_TEMPERATURE)
+	var/list/turf/open/settled_sky = list()
+	for(var/turf/open/T as anything in room)
+		if(T == warm_edge)
+			continue
+		settled_sky += T
+		SSair.sleep_active_turf(T)
+	group.self_breakdown(poke_resting = TRUE)
+	var/evict_failures = 0
+	var/touched_air = 0
+	var/woken = 0
+	for(var/turf/open/T as anything in settled_sky)
+		if(T.excited_group)
+			evict_failures++
+		if(T.air.compare(template) != "")
+			touched_air++
+		if(T.excited)
+			woken++
+	var/edge_retained = (warm_edge.excited_group == group)
+	cleanup_room()
+	TEST_ASSERT_EQUAL(evict_failures, 0, "брейкдаун удержал осевшие планетарные турфы в группе вместо выселения")
+	TEST_ASSERT_EQUAL(touched_air, 0, "брейкдаун переписал воздух осевших планетарных турфов (усреднение неба)")
+	TEST_ASSERT_EQUAL(woken, 0, "брейкдаун-поук разбудил осевшее небо")
+	TEST_ASSERT(edge_retained, "бодрый планетарный член должен оставаться в группе до собственного отдыха")
+
 /// The planetary templates themselves must be chemically inert: a template
 /// whose react() consumes its own gases turns every planetary turf into a
 /// perpetual reaction+regeneration pump.
@@ -329,6 +381,75 @@
 		qdel(holder.active_hotspot)
 	cleanup_room()
 
+/// Спящий планетарный сосед - бесконечный резервуар своего неба. Пара "тёплый
+/// интерьер - осевшая улица" не должна будить улицу: раньше share() вливал
+/// тепло в снежный тайл, шаблон стирал его за пару циклов, а разбуженный снег
+/// до нового сна поднимал и своих соседей - обе стороны каждой открытой на
+/// мороз двери и каждого шахтёрского тоннеля бодрствовали до конца раунда.
+/// Разбуженное же небо (свежий выброс на него) обязано обмениваться по-старому.
+/datum/unit_test/planetary_churn/sky_reservoir/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	build_room()
+	var/turf/base = run_loc_floor_bottom_left
+	var/turf/open/sky = locate(base.x + 1, base.y + 2, base.z)
+	var/turf/open/interior = locate(base.x + 2, base.y + 2, base.z)
+	make_planetary(sky, PLANETARY_CHURN_TEMPLATE_A)
+	settle_room()
+	// Пересчёт смежности внутри settle_room() будит соседей уже обработанных
+	// тайлов; этому тесту нужен полностью спящий старт - финальный свип.
+	for(var/turf/open/T as anything in room)
+		SSair.remove_from_active(T)
+	TEST_ASSERT_EQUAL(sky.air.compare(SSair.get_planetary_template(sky)), "", "предпосылка: воздух улицы должен совпадать с шаблоном")
+	TEST_ASSERT(!sky.excited, "предпосылка: планетарный тайл должен спать")
+
+	// Фаза A, мольный поток: интерьер плотнее и горячее неба - градиент, который
+	// прежде запускал share() в планетарный тайл и будил его.
+	interior.air.set_temperature(500)
+	SSair.add_to_active(interior)
+
+	var/sky_moles_before = sky.air.total_moles()
+	var/sky_temp_before = sky.air.return_temperature()
+	var/interior_moles_before = interior.air.total_moles()
+	var/fire = SSair.times_fired + 60000
+	interior.process_cell(fire)
+
+	var/sky_woken = sky.excited
+	var/sky_moles_delta = abs(sky.air.total_moles() - sky_moles_before)
+	var/sky_temp_delta = abs(sky.air.return_temperature() - sky_temp_before)
+	var/interior_vented = interior.air.total_moles() < interior_moles_before
+	var/interior_alive = interior.excited && interior.excited_group
+
+	// Фаза B, чисто температурная граница: состав уже совпал с небом, комната
+	// ещё тёплая. Молей тут не движется ни одного, и гейт по last_share оставил
+	// бы тайл без группы - он отдохнул бы один цикл и замер тёплым навсегда.
+	interior.air.clear()
+	interior.air.parse_gas_string(PLANETARY_CHURN_TEMPLATE_A)
+	interior.air.set_temperature(500)
+	SSair.add_to_active(interior)
+	interior.process_cell(fire + 1)
+
+	var/interior_cooled = interior.air.return_temperature() < 500 - 1
+	var/interior_alive_warm = interior.excited && interior.excited_group
+	var/sky_still_asleep = !sky.excited
+
+	// Фаза C: разбуженная улица (по ней реально что-то написало) до нового сна
+	// обязана идти старым парным путём - группа общая на двоих.
+	SSair.add_to_active(sky)
+	interior.process_cell(fire + 2)
+	var/pair_grouped = interior.excited_group && (sky.excited_group == interior.excited_group)
+
+	cleanup_room()
+	TEST_ASSERT(!sky_woken, "обмен с осевшим планетарным соседом разбудил его - граница снова кормит сама себя")
+	TEST_ASSERT(sky_moles_delta < 0.001, "обмен с резервуаром изменил газ спящего планетарного тайла (на [sky_moles_delta] моль)")
+	TEST_ASSERT(sky_temp_delta < 0.001, "обмен с резервуаром изменил температуру спящего планетарного тайла (на [sky_temp_delta] K)")
+	TEST_ASSERT(interior_vented, "интерьер у планетарной границы не отдаёт газ к небу - мольный поток через границу потерян")
+	TEST_ASSERT(interior_alive, "интерьер у планетарной границы снялся с актива, не успев стравиться")
+	TEST_ASSERT(interior_cooled, "стравившаяся до состава неба тёплая комната перестала остывать - температурный поток потерян")
+	TEST_ASSERT(interior_alive_warm, "тёплая комната без мольного потока снялась с актива - гейт группы по last_share вернулся")
+	TEST_ASSERT(sky_still_asleep, "температурное остывание разбудило планетарный тайл")
+	TEST_ASSERT(pair_grouped, "разбуженный планетарный тайл не пошёл старым парным путём - выбросы на улицу больше не растекаются")
+
 #undef PLANETARY_CHURN_TEMPLATE_A
 #undef PLANETARY_CHURN_TEMPLATE_B
 #undef PLANETARY_CHURN_MAX_CYCLES
+#undef PLANETARY_CHURN_WARM_EDGE_TEMPERATURE

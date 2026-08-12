@@ -23,7 +23,9 @@
 /datum/dynamic_ruleset/midround/execute_action()
 	trim_candidates()
 	if(!ready())
+		release_candidate_snapshots()
 		return FALSE
+	execution_pending = TRUE
 	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
 	return TRUE
 
@@ -32,6 +34,18 @@
 /// открывать опросы или выдавать роли отсюда: панель вызывает этот proc каждые несколько секунд.
 /datum/dynamic_ruleset/midround/director_preflight()
 	return null
+
+/// Повторная фильтрация живых кандидатов непосредственно перед выдачей роли: между отбором
+/// (trim на бите) и отложенным исполнением игрок мог умереть, отключиться, улететь на ЦК
+/// или уже стать антагом другой инжекцией - протухший кандидат ронял бы execute() рантаймом.
+/datum/dynamic_ruleset/midround/proc/prune_stale_living_players()
+	for(var/mob/living/player in living_players.Copy())
+		if(QDELETED(player) || player.stat == DEAD || !player.client || !player.mind)
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind.special_role || player.mind.antag_datums?.len > 0)
+			living_players -= player
 
 /// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
 /// потенциальных получателей роли в candidates. В отличие от crew-wizard этот путь не поллит.
@@ -65,6 +79,15 @@
 	living_antags = trim_list(mode.current_players[CURRENT_LIVING_ANTAGS])
 	dead_players = trim_list(mode.current_players[CURRENT_DEAD_PLAYERS])
 	list_observers = trim_list(mode.current_players[CURRENT_OBSERVERS])
+
+/datum/dynamic_ruleset/midround/release_candidate_snapshots()
+	..()
+	// trim_candidates() переприсваивает списки, но наследники алиасят candidates на
+	// living_players (families/ratvar/blob) - Cut() чистит обе стороны алиаса разом.
+	living_players.Cut()
+	living_antags.Cut()
+	dead_players.Cut()
+	list_observers.Cut()
 
 /datum/dynamic_ruleset/midround/proc/trim_list(list/L = list())
 	var/list/trimmed_list = L.Copy()
@@ -129,7 +152,8 @@
 				if (M.mind && (M.mind.assigned_role in enemy_roles) && (!(M in candidates) || (M.mind.assigned_role in restricted_roles)))
 					job_check++ // Checking for "enemies" (such as sec officers). To be counters, they must either not be candidates to that rule, or have a job that restricts them from it
 
-		var/threat = round(mode.threat_level/10)
+		// Кламп band'а: угроза ниже 10 даёт индекс 0, выше 100 (форс/оценка) - за границу списка
+		var/threat = clamp(round(mode.threat_level/10), 1, length(required_enemies))
 		if (job_check < required_enemies[threat])
 			ready_failure_reason = "контрролей [job_check] из [required_enemies[threat]] (уровень угрозы [mode.threat_level])"
 			return FALSE
@@ -290,8 +314,10 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	prune_stale_living_players()
 	if(living_players.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
@@ -301,6 +327,97 @@
 	message_admins("[ADMIN_LOOKUPFLW(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	log_game("DYNAMIC: [key_name(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	return TRUE
+
+//////////////////////////////////////////////
+//                                          //
+//        CREW CONVERSION VARIANTS          //
+//                                          //
+//////////////////////////////////////////////
+
+/// Общий каркас лёгкой экипажной конверсии (зеркало InteQ Sleeper Agent): ANTAG-пул состоял
+/// из одного лёгкого рулсета, и каждая экипажная инжекция была трейтором. Наследники задают
+/// антаг-датум и роли; отбор/готовность/выдача общие. weight = 0 - каркас сам не выбирается.
+/datum/dynamic_ruleset/midround/crew_conversion
+	name = ""
+	weight = 0
+	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
+	required_candidates = 1
+	cost = 10
+	intensity = 15
+	repeatable = TRUE
+
+/datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players.Copy())
+		if(issilicon(player))
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
+			living_players -= player
+
+/datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
+	if(required_candidates > living_players.len)
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		return FALSE
+	. = ..()
+	if(.)
+		director_preflight_detail = "подходящих членов экипажа: [living_players.len], требуется: [required_candidates]"
+
+/datum/dynamic_ruleset/midround/crew_conversion/director_preflight()
+	trim_candidates()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
+
+/datum/dynamic_ruleset/midround/crew_conversion/execute()
+	prune_stale_living_players()
+	if(living_players.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
+		return FALSE
+	var/mob/picked = pick_n_take(living_players)
+	assigned += picked.mind // mind, не моб: по assigned директор считает вклад в intensity
+	picked.mind.special_role = antag_flag
+	picked.mind.add_antag_datum(antag_datum)
+	message_admins("[ADMIN_LOOKUPFLW(picked)] was selected by the [name] ruleset.")
+	log_game("DYNAMIC: [key_name(picked)] was selected by the [name] ruleset.")
+	return TRUE
+
+/// Ересь среди экипажа: мидраунд-зеркало латеджойн-контрабандиста для уже играющих.
+/datum/dynamic_ruleset/midround/crew_conversion/heretic
+	name = "Heretic Awakening"
+	antag_datum = /datum/antagonist/heretic
+	antag_flag = "heretic mid"
+	antag_flag_override = ROLE_HERETIC
+	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "heretic" // с латеджойн-контрабандистом: не подряд
+	requirements = list(101,101,101,50,40,20,20,15,10,10)
+	// Мидраунд-еретик просыпается с нулём знаний и до первых жертв полчаса-час тихо фармит
+	// влияния: по базовой цене конверсии (10) он опустошал антаг-кошелёк, а intensity 15
+	// держала клапан нагрузки и глушила другие антаг-инжекции при нулевом движе. Разгон
+	// к концу раунда докрутит множитель активности, базово же он легче агента (8).
+	cost = 6
+	intensity = 8
+
+/// Тихий генлинг среди экипажа: мидраунд-зеркало латеджойн-варианта.
+/datum/dynamic_ruleset/midround/crew_conversion/changeling
+	name = "Latent Changeling"
+	antag_datum = /datum/antagonist/changeling
+	antag_flag = "changeling mid crew"
+	antag_flag_override = ROLE_CHANGELING
+	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "changeling" // с метеором и латеджойн-генлингом: не подряд
+	requirements = list(101,101,60,50,40,30,20,15,10,10)
+
+/datum/dynamic_ruleset/midround/crew_conversion/changeling/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players.Copy())
+		if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-генлингов
+			living_players -= player
 
 //////////////////////////////////////////////
 //                                          //
@@ -359,7 +476,12 @@
 	return handler.pre_setup_analogue()
 
 /datum/dynamic_ruleset/midround/families/execute()
-	return handler.post_setup_analogue(TRUE)
+	. = handler.post_setup_analogue(TRUE)
+	if(!.)
+		return
+	// Директор считает вклад рулсета по assigned, а хендлер держит гангстеров только в командах:
+	// без этого стартовые гангстеры давили antag_load как untracked-антаги (15/голова без затухания).
+	assigned |= handler.collect_member_minds()
 
 /datum/dynamic_ruleset/midround/families/clean_up()
 	QDEL_NULL(handler)
@@ -631,6 +753,8 @@
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -719,6 +843,8 @@
 
 /datum/dynamic_ruleset/midround/narsie_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -821,6 +947,8 @@
 
 /datum/dynamic_ruleset/midround/blob_infection/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -971,33 +1099,42 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
-	var/list/spawn_locs = list()
+	/// Точка, найденная в execute(). Гост-опрос долгий, поэтому перед самым спауном её перепроверяем.
+	var/turf/spawn_turf
+
+/datum/dynamic_ruleset/midround/from_ghosts/nightmare/ready(forced = FALSE)
+	if(!find_nightmare_spawn())
+		ready_failure_reason = "на станции нет ни одного тёмного турфа для кошмара"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare/execute()
-	for(var/X in GLOB.xeno_spawn)
-		var/turf/T = X
-		var/light_amount = T.get_lumcount()
-		if(light_amount < SHADOW_SPECIES_LIGHT_THRESHOLD)
-			spawn_locs += T
-	if(!spawn_locs.len)
+	spawn_turf = find_nightmare_spawn()
+	if(!spawn_turf)
+		execution_failure_reason = "на станции нет ни одного тёмного турфа для кошмара"
 		return FALSE
 	. = ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare/generate_ruleset_body(mob/applicant)
+	// Возврат null здесь уронил бы review_applications(), поэтому последним запасным
+	// вариантом остаётся уже найденная точка, даже если её успели осветить.
+	var/turf/destination = is_valid_nightmare_spawn(spawn_turf) ? spawn_turf : (find_nightmare_spawn() || spawn_turf)
+	log_nightmare_spawn(destination)
+
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
 	player_mind.active = TRUE
 
-	var/mob/living/carbon/human/S = new (pick(spawn_locs))
-	player_mind.transfer_to(S)
+	var/mob/living/carbon/human/nightmare = new (destination)
+	player_mind.transfer_to(nightmare)
 	player_mind.assigned_role = "Nightmare"
 	player_mind.special_role = "Nightmare"
 	player_mind.add_antag_datum(/datum/antagonist/nightmare)
-	S.set_species(/datum/species/shadow/nightmare)
+	nightmare.set_species(/datum/species/shadow/nightmare)
 
-	playsound(S, 'sound/magic/ethereal_exit.ogg', 50, TRUE, -1)
-	message_admins("[ADMIN_LOOKUPFLW(S)] has been made into a Nightmare by the midround ruleset.")
-	log_game("DYNAMIC: [key_name(S)] was spawned as a Nightmare by the midround ruleset.")
-	return S
+	playsound(nightmare, 'sound/magic/ethereal_exit.ogg', 50, TRUE, -1)
+	message_admins("[ADMIN_LOOKUPFLW(nightmare)] has been made into a Nightmare by the midround ruleset.")
+	log_game("DYNAMIC: [key_name(nightmare)] was spawned as a Nightmare by the midround ruleset.")
+	return nightmare
 
 //////////////////////////////////////////////
 //                                          //
@@ -1111,10 +1248,20 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 6
-	cost = 10
-	intensity = 15
+	// Выпадал в 3 из 5 динамик-раундов логов 9766-9775, а удешевление ниже сделает его
+	// ещё более частой целью копилки - вес вниз, чтобы не вернулась монополия дьявола.
+	weight = 4
+	// Контрактно-соушл антаг: за раунды 9767/9771 ни строчки в attack.log, но по цене 10
+	// осушал гост-кошелёк, а intensity 15 вместе с тихим еретиком держала пул в
+	// antag_saturated почти полчаса. Редкий разгон до истинного дьявола докрутит
+	// множитель активности директора сам.
+	cost = 6
+	intensity = 8
 	family = "devil" // с событием-двойником: не подряд
+	// Единственный гост-антаг без ограничений выпадал целью копилки в первые минуты, когда
+	// альтернатив ещё нет, и в Hard стрелял к 10-й минуте каждый раунд ("постоянно дьявол").
+	// Ранняя волна гост-пула открывается с 20-й минуты вместе с генлингом/болезнью/морфом.
+	earliest_start = 20 MINUTES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
 	repeatable = FALSE
@@ -1505,7 +1652,7 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/trim_candidates()
 	. = ..()
 	candidates = living_players
-	for(var/mob/living/player in candidates)
+	for(var/mob/living/player in candidates.Copy())
 		if(issilicon(player)) // никаких боргов
 			candidates -= player
 		else if(is_centcom_level(player.z))  // никаких ЦКшников
@@ -1535,12 +1682,16 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/num_bloodsuckers = get_antag_cap(population) * (scaled_times + 1)
 	for (var/i = 1 to num_bloodsuckers)
+		if(!candidates.len)
+			break
 		var/mob/M = pick_n_take(candidates)
 		assigned += M.mind
 		M.mind.restricted_roles = restricted_roles

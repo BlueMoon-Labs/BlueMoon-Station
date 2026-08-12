@@ -3,8 +3,10 @@
 	typepath = /datum/round_event/pirates
 	weight = 6
 	max_occurrences = 1
-	min_players = 30
-	earliest_start = 45 MINUTES
+	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
+	// Было 45 мин: к этому времени кошелёк уже 2-3 раза выжжен ранней волной, и за день
+	// логов 9766-9775 пираты не выпали ни разу. 30 мин - конкуренция с основной волной.
+	earliest_start = 30 MINUTES
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
@@ -68,6 +70,7 @@
 		if(D && D.adjust_money(-payoff))
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
 			return
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -83,6 +86,12 @@
 	if(length(space_zlevels))
 		return pick(space_zlevels)
 	return SSmapping.station_start
+
+/datum/round_event/pirates/proc/resolve_threat_peacefully()
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 /// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
 /// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
@@ -436,6 +445,40 @@
 		if("stop")
 			stop_sending()
 			. = TRUE
+
+/obj/machinery/computer/piratepad_control/AltClick(mob/user)
+	. = ..()
+	withdraw_points(user)
+
+/obj/machinery/computer/piratepad_control/proc/withdraw_points(mob/living/user)
+	if(!isliving(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	if(sending)
+		to_chat(user, span_warning("[src] занят отправкой груза!"))
+		return
+	if(!points)
+		to_chat(user, span_notice("На счету нет кредитов для снятия."))
+		return
+	to_chat(user, span_notice("Вы начинаете вывод средств с [src]..."))
+	user.visible_message(span_notice("[user] подключается к [src] для снятия кредитов..."), span_notice("Вы подключаетесь к [src] для снятия кредитов..."))
+	if(!do_after(user, 30 SECONDS, target = src))
+		return
+	if(QDELETED(src) || QDELETED(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE) || (machine_stat & (NOPOWER|BROKEN)))
+		return
+	if(sending || !points)
+		to_chat(user, span_warning("Снятие средств прервано."))
+		return
+	var/withdraw_amount = points
+	points = 0
+	new /obj/item/holochip(drop_location(), withdraw_amount)
+	to_chat(user, span_notice("Вы сняли [withdraw_amount] кредитов с терминала."))
+	playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
 
 /obj/machinery/computer/piratepad_control/proc/recalc()
 	if(sending)

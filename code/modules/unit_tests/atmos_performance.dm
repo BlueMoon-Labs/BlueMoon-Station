@@ -11,6 +11,23 @@
 	mix.set_temperature(T20C)
 	return mix
 
+///Repeated fire lines crossing one turf must reuse its active hotspot instead
+///of leaving the previous effect orphaned in SSair.hotspots.
+/datum/unit_test/hotspot_ensure_reuses_active/Run()
+	var/turf/open/test_turf = run_loc_floor_bottom_left
+	if(test_turf.active_hotspot)
+		qdel(test_turf.active_hotspot)
+	var/hotspots_before = length(SSair.hotspots)
+
+	var/obj/effect/hotspot/first = test_turf.ensure_hotspot()
+	var/obj/effect/hotspot/second = test_turf.ensure_hotspot()
+
+	TEST_ASSERT_NOTNULL(first, "ensure_hotspot() must create a hotspot on an open turf")
+	TEST_ASSERT_EQUAL(second, first, "A second fire exposure must reuse the turf's active hotspot")
+	TEST_ASSERT_EQUAL(test_turf.active_hotspot, first, "The reused hotspot must remain the turf's active owner")
+	TEST_ASSERT_EQUAL(length(SSair.hotspots), hotspots_before + 1, "Reusing a hotspot must add exactly one SSair processing entry")
+	qdel(first)
+
 /datum/unit_test/atmos_hot_proc_benchmark
 	priority = TEST_LONGER
 
@@ -27,6 +44,32 @@
 	for(var/i in 1 to iterations)
 		archiver.archive()
 	bench_line("archive", iterations, TICK_USAGE_TO_MS(t1))
+
+	// --- archive strategies A/B: fresh gases.Copy() vs reused list (Cut + refill) ---
+	// Прогоны чередуются (A,B,A,B): подряд идущий второй вариант выигрывал бы на
+	// прогретых кешах списков (см. историю с 19% -> 2.3% на atmos-бенчах).
+	var/datum/gas_mixture/arch_src = unit_test_air_mix()
+	arch_src.set_moles(GAS_CO2, 0.4) // третий ключ, чтобы не мерить вырожденный случай
+	var/list/reused_archive = list()
+	var/list/fresh_archive
+	var/archive_copy_ms = 0
+	var/archive_reuse_ms = 0
+	iterations = 20000
+	for(var/ab_round in 1 to 2)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			fresh_archive = arch_src.gases.Copy()
+		archive_copy_ms += TICK_USAGE_TO_MS(t1)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			reused_archive.Cut()
+			for(var/id, amount in arch_src.gases)
+				reused_archive[id] = amount
+		archive_reuse_ms += TICK_USAGE_TO_MS(t1)
+	bench_line("archive_copy", iterations * 2, archive_copy_ms)
+	bench_line("archive_reuse", iterations * 2, archive_reuse_ms)
+	TEST_ASSERT_EQUAL(length(fresh_archive), length(reused_archive), "оба варианта архива обязаны снять одинаковый набор газов")
+	qdel(arch_src)
 
 	// --- share() steady state (both sides identical, nothing moves) ---
 	var/datum/gas_mixture/settled_a = unit_test_air_mix()

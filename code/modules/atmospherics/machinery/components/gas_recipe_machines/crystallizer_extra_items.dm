@@ -100,19 +100,78 @@
 // === Fuel pellets ===
 /obj/item/fuel_pellet
 	name = "standard fuel pellet"
-	desc = "A compressed fuel pellet."
+	desc = "Сжатая топливная пеллета. При контакте с устройством передаёт энергию его аккумулятору; заряда хватает на пять импульсов по 1 МДж."
 	icon = 'icons/obj/crystallizer_exploration.dmi' 
 	icon_state = "fuel_basic"
 	w_class = WEIGHT_CLASS_SMALL
+	/// Remaining energy-transfer pulses.
 	var/uses = 5
+	/// Maximum energy transferred by one pulse.
+	var/charge_per_use = 1000
+	var/recharging = FALSE
+
+/obj/item/fuel_pellet/examine(mob/user)
+	. = ..()
+	. += span_notice("Осталось импульсов: <b>[uses]</b>. Каждый передаёт до <b>[DisplayEnergy(charge_per_use)]</b>.")
+
+/// Transfers one pulse into a cell. A full cell does not consume the pellet.
+/obj/item/fuel_pellet/proc/recharge_cell(obj/item/stock_parts/cell/target_cell)
+	if(QDELETED(target_cell) || uses <= 0)
+		return 0
+	var/transferred = target_cell.give(charge_per_use)
+	if(!transferred)
+		return 0
+	uses--
+	if(uses <= 0)
+		qdel(src)
+	return transferred
+
+/obj/item/fuel_pellet/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+	if(!proximity_flag || recharging || !ismovable(target))
+		return
+	var/atom/movable/powered_target = target
+	var/obj/item/stock_parts/cell/target_cell = powered_target.get_cell()
+	if(!target_cell)
+		return
+	if(target_cell.charge >= target_cell.maxcharge)
+		to_chat(user, span_notice("Аккумулятор [powered_target] уже полностью заряжен."))
+		return
+
+	recharging = TRUE
+	user.visible_message(
+		span_notice("[user] прижимает [src] к [powered_target]."),
+		span_notice("Вы начинаете передавать энергию из [src] в [powered_target]."),
+	)
+	if(!do_after(user, 2 SECONDS, target = powered_target) || QDELETED(src) || !user.is_holding(src))
+		recharging = FALSE
+		return
+	target_cell = powered_target.get_cell()
+	if(!target_cell)
+		recharging = FALSE
+		return
+
+	var/pellet_name = name
+	recharging = FALSE
+	var/transferred = recharge_cell(target_cell)
+	if(!transferred)
+		to_chat(user, span_warning("[pellet_name] не смогла передать энергию."))
+		return
+	target_cell.update_icon()
+	powered_target.update_icon()
+	to_chat(user, span_notice("[pellet_name] передаёт [DisplayEnergy(transferred)] в аккумулятор [powered_target]."))
 
 /obj/item/fuel_pellet/advanced
 	name = "advanced fuel pellet"
+	desc = "Усиленная топливная пеллета. При контакте с устройством передаёт энергию его аккумулятору; заряда хватает на пять импульсов по 2,5 МДж."
 	icon_state = "fuel_advanced"
+	charge_per_use = 2500
 
 /obj/item/fuel_pellet/exotic
 	name = "exotic fuel pellet"
+	desc = "Экзотическая топливная пеллета. При контакте с устройством передаёт энергию его аккумулятору; заряда хватает на пять импульсов по 5 МДж."
 	icon_state = "fuel_exotic"
+	charge_per_use = 5000
 
 // === Stacks (crystallizer products) ===
 /obj/item/stack/ammonia_crystals
@@ -563,7 +622,7 @@
 	crystal_shard_inject(target, /datum/reagent/nitrous_oxide, amount)
 
 // === Healium shard (raw + cloth-wrapped weapon) ===
-#define HEALIUM_SHARD_HEALIUM_AMOUNT 10
+#define HEALIUM_SHARD_HEALIUM_AMOUNT 5
 
 /obj/item/shard/healium
 	name = "Healium shard"

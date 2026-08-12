@@ -119,6 +119,17 @@
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
 		EK.on_death(owner.current)
 
+/// Returns the heretic's codex whether it is carried or hidden via Summon Codex.
+/datum/antagonist/heretic/proc/get_forbidden_book()
+	var/mob/living/owner_mob = owner?.current
+	if(owner_mob)
+		for(var/obj/item/forbidden_book/FB in owner_mob.GetAllContents(/obj/item/forbidden_book))
+			return FB
+	for(var/obj/item/I in summon_items)
+		if(istype(I, /obj/item/forbidden_book))
+			return I
+	return null
+
 // needs to be refactored to base /datum/antagonist sometime..
 /datum/antagonist/heretic/proc/add_objective(datum/objective/O)
 	objectives += O

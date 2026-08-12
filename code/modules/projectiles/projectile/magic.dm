@@ -18,7 +18,7 @@
 		if(M.anti_magic_check())
 			M.visible_message("<span class='warning'>[src] vanishes on contact with [target]!</span>")
 			return BULLET_ACT_BLOCK
-		M.death(0)
+		M.death(FALSE)
 
 /obj/item/projectile/magic/dust
 	name = "bolt of dust"

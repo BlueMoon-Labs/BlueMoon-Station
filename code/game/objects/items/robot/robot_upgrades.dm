@@ -81,21 +81,26 @@
 
 /obj/item/borg/upgrade/vtec/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
-	if(.)
-		if(!R.cansprint)
-			to_chat(R, "<span class='notice'>A VTEC unit is already installed!</span>")
-			to_chat(user, "<span class='notice'>There's no room for another VTEC unit!</span>")
-			return FALSE
+	if(!.)
+		return
+	return activate(R, user)
 
-		//R.vtec = -2 // Gotta go fast.
-        //Citadel change - makes vtecs give an ability rather than reducing the borg's speed instantly
-		VC = new /obj/effect/proc_holder/silicon/cyborg/vtecControl
-		R.AddAbility(VC)
-		R.cansprint = 0
-		R.disable_intentional_sprint_mode()
-		var/datum/hud/robot/robohud = R.hud_used
-		if(istype(robohud))
-			robohud.assert_move_intent_ui()
+/obj/item/borg/upgrade/vtec/proc/activate(mob/living/silicon/robot/R, user = usr)
+	if(!R.cansprint)
+		to_chat(R, "<span class='notice'>A VTEC unit is already installed!</span>")
+		to_chat(user, "<span class='notice'>There's no room for another VTEC unit!</span>")
+		return FALSE
+
+	//R.vtec = -2 // Gotta go fast.
+	//Citadel change - makes vtecs give an ability rather than reducing the borg's speed instantly
+	VC = new /obj/effect/proc_holder/silicon/cyborg/vtecControl
+	R.AddAbility(VC)
+	R.cansprint = 0
+	R.disable_intentional_sprint_mode()
+	var/datum/hud/robot/robohud = R.hud_used
+	if(istype(robohud))
+		robohud.assert_move_intent_ui()
+	return TRUE
 
 /obj/item/borg/upgrade/vtec/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
@@ -484,7 +489,11 @@
 /obj/item/borg/upgrade/selfrepair/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if (.)
-		toggle_action.Remove(R)
+		// toggle_action создаётся только в activate(), а сюда приходят и без него: перерезанный
+		// провод Reset Module двигает апгрейд, сигнал перемещения зовёт remove_from_upgrades ->
+		// deactivate(), и на пустом поле выходило "Cannot execute null.Remove()" (раунд 9834).
+		if(toggle_action)
+			toggle_action.Remove(R)
 		QDEL_NULL(toggle_action)
 		deactivate_sr()
 

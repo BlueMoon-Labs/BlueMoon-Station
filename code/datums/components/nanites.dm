@@ -60,7 +60,7 @@
 	var/last_nanite_percent_bar = 0
 
 /datum/component/nanites/Initialize(amount = 100, cloud = 0)
-	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup))
+	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup) && !istype(parent, /obj/item/implant/nanite_pump))
 		return COMPONENT_INCOMPATIBLE
 
 	nanite_volume = amount
@@ -69,8 +69,7 @@
 	//Nanites without hosts are non-interactive through normal means
 	if(isliving(parent))
 		host_mob = parent
-
-		if(!(host_mob.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)) && !HAS_TRAIT(host_mob, TRAIT_COMPATIBLE_WITH_NANOMACHINES)) //Shouldn't happen, but this avoids HUD runtimes in case a silicon gets them somehow.
+		if(HAS_TRAIT(host_mob, TRAIT_NANITES_IMMUNITY) || (!(host_mob.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)) && !HAS_TRAIT(host_mob, TRAIT_COMPATIBLE_WITH_NANITES))) //Shouldn't happen, but this avoids HUD runtimes in case a silicon gets them somehow.
 			return COMPONENT_INCOMPATIBLE
 
 		start_time = world.time
@@ -114,6 +113,9 @@
 		RegisterSignal(parent, COMSIG_SPECIES_GAIN, PROC_REF(check_viable_biotype))
 		RegisterSignal(parent, COMSIG_NANITE_SIGNAL, PROC_REF(receive_signal))
 		RegisterSignal(parent, COMSIG_NANITE_COMM_SIGNAL, PROC_REF(receive_comm_signal))
+
+	if(istype(parent, /obj/item/implant/nanite_pump))
+		RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp))
 
 /datum/component/nanites/UnregisterFromParent()
 	UnregisterSignal(parent, list(COMSIG_HAS_NANITES,
@@ -162,6 +164,8 @@
 
 /datum/component/nanites/process()
 	adjust_nanites(null, regen_rate)
+	if(!host_mob)
+		return
 	add_research()
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
@@ -354,9 +358,11 @@
 
 ///Updates the nanite volume bar visible in diagnostic HUDs
 /datum/component/nanites/proc/set_nanite_bar(remove = FALSE)
-	if(!host_mob)
+	if(!host_mob || !host_mob.hud_list)
 		return
 	var/image/holder = host_mob.hud_list[DIAG_NANITE_FULL_HUD]
+	if(!holder)
+		return
 	if(remove || stealth)
 		holder.icon_state = null
 		return
@@ -365,8 +371,7 @@
 	if(nanite_percent == last_nanite_percent_bar)
 		return
 	last_nanite_percent_bar = nanite_percent
-	var/icon/I = icon(host_mob.icon, host_mob.icon_state, host_mob.dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(host_mob.icon, host_mob.icon_state, host_mob.dir)
 	holder.icon_state = null
 	holder.icon_state = "nanites[nanite_percent]"
 
@@ -379,6 +384,7 @@
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
 		NP.on_emp(severity)
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/on_shock(datum/source, shock_damage, siemens_coeff = 1, flags = NONE)
 	if(shock_damage < 1)
@@ -390,12 +396,14 @@
 		for(var/X in programs)
 			var/datum/nanite_program/NP = X
 			NP.on_shock(shock_damage)
+		set_need_sync(TRUE)
 
 /datum/component/nanites/proc/on_minor_shock(datum/source)
 	adjust_nanites(null, -(rand(minor_shock_deletion_lower, minor_shock_deletion_upper)))			//Lose 5-15 flat nanite volume
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
 		NP.on_minor_shock()
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/check_stealth(datum/source)
 	return stealth
@@ -442,7 +450,10 @@
 	max_nanites = max(1, amount)
 
 /datum/component/nanites/proc/set_cloud(datum/source, amount)
+	SIGNAL_HANDLER
+
 	cloud_id = clamp(amount, 0, 100)
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/get_cloud(datum/source)
 	SIGNAL_HANDLER
@@ -450,6 +461,8 @@
 	return cloud_id
 
 /datum/component/nanites/proc/set_cloud_sync(datum/source, method)
+	SIGNAL_HANDLER
+
 	switch(method)
 		if(NANITE_CLOUD_TOGGLE)
 			cloud_active = !cloud_active
@@ -457,6 +470,7 @@
 			cloud_active = FALSE
 		if(NANITE_CLOUD_ENABLE)
 			cloud_active = TRUE
+	set_need_sync(TRUE)
 
 /datum/component/nanites/proc/set_safety(datum/source, amount)
 	safety_threshold = clamp(amount, 0, max_nanites)
@@ -577,3 +591,10 @@
 /datum/component/nanites/permanent
 	qdel_self_on_depletion = FALSE
 	can_be_deleted = FALSE
+
+/datum/component/nanites/nanite_pump
+	qdel_self_on_depletion = FALSE
+	cloud_active = FALSE
+	requires_cloud_sync = FALSE
+	regen_rate = 2
+	safety_threshold = 0

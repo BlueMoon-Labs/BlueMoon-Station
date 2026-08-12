@@ -118,10 +118,16 @@
 	for(var/i in affixes)
 		var/datum/fantasy_affix/affix = i
 		affix.remove(src)
+	//Списки обязаны опустеть: InheritComponent зовёт unmodify() и следом modify(),
+	//который дописывает НОВЫЕ компоненты в тот же список. Прежний код только
+	//qdel-ил их, и мёртвые /datum/component/mirv и прочие оставались висеть
+	//в appliedComponents на предмете до конца раунда - ровно один внешний держатель.
 	for(var/i in appliedComponents)
 		qdel(i)
+	appliedComponents.Cut()
 	for(var/i in appliedElements)
 		master._RemoveElement(i)
+	appliedElements.Cut()
 
 	master.force = max(0, master.force - quality)
 	master.throwforce = max(0, master.throwforce - quality)

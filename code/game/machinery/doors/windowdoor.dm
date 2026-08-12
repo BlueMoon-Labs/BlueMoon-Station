@@ -3,6 +3,7 @@
 	desc = "A strong door."
 	icon = 'icons/obj/doors/windoor.dmi'
 	icon_state = "left"
+	opens_with_door_remote = TRUE
 	layer = ABOVE_WINDOW_LAYER
 	closingLayer = ABOVE_WINDOW_LAYER
 	resistance_flags = ACID_PROOF
@@ -28,6 +29,7 @@
 
 /obj/machinery/door/window/Initialize(mapload, set_dir)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(set_dir)
 		setDir(set_dir)
 	if(src.req_access && src.req_access.len)
@@ -201,7 +203,7 @@
 
 //used in the AStar algorithm to determinate if the turf the door is on is passable
 /obj/machinery/door/window/CanAStarPass(obj/item/card/id/ID, to_dir)
-	return !density || (dir != to_dir) || (check_access(ID) && hasPower())
+	return !density || (dir != to_dir) || (!locked && hasPower() && (emergency || (unres_sides & to_dir) || check_access(ID)))
 
 /obj/machinery/door/window/CheckExit(atom/movable/mover, turf/target)
 	if((pass_flags_self & mover.pass_flags) || ((pass_flags_self & LETPASSTHROW) && mover.throwing))
@@ -299,6 +301,12 @@
 	if(exposed_temperature > T0C + (reinf ? 1600 : 800))
 		take_damage(round(exposed_volume / 200), BURN, 0, 0)
 	..()
+
+/obj/machinery/door/window/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + (reinf ? 1600 : 800))
+
+/obj/machinery/door/window/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(round(exposed_air.return_volume() / 200), BURN, 0, 0)
 
 /obj/machinery/door/window/emag_act(mob/user)
 	. = ..()

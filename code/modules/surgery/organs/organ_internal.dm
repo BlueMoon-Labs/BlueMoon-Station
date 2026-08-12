@@ -27,6 +27,12 @@
 	var/high_threshold_cleared
 	var/low_threshold_cleared
 
+	/// FALSE у органов, чей on_life() ничего не делает (переопределён в пустой
+	/// `return`): handle_organs() их не обходит вовсе. Хвосты и генталии есть почти
+	/// у каждого игрока и давали 34k пустых вызовов проца за 2.6 минуты на проде.
+	/// Ставить FALSE можно ТОЛЬКО вместе с пустым on_life - это проверяет юнит-тест.
+	var/processes_on_life = TRUE
+
 	///When you take a bite you cant jam it in for surgery anymore.
 	var/useable = TRUE
 	var/list/food_reagents = list(/datum/reagent/consumable/nutriment = 5)
@@ -54,10 +60,13 @@
 	var/obj/item/organ/replaced = M.getorganslot(slot)
 	if(replaced)
 		replaced.Remove(TRUE)
-		if(drop_if_replaced)
-			replaced.forceMove(get_turf(M))
-		else
-			qdel(replaced)
+		// Some single-use parasites qdel themselves from Remove(). Do not try
+		// to drop an already deleted replacement back into the world.
+		if(!QDELETED(replaced))
+			if(drop_if_replaced)
+				replaced.forceMove(get_turf(M))
+			else
+				qdel(replaced)
 
 	//Hopefully this doesn't cause problems
 	organ_flags &= ~ORGAN_FROZEN
@@ -65,6 +74,7 @@
 	owner = M
 	M.internal_organs |= src
 	M.internal_organs_slot[slot] = src
+	M.invalidate_life_processing_organs()
 	SEND_SIGNAL(src, COMSIG_ORGAN_INSERTED)//SPLURT EDIT ADD - gregnancy
 	moveToNullspace()
 	for(var/X in actions)
@@ -78,6 +88,7 @@
 /obj/item/organ/proc/Remove(special = FALSE)
 	if(owner)
 		owner.internal_organs -= src
+		owner.invalidate_life_processing_organs()
 		if(owner.internal_organs_slot[slot] == src)
 			owner.internal_organs_slot.Remove(slot)
 		if((organ_flags & ORGAN_VITAL) && !special && !(owner.status_flags & GODMODE))
@@ -155,7 +166,7 @@
 
 	if(!local_temp)//Shouldn't happen but in case
 		return
-	if(local_temp < 154)//I have a pretty shaky citation that states -120 allows indefinite cyrostorage
+	if(local_temp < BODYTEMP_FROZEN_THRESHOLD)//I have a pretty shaky citation that states -120 allows indefinite cyrostorage
 		organ_flags |= ORGAN_FROZEN
 		return TRUE
 	organ_flags &= ~ORGAN_FROZEN
@@ -169,7 +180,11 @@
 		return FALSE
 	if(organ_flags & ORGAN_SYNTHETIC)
 		return TRUE
-	if(!is_cold() && damage)
+	// damage вперёд is_cold(): у подавляющего большинства органов урона нет, а
+	// is_cold() лез в typecache и в bodytemperature владельца на каждом тике.
+	// Флаг ORGAN_FROZEN, который is_cold() поддерживает, читает только decay(),
+	// а тот зовёт is_cold() сам.
+	if(damage && !is_cold())
 		///Damage decrements by a percent of its maxhealth
 		var/healing_amount = -(maxHealth * healing_factor)
 		///Damage decrements again by a percent of its maxhealth, up to a total of 4 extra times depending on the owner's satiety

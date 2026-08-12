@@ -3,11 +3,12 @@
 #define KS23_RUBBER_HEAD_BRAIN_DAMAGE 150
 #define KS23_RUBBER_HEAD_EFFECT_CHANCE 25
 
+// КС-23 слаг — BR4, огромный калибр
 /obj/item/projectile/bullet/slug23
 	name = "23 shotgun slug"
 	damage = 70
 	stamina = 70
-	armour_penetration = 50
+	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 50 → BR4(50), без изменений
 	sharpness = SHARP_POINTY
 	wound_bonus = 5
 
@@ -21,10 +22,12 @@
 			C.gib_head()
 	return .
 
+// КС-23 резина — BR0
 /obj/item/projectile/bullet/slug_rubber23
 	name = "23 rubber slug"
 	damage = 20
 	stamina = 120
+	armour_penetration = BULLET_BR0
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
@@ -35,15 +38,19 @@
 	name = "23 rubbershot pellet"
 	damage = 3
 	stamina = 18
+	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
 	nonlethal_headshot_brain_damage = KS23_RUBBER_HEAD_BRAIN_DAMAGE
 	nonlethal_headshot_chance = KS23_RUBBER_HEAD_EFFECT_CHANCE
 
+// Стартовые AP для пеллетов — высокие, но быстро падают через Range()
+// КС-23 боевая дробь — BR3 в упор (шьёт бронежилет), BR0 на 4+ тайлах
 /obj/item/projectile/bullet/pellet/buckshot23
 	name = "23 buckshot pellet"
 	damage = 12
 	stamina = 8
+	armour_penetration = 35    // BLUEMOON EDIT: было BR1(10) → 35 (BR3 в упор, падает быстро)
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5

@@ -103,42 +103,40 @@
 	. = ..()
 
 /mob/living/simple_animal/hostile/clockwork/guardian/get_status_tab_items()
-	..()
-	if(statpanel("Status"))
-		stat(null, "Текущее настоящее имя: [true_name]")
-		stat(null, "Хозяин: [host ? host : "ОТСУТСТВУЕТ"]")
-		if(host)
-			var/resulthealth = round((host.health / host.maxHealth) * 100, 0.5)
-			if(iscarbon(host))
-				resulthealth = round((abs(HEALTH_THRESHOLD_DEAD - host.health) / abs(HEALTH_THRESHOLD_DEAD - host.maxHealth)) * 100)
-			stat(null, "Здоровье хозяина: [resulthealth]%")
-			if(GLOB.ratvar_awakens)
-				stat(null, "Вы [recovering ? "не" : ""] можете появиться!")
+	. = ..()
+	. += "Текущее настоящее имя: [true_name]"
+	. += "Хозяин: [host ? host : "ОТСУТСТВУЕТ"]"
+	if(host)
+		var/resulthealth = round((host.health / host.maxHealth) * 100, 0.5)
+		if(iscarbon(host))
+			resulthealth = round((abs(HEALTH_THRESHOLD_DEAD - host.health) / abs(HEALTH_THRESHOLD_DEAD - host.maxHealth)) * 100)
+		. += "Здоровье хозяина: [resulthealth]%"
+		if(GLOB.ratvar_awakens)
+			. += "Вы [recovering ? "не" : ""] можете появиться!"
+		else
+			if(resulthealth > GUARDIAN_EMERGE_THRESHOLD)
+				. += "Вы [recovering ? "не можете появиться" : "можете появиться при произнесении вашего настоящего имени"]!"
 			else
-				if(resulthealth > GUARDIAN_EMERGE_THRESHOLD)
-					stat(null, "Вы [recovering ? "не можете появиться" : "можете появиться при произнесении вашего настоящего имени"]!")
-				else
-					stat(null, "Вы [recovering ? "не можете появиться" : "можете появиться для защиты хозяина"]!")
-		stat(null, "При ближнем бою вы наносите [melee_damage_upper] единиц урона.")
+				. += "Вы [recovering ? "не можете появиться" : "можете появиться для защиты хозяина"]!"
+	. += "При ближнем бою вы наносите [melee_damage_upper] единиц урона."
 
 /mob/living/simple_animal/hostile/clockwork/marauder/get_status_tab_items()
-	..()
-	if(statpanel("Status"))
-		stat(null, "Текущее настоящее имя: [true_name]")
-		stat(null, "Хозяин: [host ? host : "ОТСУТСТВУЕТ"]")
-		if(host)
-			var/resulthealth = round((host.health / host.maxHealth) * 100, 0.5)
-			if(iscarbon(host))
-				resulthealth = round((abs(HEALTH_THRESHOLD_DEAD - host.health) / abs(HEALTH_THRESHOLD_DEAD - host.maxHealth)) * 100)
-			stat(null, "Здоровье хозяина: [resulthealth]%")
-			if(GLOB.ratvar_awakens)
-				stat(null, "Вы [recovering ? "не" : ""] можете появиться!")
+	. = ..()
+	. += "Текущее настоящее имя: [true_name]"
+	. += "Хозяин: [host ? host : "ОТСУТСТВУЕТ"]"
+	if(host)
+		var/resulthealth = round((host.health / host.maxHealth) * 100, 0.5)
+		if(iscarbon(host))
+			resulthealth = round((abs(HEALTH_THRESHOLD_DEAD - host.health) / abs(HEALTH_THRESHOLD_DEAD - host.maxHealth)) * 100)
+		. += "Здоровье хозяина: [resulthealth]%"
+		if(GLOB.ratvar_awakens)
+			. += "Вы [recovering ? "не" : ""] можете появиться!"
+		else
+			if(resulthealth > GUARDIAN_EMERGE_THRESHOLD)
+				. += "Вы [recovering ? "не можете появиться" : "можете появиться при произнесении вашего настоящего имени"]!"
 			else
-				if(resulthealth > GUARDIAN_EMERGE_THRESHOLD)
-					stat(null, "Вы [recovering ? "не можете появиться" : "можете появиться при произнесении вашего настоящего имени"]!")
-				else
-					stat(null, "Вы [recovering ? "не можете появиться" : "можете появиться для защиты хозяина"]!")
-		stat(null, "При ближнем бою вы наносите [melee_damage_upper] единиц урона.")
+				. += "Вы [recovering ? "не можете появиться" : "можете появиться для защиты хозяина"]!"
+	. += "При ближнем бою вы наносите [melee_damage_upper] единиц урона."
 
 
 /mob/living/simple_animal/hostile/clockwork/guardian/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)

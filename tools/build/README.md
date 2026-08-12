@@ -13,6 +13,22 @@ This build script is the recommended way to compile the game, including not only
 
 The script will skip build steps whose inputs have not changed since the last run.
 
+## Unit tests
+
+`dm-test` remains the compile-and-run entrypoint. Test compilation and execution
+are also exposed separately so repeated focused runs can reuse the test DMB:
+
+```
+tools/build/build dm-test-build
+tools/build/build dm-test-run
+```
+
+Use `--unit-test-profile=hermetic` for the LOWMEMORYMODE-compatible suite and
+`--unit-test-profile=full-map` for tests explicitly marked as requiring the
+production map. The default `all` profile runs every test on the production map.
+Compiled artifacts are separated by profile and define set, and are invalidated
+when sources or the local BYOND compiler change.
+
 ## Getting list of available targets
 
 You can get a list of all targets that you can build by running the following command:

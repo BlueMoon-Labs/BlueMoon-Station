@@ -215,11 +215,12 @@
 
 /datum/emote/sound/can_run_emote(mob/living/user, status_check, intentional = FALSE)
 	. = ..()
-
 	// Check parent return
 	if(!.)
 		return FALSE
 
+	if(!emote_cooldown)
+		user?.nextsoundemote = initial(user?.nextsoundemote)
 	// Check cooldown
 	if(user?.nextsoundemote >= world.time)
 		return FALSE
@@ -232,7 +233,7 @@
 	if(. && !(user?.is_muzzled() && !muzzle_ignore))
 		if(user.client?.prefs && !(user.client.prefs.toggles & SOUND_EMOTE))
 			return TRUE
-		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote") || 100) / 100)
+		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote")) / 100)
 		playsound(user.loc, sound, vol, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
 
 		//Cooldown.

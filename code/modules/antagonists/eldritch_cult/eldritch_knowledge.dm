@@ -201,15 +201,19 @@
 	log_game("[key_name_admin(C)] принимает контроль над ([key_name_admin(summoned)]), его хозяин [user.real_name]")
 	summoned.ghostize(FALSE)
 	summoned.key = C.key
-	summoned.mind.add_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic_monster/heretic_monster = summoned.mind.has_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic/master = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	heretic_monster.set_owner(master)
+	//Хозяин проставляется до выдачи роли: приветствие уходит игроку внутри add_antag_datum().
+	var/datum/antagonist/heretic_monster/heretic_monster = new
+	heretic_monster.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
+	summoned.mind.add_antag_datum(heretic_monster)
 	return TRUE
 
 //Ascension knowledge
 /datum/eldritch_knowledge/final_eldritch
 	var/finished = FALSE
+	/// Ключ сцены параллакса, которую вознесение вешает за иллюминатор. См.
+	/// _rendering/parallax/antag_scenes.dm. Объявляется путём, ставится здесь -
+	/// все четыре пути зовут этот прок родителя, и дублировать вызов незачем.
+	var/parallax_scene
 
 /datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc,selected_atoms)
 	if(finished)
@@ -224,6 +228,8 @@
 
 /datum/eldritch_knowledge/final_eldritch/on_finished_recipe(	mob/living/user, list/atoms, loc)
 	finished = TRUE
+	if(parallax_scene)
+		set_antag_parallax_scene(parallax_scene, ANTAG_PARALLAX_TOKEN_HERETIC)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/cleanup_atoms(list/atoms)
@@ -273,13 +279,12 @@
 				LH.sac_targetter.sac_targetted.Remove(H.real_name)
 			LH.sac_targetter = null
 			EC.total_sacrifices++
-			//deep contents search: get_all_gear() can't see inside MOD storage modules and the like, eating the sacrifice reward
-			for(var/obj/item/forbidden_book/FB in carbon_user.GetAllContents(/obj/item/forbidden_book))
+			var/obj/item/forbidden_book/FB = EC.get_forbidden_book()
+			if(FB)
 				FB.charge += 2
-				break
 
 		if(!LH.target)
-			var/datum/objective/A = new
+			var/datum/objective/sacrifice_ecult/A = new
 			A.owner = user.mind
 			var/list/targets = list()
 			var/list/target_blacklist = list()

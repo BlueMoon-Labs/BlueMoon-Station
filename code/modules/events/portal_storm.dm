@@ -237,8 +237,27 @@
 		T = get_safe_random_station_turf()
 	if(!T)
 		return
-	new type(T)
+	var/mob/living/spawned = new type(T)
+	make_invader_aggressive(spawned)
 	spawn_effects(T)
+
+/// Вторженец обязан нападать сам.
+///
+/// Клоунский вариант шторма спавнит семейство /hostile/retaliate, а оно по определению
+/// атакует только тех, кто ударил первым: стратегия отбора целей у них требует, чтобы цель
+/// уже лежала в enemies. В итоге ивент-вторжение выкатывал толпу, которая стоит и ждёт, пока
+/// её побьют - жалоба "клоуны из портала тупят и не нападают". Остальные варианты шторма
+/// спавнят обычных враждебных мобов, и их это не касается.
+///
+/// Снимаем пацифизм точечно, у конкретных заспавненных экземпляров: обычные клоуны в мире
+/// (клоунская планета, ходячие шутки на станции) остаются retaliate и первыми не лезут.
+/datum/round_event/portal_storm/proc/make_invader_aggressive(mob/living/spawned)
+	if(!istype(spawned, /mob/living/simple_animal/hostile/retaliate))
+		return
+	var/datum/ai_controller/controller = spawned.ai_controller
+	if(isnull(controller))
+		return
+	controller.set_blackboard_key(BB_AI_TARGETING_STRATEGY, /datum/targeting_strategy/hostile_legacy)
 
 /datum/round_event/portal_storm/proc/spawn_effects(turf/T)
 	if(!T)

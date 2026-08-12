@@ -8,7 +8,7 @@
 	resistance_flags = FLAMMABLE
 
 	var/label = ""
-	var/last_wave = 0
+	COOLDOWN_DECLARE(picket_sign_cooldown)
 
 /obj/item/picket_sign/cyborg
 	name = "metallic nano-sign"
@@ -34,10 +34,35 @@
 	else
 		return ..()
 
-/obj/item/picket_sign/attack_self(mob/living/carbon/human/user)
-	if( last_wave + 20 < world.time )
-		last_wave = world.time
-		if(label)
-			user.visible_message("<span class='warning'>[user] waves around \the \"[label]\" sign.</span>")
-		else
-			user.visible_message("<span class='warning'>[user] waves around blank sign.</span>")
+/obj/item/picket_sign/attack_self(mob/user)
+	if(!isliving(user))
+		return ..()
+
+	if(!COOLDOWN_FINISHED(src, picket_sign_cooldown))
+		return
+
+	COOLDOWN_START(src, picket_sign_cooldown, 5 SECONDS)
+
+	if(label)
+		user.emote("me", message = "размахивает плакатом с надписью \"[label]\".")
+		user.say(label)
+		user.balloon_alert_to_viewers("[label]")
+	else
+		user.emote("me", message = "размахивает пустым плакатом.")
+		user.balloon_alert_to_viewers("пустой плакат")
+
+	var/direction = prob(50) ? -1 : 1
+	if(NSCOMPONENT(user.dir))
+		animate(user, pixel_w = (1 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
+		animate(pixel_w = (-2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_w = (2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_w = (-2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_w = (1 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+	else
+		animate(user, pixel_z = (1 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
+		animate(pixel_z = (-2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_z = (2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_z = (-2 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+		animate(pixel_z = (1 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+
+	user.changeNext_move(CLICK_CD_MELEE)

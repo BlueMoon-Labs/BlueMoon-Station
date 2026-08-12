@@ -659,7 +659,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 7
-	STR.can_hold = typecacheof(list(/obj/item/toy/crayon))
+	var/static/list/crayons_can_hold = typecacheof(list(/obj/item/toy/crayon))
+	STR.can_hold = crayons_can_hold
 
 /obj/item/storage/crayons/PopulateContents()
 	new /obj/item/toy/crayon/red(src)
@@ -720,7 +721,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/hydroponics_righthand.dmi'
 	desc = "A metallic container containing tasty paint."
 
-	instant = TRUE
+	instant = FALSE
 	edible = FALSE
 	has_cap = TRUE
 	is_capped = TRUE
@@ -780,6 +781,12 @@
 	else
 		. += "It is empty."
 	. += "<span class='notice'>Alt-click [src] to [ is_capped ? "take the cap off" : "put the cap on"].</span>"
+
+/obj/item/toy/crayon/spraycan/afterattack(atom/target, mob/user, proximity, params)
+	if(LAZYLEN(user.do_afters))
+		to_chat(user, span_warning("Вы заняты и не можете использовать баллончик сейчас."))
+		return
+	return ..()
 
 /obj/item/toy/crayon/spraycan/draw_on(atom/target, mob/user, proximity, params)
 	if(!proximity)

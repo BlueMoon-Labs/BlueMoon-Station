@@ -114,8 +114,17 @@
 
 /obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/Destroy()
 	STOP_PROCESSING(SSobj,src)
-	owner = null
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
+		owner = null
 	. = ..()
+
+/// Крио уносит надетые вещи forceMove'ом, минуя dropped(): без подписки на смерть
+/// носителя бра держало тело до конца смены и продолжало тикать на трупе.
+/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/on_owner_deleted(datum/source)
+	SIGNAL_HANDLER
+	STOP_PROCESSING(SSobj,src)
+	owner = null
 
 /obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/equipped(mob/living/carbon/human/M, slot)
 	.=..()
@@ -135,7 +144,10 @@
 	var/mob/living/carbon/human/M = astype(user, /mob/living/carbon/human)
 	if(!M)
 		return
+	if(owner && owner != M)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
 	owner = M
+	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted), override = TRUE)
 	START_PROCESSING(SSobj,src)
 
 /obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/on_unequip(mob/user)
@@ -146,7 +158,9 @@
 
 	mode = HS_MODE_MSG_ALL
 	intence = HS_INTENCE_OFF
-	owner = null
+	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
+		owner = null
 
 
 

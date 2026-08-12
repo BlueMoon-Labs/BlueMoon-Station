@@ -12,12 +12,19 @@
 	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define TRANSFER_VAR(SOURCE, TARGET, VAR) \
+// Обнулять TARGET.VAR обязательно ДО ветки на SOURCE.VAR: у донора деталь может
+// отсутствовать (enforcer/nomag -> bwal2572), и тогда старое "qdel без обнуления"
+// оставляло у нового ствола ссылку на уже удалённый магазин. Дальше attack_self
+// делал ему forceMove ("doMove qdel-нутого /obj/item/ammo_box/magazine/e45") и клал
+// мертвеца в руки игроку - раунд 9827: 3 рантайма и hard delete магазина.
+#define TRANSFER_ATOM_VAR(SOURCE, TARGET, VAR) \
 	qdel(TARGET.VAR); \
+	TARGET.VAR = null; \
 	if(SOURCE.VAR) { \
 		TARGET.VAR = SOURCE.VAR; \
 		SOURCE.VAR = null; \
 		TARGET.VAR.forceMove(TARGET); \
+		TARGET.VAR.update_appearance(); \
 	}
 
 /obj/item/modkit
@@ -49,7 +56,7 @@
 		else
 			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, span_warning(" You can't modify [target] with this kit!"))
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
@@ -57,22 +64,30 @@
 
 // Прок для корректной замены деталей у оружия, не перезаписывайте его
 /obj/item/modkit/proc/gun_to_gun_replace(obj/item/gun/target, obj/item/gun/result)
+	SHOULD_CALL_PARENT(TRUE)
 	if(!istype(target) || !istype(result))
 		return
 
-	TRANSFER_VAR(target, result, pin)
+	//Ствол без пина не стреляет вообще, поэтому свой пин отдаём только на замену:
+	//у донора без пина новый ствол оставляет заводской.
+	if(target.pin)
+		TRANSFER_ATOM_VAR(target, result, pin)
 	if(result.pin)
 		result.pin.gun = result
 	if(istype(target, /obj/item/gun/ballistic) && istype(result, /obj/item/gun/ballistic))
 		var/obj/item/gun/ballistic/target_b = target
 		var/obj/item/gun/ballistic/result_b = result
 
-		TRANSFER_VAR(target_b, result_b, chambered)
-		TRANSFER_VAR(target_b, result_b, magazine)
+		TRANSFER_ATOM_VAR(target_b, result_b, chambered)
+		TRANSFER_ATOM_VAR(target_b, result_b, magazine)
+		if(result_b.can_bayonet)
+			TRANSFER_ATOM_VAR(target_b, result_b, bayonet)
+		if(result_b.can_flashlight)
+			TRANSFER_ATOM_VAR(target_b, result_b, gun_light)
 
 	result.update_appearance()
 
-#undef TRANSFER_VAR
+#undef TRANSFER_ATOM_VAR
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/Kovac_Kit
@@ -598,6 +613,7 @@
 	name = "\improper G-36"
 	desc = "Heckler & Koch Gewehr 36, G36 - семейство стрелкового оружия, разработанное в начале 1990-х немецкой компанией Heckler & Koch, под внутрифирменным обозначением HK 50, для замены хорошо известной автоматической винтовки HK G3."
 	icon_state = "G36"
+	item_state = "G36"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -951,6 +967,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "Nebular-9"
+	can_flashlight = TRUE
 	gunlight_state = "nebular-light"
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
@@ -1075,7 +1092,8 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "nebular-t"
 	item_state = "Nebular-9"
-	can_flashlight = FALSE
+	can_flashlight = TRUE
+	gunlight_state = "nebular-light"
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
@@ -1434,36 +1452,56 @@
 	product = /obj/item/gun/ballistic/automatic/pistol/g22/anomalist
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/g22)
 
+#define CZ75_COMMON \
+	desc = "The model most commonly used in stealth assassinations is made of lightweight alloy. Due to frequent use, the grip is scratched, and the letter 'S' is visible under the trigger."; \
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'; \
+	icon_state = "cz_75"; \
+	item_state = "cz_75"; \
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'; \
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'; \
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/cz_75_shoot.ogg'; \
+	base_pixel_y = -4; \
+\
+	get_gunlight_overlay() { \
+		if(!gun_light) \
+			return; \
+		var/mutable_appearance/flashlight_overlay = mutable_appearance(icon, "[initial(icon_state)]-flashlight[gun_light.on ? "-on" : ""]"); \
+		if(!chambered) \
+			flashlight_overlay.pixel_x++; \
+		return flashlight_overlay; \
+	} \
+\
+	update_icon_state() { \
+		icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"; \
+	} ;
+
 /obj/item/modkit/cz_75
 	name = "CZ-75 kit"
 	desc = "A modkit for making an Mk. 58 Enforcer into a CZ-75 pistol."
 	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
 	icon_state = "kitsuitcase"
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75
-	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/modkit/cz_75_auto
+	name = "CZ-75 Auto kit"
+	desc = "A modkit for making an Blueshield Mk. 58 Enforcer into a CZ-75 Auto pistol."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcerred/cz_75_auto
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcerred)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75
 	DONATE_ITEM_TOOLTIP_PARENT
+	CZ75_COMMON
 	name = "\improper CZ-75"
-	desc = "The model most commonly used in stealth assassinations is made of lightweight alloy. Due to frequent use, the grip is scratched, and the letter 'S' is visible under the trigger."
-	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
-	icon_state = "cz_75"
-	item_state = "cz_75"
-	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/cz_75_shoot.ogg'
-	base_pixel_y = -4
 
-/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/get_gunlight_overlay()
-	if(!gun_light)
-		return
-	var/mutable_appearance/flashlight_overlay = mutable_appearance(icon, "[initial(icon_state)]-flashlight[gun_light.on ? "-on" : ""]")
-	if(!chambered)
-		flashlight_overlay.pixel_x += 1
-	return flashlight_overlay
+/obj/item/gun/ballistic/automatic/pistol/enforcerred/cz_75_auto
+	DONATE_ITEM_TOOLTIP_PARENT
+	CZ75_COMMON
+	name = "\improper CZ-75 Auto"
 
-/obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
-	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
+#undef CZ75_COMMON
 
 /obj/item/modkit/quasar_kit
 	name = "Quasar Kit"
@@ -1640,3 +1678,46 @@
 	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
 	if(fill_level < 6)
 		. += "pulsar-[fill_level]"
+
+///////////////////////////////////////////////
+/obj/item/modkit/warder_9r
+	name = "9R Warder kit"
+	desc = "A modkit for making an WT-550 PDW into a 9R Warder."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/ballistic/automatic/wt550/warder_9r
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550, /obj/item/gun/ballistic/automatic/wt550/standart)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper 9R Warder"
+	desc = "The 9R Warder pistol was developed as an improved version of the civilian HK MP5K submachine gun. It fires 4.6x30mm bullets and features attachments for a bayonet and a silencer. It boasts good accuracy at medium and close ranges. It is often used by mercenaries in certain sectors of the frontier. The model has been repainted to match the owner's style."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "warder_9r"
+	item_state = "warder_9r"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/warder_r9_shoot.ogg'
+	base_pixel_x = -10
+	unique_reskin = list(
+		"Default" = list(),
+		"Alt" = list(
+			RESKIN_ICON_STATE = "warder_9r-alt"
+		)
+	)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/update_icon_state()
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/get_bayonet_overlay()
+	if(!bayonet)
+		return
+	return mutable_appearance(icon, "[initial(icon_state)]-bayonet", pixel_x = 3)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/update_overlays()
+	. = ..()
+	var/base_state = initial(icon_state)
+	if(magazine)
+		. += "[base_state]-mag"
+	if(suppressed)
+		. += mutable_appearance(icon, "[base_state]-suppressor", pixel_x = 11)

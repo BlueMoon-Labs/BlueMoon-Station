@@ -40,7 +40,10 @@
 
 		A.flags_1 |= (flags_1 & ADMIN_SPAWNED_1)
 		A.GiveTarget(target)
-		A.friends = friends
+		//Копией, а не ссылкой: иначе бруд и хайвлорд делят ОДИН список, и запись о
+		//любом удалённом мобе живёт в нём у обоих до конца раунда. faction рядом
+		//копируется с самого начала, friends просто забыли.
+		A.friends = friends?.Copy()
 		A.faction = faction.Copy()
 		if(!A == /mob/living/simple_animal/hostile/poison/bees/toxin)
 			A.my_creator = type
@@ -127,8 +130,11 @@
 	var/mob/living/carbon/human/stored_mob
 
 /mob/living/simple_animal/hostile/asteroid/hivelord/legion/Destroy()
+	//тело внутри легиона могли удалить отдельно (гибы, админ-удаление, чистка
+	//z-уровня): forceMove по нему уходил в "doMove qdel-нутого"
 	if(stored_mob)
-		stored_mob.forceMove(get_turf(src))
+		if(!QDELETED(stored_mob))
+			stored_mob.forceMove(get_turf(src))
 		stored_mob = null
 	return ..()
 
@@ -162,7 +168,8 @@
 	var/turf/T = get_turf(src)
 	if(T)
 		if(stored_mob)
-			stored_mob.forceMove(get_turf(src))
+			if(!QDELETED(stored_mob))
+				stored_mob.forceMove(get_turf(src))
 			stored_mob = null
 		else if(fromtendril)
 			new /obj/effect/mob_spawn/human/corpse/charredskeleton(T)

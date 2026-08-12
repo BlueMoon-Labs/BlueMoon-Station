@@ -35,3 +35,24 @@
 	reqs = list(/obj/item/reagent_containers/food/snacks/grown/poppy/geranium = 5)
 	time = 2 SECONDS
 	category = CAT_CLOTHING
+
+/datum/crafting_recipe/makeshift_platecarrier
+	name = "Makeshift Plate Carrier"
+	result = /obj/item/clothing/suit/armor/hos/platecarrier/makeshift
+	reqs = list(
+		/obj/item/clothing/suit/armor/vest = 1,
+		/obj/item/storage/belt/security = 1,
+	)
+	tools = list(TOOL_WIRECUTTER)
+	time = 60
+	category = CAT_CLOTHING
+
+/datum/crafting_recipe/makeshift_platecarrier/New()
+	. = ..()
+	blacklist |= (subtypesof(/obj/item/clothing/suit/armor/vest) - list(/obj/item/clothing/suit/armor/vest/alt))
+
+/datum/crafting_recipe/makeshift_platecarrier/check_requirements(mob/user, list/collected_requirements)
+	for(var/obj/item/storage/belt/security/belt in collected_requirements[/obj/item/storage/belt/security])
+		if(belt.contents.len)
+			return FALSE
+	return TRUE

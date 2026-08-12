@@ -218,11 +218,12 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 	desc = "A conveyor control switch."
 	icon = 'icons/obj/recycling.dmi'
 	icon_state = "switch-off"
-	speed_process = TRUE
+	//свитч событийный: do_process() зовётся из interact(), молотить
+	//SSfastprocess ради флага operated незачем
+	init_process = FALSE
 
 	var/position = 0			// 0 off, -1 reverse, 1 forward
 	var/last_pos = -1			// last direction setting
-	var/operated = 1			// true if just operated
 	var/oneway = FALSE			// if the switch only operates the conveyor belts in a single direction.
 	var/invert_icon = FALSE		// If the level points the opposite direction when it's turned on.
 
@@ -234,6 +235,10 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		id = newid
 	update_icon()
 	LAZYADD(GLOB.conveyors_by_id[id], src)
+
+/obj/machinery/conveyor_switch/LateInitialize()
+	. = ..()
+	do_process() //синхронизация лент с позицией свитча на старте
 
 /obj/machinery/conveyor_switch/Destroy()
 	LAZYREMOVE(GLOB.conveyors_by_id[id], src)
@@ -277,12 +282,6 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 			START_PROCESSING(SSfastprocess, C)
 		CHECK_TICK
 
-/obj/machinery/conveyor_switch/process()
-	if(!operated)
-		return
-	operated = 0
-	do_process()
-
 // attack with hand, switch position
 /obj/machinery/conveyor_switch/interact(mob/user)
 	add_fingerprint(user)
@@ -300,8 +299,8 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		last_pos = position
 		position = 0
 
-	operated = 1
 	update_icon()
+	do_process()
 
 	// find any switches with same id as this one, and set their positions to match us
 	for(var/obj/machinery/conveyor_switch/S in GLOB.conveyors_by_id[id])

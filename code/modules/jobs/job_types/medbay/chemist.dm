@@ -85,6 +85,7 @@
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit =  /obj/item/clothing/suit/toggle/labcoat/chemist
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med

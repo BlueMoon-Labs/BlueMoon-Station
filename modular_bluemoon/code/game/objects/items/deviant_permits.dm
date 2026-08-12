@@ -37,6 +37,13 @@
 	permitted_weapons = "Вооружение культа"
 	notes = "Носитель имеет право на проведение безвредных для станции ритуалов и аггитирование без страха преследования со стороны службы безопасности."
 
+/obj/item/clothing/accessory/permit/special/deviant/lust
+	icon_state = "lust_plus"
+	name = "Horny activity permit"
+	desc = "Вещественное одобрение ЦК на проведение извращённой~ деятельности"
+	permitted_weapons = "N/A"
+	notes = "Носитель имеет право на обустройство свободных отсеков станции под бордели и стриптиз клубы."
+
 /obj/item/clothing/accessory/permit/special/deviant/lust/changeling
 	name = "Horny Activity Permit"
 	desc = "Вещественное одобрение от ЦК."

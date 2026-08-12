@@ -1,3 +1,98 @@
+/// Строка-вердикт для шапки панели: главный гейт текущего момента одним предложением.
+/// Админ не должен сопоставлять три секции, чтобы понять, почему сейчас тихо.
+/datum/controller/subsystem/director/proc/panel_status_line(antag_load_now, antag_target_now)
+	if(!profile || !SSticker.HasRoundStarted())
+		return "Раунд не начался - директор ждёт старта."
+	if(paused)
+		return "Директор на паузе: капля и биты стоят, запущенные события дотикивают."
+	var/datum/director_signals/signals = last_signals
+	if(signals && signals.evac_state == DIRECTOR_EVAC_GONE)
+		return "Эвакуация завершена - директор больше ничего не запускает."
+	var/list/parts = list()
+	if(signals && signals.evac_state == DIRECTOR_EVAC_CALLED)
+		parts += "эвакуация вызвана: крупные события и антаг-инжекции закрыты"
+	else if(antag_target_now > 0 && antag_load_now >= antag_target_now)
+		parts += "антаг-каналы заперты насыщением ([round(antag_load_now)] из [round(antag_target_now)]) - ждём выбытия или затухания живых угроз"
+	else if(antag_heavy_load_blocked(antag_load_now, antag_target_now))
+		parts += "лёгкие антаг-инжекции открыты; тяжёлые команды ждут нагрузку ниже [round(antag_target_now * profile.antag_heavy_load_fraction)] (сейчас [round(antag_load_now)])"
+	if(signals && signals.dead_fraction > profile.dead_fraction_threshold)
+		parts += "кризис смертности ([round(signals.dead_fraction * 100)]% манифеста): капля вдвое медленнее, тяжёлое закрыто"
+	if(signals && signals.active_intensity >= profile.intensity_cap)
+		parts += "потолок нагрузки событий ([round(signals.active_intensity)] из [profile.intensity_cap]): стреляет только флейвор"
+	var/plan = pool_plan_text()
+	if(plan)
+		parts += plan
+	if(!length(parts))
+		var/quiet_minutes = round((now() - last_real_fired_at) / (1 MINUTES))
+		if(quiet_minutes < round(profile.max_quiet_time / (1 MINUTES)))
+			parts += "штатный темп: гейтов нет, решения раз в минуту"
+		// Зеркало гарантии run_beat(): кроме таймера тишины нужна видимая нагрузка ниже порога.
+		else if(signals && signals.event_intensity >= profile.quiet_intensity_threshold)
+			parts += "тихо уже [quiet_minutes] мин, но видимая нагрузка [round(signals.event_intensity)] не ниже порога [profile.quiet_intensity_threshold] - гарантия ждёт затишья"
+		else
+			parts += "тихо уже [quiet_minutes] мин - ближайший бит гарантирует реальный контент"
+	return "[jointext(parts, "; ")]."
+
+/// Короткий план копилок антаг-пулов: на что копим и когда докопим при текущей капле.
+/datum/controller/subsystem/director/proc/pool_plan_text()
+	var/list/plans = list()
+	// ETA честен с accumulate_drip(): кризис смертности режет антаг-каплю вдвое.
+	var/datum/director_signals/plan_signals = last_signals
+	var/drip_mult = (plan_signals && plan_signals.dead_fraction > profile.dead_fraction_threshold) ? 0.5 : 1
+	var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0
+	var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0
+	var/total_share = antag_share + ghost_share
+	for(var/sev in list(DIRECTOR_SEVERITY_GHOST, DIRECTOR_SEVERITY_ANTAG))
+		var/datum/director_action/target = pool_saving[sev]
+		if(QDELETED(target))
+			continue
+		var/pool_name = sev == DIRECTOR_SEVERITY_GHOST ? "гост-пул" : "антаг-пул"
+		var/missing = target.cost - budgets[sev]
+		if(missing <= 0)
+			plans += "[pool_name] готов запустить [target.action_name()] - ждёт паузу или окно"
+			continue
+		var/share = (sev == DIRECTOR_SEVERITY_GHOST) ? ghost_share : antag_share
+		var/rate = total_share > 0 ? profile.antag_drip * last_antag_deficit * drip_mult * share / total_share : 0
+		if(rate > 0.01)
+			plans += "[pool_name] копит на [target.action_name()]: [round(budgets[sev], 0.1)] из [target.cost] (~[CEILING(missing / rate, 1)] мин)"
+		else
+			plans += "[pool_name] копит на [target.action_name()]: [round(budgets[sev], 0.1)] из [target.cost], капля стоит - дефицита нет"
+	return length(plans) ? jointext(plans, "; ") : null
+
+/// TRUE = запускать. Форс антаг-контента поверх заполненной цели стакает угрозы
+/// (прод-кейс: админ форсит Nightmare поверх ещё не отыгравших рейдеров при нагрузке
+/// 88 из 54, гост в дедчате резонно спрашивает "куда") - предупреждаем и даём
+/// осознанно подтвердить. Не-антаг действия и ненасыщенный раунд проходят молча.
+/datum/controller/subsystem/director/proc/confirm_antag_force(mob/user, datum/director_action/action)
+	if(!user || !profile || !SSticker.HasRoundStarted() || !DIRECTOR_IS_ANTAG_POOL(action.severity))
+		return TRUE
+	var/datum/director_signals/signals = collect_signals()
+	var/target = antag_target(signals.effective_crew)
+	var/load = target > 0 ? antag_load() : 0
+	if(target <= 0 || load < target)
+		return TRUE
+	var/list/breakdown = list()
+	// Общий дедуп-список, как в antag_load(): без него разум, уже посчитанный рулсетом
+	// или гост-ролью, всплыл бы в untracked-строке второй раз.
+	var/list/counted_minds = list()
+	get_ruleset_intensity(list(), breakdown, counted_minds)
+	get_ghost_role_intensity(breakdown = breakdown, only_antag = TRUE, counted_minds = counted_minds)
+	get_untracked_antag_intensity(counted_minds, breakdown)
+	// Два крупнейших держателя нагрузки - чтобы предупреждение называло виновников.
+	var/list/holder_names = list()
+	var/list/remaining = breakdown.Copy()
+	for(var/pick_index in 1 to min(2, length(remaining)))
+		var/list/best
+		for(var/list/row in remaining)
+			if(!best || row[2] > best[2])
+				best = row
+		remaining -= list(best)
+		holder_names += "[best[1]] ([round(best[2])])"
+	var/holders_text = length(holder_names) ? " - держат [jointext(holder_names, ", ")]" : ""
+	var/answer = tgui_alert(user, "Антаг-нагрузка уже [round(load)] при цели [round(target)][holders_text]. \
+		[action.action_name()] ляжет поверх живых угроз. Запустить всё равно?", "Директор: насыщение антагами", list("Запустить", "Отмена"))
+	return answer == "Запустить"
+
 /// TGUI-обёртка панели директора; создаётся на клик, живёт на клиенте
 /datum/director_panel
 	/// Структурный каталог рулсетов для предпросмотра профилей до выбора игрового режима.
@@ -108,8 +203,10 @@
 	for(var/list/entry in D.intensity_ledger)
 		ledger_out += list(list("name" = entry[1], "intensity" = entry[2],
 			"expires_in" = entry[3] ? max(0, round((entry[3] - D.now()) / 600)) : null))
+	// Последний час битов: таблица решений берёт хвост в 20 записей на фронте,
+	// остальное кормит графики динамики (нагрузка/цель/intensity по времени).
 	var/list/beats_out = list()
-	var/from_index = max(1, length(D.beat_log) - 19)
+	var/from_index = max(1, length(D.beat_log) - 59)
 	for(var/i in from_index to length(D.beat_log))
 		beats_out += list(D.beat_log[i])
 	// Кошельки со всей экономикой ступени: пауза, счётчик запусков, поправка веса.
@@ -148,7 +245,13 @@
 		dead_halved = D.last_signals && (D.last_signals.dead_fraction > D.profile.dead_fraction_threshold)
 		drip_rate = D.profile.base_drip * time_mult * pop_mult * (dead_halved ? 0.5 : 1)
 		antag_drip_rate = D.profile.antag_drip * D.last_antag_deficit * (dead_halved ? 0.5 : 1)
-		antag_load_now = D.antag_load()
+		// Разбивка antag_load: строка untracked-источника (вербовка/админ-выдачи) уходит в ту же
+		// таблицу вкладов - прод-раунд Families показывал 70+ нагрузки при пустой таблице.
+		var/list/antag_rows = list()
+		antag_load_now = D.antag_load(antag_rows)
+		for(var/list/antag_row in antag_rows)
+			ledger_out += list(list("name" = antag_row[1], "intensity" = round(antag_row[2], 0.1),
+				"living" = antag_row[3]))
 		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,
@@ -178,7 +281,9 @@
 		"antagDeficit" = round(D.last_antag_deficit * 100),
 		"antagLoad" = round(antag_load_now, 0.1),
 		"antagTarget" = round(antag_target_now, 0.1),
-		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_any_fired_at) / (1 MINUTES)) : 0,
+		"statusLine" = D.panel_status_line(antag_load_now, antag_target_now),
+		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_real_fired_at) / (1 MINUTES)) : 0,
+		"eventIntensity" = D.last_signals ? round(D.last_signals.event_intensity, 0.1) : 0,
 		"maxQuiet" = D.profile ? D.profile.max_quiet_time / (1 MINUTES) : 0,
 		"quietThreshold" = D.profile ? D.profile.quiet_intensity_threshold : 0,
 		"maxActiveMajor" = D.profile ? D.profile.max_active_major : 0,

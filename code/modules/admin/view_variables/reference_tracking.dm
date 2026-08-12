@@ -73,6 +73,9 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	log_reftracker("Начат поиск ссылок на [type] [text_ref(src)], ищем [references_to_clear == INFINITY ? "все" : references_to_clear].")
 	GLOB.reftracker_scan_id--
 	var/search_id = GLOB.reftracker_scan_id
+	// Снимок на старте и на финише снимается в ОДНОМ фрейме - иначе глубина вызова
+	// сама сдвинет refcount. Отрицательная дельта = держатель отпустил посреди скана.
+	var/refs_at_start = refcount(src)
 
 	DoSearchVar(GLOB, "GLOB", search_id)
 	log_reftracker("GLOB просканирован")
@@ -90,14 +93,11 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 		return FinishSearch()
 
 	var/list/skip_types = GLOB.reftracker_skip_typecache
-	for(var/datum/thing in world) //atoms (don't beleive its lies)
-		if(skip_types[thing.type])
-			continue
-		DoSearchVar(thing, "World -> [thing.type]", search_id)
-		if(SearchDone())
-			return FinishSearch()
-	log_reftracker("Атомы просканированы")
 
+	// ПОРЯДОК ВАЖЕН. Проход по датумам занимает ~17с, проход по атомам - ~215с (прод,
+	// раунд 9807). Держатель, который отпускает через пару минут, при обратном порядке
+	// исчезал ДО того, как скан до него доходил, и лог печатал честное "найдено 0 из 1"
+	// на реально находимой ссылке. Сначала всё дешёвое, атомы - последними.
 	for(var/datum/thing) //datums
 		if(skip_types[thing.type])
 			continue
@@ -107,10 +107,21 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	log_reftracker("Датумы просканированы")
 
 	// Клиентские структуры (images/screen/eye) обычному скану не видны - явный проб.
+	// Дёшево (миллисекунды), поэтому идёт до тяжёлого прохода по атомам.
 	log_reftracker("Проверка клиентских структур ([length(GLOB.clients)] клиентов)...")
 	find_client_references(src)
+	if(SearchDone())
+		return FinishSearch()
 
-	FinishSearch()
+	for(var/datum/thing in world) //atoms (don't beleive its lies)
+		if(skip_types[thing.type])
+			continue
+		DoSearchVar(thing, "World -> [thing.type]", search_id)
+		if(SearchDone())
+			return FinishSearch()
+	log_reftracker("Атомы просканированы")
+
+	FinishSearch(refcount(src) - refs_at_start)
 
 /// TRUE, когда скан пора прекращать: все ссылки найдены или запрошена отмена.
 /// В тестовом режиме (should_save_refs) ранний выход по счётчику отключён.
@@ -123,17 +134,33 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	#endif
 	return GLOB.reftracker_references_to_clear <= 0
 
-/datum/proc/FinishSearch()
+/**
+ * Расшифровка недобора ссылок по изменению refcount цели за время скана.
+ * Без неё "невидимый держатель" и "держатель, отпустивший посреди скана" печатались
+ * одной и той же строкой - шесть пасов расследования обсерверов читали транзитного
+ * держателя как VM-пин. Чистый прок: тестируется без запуска полного скана мира.
+ * ref_delta - изменение refcount цели за время скана, null если скан вышел рано.
+ */
+/proc/build_refsearch_verdict(ref_delta)
+	if(isnull(ref_delta))
+		return "Скан завершился до полного обхода - вердикт по держателю не снят."
+	if(ref_delta < 0)
+		return "За время скана refcount цели упал на [-ref_delta]: держатель ОТПУСТИЛ по ходу поиска \
+			и физически не мог быть найден. Ищи владельца с временем жизни порядка пары минут \
+			(снапшот-список, отложенный колбек, кэш с TTL), а не VM-пин."
+	return "refcount цели за время скана не упал: держатель ЖИВ и не найден ни одним проходом \
+		(GLOB, нативные глобалы, датумы, клиенты, атомы) - значит он вне досягаемости DM: \
+		VM-пин живого фрейма или внутренности BYOND."
+
+/// ref_delta - изменение refcount цели за время скана (null, если скан вышел рано).
+/datum/proc/FinishSearch(ref_delta = null)
 	if(GLOB.reftracker_cancel)
 		log_reftracker("Поиск ссылок на [type] [text_ref(src)] ОТМЕНЁН.")
 	else if(GLOB.reftracker_scan_requested != INFINITY && GLOB.reftracker_references_to_clear > 0)
 		// Полный обход мира закончился, а ожидаемые ссылки не нашлись: датумы,
 		// списки, image-держатели и клиентские структуры уже исключены.
 		var/found = GLOB.reftracker_scan_requested - GLOB.reftracker_references_to_clear
-		log_reftracker("Поиск ссылок на [type] [text_ref(src)] завершён: найдено [found] из [GLOB.reftracker_scan_requested]. \
-			Недостающие держатели вне датумов - как правило это VM-пины (локали и temp-слоты живых проков, \
-			отпускают при смерти фрейма; refcount в момент фейла тоже мог быть завышен фреймом GC). \
-			Устойчивый недобор при повторных сканах = реальный держатель во внутренностях BYOND.")
+		log_reftracker("Поиск ссылок на [type] [text_ref(src)] завершён: найдено [found] из [GLOB.reftracker_scan_requested]. [build_refsearch_verdict(ref_delta)]")
 		if(ismob(src))
 			var/mob/target_mob = src
 			if(target_mob.pending_native_prompts > 0)

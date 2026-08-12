@@ -182,7 +182,8 @@
 		"arachnid_mandibles"	= pick(GLOB.arachnid_mandibles_list),
 		"taur"				= "None",
 		"mam_body_markings" = list(),
-		"emissive_eyes" = FALSE,
+		"allow_emissives" = FALSE,
+		"emissive_parts" = list(),
 		"mam_ears" 			= snowflake_ears_list ? pick(snowflake_ears_list) : "None",
 		"mam_snouts"		= snowflake_mam_snouts_list ? pick(snowflake_mam_snouts_list) : "None",
 		"mam_tail"			= snowflake_mam_tails_list ? pick(snowflake_mam_tails_list) : "None",
@@ -561,6 +562,9 @@ GLOBAL_LIST_EMPTY(species_datums)
 #define GET_CLIENT(mob) (##mob.client || ##mob.mock_client)
 
 #define IS_IN_STASIS(mob) (mob.has_status_effect(/datum/status_effect/grouped/stasis))
+
+#define IS_BOLA_ENSNARED(mob) (mob.has_status_effect(/datum/status_effect/bola_snared))
+#define IS_BEARTRAP_ENSNARED(mob) (mob.has_status_effect(/datum/status_effect/beartrap_ensnared))
 
 /proc/set_criminal_status(mob/living/user, datum/data/record/target_records , criminal_status, comment, user_rank, list/authcard_access = list(), user_name)
 	var/status = criminal_status

@@ -6,4 +6,10 @@
 #define ROUNDTYPE_DYNAMIC_LIGHT "Dynamic (Light)"
 #define ROUNDTYPE_EXTENDED "Extended"
 
+/// Группы ротации roundtype: лёгкие (Extended / Light) vs тяжёлые (Medium / Hard / Team-Based).
+#define ROUNDTYPE_ROTATION_LIGHT "light"
+#define ROUNDTYPE_ROTATION_HEAVY "heavy"
+
 #define ROUNDTYPE_MAX_COMBO 2
+
+#define IS_XENO_MAID_ROUND (GLOB.round_type == ROUNDTYPE_EXTENDED || GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)

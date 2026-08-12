@@ -143,6 +143,9 @@
 	toolspeed = 0.25
 	random_color = FALSE
 
+/obj/item/screwdriver/power/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
+
 /obj/item/screwdriver/power/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is putting [src] to [user.ru_ego()] temple. It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	return(BRUTELOSS)
@@ -168,7 +171,7 @@
 	name = "advanced screwdriver"
 	desc = "A classy silver screwdriver with an alien alloy tip, it works almost as well as the real thing."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "screwdriver_a"
+	icon_state = "adv_screwdriver"
 	item_state = "screwdriver_nuke"
 	usesound = 'sound/items/pshoom.ogg'
 	toolspeed = 0.2
@@ -176,11 +179,10 @@
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
-			RESKIN_ICON_STATE = "screwdriver_a_black",
+			RESKIN_ICON_STATE = "adv_screwdriver_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "screwdriver_a",
+			RESKIN_ICON_STATE = "adv_screwdriver",
 		)
 	)
 

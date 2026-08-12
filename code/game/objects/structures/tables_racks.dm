@@ -289,8 +289,8 @@
 		if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
 			return
 		//Clamp it so that the icon never moves more than 16 pixels in either direction (thus leaving the table turf)
-		I.pixel_x = clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
-		I.pixel_y = clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
+		I.pixel_x = I.base_pixel_x + clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
+		I.pixel_y = I.base_pixel_y + clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
 		AfterPutItemOnTable(I, user)
 		return TRUE
 
@@ -805,8 +805,16 @@
 	var/obj/item/tank/internals/tank = null // баллон внутри
 	var/obj/item/clothing/mask/mask = null // маска внутри
 
+/obj/structure/table/optable/loaded
+	tank = /obj/item/tank/internals/anesthetic
+	mask = /obj/item/clothing/mask/breath/medical
+
 /obj/structure/table/optable/Initialize(mapload)
 	. = ..()
+	if(ispath(tank))
+		tank = new tank(src)
+	if(ispath(mask))
+		mask = new mask(src)
 	register_context()
 
 

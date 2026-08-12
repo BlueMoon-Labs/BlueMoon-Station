@@ -106,16 +106,6 @@ Difficulty: Insanely Hard
 	. = ..()
 	update_icon()
 
-/mob/living/simple_animal/hostile/megafauna/king/Found(atom/A)
-	if(isliving(A))
-		return A
-	return ..()
-
-/mob/living/simple_animal/hostile/retaliate/goat/guard/Found(atom/A)
-	if(isliving(A))
-		return A
-	return ..()
-
 /mob/living/simple_animal/hostile/retaliate/goat/guard
 	name = "honour guard"
 	desc = "A very handsome and noble beast."

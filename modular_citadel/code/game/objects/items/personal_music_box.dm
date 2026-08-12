@@ -25,10 +25,24 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	return UI_CLOSE
 
 /datum/component/jukebox/personal_music_box/proc/set_custom_track(track_path, track_name)
-	QDEL_NULL(custom_track)
+	clear_custom_track()
 	if(!track_path)
 		return
 	custom_track = new(track_name, file(track_path), PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH, 50, "personal_[REF(parent)]")
+
+/datum/component/jukebox/personal_music_box/proc/clear_custom_track()
+	var/datum/track/old_track = custom_track
+	if(!old_track)
+		return
+	custom_track = null
+	queuedplaylist -= old_track
+	if(selectedtrack == old_track)
+		selectedtrack = null
+	if(playing == old_track)
+		dance_over()
+		active = FALSE
+		playing = null
+	qdel(old_track)
 
 /datum/component/jukebox/personal_music_box/proc/stop_playback()
 	if(!active && !playing)
@@ -58,7 +72,7 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	return TRUE
 
 /datum/component/jukebox/personal_music_box/Destroy()
-	QDEL_NULL(custom_track)
+	clear_custom_track()
 	return ..()
 
 /obj/item/personal_music_box

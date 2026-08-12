@@ -11,7 +11,7 @@
 //     but overall network volume is also increased as this increases...
 
 /obj/machinery/atmospherics/components/binary/pump
-	icon_state = "pump_map-2"
+	icon_state = "pump_map-3"
 	name = "gas pump"
 	desc = "A pump that moves gas by pressure."
 
@@ -78,22 +78,31 @@
 		atmos_consider_idle()
 		return
 
-	//Calculate necessary moles to transfer using PV=nRT
+	//Calculate necessary moles to transfer
 	if((air1.total_moles() > 0) && (air1.return_temperature()>0))
-		var/pressure_delta = target_pressure - output_starting_pressure
-		var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
-
 		if(air2.gc_share)
+			// Venting into space: no back-pressure builds up, the legacy PV=nRT
+			// estimate is exact enough and the solver's output-side terms are
+			// meaningless against an immutable void.
+			var/pressure_delta = target_pressure - output_starting_pressure
+			var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
 			if(air1.vent_moles(transfer_moles))
 				update_parents()
 				atmos_idle_streak = 0
 			else
 				atmos_consider_idle()
-		else if(air1.transfer_to(air2,transfer_moles))
+			return
+		// Exact one-step solve (tg port): the legacy formula ignores that the
+		// transferred gas changes the output's temperature, so a hot-input
+		// cold-output pump chased the target for many extra cycles, rewaking
+		// itself and the pipenet every time.
+		var/temperature_delta = abs(air1.return_temperature() - air2.return_temperature())
+		var/transfer_moles = air1.gas_pressure_calculate(air2, target_pressure, temperature_delta <= 5)
+		if(transfer_moles && air1.transfer_to(air2, transfer_moles))
 			update_parents()
 			atmos_idle_streak = 0
 		else
-			// No-op transfer (nothing actually moved): same idle path as venting.
+			// No transfer warranted or a no-op move: same idle path as venting.
 			atmos_consider_idle()
 	else
 		// Empty input: woken by the pipenet broadcast when gas arrives.
@@ -130,6 +139,7 @@
 	data["on"] = on
 	data["pressure"] = round(target_pressure)
 	data["max_pressure"] = round(MAX_OUTPUT_PRESSURE)
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/pump/ui_act(action, params)
@@ -213,18 +223,34 @@
 	piping_layer = 1
 	icon_state= "pump_map-1"
 
-/obj/machinery/atmospherics/components/binary/pump/layer3
-	piping_layer = 3
+/obj/machinery/atmospherics/components/binary/pump/layer2
+	piping_layer = 2
+	icon_state= "pump_map-1"
+
+/obj/machinery/atmospherics/components/binary/pump/layer4
+	piping_layer = 4
+	icon_state= "pump_map-3"
+
+/obj/machinery/atmospherics/components/binary/pump/layer5
+	piping_layer = 5
 	icon_state= "pump_map-3"
 
 /obj/machinery/atmospherics/components/binary/pump/on
 	on = TRUE
-	icon_state = "pump_on_map-2"
+	icon_state = "pump_on_map-3"
 
 /obj/machinery/atmospherics/components/binary/pump/on/layer1
 	piping_layer = 1
 	icon_state= "pump_on_map-1"
 
-/obj/machinery/atmospherics/components/binary/pump/on/layer3
-	piping_layer = 3
+/obj/machinery/atmospherics/components/binary/pump/on/layer2
+	piping_layer = 2
+	icon_state= "pump_on_map-1"
+
+/obj/machinery/atmospherics/components/binary/pump/on/layer4
+	piping_layer = 4
+	icon_state= "pump_on_map-3"
+
+/obj/machinery/atmospherics/components/binary/pump/on/layer5
+	piping_layer = 5
 	icon_state= "pump_on_map-3"

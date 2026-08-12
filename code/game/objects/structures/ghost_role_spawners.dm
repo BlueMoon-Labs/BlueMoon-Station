@@ -490,6 +490,9 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	r_pocket = /obj/item/radio/off
 	back = /obj/item/storage/backpack
 	implants = list(/obj/item/implant/mindshield)
+	id = /obj/item/card/id/away/hotel/splurt
+	ears = /obj/item/radio/headset/headset_srv/hotel
+	l_pocket = /obj/item/modular_computer/pda/hotelstaff
 
 /obj/effect/mob_spawn/human/hotel_staff/security
 	name = "hotel security sleeper"
@@ -502,6 +505,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Вы можете вести себя как СБ со станции и \
 	полностью подчиняетесь КЗ и НРП СБ. Любых преступников, или нарушителей порядка вам следует передавать на станцию для вынесения и исполнения приговора. Вам нужно помнить, \
 	что отель не защищен от нападения агентов вражеских организаций."
+	make_bank_account = TRUE
 
 /datum/outfit/hotelstaff/security
 	name = "Hotel Secuirty"
@@ -511,6 +515,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	head = /obj/item/clothing/head/helmet/blueshirt
 	back = /obj/item/storage/backpack/security
 	belt = /obj/item/storage/belt/security/full
+	id = /obj/item/card/id/away/hotel/securty
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
 						/obj/item/ammo_box/magazine/e45/taser=3
@@ -881,6 +886,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /obj/effect/mob_spawn/human/pirate/special(mob/living/new_spawn)
 	new_spawn.fully_replace_character_name(new_spawn.real_name,generate_pirate_name())
 	new_spawn.mind.add_antag_datum(/datum/antagonist/pirate)
+	for(var/obj/item/I in new_spawn.get_equipped_items(include_pockets = TRUE))
+		ADD_TRAIT(I, TRAIT_NODROP, "pirate_antag")
 
 /obj/effect/mob_spawn/human/pirate/proc/generate_pirate_name()
 	var/beggings = strings(PIRATE_NAMES_FILE, "beginnings")

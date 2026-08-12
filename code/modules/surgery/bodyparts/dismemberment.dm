@@ -1,5 +1,5 @@
 
-/obj/item/bodypart/proc/can_dismember(obj/item/I)
+/obj/item/bodypart/proc/can_dismembered()
 	if(dismemberable)
 		return TRUE
 
@@ -22,7 +22,8 @@
 	if(!harmless)
 		C.emote("realagony")
 		SEND_SIGNAL(C, COMSIG_ADD_MOOD_EVENT, "dismembered", /datum/mood_event/dismembered)
-	else C.emote("pain")
+	else
+		C.emote("pain")
 	drop_limb()
 	C.update_equipment_speed_mods() // Update in case speed affecting item unequipped by dismemberment
 
@@ -112,6 +113,7 @@
 	owner = null
 	bleed_overlay_icon = null
 	C.update_wound_overlays()
+	C.update_bandage_overlays()
 
 	for(var/X in C.surgeries) //if we had an ongoing surgery on that limb, we stop it.
 		var/datum/surgery/S = X
@@ -191,6 +193,7 @@
   * * bare_wound_bonus: ditto above
   */
 /obj/item/bodypart/proc/try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
+	. = FALSE
 	if(wounding_dmg < DISMEMBER_MINIMUM_DAMAGE)
 		return
 
@@ -202,9 +205,7 @@
 		return
 
 	var/datum/wound/loss/dismembering = new
-	dismembering.apply_dismember(src, wounding_type)
-
-	return TRUE
+	return dismembering.apply_dismember(src, wounding_type)
 
 //when a limb is dropped, the internal organs are removed from the mob and put into the limb
 /obj/item/organ/proc/transfer_to_limb(obj/item/bodypart/LB, mob/living/carbon/C)
@@ -364,9 +365,12 @@
 		S.victim = C
 		LAZYADD(C.all_scars, thing)
 
-	for(var/i in wounds)
-		var/datum/wound/W = i
-		W.apply_wound(src, TRUE)
+	// drop_limb() снимает раны из all_wounds жертвы, но оставляет их в wounds конечности. Из-за
+	// этого apply_wound() сравнивал рану САМУ С СОБОЙ в проверке дублей и делал ей qdel: пришитая
+	// обратно конечность возвращалась без своих ран. Восстанавливаем связь напрямую, по снапшоту -
+	// apply_wound здесь не годится, он считает рану новой и дублирует записи с подпиской.
+	for(var/datum/wound/W as anything in wounds?.Copy())
+		W.reattach_to_victim(C)
 
 	update_bodypart_damage_state()
 	update_disabled()

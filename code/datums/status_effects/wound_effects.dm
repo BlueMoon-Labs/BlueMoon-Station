@@ -8,6 +8,7 @@
 
 /datum/status_effect/determined
 	id = "determined"
+	tick_interval = -1 //чисто сигнальный вечный эффект: в processing ему нечего делать
 	alert_type = /atom/movable/screen/alert/status_effect/determined
 
 /datum/status_effect/determined/on_apply()
@@ -21,7 +22,7 @@
 /datum/status_effect/limp
 	id = "limp"
 	status_type = STATUS_EFFECT_REPLACE
-	tick_interval = 10
+	tick_interval = -1 //вся логика на сигналах движения, tick() не используется
 	alert_type = /atom/movable/screen/alert/status_effect/limp
 	var/msg_stage = 0//so you dont get the most intense messages immediately
 	/// The left leg of the limping person
@@ -118,6 +119,7 @@
 /datum/status_effect/wound
 	id = "wound"
 	status_type = STATUS_EFFECT_MULTIPLE
+	tick_interval = -1 //живёт до снятия раны, реагирует только на сигналы
 	var/obj/item/bodypart/linked_limb
 	var/datum/wound/linked_wound
 	alert_type = NONE

@@ -102,6 +102,16 @@
 	/// накопление и блокирует антаг-действия в битах/латеджойне. Живой лёгкий антаг = 15:
 	/// при 1.5 цель на 40 экипажа = 60 = ~4 живых лёгких антага.
 	var/antag_intensity_per_crew = 1.5
+	/// Порог тяжёлых антаг-покупок: команда (antag_heavy) покупается только пока живая
+	/// нагрузка не выше этой доли цели. Тяжёлая команда - главное блюдо пустого раунда:
+	/// рейдеры с intensity 45, купленные в запас 9.8 (прод-раунд), пробили цель почти вдвое
+	/// и заперли антаг-каналы гейтом насыщения до конца смены.
+	var/antag_heavy_load_fraction = 0.5
+	/// Стартовый аванс антаг-кошельков (делится ANTAG/GHOST по pool_shares) поверх общего
+	/// initial_grant: дефицит-капля при живых, но тихих раундстартерах набирала первую
+	/// гост-роль только к ~25-й минуте - аванс сдвигает первый гост-контент к открытию
+	/// его earliest_start, не меняя крейсерский темп (капля та же).
+	var/antag_initial_grant = 8
 	/// Доступны ли профилю тяжёлые антаг-действия (antag_heavy: нюк-асолт, блоб, ксено, терор).
 	/// FALSE у фоновых профилей (Light/Extended): там командный асолт не "редкий", а неуместный.
 	var/antag_heavy_enabled = TRUE
@@ -159,6 +169,8 @@
 		"disruptionMults" = disruption_weight_mults,
 		"antagPerCrew" = antag_intensity_per_crew,
 		"antagHeavyEnabled" = antag_heavy_enabled,
+		"antagHeavyLoadFraction" = antag_heavy_load_fraction,
+		"antagInitialGrant" = antag_initial_grant,
 		"antagLossRefundWindow" = round(antag_loss_refund_window / (1 MINUTES), 0.1),
 		"antagLossActivityThreshold" = antag_loss_activity_threshold,
 		"maxQuiet" = round(max_quiet_time / (1 MINUTES), 0.1),
@@ -184,6 +196,8 @@
 	antag_heavy_enabled = FALSE
 	// Цель нагрузки ниже медиумных 1.5: на 40 экипажа = 36 = 2-3 лёгких антага, не 4.
 	antag_intensity_per_crew = 0.9
+	// Аванс скромнее медиумного: фоновому профилю ранний гост нужен, но не к 15-й минуте.
+	antag_initial_grant = 5
 	family_spacing = 12 MINUTES
 	disruption_weight_mults = list(
 		DIRECTOR_DISRUPTION_AMBIENT = 1,
@@ -235,6 +249,8 @@
 	// (2.2 на голову: на 40 экипажа цель 88 = ~6 лёгких или 2 тяжёлые команды со свитой),
 	// разгон с первых минут (колено кривой на 10-й) и без спада до второго часа.
 	antag_intensity_per_crew = 2.2
+	// Разгон с первых минут касается и антаг-кошельков: первый гост не позже колена кривой.
+	antag_initial_grant = 12
 	time_curve = list(list(0, 0.7), list(10, 1), list(100, 1), list(130, 0.7))
 	severity_spacing = list(
 		DIRECTOR_SEVERITY_FLAVOR = 4 MINUTES,
@@ -274,6 +290,9 @@
 	// вмещает тяжёлую роундстарт-команду (45) со свитой, но не две команды разом; события
 	// уступают долю антаг-пулам (0.45 на двоих) и служат фоном конфликта.
 	antag_intensity_per_crew = 2
+	// Команда - смысл профиля: порог тяжёлых покупок мягче дефолтного, аванс крупнее.
+	antag_heavy_load_fraction = 0.6
+	antag_initial_grant = 10
 	// Антаг-доли профиля не прожать через дефолтные паузы 12/30 - антаг-треки чаще
 	antag_light_spacing = 12 MINUTES
 	antag_heavy_spacing = 28 MINUTES
@@ -337,6 +356,7 @@
 	max_quiet_time = 20 MINUTES
 	quiet_intensity_threshold = 15
 	initial_grant = 0 // экста фоновая: первые полчаса без событий - это нормально
+	antag_initial_grant = 0 // штучный темп гост-спавнеров эксты аванс не ускоряет
 	roundstart_budget_min = 0
 	roundstart_budget_max = 0
 

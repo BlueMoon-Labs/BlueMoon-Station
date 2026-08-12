@@ -2676,9 +2676,8 @@
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "afo" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = 26
 	},
@@ -8610,7 +8609,7 @@
 	id = "detectivewindows";
 	name = "HoS Privacy Blast door"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "aqz" = (
@@ -37844,7 +37843,7 @@
 /area/maintenance/starboard/aft)
 "pjU" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/yellow/hidden{
+/obj/machinery/atmospherics/pipe/simple/green/hidden{
 	dir = 6
 	},
 /turf/closed/wall/r_wall,

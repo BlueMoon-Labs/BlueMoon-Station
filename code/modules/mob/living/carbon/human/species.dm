@@ -813,11 +813,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					grad_color = H.grad_color
 					if(grad_style)
 						var/datum/sprite_accessory/gradient = GLOB.hair_gradients_list[grad_style]
-						var/icon/temp = icon(gradient.icon, gradient.icon_state)
-						var/icon/temp_hair = icon(hair_file, hair_state)
-						temp.Blend(temp_hair, ICON_ADD)
-						gradient_overlay.icon = temp
-						gradient_overlay.color = "#" + grad_color
+						// Битый преф (стиль, которого больше нет в списке) без гарда
+						// роняет весь handle_hair на каждом апдейте иконки моба.
+						if(gradient)
+							var/icon/temp = icon(gradient.icon, gradient.icon_state)
+							var/icon/temp_hair = icon(hair_file, hair_state)
+							temp.Blend(temp_hair, ICON_ADD)
+							gradient_overlay.icon = temp
+							gradient_overlay.color = "#" + grad_color
+						else
+							grad_style = null
+							H.grad_style = null
 
 				else
 					hair_overlay.color = forced_colour
@@ -890,19 +896,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += left_eye
 				standing += right_eye
 				// Свечение глаз
-				if(H.dna?.features["emissive_eyes"])
-					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					left_eye_emissive.pixel_x = left_eye.pixel_x
-					left_eye_emissive.pixel_y = left_eye.pixel_y
-					right_eye_emissive.pixel_x = right_eye.pixel_x
-					right_eye_emissive.pixel_y = right_eye.pixel_y
-					left_eye_emissive.category = "HEAD"
-					right_eye_emissive.category = "HEAD"
-					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
-					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
-					standing += left_eye_emissive
-					standing += right_eye_emissive
+				if(has_emissive_part(H.dna.features, "eyes"))
+					standing += emissive_copy(left_eye)
+					standing += emissive_copy(right_eye)
 
 	/* skyrat edit
 	//Underwear, Undershirts & Socks
@@ -1192,6 +1188,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 			standing += accessory_overlay
 
+			if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+				standing += emissive_copy(accessory_overlay)
+
 			if(S.extra) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra_accessory_overlay.category = S.mutable_category
@@ -1239,6 +1238,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				standing += extra_accessory_overlay
 
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra_accessory_overlay)
+
 			if(S.extra2) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 				extra2_accessory_overlay.category = S.mutable_category
@@ -1280,6 +1282,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					extra2_accessory_overlay.pixel_y += H.dna.species.offset_features[OFFSET_MUTPARTS][2]
 
 				standing += extra2_accessory_overlay
+
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
+					standing += emissive_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing
 
@@ -1568,7 +1573,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			if(istype(I, /obj/item/clothing/accessory/ring))
 				if(istype(H.gloves))
 					var/obj/item/clothing/gloves/attaching_target = H.gloves
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -1584,7 +1589,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			else
 				if(istype(H.w_uniform, /obj/item/clothing/under))
 					var/obj/item/clothing/under/attaching_target = H.w_uniform
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -2204,7 +2209,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		Iwound_bonus = CANT_WOUND
 
 	var/weakness = H.check_weakness(I, user)
-	apply_damage(totitemdamage * weakness, I.damtype, def_zone, armor_block, H, wound_bonus = Iwound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness())
+	apply_damage(totitemdamage * weakness, I.damtype, def_zone, armor_block, H, wound_bonus = Iwound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness(), can_dismember = I.can_dismember())
 
 
 	H.send_item_attack_message(I, user, hit_area, affecting, totitemdamage)
@@ -2450,7 +2455,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		target.ShoveOffBalance(SHOVE_OFFBALANCE_DURATION + user.dna.species.disarm_bonus) // BLUEMOON EDIT - xenohybrids_improvements - добавлено "+ disarm_bonus"
 		log_combat(user, target, "shoved", append_message)
 
-/datum/species/proc/apply_damage(damage, damagetype = BRUTE, def_zone = null, blocked, mob/living/carbon/human/H, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE)
+/datum/species/proc/apply_damage(damage, damagetype = BRUTE, def_zone = null, blocked, mob/living/carbon/human/H, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE, can_dismember = TRUE)
 	// BLUEMOON EDIT START - sanity check
 	if(!H)
 		return
@@ -2491,7 +2496,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				apply_damage(damage, damagetype = STAMINA)
 				return
 			if(BP)
-				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
+				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
 			//BLUEMOON EDIT START
 			else//no bodypart, we deal damage with a more general method.
@@ -2501,7 +2506,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			H.damageoverlaytemp = 20
 			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod
 			if(BP)
-				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
+				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
 			else
 				H.adjustFireLoss(damage_amount)
@@ -2658,16 +2663,23 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "cold", /datum/mood_event/cold)
 		//Apply cold slowdown
 		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/cold, multiplicative_slowdown = (((BODYTEMP_COLD_DAMAGE_LIMIT + cold_offset) - H.bodytemperature) / COLD_SLOWDOWN_FACTOR))
-		switch(H.bodytemperature)
-			if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 1)
-				H.apply_damage(COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod, BURN)
-			if(120 to 200)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 2)
-				H.apply_damage(COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod, BURN)
-			else
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 3)
-				H.apply_damage(COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod, BURN)
+		// For dead mobs, stop cold damage once body is frozen
+		if(H.stat != DEAD || H.bodytemperature > BODYTEMP_FROZEN_THRESHOLD)
+			var/cold_damage = 0
+			var/shiver_level = 0
+			switch(H.bodytemperature)
+				if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
+					shiver_level = 1
+					cold_damage = COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod
+				if(120 to 200)
+					shiver_level = 2
+					cold_damage = COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod
+				else
+					shiver_level = 3
+					cold_damage = COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod
+			if(shiver_level)
+				H.throw_alert("temp", /atom/movable/screen/alert/shiver, shiver_level)
+				H.apply_damage(cold_damage, BURN)
 
 	else
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/cold)

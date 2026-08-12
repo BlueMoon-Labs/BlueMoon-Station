@@ -15,7 +15,7 @@
 	max_stamina_damage = 200
 	var/obj/item/cavity_item
 
-/obj/item/bodypart/chest/can_dismember(obj/item/I)
+/obj/item/bodypart/chest/can_dismembered()
 	if(!((owner.stat == DEAD) || owner.InFullCritical()) || !get_organs())
 		return FALSE
 	return ..()
@@ -80,7 +80,8 @@
 	stam_heal_tick = STAM_RECOVERY_LIMB
 
 /obj/item/bodypart/l_arm/is_disabled()
-	if(HAS_TRAIT(owner, TRAIT_PARALYSIS_L_ARM))
+	//owner null у отсоединённой конечности - null-гард живёт в родителе
+	if(owner && HAS_TRAIT(owner, TRAIT_PARALYSIS_L_ARM))
 		return BODYPART_DISABLED_PARALYSIS
 	return ..()
 
@@ -147,7 +148,7 @@
 	max_stamina_damage = 50
 
 /obj/item/bodypart/r_arm/is_disabled()
-	if(HAS_TRAIT(owner, TRAIT_PARALYSIS_R_ARM))
+	if(owner && HAS_TRAIT(owner, TRAIT_PARALYSIS_R_ARM))
 		return BODYPART_DISABLED_PARALYSIS
 	return ..()
 
@@ -213,7 +214,7 @@
 	max_stamina_damage = 50
 
 /obj/item/bodypart/l_leg/is_disabled()
-	if(HAS_TRAIT(owner, TRAIT_PARALYSIS_L_LEG))
+	if(owner && HAS_TRAIT(owner, TRAIT_PARALYSIS_L_LEG))
 		return BODYPART_DISABLED_PARALYSIS
 	return ..()
 
@@ -276,7 +277,7 @@
 	stam_heal_tick = STAM_RECOVERY_LIMB
 
 /obj/item/bodypart/r_leg/is_disabled()
-	if(HAS_TRAIT(owner, TRAIT_PARALYSIS_R_LEG))
+	if(owner && HAS_TRAIT(owner, TRAIT_PARALYSIS_R_LEG))
 		return BODYPART_DISABLED_PARALYSIS
 	return ..()
 

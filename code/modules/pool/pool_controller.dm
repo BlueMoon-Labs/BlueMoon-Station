@@ -75,7 +75,17 @@
 	scan_things()
 
 /obj/machinery/pool/controller/Destroy()
-	STOP_PROCESSING(SSprocessing, src)
+	// Initialize регистрирует нас в SSfastprocess - снимать надо оттуда же,
+	// иначе контроллер остаётся в processing/currentrun и уходит в харддел
+	STOP_PROCESSING(SSfastprocess, src)
+	// Обратные ссылки: турфы и машины держат нас, пока сами их не обнулим
+	for(var/turf/open/pool/linked_turf as anything in linked_turfs)
+		if(linked_turf.controller == src)
+			linked_turf.controller = null
+	if(linked_drain?.controller == src)
+		linked_drain.controller = null
+	if(linked_filter?.controller == src)
+		linked_filter.controller = null
 	linked_drain = null
 	linked_filter = null
 	linked_turfs.Cut()
@@ -405,7 +415,7 @@
 			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
 			mist_off()
 			interact_delay = world.time + 60
-			linked_drain.active = TRUE
+			linked_drain.set_active(TRUE)
 			linked_drain.cycles_left = 75
 			if(!linked_drain.filling)
 				new /obj/effect/whirlpool(linked_drain.loc)

@@ -435,7 +435,7 @@
 /area/awaymission/challenge/end)
 "ch" = (
 /obj/structure/chair/comfy/black,
-/mob/living/simple_animal/hostile/syndicate/real_syndicate{
+/mob/living/simple_animal/hostile/syndicate{
 	desc = "It's HIM.";
 	name = "John Syndicate";
 	environment_smash = 0
@@ -520,10 +520,6 @@
 	pixel_y = -3
 	},
 /turf/open/floor/wood,
-/area/awaymission/challenge/end)
-"cu" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/anthro,
-/turf/open/floor/circuit,
 /area/awaymission/challenge/end)
 "cv" = (
 /obj/structure/chair{
@@ -711,10 +707,6 @@
 /area/awaymission/challenge/main)
 "zn" = (
 /turf/open/space/basic,
-/area/awaymission/challenge/end)
-"Db" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper/anthro/fox,
-/turf/open/floor/wood,
 /area/awaymission/challenge/end)
 "Hr" = (
 /mob/living/simple_animal/hostile/syndicate/ranged/smg/anthro,
@@ -27155,7 +27147,7 @@ cd
 cd
 cd
 cd
-cF
+cd
 do
 bP
 aa
@@ -30996,7 +30988,7 @@ bP
 bZ
 cj
 cj
-Db
+cj
 bP
 cn
 cd
@@ -31005,7 +30997,7 @@ cn
 cn
 cn
 cn
-cu
+cn
 cn
 cn
 cn

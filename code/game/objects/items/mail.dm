@@ -276,7 +276,7 @@
 		if(human.stat == DEAD || !human.mind)
 			continue
 		// Skip wizards, nuke ops, cyborgs; Centcom does not send them mail
-		if(!(human.mind.assigned_role in get_all_jobs()))
+		if(!GLOB.all_jobs_lookup[human.mind.assigned_role])
 			continue
 
 		mail_recipients += human.mind
@@ -346,11 +346,12 @@
 	storage.max_combined_w_class = 42
 	storage.max_items = 21
 	storage.display_numerical_stacking = FALSE
-	storage.can_hold = typecacheof(list(
+	var/static/list/mailbag_can_hold = typecacheof(list(
 		/obj/item/mail,
 		/obj/item/small_delivery,
 		/obj/item/paper
 	))
+	storage.can_hold = mailbag_can_hold
 
 /obj/item/paper/fluff/junkmail_redpill
 	name = "smudged paper"

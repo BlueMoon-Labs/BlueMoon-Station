@@ -20,7 +20,7 @@
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 2
+#define STATBROWSER_PROTOCOL_VERSION 3
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"
@@ -28,6 +28,9 @@
 #define STATPANEL_CHANNEL_SPELLS "spells"
 #define STATPANEL_CHANNEL_TICKETS "tickets"
 #define STATPANEL_CHANNEL_SDQL2 "sdql2"
+#define STATPANEL_CHANNEL_READYPLAYERS "readyplayers"
+/// Ready players payload is rebuilt at most this often (deciseconds).
+#define STATPANEL_READYPLAYERS_CACHE_DELAY 15
 
 SUBSYSTEM_DEF(statpanels)
 	name = "Stat Panels"
@@ -49,6 +52,8 @@ SUBSYSTEM_DEF(statpanels)
 	var/slow_data_counter = 0
 	var/list/cached_vote_base
 	var/cached_vote_encoded
+	var/cached_readyplayers_encoded
+	var/readyplayers_cache_time = 0
 	var/list/perf_history_cpu = list()
 	var/list/perf_history_tidi = list()
 	var/list/perf_history_ping = list()
@@ -88,6 +93,14 @@ SUBSYSTEM_DEF(statpanels)
 		list("Подключено Игроков", player_trend),
 		list("Предыдущие Режимы", SSpersistence ? jointext(SSpersistence.saved_modes, ", ") : ""))
 	encoded_global_slow = url_encode(json_encode(server_section))
+
+/datum/controller/subsystem/statpanels/proc/build_readyplayers_payload()
+	var/list/rows = list()
+	for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+		if(np.ready != PLAYER_READY_TO_PLAY || !np.client)
+			continue
+		rows += np.client.prefs?.real_name || np.client.ckey
+	return rows
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)
 	if (!resumed)
@@ -250,6 +263,9 @@ SUBSYSTEM_DEF(statpanels)
 				if(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING))
 					for(var/choice in SSvote.choice_statclicks)
 						var/choice_id = SSvote.choice_statclicks[choice]
+						var/display_choice = choice
+						if(target.holder && SSvote.should_show_votes_to(target.mob) && !(SSvote.display_votes & SHOW_VOTES))
+							display_choice = "[choice] ([SSvote.get_effective_votes(choice)])"
 						if(target.ckey)
 							switch(SSvote.vote_system)
 								if(PLURALITY_VOTING, APPROVAL_VOTING)
@@ -258,13 +274,13 @@ SUBSYSTEM_DEF(statpanels)
 										ivotedforthis = SSvote.voted[target.ckey] && (text2num(choice_id) in SSvote.voted[target.ckey])
 									else
 										ivotedforthis = (SSvote.voted[target.ckey] == text2num(choice_id))
-									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
 								if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
 									var/list/vote = SSvote.voted[target.ckey]
 									var/vote_position = " "
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
-									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
 				var/raw_vote = json_encode(vote_arry)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
 					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")
@@ -319,6 +335,16 @@ SUBSYSTEM_DEF(statpanels)
 					target.statpanel_last_sent[STATPANEL_CHANNEL_SDQL2] = raw_sdql
 
 		if(target.mob)
+			if(istype(target.mob, /mob/dead/new_player) && !SSticker.HasRoundStarted())
+				if(!cached_readyplayers_encoded || world.time >= readyplayers_cache_time)
+					cached_readyplayers_encoded = url_encode(json_encode(build_readyplayers_payload()))
+					readyplayers_cache_time = world.time + STATPANEL_READYPLAYERS_CACHE_DELAY
+				if(target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] != cached_readyplayers_encoded)
+					target << output(cached_readyplayers_encoded, "statbrowser:update_readyplayers")
+					target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] = cached_readyplayers_encoded
+			else if(target.statpanel_last_sent[STATPANEL_CHANNEL_READYPLAYERS] != null)
+				target << output("", "statbrowser:remove_readyplayers")
+				target.statpanel_last_sent -= STATPANEL_CHANNEL_READYPLAYERS
 			var/mob/M = target.mob
 			// Process listed-turf BEFORE the spell tick check, so the listed-turf path is not starved
 			// when a slow fire yields halfway through this client's per-tick work.
@@ -795,3 +821,5 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_CHANNEL_SPELLS
 #undef STATPANEL_CHANNEL_TICKETS
 #undef STATPANEL_CHANNEL_SDQL2
+#undef STATPANEL_CHANNEL_READYPLAYERS
+#undef STATPANEL_READYPLAYERS_CACHE_DELAY

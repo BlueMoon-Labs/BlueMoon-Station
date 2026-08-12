@@ -53,7 +53,6 @@
 	//Equipment slots
 	var/obj/item/wear_suit = null
 	var/obj/item/w_uniform = null
-	var/obj/item/belt = null
 	var/obj/item/wear_id = null
 	var/obj/item/r_store = null
 	var/obj/item/l_store = null
@@ -94,6 +93,9 @@
 	var/account_id
 	var/last_fire_update
 	var/hardcore_survival_score = 0
+	/// Arms the plasma-contaminated-clothing pass in handle_plasma_clothing();
+	/// self-clears once worn contamination drops below the poisoning threshold.
+	var/plasma_gear_dirty = FALSE
 
 	tooltips = TRUE
 

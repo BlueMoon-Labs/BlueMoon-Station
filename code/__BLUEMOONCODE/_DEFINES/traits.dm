@@ -25,20 +25,8 @@
 #define TRAIT_TK_POTENTIAL					"TK_potential"
 #define TRAIT_RETRACTABLE_CLAWS				"claws"
 #define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
+#define TRAIT_KNOWS_RESEARCH 				"parchment_knowledge"
 #define BLUEMOON_TRAIT_NAME_PHOBIA			"Фобия"
-
-// Отдельные наименования для квирков, чтобы не повторять их в настройках
-#define BLUEMOON_TRAIT_NAME_SHRIEK				"Крикун"
-#define BLUEMOON_TRAIT_NAME_SHOWER_NEED			"Потребность в душе"
-#define BLUEMOON_TRAIT_NAME_COMPLEX_MAINTENANCE "Сложное обслуживание"
-#define BLUEMOON_TRAIT_NAME_RESTORATIVE_NANOBOTS "Восстановительные Наноботы"
-#define BLUEMOON_TRAIT_NAME_SYSCLEANER			"Система Бэкапов"
-#define BLUEMOON_TRAIT_NAME_POWERSAVING			"Эффективное Энергопотребление"
-#define BLUEMOON_TRAIT_NAME_POWERSHARING		"Двусторонняя Зарядка"
-#define BLUEMOON_TRAIT_NAME_COOLANT_GENERATOR	"Генератор Хладагента"
-#define BLUEMOON_TRAIT_NAME_WATER_VULNERABILITY	"Уязвимость к Воде"
-#define BLUEMOON_TRAIT_NAME_EMP_VULNERABILITY	"Некачественное Экранирование"
-#define TRAIT_KNOWS_RESEARCH 					"Знанине использования Пергаментом"
 
 // Трейты для рас
 #define CAN_BE_OPERATED_WITHOUT_PAIN		"can_be_operated_without_pain"

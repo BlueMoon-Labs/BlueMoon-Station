@@ -39,6 +39,11 @@
 	var/mode = 0
 	/// Supermatter hitscan: set during P.fire() when the beam strikes a crystal this shot.
 	var/obj/machinery/power/supermatter_crystal/last_shot_hit_sm
+	/// Слабые ссылки на кристаллы, у которых мы зарегистрировали попадание луча.
+	/// Снимать регистрацию нужно ровно с них: обход range(20) - это 41x41 тайл с их
+	/// содержимым на КАЖДЫЙ выстрел мимо кристалла (профиль SSMachines раунда 9860:
+	/// до 4.4мс за один process() эмиттера).
+	var/list/datum/weakref/registered_supermatters
 
 	// The following 3 vars are mostly for the prototype
 	var/manual = FALSE
@@ -166,10 +171,14 @@
 	if(machine_stat & (BROKEN))
 		return
 	if(state != EMITTER_WELDED || (!powernet && active_power_usage))
+		// Незаваренный (или обесточенный) эмиттер сидит в этой ветке весь раунд.
+		// Перерисовывать его иконку каждый проход SSmachines незачем: при active = FALSE
+		// update_icon_state() всегда выдаёт initial(icon_state), а все настоящие смены
+		// состояния (панель, питание, поломка) дёргают update_icon() сами.
 		if(active)
 			clear_supermatter_beam_registrations()
-		active = FALSE
-		update_icon()
+			active = FALSE
+			update_icon()
 		return
 	if(active == TRUE)
 		if(!active_power_usage || surplus() >= active_power_usage)
@@ -222,7 +231,7 @@
 		P.fire(dir2angle(dir))
 	if(is_supermatter_beam_emitter(src))
 		if(last_shot_hit_sm)
-			last_shot_hit_sm.register_emitter_beam_hit(src)
+			register_supermatter_beam_hit(last_shot_hit_sm)
 		else
 			clear_supermatter_beam_registrations()
 		last_shot_hit_sm = null
@@ -236,11 +245,27 @@
 			shot_number = 0
 	return P
 
-/// Clears supermatter beam-hit tracking for this emitter on all nearby crystals.
+/// Registers a beam hit on the given crystal and remembers it, so the matching
+/// unregistration does not have to sweep the map looking for crystals.
+/obj/machinery/power/emitter/proc/register_supermatter_beam_hit(obj/machinery/power/supermatter_crystal/crystal)
+	crystal.register_emitter_beam_hit(src)
+	var/datum/weakref/crystal_ref = WEAKREF(crystal)
+	if(!crystal_ref)
+		return
+	if(registered_supermatters?.Find(crystal_ref))
+		return
+	LAZYADD(registered_supermatters, crystal_ref)
+
+/// Clears supermatter beam-hit tracking for this emitter on every crystal it registered with.
 /obj/machinery/power/emitter/proc/clear_supermatter_beam_registrations()
-	for(var/obj/machinery/power/supermatter_crystal/SM in range(20, src))
-		SM.unregister_emitter_beam_hit(src)
 	last_shot_hit_sm = null
+	var/list/datum/weakref/stale_registrations = registered_supermatters
+	registered_supermatters = null
+	for(var/datum/weakref/crystal_ref as anything in stale_registrations)
+		var/obj/machinery/power/supermatter_crystal/crystal = crystal_ref.resolve()
+		if(!crystal)
+			continue
+		crystal.unregister_emitter_beam_hit(src)
 
 /obj/machinery/power/emitter/can_be_unfasten_wrench(mob/user, silent)
 	if(active)
