@@ -40,6 +40,9 @@
 /area/centcom/holding/exterior // зона со светом
 	name = "Holding Facility Exterior"
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
+
+/area/centcom/holding/shootingrange
+	name = "Holding Facility Shooting Range"
 // BLUEMOON ADD END
 
 /area/centcom/vip

@@ -24,13 +24,12 @@ SUBSYSTEM_DEF(metadollars)
 	return parts[parts.len - 1]
 
 /datum/controller/subsystem/metadollars/Initialize()
-	. = ..()
 	prep_metadollar_leaderboard()
 	var/recovered = recover_all_legacy_balances()
 	if(recovered)
 		log_world("Metadollars: restored legacy balances for [recovered] player(s) from preferences.sav backups.")
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(round_begin_reset))
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/metadollars/proc/round_begin_reset()
 	SIGNAL_HANDLER

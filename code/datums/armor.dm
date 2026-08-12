@@ -17,6 +17,23 @@
 #define MAGIC 	"magic"
 #define WOUND 	"wound"
 
+// BLUEMOON ADD START - BR (Bullet Rating) классы пробития для пуль.
+// Смысловые метки над armour_penetration — используются при назначении AP патронам.
+// BR0 = без пробития брони (резиновые пули, дробь)
+// BR1 = пистолетный класс (пробивает только самую лёгкую броню)
+// BR2 = PDW/промежуточный (шьёт жилет СБ, слаб по бронежилету)
+// BR3 = боевая винтовка (шьёт жилет и частично бронежилет)
+// BR4 = AP/усиленный (шьёт бронежилет, частично Джаггернаут)
+// BR5 = снайперский/крупнокалиберный (шьёт всё кроме топовой брони)
+// BR6 = противоматериальный (пробивает вообще всё)
+#define BULLET_BR0  0    // резина, дробь — нет пробития
+#define BULLET_BR1  10   // пистолеты, .45, 9mm
+#define BULLET_BR2  20   // PDW (4.6x30), 5.56 FMJ, 5.8mm FMJ
+#define BULLET_BR3  35   // 7.62x39 FMJ, SAW, AP для PDW
+#define BULLET_BR4  50   // AP патроны штурмовок, .50 базовый
+#define BULLET_BR5  65   // .50 снайпер, тяжёлые AP
+#define BULLET_BR6  100   // противоматериальный
+
 /proc/getArmor(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
 	. = locate(ARMORID)
 	if (!.)

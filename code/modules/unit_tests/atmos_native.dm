@@ -874,6 +874,7 @@
 	small.add_turf(third)
 	big.merge_groups(small)
 	TEST_ASSERT_EQUAL(big.awake_members, 3, "merge did not transfer the loser's awake count")
+	TEST_ASSERT_EQUAL(length(big.turf_list), 3, "merge did not append every member exactly once")
 	TEST_ASSERT_EQUAL(third.excited_group, big, "merge did not repoint the loser's member")
 	TEST_ASSERT_EQUAL(length(small.turf_list), 0, "merge left members listed in the dead loser group")
 	TEST_ASSERT(!(small in SSair.excited_groups), "merge left the loser group registered")
@@ -888,6 +889,7 @@
 	pair.add_turf(third)
 	tiny.merge_groups(pair)
 	TEST_ASSERT_EQUAL(pair.awake_members, 3, "merge into the bigger group did not transfer the awake count")
+	TEST_ASSERT_EQUAL(length(pair.turf_list), 3, "reverse merge did not append every member exactly once")
 	TEST_ASSERT_EQUAL(first.excited_group, pair, "merge into the bigger group did not repoint the smaller group's member")
 	TEST_ASSERT_EQUAL(length(tiny.turf_list), 0, "merge left members listed in the dead smaller group")
 	pair.garbage_collect()
@@ -895,6 +897,190 @@
 	SSair.remove_from_active(first)
 	SSair.remove_from_active(second)
 	SSair.remove_from_active(third)
+
+/// merge_groups() appends member lists without a membership scan, which is only
+/// sound while "listed in turf_list" and "excited_group points back" say the same
+/// thing. The eviction stage unhooks one member per slice and swaps in the surviving
+/// list only after walking the whole eviction list, so a breakdown cancelled inside
+/// that window must not leave the unhooked turfs listed: the next merge would append
+/// one of them a second time and average its air twice.
+/datum/unit_test/atmos_cancelled_eviction_keeps_membership_honest/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/turf/open/members = list(
+		locate(origin.x + 1, origin.y + 1, origin.z),
+		locate(origin.x + 2, origin.y + 1, origin.z),
+		locate(origin.x + 3, origin.y + 1, origin.z),
+	)
+	var/datum/excited_group/group = new
+	for(var/turf/open/member as anything in members)
+		TEST_ASSERT(istype(member), "test location is not an open turf")
+		member.air.copy_from_turf(member)
+		group.add_turf(member)
+		// Identical air plus a resting member is exactly what the write stage sends
+		// to the eviction list. Drop the active listing by hand: remove_from_active()
+		// would garbage collect the very group this test is building.
+		member.excited = FALSE
+		SSair.unlist_active_turf(member)
+
+	var/turf/open/unhooked_member
+	var/slices = 0
+	while(slices < 100)
+		var/finished = group.self_breakdown(slice_budget = 1)
+		slices++
+		var/list/turf/open/unhooked = list()
+		for(var/turf/open/member as anything in members)
+			if(member.excited_group != group)
+				unhooked += member
+		// Stop on the first slice that has unhooked some members but not all: that
+		// is the window this test exists for.
+		if(length(unhooked) && length(unhooked) < length(members))
+			unhooked_member = unhooked[1]
+			break
+		if(finished)
+			break
+	TEST_ASSERT_NOTNULL(unhooked_member, "no slice left the group partly evicted, so the guarded window was never reached")
+
+	group.cancel_breakdown()
+	for(var/turf/open/listed as anything in group.turf_list)
+		TEST_ASSERT_EQUAL(listed.excited_group, group, "a breakdown cancelled mid-eviction left an unhooked turf listed in turf_list")
+
+	// The stale entry only bites on the next merge, once the woken turf has joined
+	// another group and both member lists are appended wholesale.
+	var/datum/excited_group/rejoined_group = new
+	rejoined_group.add_turf(unhooked_member)
+	group.merge_groups(rejoined_group)
+	// Every test turf is accounted for exactly once, whichever side of the merge it
+	// came from. A stale listing shows up here as one member too many.
+	TEST_ASSERT_EQUAL(length(group.turf_list), length(members), "merging after a cancelled eviction listed a member twice")
+
+	group.garbage_collect()
+	rejoined_group.garbage_collect()
+	for(var/turf/open/member as anything in members)
+		member.air.copy_from_turf(member)
+		member.atmos_cooldown = 0
+		SSair.remove_from_active(member)
+
+/// add_turf() appends to turf_list and only then funnels through reset_cooldowns()
+/// -> cancel_breakdown(). A turf joining the group inside the eviction window -
+/// brand new, or just-evicted and re-shared - therefore exists in neither half of
+/// the eviction partition, so a cancel that trusted the partition would drop it
+/// from turf_list while its excited_group still points at the group: breakdowns
+/// and dismantle would never reach it again, and once the group died the turf
+/// would keep a dangling pointer to an unregistered zombie datum.
+/datum/unit_test/atmos_midevict_join_survives_cancel
+	var/list/turf/open/members
+
+/// Builds a fresh resting group over [members] and slices its breakdown until the
+/// eviction stage has unhooked some but not all of them. Returns the first
+/// unhooked member, or null if the window was never observed.
+/datum/unit_test/atmos_midevict_join_survives_cancel/proc/build_group_at_evict_window(datum/excited_group/group)
+	for(var/turf/open/member as anything in members)
+		member.air.copy_from_turf(member)
+		group.add_turf(member)
+		// Identical air plus a resting member is exactly what the write stage sends
+		// to the eviction list. Drop the active listing by hand: remove_from_active()
+		// would garbage collect the very group this helper is building.
+		member.excited = FALSE
+		SSair.unlist_active_turf(member)
+	var/slices = 0
+	while(slices < 100)
+		var/finished = group.self_breakdown(slice_budget = 1)
+		slices++
+		var/list/turf/open/unhooked = list()
+		for(var/turf/open/member as anything in members)
+			if(member.excited_group != group)
+				unhooked += member
+		if(length(unhooked) && length(unhooked) < length(members))
+			return unhooked[1]
+		if(finished)
+			return null
+	return null
+
+/datum/unit_test/atmos_midevict_join_survives_cancel/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	members = list(
+		locate(origin.x + 1, origin.y + 1, origin.z),
+		locate(origin.x + 2, origin.y + 1, origin.z),
+		locate(origin.x + 3, origin.y + 1, origin.z),
+	)
+	for(var/turf/open/member as anything in members)
+		TEST_ASSERT(istype(member), "test location is not an open turf")
+
+	// Case 1: a just-evicted member is re-added inside the window. It is still
+	// listed in turf_list (the swap has not happened yet), so the |= in add_turf
+	// is a no-op and only the back-pointer changes - the cancel must keep the
+	// turf, and keep it listed exactly once.
+	var/datum/excited_group/group = new
+	var/turf/open/evicted = build_group_at_evict_window(group)
+	TEST_ASSERT_NOTNULL(evicted, "no slice left the group partly evicted, so the guarded window was never reached")
+	group.add_turf(evicted) // reset_cooldowns() inside runs the guarded cancel
+	TEST_ASSERT(!group.breakdown_stage, "add_turf did not cancel the in-flight breakdown")
+	TEST_ASSERT_EQUAL(evicted.excited_group, group, "re-adding an evicted turf did not repoint it at the group")
+	var/listings = 0
+	for(var/turf/open/listed as anything in group.turf_list)
+		if(listed == evicted)
+			listings++
+	TEST_ASSERT_EQUAL(listings, 1, "a member re-added mid-eviction must survive the cancel listed exactly once")
+	group.garbage_collect()
+
+	// Case 2: a brand-new turf joins inside the window. It postdates the
+	// eviction partition entirely, so only the live turf_list knows about it.
+	var/turf/open/extra = locate(origin.x + 1, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(extra), "test location is not an open turf")
+	group = new
+	var/turf/open/unhooked = build_group_at_evict_window(group)
+	TEST_ASSERT_NOTNULL(unhooked, "no slice left the group partly evicted, so the guarded window was never reached")
+	extra.air.copy_from_turf(extra)
+	group.add_turf(extra)
+	TEST_ASSERT_EQUAL(extra.excited_group, group, "a turf joining mid-eviction lost its group pointer")
+	TEST_ASSERT(extra in group.turf_list, "a turf joining mid-eviction was dropped from turf_list by the cancel")
+	group.garbage_collect()
+
+	for(var/turf/open/member as anything in members + extra)
+		member.air.copy_from_turf(member)
+		member.atmos_cooldown = 0
+		SSair.remove_from_active(member)
+	members = null
+
+/// CHANGETURF_SKIP is the one replacement path that goes around qdel/Destroy - and
+/// with it around the update_air_ref(-1) -> remove_from_active() teardown that
+/// buries a replaced member's excited group. Turf references are positional, so
+/// without an explicit teardown the group's turf_list entry silently becomes the
+/// NEW turf with a null back-pointer: the stale listing merge_groups() trusts the
+/// lists never to contain.
+/datum/unit_test/atmos_changeturf_skip_buries_group/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/replaced = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/partner = locate(origin.x + 2, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(replaced), "test location is not an open turf")
+	TEST_ASSERT(istype(partner), "adjacent test location is not an open turf")
+
+	var/original_type = replaced.type
+	var/list/original_baseturfs = islist(replaced.baseturfs) ? replaced.baseturfs.Copy() : replaced.baseturfs
+	var/replacement_type = original_type == /turf/open/floor/wood ? /turf/open/floor/carpet : /turf/open/floor/wood
+
+	var/datum/excited_group/group = new
+	group.add_turf(replaced)
+	group.add_turf(partner)
+
+	var/turf/open/swapped_in = replaced.ChangeTurf(replacement_type, null, CHANGETURF_SKIP)
+	TEST_ASSERT_NOTNULL(swapped_in, "CHANGETURF_SKIP replacement did not happen")
+	TEST_ASSERT(!(group in SSair.excited_groups), "replacing a member through SKIP left its excited group registered")
+	TEST_ASSERT_EQUAL(length(group.turf_list), 0, "SKIP replacement left members listed in the buried group")
+	TEST_ASSERT_NULL(partner.excited_group, "SKIP replacement left the surviving member pointing at the buried group")
+
+	var/turf/open/restored = swapped_in.ChangeTurf(original_type, null, CHANGETURF_SKIP)
+	TEST_ASSERT_NOTNULL(restored, "restoring the original turf type did not happen")
+	restored.baseturfs = original_baseturfs
+	restored.air.copy_from_turf(restored)
+	restored.atmos_cooldown = 0
+	partner.air.copy_from_turf(partner)
+	partner.atmos_cooldown = 0
+	SSair.remove_from_active(restored)
+	SSair.remove_from_active(partner)
 
 /// The awake counter is maintained incrementally; exotic paths (a turf type
 /// change under a live group) can strand it. Every breakdown already walks the
