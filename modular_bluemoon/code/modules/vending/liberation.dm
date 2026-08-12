@@ -242,7 +242,7 @@
 				/obj/item/storage/firstaid/brute = 5,
 				/obj/item/storage/firstaid/fire = 5,
 				/obj/item/storage/firstaid/toxin = 5,
-				/obj/item/storage/firstaid/oxygen = 5,
+				/obj/item/storage/firstaid/o2 = 5,
 				/obj/item/gun/magic/wand/resurrection/debug/ghostcafe = 1,
 			)
 		),
