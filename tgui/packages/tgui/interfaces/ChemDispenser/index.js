@@ -1,6 +1,6 @@
 import { toFixed } from 'common/math';
 import { createSearch, toTitleCase } from 'common/string';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useBackend } from '../../backend';
 import {
@@ -40,6 +40,23 @@ const getChemMetadata = (chemicals) => {
 };
 
 let _recipesCountCache = { key: null, count: 0, drinkCount: 0 };
+
+// Пока книгу рецептов не запросили, сервер шлёт только счётчик по категориям -
+// сама книга весит под 560 КБ и едет лишь по заходу на вкладку.
+const getRecipesCountFromCounts = (counts, isDrinkDispenser) => {
+  let total = 0;
+  for (const category in counts) {
+    if (!isDrinkDispenser || DRINK_CATEGORIES.includes(category)) {
+      total += counts[category];
+    }
+  }
+  return total;
+};
+
+const resolveRecipesCount = (data, gameRecipes, isDrinkDispenser) =>
+  data.gameRecipes
+    ? getRecipesCount(gameRecipes, isDrinkDispenser)
+    : getRecipesCountFromCounts(data.gameRecipeCounts, isDrinkDispenser);
 
 const getRecipesCount = (gameRecipes, isDrinkDispenser) => {
   if (_recipesCountCache.key !== gameRecipes) {
@@ -273,6 +290,23 @@ const resolveOptimisticAmount = (optAmount, data) => {
   return data.amount;
 };
 
+// Книга рецептов запрашивается по заходу на вкладку, поэтому первый кадр вкладки
+// показывает ожидание, а не пустой список.
+function GameRecipesPane(props) {
+  const { loaded, ...rest } = props;
+  if (!loaded) {
+    return (
+      <Section fill>
+        <Box color="label" mt={2} textAlign="center">
+          <Icon name="spinner" spin mr={1} />
+          Загрузка книги рецептов...
+        </Box>
+      </Section>
+    );
+  }
+  return <GameRecipesTab {...rest} />;
+}
+
 export const ChemDispenser = (props) => {
   const { act, data } = useBackend();
 
@@ -343,7 +377,16 @@ export const ChemDispenser = (props) => {
       contents: data.recipes[name],
     }));
 
-  const gameRecipesCount = getRecipesCount(gameRecipes, isDrinkDispenser);
+  const gameRecipesLoaded = !!data.gameRecipes;
+  const gameRecipesCount = resolveRecipesCount(data, gameRecipes, isDrinkDispenser);
+  const needGameRecipes = activeTab === 'gameRecipes' && !gameRecipesLoaded;
+
+  // Книга приезжает по первому заходу на вкладку рецептов, а не при открытии окна.
+  useEffect(() => {
+    if (needGameRecipes) {
+      act('load_game_recipes');
+    }
+  }, [needGameRecipes]);
 
   const beakerContents = recording
     ? Object.keys(data.recordingRecipe || {}).map(id => ({
@@ -960,7 +1003,8 @@ export const ChemDispenser = (props) => {
                 )}
 
                 {activeTab === 'gameRecipes' && (
-                  <GameRecipesTab
+                  <GameRecipesPane
+                    loaded={gameRecipesLoaded}
                     gameRecipes={gameRecipes}
                     searchQuery={searchQuery}
                     isBeakerLoaded={displayIsBeakerLoaded}
