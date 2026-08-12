@@ -75,16 +75,17 @@
 		/obj/item/flashlight/seclite = 6,
 		/obj/item/ammo_box/magazine/m10mm = 9,
 		/obj/item/ammo_box/magazine/smgm45 = 9,
-		/obj/item/ammo_box/magazine/sniper_rounds = 9,
+		// /obj/item/ammo_box/magazine/sniper_rounds = 9,
 		/obj/item/ammo_box/magazine/m556 = 6,
+		/obj/item/ammo_casing/a40mm = 6,
 		/obj/item/ammo_box/magazine/m12g = 9,
-		/obj/item/grenade/plastic/c4 = 6,
-		/obj/item/grenade/frag = 12,
+		/obj/item/grenade/plastic/c4 = 4,
+		/obj/item/grenade/frag = 4,
 		/obj/item/melee/transforming/energy/sword/saber/red = 6,
 	)
 	var/voucher_items = list(
 		"M-90gl Carbine" = /obj/item/gun/ballistic/automatic/m90/unrestricted,
-		"Sniper Rifle" = /obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted,
+		// "Sniper Rifle" = /obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted,
 		"C-20r SMG" = /obj/item/gun/ballistic/automatic/c20r/unrestricted,
 		"Bulldog Shotgun" = /obj/item/gun/ballistic/automatic/shotgun/bulldog/unrestricted
 	)
