@@ -6,6 +6,9 @@
 /*
 	Base definition
 */
+/*
+	Base definition
+*/
 /datum/wound/blunt
 	sound_effect = 'sound/effects/wounds/crack1.ogg'
 	wound_type = WOUND_BLUNT
@@ -31,6 +34,16 @@
 	var/trauma_cycle_cooldown
 	/// If this is a chest wound and this is set, we have this chance to cough up blood when hit in the chest
 	var/internal_bleeding_chance = 0
+	// BLUEMOON ADD START - прогрессирующая внутренняя травма CHEST/HEAD
+	/// Текущая интенсивность приступа за тик. Растёт арифметически, пока не начато лечение (gel()).
+	var/internal_injury_intensity = 0
+	/// Шаг прироста интенсивности за тик
+	var/internal_injury_increment = 0
+	/// Раз в сколько тиков handle_process() применяется приступ
+	var/internal_injury_tick_interval = 5
+	/// Внутренний счётчик тиков
+	var/internal_injury_tick_counter = 0
+	// BLUEMOON ADD END
 	/// Cooldown for fumble/drop checks when using an item with a wounded arm
 	var/next_fumble_check = 0
 
@@ -38,6 +51,25 @@
 	Overwriting of base procs
 */
 /datum/wound/blunt/wound_injury(datum/wound/old_wound = null)
+	// BLUEMOON ADD START - разовый сильный приступ при получении тяжёлого перелома груди/головы
+	if((limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD) && severity >= WOUND_SEVERITY_SEVERE)
+		var/is_critical = (severity == WOUND_SEVERITY_CRITICAL)
+		// запускаем прогрессирующий процесс
+		processes = TRUE
+		internal_injury_intensity = is_critical ? 2 : 1
+		internal_injury_increment = is_critical ? 0.6 : 0.3
+		internal_injury_tick_counter = 0
+
+		// разовый приступ прямо сейчас - физическое "так, мне нужно отступать"
+		if(victim.blood_volume)
+			victim.visible_message(
+				span_userdanger("[victim] резко содрогается и [is_critical ? "обильно харкает" : "харкает"] кровью!"),
+				span_userdanger("Резкая боль пронзает вас, и вы [is_critical ? "обильно харкаете" : "харкаете"] кровью!"),
+				vision_distance = COMBAT_MESSAGE_RANGE,
+			)
+			victim.vomit(blood = TRUE, stun = TRUE, distance = 0, message = FALSE, harm = TRUE)
+	// BLUEMOON ADD END
+
 	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group)
 		processes = TRUE
 		active_trauma = victim.gain_trauma_type(brain_trauma_group, TRAUMA_RESILIENCE_WOUND)
@@ -67,6 +99,10 @@
 
 /datum/wound/blunt/remove_wound(ignore_limb, replaced)
 	limp_slowdown = 0
+	// BLUEMOON ADD START - сброс прогрессирующей внутренней травмы при снятии раны
+	internal_injury_intensity = 0
+	internal_injury_tick_counter = 0
+	// BLUEMOON ADD END
 	QDEL_NULL(active_trauma)
 	if(victim)
 		UnregisterSignal(victim, list(COMSIG_HUMAN_EARLY_UNARMED_ATTACK, COMSIG_MOB_CLICKON))
@@ -82,6 +118,40 @@
 		else
 			active_trauma = victim.gain_trauma_type(brain_trauma_group, TRAUMA_RESILIENCE_WOUND)
 		next_trauma_cycle = world.time + (rand(100-WOUND_BONE_HEAD_TIME_VARIANCE, 100+WOUND_BONE_HEAD_TIME_VARIANCE) * 0.01 * trauma_cycle_cooldown)
+
+	// BLUEMOON ADD START - прогрессирующая внутренняя травма груди/головы.
+	// Арифметический рост: каждый проц увеличивает интенсивность на internal_injury_increment.
+	// Полностью останавливается как только начато лечение (gelled == TRUE).
+	// Бинт (limb.current_gauze) не останавливает, но сильно ЗАМЕДЛЯЕТ рост - отсрочка до хирургии, не замена ей.
+	if(internal_injury_intensity > 0 && !gelled && (limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD))
+		internal_injury_tick_counter++
+		if(internal_injury_tick_counter >= internal_injury_tick_interval)
+			internal_injury_tick_counter = 0
+			if(!victim || !limb)
+				return
+			switch(limb.body_zone)
+				if(BODY_ZONE_CHEST)
+					victim.adjustOxyLoss(internal_injury_intensity)
+					if(prob(35))
+						victim.visible_message(
+							span_danger("[victim] хрипит и кашляет кровью!"),
+							span_userdanger("Ваша грудь горит, вам становится труднее дышать..."),
+							vision_distance = COMBAT_MESSAGE_RANGE,
+						)
+						if(victim.blood_volume)
+							victim.vomit(blood = TRUE, stun = FALSE, distance = 0, message = FALSE, harm = TRUE)
+				if(BODY_ZONE_HEAD)
+					victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, internal_injury_intensity)
+					if(prob(35))
+						victim.visible_message(
+							span_danger("[victim] хватается за голову, теряя ориентацию!"),
+							span_userdanger("Голова раскалывается от боли, перед глазами всё плывёт..."),
+							vision_distance = COMBAT_MESSAGE_RANGE,
+						)
+			// бинт замедляет рост в 4 раза - отсрочка, а не остановка. Без бинта - полный темп.
+			var/effective_increment = limb.current_gauze ? (internal_injury_increment * 0.25) : internal_injury_increment
+			internal_injury_intensity += effective_increment
+	// BLUEMOON ADD END
 
 	if(!regen_points_needed)
 		return
@@ -585,6 +655,11 @@
 	limb.receive_damage(30, stamina=stamina_damage, wound_bonus=CANT_WOUND)
 	if(!gelled)
 		gelled = TRUE
+		// BLUEMOON ADD START - нанесение костного геля полностью останавливает прогрессирующую внутреннюю травму
+		// (сама остановка достигается условием !gelled в handle_process() выше, здесь только обратная связь игроку)
+		if(internal_injury_intensity > 0)
+			to_chat(victim, span_notice("Вы чувствуете, как [limb.body_zone == BODY_ZONE_HEAD ? "давление в голове" : "боль в груди"] начинает отступать - лечение помогает!"))
+		// BLUEMOON ADD END
 
 /// if someone is using surgical tape on our wound
 /datum/wound/blunt/proc/tape(obj/item/stack/sticky_tape/surgical/I, mob/user)

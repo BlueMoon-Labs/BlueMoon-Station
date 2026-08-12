@@ -582,3 +582,18 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "stupid_cap"
 	item_state = "stupid_cap"
+
+/obj/item/modkit/concord_riot_helmet_kit
+	name = "Concord light riot helmet Kit"
+	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/riot/concord_riot_helmet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Concord light riot helmet"
+	desc = "Котелок для защиты пустой и не очень балды от летящих в неё камней, бит, клинков и прочей гадости, с которой только можно столкнуться при подавлении беспорядков. Прочное забрало-визор обеспечивает защиту глупой головы владельца не только от внешних факторов, не только подавляет лучи глупенькости из миниатюрного мозга, но ещё и излучает ауру стиля, на зависть окружающим."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
+	icon_state = "lapkee-helmet"
+	flags_inv = HIDEEARS|HIDEFACE
