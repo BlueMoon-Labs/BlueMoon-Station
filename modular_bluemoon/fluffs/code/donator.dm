@@ -688,7 +688,7 @@
 	name = "Black coat"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/h_soul_coat
-	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda")
+	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda", "hartty")
 
 /datum/gear/donator/bm/tricorne
 	name = "Tricorne"
@@ -2508,4 +2508,4 @@
 	name = "Propeller beanie"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/stupid_cap
-	ckeywhitelist = list("angelnedemon")
+	ckeywhitelist = list("angelnedemon", "keerw1n")
