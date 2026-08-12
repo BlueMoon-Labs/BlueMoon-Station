@@ -1009,10 +1009,10 @@ BLUEMOON REMOVAL END*/
 	minimum_required_age = 0
 	required_candidates = 1
 	exclusive_roles = list("AI")
-	weight = 3
-	cost = 20
+	weight = 5
+	cost = 15
 	intensity = 45
-	requirements = list(101,101,101,101,101,101,60,40,30,10)
+	requirements = list(101,101,101,101,101,60,40,30,20,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
 

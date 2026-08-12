@@ -1,7 +1,10 @@
+// 12g слаг — BR2
 /obj/item/projectile/bullet/shotgun_slug
 	name = "12g shotgun slug"
 	damage = 45
-	sharpness = SHARP_POINTY // SHARP_POINTY
+	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 30 → BR2(20)... нет, было 30
+// оставляем 30 как есть (между BR2 и BR3, допустимо)
+	sharpness = SHARP_POINTY
 	wound_bonus = 6
 
 /obj/item/projectile/bullet/shotgun_slug/executioner
@@ -17,10 +20,12 @@
 #define NONLETHAL_HEAD_BRAIN_DAMAGE 50
 #define NONLETHAL_HEAD_EFFECT_CHANCE 25
 
+// Beanbag — BR0
 /obj/item/projectile/bullet/shotgun_beanbag
 	name = "beanbag slug"
 	damage = 5
-	stamina = 70
+	stamina = 80                      // BLUEMOON EDIT: было 70 → 80
+	armour_penetration = BULLET_BR0
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
@@ -37,8 +42,10 @@
 
 /obj/item/projectile/bullet/shotgun_stunslug
 	name = "stunslug"
-	damage =  0 //5 - Зачем урон тазерному патрону
-	stamina = 45 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
+	damage =  5
+	armour_penetration = BULLET_BR0 // Stunslug — BR0
+	stamina = 60 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
+	knockdown = 5
 	stutter = 5
 	jitter = 20
 	range = 7
@@ -61,12 +68,14 @@
 			C.electrocute_act(15, src, 1, SHOCK_NOSTUN)
 			C.apply_status_effect(STATUS_EFFECT_TASED_WEAK, tase_duration)
 
+// Meteorslug — BR0 (нелетальный)
 /obj/item/projectile/bullet/shotgun_meteorslug
 	name = "meteorslug"
 	icon = 'icons/obj/meteor.dmi'
 	icon_state = "dust"
 	damage = 20
 	knockdown = 80
+	armour_penetration = BULLET_BR0
 	hitsound = 'sound/effects/meteorimpact.ogg'
 
 /obj/item/projectile/bullet/shotgun_meteorslug/on_hit(atom/target, blocked = FALSE)
@@ -80,10 +89,12 @@
 	. = ..()
 	SpinAnimation()
 
+// frag12 — BR1
 /obj/item/projectile/bullet/shotgun_frag12
 	name ="frag12 slug"
 	damage = 25
 	knockdown = 50
+	armour_penetration = BULLET_BR1
 
 /obj/item/projectile/bullet/shotgun_frag12/on_hit(atom/target, blocked = FALSE)
 	..()
@@ -93,18 +104,23 @@
 /obj/item/projectile/bullet/pellet
 	var/tile_dropoff = 0.45
 	var/tile_dropoff_s = 1.25
+	var/tile_dropoff_ap = 8    // BLUEMOON ADD
 
+// Стандартная дробь 12g — BR1
 /obj/item/projectile/bullet/pellet/shotgun_buckshot
 	name = "buckshot pellet"
-	damage = 7.5
+	damage = 12.5                     // BLUEMOON EDIT: было 7.5 → 12.5 (конкретно Bluemoon переопределение)
+	armour_penetration = BULLET_BR1   // BLUEMOON ADD
 	wound_bonus = 5
 	bare_wound_bonus = 5
-	wound_falloff_tile = -2.5 // low damage + additional dropoff will already curb wounding potential anything past point blank
+	wound_falloff_tile = -2.5  // low damage + additional dropoff will already curb wounding potential anything past point blank
 
+// Резиновая дробь 12g — BR0
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
 	damage = 2
-	stamina = 15
+	stamina = 25                      // BLUEMOON EDIT: было 15 → 25
+	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
 
@@ -114,11 +130,17 @@
 		damage -= tile_dropoff
 	if(stamina > 0)
 		stamina -= tile_dropoff_s
+	// BLUEMOON ADD START - AP дропофф: высокое пробитие в упор, падает до нуля на дистанции
+	if(armour_penetration > 0)
+		armour_penetration = max(0, armour_penetration - tile_dropoff_ap)
+	// BLUEMOON ADD END
 	if(damage < 0 && stamina < 0)
 		qdel(src)
 
+// Самодельная дробь — BR0 (ненадёжная, слабая)
 /obj/item/projectile/bullet/pellet/shotgun_improvised
-	tile_dropoff = 0.35		//Come on it does 6 damage don't be like that.
+	armour_penetration = BULLET_BR0
+	tile_dropoff = 0.35
 	damage = 6
 	wound_bonus = 0
 	bare_wound_bonus = 7.5
@@ -135,8 +157,10 @@
 
 /obj/item/projectile/bullet/scattershot
 	damage = 20
+	armour_penetration = BULLET_BR1
 
 /obj/item/projectile/bullet/seed
+	armour_penetration = BULLET_BR0
 	damage = 4
 	stamina = 1
 
@@ -144,6 +168,7 @@
 	name = "incapacitating pellet"
 	damage = 1
 	stamina = 6
+	armour_penetration = BULLET_BR0
 
 #undef NONLETHAL_HEAD_BRAIN_DAMAGE
 #undef NONLETHAL_HEAD_EFFECT_CHANCE

@@ -282,6 +282,7 @@
 	cost = 5
 	sacs_needed = 5
 	route = PATH_FLESH
+	parallax_scene = ANTAG_SCENE_HERETIC_FLESH
 
 /datum/eldritch_knowledge/final_eldritch/flesh_final/on_finished_recipe(mob/living/user, list/atoms, loc)
 	. = ..()

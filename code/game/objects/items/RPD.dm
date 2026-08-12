@@ -14,39 +14,58 @@ RPD
 #define PAINT_MODE (1<<3)
 
 
-GLOBAL_LIST_INIT(atmos_pipe_recipes, list(
-	"Pipes" = list(
+/// Каталог рецептов атмос-раздатчика. Обычный RPD и блюспейс-раздатчик обязаны
+/// раздавать одну и ту же машинерию, поэтому список собирается здесь один раз,
+/// а не переписывается руками в каждом раздатчике: иначе новый компонент
+/// попадает в один каталог и молча теряется в другом.
+/// `extra_pipes` - рецепты труб, доступные только конкретному раздатчику.
+/proc/build_atmos_pipe_recipes(list/extra_pipes)
+	var/list/pipes = list(
 		new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/simple),
 		new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/manifold),
 		new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/manifold4w),
+		new /datum/pipe_info/pipe("Bridge Pipe",			/obj/machinery/atmospherics/pipe/bridge_pipe),
 		new /datum/pipe_info/pipe("Layer Manifold",		/obj/machinery/atmospherics/pipe/layer_manifold),
+		new /datum/pipe_info/pipe("Color Adapter",		/obj/machinery/atmospherics/pipe/color_adapter),
 		new /datum/pipe_info/pipe("Multi-Deck Adapter", /obj/machinery/atmospherics/pipe/simple/multiz),
-	),
-	"Devices" = list(
-		new /datum/pipe_info/pipe("Connector",			/obj/machinery/atmospherics/components/unary/portables_connector),
-		new /datum/pipe_info/pipe("Gas Pump",			/obj/machinery/atmospherics/components/binary/pump),
-		new /datum/pipe_info/pipe("Volume Pump",		/obj/machinery/atmospherics/components/binary/volume_pump),
-		new /datum/pipe_info/pipe("Gas Filter",			/obj/machinery/atmospherics/components/trinary/filter),
-		new /datum/pipe_info/pipe("Gas Mixer",			/obj/machinery/atmospherics/components/trinary/mixer),
-		new /datum/pipe_info/pipe("Passive Gate",		/obj/machinery/atmospherics/components/binary/passive_gate),
-		new /datum/pipe_info/pipe("Injector",			/obj/machinery/atmospherics/components/unary/outlet_injector),
-		new /datum/pipe_info/pipe("Scrubber",			/obj/machinery/atmospherics/components/unary/vent_scrubber),
-		new /datum/pipe_info/pipe("Unary Vent",			/obj/machinery/atmospherics/components/unary/vent_pump),
-		new /datum/pipe_info/pipe("Passive Vent",		/obj/machinery/atmospherics/components/unary/passive_vent),
-		new /datum/pipe_info/pipe("Manual Valve",		/obj/machinery/atmospherics/components/binary/valve),
-		new /datum/pipe_info/pipe("Digital Valve",		/obj/machinery/atmospherics/components/binary/valve/digital),
-		new /datum/pipe_info/pipe("Relief Valve (Binary)",		/obj/machinery/atmospherics/components/binary/relief_valve),
-		new /datum/pipe_info/pipe("Relief Valve (Unary)",		/obj/machinery/atmospherics/components/unary/relief_valve),
-		new /datum/pipe_info/meter("Meter"),
-	),
-	"Heat Exchange" = list(
-		new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/heat_exchanging/simple),
-		new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/heat_exchanging/manifold),
-		new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w),
-		new /datum/pipe_info/pipe("Junction",			/obj/machinery/atmospherics/pipe/heat_exchanging/junction),
-		new /datum/pipe_info/pipe("Heat Exchanger",		/obj/machinery/atmospherics/components/unary/heat_exchanger),
 	)
-))
+	if(length(extra_pipes))
+		pipes += extra_pipes
+
+	return list(
+		"Pipes" = pipes,
+		"Devices" = list(
+			new /datum/pipe_info/pipe("Connector",			/obj/machinery/atmospherics/components/unary/portables_connector),
+			new /datum/pipe_info/pipe("Gas Pump",			/obj/machinery/atmospherics/components/binary/pump),
+			new /datum/pipe_info/pipe("Volume Pump",		/obj/machinery/atmospherics/components/binary/volume_pump),
+			new /datum/pipe_info/pipe("Temperature Gate",	/obj/machinery/atmospherics/components/binary/temperature_gate),
+			new /datum/pipe_info/pipe("Temperature Pump",	/obj/machinery/atmospherics/components/binary/temperature_pump),
+			new /datum/pipe_info/pipe("Pressure Valve",		/obj/machinery/atmospherics/components/binary/pressure_valve),
+			new /datum/pipe_info/pipe("Gas Filter",			/obj/machinery/atmospherics/components/trinary/filter),
+			new /datum/pipe_info/pipe("Gas Mixer",			/obj/machinery/atmospherics/components/trinary/mixer),
+			new /datum/pipe_info/pipe("Omni Gas Filter",		/obj/machinery/atmospherics/components/quaternary/omni_filter),
+			new /datum/pipe_info/pipe("Omni Gas Mixer",		/obj/machinery/atmospherics/components/quaternary/omni_mixer),
+			new /datum/pipe_info/pipe("Passive Gate",		/obj/machinery/atmospherics/components/binary/passive_gate),
+			new /datum/pipe_info/pipe("Injector",			/obj/machinery/atmospherics/components/unary/outlet_injector),
+			new /datum/pipe_info/pipe("Scrubber",			/obj/machinery/atmospherics/components/unary/vent_scrubber),
+			new /datum/pipe_info/pipe("Unary Vent",			/obj/machinery/atmospherics/components/unary/vent_pump),
+			new /datum/pipe_info/pipe("Passive Vent",		/obj/machinery/atmospherics/components/unary/passive_vent),
+			new /datum/pipe_info/pipe("Manual Valve",		/obj/machinery/atmospherics/components/binary/valve),
+			new /datum/pipe_info/pipe("Digital Valve",		/obj/machinery/atmospherics/components/binary/valve/digital),
+			new /datum/pipe_info/pipe("Relief Valve (Binary)",		/obj/machinery/atmospherics/components/binary/relief_valve),
+			new /datum/pipe_info/pipe("Relief Valve (Unary)",		/obj/machinery/atmospherics/components/unary/relief_valve),
+			new /datum/pipe_info/meter("Meter"),
+		),
+		"Heat Exchange" = list(
+			new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/heat_exchanging/simple),
+			new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/heat_exchanging/manifold),
+			new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w),
+			new /datum/pipe_info/pipe("Junction",			/obj/machinery/atmospherics/pipe/heat_exchanging/junction),
+			new /datum/pipe_info/pipe("Heat Exchanger",		/obj/machinery/atmospherics/components/unary/heat_exchanger),
+		),
+	)
+
+GLOBAL_LIST_INIT(atmos_pipe_recipes, build_atmos_pipe_recipes())
 
 GLOBAL_LIST_INIT(disposal_pipe_recipes, list(
 	"Disposal Pipes" = list(
@@ -210,17 +229,17 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	var/datum/effect_system/spark_spread/spark_system
-	var/effectcooldown
-	var/working = 0
 	var/p_dir = NORTH
 	var/p_flipped = FALSE
 	var/paint_color = "grey"
-	var/atmos_build_speed = 5 //deciseconds (500ms)
+	///Laying and painting atmos pipe is instant; the other build categories keep their own pacing.
+	var/atmos_build_speed = 0
 	var/disposal_build_speed = 5
 	var/transit_build_speed = 5
 	var/plumbing_build_speed = 5
-	var/destroy_speed = 5
-	var/paint_speed = 5
+	///Shared by every category, but it only ever chews up a loose unwrenched fitting.
+	var/destroy_speed = 0
+	var/paint_speed = 0
 	var/category = ATMOS_CATEGORY
 	var/piping_layer = PIPING_LAYER_DEFAULT
 	var/ducting_layer = DUCT_LAYER_DEFAULT
@@ -252,6 +271,24 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 	qdel(spark_system)
 	spark_system = null
 	return ..()
+
+/// The atmos side of the dispenser is instant, so both the wind-up line and the
+/// zero-length do_after (which would still spawn and drop a progress bar) are
+/// skipped. Disposals, transit tubes and plumbing keep their own pacing.
+/// Layer adaptors and colour adaptors join every colour by design, so painting
+/// them is meaningless in both the dispenser and the painter.
+/proc/is_paintable_pipe_type(path)
+	if(!ispath(path, /obj/machinery/atmospherics/pipe))
+		return FALSE
+	var/obj/machinery/atmospherics/pipe/reference = path
+	return initial(reference.paintable)
+
+/obj/item/pipe_dispenser/proc/rpd_do_after(mob/user, delay, atom/target, message)
+	if(delay <= 0)
+		return TRUE
+	if(message)
+		to_chat(user, "<span class='notice'>[message]</span>")
+	return do_after(user, delay, target = target)
 
 /obj/item/pipe_dispenser/attack_self(mob/user)
 	ui_interact(user)
@@ -321,17 +358,8 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 		if("color")
 			paint_color = params["paint_color"]
 		if("category")
-			category = text2num(params["category"])
-			switch(category)
-				if(DISPOSALS_CATEGORY)
-					recipe = first_disposal
-				if(ATMOS_CATEGORY)
-					recipe = first_atmos
-				if(TRANSIT_CATEGORY)
-					recipe = first_transit
-				if(PLUMBING_CATEGORY)
-					recipe = first_plumbing
-			p_dir = NORTH
+			if(!set_category(text2num(params["category"])))
+				return TRUE
 			playeffect = FALSE
 		if("piping_layer")
 			piping_layer = text2num(params["piping_layer"])
@@ -364,6 +392,52 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 		playsound(get_turf(src), 'sound/effects/pop.ogg', 50, FALSE)
 	return TRUE
 
+/// Годится ли цель под снос по одному только типу, без оглядки на режим.
+/// Пять типов, которые раздатчик умеет разобрать обратно: незакрученный фитинг,
+/// мусоропроводная конструкция, транзитная труба, под и метр.
+/// Всегда строго TRUE или FALSE.
+/obj/item/pipe_dispenser/proc/is_destroyable_target(atom/target)
+	var/static/list/destroyable_types
+	if(!destroyable_types)
+		destroyable_types = typecacheof(list(
+			/obj/item/pipe,
+			/obj/structure/disposalconstruct,
+			/obj/structure/c_transit_tube,
+			/obj/structure/c_transit_tube_pod,
+			/obj/item/pipe_meter,
+		))
+	// is_type_in_typecache - макрос, и на отсутствующем ключе списка отдаёт null,
+	// а null в DM не равен FALSE. Приводим к булеву здесь, чтобы вызывающим
+	// было можно сравнивать через ==.
+	return is_type_in_typecache(target, destroyable_types) ? TRUE : FALSE
+
+/// Снесёт ли раздатчик цель прямо сейчас: подходящий тип плюс включённый
+/// DESTROY_MODE. Всегда строго TRUE или FALSE.
+/obj/item/pipe_dispenser/proc/can_destroy_target(atom/target)
+	if(!(mode & DESTROY_MODE))
+		return FALSE
+	return is_destroyable_target(target)
+
+/// Применяет категорию, пришедшую из интерфейса. Возвращает FALSE, если
+/// категория не поддержана - подтип Plumberinator закомментирован, так что
+/// first_plumbing всегда null и PLUMBING оставил бы раздатчик без рецепта.
+/// Всегда строго TRUE или FALSE.
+/obj/item/pipe_dispenser/proc/set_category(new_category)
+	if(isnull(new_category))
+		return FALSE
+	switch(new_category)
+		if(ATMOS_CATEGORY)
+			recipe = first_atmos
+		if(DISPOSALS_CATEGORY)
+			recipe = first_disposal
+		if(TRANSIT_CATEGORY)
+			recipe = first_transit
+		else
+			return FALSE
+	category = new_category
+	p_dir = NORTH
+	return TRUE
+
 /obj/item/pipe_dispenser/pre_attack(atom/A, mob/user)
 	var/turf/T = get_turf(A)
 	if(!user.IsAdvancedToolUser() || !T || istype(T, /turf/open/space/transit) || isindestructiblewall(T))
@@ -384,30 +458,38 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 
 	. = TRUE
 
-	if((mode & DESTROY_MODE) && istype(A, /obj/item/pipe) || istype(A, /obj/structure/disposalconstruct) || istype(A, /obj/structure/c_transit_tube) || istype(A, /obj/structure/c_transit_tube_pod) || istype(A, /obj/item/pipe_meter))
+	if(can_destroy_target(A))
 		var/obj/item/pipe/P = A
 		if(!istype(P) || P.disposable)
-			to_chat(user, "<span class='notice'>You start destroying a pipe...</span>")
 			playsound(get_turf(src), 'sound/machines/click.ogg', 50, 1)
-			if(do_after(user, destroy_speed, target = A))
+			if(rpd_do_after(user, destroy_speed, A, "You start destroying a pipe..."))
 				activate()
 				qdel(A)
 			return
+	else if(!istype(A, /obj/item/pipe) && is_destroyable_target(A))
+		// Тип сносимый, но режим снят. Незакрученный фитинг сюда не попадает:
+		// он есть в make_pipe_whitelist и обязан провалиться дальше в постройку.
+		// Всё остальное надо перехватить здесь, иначе клик уходит в attackby и
+		// раздатчик молотит цель как дубина. `.` уже TRUE, голый return
+		// останавливает цепочку атаки.
+		to_chat(user, "<span class='warning'>Индикатор ошибки [src] мигает; режим сноса выключен!</span>")
+		return
 
 	if((mode & PAINT_MODE))
-		if(istype(A, /obj/machinery/atmospherics/pipe) && !istype(A, /obj/machinery/atmospherics/pipe/layer_manifold))
+		if(istype(A, /obj/machinery/atmospherics/pipe))
 			var/obj/machinery/atmospherics/pipe/P = A
-			to_chat(user, "<span class='notice'>You start painting \the [P] [paint_color]...</span>")
+			if(!P.paintable)
+				to_chat(user, "<span class='warning'>\The [P] has no paint to speak of - it joins any colour as it is.</span>")
+				return
 			playsound(get_turf(src), 'sound/machines/click.ogg', 50, 1)
-			if(do_after(user, paint_speed, target = A))
+			if(rpd_do_after(user, paint_speed, A, "You start painting \the [P] [paint_color]..."))
 				P.paint(GLOB.pipe_paint_colors[paint_color]) //paint the pipe
 				user.visible_message("<span class='notice'>[user] paints \the [P] [paint_color].</span>","<span class='notice'>You paint \the [P] [paint_color].</span>")
 			return
 		var/obj/item/pipe/P = A
-		if(istype(P) && findtext("[P.pipe_type]", "/obj/machinery/atmospherics/pipe") && !findtext("[P.pipe_type]", "layer_manifold"))
-			to_chat(user, "<span class='notice'>You start painting \the [A] [paint_color]...</span>")
+		if(istype(P) && is_paintable_pipe_type(P.pipe_type))
 			playsound(get_turf(src), 'sound/machines/click.ogg', 50, 1)
-			if(do_after(user, paint_speed, target = A))
+			if(rpd_do_after(user, paint_speed, A, "You start painting \the [A] [paint_color]..."))
 				A.add_atom_colour(GLOB.pipe_paint_colors[paint_color], FIXED_COLOUR_PRIORITY) //paint the pipe
 				user.visible_message("<span class='notice'>[user] paints \the [A] [paint_color].</span>","<span class='notice'>You paint \the [A] [paint_color].</span>")
 			return
@@ -423,16 +505,14 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 					return
 				playsound(get_turf(src), 'sound/machines/click.ogg', 50, 1)
 				if (recipe.type == /datum/pipe_info/meter)
-					to_chat(user, "<span class='notice'>You start building a meter...</span>")
-					if(do_after(user, atmos_build_speed, target = A))
+					if(rpd_do_after(user, atmos_build_speed, A, "You start building a meter..."))
 						activate()
 						var/obj/item/pipe_meter/PM = new /obj/item/pipe_meter(A)
 						PM.setAttachLayer(piping_layer)
 						if(mode & WRENCH_MODE)
 							PM.wrench_act(user, src)
 				else
-					to_chat(user, "<span class='notice'>You start building a pipe...</span>")
-					if(do_after(user, atmos_build_speed, target = A))
+					if(rpd_do_after(user, atmos_build_speed, A, "You start building a pipe..."))
 						activate()
 						var/obj/machinery/atmospherics/path = queued_p_type
 						var/pipe_item_type = initial(path.construction_type) || /obj/item/pipe
@@ -445,7 +525,12 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 						P.update()
 						P.add_fingerprint(usr)
 						P.setPipingLayer(piping_layer)
-						if(findtext("[queued_p_type]", "/obj/machinery/atmospherics/pipe") && !findtext("[queued_p_type]", "layer_manifold"))
+						// Широкие трубы не встают на крайние слои. Молча
+						// положить не туда, куда показывает переключатель, хуже,
+						// чем сказать об этом вслух.
+						if(P.piping_layer != piping_layer)
+							to_chat(user, "<span class='warning'>[src] укладывает трубу на слой [P.piping_layer]: крайние слои ей не по размеру.</span>")
+						if(is_paintable_pipe_type(queued_p_type))
 							P.add_atom_colour(GLOB.pipe_paint_colors[paint_color], FIXED_COLOUR_PRIORITY)
 						if(mode & WRENCH_MODE)
 							P.wrench_act(user, src)

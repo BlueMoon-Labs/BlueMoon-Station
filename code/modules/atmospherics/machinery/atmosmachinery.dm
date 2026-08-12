@@ -44,11 +44,20 @@
 	var/atmos_idle_until = 0
 	///consecutive SSair fires that did no work; drives atmos_idle_until
 	var/atmos_idle_streak = 0
-	///TRUE while this machine has an entry in SSair.atmos_idle_queue (sleeping
-	///machines leave atmos_machinery entirely; the queue is their heartbeat)
+	///TRUE while this machine has an entry in one of SSair.atmos_idle_queues
+	///(sleeping machines leave atmos_machinery entirely; the queue is their heartbeat)
 	var/atmos_idle_queued = FALSE
+	///Which backoff tier of SSair.atmos_idle_queues holds our entry, 1-based.
+	///Each tier is FIFO only because every entry in it waits the SAME period, so
+	///the tier has to be remembered rather than recomputed from the streak (the
+	///streak keeps growing while we sleep).
+	var/atmos_idle_tier = 0
 	///the turf whose atmos_wake_machines list we are registered in
 	var/turf/open/registered_wake_turf
+	///TRUE, пока машина ждёт в SSair.pipenets_needing_rebuilt. Ставится и
+	///снимается только самой очередью - флаг заменяет линейный поиск по списку
+	///на каждое добавление (взрыв сыплет их сотнями за тик).
+	var/rebuild_queued = FALSE
 
 /obj/machinery/atmospherics/Initialize(mapload)
 	. = ..()
@@ -56,10 +65,40 @@
 
 /obj/machinery/atmospherics/examine(mob/user)
 	. = ..()
+	. += pipe_layer_examine()
 	if(is_type_in_list(src, GLOB.ventcrawl_machinery) && isliving(user))
 		var/mob/living/L = user
 		if(SEND_SIGNAL(L, COMSIG_CHECK_VENTCRAWL))
 			. += "<span class='notice'>Alt-click to crawl through it.</span>"
+
+/// Five pipes can share a tile and only the paint tells you which of them will
+/// ever meet, so examine has to spell out both. Layer manifolds sit on every
+/// layer at once and colour adapters ignore paint, hence the flag branches.
+/obj/machinery/atmospherics/proc/pipe_layer_examine()
+	var/list/lines = list()
+	if(pipe_flags & PIPING_ALL_LAYER)
+		lines += "<span class='notice'>Соединяется со <b>всеми</b> слоями прокладки.</span>"
+	else
+		lines += "<span class='notice'>Слой прокладки: <b>[piping_layer]</b> из [PIPING_LAYER_MAX].</span>"
+		if(pipe_flags & PIPING_INNER_LAYERS_ONLY)
+			lines += "<span class='notice'>Широкая: встаёт только с [PIPING_LAYER_MIN + 1]-го по [PIPING_LAYER_MAX - 1]-й слой.</span>"
+	if(pipe_flags & PIPING_ALL_COLORS)
+		lines += "<span class='notice'>Стыкуется с трубами <b>любого</b> цвета.</span>"
+	else if(IS_OMNI_PIPE_COLOR(pipe_color))
+		lines += "<span class='notice'>Окраска серая - стыкуется с трубами любого цвета.</span>"
+	else
+		lines += "<span class='notice'>Окраска <b>[pipe_paint_color_name(pipe_color)]</b> - стыкуется только с такими же и с серыми.</span>"
+	return lines
+
+/// Turns a stored hex back into the paint name the RPD offers. Anything not on
+/// the palette (custom varedits, admin spawns) falls back to the raw hex.
+/proc/pipe_paint_color_name(hex)
+	if(IS_OMNI_PIPE_COLOR(hex))
+		return GLOB.pipe_paint_color_names["grey"]
+	for(var/color_key in GLOB.pipe_paint_colors)
+		if(lowertext(GLOB.pipe_paint_colors[color_key]) == lowertext(hex))
+			return GLOB.pipe_paint_color_names[color_key] || color_key
+	return hex
 
 /obj/machinery/atmospherics/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -94,7 +133,9 @@
 
 	SSair.stop_processing_machine(src)
 	SSair.dequeue_idle_machine(src)
-	SSair.pipenets_needing_rebuilt -= src
+	if(rebuild_queued)
+		SSair.pipenets_needing_rebuilt -= src
+		rebuild_queued = FALSE
 	// Every idling machine registers itself in turf.atmos_wake_machines (a strong
 	// ref); without this the turf pins the deleted machine forever.
 	unregister_turf_wake()
@@ -112,8 +153,18 @@
 	// The queued flag limits this to machines that left via their idle streak,
 	// so a stray wake never adds things SSair does not process (plain pipes,
 	// internal pumps of portables).
-	if(atmos_idle_queued && !atmos_processing)
-		SSair.start_processing_machine(src)
+	if(atmos_idle_queued)
+		if(!atmos_processing)
+			SSair.start_processing_machine(src)
+		// Запись из очереди снимается здесь, а не оставляется протухать.
+		// Раньше протухшая запись была безобидна: периоды у всех совпадали, и
+		// она лишь давала машине лишнюю раннюю проверку. С лестницей отката она
+		// вредна - sleep_processing_machine выходит по этому же флагу первой
+		// строкой, то есть машина, разбуженная событием и снова уснувшая,
+		// осталась бы висеть на СТАРОЙ ступени со старым дедлайном. Снятие
+		// стоит хеш-лукап и только для реально спавшей машины: у бодрствующей
+		// флаг уже FALSE и dequeue выходит сразу.
+		SSair.dequeue_idle_machine(src)
 	atmos_idle_until = 0
 	atmos_idle_streak = 0
 
@@ -124,11 +175,19 @@
 
 /// Counts a no-op processing pass; after ATMOS_MACHINE_IDLE_STREAK of those the
 /// machine leaves the machinery list entirely and only rechecks on the idle
-/// heartbeat (SSair.atmos_idle_queue) until an event wakes it.
+/// heartbeat (SSair.atmos_idle_queues) until an event wakes it. Каждое холостое
+/// сердцебиение поднимает машину на ступень отката: период удваивается.
 /obj/machinery/atmospherics/proc/atmos_consider_idle()
 	atmos_idle_streak++
 	if(atmos_idle_streak >= ATMOS_MACHINE_IDLE_STREAK)
-		atmos_idle_until = world.time + ATMOS_MACHINE_IDLE_HEARTBEAT
+		// Каждое сердцебиение, закончившееся ничем, поднимает машину на ступень
+		// выше: сама ротация очереди - постоянная доля фазы машинерии, и платить
+		// её в полном объёме за трубу, которая не шелохнулась час, незачем.
+		// wake_expired_idle_machines НЕ трогает atmos_idle_streak, поэтому
+		// счётчик честно копит холостые проверки поверх начальной серии, а любой
+		// atmos_wake() сбрасывает его в ноль вместе со ступенью.
+		var/tier = clamp(atmos_idle_streak - ATMOS_MACHINE_IDLE_STREAK, 0, ATMOS_MACHINE_IDLE_BACKOFF_STEPS)
+		atmos_idle_until = world.time + ATMOS_MACHINE_IDLE_HEARTBEAT * (2 ** tier)
 		// Re-registering on every idle transition self-heals lost registrations
 		// (ChangeTurf under the machine replaces the turf and drops its list).
 		register_turf_wake()
@@ -136,7 +195,7 @@
 		// internal pumps of portables call this too but are processed by their
 		// holder, and must never be added to atmos_machinery by the heartbeat.
 		if(atmos_processing)
-			SSair.sleep_processing_machine(src)
+			SSair.sleep_processing_machine(src, tier + 1)
 
 /// Subscribes this machine to instant wake-ups when air changes on its turf
 /// (air-changing SSair.add_to_active calls and breakdown write-backs clear the
@@ -167,8 +226,10 @@
 /obj/machinery/atmospherics/proc/destroy_network()
 	return
 
-/obj/machinery/atmospherics/proc/build_network()
-	// Called to build a network from this node
+/obj/machinery/atmospherics/proc/build_network(blocking = FALSE)
+	// Called to build a network from this node. With blocking unset the BFS
+	// runs in SSair's rebuild phase and may span several fires; blocking is for
+	// callers that need the net complete before they return (init, templates).
 	return
 
 /obj/machinery/atmospherics/proc/nullifyNode(i)
@@ -210,8 +271,18 @@
 	update_icon()
 
 /obj/machinery/atmospherics/proc/setPipingLayer(new_layer)
-	piping_layer = (pipe_flags & PIPING_DEFAULT_LAYER_ONLY) ? PIPING_LAYER_DEFAULT : new_layer
+	piping_layer = clamp_piping_layer(pipe_flags, new_layer)
 	update_icon()
+
+/// Единая точка, где флаги слоя решают, на каком слое вещь вообще может стоять.
+/// Живёт глобальным проком, потому что то же решение принимает и заготовка трубы
+/// в руках, у которой нет ни pipe_flags, ни общего родителя с машиной.
+/proc/clamp_piping_layer(flags, new_layer)
+	if(flags & PIPING_DEFAULT_LAYER_ONLY)
+		return PIPING_LAYER_DEFAULT
+	if(flags & PIPING_INNER_LAYERS_ONLY)
+		return clamp(new_layer, PIPING_LAYER_MIN + 1, PIPING_LAYER_MAX - 1)
+	return new_layer
 
 /obj/machinery/atmospherics/proc/can_be_node(obj/machinery/atmospherics/target, iteration)
 	return connection_check(target, piping_layer)
@@ -244,9 +315,60 @@
 		given_layer = piping_layer
 	if(target.loc == loc)
 		return FALSE
-	if((target.piping_layer == given_layer) || (target.pipe_flags & PIPING_ALL_LAYER))
+	if((target.piping_layer != given_layer) && !(target.pipe_flags & PIPING_ALL_LAYER))
+		return FALSE
+	return colors_connectable(target)
+
+/// Paint is a real boundary, not decoration: two differently painted pipes ignore
+/// each other completely. Grey and unpainted stay universal, so the RPD default
+/// and every uncoloured device still join whatever they are laid against, and
+/// PIPING_ALL_COLORS opts a machine out of the rule from either side.
+/obj/machinery/atmospherics/proc/colors_connectable(obj/machinery/atmospherics/target)
+	// Matching paint is the overwhelmingly common case and covers both pipes
+	// being unpainted, so it goes first and keeps the rebuild path cheap.
+	if(pipe_color == target.pipe_color)
 		return TRUE
-	return FALSE
+	if((pipe_flags | target.pipe_flags) & PIPING_ALL_COLORS)
+		return TRUE
+	return IS_OMNI_PIPE_COLOR(pipe_color) || IS_OMNI_PIPE_COLOR(target.pipe_color)
+
+/// Объясняет игроку, почему только что поставленная труба не сцепилась ни с чем.
+///
+/// Покраска стала настоящей границей, но отказа при установке она не даёт: труба
+/// молча встаёт мёртвой, и разбираться приходится методом тыка. Раунд 9870,
+/// атмосианин посреди работы: "что то с трубами меняли, Рирмах пока не
+/// разбирался что".
+///
+/// Порог намеренно узкий - труба не подключилась ВООБЩЕ. Слой и цвет для того и
+/// существуют, чтобы вести линии впритирку не соединяя их, так что ругаться на
+/// каждого несоединившегося соседа значило бы спамить по делу работающему
+/// инженеру. А вот труба, не сцепившаяся ни с одной стороной, - почти всегда
+/// ошибка.
+/obj/machinery/atmospherics/proc/warn_if_isolated_by_paint(mob/user)
+	if(!user)
+		return
+	for(var/obj/machinery/atmospherics/node as anything in nodes)
+		if(node)
+			return
+	var/obj/machinery/atmospherics/blocked_by
+	for(var/direction in GLOB.cardinals)
+		if(!(initialize_directions & direction))
+			continue
+		for(var/obj/machinery/atmospherics/target in get_step(src, direction))
+			if(target == src || !(target.initialize_directions & get_dir(target, src)))
+				continue
+			// Слой сюда не попадает намеренно: он виден на спрайте сдвигом, и
+			// параллельные линии на разных слоях - штатный приём, а не промах.
+			if((target.piping_layer != piping_layer) && !((pipe_flags | target.pipe_flags) & PIPING_ALL_LAYER))
+				continue
+			if(!colors_connectable(target))
+				blocked_by = target
+				break
+		if(blocked_by)
+			break
+	if(!blocked_by)
+		return
+	to_chat(user, span_warning("[capitalize(name)] не соединился с [blocked_by.name]: окраска <b>[pipe_paint_color_name(pipe_color)]</b> против <b>[pipe_paint_color_name(blocked_by.pipe_color)]</b>. Разного цвета трубы не стыкуются - перекрасьте одну из них или возьмите серую."))
 
 /obj/machinery/atmospherics/proc/pipeline_expansion()
 	return nodes
@@ -310,13 +432,16 @@
 	if(int_air && env_air)
 		internal_pressure = int_air.return_pressure() - env_air.return_pressure()
 
-	to_chat(user, "<span class='notice'>You begin to unfasten \the [src]...</span>")
-
+	// Laying and pulling pipe is meant to be instant; the only thing still worth
+	// waiting on is the gush of air, which exists purely so the warning below has
+	// a window in which the player can still let go.
+	var/wrench_delay = 0
 	if (internal_pressure > 2*ONE_ATMOSPHERE)
 		to_chat(user, "<span class='warning'>As you begin unwrenching \the [src] a gush of air blows in your face... maybe you should reconsider?</span>")
 		unsafe_wrenching = TRUE //Oh dear oh dear
+		wrench_delay = ATMOS_UNSAFE_WRENCH_DELAY
 
-	if(I.use_tool(src, user, 20, volume=50))
+	if(I.use_tool(src, user, wrench_delay, volume=50))
 		user.visible_message( \
 			"[user] unfastens \the [src].", \
 			"<span class='notice'>You unfasten \the [src].</span>", \
@@ -362,7 +487,7 @@
 			transfer_fingerprints_to(stored)
 	..()
 
-/obj/machinery/atmospherics/proc/getpipeimage(iconset, iconstate, direction, col=rgb(255,255,255), piping_layer=2)
+/obj/machinery/atmospherics/proc/getpipeimage(iconset, iconstate, direction, col=rgb(255,255,255), piping_layer=PIPING_LAYER_DEFAULT)
 
 	//Add identifiers for the iconset
 	if(iconsetids[iconset] == null)

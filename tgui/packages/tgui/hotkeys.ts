@@ -70,10 +70,14 @@ const handlePassthrough = (key: KeyEvent) => {
     return Byond.command(macro);
   }
   // KeyDown
-  if (key.isDown() && !keyState[byondKeyCode]) {
+  if (key.isDown()
+      && (!keyState[byondKeyCode] || key.event.repeat)) {
+    const wasHeld = keyState[byondKeyCode];
     keyState[byondKeyCode] = true;
-    const command = `KeyDown "${byondKeyCode}"`;
-    logger.debug(command);
+    const command = wasHeld
+      ? `KeyRepeat "${byondKeyCode}"`
+      : `KeyDown "${byondKeyCode}"`;
+    logger.debug(wasHeld ? `${command} (repeat)` : command);
     return Byond.command(command);
   }
   // KeyUp

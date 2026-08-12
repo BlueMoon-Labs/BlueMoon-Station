@@ -159,7 +159,7 @@
 	name = "Tactical Gasmask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version
-	ckeywhitelist = list("oni3288", "smileycom", "shizalrp", "lindaastereih")
+	ckeywhitelist = list("oni3288", "smileycom", "shizalrp", "lindaastereih", "silverfoxpaws")
 
 /datum/gear/donator/bm/blackcool_mask
 	name = "CFIS Gasmask"
@@ -1360,7 +1360,7 @@
 	ckeywhitelist = list("dolbajob", "enigma418")
 
 /datum/gear/donator/bm/hahun_jukebox
-	name = "Irrelian Jukebox"
+	name = "Irellian Jukebox"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/hahun_jukebox
 	ckeywhitelist = list("dolbajob", "enigma418")

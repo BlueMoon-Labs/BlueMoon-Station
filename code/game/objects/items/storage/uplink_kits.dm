@@ -599,6 +599,7 @@
 	new /obj/item/storage/bag/harpoon_quiver(src)
 	new /obj/item/clothing/suit/space/hardsuit/carp(src)
 	new /obj/item/clothing/mask/gas/carp(src)
+	new /obj/item/clothing/gloves/combat(src)
 	new /obj/item/grenade/spawnergrenade/spesscarp(src)
 	new /obj/item/toy/plush/carpplushie/dehy_carp(src)
 

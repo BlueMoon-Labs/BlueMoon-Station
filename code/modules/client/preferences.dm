@@ -213,7 +213,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
 "mam_body_markings" = list(),
-"emissive_eyes" = FALSE,
+"allow_emissives" = FALSE,
+"emissive_parts" = list(),
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
@@ -487,6 +488,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/pref_queue
 	var/char_queue
+	/// world.time, позже которого отложенную запись префов больше не переносят.
+	/// Каждый вызов внутри кулдауна перевзводил таймер, и игрок, который щёлкает
+	/// тумблеры чаще кулдауна, не сохранялся вообще - до самого логаута.
+	var/pref_queue_deadline = 0
+	/// То же самое для записи персонажа.
+	var/char_queue_deadline = 0
 
 	var/silicon_lawset
 
@@ -1124,6 +1131,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			// Declare common labels used across multiple tabs to avoid duplicate variable errors
 			var/enabled_label = src.use_modern_translations ? get_modern_text("enabled", src) : "Enabled"
 			var/disabled_label = src.use_modern_translations ? get_modern_text("disabled", src) : "Disabled"
+			var/glow_label = src.use_modern_translations ? get_modern_text("allow_emissives", src) : "Glow"
 			var/change_label = src.use_modern_translations ? get_modern_text("change", src) : "Change"
 			var/yes_label = src.use_modern_translations ? get_modern_text("yes", src) : "Yes"
 			var/no_label = src.use_modern_translations ? get_modern_text("no", src) : "No"
@@ -1606,6 +1614,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[custom_species_name_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=custom_species;task=input'>[custom_species ? custom_species : none_label]</a><BR>"
 					dat += "<b>[random_body_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=all;task=random'>[randomize_label]</A><BR>"
 					dat += "<b>[always_random_body_label]:</b><a href='?_src_=prefs;preference=all'>[be_random_body ? yes_label : no_label]</A><BR>"
+					dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_master;task=input'>[features["allow_emissives"] ? enabled_label : disabled_label]</a><BR>"
 					dat += "<br><b>[cycle_background_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cycle_bg;task=input'>[bgstate]</a><BR>"
 
 					dat += "</td>"
@@ -1646,6 +1655,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!(NOEYES in pref_species.species_traits))
 						dat += "<h3>[eye_type_label]</h3>"
 						dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=eye_type;task=input'>[eye_type]</a>"
+						var/glow_eyes_label = src.use_modern_translations ? get_modern_text("emissive_eyes", src) : "Glowing Eyes"
+						dat += "<b>[glow_eyes_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=eyes;task=input'>[emissive_part_enabled(features, "eyes") ? enabled_label : disabled_label]</a><BR>"
 						if((EYECOLOR in pref_species.species_traits))
 							if(!use_skintones && !mutant_colors)
 								dat += APPEARANCE_CATEGORY_COLUMN
@@ -1659,10 +1670,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<h3 title='[heterochromia_hint]'>[heterochromia_label]</h3>"
 							// UI tweak end
 							dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_split_eyes;task=input'>[split_eye_colors ? enabled_label : disabled_label]</a>"
-							var/emissive_eyes_on = features["emissive_eyes"]
-							var/glowing_eyes_label = src.use_modern_translations ? get_modern_text("glowing_eyes", src) : "Glowing Eyes"
-							dat += "<h3>[glowing_eyes_label]</h3>"
-							dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_emissive_eyes;task=input'>[emissive_eyes_on ? enabled_label : disabled_label]</a>"
 							if(!split_eye_colors)
 								dat += "<h3>[eye_color_label]</h3>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[left_eye_color];'><font color='[color_hex2num(left_eye_color) < 200 ? "FFFFFF" : "000000"]'>#[left_eye_color]</font></span> <a href='?_src_=prefs;preference=eyes;task=input'>[change_label]</a>"
@@ -1714,6 +1721,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							// BLUEMOON ADD START - <_AND_>_FOR_CHARACTER_REDACTOR
 							dat += "<a href='?_src_=prefs;preference=previous_[mutant_part]_style;task=input'>&lt;</a> <a href='?_src_=prefs;preference=next_[mutant_part]_style;task=input'>&gt;</a><BR>"
 							// BLUEMOON ADD END
+							var/emissive_part_key = mutant_part
+							if(mutant_part == "mam_tail" || mutant_part == "tail_lizard" || mutant_part == "tail_human")
+								emissive_part_key = "tail"
+							if(mutant_part == "mam_ears")
+								emissive_part_key = "ears"
+							if(mutant_part == "mam_snouts")
+								emissive_part_key = "snout"
+							if(emissive_part_key in GLOB.emissive_parts_list)
+								dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=[emissive_part_key];task=input'>[emissive_part_enabled(features, emissive_part_key) ? enabled_label : disabled_label]</a><BR>"
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
@@ -1919,6 +1935,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(pref_species.use_skintones)
 								dat += "<b>[genitals_use_skintone_label]:</b><a href='?_src_=prefs;preference=genital_colour'>[features["genitals_use_skintone"] == TRUE ? "Yes" : "No"]</a>"
 						dat += "<h3>[penis_header]</h3>"
+						var/glow_penis_on = emissive_part_enabled(features, "penis")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=penis;task=input'>[glow_penis_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_penis_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_cock'>[features["has_cock"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_cock"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -1944,6 +1962,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>[penis_stuffing_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=cock_stuffing'>[features["cock_stuffing"] == TRUE ? "Yes" : "No"]</a>" //SPLURT Edit
 
 						dat += "<h3>Testicles</h3>"
+						var/glow_testicles_on = emissive_part_enabled(features, "testicles")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=testicles;task=input'>[glow_testicles_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_testicles_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_balls'>[features["has_balls"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_balls"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -1972,6 +1992,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[vagina_header]</h3>"
+						var/glow_vagina_on = emissive_part_enabled(features, "vagina")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=vagina;task=input'>[glow_vagina_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_vagina_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_vag'>[features["has_vag"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_vag"])
 							dat += "<b>[vagina_type_label]:</b> <a style='display:block;width:100px' href='?_src_=prefs;preference=vag_shape;task=input'>[features["vag_shape"]]</a>"
@@ -1997,6 +2019,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[breasts_header]</h3>"
+						var/glow_breasts_on = emissive_part_enabled(features, "breasts")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=breasts;task=input'>[glow_breasts_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_breasts_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_breasts'>[features["has_breasts"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_breasts"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2024,6 +2048,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[butt_header]</h3>"
+						var/glow_butt_on = emissive_part_enabled(features, "butt")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=butt;task=input'>[glow_butt_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_butt_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_butt'>[features["has_butt"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_butt"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2040,6 +2066,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>Max Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_max_size;task=input'>[features["butt_max_size"] ? features["butt_max_size"] : "Disabled"]</a>"
 							dat += "<b>Min Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_min_size;task=input'>[features["butt_min_size"] ? features["butt_min_size"] : "Disabled"]</a>"
 							dat += "<b>[has_anus_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_anus'>[features["has_anus"] == TRUE ? "Yes" : "No"]</a>"
+							var/glow_anus_on = emissive_part_enabled(features, "anus")
+							dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=anus;task=input'>[glow_anus_on ? enabled_label : disabled_label]</a><BR>"
 							if(features["has_anus"])
 								dat += "<b>[anus_color_label]:</b></a><BR>"
 								if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2054,6 +2082,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[belly_header]</h3>"
+						var/glow_belly_on = emissive_part_enabled(features, "belly")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=belly;task=input'>[glow_belly_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_belly_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_belly'>[features["has_belly"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_belly"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2149,7 +2179,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "</div>"
 								dat += "</div>"
 								dat += "<table class='csetup-marking-table'>"
-								dat += "<thead class='csetup-marking-table-head'><tr><th class='csetup-col-index'>#</th><th class='csetup-col-move'>[move_label]</th><th>[name_column_label]</th><th class='csetup-col-colors'>[colors_label]</th><th class='csetup-col-del'></th></tr></thead>"
+								dat += "<thead class='csetup-marking-table-head'><tr><th class='csetup-col-index'>#</th><th class='csetup-col-move'>[move_label]</th><th>[name_column_label]</th><th class='csetup-col-colors'>[colors_label]</th><th class='csetup-col-glow'>[glow_label]</th><th class='csetup-col-del'></th></tr></thead>"
 								dat += "<tbody>"
 								var/has_any = FALSE
 								if(length(features[marking_type]))
@@ -2168,9 +2198,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										var/color_marking_dat = ""
 										var/number_colors = 1
 										var/datum/sprite_accessory/mam_body_markings/S = GLOB.mam_body_markings_list[marking_list[2]]
-										var/matrixed_sections = S.covered_limbs[actual_name]
+										var/matrixed_sections = S?.covered_limbs[actual_name]
 										if(S && matrixed_sections)
-											if(length(marking_list) == 2)
+											if(length(marking_list) < 3 || !islist(marking_list[3]))
 												var/first = "#FFFFFF"
 												var/second = "#FFFFFF"
 												var/third = "#FFFFFF"
@@ -2209,12 +2239,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										dat += "<a title='[down_label]' href='?_src_=prefs;preference=marking_down;task=input;marking_index=[marking_index];marking_type=[marking_type];'>&#708;</a>"
 										dat += "<a title='[bottom_label]' href='?_src_=prefs;preference=marking_bottom;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#8681;</a>"
 										dat += "</span></td>"
-										dat += "<td>[marking_list[2]]</td>"
+										dat += "<td><span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=prev;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9664;</a></span> [marking_list[2]] <span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=next;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9654;</a></span></td>"
 										dat += "<td class='csetup-col-colors'>[color_marking_dat]</td>"
+										var/marking_glow_on = length(marking_list) >= 4 ? marking_list[4] : FALSE
+										dat += "<td class='csetup-col-glow'><a class='csetup-mini-action [marking_glow_on ? "csetup-glow-on" : "csetup-glow-off"]' href='?_src_=prefs;preference=toggle_marking_emissive;task=input;marking_index=[marking_index];marking_type=[marking_type]'>[marking_glow_on ? enabled_label : disabled_label]</a></td>"
 										dat += "<td class='csetup-col-del'><a class='csetup-marking-del' href='?_src_=prefs;preference=marking_remove;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&times;</a></td>"
 										dat += "</tr>"
 								if(!has_any)
-									dat += "<tr class='csetup-marking-row csetup-marking-row-empty'><td class='csetup-marking-empty' colspan='5'>Нет маркингов на этой части тела.</td></tr>"
+									dat += "<tr class='csetup-marking-row csetup-marking-row-empty'><td class='csetup-marking-empty' colspan='6'>Нет маркингов на этой части тела.</td></tr>"
 								dat += "</tbody></table>"
 								dat += "</section>"
 							dat += "</div>"
@@ -3964,8 +3996,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					split_eye_colors = !split_eye_colors
 					right_eye_color = left_eye_color
 
-				if("toggle_emissive_eyes")
-					features["emissive_eyes"] = !features["emissive_eyes"]
+				if("toggle_emissive_master")
+					features["allow_emissives"] = !features["allow_emissives"]
+
+				if("toggle_emissive_part")
+					var/part = href_list["part"]
+					if(part)
+						toggle_emissive_part(features, part)
 
 				if("species")
 					var/result = tgui_input_list(user, "Select a species", "Species Selection", GLOB.roundstart_race_names)
@@ -5005,6 +5042,39 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								for(var/i = index; i < length(markings); i++)
 									markings.Swap(i, i + 1)
 
+				if("marking_cycle")
+					var/index = text2num(href_list["marking_index"])
+					var/marking_type = href_list["marking_type"]
+					var/direction = href_list["direction"]
+					if(index && marking_type && features[marking_type] && (direction == "prev" || direction == "next"))
+						var/list/markings = features[marking_type]
+						if(index >= 1 && index <= length(markings))
+							var/list/entry = markings[index]
+							if(istype(entry, /list) && length(entry) >= 2)
+								var/actual_name = GLOB.bodypart_names[num2text(entry[1])]
+								var/list/available = list()
+								for(var/name in GLOB.mam_body_markings_list)
+									var/datum/sprite_accessory/S = GLOB.mam_body_markings_list[name]
+									if(!istype(S, /datum/sprite_accessory/mam_body_markings))
+										continue
+									var/datum/sprite_accessory/mam_body_markings/marking = S
+									if(!(actual_name in marking.covered_limbs))
+										continue
+									if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+										available += name
+								if(length(available))
+									var/current_pos = available.Find(entry[2])
+									if(!current_pos)
+										current_pos = 0
+									var/new_pos = current_pos + (direction == "next" ? 1 : -1)
+									if(new_pos < 1)
+										new_pos = length(available)
+									else if(new_pos > length(available))
+										new_pos = 1
+									entry[2] = available[new_pos]
+									if(length(entry) >= 3 && entry[3])
+										entry[3] = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
+
 				if("marking_remove")
 					// move the specified marking up
 					var/index = text2num(href_list["marking_index"])
@@ -5014,6 +5084,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/list/L = features[marking_type]
 						if(index <= length(L))
 							L.Cut(index, index + 1)
+
+				if("toggle_marking_emissive")
+					var/index = text2num(href_list["marking_index"])
+					var/marking_type = href_list["marking_type"]
+					if(index && marking_type && features[marking_type])
+						var/list/L = features[marking_type]
+						if(index >= 1 && index <= length(L) && islist(L[index]))
+							var/list/entry = L[index]
+							if(length(entry) >= 4)
+								entry[4] = !entry[4]
+							else
+								entry += TRUE
+							if(entry[4])
+								features["allow_emissives"] = TRUE
 
 				if("marking_add")
 					// add a marking
@@ -5039,12 +5123,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(selected_marking)
 								if(selected_limb != "All")
 									var/limb_value = text2num(GLOB.bodypart_values[selected_limb])
-									features[marking_type] += list(list(limb_value, selected_marking))
+									features[marking_type] += list(list(limb_value, selected_marking, list("#FFFFFF", "#FFFFFF", "#FFFFFF")))
 								else
 									var/datum/sprite_accessory/mam_body_markings/S = marking_list[selected_marking]
 									for(var/limb in S.covered_limbs)
 										var/limb_value = text2num(GLOB.bodypart_values[limb])
-										features[marking_type] += list(list(limb_value, selected_marking))
+										features[marking_type] += list(list(limb_value, selected_marking, list("#FFFFFF", "#FFFFFF", "#FFFFFF")))
 
 				if("markings_clear_limb")
 					var/marking_type = href_list["marking_type"]

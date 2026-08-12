@@ -74,7 +74,7 @@ GENETICS SCANNER
 /obj/item/healthanalyzer
 	name = "health analyzer"
 	icon = 'icons/obj/device.dmi'
-	icon_state = "health"
+	icon_state = "health1"
 	item_state = "healthanalyzer"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
@@ -770,6 +770,12 @@ GENETICS SCANNER
 	var/cooldown = FALSE
 	var/cooldown_time = 250
 	var/accuracy // 0 is the best accuracy.
+	/// Разобранные смеси последнего скана. Окно показывает снимок, а не живые данные:
+	/// анализатор уносят от того, что просканировали, и смесь под ним меняется.
+	var/list/last_gasmix_data
+	/// REF смеси -> нестабильность недавнего синтеза. Лежит РЯДОМ со смесью, а не
+	/// внутри неё: контракт gas_mixture_parser общий для всех окон и поля под это не имеет.
+	var/list/last_fusion_data
 
 /obj/item/analyzer/examine(mob/user)
 	. = ..()
@@ -778,6 +784,82 @@ GENETICS SCANNER
 /obj/item/analyzer/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] начинает анализировать себя с помощью [src]! Экран показывает, что [user.ru_who()] мертв[user.ru_a()]!</span>")
 	return BRUTELOSS
+
+/obj/item/analyzer/ui_state(mob/user)
+	return GLOB.hands_state
+
+/obj/item/analyzer/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "GasAnalyzer", "Газоанализатор")
+		ui.open()
+
+/obj/item/analyzer/ui_data(mob/user)
+	LAZYINITLIST(last_gasmix_data)
+	LAZYINITLIST(last_fusion_data)
+	return list(
+		"gasmixes" = last_gasmix_data,
+		"fusion_instability" = last_fusion_data,
+	)
+
+/obj/item/analyzer/ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return
+	// Вторая точка входа в справочник. Анализатор - тот прибор, который в руках
+	// у человека ровно в тот момент, когда он смотрит на незнакомый газ и не
+	// понимает, что это и чем оно опасно.
+	if(action == "handbook")
+		open_atmos_handbook(usr)
+		return TRUE
+
+/** Снимает смеси цели в `last_gasmix_data` для окна.
+ *
+ * Аргументы:
+ * * target: атом, у которого спрашивается воздух через `return_analyzable_air()`.
+ *
+ * Возвращает TRUE, если у цели нашлось что анализировать. На FALSE прошлый снимок
+ * остаётся нетронутым: показать вместо стены старую смесь честнее, чем пустое окно
+ * без объяснений, а вызывающий код в этом случае уходит в чат-вывод.
+ */
+/obj/item/analyzer/proc/on_analyze(atom/target)
+	if(!target)
+		return FALSE
+	var/mixture = target.return_analyzable_air()
+	if(!mixture)
+		return FALSE
+	var/list/airs = islist(mixture) ? mixture : list(mixture)
+	// Пустой list() в DM истинен, поэтому нулевую длину проверяем отдельно: иначе
+	// окно откроется с пустым снимком вместо честного ухода в чат.
+	if(!length(airs))
+		return FALSE
+	var/list/new_gasmix_data = list()
+	var/list/new_fusion_data = list()
+	var/target_name = capitalize(lowertext(target.name)) //от узла к узлу не меняется
+	var/multiple_nodes = length(airs) > 1
+	// Идём по индексам, а не по значениям: номер узла обязан быть позицией в списке.
+	// Поиск позиции по значению искал бы её заново на каждой итерации, а для двух узлов
+	// с одной и той же смесью вернул бы обоим первый индекс - секции окна стали бы
+	// неразличимы.
+	for(var/node_index in 1 to length(airs))
+		// istype, а не `as anything`: nullifyNode() делает QDEL_NULL(airs[i]) и
+		// оставляет в списке дырку, обращение к полям null было бы рантаймом.
+		var/datum/gas_mixture/air = airs[node_index]
+		if(!istype(air))
+			continue
+		var/mix_name = target_name
+		if(multiple_nodes) //не унарная смесь: у машины несколько узлов
+			mix_name += " - Узел [node_index]"
+		new_gasmix_data += list(gas_mixture_parser(air, mix_name))
+		var/list/cached_scan_results = air.analyzer_results
+		if(cached_scan_results && cached_scan_results["fusion"])
+			new_fusion_data[REF(air)] = round(cached_scan_results["fusion"], 0.01)
+	// Список был не пуст, но состоял из одних дырок: снимка не получилось.
+	if(!length(new_gasmix_data))
+		return FALSE
+	last_gasmix_data = new_gasmix_data
+	last_fusion_data = new_fusion_data
+	return TRUE
 
 /obj/item/analyzer/attack_self(mob/user)
 	add_fingerprint(user)
@@ -788,6 +870,12 @@ GENETICS SCANNER
 	//Functionality moved down to proc/scan_turf()
 	var/turf/location = get_turf(user)
 	if(!istype(location))
+		return
+
+	// Окно - основной вывод, но открыть его есть чем не всегда: без клиента
+	// (мобы под ИИ, юнит-тесты) и на турфе без анализируемого воздуха остаётся чат.
+	if(user.client && on_analyze(location))
+		ui_interact(user)
 		return
 
 	scan_turf(user, location)

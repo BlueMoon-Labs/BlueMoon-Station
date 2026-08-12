@@ -1,5 +1,5 @@
 /obj/item/gun/ballistic/automatic/pistol/m1911
-	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'
+	icon = 'icons/obj/guns/projectile.dmi'
 	can_flashlight = 1
 	flight_x_offset = 19
 	flight_y_offset = 15

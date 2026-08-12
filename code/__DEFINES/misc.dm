@@ -182,6 +182,11 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define DAMAGED_SENSORS_VITALS 2
 #define HAS_SENSORS 3
 
+/// Шкала жестокости целей предателя (bm_traitor_violence_tier).
+#define BM_TRAITOR_VIOLENCE_NONE 0
+#define BM_TRAITOR_VIOLENCE_SOFT 1
+#define BM_TRAITOR_VIOLENCE_FULL 2
+
 //suit sensor flags: sensor_flag defines
 #define SENSOR_RANDOM (1<<0)
 #define SENSOR_LOCKED (1<<1)
@@ -578,6 +583,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 #define PREF_LOAD_COOLDOWN 5
 #define PREF_SAVE_COOLDOWN 2 SECONDS
+/// Насколько далеко отложенную запись savefile разрешено переносить от первой
+/// правки в пачке. Запись синхронная - она морозит весь процесс, поэтому пачку
+/// правок склеиваем в одну; но переносить бесконечно нельзя, иначе игрок,
+/// который щёлкает настройки чаще кулдауна, не сохраняется до самого логаута.
+#define PREF_SAVE_MAX_DEFER 15 SECONDS
 
 #define VOMIT_TOXIC 1
 #define VOMIT_PURPLE 2

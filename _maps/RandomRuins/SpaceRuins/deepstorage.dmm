@@ -2759,7 +2759,7 @@
 "fO" = (
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/simple/supplymain/hidden{
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark,
@@ -2918,7 +2918,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "gg" = (
@@ -2975,7 +2975,7 @@
 /area/ruin/space/has_grav/deepstorage/power)
 "gl" = (
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "gm" = (
@@ -3044,7 +3044,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supplymain/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "gy" = (
@@ -3106,7 +3106,7 @@
 "gF" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "gG" = (
@@ -3742,9 +3742,6 @@
 /area/ruin/space/has_grav/deepstorage/crusher)
 "Bd" = (
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 9
-	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/deepstorage/dorm)
@@ -3851,9 +3848,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage)
 "OS" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 5
-	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/deepstorage/dorm)

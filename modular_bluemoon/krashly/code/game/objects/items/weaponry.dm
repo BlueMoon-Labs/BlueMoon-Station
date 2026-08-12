@@ -203,7 +203,7 @@
 /obj/item/gun/ballistic/automatic/ak12
 	name = "\improper AK-12 rifle"
 	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
-	icon = 'modular_bluemoon/krashly/icons/obj/weapons/weapons.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "ak12"
 	item_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
@@ -219,6 +219,7 @@
 
 /obj/item/gun/ballistic/automatic/ak12/update_icon_state()
 	icon_state = "[initial(icon_state)][!magazine ? "_e" : ""]"
+	item_state = "[initial(item_state)][!magazine ? "_e" : ""]"
 
 /obj/item/ammo_box/magazine/ak12
 	name = "\improper AK-12 magazine"
@@ -263,8 +264,8 @@
 
 /obj/item/ammo_box/magazine/ak12/r
 	name = "\improper Pink AK-12 magazine"
-	icon_state = "akr12_mag"
-	item_state = "akr12_mag"
+	icon_state = "ak12_mag"
+	item_state = "ak12_mag"
 
 /obj/item/gun/ballistic/revolver/inteq
 	icon_state = "revolver_inteq"

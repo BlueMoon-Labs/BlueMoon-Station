@@ -28,99 +28,37 @@
 	if(slot == ITEM_SLOT_MASK)
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
-/datum/action/item_action/nanojump
-	name = "Activate Strength Jump"
-	desc = "Launches the wearer five tiles forward in strength mode, smashing through walls in the way."
-	icon_icon = 'modular_bluemoon/icons/mob/nanosuit/actions_nanosuit.dmi'
-	button_icon_state = "strength_mode"
-
-/obj/item/clothing/shoes/combat/coldres/nanojump
+/obj/item/clothing/shoes/combat/coldres/nano
 	name = "nanosuit boots"
 	desc = "Boots part of a nanosuit. Slip resistant. Property of CryNet Systems."
 	clothing_flags = NOSLIP
 	gas_transfer_coefficient = 0.01
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 0, ACID = 0)
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF
-	var/jumpdistance = 5
-	var/jumpspeed = 2
-	actions_types = list(/datum/action/item_action/nanojump)
 	item_flags = DROPDEL
 
-/obj/item/clothing/shoes/combat/coldres/nanojump/proc/break_walls_along_jump(mob/living/user, distance)
-	var/turf/T = get_turf(user)
-	if(!T)
-		return
-	for(var/i in 1 to distance)
-		T = get_step(T, user.dir)
-		if(!T)
-			break
-		if(!istype(T, /turf/closed/wall))
-			continue
-		var/turf/closed/wall/W = T
-		user.visible_message(span_danger("[user] пробивает [W]!"), span_danger("You smash through [W]!"), null, COMBAT_MESSAGE_RANGE)
-		playsound(W, 'sound/effects/meteorimpact.ogg', 80, TRUE)
-		W.dismantle_wall(TRUE)
-
-/obj/item/clothing/shoes/combat/coldres/nanojump/ui_action_click(mob/user, action)
-	if(!isliving(user))
-		return
-	var/turf/user_turf = get_turf(user)
-	var/obj/structure/S = locate() in user_turf
-	var/mob/living/carbon/human/H = user
-	if(istype(H.wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
-		var/obj/item/clothing/suit/space/hardsuit/nano/NS = H.wear_suit
-		if(NS.mode == NANO_STRENGTH)
-			if(isfloorturf(user_turf) || istype(S))
-				if(NS.cell.charge >= NANO_JUMP_USE)
-					NS.set_nano_energy(NANO_JUMP_USE,NANO_CHARGE_DELAY)
-				else
-					to_chat(user, span_warning("Недостаточно энергии."))
-					return
-			else
-				to_chat(user, span_warning("Нужно находиться на твёрдой поверхности."))
-				return
-		else
-			to_chat(user, span_warning("Доступно только в режиме <b>силы</b>."))
-			return
-	else
-		to_chat(user, span_warning("Без нанокостюма эти ботинки бесполезны."))
-		return
-
-	break_walls_along_jump(user, jumpdistance)
-	var/turf/target = get_ranged_target_turf(user, user.dir, jumpdistance)
-	if(user.throw_at(target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
-		playsound(src, 'sound/effects/stealthoff.ogg', 50, TRUE)
-		user.visible_message(span_warning("[user] прыгает вперёд с невероятной силой!"))
-	else
-		to_chat(user, span_warning("Что-то не даёт тебе прыгнуть!"))
-
-
-/obj/item/clothing/shoes/combat/coldres/nanojump/equipped(mob/user, slot)
+/obj/item/clothing/shoes/combat/coldres/nano/equipped(mob/user, slot)
 	..()
 	if(slot == ITEM_SLOT_FEET)
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
-/obj/item/clothing/gloves/combat/nano
-	name = "nano gloves"
-	desc = "These tactical gloves are built into a nanosuit and are fireproof and shock resistant. Property of CryNet Systems."
+/obj/item/clothing/gloves/tackler/combat/insulated/nano
+	name = "nanosuit gorilla gloves"
+	desc = "CryNet-issue guerrilla tackling gloves built into the nanosuit. Fireproof, shock resistant, and tuned for devastating rushes."
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF
 	gas_transfer_coefficient = 0.01
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 0, ACID = 0)
 	item_flags = DROPDEL
-	var/datum/component/tackler
-	var/tackle_stam_cost = 30
-	var/base_knockdown = 1.25 SECONDS
-	var/tackle_range = 4
-	var/min_distance = 2
-	var/tackle_speed = 2
-	var/skill_mod = 2
+	tackle_stam_cost = 35
+	base_knockdown = 1.5 SECONDS
+	tackle_range = 5
+	tackle_speed = 2
+	skill_mod = 3
 
-/obj/item/clothing/gloves/combat/nano/equipped(mob/user, slot)
-	..()
+/obj/item/clothing/gloves/tackler/combat/insulated/nano/equipped(mob/user, slot)
+	. = ..()
 	if(slot == ITEM_SLOT_GLOVES)
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
-		var/mob/living/carbon/human/H = user
-		tackler = H.AddComponent(/datum/component/tackler, stamina_cost=tackle_stam_cost, base_knockdown = base_knockdown, range = tackle_range, speed = tackle_speed, skill_mod = skill_mod, min_distance = min_distance)
 
 /obj/item/radio/headset/syndicate/alt/nano
 	name = "\proper the nanosuit's bowman headset"
@@ -229,7 +167,7 @@
 	name = "nanosuit"
 	desc = "Some sort of alien future suit. It looks very robust. Property of CryNet Systems."
 	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 40)
-	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/grenade, /obj/item/nullrod, /obj/item/ammo_box, /obj/item/ammo_casing)
+	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/grenade, /obj/item/nullrod, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/tank/internals)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/nano
@@ -744,8 +682,6 @@
 		nano_items += helmet
 	if(istype(Wearer.glasses, /obj/item/clothing/glasses/nano_goggles))
 		nano_items += Wearer.glasses
-	if(istype(Wearer.shoes, /obj/item/clothing/shoes/combat/coldres/nanojump))
-		nano_items += Wearer.shoes
 	for(var/obj/item/I in nano_items)
 		for(var/datum/action/A as anything in I.actions)
 			A.Grant(Wearer)
@@ -762,8 +698,8 @@
 
 /obj/item/clothing/suit/space/hardsuit/nano/proc/equip_support_gear(mob/living/carbon/human/H)
 	equip_kit_item(H, /obj/item/clothing/glasses/nano_goggles, ITEM_SLOT_EYES)
-	equip_kit_item(H, /obj/item/clothing/gloves/combat/nano, ITEM_SLOT_GLOVES)
-	equip_kit_item(H, /obj/item/clothing/shoes/combat/coldres/nanojump, ITEM_SLOT_FEET)
+	equip_kit_item(H, /obj/item/clothing/gloves/tackler/combat/insulated/nano, ITEM_SLOT_GLOVES)
+	equip_kit_item(H, /obj/item/clothing/shoes/combat/coldres/nano, ITEM_SLOT_FEET)
 
 /obj/item/clothing/suit/space/hardsuit/nano/proc/equip_kit_item(mob/living/carbon/human/H, item_path, slot)
 	for(var/obj/item/I in get_turf(H))
@@ -1026,6 +962,8 @@
 /mob/living/carbon/human/proc/heavy_melee_harm(mob/living/carbon/target)
 	if(!has_heavy_melee() || a_intent != INTENT_HARM)
 		return FALSE
+	if(!CheckActionCooldown(CLICK_CD_MELEE))
+		return FALSE
 	if(HAS_TRAIT(src, TRAIT_PACIFISM))
 		to_chat(src, span_warning("You don't want to harm other living beings!"))
 		return FALSE
@@ -1043,16 +981,20 @@
 	target.visible_message(span_danger("[src] бьёт [target] с силой боевого меха!"), \
 		span_userdanger("[src] бьёт тебя с силой боевого меха!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, src)
 	log_combat(src, target, "heavy meleed")
+	DelayNextAction(CLICK_CD_MELEE)
 	return TRUE
 
 /atom/proc/attack_heavy_melee(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	if(!user.has_heavy_melee())
 		return FALSE
+	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
+		return FALSE
 	SEND_SIGNAL(src, COMSIG_MOB_ATTACK_HAND, user)
 	if(does_attack_animation)
-		user.changeNext_move(CLICK_CD_MELEE)
 		log_combat(user, src, "punched", "heavy melee")
 		user.do_attack_animation(src, ATTACK_EFFECT_SMASH)
+	user.DelayNextAction(CLICK_CD_MELEE)
+	return TRUE
 
 /atom/proc/attack_nanosuit(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	return attack_heavy_melee(user, does_attack_animation)
@@ -1060,7 +1002,8 @@
 /turf/closed/wall/attack_heavy_melee(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	if(user.a_intent != INTENT_HARM)
 		return FALSE
-	..(user, TRUE)
+	if(!..(user, TRUE))
+		return FALSE
 	user.visible_message(span_danger("[user] бьёт [src]!"), span_danger("You hit [src]!"), null, COMBAT_MESSAGE_RANGE)
 	playsound(src, 'sound/weapons/genhit1.ogg', 50, TRUE)
 	if(prob(hardness + HEAVY_MELEE_FORCE) && HEAVY_MELEE_FORCE > 20)
@@ -1072,7 +1015,8 @@
 
 /mob/living/simple_animal/attack_heavy_melee(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	if(user.a_intent == INTENT_HARM)
-		..(user, TRUE)
+		if(!..(user, TRUE))
+			return FALSE
 		if(!stat)
 			Unconscious(20)
 		apply_damage(rand(HEAVY_MELEE_FORCE * 0.5, HEAVY_MELEE_FORCE), BRUTE)
@@ -1106,7 +1050,8 @@
 
 /obj/attack_heavy_melee(mob/living/carbon/human/user, does_attack_animation = FALSE)//attacking objects barehand
 	if(user.a_intent == INTENT_HARM)
-		..(user, TRUE)
+		if(!..(user, TRUE))
+			return FALSE
 		visible_message(span_danger("[user] ломает [src]!") , null, null, COMBAT_MESSAGE_RANGE)
 		if(density)
 			playsound(src, 'sound/effects/bang.ogg', 100, TRUE)//less ear rape
@@ -1137,8 +1082,9 @@
 	. = ..()
 
 /datum/martial_art/nanosuit/proc/on_attack_hand(mob/living/carbon/human/owner, atom/target, proximity)
-	if(proximity)
-		return target.attack_heavy_melee(owner)
+	if(!proximity || iscarbon(target))
+		return FALSE
+	return target.attack_heavy_melee(owner)
 
 /mob/living/carbon/human/UnarmedAttack(atom/A, proximity)
 	var/datum/martial_art/nanosuit/style = mind?.has_martialart(MARTIALART_NANOSUIT)
@@ -1191,8 +1137,8 @@
 /obj/item/storage/box/syndie_kit/nanosuit/PopulateContents()
 	new /obj/item/clothing/suit/space/hardsuit/nano(src)
 	new /obj/item/clothing/glasses/nano_goggles(src)
-	new /obj/item/clothing/gloves/combat/nano(src)
-	new /obj/item/clothing/shoes/combat/coldres/nanojump(src)
+	new /obj/item/clothing/gloves/tackler/combat/insulated/nano(src)
+	new /obj/item/clothing/shoes/combat/coldres/nano(src)
 
 /obj/item/implant/explosive/disintegrate
 	name = "дезинтеграционный имплант"
@@ -1264,16 +1210,16 @@
 	to_chat(src, "<b><i>If you are reading this, you've probably alerted the entire sector about the purchase of an illegal syndicate item banned in a radius of 50 megaparsecs!</i></b>")
 	to_chat(src, "<b><i>Fortunately the syndicate equipped this bad boy with high tech sensing equipment,the downside is the whole crew knows you're here.</i></b>")
 	to_chat(src, "<b>Sensors</b>: Combo HUD (medical, security, robotics), thermal vision, night vision, bomb radar, user life signs monitor and bluespace communication relay.")
-	to_chat(src, "<b>Passive equipment</b>: Binoculars, night vision, anti-slips, shock and heat proof gloves, self refilling mini o2 tank, nutriment pump implant, emergency medical systems and body temperature defroster.")
+	to_chat(src, "<b>Passive equipment</b>: Binoculars, night vision, anti-slips, gorilla tackling gloves, self refilling mini o2 tank, nutriment pump implant, emergency medical systems and body temperature defroster.")
 	to_chat(src, "<b>Press C to toggle quick mode selection.</b>")
 	to_chat(src, "<b>Active modes</b>: Armor, strength, speed and cloak.")
 	to_chat(src, "<span class='notice'>Armor</span>: Resist damage that would normally kill or seriously injure you. Blocks 55% of attacks at a cost of suit energy drain.")
 	to_chat(src, "<span class='notice'>Cloak</span>: Become a ninja. Cloaking technology alters the outer layers to refract light through and around the suit, making the user appear almost completely invisible. Simple tasks such as attacking in any way, being hit or throwing objects cancels cloak.")
 	to_chat(src, "<span class='notice'>Speed</span>: Run like a madman. Use conservatively as suit energy drains fairly quickly.")
-	to_chat(src, "<span class='notice'>Strength</span>: Beat the shit out of objects or people with your fists, breaking walls like a Durand and knocking targets unconscious for two seconds. Leap five tiles forward and smash through walls in your path. You hit and throw harder with brute objects. You can't be grabbed aggressively or pushed. 25% ranged hits deflection. Toggling throw mode gives you a 75% block chance.")
+	to_chat(src, "<span class='notice'>Strength</span>: Beat the shit out of objects or people with your fists, breaking walls like a Durand and knocking targets unconscious for two seconds. Gorilla tackling gloves let you rush targets in throw mode. You hit and throw harder with brute objects. You can't be grabbed aggressively or pushed. 25% ranged hits deflection. Toggling throw mode gives you a 75% block chance.")
 	to_chat(src, "<b>Energy</b>: The suit uses a built-in self-charging battery (100%). It cannot be removed or recharged externally — no APCs, chargers, or spare cells will help.")
 	to_chat(src, "<span class='notice'>Energy</span>: Check your charge in the <b>Status</b> statpanel tab (available after boot finishes). Energy slowly regenerates on its own while you are <b>not</b> in cloak mode and not recovering from heavy use.")
-	to_chat(src, "<span class='notice'>Energy</span>: Cloak drains constantly; speed drains while moving; armor drains when blocking hits. Nanojump boots cost a large chunk of charge. After spending energy, regeneration pauses briefly — stand still in armor mode and wait.")
+	to_chat(src, "<span class='notice'>Energy</span>: Cloak drains constantly; speed drains while moving; armor drains when blocking hits. After spending energy, regeneration pauses briefly — stand still in armor mode and wait.")
 	to_chat(src, "<span class='notice'>Energy</span>: At 0% charge the suit forces armor mode. EMP attacks can drain energy and temporarily shut down all systems until the suit reboots.")
 	to_chat(src, "<span class='notice'>Aggressive grab</span>: Your grabs start aggressive.")
 	to_chat(src, "<span class='notice'>Robust push</span>: Your disarms have a 70% chance of knocking an opponent down for 4 seconds.")
@@ -1326,9 +1272,10 @@
 	desc = "Станьте постчеловеческим воином с этим тяжелобронированным и мощным костюмом. Нанокостюм нельзя снять, а также он предупреждает экипаж о вашем местоположении, если вы его надели."
 	item = /obj/item/storage/box/syndie_kit/nanosuit
 	cost = 30
-	surplus = 5
+	surplus = 1
 	cant_discount = TRUE
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	hijack_only = TRUE
 
 /datum/movespeed_modifier/nanospeed
 	movetypes = GROUND
@@ -1336,6 +1283,8 @@
 	id = NANO_SPEED
 
 /obj/item/clothing/suit/space/hardsuit/nano/proc/nano_suit_accepts_s_store(obj/item/I)
+	if(istype(I, /obj/item/tank/internals))
+		return TRUE
 	if(istype(I, /obj/item/gun) || istype(I, /obj/item/melee) || istype(I, /obj/item/grenade) || istype(I, /obj/item/nullrod))
 		return TRUE
 	if(istype(I, /obj/item/ammo_box) || istype(I, /obj/item/ammo_casing))

@@ -81,6 +81,18 @@
 	var/list/cameras
 	var/list/firealarms
 	var/firedoors_last_closed_on = 0
+	/// Слушают ли пожарные шлюзы зоны собственные датчики температуры. Считается
+	/// из пожарных сигнализаций зоны: пока хоть одна из них детектит, детекция
+	/// включена. Провод детекции в сигнализации это и есть штатный способ
+	/// отключить автоматику в комнате, которую греют или морозят намеренно.
+	/// Зона без сигнализаций детектит всегда.
+	var/fire_detect = TRUE
+	/// Комната спроектирована горячей: камера сгорания, турбина. Жар в её турфах -
+	/// это работа комнаты, а не авария, и тепловую тревогу файрлока они не поднимают.
+	/// Отдельно от fire_detect намеренно: тот пересобирается по пожарным
+	/// сигнализациям зоны и мапленное значение затирает, а ещё агрегируется по ВСЕМ
+	/// зонам двери - створка на входе ослепла бы и со стороны коридора.
+	var/firelock_heat_exempt = FALSE
 
 
 	///This datum, if set, allows terrain generation behavior to be ran on Initialize()
@@ -376,6 +388,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		firedoors_last_closed_on = world.time
 		for(var/FD in firedoors)
 			var/obj/machinery/door/firedoor/D = FD
+			D.refresh_generic_alarm()
 			var/cont = !D.welded
 			if(cont && opening)	//don't open if adjacent area is on fire
 				for(var/I in D.affecting_areas)
@@ -384,6 +397,13 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				// Закрытие зоной - тоже работа автоматики, и открывать обратно
+				// обязана она же: собственной тревоги у такой двери нет, а
+				// пересчёт тревоги ходит только по фронту тревоги.
+				if(opening)
+					D.auto_closed = FALSE
+				else if(!D.density)
+					D.mark_auto_closed()
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))
@@ -438,6 +458,28 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	//Lockdown airlocks
 	for(var/obj/machinery/door/door in get_sub_areas_contents(src))
 		close_and_lock_door(door)
+
+/// Пересобирает fire_detect по пожарным сигнализациям зоны и разносит вердикт
+/// по пожарным шлюзам. Зовётся при появлении, поломке и перещёлкивании провода
+/// детекции - то есть редко, поэтому шлюзы держат готовый ответ у себя, а не
+/// перебирают зоны на каждом замере воздуха.
+/area/proc/refresh_fire_detect()
+	var/new_state = TRUE
+	if(LAZYLEN(firealarms))
+		new_state = FALSE
+		for(var/obj/machinery/firealarm/alarm as anything in firealarms)
+			// Сломанную или обесточенную сигнализацию не считаем за выключенную
+			// детекцию: иначе разбить одну коробку на стене хватало бы, чтобы
+			// снять автоматику со всей комнаты. Нужен именно осознанный жест -
+			// перерезанный провод детекции или эмаг.
+			if(alarm.detecting && !(alarm.obj_flags & EMAGGED))
+				new_state = TRUE
+				break
+	if(new_state == fire_detect)
+		return
+	fire_detect = new_state
+	for(var/obj/machinery/door/firedoor/door as anything in firedoors)
+		door.refresh_fire_detection()
 
 /area/proc/set_fire_alarm_effects(boolean)
 	fire = boolean

@@ -17,6 +17,11 @@ SUBSYSTEM_DEF(ai_controllers)
 /datum/controller/subsystem/ai_controllers/Initialize()
 	. = ..()
 	setup_subtrees()
+	//Пол скорости погони считается заново здесь, а не только из ValidateAndSet
+	//конфига: GLOBAL_VAR_INIT печёт его до того, как world.tick_lag выставлен из
+	//конфига, а без строки RUN_DELAY в конфиге ValidateAndSet не зовётся вовсе -
+	//мир без строки (CI) жил с мусорным полом навсегда.
+	update_ai_pursuit_speed_floor()
 
 /datum/controller/subsystem/ai_controllers/stat_entry(msg)
 	msg = "ON:[length(GLOB.ai_controllers_by_status[AI_STATUS_ON])]|IDLE:[length(GLOB.ai_controllers_by_status[AI_STATUS_IDLE])]|OFF:[length(GLOB.ai_controllers_by_status[AI_STATUS_OFF])]"
