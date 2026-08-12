@@ -1,3 +1,7 @@
+/// Максимум альфа-канала. Декали хранят прозрачность в 0..255, а change_opacity()
+/// ждёт долю 0..1, так что перевод - это деление на этот максимум.
+#define DECAL_ALPHA_MAX 255
+
 /obj/item/airlock_painter
 	name = "airlock painter"
 	desc = "An advanced autopainter preprogrammed with several paintjobs for airlocks. Use it on an airlock during or after construction to change the paintjob."
@@ -468,7 +472,9 @@
 		render_alpha = text2num(tile_type.rgba_regex.group[2], 16)
 
 	var/datum/universal_icon/colored_icon = uni_icon('icons/turf/decals.dmi', source_decal, source_dir)
-	colored_icon.change_opacity(render_alpha * 0.008)
+	// Ровно та же альфа, с какой декаль ложится на пол: старый множитель 0.008 (наследство
+	// DM-пути) давал вдвое плотнее - у дефолтных 110 выходило 224 из 255.
+	colored_icon.change_opacity(render_alpha / DECAL_ALPHA_MAX)
 	if(color == "custom")
 		// Do a fun rainbow pattern to stand out while still being static.
 		colored_icon.blend_icon(uni_icon('icons/effects/random_spawners.dmi', "rainbow", SOUTH), ICON_MULTIPLY)
@@ -476,3 +482,5 @@
 		colored_icon.blend_color(render_color, ICON_MULTIPLY)
 
 	insert_icon("[decal]_[dir]_[replacetext(color, "#", "")]", blend_preview_floor(colored_icon))
+
+#undef DECAL_ALPHA_MAX

@@ -170,6 +170,11 @@
 		realize_spritesheets_owned(yield)
 	catch(var/exception/error)
 		generation_error = error.name
+		// Результат задачи rust-g одноразовый: тот, кто заберёт его вторым, уснёт в UNTIL
+		// навсегда. Оборванную попытку доигрывать некому, поэтому следующий заход
+		// (ensure_ready или повтор из очереди) обязан начинать с чистых идентификаторов.
+		job_id = null
+		cache_job_id = null
 		generation_in_progress = FALSE
 		throw error
 	generation_in_progress = FALSE

@@ -49,17 +49,28 @@
 	generation_error = null
 	fully_generated = FALSE
 
+/**
+ * Сносит с диска всё, что оставил после себя лист: шарды, метаданные и css.
+ *
+ * Зовётся в начале теста, а не в конце: любой TEST_ASSERT прерывает Run(), и
+ * завершающая уборка до себя не доживает - следующий прогон в этом же каталоге
+ * начинал бы с чужого кэша и первый заход оказался бы попаданием.
+ */
+/proc/drop_spritesheet_artifacts(datum/asset/spritesheet_batched/sheet)
+	for(var/existing_file in flist(SPRITESHEET_CACHE_DIR))
+		if(findtextEx(existing_file, "[sheet.name]_part") == 1 && copytext(existing_file, -4) == ".png")
+			fdel("[SPRITESHEET_CACHE_DIR][existing_file]")
+	fdel(sheet.cache_meta_path())
+	fdel("[SPRITESHEET_CACHE_DIR]spritesheet_[sheet.name].css")
+
 /datum/unit_test/spritesheet_batched_smart_cache
 
 /datum/unit_test/spritesheet_batched_smart_cache/Run()
 	var/datum/asset/spritesheet_batched/test_batched/sheet = new()
 	var/meta_path = sheet.cache_meta_path()
-	var/css_path = "[SPRITESHEET_CACHE_DIR]spritesheet_test_batched.css"
-	// Датум создан на чистом кэше: сносим метаданные и собираем заново, иначе
-	// прошлый прогон в этом же каталоге сделал бы первый заход попаданием.
+	// Датум создан на чистом кэше: сносим следы прошлых прогонов и собираем заново.
 	sheet.reset_state()
-	fdel(meta_path)
-	fdel(css_path)
+	drop_spritesheet_artifacts(sheet)
 	sheet.register()
 
 	TEST_ASSERT(sheet.fully_generated, "лист не собрался")
@@ -116,14 +127,6 @@
 	TEST_ASSERT_NOTNULL(reforged, "png не зарегистрирован после пересборки")
 	TEST_ASSERT_EQUAL(md5asfile(reforged.resource), md5asfile(file(clobbered_png)), "зарегистрированный слепок не совпал с пересобранным png")
 
-	// Уборка: следующий прогон в этом каталоге должен начинать с чистого листа.
-	var/list/files_to_drop = sheet.sheet_files.Copy()
-	sheet.unregister()
-	for(var/leftover in files_to_drop)
-		fdel("[SPRITESHEET_CACHE_DIR][leftover]")
-	fdel(meta_path)
-	fdel(css_path)
-
 /**
  * Тот же лист, но по отложенному пути (yield = TRUE) - так его собирает
  * SSasset_loading в лобби. Под UNIT_TESTS отложенная сборка выключена, поэтому в
@@ -139,11 +142,8 @@
 
 /datum/unit_test/spritesheet_batched_deferred/Run()
 	var/datum/asset/spritesheet_batched/test_batched/deferred/sheet = new()
-	var/meta_path = sheet.cache_meta_path()
-	var/css_path = "[SPRITESHEET_CACHE_DIR]spritesheet_[sheet.name].css"
 	sheet.reset_state()
-	fdel(meta_path)
-	fdel(css_path)
+	drop_spritesheet_artifacts(sheet)
 
 	// register() собрал бы лист синхронно, поэтому описание и сборку зовём врозь.
 	sheet.create_spritesheets()
@@ -168,13 +168,6 @@
 	TEST_ASSERT_EQUAL(json_encode(sheet.sprites), json_encode(first_sprites), "раскладка спрайтов из кэша не совпала с собранной")
 	TEST_ASSERT_EQUAL(json_encode(sheet.sheet_files), json_encode(first_files), "набор png из кэша не совпал с собранным")
 
-	var/list/files_to_drop = sheet.sheet_files.Copy()
-	sheet.unregister()
-	for(var/leftover in files_to_drop)
-		fdel("[SPRITESHEET_CACHE_DIR][leftover]")
-	fdel(meta_path)
-	fdel(css_path)
-
 /**
  * Каждый батчёвый лист обязан быть собран к концу инициализации.
  *
@@ -190,10 +183,18 @@
 		if(sheet_type == initial(sheet._abstract))
 			continue
 		var/datum/asset/spritesheet_batched/loaded = GLOB.asset_datums[sheet_type]
-		TEST_ASSERT_NOTNULL(loaded, "лист [sheet_type] не зарегистрирован в SSassets")
-		TEST_ASSERT(loaded.fully_generated, "лист [loaded.name] ([sheet_type]) не собран после инициализации")
-		TEST_ASSERT(length(loaded.sheet_files), "у листа [loaded.name] ([sheet_type]) нет ни одного png")
-		TEST_ASSERT(length(loaded.sprites), "у листа [loaded.name] ([sheet_type]) нет ни одного спрайта")
+		// Через TEST_FAIL, а не TEST_ASSERT: assert выходит из Run() на первом же
+		// битом листе, а знать надо про все сразу - иначе чинить их придётся по одному
+		// за прогон.
+		if(isnull(loaded))
+			TEST_FAIL("лист [sheet_type] не зарегистрирован в SSassets")
+			continue
+		if(!loaded.fully_generated)
+			TEST_FAIL("лист [loaded.name] ([sheet_type]) не собран после инициализации")
+		if(!length(loaded.sheet_files))
+			TEST_FAIL("у листа [loaded.name] ([sheet_type]) нет ни одного png")
+		if(!length(loaded.sprites))
+			TEST_FAIL("у листа [loaded.name] ([sheet_type]) нет ни одного спрайта")
 
 /// Описание иконки должно выживать сериализацию: именно в этом виде оно уезжает в rust.
 /datum/unit_test/universal_icon_serialization
@@ -220,9 +221,11 @@
 	TEST_ASSERT(istype(blend_entry["icon"], /datum/universal_icon), "to_list() испортил исходный трансформер, подменив вложенную иконку списком")
 
 	// copy() обязан отвязать и цепочку, и вложенные иконки.
+	var/base_operations = length(base.transform.transforms)
 	var/datum/universal_icon/copied = base.copy()
 	copied.blend_color("#0000ff", ICON_MULTIPLY)
-	TEST_ASSERT(length(copied.transform.transforms) != length(base.transform.transforms), "правка копии дописала операцию в оригинал")
+	TEST_ASSERT_EQUAL(length(base.transform.transforms), base_operations, "правка копии дописала операцию в оригинал")
+	TEST_ASSERT_EQUAL(length(copied.transform.transforms), base_operations + 1, "в копии оказалась не одна новая операция, а другая цепочка целиком")
 	var/datum/universal_icon/copied_nested
 	for(var/list/entry as anything in copied.transform.transforms)
 		if(entry["type"] == RUSTG_ICONFORGE_BLEND_ICON)
@@ -247,3 +250,62 @@
 		var/list/sprite = sheet.sprites[sprite_name]
 		TEST_ASSERT(sprite["size_id"] in sheet.sizes, "спрайт [sprite_name] ссылается на размер [sprite["size_id"]], которого нет в списке размеров листа")
 		TEST_ASSERT(sprite["file"] in sheet.sheet_files, "спрайт [sprite_name] ссылается на png [sprite["file"]], которого нет в списке файлов листа")
+
+/**
+ * Лист на три декали для проверки прозрачности превью.
+ *
+ * Имя и _abstract свои: боевой floor_tile_decals отпускает описание спрайтов сразу
+ * после сборки (см. finish_generation), а проверять надо именно его - поэтому
+ * снимаем копию прямо в create_spritesheets().
+ */
+/datum/asset/spritesheet_batched/decals/tiles/test_alpha
+	_abstract = /datum/asset/spritesheet_batched/decals/tiles/test_alpha
+	name = "test_decals_alpha"
+	/// Цвет декали -> альфа, которую обязано показать её превью.
+	var/list/expected_alphas
+	/// Описание спрайтов до того, как его отпустит finish_generation().
+	var/list/captured_entries
+
+/datum/asset/spritesheet_batched/decals/tiles/test_alpha/create_spritesheets()
+	var/obj/item/airlock_painter/decal/tile/tile_painter = painter_type
+	expected_alphas = list(
+		"#ff0000" = initial(tile_painter.default_alpha), // без RGBA-хвоста альфу даёт пейнтер
+		"#ff000000" = 0,
+		"#ff0000ff" = 255,
+	)
+	for(var/color in expected_alphas)
+		insert_state("tile_corner", SOUTH, color)
+	captured_entries = entries.Copy()
+
+/**
+ * Превью декали обязано быть той же прозрачности, с какой декаль ложится на пол.
+ *
+ * Альфа приходит в 0..255, а change_opacity() ждёт долю 0..1. Пока переводом был
+ * множитель 0.008, превью выходило вдвое плотнее декали, и заметить это можно было
+ * только рядом с покрашенным полом.
+ */
+/datum/unit_test/decal_preview_alpha
+
+/datum/unit_test/decal_preview_alpha/Run()
+	var/datum/asset/spritesheet_batched/decals/tiles/test_alpha/sheet = new()
+	drop_spritesheet_artifacts(sheet)
+
+	for(var/color in sheet.expected_alphas)
+		var/expected_alpha = sheet.expected_alphas[color]
+		var/sprite_name = "tile_corner_[SOUTH]_[replacetext(color, "#", "")]"
+		var/list/entry = sheet.captured_entries[sprite_name]
+		TEST_ASSERT_NOTNULL(entry, "в описании листа нет спрайта [sprite_name]")
+		// Декаль подмешана вложенной иконкой поверх превью-пола, а прозрачность ей
+		// задаёт первая же операция её цепочки (см. insert_state).
+		var/list/decal_icon
+		for(var/list/operation as anything in entry["transform"])
+			if(operation["type"] == RUSTG_ICONFORGE_BLEND_ICON)
+				decal_icon = operation["icon"]
+				break
+		TEST_ASSERT_NOTNULL(decal_icon, "спрайт [sprite_name] не подмешал декаль к превью-полу")
+		var/list/decal_operations = decal_icon["transform"]
+		TEST_ASSERT(length(decal_operations), "у декали в спрайте [sprite_name] нет ни одной операции - прозрачность не задана вовсе")
+		var/list/opacity_operation = decal_operations[1]
+		var/rendered_alpha = hex2num(copytext(opacity_operation["color"], -2))
+		// Допуск в единицу - это округление доли обратно в 0..255 внутри change_opacity.
+		TEST_ASSERT(abs(rendered_alpha - expected_alpha) <= 1, "превью [sprite_name] нарисовано с альфой [rendered_alpha] вместо [expected_alpha]")

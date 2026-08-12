@@ -1,3 +1,7 @@
+/// Сторона превьюшки в пикселях. Интерфейс вешает на них класс spawnpanel32x32
+/// (см. SpawnPanel/CreateObject.tsx), так что весь лист обязан быть этого размера.
+#define SPAWN_PANEL_PREVIEW_SIZE 32
+
 GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid string
 
 /datum/asset/spritesheet_batched/spawnpanel
@@ -56,19 +60,17 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 			if(!imgid)
 				imgid = "sp[counter]"
 				var/datum/universal_icon/entry = uni_icon(icon_file, icon_state)
-				// Интерфейс панели вешает на превью класс spawnpanel32x32 (см.
-				// SpawnPanel/CreateObject.tsx), так что весь лист обязан быть 32x32:
-				// нестандартные кадры тянем. Размер - свойство файла, поэтому
-				// метаданные читаются один раз на файл, а не на спрайт.
+				// Кадры не того размера тянем к стороне превью. Размер - свойство
+				// файла, поэтому метаданные читаются один раз на файл, а не на спрайт.
 				var/needs_scale = scale_cache[icon_file]
 				if(isnull(needs_scale))
 					var/list/dimensions = dmi_frame_dimensions(icon_file)
 					// Метаданные не прочитались - тянем на всякий случай: такой файл
 					// rust-g всё равно не отрисует, а размер угадывать нечем.
-					needs_scale = isnull(dimensions) || dimensions["width"] != 32 || dimensions["height"] != 32
+					needs_scale = isnull(dimensions) || dimensions["width"] != SPAWN_PANEL_PREVIEW_SIZE || dimensions["height"] != SPAWN_PANEL_PREVIEW_SIZE
 					scale_cache[icon_file] = needs_scale
 				if(needs_scale)
-					entry.scale(32, 32)
+					entry.scale(SPAWN_PANEL_PREVIEW_SIZE, SPAWN_PANEL_PREVIEW_SIZE)
 				insert_icon(imgid, entry)
 				counter++
 				icon_dedup[cache_key] = imgid
@@ -112,3 +114,5 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 
 	data["atoms"] = atoms
 	return data
+
+#undef SPAWN_PANEL_PREVIEW_SIZE
