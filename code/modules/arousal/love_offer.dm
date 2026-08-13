@@ -45,7 +45,7 @@
 			var/r_name = recipient_name_check(params["recipient_name"], user)
 			if(!r_name)
 				return FALSE
-			recipient_name = uppertext(params["recipient_name"])
+			recipient_name = uppertext(r_name)
 		if("save")
 			var/lines_count = params["linesCount"]
 			if(lines_count > OFFER_TEXT_MAX_LINES)
