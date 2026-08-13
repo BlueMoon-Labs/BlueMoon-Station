@@ -1,3 +1,7 @@
+/obj/item/clothing/neck/donator/bm
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+
 /obj/item/clothing/neck/SMART_fabric_boatcloak
 	name = "SMART-fabric boatcloak"
 	desc = "The tissue is capable of changing its structure by reading small nerve impulses from the body."
@@ -74,6 +78,8 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 
+///////////////////////////////////////////////
+
 /obj/item/clothing/neck/cloak/wintercape
 	name = "Winter Cape"
 	desc = "The cape is made of fairly thick fabric and trimmed with gold. The cape itself is designed in a wintery style, with icy accents and prominent gold shoulder straps, clearly identifying it as belonging to a Lieutenant Commander."
@@ -82,3 +88,11 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
 
+/obj/item/clothing/neck/donator/bm/antique_cape
+	name = "Antique cape"
+	desc = "An antique cape reminiscent of bygone times."
+	icon_state = "antique_cape"
+
+/obj/item/clothing/neck/donator/bm/antique_cape/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#777777", "#FFFFCC", "#66FFFF"), 3)

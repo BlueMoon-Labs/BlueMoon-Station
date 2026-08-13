@@ -2540,3 +2540,11 @@
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/yun_sneakers
 	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/antique_cape
+	name = "Antique cape"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/donator/bm/antique_cape
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#777777", "#FFFFCC", "#66FFFF")
+	ckeywhitelist = list("ingvarr3313", "shizalrp", "herobrine998")
