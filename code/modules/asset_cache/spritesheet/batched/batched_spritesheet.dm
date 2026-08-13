@@ -27,8 +27,12 @@
  * шире 32768 px, так что лист режется на шарды с двукратным запасом.
  */
 #define MAX_SHEET_WIDTH 16384
-/// Сколько ненайденных DMI перечислять в сообщении о пустом шарде.
+/// Сколько ненайденных DMI перечислять в сообщениях лога.
 #define MISSING_DMI_REPORTED 5
+/// Сколько раз лист возвращается в очередь, если rust не прочитал часть DMI.
+#define UNREAD_DMI_RETRIES 2
+/// Пауза перед пересборкой: даём деплою докопировать дерево иконок на диск.
+#define UNREAD_DMI_RETRY_DELAY (15 SECONDS)
 
 /datum/asset/spritesheet_batched
 	_abstract = /datum/asset/spritesheet_batched
@@ -78,6 +82,15 @@
 	var/generation_in_progress = FALSE
 	/// Сохраняет ошибку владельца для тех, кто ждал его синхронно.
 	var/generation_error
+	/// DMI, которые rust не смог прочитать в последнем прогоне сборки.
+	var/list/unread_dmi_paths = list()
+	/// Сколько пересборок осталось листу, напоровшемуся на непрочитанные DMI. На боевом
+	/// сервере это почти всегда гонка деплоя: dmb уже запущен, а дерево иконок ещё
+	/// копируется (раунд 9954: jobs.dmi в 04:38:36 не открывался, а секундой позже
+	/// та же генерация читала его без жалоб).
+	var/unread_retries_left = UNREAD_DMI_RETRIES
+	/// Таймер отложенной пересборки, чтобы unregister() мог его снять.
+	var/retry_timer_id
 
 /datum/asset/spritesheet_batched/proc/cache_meta_path()
 	return "[SPRITESHEET_CACHE_DIR]cache_batched.[name].json"
@@ -205,6 +218,8 @@
 	sizes = list()
 	sprites = list()
 	sheet_files = list()
+	unread_dmi_paths = list()
+	retry_timer_id = null
 	var/list/generated_cache_shards = list()
 	var/list/shard_entries = list()
 	var/shard_index = 1
@@ -214,14 +229,22 @@
 			continue
 		generate_shard(shard_index++, shard_entries, generated_cache_shards, yield)
 		shard_entries = list()
+		// Лист всё равно уйдёт на пересборку целиком - остальные шарды считать незачем.
+		if(needs_unread_retry(yield))
+			break
 		// Задача rust-g может вернуться в том же тике, и тогда UNTIL внутри не уснёт
 		// ни разу: на листе панели спавна это полсотни шардов подряд в одном прогоне МК.
 		if(yield)
 			CHECK_TICK
-	if(length(shard_entries))
+	if(length(shard_entries) && !needs_unread_retry(yield))
 		generate_shard(shard_index, shard_entries, generated_cache_shards, yield)
+	if(needs_unread_retry(yield))
+		schedule_unread_retry()
+		return
 	if(!length(sizes) || !length(sprites) || !length(sheet_files))
 		CRASH("Спрайтшит [name]: rust-g вернул пустой результат")
+	if(length(unread_dmi_paths))
+		log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - их спрайты пропали с листа, а кросс-раундовый кэш не сойдётся, пока файлы не станут читаемыми. [describe_unread_dmis()]")
 
 	var/list/png_hashes = list()
 	for(var/png_name in sheet_files)
@@ -265,6 +288,11 @@
 	if(generated["error"] && !(ignore_dir_errors && findtext(generated["error"], "is not in the set of valid dirs")))
 		CRASH("Спрайтшит [name], шард [shard_index]: ошибка генерации ([generated["error"]])")
 	if(!length(shard_sizes) || !length(shard_sprites))
+		// Пустым шард выходит и тогда, когда деплой ещё не докопировал ни одного его
+		// DMI - в этом случае лист уходит на пересборку, а не в CRASH.
+		unread_dmi_paths |= unread_shard_dmis(shard_entries, generated["dmi_hashes"])
+		if(needs_unread_retry(yield))
+			return
 		var/list/missing_dmis = missing_dmi_files(shard_entries)
 		CRASH("Спрайтшит [name], шард [shard_index]: пустой результат[length(missing_dmis) ? " - на диске нет DMI: [missing_dmis.Join(", ")]" : ""]")
 
@@ -293,30 +321,63 @@
 		"dmi_hashes" = generated["dmi_hashes"],
 	))
 
-	warn_on_unread_dmis(shard_index, shard_entries, generated["dmi_hashes"])
+	unread_dmi_paths |= unread_shard_dmis(shard_entries, generated["dmi_hashes"])
 
 /**
- * Жалуется на DMI, которые rust не смог прочитать.
+ * DMI шарда, которые rust не смог прочитать.
  *
  * Ошибки чтения наружу не приезжают: rust просто не кладёт такой файл в dmi_hashes, а
  * спрайты из него молча пропадают с листа. Заодно из-за нехватки хэшей кросс-раундовый
  * кэш шарда не сходится НИКОГДА ("more DMIs exist than DMI hashes provided"), и лист
- * пересобирается каждый раунд. Обычная причина - регистр пути в коде, не совпадающий с
- * именем файла: BYOND такой путь находит, файловая система боевого сервера - нет.
+ * пересобирается каждый раунд. Причин две: регистр пути в коде, не совпадающий с именем
+ * файла (BYOND такой путь находит, файловая система боевого сервера - нет), и гонка
+ * деплоя - сервер уже стартовал, а дерево иконок ещё копируется на диск.
  */
-/datum/asset/spritesheet_batched/proc/warn_on_unread_dmis(shard_index, list/shard_entries, list/dmi_hashes)
+/datum/asset/spritesheet_batched/proc/unread_shard_dmis(list/shard_entries, list/dmi_hashes)
+	RETURN_TYPE(/list)
+	var/list/unread = list()
 	if(!islist(dmi_hashes))
-		return
+		return unread
 	var/list/referenced = shard_dmi_paths(shard_entries)
 	if(length(referenced) <= length(dmi_hashes))
-		return
-	var/list/unread = list()
+		return unread
 	for(var/icon_path in referenced)
-		if(isnull(dmi_hashes[icon_path]) && length(unread) < MISSING_DMI_REPORTED)
+		if(isnull(dmi_hashes[icon_path]))
 			unread += icon_path
-	if(!length(unread))
-		return
-	log_asset("Лист spritesheet_[name], шард [shard_index]: rust не прочитал [length(referenced) - length(dmi_hashes)] DMI - спрайты из них пропали, а кэш шарда больше не сойдётся. Не прочитаны: [unread.Join(", ")]")
+	return unread
+
+/// Непрочитанные DMI лечатся пересборкой только на отложенном пути: синхронный
+/// потребитель ждать не может и получает лист как есть, с предупреждением в логе.
+/datum/asset/spritesheet_batched/proc/needs_unread_retry(yield)
+	return yield && length(unread_dmi_paths) && unread_retries_left > 0
+
+/**
+ * Возвращает лист в очередь сборки с паузой на докопирование иконок.
+ *
+ * Прод-сценарий раунда 9954: сторож запускает мир по появлению dmb, пока деплой ещё
+ * копирует 15 тысяч DMI. Листы, собравшиеся в первые пару минут, теряли спрайты из
+ * ещё не доехавших файлов и до конца раунда показывали пустые рамки, а их кэш
+ * записывался с неполными хэшами и промахивался все последующие раунды.
+ */
+/datum/asset/spritesheet_batched/proc/schedule_unread_retry()
+	unread_retries_left--
+	log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - похоже, деплой ещё копирует дерево иконок. Пересборка через [UNREAD_DMI_RETRY_DELAY / 10] с, осталось попыток: [unread_retries_left]. [describe_unread_dmis()]")
+	sizes = list()
+	sprites = list()
+	sheet_files = list()
+	retry_timer_id = addtimer(CALLBACK(SSasset_loading, TYPE_PROC_REF(/datum/controller/subsystem/asset_loading, queue_asset), src), UNREAD_DMI_RETRY_DELAY, TIMER_STOPPABLE)
+
+/// Первые MISSING_DMI_REPORTED непрочитанных путей с пометкой, виден ли файл BYOND-у.
+/// fexists прощает регистр, поэтому "есть" означает гонку деплоя либо регистр пути,
+/// а "нет" - файла не существует вовсе.
+/datum/asset/spritesheet_batched/proc/describe_unread_dmis()
+	var/list/described = list()
+	for(var/icon_path in unread_dmi_paths)
+		if(length(described) >= MISSING_DMI_REPORTED)
+			described += "и ещё [length(unread_dmi_paths) - MISSING_DMI_REPORTED]"
+			break
+		described += "[icon_path] (fexists: [fexists(icon_path) ? "есть" : "нет"])"
+	return "Не прочитаны: [described.Join(", ")]"
 
 /**
  * DMI из описания шарда, которых нет на диске рядом с сервером.
@@ -569,6 +630,9 @@
 		.[png_name] = SSassets.transport.get_asset_url(png_name)
 
 /datum/asset/spritesheet_batched/proc/unregister()
+	if(retry_timer_id)
+		deltimer(retry_timer_id)
+		retry_timer_id = null
 	SSasset_loading.dequeue_asset(src)
 	SSassets.transport.unregister_asset("spritesheet_[name].css")
 	for(var/png_name in sheet_files)
@@ -642,3 +706,5 @@
 #undef SPRITES_PER_SHARD_DEFAULT
 #undef MAX_SHEET_WIDTH
 #undef MISSING_DMI_REPORTED
+#undef UNREAD_DMI_RETRIES
+#undef UNREAD_DMI_RETRY_DELAY

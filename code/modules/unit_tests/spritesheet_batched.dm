@@ -48,6 +48,8 @@
 	generation_in_progress = FALSE
 	generation_error = null
 	fully_generated = FALSE
+	unread_dmi_paths = list()
+	unread_retries_left = initial(unread_retries_left)
 
 /**
  * Сносит с диска всё, что оставил после себя лист: шарды, метаданные и css.
@@ -315,6 +317,83 @@
 		var/rendered_alpha = hex2num(copytext(opacity_operation["color"], -2))
 		// Допуск в единицу - это округление доли обратно в 0..255 внутри change_opacity.
 		TEST_ASSERT(abs(rendered_alpha - expected_alpha) <= 1, "превью [sprite_name] нарисовано с альфой [rendered_alpha] вместо [expected_alpha]")
+
+/**
+ * Лист с DMI, которого нет на диске в момент сборки.
+ *
+ * Прод-сценарий раунда 9954: сторож запускает мир по появлению dmb, пока деплой ещё
+ * копирует дерево иконок. rust молча не читает недоехавшие файлы - их спрайты пропадают
+ * с листа до конца раунда, а кэш пишется с неполными хэшами и не сходится никогда.
+ * Лечится возвратом листа в очередь сборки; здесь таймер не ждём, а зовём пересборку
+ * руками - ровно то, что сделал бы SSasset_loading, когда таймер вернёт лист в очередь.
+ */
+/datum/asset/spritesheet_batched/test_batched/transient
+	_abstract = /datum/asset/spritesheet_batched/test_batched/transient
+	name = "test_batched_transient"
+
+/datum/asset/spritesheet_batched/test_batched/transient/proc/transient_dmi_path()
+	return "[SPRITESHEET_CACHE_DIR]test_transient.dmi"
+
+/datum/asset/spritesheet_batched/test_batched/transient/create_spritesheets()
+	var/obj/item/binoculars/donor = /obj/item/binoculars
+	insert_icon("good", get_display_icon_for(donor))
+	// Текстовый путь вместо фейрефа: файла на момент компиляции не существует,
+	// он "доезжает" на диск прямо по ходу теста.
+	insert_icon("transient", uni_icon(transient_dmi_path(), initial(donor.icon_state)))
+
+/datum/unit_test/spritesheet_batched_transient_retry
+
+/datum/unit_test/spritesheet_batched_transient_retry/Run()
+	var/datum/asset/spritesheet_batched/test_batched/transient/sheet = new()
+	var/transient_path = sheet.transient_dmi_path()
+	var/obj/item/binoculars/donor = /obj/item/binoculars
+	sheet.reset_state()
+	drop_spritesheet_artifacts(sheet)
+	fdel(transient_path)
+	// rust держит разобранные DMI в памяти процесса и отдаёт их даже после удаления
+	// файла с диска - "отсутствующий" файл обязан отсутствовать и там.
+	rustg_iconforge_cleanup()
+
+	// Первый заход: файла нет, лист обязан уйти на пересборку, а не уехать дырявым.
+	sheet.create_spritesheets()
+	sheet.realize_spritesheets(yield = TRUE)
+	// Таймер снимаем сразу, до ассертов: упавший ассерт выходит из Run(), и через
+	// 15 секунд таймер позвал бы queue_asset посреди чужого теста (под
+	// DO_NOT_DEFER_ASSETS это ещё и stack_trace).
+	var/timer_was_armed = !isnull(sheet.retry_timer_id)
+	deltimer(sheet.retry_timer_id)
+	sheet.retry_timer_id = null
+	TEST_ASSERT(!sheet.fully_generated, "лист собрался, хотя один из его DMI не существует - спрайт молча пропал бы у игроков")
+	TEST_ASSERT_EQUAL(sheet.unread_retries_left, initial(sheet.unread_retries_left) - 1, "попытка пересборки не списалась")
+	TEST_ASSERT_EQUAL(length(sheet.unread_dmi_paths), 1, "в непрочитанных ожидался ровно один DMI: [json_encode(sheet.unread_dmi_paths)]")
+	TEST_ASSERT_EQUAL(sheet.unread_dmi_paths[1], transient_path, "в непрочитанные попал не тот путь")
+	TEST_ASSERT(timer_was_armed, "таймер пересборки не взведён")
+	TEST_ASSERT(!length(sheet.sprites), "раскладка не сброшена перед пересборкой")
+
+	// Файл "доехал" - пересборка обязана собрать лист целиком.
+	fcopy(initial(donor.icon), transient_path)
+	sheet.realize_spritesheets(yield = TRUE)
+	TEST_ASSERT(sheet.fully_generated, "лист не собрался после того, как DMI появился на диске")
+	TEST_ASSERT(!length(sheet.unread_dmi_paths), "после успешной пересборки остались непрочитанные DMI: [json_encode(sheet.unread_dmi_paths)]")
+	TEST_ASSERT("good" in sheet.sprites, "спрайт good пропал после пересборки")
+	TEST_ASSERT("transient" in sheet.sprites, "спрайт из доехавшего DMI не попал в лист")
+
+	// Попытки кончились - лист уезжает как есть: с предупреждением и без спрайта,
+	// но живой. Пустая витрина у всех лучше, чем ни одной витрины ни у кого.
+	sheet.reset_state()
+	drop_spritesheet_artifacts(sheet)
+	fdel(transient_path)
+	// Пересборка выше положила файл в память rust - без чистки спрайт "соберётся"
+	// из кэша процесса даже после fdel, и тест проверит не то.
+	rustg_iconforge_cleanup()
+	sheet.create_spritesheets()
+	sheet.unread_retries_left = 0
+	sheet.realize_spritesheets(yield = TRUE)
+	TEST_ASSERT(sheet.fully_generated, "лист без попыток пересборки обязан собраться как есть")
+	TEST_ASSERT("good" in sheet.sprites, "читаемый спрайт пропал вместе с нечитаемым")
+	TEST_ASSERT(!("transient" in sheet.sprites), "спрайт из несуществующего DMI мистическим образом собрался")
+	TEST_ASSERT_EQUAL(length(sheet.unread_dmi_paths), 1, "непрочитанный DMI не попал в диагностику: [json_encode(sheet.unread_dmi_paths)]")
+	TEST_ASSERT_NULL(sheet.retry_timer_id, "лист без попыток взвёл таймер пересборки")
 
 /// Меню крафта не имеет права возить иконки внутри нагрузки. На инлайновом base64
 /// статика меню весила 3.03 МБ (2.71 МБ из них - картинки), и каждое открытие просило
