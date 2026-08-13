@@ -17,6 +17,8 @@
 		linked_contract.active_ransom = null
 	linked_contract = null
 	forced_pirate_victim = null
+	pirate_console = null
+	pirate_objective = null
 	return ..()
 
 /proc/pick_ransom_return_area()

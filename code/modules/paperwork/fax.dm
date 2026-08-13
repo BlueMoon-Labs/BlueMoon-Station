@@ -284,7 +284,7 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 				return
 			if(send(loaded, destination))
 				log_fax(loaded, destination, target_fax.fax_name)
-				announce_dispatch(target_fax.fax_name)
+				announce_dispatch(target_fax)
 				loaded_item_ref = null
 				update_appearance()
 				return TRUE
@@ -360,16 +360,16 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * id - The network ID of the fax machine you want to send the item to.
  */
 /obj/machinery/fax/proc/send(obj/item/loaded, id)
-	var/obj/machinery/fax/FAX = get_fax_by_id(id)
-	if (!FAX)
+	var/obj/machinery/fax/target_fax = get_fax_by_id(id)
+	if (!target_fax)
 		return FALSE
-	if (FAX.jammed)
+	if (target_fax.jammed)
 		do_sparks(5, TRUE, src)
 		balloon_alert(usr, "destination port jammed")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		return FALSE
-	FAX.receive(loaded, fax_name, fax_id)
-	history_add("Send", FAX.fax_name)
+	target_fax.receive(loaded, fax_name, fax_id, can_announce())
+	history_add("Send", target_fax.fax_name)
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "send"))
 	playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, FALSE)
 	return TRUE
@@ -383,9 +383,9 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * id - сетевой ID искомой машины.
  */
 /obj/machinery/fax/proc/get_fax_by_id(id)
-	for(var/obj/machinery/fax/FAX as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/fax))
-		if (FAX.fax_id == id)
-			return FAX
+	for(var/obj/machinery/fax/fax_machine as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/fax))
+		if (fax_machine.fax_id == id)
+			return fax_machine
 	return null
 
 /**
@@ -396,15 +396,16 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * loaded - The object to be printed.
  * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations. Renameable with a multitool, so it proves nothing.
  * * sender_id - The sender's network ID, if the fax came from an actual machine. Assigned on init and not user-editable.
+ * * sender_announces - Whether the sending machine is allowed on the air itself. Central Command and admin faxes are, hidden machines are not.
  */
-/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id)
+/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id, sender_announces = TRUE)
 	playsound(src, 'sound/effects/printer.ogg', 50, FALSE)
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "receive"))
 	say("Получена корреспонденция от [sender_name].")
 	history_add("Receive", sender_name)
 	//Об отправке рапортует отправитель, но факс ЦК вещает в свою рацию, до станции она не достаёт.
 	//Поэтому о получении говорит сам приёмник - иначе о факсе с ЦК узнают только случайно.
-	announce_receipt(sender_name, sender_id)
+	announce_receipt(sender_name, sender_id, sender_announces)
 
 	// Добавляем в лог сообщений для панели тикетов
 	var/paper_text
@@ -449,13 +450,16 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 
 /**
  * Объявляет по командному каналу об отправленной корреспонденции.
+ *
+ * Молчать должны обе стороны переписки: объявление называет и отправителя, и получателя,
+ * поэтому болтливый аппарат выдал бы в эфир имя и ID спрятанного собеседника.
  * Arguments:
- * * destination_name - имя машины-получателя, взятое у неё самой, а не из параметров клиента.
+ * * destination - машина-получатель. Имя берётся у неё самой, а не из параметров клиента.
  */
-/obj/machinery/fax/proc/announce_dispatch(destination_name)
-	if(!can_announce())
+/obj/machinery/fax/proc/announce_dispatch(obj/machinery/fax/destination)
+	if(!can_announce() || !destination?.can_announce())
 		return
-	Radio?.talk_into(src, "Внимание. Отправлен факс от [fax_name]/[fax_id] на [destination_name].", RADIO_CHANNEL_COMMAND)
+	Radio?.talk_into(src, "Внимание. Отправлен факс от [fax_name]/[fax_id] на [destination.fax_name].", RADIO_CHANNEL_COMMAND)
 
 /**
  * Объявляет по командному каналу о полученной корреспонденции.
@@ -463,9 +467,11 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * sender_name - имя отправителя, как его показал передающий факс. Переименовывается мультитулом,
  * поэтому идёт в эфир вместе с ID - ровно так же, как в объявлении об отправке.
  * * sender_id - сетевой ID отправителя, если факс пришёл от машины, а не от ЦК или админа.
+ * * sender_announces - готовность отправителя светиться в эфире. Спрятанную машину не называем
+ * и с этой стороны, иначе гейт отправки обходится простой отправкой факса самому себе на станцию.
  */
-/obj/machinery/fax/proc/announce_receipt(sender_name, sender_id)
-	if(!can_announce())
+/obj/machinery/fax/proc/announce_receipt(sender_name, sender_id, sender_announces = TRUE)
+	if(!can_announce() || !sender_announces)
 		return
 	var/sender_label = sender_id ? "[sender_name]/[sender_id]" : sender_name
 	Radio?.talk_into(src, "Внимание. Получен факс от [sender_label].", RADIO_CHANNEL_COMMAND)

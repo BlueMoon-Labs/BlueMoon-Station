@@ -10,7 +10,7 @@
 
 /obj/item/armyknife
 	name = "Army Multitool"
-	desc = "A simple tool with a small knife, screwdriver, and wirecutters. It is currently folded away."
+	desc = "Нехитрый инструмент с ножичком, отвёрткой и кусачками. Сейчас всё сложено."
 	icon_state = "armyknife_fold"
 	icon = 'modular_splurt/icons/obj/items_and_weapons.dmi'
 	custom_materials = list(/datum/material/iron=300, /datum/material/plastic=300)
@@ -34,16 +34,16 @@
 	switch(mode)
 		if(ARMYKNIFE_FOLDED)
 			set_mode(ARMYKNIFE_SCREWDRIVER)
-			to_chat(user, span_notice("You unfold the screwdriver."))
+			to_chat(user, span_notice("Вы раскладываете отвёртку."))
 		if(ARMYKNIFE_SCREWDRIVER)
 			set_mode(ARMYKNIFE_WIRECUTTER)
-			to_chat(user, span_notice("You fold the screwdriver and unfold the wirecutters."))
+			to_chat(user, span_notice("Вы складываете отвёртку и раскладываете кусачки."))
 		if(ARMYKNIFE_WIRECUTTER)
 			set_mode(ARMYKNIFE_BLADE)
-			to_chat(user, span_notice("You fold the wirecutters and unfold the knife."))
+			to_chat(user, span_notice("Вы складываете кусачки и раскладываете нож."))
 		else
 			set_mode(ARMYKNIFE_FOLDED)
-			to_chat(user, span_notice("You fold the knife."))
+			to_chat(user, span_notice("Вы складываете нож."))
 	add_fingerprint(user)
 
 /obj/item/armyknife/proc/set_mode(new_mode)
@@ -57,7 +57,7 @@
 	righthand_file = initial(righthand_file)
 	switch(mode)
 		if(ARMYKNIFE_SCREWDRIVER)
-			desc = "A simple tool with a small knife, screwdriver, and wirecutters. Currently has the screwdriver extended."
+			desc = "Нехитрый инструмент с ножичком, отвёрткой и кусачками. Сейчас разложена отвёртка."
 			icon_state = "armyknife_screw"
 			item_state = "screwdriver"
 			lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
@@ -69,7 +69,7 @@
 			hitsound = 'sound/weapons/bladeslice.ogg'
 			usesound = list('sound/items/screwdriver.ogg', 'sound/items/screwdriver2.ogg')
 		if(ARMYKNIFE_WIRECUTTER)
-			desc = "A simple tool with a small knife, screwdriver, and wirecutters. Currently has the wirecutters extended."
+			desc = "Нехитрый инструмент с ножичком, отвёрткой и кусачками. Сейчас разложены кусачки."
 			icon_state = "armyknife_cutter"
 			item_state = "cutters"
 			lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
@@ -81,7 +81,7 @@
 			hitsound = 'sound/weapons/bladeslice.ogg'
 			usesound = 'sound/items/wirecutter.ogg'
 		if(ARMYKNIFE_BLADE)
-			desc = "A simple tool with a small knife, screwdriver, and wirecutters. Currently has the knife extended."
+			desc = "Нехитрый инструмент с ножичком, отвёрткой и кусачками. Сейчас разложен нож."
 			icon_state = "armyknife_blade"
 			item_state = "switchblade_ext"
 			lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'

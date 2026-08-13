@@ -121,8 +121,8 @@
 	//присваивании турфа в типизированную переменную - ветка была истинной на любом полу и не
 	//работала ни дня. Включать скрытую механику задним числом - отдельное балансное решение.
 	var/penalty = max((get_env_temp() - temp_tolerance_high), 0) * temp_penalty_coefficient
-	for(var/i in .)
-		.[i] = max(((.[i] * income_gen) - penalty) * RESEARCH_SERVER_OUTPUT_MULTIPLIER, 0)
+	for(var/point_type as anything in .)
+		.[point_type] = max(((.[point_type] * income_gen) - penalty) * RESEARCH_SERVER_OUTPUT_MULTIPLIER, 0)
 
 /obj/machinery/rnd/server/proc/get_env_temp()
 	var/datum/gas_mixture/environment = loc.return_air()
