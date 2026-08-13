@@ -899,7 +899,10 @@
 /proc/safe_json_decode(string, default = list())
 	try
 		return json_decode(string)
-	catch
+	catch(var/exception/error)
+		//молчаливый null прятал источник битого JSON - оставляем след со стеком
+		//вызова, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input: [copytext_char("[string]", 1, 100)]")
 		return null
 
 /**

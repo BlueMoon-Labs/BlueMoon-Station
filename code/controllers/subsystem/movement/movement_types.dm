@@ -150,8 +150,10 @@
 	return FALSE
 
 ///Removes the atom from some movement subsystem. Defaults to SSmovement
+///moving может быть null: харддел нулит ссылку у вызывающего раньше, чем тот
+///успевает остановить движение - это штатный no-op, а не рантайм
 /datum/controller/subsystem/move_manager/proc/stop_looping(atom/movable/moving, datum/controller/subsystem/movement/subsystem = SSmovement)
-	var/datum/movement_packet/our_info = moving.move_packet
+	var/datum/movement_packet/our_info = moving?.move_packet
 	if(!our_info)
 		return FALSE
 	return our_info.remove_subsystem(subsystem)

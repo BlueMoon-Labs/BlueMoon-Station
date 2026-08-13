@@ -235,6 +235,7 @@
 #include "manifest_photo_deferred.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
+#include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
 #include "keybindings_idle_move_delay.dm"
