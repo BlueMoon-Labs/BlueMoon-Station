@@ -173,13 +173,48 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 
 	return copiedobjs
 
+//Ссылка, которую копия не имеет права унаследовать: атом или обычный датум
+//остаётся хозяйством шаблона. Картинка и аппиранс - это значение внешнего вида,
+//а не владение, их копия получить обязана, иначе с турфа слетят оверлеи
+#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value) && !isappearance(value))
+
+/**
+ * Копия списка шаблона без чужих ссылок: датум выкидывается и из ключа, и из
+ * значения, вложенные списки чистятся тем же правилом.
+ *
+ * Мелкая .Copy() отсеивала одиночную ссылку на датум, но список таких же ссылок
+ * проезжал целиком: копия получала vis_contents шаблона (и показывала его атомы)
+ * вместе с alternate_appearances, а Destroy копии дёргал за них чужие HUD-датумы.
+ */
+/proc/copy_template_list(list/source)
+	var/list/scrubbed = list()
+	for(var/index in 1 to length(source))
+		var/key = source[index]
+		if(IS_BORROWED_TEMPLATE_REF(key))
+			continue
+		//число и null ключами ассоциации не бывают, а source[число] - это доступ по индексу
+		var/value = (isnum(key) || isnull(key)) ? null : source[key]
+		if(IS_BORROWED_TEMPLATE_REF(value))
+			continue
+		if(islist(key))
+			key = copy_template_list(key)
+		if(islist(value))
+			value = copy_template_list(value)
+		//не += : список приехал бы слитым, а null потерялся бы молча
+		scrubbed.len++
+		scrubbed[scrubbed.len] = key
+		if(!isnull(value))
+			scrubbed[key] = value
+	return scrubbed
+
 /**
  * Переносит вары турфа-шаблона на этот турф (голодек, ресет тандердома).
  *
  * Правила те же, что у DuplicateObject: список копируется, а не шарится (иначе
- * геймплей в копии мутировал бы списки шаблона), одиночная ссылка на датум не
- * переносится вовсе - она сломается, как только оригинал удалят. Сверх этого
- * отсекается лайтинг-состояние, см. GLOB.turf_copy_forbidden_vars.
+ * геймплей в копии мутировал бы списки шаблона), ссылка на датум не переносится
+ * вовсе - она сломается, как только оригинал удалят, и неважно, лежит она в варе
+ * или внутри списка. Сверх этого отсекается лайтинг-состояние,
+ * см. GLOB.turf_copy_forbidden_vars.
  */
 /turf/proc/copy_template_vars(turf/template)
 	if(!template)
@@ -193,10 +228,9 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 			continue
 		var/template_value = template.vars[varname]
 		if(islist(template_value))
-			var/list/template_list = template_value
-			vars[varname] = template_list.Copy()
+			vars[varname] = copy_template_list(template_value)
 			continue
-		if(istype(template_value, /datum))
+		if(IS_BORROWED_TEMPLATE_REF(template_value))
 			continue
 		vars[varname] = template_value
 	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
@@ -204,3 +238,5 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов
 	if(light || light_range)
 		update_light()
+
+#undef IS_BORROWED_TEMPLATE_REF

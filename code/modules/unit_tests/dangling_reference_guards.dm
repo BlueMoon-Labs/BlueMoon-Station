@@ -41,7 +41,7 @@
 ///out of bounds" в LUM_FALLOFF, 166 рантаймов за один ресет.
 /datum/unit_test/turf_template_copy_keeps_own_lighting/Run()
 	var/turf/copy_target = run_loc_floor_bottom_left
-	var/turf/template = locate(copy_target.x + 1, copy_target.y, copy_target.z)
+	var/turf/template = get_step(copy_target, EAST)
 	TEST_ASSERT_NOTNULL(template, "Sanity: соседний турф резервации должен существовать")
 
 	copy_target.generate_missing_corners()
@@ -54,6 +54,7 @@
 	var/saved_desc = copy_target.desc
 	var/saved_template_desc = template.desc
 	var/list/saved_sources = template.light_sources
+	var/list/own_sources = copy_target.light_sources
 	var/list/template_sources = list()
 	template.light_sources = template_sources
 	template.desc = "шаблонное описание"
@@ -66,12 +67,59 @@
 	var/copied_corner = copy_target.lc_topleft
 	var/copied_object = copy_target.lighting_object
 	var/copied_desc = copy_target.desc
+	copy_target.light_sources = own_sources
 	copy_target.desc = saved_desc
 
 	TEST_ASSERT_EQUAL(copied_desc, "шаблонное описание", "Обычные вары шаблона должны переноситься")
 	TEST_ASSERT_EQUAL(copied_corner, own_corner, "Углы освещения шаблона не должны подменять собственные углы приёмника")
 	TEST_ASSERT_EQUAL(copied_object, own_object, "lighting_object шаблона не должен подменять собственный оверлей приёмника")
 	TEST_ASSERT_NOTEQUAL(copied_sources, template_sources, "Список источников света шаблона не должен переезжать на копию")
+	TEST_ASSERT_EQUAL(copied_sources, own_sources, "Собственный список источников света приёмника должен остаться нетронутым")
+
+///Тот же перенос варов, но через списки: мелкая .Copy() отсеивала одиночную ссылку
+///на датум и молча тащила список таких же ссылок. Копия становилась вторым держателем
+///атомов из vis_contents и HUD-датумов шаблона, а её Destroy дёргал чужое хозяйство.
+///Аппирансы при этом не владение, а значение внешнего вида - они переезжать обязаны.
+/datum/unit_test/turf_template_copy_drops_datum_lists/Run()
+	var/turf/copy_target = run_loc_floor_bottom_left
+	var/turf/template = get_step(copy_target, EAST)
+	TEST_ASSERT_NOTNULL(template, "Sanity: соседний турф резервации должен существовать")
+
+	var/obj/item/crowbar/template_prop = allocate(/obj/item/crowbar, template)
+	var/list/saved_template_appearances = template.alternate_appearances
+	var/list/saved_own_appearances = copy_target.alternate_appearances
+	var/list/saved_template_vis = template.vis_contents.Copy()
+	var/list/saved_own_vis = copy_target.vis_contents.Copy()
+
+	//датум и в ключе, и в значении, и во вложенном списке - все три пути чистки
+	template.alternate_appearances = list(
+		"держатель" = template_prop,
+		template_prop = "датум-ключ",
+		"обычная" = "строка",
+		"аппиранс" = template_prop.appearance,
+		"вложенная" = list(template_prop, "уцелевшая строка")
+		)
+	template.vis_contents += template_prop
+
+	copy_target.copy_template_vars(template)
+
+	var/list/copied_appearances = copy_target.alternate_appearances
+	var/list/copied_vis = copy_target.vis_contents.Copy()
+	template.alternate_appearances = saved_template_appearances
+	template.vis_contents = saved_template_vis
+	copy_target.alternate_appearances = saved_own_appearances
+	copy_target.vis_contents = saved_own_vis
+
+	TEST_ASSERT_NOTNULL(copied_appearances, "Список шаблона должен доезжать до копии, а не теряться целиком")
+	TEST_ASSERT(!(template_prop in copied_appearances), "Датум шаблона не должен остаться ключом в списке копии")
+	TEST_ASSERT(!("держатель" in copied_appearances), "Запись со значением-датумом не должна остаться в списке копии")
+	TEST_ASSERT_EQUAL(copied_appearances["обычная"], "строка", "Не-датумные записи должны переживать чистку")
+	TEST_ASSERT_NOTNULL(copied_appearances["аппиранс"], "Аппиранс - значение внешнего вида, его чистка выкидывать не должна")
+	var/list/copied_nested = copied_appearances["вложенная"]
+	TEST_ASSERT_NOTNULL(copied_nested, "Вложенный список должен доезжать до копии")
+	TEST_ASSERT(!(template_prop in copied_nested), "Датум шаблона не должен остаться во вложенном списке")
+	TEST_ASSERT(("уцелевшая строка" in copied_nested), "Не-датумные записи вложенного списка должны переживать чистку")
+	TEST_ASSERT(!(template_prop in copied_vis), "Атом из vis_contents шаблона не должен оседать в vis_contents копии")
 
 ///Отсутствующая запись сейвфайла приезжает в safe_json_decode как null. Это не битый
 ///JSON, и трейс на него давал под две сотни рантаймов за раунд на пустом месте.
