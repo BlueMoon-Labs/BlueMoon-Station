@@ -8,14 +8,20 @@
 /datum/unit_test/atmos_speed_lever/Run()
 	var/saved_speed = SSair.atmos_speed
 	var/saved_lag_scale = SSair.lag_scale
+	var/saved_saturation_scale = SSair.saturation_scale
 	var/saved_wait = SSair.wait
 	var/base_wait = initial(SSair.wait)
 
-	// Задыхающийся CI-раннер честно взводит лаг-клапан ДО теста (реальная
-	// дилатация SStime_track), и каденция при speed 1 читается уже придушенной -
-	// festive стабильно краснел именно так. Пороги клапана проверяются ниже
-	// через apply_lag_valve, здесь его состояние обязано быть нейтральным.
+	// Задыхающийся CI-раннер честно взводит клапаны ДО теста (реальная дилатация
+	// SStime_track и реально не влезающий в свой слот проход), и каденция при
+	// speed 1 читается уже придушенной - festive стабильно краснел именно так.
+	// Нейтрализовать обязательно ОБА: apply_atmos_cadence() берёт min(lag_scale,
+	// saturation_scale), поэтому одного лаг-клапана мало - в CI ловились ровно
+	// ступени клапана насыщения, 5/0.75 = 6.66667 и 5/0.5 = 10. Пороги клапанов
+	// проверяются ниже через apply_lag_valve, здесь их состояние обязано быть
+	// нейтральным.
 	SSair.lag_scale = 1
+	SSair.saturation_scale = 1
 
 	SSair.set_atmos_speed(1)
 	TEST_ASSERT_EQUAL(SSair.wait, base_wait, "speed 1 must leave the compiled cadence alone")
@@ -61,4 +67,5 @@
 
 	SSair.atmos_speed = saved_speed
 	SSair.lag_scale = saved_lag_scale
+	SSair.saturation_scale = saved_saturation_scale
 	SSair.wait = saved_wait
