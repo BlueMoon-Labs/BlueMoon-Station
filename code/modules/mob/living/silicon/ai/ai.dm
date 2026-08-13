@@ -14,7 +14,7 @@
 
 /mob/living/silicon/ai
 	name = "AI"
-	icon = 'icons/mob/ai.dmi'
+	icon = 'icons/mob/AI.dmi'
 	icon_state = "ai"
 	move_resist = MOVE_FORCE_OVERPOWERING
 	density = TRUE
@@ -162,7 +162,7 @@
 
 	set_core_display_icon()
 
-	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"female"))
+	holo_icon = getHologramIcon(icon('icons/mob/AI.dmi',"female"))
 
 	spark_system = new /datum/effect_system/spark_spread()
 	spark_system.set_up(5, 0, src)
@@ -756,7 +756,7 @@
 			new_color = null
 
 	hologram_color = new_color
-	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"female"), FALSE, hologram_color)
+	holo_icon = getHologramIcon(icon('icons/mob/AI.dmi',"female"), FALSE, hologram_color)
 	to_chat(src, "Цвет голограммы изменён на [new_color].")
 
 // MARK: Voice Change
@@ -858,13 +858,13 @@
 						holo_icon = getHologramIcon(icon(icon_list[input], input))
 		else
 			var/list/icon_list = list(
-				"female" = 'icons/mob/ai.dmi',
-				"male" = 'icons/mob/ai.dmi',
-				"floating face" = 'icons/mob/ai.dmi',
-				"green face" = 'icons/mob/ai.dmi',
+				"female" = 'icons/mob/AI.dmi',
+				"male" = 'icons/mob/AI.dmi',
+				"floating face" = 'icons/mob/AI.dmi',
+				"green face" = 'icons/mob/AI.dmi',
 				"xeno queen" = 'icons/Xeno/castes/queen.dmi', // icon_state "Queen Walking"
-				"horror" = 'icons/mob/ai.dmi',
-				"creature" = 'icons/mob/ai.dmi',
+				"horror" = 'icons/mob/AI.dmi',
+				"creature" = 'icons/mob/AI.dmi',
 				"custom"
 				)
 
@@ -876,7 +876,7 @@
 						if(client?.prefs?.custom_holoform_icon)
 							holo_icon = client.prefs.get_filtered_holoform(HOLOFORM_FILTER_AI)
 						else
-							holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"), FALSE, hologram_color)
+							holo_icon = getHologramIcon(icon('icons/mob/AI.dmi', "female"), FALSE, hologram_color)
 					if("xeno queen")
 						holo_icon = getHologramIcon(icon(icon_list[input],"Queen Walking"), FALSE, hologram_color)
 					else

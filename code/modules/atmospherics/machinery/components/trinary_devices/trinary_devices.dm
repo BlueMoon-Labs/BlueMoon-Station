@@ -9,6 +9,9 @@
 
 	var/flipped = FALSE
 
+/obj/machinery/atmospherics/components/trinary/ui_port_labels()
+	return list("Вход", "Боковой выход", "Основной выход")
+
 /obj/machinery/atmospherics/components/trinary/SetInitDirections()
 	switch(dir)
 		if(NORTH)

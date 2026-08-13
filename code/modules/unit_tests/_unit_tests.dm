@@ -71,16 +71,37 @@
 
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
+#include "airalarm_thresholds.dm"
+#include "atmos_engineering_fixes.dm"
+#include "atmos_exposure_consumers.dm"
 #include "atmos_gas_propagation.dm"
+#include "atmos_high_pressure_pile.dm"
 #include "atmos_native.dm"
 #include "atmos_performance.dm"
+#include "atmos_superconduction.dm"
 #include "atmos_planetary_churn.dm"
+#include "atmos_saturation_valve.dm"
+#include "atmos_sleeping_edges.dm"
+#include "atmos_speed_lever.dm"
+#include "atmos_he_pipe_sleep.dm"
+#include "atmos_idle_churn.dm"
+#include "canister_valve.dm"
+#include "atmos_zone_walk.dm"
+#include "atmos_sprite_states.dm"
+#include "atmos_pipe_paint.dm"
+#include "atmos_pipenet_rebuild.dm"
+#include "atmos_gas_balance.dm"
+#include "atmos_handbook.dm"
+#include "firelock_alarm.dm"
+#include "rpd_fixes.dm"
+#include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
 // #include "bloody_footprints.dm"
 // #include "breath.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
+#include "chem_dispenser_payload.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"
@@ -97,11 +118,16 @@
 #include "event_ports.dm"
 #include "families.dm"
 // #include "food_edibility_check.dm"
+#include "gas_mixture_parser.dm"
 #include "gc_rewrite.dm"
+#include "healium_nerf.dm"
 #include "harddel_round_9813.dm"
 #include "harddel_round_9824.dm"
 #include "harddel_round_9827.dm"
 #include "harddel_round_9832.dm"
+#include "harddel_round_9860.dm"
+#include "holofan_charge.dm"
+#include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
@@ -113,6 +139,8 @@
 #include "lighting.dm"
 #include "lighting_deferred_init.dm"
 #include "light_range_cap.dm"
+#include "airalarm_danger_read.dm"
+#include "area_power_signal.dm"
 #include "area_tracking.dm"
 #include "cleanable_decals_tracking.dm"
 #include "clockwork_power.dm"
@@ -128,6 +156,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "mob_elements.dm"
+#include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
 #include "nightshift.dm"
 // #include "ntnetwork_tests.dm"
@@ -145,14 +174,19 @@
 #include "resist.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
+#include "say_input_encoding.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
+#include "shuttle_move_atmos_exposure.dm"
+#include "signal_teardown.dm"
 // #include "siunit.dm"
 #include "sort_tim.dm"
 #include "space_cleaner_gentle.dm"
 #include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
+#include "spritesheet_asset_snapshot.dm"
+#include "spritesheet_batched.dm"
 #include "startup_bootstrap.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
@@ -182,6 +216,7 @@
 
 /// BLUEMOON TESTS
 #include "admin_log_viewer.dm"
+#include "atom_hud_membership.dm"
 #include "atom_hud_perf.dm"
 #include "atmos_excited_group_lifecycle.dm"
 #include "atmos_pump_solver.dm"
@@ -207,6 +242,10 @@
 #include "keybindings_idle_move_delay.dm"
 #include "mob_population_perf.dm"
 #include "mob_update_cascade.dm"
+#include "movement_glide_math.dm"
+#include "movement_probe_math.dm"
+#include "movement_weight_slowdown.dm"
+#include "turf_enter_checks.dm"
 #include "turf_exit_checks.dm"
 #include "objective_completion.dm"
 #include "prod_round_9832.dm"
@@ -216,6 +255,7 @@
 #include "hallucination_stationmessage.dm"
 #include "hilbert_hotel.dm"
 #include "hilbert_hotel_lighting.dm"
+#include "holodeck_copy_isolation.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
@@ -223,10 +263,15 @@
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
+#include "parallax_profiles.dm"
 #include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
+#include "perf_pass_non_atmos.dm"
+#include "ping_measurement.dm"
+#include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
+#include "preferences_save_deferral.dm"
 #include "image_leak_audit.dm"
 #include "radiation_contamination.dm"
 #include "rtt_window.dm"
@@ -234,8 +279,14 @@
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
 #include "space_drift.dm"
+#include "astro_sensor.dm"
+#include "space_flight_modes.dm"
+#include "space_weather_effects.dm"
+#include "space_weather_graveyard.dm"
+#include "space_weather_phases.dm"
 #include "spirit_regressions.dm"
 #include "statpanel_listedturf.dm"
+#include "status_tab_suit_readouts.dm"
 #include "ssmobs_optimization.dm"
 #include "hostile_ai_baseline.dm"
 #include "ai_behavior_scenarios.dm"
@@ -256,12 +307,14 @@
 #include "ai_tactics.dm"
 #include "ai_targeting.dm"
 #include "simple_animal_environment_gate.dm"
+#include "singularity_containment.dm"
 #include "slime_ai.dm"
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
+#include "tile_pipe_placement.dm"
 #include "update_icon_short_circuit.dm"
 
 
@@ -295,15 +348,28 @@ TEST_FOCUS(/datum/unit_test/ai_hybrid_direct_to_jps_switch)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_direct_retries_mob_blocker)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_congestion_retargets_relevant_enemy)
 TEST_FOCUS(/datum/unit_test/ai_tactics_safe_firing_lane)
+TEST_FOCUS(/datum/unit_test/ai_ranged_seated_corpse_blocks_lane)
 TEST_FOCUS(/datum/unit_test/ai_ranged_diagonal_wall_lane)
 TEST_FOCUS(/datum/unit_test/ai_nanotrasen_rechecks_friendly_fire)
 TEST_FOCUS(/datum/unit_test/ai_ranged_rechecks_line_of_sight)
+TEST_FOCUS(/datum/unit_test/ai_buckled_pawn_requests_unbuckle_on_cooldown)
+TEST_FOCUS(/datum/unit_test/ai_body_block_clears_seated_corpse)
+TEST_FOCUS(/datum/unit_test/ai_body_block_barricade_attempt_budget)
+TEST_FOCUS(/datum/unit_test/ai_targets_occupied_mecha)
+TEST_FOCUS(/datum/unit_test/ai_ignores_empty_mecha)
 TEST_FOCUS(/datum/unit_test/ai_inteq_space_pathing_capability)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_controller_path_budget)
 TEST_FOCUS(/datum/unit_test/ai_pirate_tactical_atmosphere_gate)
 TEST_FOCUS(/datum/unit_test/ai_unreachable_route_releases_target)
 TEST_FOCUS(/datum/unit_test/ai_watcher_can_pursue_across_lava)
 TEST_FOCUS(/datum/unit_test/patient_machine_idle_sleep)
+TEST_FOCUS(/datum/unit_test/cleanbot_combined_scan_keeps_category_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_combined_scan_keeps_adjacent_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_grid_ground_target_lifecycle)
+TEST_FOCUS(/datum/unit_test/cleanbot_small_candidate_filter_preserves_view_los)
+TEST_FOCUS(/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
+TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
 
 #undef TEST_ASSERT

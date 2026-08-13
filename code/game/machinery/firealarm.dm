@@ -40,6 +40,10 @@
 	var/triggered = FALSE
 
 	var/alarm_active = FALSE
+	///Беспламенная тревога по жару уже поднята для текущей горячей серии.
+	///Снимается сама, когда воздух возвращается ниже ATMOS_HEAT_ALARM_HYSTERESIS
+	///под порогом. См. should_atmos_process().
+	var/heat_alarm_latched = FALSE
 	var/wire_override = FALSE
 	var/button_wire_cut = FALSE
 
@@ -67,9 +71,14 @@
 	update_icon()
 	myarea = get_base_area(src)
 	LAZYADD(myarea.firealarms, src)
+	myarea.refresh_fire_detect()
 
 	set_wires(new /datum/wires/firealarm(src))
 	register_context()
+	// Hot AIR detection: temperature_expose only fires from a hotspot touching
+	// this very tile, so a room could be lethally hot with no flame and no
+	// alarm. The exposure element covers the flameless case.
+	AddElement(/datum/element/atmos_sensitive, mapload)
 
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -82,6 +91,7 @@
 /obj/machinery/firealarm/Destroy()
 	myarea.firereset(src)
 	LAZYREMOVE(myarea.firealarms, src)
+	myarea.refresh_fire_detect()
 
 	qdel(wires)
 	wires = null
@@ -161,6 +171,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	update_icon()
+	myarea?.refresh_fire_detect()
 	if(user)
 		user.visible_message("<span class='warning'>Sparks fly out of [src]!</span>",
 							"<span class='notice'>You emag [src], disabling its thermal sensors.</span>")
@@ -171,6 +182,44 @@
 	if((temperature > T0C + 200 || temperature < BODYTEMP_COLD_DAMAGE_LIMIT) && COOLDOWN_FINISHED(src, last_alarm) && !(obj_flags & EMAGGED) && detecting && !machine_stat)
 		alarm()
 	..()
+
+// Heat only: cold rooms are the decompression/firelock paths' business, and a
+// breached room would otherwise double-alarm from both systems at once.
+//
+// Взводится один раз на горячую серию. process_exposure() зовёт atmos_expose()
+// каждый фаер SSair, пока условие держится, а держится оно в турбинном зале или
+// камере сгорания до конца раунда: сирена и захлопывание файрлоков раз в
+// FIREALARM_COOLDOWN, и кнопка сброса не может выиграть - через 6.7 секунды
+// тревога поднималась заново. Пока взвод стоит, слушаем только возврат воздуха
+// ниже полосы: он и перевзводит детектор на следующую серию.
+/obj/machinery/firealarm/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	if(!detecting || (obj_flags & EMAGGED) || machine_stat)
+		return FALSE
+	if(heat_alarm_latched)
+		return exposed_temperature < ATMOS_HEAT_ALARM_TEMPERATURE - ATMOS_HEAT_ALARM_HYSTERESIS
+	return exposed_temperature > ATMOS_HEAT_ALARM_TEMPERATURE
+
+/obj/machinery/firealarm/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	if(heat_alarm_latched)
+		heat_alarm_latched = FALSE
+		return
+	heat_alarm_latched = TRUE
+	alarm()
+
+/// Единственная точка, где меняется детекция. Провод в сигнализации гасит не
+/// только её собственный термометр, но и датчики пожарных шлюзов зоны: это
+/// штатный способ снять автоматику с комнаты, которую греют или морозят
+/// намеренно, и он же ответ на "тревога сработала, а выключить нечем".
+/obj/machinery/firealarm/proc/set_detecting(new_state)
+	new_state = !!new_state
+	if(detecting == new_state)
+		return
+	detecting = new_state
+	if(!detecting)
+		// Взведённый беспламенный детектор снимается вместе с детекцией, иначе
+		// после обратного подключения провода он промолчит о настоящем пожаре.
+		heat_alarm_latched = FALSE
+	myarea?.refresh_fire_detect()
 
 /obj/machinery/firealarm/proc/alarm(mob/user)
 	if(!is_operational() || !COOLDOWN_FINISHED(src, last_alarm))
@@ -187,6 +236,14 @@
 /obj/machinery/firealarm/proc/reset(mob/user)
 	if(!is_operational())
 		return
+	// Нажатие кнопки - это подтверждение "я знаю, здесь горячо". Взводим
+	// беспламенный детектор, чтобы он не поднял ту же тревогу заново, пока
+	// воздух не остынет и не нагреется снова. Взводим ТОЛЬКО на горячем: на
+	// холодном взвод снимается лишь новым сигналом с турфа, а покоящийся турф
+	// его не шлёт - и настоящий пожар потом остался бы незамеченным.
+	var/turf/open/here = loc
+	if(istype(here) && here.air && here.air.return_temperature() > ATMOS_HEAT_ALARM_TEMPERATURE)
+		heat_alarm_latched = TRUE
 	var/area/A = get_base_area(src)
 	A.firereset()
 	if(user)
@@ -348,6 +405,7 @@
 /obj/machinery/firealarm/obj_break(damage_flag)
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1) && buildstage != 0) //can't break the electronics if there isn't any inside.
 		LAZYREMOVE(myarea.firealarms, src)
+		myarea.refresh_fire_detect()
 		set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 

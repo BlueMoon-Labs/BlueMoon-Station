@@ -114,6 +114,12 @@
 /datum/wave_explosion/Destroy()
 	if(running)
 		stop(FALSE)
+	// New() записал нас в реестр всех волновых взрывов, а снимала оттуда только
+	// stop() - и то лишь из active_wave_explosions. Реестр держит жёсткую ссылку,
+	// поэтому каждый волновой взрыв за раунд гарантированно уходил в харддел.
+	SSexplosions.wave_explosions -= src
+	SSexplosions.active_wave_explosions -= src
+	SSexplosions.currentrun -= src
 	return ..()
 
 /datum/wave_explosion/proc/start(list/turf/_starting)

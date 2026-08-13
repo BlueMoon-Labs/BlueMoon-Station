@@ -704,8 +704,9 @@
 	breach.ChangeTurf(saved_breach_type)
 	qdel(breather_controller)
 
-///After exhausting a real route, hostile AI must release the pinned target
-///instead of instantly rebuilding the same impossible pursuit forever.
+///An exhausted route with the victim in plain sight a couple of tiles away must
+///siege (hold the target, no demote thrash); an exhausted route to a hidden or
+///distant victim must still release the target with a short rebuild delay.
 /datum/unit_test/ai_unreachable_route_releases_target/Run()
 	var/mob/living/simple_animal/hostile/pirate/melee/pirate = allocate(/mob/living/simple_animal/hostile/pirate/melee, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
@@ -713,10 +714,25 @@
 	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
 	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
 
+	//жертва на виду вплотную: исчерпанный маршрут - это мебель между нами, а не
+	//потерянная цель. Разжалование здесь давало вечный цикл "взял-исчерпал-бросил"
+	//(round-23.35.57: моб у стеклянного стола, 34 цикла за 2.5 минуты).
+	for(var/i in 1 to mover.max_pathing_attempts)
+		mover.increment_pathing_failures(controller)
+	TEST_ASSERT(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A visible pointblank target must be sieged, not released")
+	TEST_ASSERT(controller.blackboard[BB_AI_SIEGE_UNTIL] > world.time, "An exhausted route to a visible close target must arm the siege hold")
+
+	//жертва скрылась за глухой преградой: исчерпанный маршрут честно освобождает цель
+	controller.blackboard[BB_AI_SIEGE_UNTIL] = 0
+	var/turf/far_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/turf/blocker_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	prey.forceMove(far_turf)
+	allocate(/obj/effect/ai_unit_test_opaque_blocker, blocker_turf)
+	TEST_ASSERT(!can_see(pirate, prey, AI_SIEGE_HOLD_RANGE), "Sanity: the blocker must hide the prey")
 	for(var/i in 1 to mover.max_pathing_attempts)
 		mover.increment_pathing_failures(controller)
 
-	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A hostile must release a target after exhausting the route")
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A hostile must release a hidden target after exhausting the route")
 	TEST_ASSERT(controller.blackboard[BB_AI_ROUTE_RETRY_AT] > world.time, "An exhausted route must receive a short rebuild delay")
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
 	var/result = finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
@@ -890,3 +906,69 @@
 	TEST_ASSERT(length(path), "The bounded search must still route around the wall to a reachable target")
 	TEST_ASSERT(!(blocked_turf in path), "The detour must not pass through the indestructible wall")
 	TEST_ASSERT(length(path) > get_dist(start, target_turf), "A path around the wall must be longer than the straight-line distance")
+
+///Пол скорости погони обязан считаться от ФАКТИЧЕСКОГО RUN_DELAY, а не от
+///константы. Июльская калибровка отсчитывалась от репозиторного RUN_DELAY 2.5,
+///а прод всё это время крутил 1.5 - и пол, задуманный как "0.6 от игрока",
+///по факту означал паритет.
+/datum/unit_test/ai_pursuit_floor_tracks_run_delay/Run()
+	var/player_run_delay = CONFIG_GET(number/movedelay/run_delay)
+	TEST_ASSERT(player_run_delay > 0, "Санити: конфиг скорости бега обязан быть загружен")
+	TEST_ASSERT_EQUAL(update_ai_pursuit_speed_floor(), max(world.tick_lag, player_run_delay * AI_PURSUIT_SPEED_RATIO), "Пол погони обязан считаться от фактического RUN_DELAY")
+
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	TEST_ASSERT(pawn.ai_pursuit_speed_capped, "Санити: обычная фауна обязана быть под полом скорости")
+
+	var/mob_step = movement_quantize_delay(pawn.ai_movement_delay(), world.tick_lag)
+	var/player_step = movement_step_delay(player_run_delay, FALSE, world.tick_lag)
+	TEST_ASSERT(mob_step > player_step, "Обычная фауна обязана быть медленнее бегущего игрока по прямой ([mob_step] против [player_step])")
+
+///Мув-луп ИИ платит за диагональ ту же цену, что и игрок. Без этого моб на 1.5 дс
+///проходил диагональ за 1.5 дс, а игрок за 2.0 - скрытые 1.33x поверх паритета.
+/datum/unit_test/ai_move_loop_charges_for_diagonal/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/turf/diagonal_turf = locate(start.x + 2, start.y + 2, start.z)
+	TEST_ASSERT_NOTNULL(diagonal_turf, "Санити: диагональный турф обязан существовать внутри резервации")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, diagonal_turf)
+
+	SSmove_manager.move_towards_legacy(pawn, prey, delay = 2, subsystem = SSai_movement)
+	var/datum/move_loop/has_target/loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	TEST_ASSERT_NOTNULL(loop, "Санити: мув-луп обязан быть создан")
+	loop.set_delay(2)
+	var/cardinal_price = loop.scheduled_delay
+
+	TEST_ASSERT(loop.move(), "Санити: шаг к диагональной цели обязан пройти")
+	TEST_ASSERT_EQUAL(get_turf(pawn), get_step(start, NORTHEAST), "Санити: первый шаг к диагональной цели обязан быть диагональным")
+	TEST_ASSERT_EQUAL(loop.scheduled_delay, movement_step_delay(2, TRUE, world.tick_lag), "Диагональный шаг обязан стоить столько же, сколько диагональный шаг игрока")
+	TEST_ASSERT(loop.scheduled_delay > cardinal_price, "Диагональ обязана быть дороже кардинального шага")
+
+	qdel(loop)
+
+///JPS-луп платит за диагональ ту же цену, что бюджетный луп и игрок: маршрут по
+///открытой местности сплошь состоит из диагональных сегментов, и без надбавки
+///длинная погоня по нему сохраняла те же скрытые 1.33x скорости.
+/datum/unit_test/ai_jps_loop_charges_for_diagonal/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/turf/diagonal_turf = locate(start.x + 2, start.y + 2, start.z)
+	TEST_ASSERT_NOTNULL(diagonal_turf, "Санити: диагональный турф обязан существовать внутри резервации")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, diagonal_turf)
+	var/datum/ai_controller/unit_test_mover/controller = new(pawn)
+
+	var/datum/move_loop/has_target/jps/loop = SSmove_manager.jps_move(pawn, prey, 2, repath_delay = 10 SECONDS, max_path_length = 10, subsystem = SSai_movement, extra_info = controller)
+	TEST_ASSERT_NOTNULL(loop, "Санити: jps_move обязан создать луп")
+	hold_move_loop(loop)
+	loop.set_delay(2)
+	var/cardinal_price = loop.scheduled_delay
+
+	loop.movement_path = list(get_step(start, NORTHEAST), diagonal_turf)
+	loop.repath_in_progress = FALSE
+	COOLDOWN_RESET(loop, repath_cooldown)
+	TEST_ASSERT(loop.move(), "Санити: диагональный шаг по кэшированному маршруту обязан пройти")
+	TEST_ASSERT_EQUAL(get_turf(pawn), get_step(start, NORTHEAST), "Санити: шаг обязан быть диагональным")
+	TEST_ASSERT_EQUAL(loop.scheduled_delay, movement_step_delay(2, TRUE, world.tick_lag), "Диагональный JPS-шаг обязан стоить столько же, сколько диагональный шаг игрока")
+	TEST_ASSERT(loop.scheduled_delay > cardinal_price, "Диагональ JPS-маршрута обязана быть дороже кардинального шага")
+
+	SSmove_manager.stop_looping(pawn, SSai_movement)
+	qdel(controller)

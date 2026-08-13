@@ -25,10 +25,91 @@
 	var/distance = get_dist(controller.pawn, target)
 	if(distance > max_range || distance < min_range)
 		return
+	//Перестроение звалось ТОЛЬКО при перекрытой линии огня, то есть исключительно
+	//чтобы попасть, и никогда - чтобы не получить. Стрелок с чистой линией стоял
+	//столбом на открытом месте, пока его расстреливали. Теперь поводов два, но
+	//они НЕ равнозначны: перекрытая линия - стрелять всё равно нечем, план
+	//обрывается на движении; открытая позиция под огнём - повод сместиться, но
+	//не повод молчать. На голой земле лучшего тайла может не быть вовсе
+	//(best_reposition_tile честно возвращает текущий), и стрелок, менявший
+	//позицию ВМЕСТО выстрела, снова стоял столбом - только теперь со взведённым
+	//поведением укрытия. Поэтому укрытие планируется вместе с выстрелом.
 	if(istype(hostile_pawn) && hostile_pawn.CheckRangedFireLane(target))
+		//живой фланговый манёвр ведём до конца. Раньше движение на фланг жило
+		//ровно один планировочный цикл: следующий план сидел на кулдауне
+		//перевыбора, ставил reposition, и незапереплланированный манёвр
+		//отменялся - стрелки минутами перевыбирали один тайл, не сходя с места
+		//(round-23.35.57: 464 "фланга" без единого дохода).
+		var/turf/committed_flank = controller.blackboard[BB_AI_FLANK_TILE]
+		if(!isnull(committed_flank))
+			if(world.time >= (controller.blackboard[BB_AI_FLANK_UNTIL] || 0) \
+				|| committed_flank == get_turf(controller.pawn) \
+				|| !controller.can_enter_turf(committed_flank) || committed_flank.is_blocked_turf(source_atom = controller.pawn))
+				controller.clear_flank_commit()
+			else
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, committed_flank)
+				return SUBTREE_RETURN_FINISH_PLANNING
+		//дешёвый сосед уже расписался в бессилии (reposition держит позицию с
+		//перекрытой линией - очередь в затылок союзнику): идём флангом на
+		//свободный румб кольца боевой дистанции, а не стоим в колонне
+		if(world.time - (controller.blackboard[BB_AI_LANE_STUCK_AT] || -INFINITY) < AI_LANE_STUCK_FRESH_TIME \
+			&& world.time >= (controller.blackboard[BB_AI_FLANK_RETRY_AT] || 0))
+			controller.blackboard[BB_AI_FLANK_RETRY_AT] = world.time + AI_FLANK_RETRY_COOLDOWN
+			var/turf/flank_tile = controller.find_flank_fire_tile(target)
+			if(flank_tile)
+				AI_TRACE(controller, "lane", "фланг на ([flank_tile.x],[flank_tile.y],[flank_tile.z]) против [target]")
+				controller.set_blackboard_key(BB_AI_FLANK_TILE, flank_tile)
+				controller.blackboard[BB_AI_FLANK_UNTIL] = world.time + AI_FLANK_COMMIT_TIME
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, flank_tile)
+				return SUBTREE_RETURN_FINISH_PLANNING
+			//огневой позиции нет ВООБЩЕ: ни сосед, ни кольцо (узкий мостик над
+			//космосом, теснота). Стоять столбом нельзя - переходим в сближение
+			AI_TRACE(controller, "lane", "огневой позиции нет вовсе - сближаюсь с [target]")
+			controller.blackboard[BB_AI_LANE_DEADLOCK_UNTIL] = world.time + AI_FLANK_RETRY_COOLDOWN
+		//лишённый позиции стрелок сближается как чейзер: каждая планировка
+		//перепроверяет трассу, и линия почти всегда открывается раньше мили;
+		//дошёл вплотную - hostile_break_away даст выстрел в упор или огрызок.
+		//Плейтест 23.19: штурмовик на мостике над космосом стоял и не мог ни
+		//выстрелить (ферма в трассе), ни перестроиться (вокруг космос) - легаси
+		//в этой же ситуации пёр напролом.
+		if(world.time < (controller.blackboard[BB_AI_LANE_DEADLOCK_UNTIL] || 0))
+			//тупик под обстрелом: стрелять нечем, по нам работают, позиция
+			//голая - если в шаге есть ПОЛНОЦЕННОЕ укрытие от стрелка, сначала
+			//оно (лазер сквозь стекло убивал стоящего в тупике безответно)
+			if(world.time < (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] || 0))
+				var/atom/deadlock_shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+				if(QDELETED(deadlock_shooter))
+					deadlock_shooter = target
+				if(!QDELETED(deadlock_shooter) && !controller.current_position_covered(deadlock_shooter))
+					var/turf/deadlock_hiding = controller.best_hiding_tile(deadlock_shooter)
+					if(deadlock_hiding && deadlock_hiding != get_turf(controller.pawn) \
+						&& controller.cover_quality(deadlock_hiding, deadlock_shooter) == AI_COVER_FULL)
+						controller.queue_behavior(/datum/ai_behavior/hold_covering_position, deadlock_hiding)
+						return SUBTREE_RETURN_FINISH_PLANNING
+			controller.queue_behavior(/datum/ai_behavior/pursue_to_range, target_key, 1)
+			return SUBTREE_RETURN_FINISH_PLANNING
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
+	//линия чиста - фланговый манёвр выполнил свою задачу
+	if(istype(hostile_pawn))
+		controller.clear_flank_commit()
+	if(istype(hostile_pawn) && ai_should_seek_firing_cover(controller, target))
+		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 	controller.queue_behavior(attack_behavior, target_key, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, max_range, min_range)
+
+///Нужно ли стрелку менять позицию ради безопасности, а не ради линии огня:
+///по нам работают, и текущий тайл от этого стрелка ничем не прикрыт. Сам выбор
+///тайла держит линию огня приоритетом, поэтому "уйти в укрытие и ослепнуть" тут
+///невозможно - в худшем случае стрелок останется на месте.
+/proc/ai_should_seek_firing_cover(datum/ai_controller/controller, atom/target)
+	if(!(controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time))
+		return FALSE
+	var/atom/shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+	if(QDELETED(shooter))
+		shooter = target
+	if(QDELETED(shooter))
+		return FALSE
+	return !controller.current_position_covered(shooter)
 
 /// How often will we try to perform our ranged attack?
 /datum/ai_behavior/ranged_skirmish
@@ -58,6 +139,14 @@
 	if(distance > max_range || distance < min_range)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
+
+	//Дальник не расстреливает беспомощного. Прод 9887: watcher всадил 17 выстрелов
+	//в игрока, который уже был ниже нуля, последние шесть - в неподвижную цель на
+	//одном тайле с шагом 3.1 с. Мили-добивание вплотную остаётся (им занимается
+	//hostile_melee), а падальщики со stat_exclusive живут ровно этим и не гейтятся.
+	var/mob/living/downed_check = target
+	if(isliving(downed_check) && downed_check.stat != CONSCIOUS && (!istype(hostile_pawn) || !hostile_pawn.stat_exclusive))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	//Do not pay for LOS while the weapon is cooling down. Once it can actually
 	//fire, however, a cached target must still be visible at that exact moment.
 	if(istype(hostile_pawn) && hostile_pawn.ranged_cooldown > world.time)
@@ -98,7 +187,10 @@
 			return FALSE
 		if(hostile_pawn.CheckRangedFireLane(target))
 			return FALSE
-		hostile_pawn.target = target
+		controller.note_combat_exchange()
+		if(hostile_pawn.ranged_telegraph_duration > 0)
+			return hostile_pawn.telegraphed_open_fire(target)
+		hostile_pawn.GiveTarget(target)
 		INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, OpenFire), target)
 		return TRUE
 	var/mob/living/living_pawn = controller.pawn
@@ -126,8 +218,17 @@
 	//Текущий тайл уже лучший - держим позицию, не двигаемся.
 	if(chosen == get_turf(shooter))
 		controller.set_blackboard_key(BB_AI_SAFE_FIRE_POSITION, chosen)
+		//позицию держим, а стрелять по-прежнему нечем: соседи линию не открыли.
+		//Это очередь в затылок союзнику - пометка ведёт планировщик на фланговый
+		//манёвр (find_flank_fire_tile) вместо вечного стояния в колонне.
+		if(shooter.CheckRangedFireLane(target))
+			AI_TRACE_THROTTLED(controller, "lane", "очередь в затылок: соседи линию на [target] не открывают")
+			controller.blackboard[BB_AI_LANE_STUCK_AT] = world.time
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	if(!shooter.Move(chosen, get_dir(shooter, chosen)))
+	//Через контроллер: боковое перестроение - такой же шаг, как обычный, и
+	//оплачивается тем же movement_delay с тем же glide.
+	if(!controller.ai_step_outside_loop(chosen))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	controller.set_blackboard_key(BB_AI_SAFE_FIRE_POSITION, chosen)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

@@ -1835,17 +1835,28 @@
 	description = "A miraculous gas that rapidly heals wounds."
 	reagent_state = LIQUID
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
+	overdose_threshold = 30
 	gas = GAS_HEALIUM
 	color = "#ff4444"
 	taste_description = "cold relief"
 	value = REAGENT_VALUE_VERY_RARE
 
+/// Лечение фиксировано за тик и НЕ масштабируется от объёма: прежняя формула
+/// превращала запас реагента в скорость лечения (до 41 HP за тик, без побочек
+/// и без потолка). В /tg/station за лечение платят сном (SetSleeping каждый тик),
+/// здесь платой служат фиксированная ставка и передоз.
 /datum/reagent/healium/on_mob_life(mob/living/carbon/M)
-	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
-	M.adjustBruteLoss(-heal_amount)
-	M.adjustFireLoss(-heal_amount)
-	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
-	. = ..()
+	M.adjustBruteLoss(-6 * REM, 0)
+	M.adjustFireLoss(-6 * REM, 0)
+	M.adjustToxLoss(-2 * REM, 0)
+	. = 1
+	..()
+
+/datum/reagent/healium/overdose_process(mob/living/M)
+	M.adjustToxLoss(2 * REM, 0)
+	M.adjustOxyLoss(2 * REM, 0)
+	. = 1
+	..()
 
 /datum/reagent/zauker
 	name = "Zauker"
@@ -2856,6 +2867,10 @@
 /datum/reagent/consumable/semen
 	name = "Semen"
 	description = "Sperm from some animal. Useless for anything but insemination, really."
+	glass_icon = 'modular_splurt/icons/obj/drinks.dmi'
+	glass_icon_state = "cumchalice"
+	glass_name = "chalice of cum" // Because femcum also change the glass, so it can be not a normal semen
+	glass_desc = "Consuming this will not give you a birth of fine, healthy litter of puppies."
 	taste_description = "something salty"
 	taste_mult = 2 //Not very overpowering flavor
 	data = list("donor"=null,"viruses"=null,"donor_DNA"=null,"blood_type"=null,"resistances"=null,"trace_chem"=null,"mind"=null,"ckey"=null,"gender"=null,"real_name"=null)
@@ -2866,6 +2881,14 @@
 	// boiling_point = T0C + 100
 	nutriment_factor = 0.5 * REAGENTS_METABOLISM
 	var/decal_path = /obj/effect/decal/cleanable/semen
+	var/list/desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~"),
+		TRAIT_DUMB_CUM = list(
+			span_love("Как же вкусно!~"),
+			span_love("Восхитительно!~"),
+			span_love("Невозможно удержаться!~"),
+		)
+	)
 
 /datum/reagent/consumable/semen/reaction_turf(turf/location, reac_volume)
 	..()
@@ -2893,6 +2916,40 @@
 			S.update_icon()
 			qdel(drip)
 		return
+
+/datum/reagent/consumable/semen/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart) //splashing or ingesting
+	. = ..()
+	if(!.)
+		return
+	if(LAZYLEN(desc_on_traits))
+		for(var/trait in desc_on_traits)
+			var/phrase = desc_on_traits[trait] // Может быть листом
+			if(!LAZYLEN(phrase) || !HAS_TRAIT(M, trait))
+				continue
+			if(trait == TRAIT_DUMB_CUM && !prob(15))
+				continue
+			
+			// Если лист = рандом
+			if(islist(phrase))
+				phrase = pick(phrase)
+			to_chat(M, phrase)
+			if(trait == TRAIT_DUMB_CUM)
+				M.emote("moan")
+
+/datum/reagent/consumable/semen/on_merge(data, amount, mob/living/carbon/M, purity) //when we add more through ERP panel
+	. = ..()
+	if(!iscarbon(M))
+		return
+	if(HAS_TRAIT(M,TRAIT_DUMB_CUM) && !istype(src, /datum/reagent/consumable/semen/femcum))
+		var/datum/quirk/dumb4cum/quirk_target = locate() in M.roundstart_quirks
+		quirk_target.uncrave()
+
+/datum/reagent/consumable/semen/on_mob_life(mob/living/carbon/M)
+	. = ..()
+	if(iscatperson(M) && HAS_TRAIT(M,TRAIT_DUMB_CUM)  && !istype(src, /datum/reagent/consumable/semen/femcum)) //special "milk" tastes nice for special felinids
+		if(prob(3))
+			to_chat(M, span_notice(pick("Mmmm~ boy's milk feels so good inside me~", "Ahh~ boy's milk~")))
+			M.emote("purr")
 
 /obj/effect/decal/cleanable/semen
 	name = "semen"
@@ -2935,9 +2992,15 @@
 /datum/reagent/consumable/semen/femcum
 	name = "Female Ejaculate"
 	description = "Vaginal lubricant found in most mammals and other animals of similar nature. Where you found this is your own business."
+	glass_icon_state = "cumchalice_fem"
+	glass_name = "chalice of femcum"
+	glass_desc = "Cloudy, viscous."
 	taste_description = "something with a tang" // wew coders who haven't eaten out a girl.
 	color = "#FFFFFF"
 	decal_path = /obj/effect/decal/cleanable/semen/femcum
+	desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежего сквирта~")
+	)
 
 /obj/effect/decal/cleanable/semen/femcum
 	name = "female ejaculate"
@@ -2951,9 +3014,19 @@
 /datum/reagent/consumable/semen/siliconcum
 	name = "SynthCum"
 	description = "Synthetic lubricant designed for cyborgs."
+	glass_icon_state = "cumchalice_synth"
+	glass_name = "chalice of synthcum"
 	taste_description = "something with a silicone"
 	color = "#5cb2cc"
 	decal_path = /obj/effect/decal/cleanable/semen/siliconcum
+	desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~ Но отдает синтетикой..."),
+		TRAIT_DUMB_CUM = list(
+			span_love("Как же вкусно!~ Но отдает синтетикой..."),
+			span_love("Восхитительно!~ Но отдает синтетикой..."),
+			span_love("Невозможно удержаться!~ Но отдает синтетикой..."),
+		)
+	)
 
 /obj/effect/decal/cleanable/semen/siliconcum
 	name = "synthetic cum"

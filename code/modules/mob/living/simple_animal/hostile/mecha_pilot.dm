@@ -24,7 +24,7 @@
 	wanted_objects = list()
 	search_objects = 0
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
-	faction = list(ROLE_SYNDICATE)
+	faction = list("neutral", ROLE_SYNDICATE)
 
 	var/spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded
 	var/obj/vehicle/sealed/mecha/mecha //Ref to pilot's mecha instance
@@ -55,6 +55,8 @@
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq
 	name = "\improper InteQ Mecha Pilot"
+	icon_state = "syndicate"
+	icon_living = "syndicate"
 	faction = list(ROLE_INTEQ)
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares
 

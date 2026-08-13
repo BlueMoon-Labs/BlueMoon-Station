@@ -310,6 +310,39 @@
 	qdel(occupant_mind)
 	return record
 
+/// Удаление личного КПК и айди-карты - единственная защита крио от кражи доступов.
+/// Удаление ступенчатое (очередь SSauto_cryo), а вещи к этому моменту уже лежат ВНУТРИ
+/// капсулы, которую open_machine() тут же вытряхивает на пол: КПК вместе с картой внутри
+/// успевали подобрать раньше, чем очередь до него доходила.
+/datum/unit_test/cryopod_does_not_drop_doomed_pda/Run()
+	var/turf/pod_turf = run_loc_floor_bottom_left
+	var/obj/machinery/cryopod/pod = allocate(/obj/machinery/cryopod, pod_turf)
+	var/mob/living/carbon/human/occupant = allocate(/mob/living/carbon/human, pod_turf)
+	var/datum/mind/occupant_mind = new
+	occupant_mind.transfer_to(occupant)
+	occupant_mind.assigned_role = "Assistant"
+
+	var/obj/item/modular_computer/pda/personal_pda = allocate(/obj/item/modular_computer/pda, pod_turf)
+	occupant.put_in_hands(personal_pda)
+	personal_pda.owner = occupant.real_name //именно по owner крио отличает свой КПК от чужого
+	TEST_ASSERT_EQUAL(personal_pda.loc, occupant, "Sanity: КПК должен лежать в руках жильца, иначе get_all_gear его не увидит")
+
+	pod.close_machine(occupant)
+	TEST_ASSERT_EQUAL(pod.occupant, occupant, "Sanity: моб не попал в крио-под")
+
+	allocated -= occupant //мобом дальше владеет очередь SSauto_cryo
+	pod.despawn_occupant()
+
+	TEST_ASSERT(!(personal_pda in pod_turf.contents), "Личный КПК жильца вытряхнуло из капсулы на пол - его успевают подобрать вместе с айди-картой внутри")
+	TEST_ASSERT(isnull(personal_pda.loc) || QDELETED(personal_pda), "Личный КПК жильца обязан покинуть мир сразу, а не ждать своей очереди на виду у всех")
+
+	while(length(SSauto_cryo.delete_queue))
+		var/atom/movable/victim = SSauto_cryo.delete_queue[1]
+		SSauto_cryo.delete_queue.Cut(1, 2)
+		if(!QDELETED(victim))
+			qdel(victim)
+	qdel(occupant_mind)
+
 /datum/unit_test/gc_cryo_despawn_releases_occupant/Run()
 	begin_isolated_gc()
 	var/list/record = despawn_via_cryo()

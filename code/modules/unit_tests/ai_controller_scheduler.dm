@@ -177,3 +177,63 @@
 
 	unregister_fake_player(fake_player)
 	qdel(controller)
+
+///Харддел пауна зануляет ссылку молча, и UnpossessPawn приходит уже с null.
+///Ранний выход по isnull(pawn) стоял ДО remove_from_unplanned_controllers(),
+///поэтому осиротевший контроллер оставался в пуле навсегда и фейлился каждый
+///планировочный тик: 357 рантаймов idle_random_walk.dm за 16 прод-раундов.
+/datum/unit_test/ai_controller_null_pawn_leaves_unplanned_pool/Run()
+	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	register_fake_player(fake_player, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_wanderer/controller = new(pawn)
+
+	controller.add_to_unplanned_controllers()
+	TEST_ASSERT(controller in GLOB.unplanned_controllers, "Sanity: an ON controller with an idle behavior must enter the unplanned pool")
+
+	//именно так выглядит харддел пауна с точки зрения контроллера
+	controller.pawn = null
+	controller.UnpossessPawn(FALSE)
+
+	TEST_ASSERT(!(controller in GLOB.unplanned_controllers), "A controller unpossessed with a null pawn must still leave the unplanned pool")
+	TEST_ASSERT(!(controller in SSunplanned_controllers.currentrun), "A controller unpossessed with a null pawn must also leave the pool's current run")
+
+	unregister_fake_player(fake_player)
+	qdel(controller)
+
+///Вторая линия обороны, и в проде она была единственной сработавшей: пул
+///вычищал записи только по QDELETED, а осиротевший контроллер жив - его не
+///удаляли, и он фейлился каждые 0.25 с сорок минут подряд (round-9887).
+/datum/unit_test/ai_unplanned_pool_drops_null_pawn_controller/Run()
+	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	register_fake_player(fake_player, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_wanderer/controller = new(pawn)
+
+	controller.add_to_unplanned_controllers()
+	TEST_ASSERT(controller in GLOB.unplanned_controllers, "Sanity: an ON controller with an idle behavior must enter the unplanned pool")
+	TEST_ASSERT(SSunplanned_controllers.run_unplanned_controller(controller), "Sanity: a healthy controller must run its idle behavior")
+
+	//харддел пауна: контроллер жив, ссылка молча стала null
+	controller.pawn = null
+
+	TEST_ASSERT(!SSunplanned_controllers.run_unplanned_controller(controller), "A controller with a null pawn must not run its idle behavior")
+	TEST_ASSERT(!(controller in GLOB.unplanned_controllers), "A controller with a null pawn must be evicted from the pool by the subsystem itself")
+
+	unregister_fake_player(fake_player)
+	qdel(controller)
+
+///A malformed controller without background work is just as terminal for this
+///pool entry as a deleted controller or pawn; retaining it retries a no-op forever.
+/datum/unit_test/ai_unplanned_pool_drops_controller_without_idle_behavior/Run()
+	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_dormant/controller = new(pawn)
+
+	//Simulate a stale/malformed entry: the public adder correctly rejects it,
+	//but the subsystem still has to clean one that already reached the pool.
+	GLOB.unplanned_controllers[controller] = TRUE
+	TEST_ASSERT(controller in GLOB.unplanned_controllers, "Sanity: the malformed controller must be present before the subsystem validates it")
+	TEST_ASSERT(!SSunplanned_controllers.run_unplanned_controller(controller), "A controller without an idle behavior must report FALSE")
+	TEST_ASSERT(!(controller in GLOB.unplanned_controllers), "A controller without an idle behavior must be evicted from the unplanned pool")
+
+	qdel(controller)

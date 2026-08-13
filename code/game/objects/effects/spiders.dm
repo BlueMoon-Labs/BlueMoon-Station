@@ -21,9 +21,19 @@
 				damage_amount *= 0.25
 	. = ..()
 
+/obj/structure/spider/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/structure/spider/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		take_damage(5, BURN, 0, 0)
+
+/obj/structure/spider/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/spider/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 /obj/structure/spider/stickyweb
 	var/genetic = FALSE
@@ -125,8 +135,16 @@
 	var/no_nurses = FALSE
 	attack_hand_speed = CLICK_CD_MELEE
 	attack_hand_is_action = TRUE
+	/// Вентиль, из которого паучок собирается вылезти.
+	var/obj/machinery/atmospherics/components/unary/vent_pump/vent_travel_exit
+	/// Идентификатор отложенного шага прогулки по вентиляции. Снимается в Destroy():
+	/// раньше здесь стоял spawn(), и он доносил паучка forceMove'ом до живого вентиля
+	/// уже после qdel - в раунде 9860 это дало восемь "doMove qdel-нутого" подряд.
+	var/vent_travel_timer
 
 /obj/structure/spider/spiderling/Destroy()
+	stop_vent_travel()
+	walk(src, 0) //встроенный walk_to держит и паучка, и цель жёсткой ссылкой мимо GC
 	new/obj/effect/decal/cleanable/insectguts(get_turf(src))
 	new/obj/item/reagent_containers/food/snacks/spiderling(get_turf(src))
 	. = ..()
@@ -180,55 +198,93 @@
 	walk_to(src, pick(available_turfs))
 	return TRUE
 
+/// Снимает отложенные шаги прогулки по вентиляции и отпускает ссылки на вентили.
+/// Обязателен в Destroy(): пока цепочка жива, колбэк держит паучка жёсткой ссылкой,
+/// а её последний шаг возвращает уже удалённого паучка в contents живого вентиля.
+/obj/structure/spider/spiderling/proc/stop_vent_travel()
+	if(vent_travel_timer)
+		deltimer(vent_travel_timer)
+		vent_travel_timer = null
+	entry_vent = null
+	vent_travel_exit = null
+	travelling_in_vent = 0
+
+/// Выбирает вентиль на выходе и заводит отложенную цепочку перемещения.
+/obj/structure/spider/spiderling/proc/begin_vent_travel()
+	var/datum/pipeline/entry_vent_parent = length(entry_vent.parents) ? entry_vent.parents[1] : null
+	if(!entry_vent_parent)
+		entry_vent = null
+		return
+	var/list/vents = list()
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in entry_vent_parent.other_atmosmch)
+		vents += temp_vent
+	if(!length(vents))
+		entry_vent = null
+		return
+	vent_travel_exit = pick(vents)
+	if(prob(50))
+		visible_message("<B>[src] scrambles into the ventilation ducts!</B>", \
+						"<span class='italics'>You hear something scampering through the ventilation ducts.</span>")
+	vent_travel_timer = addtimer(CALLBACK(src, PROC_REF(vent_travel_enter)), rand(20, 60), TIMER_STOPPABLE)
+
+/// Шаг 1: паучок забирается внутрь вентиля, через который залезал.
+/obj/structure/spider/spiderling/proc/vent_travel_enter()
+	vent_travel_timer = null
+	if(QDELETED(entry_vent) || QDELETED(vent_travel_exit))
+		stop_vent_travel()
+		return
+	travelling_in_vent = 1
+	forceMove(entry_vent)
+	var/travel_time = max(round(get_dist(entry_vent, vent_travel_exit) / 2), 1)
+	vent_travel_timer = addtimer(CALLBACK(src, PROC_REF(vent_travel_halfway), travel_time), travel_time, TIMER_STOPPABLE)
+
+/// Шаг 2: середина пути, слышно шуршание в трубах.
+/obj/structure/spider/spiderling/proc/vent_travel_halfway(travel_time)
+	vent_travel_timer = null
+	if(QDELETED(vent_travel_exit) || vent_travel_exit.welded)
+		abort_vent_travel()
+		return
+	if(prob(50))
+		audible_message("<span class='italics'>You hear something scampering through the ventilation ducts.</span>")
+	vent_travel_timer = addtimer(CALLBACK(src, PROC_REF(vent_travel_emerge)), travel_time, TIMER_STOPPABLE)
+
+/// Шаг 3: паучок вылезает у вентиля назначения.
+/obj/structure/spider/spiderling/proc/vent_travel_emerge()
+	vent_travel_timer = null
+	if(QDELETED(vent_travel_exit) || vent_travel_exit.welded)
+		abort_vent_travel()
+		return
+	var/turf/exit_turf = get_turf(vent_travel_exit)
+	stop_vent_travel()
+	if(exit_turf)
+		forceMove(exit_turf)
+
+/// Дорогу перекрыли - вылезаем там же, где залезли, а не остаёмся навсегда
+/// в contents вентиля (оттуда travelling_in_vent уже никогда не сбрасывался).
+/obj/structure/spider/spiderling/proc/abort_vent_travel()
+	var/turf/entry_turf = get_turf(entry_vent)
+	stop_vent_travel()
+	if(entry_turf)
+		forceMove(entry_turf)
+
 /obj/structure/spider/spiderling/process()
 	if(travelling_in_vent)
 		if(isturf(loc))
 			travelling_in_vent = 0
 			entry_vent = null
+			vent_travel_exit = null
 	else if(entry_vent)
-		if(get_dist(src, entry_vent) <= 1)
-			var/list/vents = list()
-			var/datum/pipeline/entry_vent_parent = entry_vent.parents[1]
-			for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in entry_vent_parent.other_atmosmch)
-				vents.Add(temp_vent)
-			if(!vents.len)
-				entry_vent = null
-				return
-			var/obj/machinery/atmospherics/components/unary/vent_pump/exit_vent = pick(vents)
-			if(prob(50))
-				visible_message("<B>[src] scrambles into the ventilation ducts!</B>", \
-								"<span class='italics'>You hear something scampering through the ventilation ducts.</span>")
-
-			spawn(rand(20,60))
-				forceMove(exit_vent)
-				var/travel_time = round(get_dist(loc, exit_vent.loc) / 2)
-				spawn(travel_time)
-
-					if(!exit_vent || exit_vent.welded)
-						forceMove(entry_vent)
-						entry_vent = null
-						return
-
-					if(prob(50))
-						audible_message("<span class='italics'>You hear something scampering through the ventilation ducts.</span>")
-					sleep(travel_time)
-
-					if(!exit_vent || exit_vent.welded)
-						forceMove(entry_vent)
-						entry_vent = null
-						return
-					forceMove(exit_vent.loc)
-					entry_vent = null
-					var/area/new_area = get_area(loc)
-					if(new_area)
-						new_area.Entered(src)
-	//=================
-
+		if(QDELETED(entry_vent))
+			entry_vent = null
+		else if(get_dist(src, entry_vent) <= 1)
+			begin_vent_travel()
 	else if(prob(33))
 		var/list/nearby = oview(10, src)
 		if(nearby.len)
-			var/target_atom = pick(nearby)
-			walk_to(src, target_atom)
+			var/atom/target_atom = pick(nearby)
+			//Идём на турф цели, а не за самой целью: встроенный walk_to держит цель
+			//жёсткой ссылкой мимо GC, и любой подобранный из oview предмет хардделился.
+			walk_to(src, get_turf(target_atom))
 			if(prob(40))
 				src.visible_message("<span class='notice'>\The [src] skitters[pick(" away"," around","")].</span>")
 	else if(prob(10))
@@ -236,7 +292,7 @@
 		for(var/obj/machinery/atmospherics/components/unary/vent_pump/v in view(7,src))
 			if(!v.welded)
 				entry_vent = v
-				walk_to(src, entry_vent, 1)
+				walk_to(src, get_turf(entry_vent), 1)
 				break
 	if(isturf(loc))
 		amount_grown += rand(0,2)

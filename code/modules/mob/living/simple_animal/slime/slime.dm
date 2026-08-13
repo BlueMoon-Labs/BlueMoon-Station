@@ -190,7 +190,11 @@
 	var/mod = 0
 	if(bodytemperature >= 330.23) // 135 F or 57.08 C
 		mod = -1	// slimes become supercharged at high temperatures
-	else if(bodytemperature < 183.222)
+	// Порог обязан совпадать с точкой отсчёта формулы ниже. С опечаткой 183.222
+	// замедление включалось на 40 K ХОЛОДНЕЕ, чем начинает убивать урон от холода
+	// (223.15 K), то есть слайм успевал умереть, ни разу не притормозив, и на
+	// морозе бегал на полной скорости.
+	else if(bodytemperature < 283.222)
 		mod = min(15, (283.222 - bodytemperature) / 10 * 1.75)
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_tempmod, multiplicative_slowdown = mod)
 
@@ -430,11 +434,13 @@
 
 /mob/living/simple_animal/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
-	if(!client)
-		if(Target) // Like cats
-			Target = null
-			++Discipline
-	return
+	// Вода обязана не только жечь, но и срывать слайма с жертвы. Раньше здесь
+	// стоял только сброс Target, да и тот у НЕигровых слаймов: присосавшегося
+	// слайма нельзя было смыть огнетушителем вообще - он держал захват и просто
+	// медленно умирал на жертве, а игровой слайм не замечал воду совсем.
+	// discipline_slime() снимает захват через Feedstop, сбрасывает цель и
+	// коротко оглушает - это и есть штатная реакция слайма на воду.
+	discipline_slime()
 
 /mob/living/simple_animal/slime/examine(mob/user)
 	. = list("<span class='info'>This is [icon2html(src, user)] \a <EM>[src]</EM>!")

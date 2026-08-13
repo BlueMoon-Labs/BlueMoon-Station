@@ -98,6 +98,8 @@
 	var/list/managed_vis_overlays
 	///overlays managed by [update_overlays][/atom/proc/update_overlays] to prevent removing overlays that weren't added by the same proc
 	var/list/managed_overlays
+	///Connected-cluster datums currently tracking this atom.
+	var/list/datum/merger/mergers
 
 	///Proximity monitor associated with this atom
 	var/datum/proximity_monitor/proximity_monitor
@@ -183,6 +185,15 @@
  *
  * We also generate a tag here if the DF_USE_TAG flag is set on the atom
  */
+/// Gets the merger datum representing this atom's connected cluster.
+/atom/proc/GetMergeGroup(id, list/allowed_types)
+	RETURN_TYPE(/datum/merger)
+	var/datum/merger/candidate = mergers?[id]
+	if(!candidate)
+		new /datum/merger(id, allowed_types, src)
+		candidate = mergers?[id]
+	return candidate
+
 /atom/New(loc, ...)
 	//atom creation method that preloads variables at creation
 	if(GLOB.use_preloader && (src.type == GLOB._preloader.target_path))//in case the instanciated atom is creating other atoms in New()

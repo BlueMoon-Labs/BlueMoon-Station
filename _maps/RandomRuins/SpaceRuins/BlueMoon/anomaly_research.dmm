@@ -1,0 +1,3196 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aw" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"aA" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"aX" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ba" = (
+/obj/structure/reagent_dispensers/plumbed,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"bB" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"bP" = (
+/obj/structure/table/wood,
+/obj/item/toy/plush/slimeplushie,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"cr" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"cv" = (
+/obj/machinery/door/airlock/vault,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"cy" = (
+/obj/machinery/door/airlock/research,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"cK" = (
+/obj/structure/table/wood,
+/obj/machinery/microwave,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"ds" = (
+/obj/machinery/duct,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"dD" = (
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"eq" = (
+/obj/structure/table,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ev" = (
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"eT" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 6
+	},
+/obj/structure/table/reinforced,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"eU" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"fc" = (
+/obj/effect/turf_decal/arrows/red{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"fw" = (
+/obj/machinery/suit_storage_unit,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"fz" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/MimicResrch)
+"gs" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"gB" = (
+/obj/effect/turf_decal/trimline/purple/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"gT" = (
+/mob/living/simple_animal/hostile/mimic,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"hq" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/raw_anomaly_core/random{
+	pixel_x = -7
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"hU" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/structure/chair/office,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ih" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 6
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ii" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"ip" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"iq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"it" = (
+/obj/machinery/shower/directional/east,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"iv" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"iC" = (
+/obj/machinery/door/airlock/external,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"iK" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 9
+	},
+/obj/machinery/monkey_recycler,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"iP" = (
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ki" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister/air,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"kj" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"kp" = (
+/turf/template_noop,
+/area/space/nearstation)
+"kt" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/anomaly_neutralizer,
+/obj/item/anomaly_neutralizer,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"kw" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/machinery/light/warm/no_nightlight/directional/north,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"kY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"lo" = (
+/obj/machinery/duct,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"lz" = (
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted,
+/obj/item/kirbyplants/random,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"lL" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"lS" = (
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"lX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ml" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"mC" = (
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/office,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"mS" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/suit/hooded/wintercoat/science,
+/obj/machinery/light/warm/no_nightlight/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"mZ" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/item/anomaly_neutralizer,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"nh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/item/taperecorder{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"nl" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/syringe/bluespace,
+/obj/item/clothing/glasses/science,
+/obj/effect/turf_decal/siding/white,
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"nU" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 5
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"nZ" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ok" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 4
+	},
+/obj/machinery/light/broken/directional/north,
+/obj/effect/turf_decal/box,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"oq" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/structure/table/reinforced,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"oI" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"oK" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/computer/rdconsole{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"pb" = (
+/obj/item/storage/box/lights/mixed,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"pk" = (
+/obj/machinery/jukebox,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"pl" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"pu" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"qr" = (
+/obj/structure/tank_dispenser/oxygen{
+	pixel_x = -1;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"qx" = (
+/obj/machinery/light/warm/no_nightlight/directional/north,
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"qH" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/glass/fifty,
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"qM" = (
+/obj/effect/turf_decal/trimline/purple,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"rd" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/mob/living/simple_animal/hostile/mimic,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"rA" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"sg" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"st" = (
+/obj/machinery/door/airlock/vault,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"sz" = (
+/obj/effect/turf_decal/tile/purple/fourcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"sF" = (
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 1
+	},
+/obj/machinery/recharge_station,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"sU" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"sX" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"tf" = (
+/obj/structure/bed/double,
+/obj/item/bedsheet/rd/double,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"tw" = (
+/obj/structure/table/reinforced,
+/obj/item/taperecorder{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/siding/purple,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"tx" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/white,
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"tD" = (
+/obj/machinery/door/airlock/vault,
+/obj/effect/mapping_helpers/airlock/access/all/science/rd,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"tG" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"tK" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"tR" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 4
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"un" = (
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"uB" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"uG" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/suit/hooded/wintercoat/science,
+/obj/item/flashlight,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"uL" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/purple/half/contrasted,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"uN" = (
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/item/assembly/signaler{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/signaler{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/obj/item/assembly/signaler{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/obj/item/assembly/signaler{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/signaler{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/assembly/signaler{
+	pixel_y = 8
+	},
+/obj/item/analyzer,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"uO" = (
+/obj/structure/lattice/catwalk,
+/turf/open/lava/plasma/ice_moon,
+/area/ruin/space/has_grav/MimicResrch)
+"uZ" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 4
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"wb" = (
+/obj/effect/turf_decal/tile/yellow/half,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"wg" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 10
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/box/monkeycubes,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ww" = (
+/obj/machinery/light/warm/no_nightlight/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"wz" = (
+/obj/structure/table/reinforced,
+/obj/item/anomaly_neutralizer,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"xa" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/warm/no_nightlight/directional/east,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/white,
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"xo" = (
+/obj/machinery/duct,
+/turf/closed/wall,
+/area/ruin/space/has_grav/MimicResrch)
+"xE" = (
+/turf/open/lava/plasma/ice_moon,
+/area/ruin/space/has_grav/MimicResrch)
+"xQ" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"xS" = (
+/turf/closed/mineral/strange,
+/area/space)
+"ya" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/MimicResrch)
+"yp" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"yJ" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Pharmacy"
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"yR" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"yS" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"zu" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"AE" = (
+/obj/structure/statue/snow/snowman,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Bq" = (
+/obj/effect/turf_decal/tile/purple/fourcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Bu" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"BA" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/structure/closet/crate,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"BD" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/suit/hooded/wintercoat/science,
+/obj/item/flashlight,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ce" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Cf" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ch" = (
+/obj/machinery/rnd/experimentor,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"Cl" = (
+/obj/effect/spawner/structure/window/plasma,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"CP" = (
+/obj/structure/bed/dogbed,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"CZ" = (
+/obj/effect/turf_decal/trimline/purple/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ds" = (
+/obj/effect/turf_decal/trimline/purple/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Dt" = (
+/obj/structure/rack,
+/obj/item/clothing/head/collectable/welding,
+/obj/item/weldingtool/largetank,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"DV" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Eb" = (
+/obj/machinery/autolathe,
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ek" = (
+/obj/structure/lattice,
+/turf/closed/mineral/snowmountain/cavern,
+/area/space)
+"En" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Et" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ew" = (
+/obj/machinery/duct,
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"EE" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 4
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ff" = (
+/obj/effect/turf_decal/trimline/purple/line,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Fm" = (
+/obj/structure/table,
+/obj/item/stock_parts/micro_laser/ultra,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Fs" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Ft" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"FK" = (
+/obj/machinery/light/warm/no_nightlight/directional/south,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"FR" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"FX" = (
+/obj/structure/sink/directional,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"Gc" = (
+/obj/structure/chair/office,
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Gj" = (
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"Gr" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"GA" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Mining Station Maintenance"
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"GG" = (
+/obj/effect/spawner/structure/window,
+/obj/machinery/duct,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"GI" = (
+/obj/structure/tank_dispenser,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"GM" = (
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/cell/crystal_cell,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"GR" = (
+/turf/closed/mineral/snowmountain/cavern,
+/area/space/nearstation)
+"HL" = (
+/obj/effect/turf_decal/siding/white,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"HN" = (
+/obj/structure/toilet{
+	pixel_y = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"HO" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/white,
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"HT" = (
+/obj/effect/turf_decal/trimline/purple/corner,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ia" = (
+/obj/effect/turf_decal/siding/purple,
+/obj/structure/table/reinforced,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Is" = (
+/obj/machinery/duct,
+/obj/machinery/light/small/directional/north,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"Iw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"IC" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/space)
+"IH" = (
+/obj/machinery/power/supermatter_crystal/shard,
+/obj/structure/closet/crate/radiation,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"IL" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Jw" = (
+/obj/effect/turf_decal/arrows/red,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Jy" = (
+/obj/item/anomaly_neutralizer,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"JN" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/pool,
+/area/ruin/space/has_grav/MimicResrch)
+"Kc" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Mining Station Maintenance"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"Kh" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/gloves,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"KU" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 9
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"La" = (
+/obj/structure/closet/l3closet,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Lo" = (
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"LB" = (
+/obj/structure/closet/bombcloset,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"LU" = (
+/obj/structure/sink/kitchen/directional/west,
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"LW" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical,
+/obj/effect/turf_decal/tile/purple/anticorner/contrasted{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"LZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"Mg" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"MN" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Ng" = (
+/obj/effect/turf_decal/trimline/purple/line,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Nj" = (
+/turf/closed/mineral/snowmountain/cavern,
+/area/ruin/space/has_grav/MimicResrch)
+"NP" = (
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Oi" = (
+/mob/living/simple_animal/hostile/mimic,
+/obj/item/stock_parts/capacitor/geis,
+/obj/item/stock_parts/capacitor/geis,
+/obj/item/stock_parts/capacitor/geis,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"On" = (
+/obj/structure/table/wood,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"Oo" = (
+/obj/structure/table/reinforced,
+/obj/item/analyzer/ranged,
+/obj/effect/turf_decal/siding/purple{
+	dir = 6
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Oq" = (
+/obj/structure/table/glass,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/effect/turf_decal/siding/white,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Ot" = (
+/mob/living/simple_animal/hostile/mimic,
+/obj/item/stock_parts/manipulator/zepto,
+/obj/item/stock_parts/manipulator/zepto,
+/obj/item/stock_parts/manipulator/zepto,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"Ox" = (
+/obj/machinery/light/broken/directional/south,
+/mob/living/simple_animal/hostile/mimic,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/MimicResrch)
+"OL" = (
+/obj/item/stack/cable_coil,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"Qp" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"Qq" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Qu" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/structure/closet/crate,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Qw" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"Qz" = (
+/obj/structure/closet/radiation,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"QZ" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 10
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"RC" = (
+/obj/structure/fireplace{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"RT" = (
+/turf/template_noop,
+/area/space)
+"So" = (
+/obj/structure/table/reinforced,
+/obj/machinery/reagentgrinder,
+/obj/item/book/manual/wiki/chemistry{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/siding/white,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"SQ" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/gloves,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"SS" = (
+/obj/structure/rack,
+/obj/item/shovel/spade,
+/obj/item/pickaxe,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Tp" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/effect/turf_decal/siding/purple{
+	dir = 10
+	},
+/obj/item/flashlight/lamp,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Tu" = (
+/mob/living/simple_animal/hostile/mimic,
+/obj/item/stock_parts/micro_laser/ansible,
+/obj/item/stock_parts/micro_laser/ansible,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"TB" = (
+/obj/effect/turf_decal/siding/purple{
+	dir = 5
+	},
+/obj/structure/closet/crate,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"TE" = (
+/obj/structure/fluff/fokoff_sign,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Uo" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"UC" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"UD" = (
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/MimicResrch)
+"UJ" = (
+/obj/structure/table/glass,
+/obj/effect/turf_decal/siding/white,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"VL" = (
+/obj/structure/table/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"VX" = (
+/obj/structure/tank_holder/extinguisher,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Wu" = (
+/obj/structure/lattice,
+/turf/open/lava/plasma/ice_moon,
+/area/ruin/space/has_grav/MimicResrch)
+"Wy" = (
+/obj/structure/chair/comfy/brown{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/MimicResrch)
+"Wz" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/MimicResrch)
+"WB" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"WD" = (
+/obj/effect/turf_decal/siding/purple,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"WM" = (
+/obj/structure/table,
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Xo" = (
+/obj/machinery/door/airlock{
+	name = "Unisex Restrooms"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Xp" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Xr" = (
+/obj/structure/tank_holder/oxygen/yellow,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"XH" = (
+/obj/item/shovel/spade,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Ys" = (
+/mob/living/simple_animal/hostile/mimic,
+/obj/item/stock_parts/matter_bin/darkmatter,
+/obj/item/stock_parts/matter_bin/darkmatter,
+/obj/item/stock_parts/matter_bin/darkmatter,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/MimicResrch)
+"YA" = (
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/MimicResrch)
+"YU" = (
+/obj/structure/fence/door,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
+"Zp" = (
+/obj/machinery/door/airlock/wood/glass,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"Zv" = (
+/obj/machinery/duct,
+/obj/machinery/door/airlock/research/glass{
+	name = "Pharmacy"
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ZA" = (
+/obj/machinery/door/airlock/research/glass,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+"ZI" = (
+/obj/machinery/door/airlock/wood/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/MimicResrch)
+"ZJ" = (
+/turf/open/space/basic,
+/area/space)
+"ZM" = (
+/turf/closed/mineral/snowmountain/cavern,
+/area/space)
+"ZO" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/siding/white,
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
+
+(1,1,1) = {"
+RT
+RT
+RT
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+kp
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+kp
+"}
+(2,1,1) = {"
+kp
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+"}
+(3,1,1) = {"
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+ZM
+RT
+RT
+RT
+RT
+"}
+(4,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+xS
+ZM
+RT
+RT
+RT
+"}
+(5,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+xE
+ZM
+ZM
+xE
+xE
+ZJ
+ZJ
+ZJ
+xE
+xE
+xE
+ZM
+ZM
+ZM
+xS
+ZM
+RT
+RT
+"}
+(6,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ZM
+ZJ
+ZJ
+ZJ
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ZJ
+ZJ
+ZJ
+xE
+xE
+xE
+ZM
+ZM
+ZM
+xS
+ZM
+RT
+"}
+(7,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ZM
+ZJ
+ZJ
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ZJ
+xE
+xE
+xE
+xE
+xE
+ZM
+ZM
+xS
+ZM
+ZM
+"}
+(8,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ZM
+ZJ
+xE
+xE
+xE
+xE
+ya
+IC
+IC
+IC
+IC
+IC
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ZM
+ZM
+xS
+ZM
+ZM
+"}
+(9,1,1) = {"
+ZM
+ZM
+ZM
+ZM
+xS
+ZM
+xE
+xE
+xE
+xE
+xE
+ya
+On
+cK
+aA
+Gj
+FR
+ya
+Wz
+gT
+ya
+dD
+dD
+dD
+Qw
+Qw
+Qw
+Qw
+kj
+xE
+xE
+ZM
+ZM
+xS
+ZM
+ZM
+"}
+(10,1,1) = {"
+ZM
+ZM
+ZM
+ZM
+xS
+ZM
+xE
+yp
+yp
+yp
+yp
+ya
+eU
+eU
+eU
+iv
+Gj
+tD
+Gj
+Gj
+iC
+dD
+dD
+dD
+dD
+dD
+dD
+dD
+cr
+xE
+xE
+ZM
+ZM
+xS
+ZM
+RT
+"}
+(11,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ZM
+xE
+yp
+UD
+UD
+UD
+ZI
+pl
+pl
+pl
+Lo
+FK
+ya
+Gj
+gT
+ya
+dD
+dD
+dD
+Mg
+Mg
+dD
+dD
+cr
+xE
+xE
+xE
+ZM
+xS
+ZM
+RT
+"}
+(12,1,1) = {"
+RT
+ZM
+xS
+xS
+xS
+ZM
+xE
+yp
+UD
+yp
+yp
+ya
+VL
+VL
+VL
+Lo
+Gj
+ya
+Kc
+ya
+ya
+ya
+ya
+ya
+xE
+xE
+gs
+dD
+cr
+xE
+xE
+xE
+ZM
+xS
+ZM
+RT
+"}
+(13,1,1) = {"
+RT
+ZM
+xS
+ZM
+ZM
+xE
+xE
+yp
+UD
+yp
+xE
+ya
+pl
+Wy
+VL
+Lo
+Gj
+ya
+sX
+sX
+OL
+pb
+sX
+ya
+xE
+xE
+gs
+dD
+cr
+xE
+xE
+xE
+ZM
+xS
+ZM
+RT
+"}
+(14,1,1) = {"
+RT
+ZM
+xS
+ya
+ya
+ya
+ya
+ya
+cy
+ya
+xE
+ya
+RC
+ww
+pl
+Lo
+pk
+ya
+rA
+Dt
+ki
+sX
+sX
+ya
+ya
+ya
+ya
+iC
+ya
+ya
+xE
+xE
+ZM
+xS
+ZM
+RT
+"}
+(15,1,1) = {"
+RT
+ZM
+xS
+ya
+LW
+qH
+bB
+sU
+yS
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+xE
+ya
+qr
+zu
+yp
+xE
+xE
+xE
+ZM
+xS
+ZM
+RT
+"}
+(16,1,1) = {"
+RT
+ZM
+xS
+ya
+Eb
+uL
+bB
+Kh
+yS
+ya
+sz
+Ce
+WM
+lS
+lS
+lS
+ya
+xE
+xE
+xE
+uO
+uO
+xE
+xE
+xE
+ya
+fw
+zu
+yp
+xE
+xE
+ZM
+ZM
+xS
+ZM
+RT
+"}
+(17,1,1) = {"
+RT
+ZM
+xS
+ya
+qx
+IL
+bB
+rd
+yS
+ZA
+oI
+un
+Fm
+Jy
+Ch
+pu
+ya
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ya
+mS
+zu
+yp
+xE
+xE
+ZM
+xS
+ZM
+RT
+RT
+"}
+(18,1,1) = {"
+RT
+ZM
+xS
+ya
+tR
+iP
+bB
+BA
+yS
+ya
+qx
+un
+eq
+lS
+lS
+lS
+ya
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ya
+Uo
+zu
+yp
+xE
+ZM
+xS
+ZM
+ZM
+RT
+RT
+"}
+(19,1,1) = {"
+RT
+ZM
+xS
+ya
+ya
+yJ
+bB
+yS
+yS
+ya
+Bq
+Qq
+Qq
+lS
+lS
+lS
+ya
+xE
+xE
+xE
+xE
+xE
+xE
+ZM
+ZM
+fz
+fz
+iC
+fz
+fz
+xS
+ZM
+ZM
+RT
+RT
+RT
+"}
+(20,1,1) = {"
+RT
+ZM
+xS
+Nj
+ya
+KU
+DV
+QZ
+yS
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+xE
+xE
+xE
+xE
+xE
+xE
+ZM
+xS
+ZM
+Fs
+Fs
+Fs
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+"}
+(21,1,1) = {"
+RT
+ZM
+xS
+ZM
+ya
+kw
+qM
+WD
+yS
+yS
+rd
+Cl
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ZM
+xS
+ZM
+Fs
+kp
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(22,1,1) = {"
+RT
+ZM
+xS
+ZM
+ya
+TB
+uZ
+ih
+yS
+yS
+yS
+Cl
+xE
+xE
+Cl
+Cl
+Cl
+Cl
+Cl
+Cl
+Cl
+xE
+xE
+ZM
+xS
+ZM
+TE
+RT
+RT
+RT
+RT
+RT
+kp
+RT
+RT
+RT
+"}
+(23,1,1) = {"
+RT
+ZM
+xS
+ya
+ya
+yR
+Zv
+GG
+GG
+yS
+xQ
+Cl
+Cl
+xE
+Cl
+Ys
+lS
+lS
+lS
+Ot
+Cl
+xE
+xE
+ZM
+xS
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(24,1,1) = {"
+RT
+ZM
+xS
+ya
+ZO
+nZ
+LU
+NP
+GG
+yS
+KU
+Tp
+Cl
+Wu
+Cl
+lS
+lS
+lS
+lS
+lS
+Cl
+Wu
+Wu
+Ek
+xS
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(25,1,1) = {"
+RT
+GR
+xS
+ya
+So
+Et
+HO
+wb
+GG
+yS
+Gc
+tw
+Cl
+xE
+Cl
+lS
+lS
+IH
+lS
+lS
+Cl
+xE
+xE
+ZM
+xS
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(26,1,1) = {"
+RT
+ZM
+xS
+ya
+UJ
+Et
+tx
+wb
+GG
+yS
+nU
+Oo
+Cl
+Wu
+Cl
+lS
+lS
+lS
+lS
+lS
+Cl
+Wu
+Wu
+Ek
+xS
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(27,1,1) = {"
+RT
+ZM
+xS
+ya
+Oq
+tK
+nl
+wb
+GG
+yS
+xQ
+Cl
+Cl
+xE
+Cl
+Tu
+lS
+lS
+lS
+Oi
+Cl
+xE
+xE
+ZM
+xS
+ZM
+RT
+RT
+RT
+kp
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(28,1,1) = {"
+RT
+ZM
+xS
+ya
+HL
+EE
+xa
+ml
+GG
+yS
+yS
+Cl
+xE
+xE
+Cl
+Cl
+Cl
+cv
+Cl
+Cl
+Cl
+xE
+xE
+ZM
+xS
+ZM
+ZM
+Fs
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(29,1,1) = {"
+RT
+ZM
+xS
+ya
+ya
+GA
+xo
+xo
+xo
+aX
+tG
+Cl
+xE
+xE
+xE
+xE
+Wu
+uO
+Wu
+xE
+xE
+xE
+xE
+ZM
+xS
+xS
+ZM
+ZM
+Fs
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(30,1,1) = {"
+RT
+ZM
+xS
+xS
+ya
+sX
+Ew
+ya
+lL
+yS
+tG
+Cl
+xE
+xE
+xE
+xE
+Wu
+uO
+Wu
+xE
+xE
+xE
+xE
+Fs
+Xp
+Fs
+xS
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+"}
+(31,1,1) = {"
+RT
+ZM
+xS
+xS
+ya
+sX
+Ew
+ya
+SQ
+Iw
+tG
+Cl
+Cl
+ya
+ZM
+xE
+Wu
+uO
+Wu
+xE
+xE
+xE
+Fs
+Fs
+YU
+Fs
+ZM
+xS
+xS
+xS
+xS
+ZM
+RT
+RT
+RT
+RT
+"}
+(32,1,1) = {"
+ZM
+ZM
+ZM
+xS
+ya
+ba
+Ew
+ya
+wz
+Iw
+Iw
+tG
+tG
+ya
+ZM
+xE
+Wu
+uO
+Wu
+xE
+xE
+ZM
+ZM
+ZM
+ZM
+Fs
+Fs
+ZM
+ZM
+ZM
+ZM
+xS
+ZM
+RT
+RT
+RT
+"}
+(33,1,1) = {"
+RT
+ZM
+ZM
+xS
+ya
+ya
+xo
+ya
+GI
+Iw
+iK
+wg
+tG
+ya
+ZM
+xE
+Wu
+uO
+Wu
+ZM
+ZM
+ZM
+ZM
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+xE
+ZM
+xS
+xS
+RT
+RT
+RT
+"}
+(34,1,1) = {"
+RT
+ZM
+ZM
+xS
+ya
+it
+lo
+ya
+ok
+Iw
+uB
+oq
+tG
+ya
+ZM
+xE
+Wu
+uO
+Wu
+ZM
+ZM
+ZM
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+xE
+ZM
+xS
+ZM
+RT
+RT
+"}
+(35,1,1) = {"
+RT
+ZM
+ZM
+xS
+ya
+Is
+lo
+ya
+sg
+Iw
+hU
+Ia
+tG
+ya
+ZM
+ZM
+Wu
+uO
+Nj
+ZM
+ZM
+Fs
+Fs
+Fs
+Fs
+Fs
+AE
+XH
+Fs
+Fs
+xE
+ZM
+xS
+ZM
+RT
+RT
+"}
+(36,1,1) = {"
+RT
+RT
+ZM
+xS
+ya
+FX
+ds
+ya
+Qu
+Iw
+mZ
+eT
+Iw
+ya
+ya
+ya
+ya
+st
+ya
+ya
+ZM
+Fs
+Fs
+MN
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(37,1,1) = {"
+RT
+RT
+ZM
+xS
+ya
+HN
+JN
+ya
+WB
+Iw
+Iw
+iq
+Iw
+GM
+xQ
+ya
+un
+fc
+VX
+ya
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+MN
+Fs
+Fs
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(38,1,1) = {"
+RT
+RT
+ZM
+xS
+ya
+ya
+Xo
+ya
+ii
+ii
+ii
+Iw
+yS
+HT
+CZ
+cy
+Jw
+un
+un
+ya
+MN
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(39,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+ya
+Bu
+kY
+oK
+ip
+ii
+tG
+Iw
+Ff
+YA
+ya
+Qz
+LB
+La
+ya
+Fs
+Fs
+MN
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+ZM
+xS
+ZM
+ZM
+ZM
+"}
+(40,1,1) = {"
+RT
+RT
+RT
+ZM
+xS
+ya
+sF
+Gr
+mC
+nh
+ii
+tG
+Iw
+Ng
+Ox
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+ZM
+xS
+ZM
+ZM
+ZM
+"}
+(41,1,1) = {"
+RT
+RT
+kp
+ZM
+xS
+ya
+kt
+En
+Ft
+ip
+ii
+yS
+Iw
+Ff
+YA
+ya
+un
+aw
+SS
+Xr
+un
+ya
+Fs
+Fs
+Fs
+MN
+Fs
+Fs
+Fs
+MN
+Fs
+ZM
+xS
+ZM
+ZM
+ZM
+"}
+(42,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+ya
+hq
+un
+Ft
+lX
+cy
+yS
+Iw
+Ds
+gB
+cy
+un
+un
+un
+un
+un
+Zp
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+ZM
+xS
+ZM
+ZM
+ZM
+"}
+(43,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+ya
+uN
+un
+lz
+ip
+ii
+Cf
+Iw
+tG
+xQ
+ya
+un
+BD
+uG
+BD
+un
+ya
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+ZM
+xS
+ZM
+ZM
+ZM
+"}
+(44,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ya
+ya
+Qp
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+ya
+Fs
+Fs
+Fs
+MN
+Fs
+Fs
+Fs
+Fs
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(45,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ya
+bP
+pl
+pl
+CP
+Cl
+xE
+xE
+xE
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(46,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ya
+UC
+LZ
+LZ
+pl
+Cl
+xE
+xE
+xE
+xE
+xE
+Fs
+Fs
+xE
+MN
+Fs
+Fs
+Fs
+MN
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(47,1,1) = {"
+RT
+ZM
+ZM
+ZM
+xS
+ya
+LZ
+ev
+LZ
+tf
+Cl
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+Fs
+Fs
+Fs
+Fs
+Fs
+xE
+xE
+xE
+xE
+ZM
+xS
+ZM
+ZM
+RT
+"}
+(48,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+ya
+ya
+ya
+ya
+ya
+ya
+ZM
+ZM
+ZM
+ZM
+ZM
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+xE
+ZM
+xS
+xS
+ZM
+ZM
+RT
+"}
+(49,1,1) = {"
+RT
+RT
+ZM
+ZM
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+xS
+xS
+ZM
+ZM
+RT
+RT
+RT
+"}
+(50,1,1) = {"
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+xS
+ZM
+ZM
+ZM
+RT
+kp
+RT
+RT
+"}
+(51,1,1) = {"
+RT
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+"}
+(52,1,1) = {"
+kp
+RT
+RT
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+kp
+RT
+RT
+RT
+RT
+RT
+RT
+ZM
+ZM
+ZM
+ZM
+ZM
+ZM
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+RT
+"}

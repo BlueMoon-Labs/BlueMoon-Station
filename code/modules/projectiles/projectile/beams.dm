@@ -97,12 +97,20 @@
 	irradiate = 100
 	range = 15
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE | PASSCLOSEDTURF | PASSMACHINE | PASSSTRUCTURE
+	projectile_piercing = ALL
+	is_reflectable = TRUE
+	var/damage_dropoff_multiplier = 0.9
 
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
 	light_color = LIGHT_COLOR_GREEN
 	tracer_type = /obj/effect/projectile/tracer/xray
 	muzzle_type = /obj/effect/projectile/muzzle/xray
 	impact_type = /obj/effect/projectile/impact/xray
+
+/obj/item/projectile/beam/xray/Range()
+	if(damage > 1)
+		damage = max(1, damage * damage_dropoff_multiplier)
+	return ..()
 
 /obj/item/projectile/beam/disabler
 	name = "disabler beam"

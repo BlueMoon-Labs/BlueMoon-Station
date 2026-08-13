@@ -335,19 +335,7 @@
 /obj/item/clothing/suit/space/hardsuit/engine,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"bg" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating/icemoon,
-/area/lavaland/surface/outdoors)
 "bh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 6
 	},
@@ -360,7 +348,7 @@
 /obj/machinery/door/airlock/engineering{
 	name = "The Singularity Engine"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
@@ -1503,7 +1491,7 @@ au
 as
 as
 as
-bg
+gA
 al
 al
 cg

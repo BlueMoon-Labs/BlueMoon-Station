@@ -1,5 +1,14 @@
 // Xenomorph queen maid — restored from pre-2017 donor feature (Maidify action).
 
+/mob/living/carbon/alien/humanoid/royal/queen/maid
+	name = "alien queen maid"
+	desc = "Lusty, Sexy"
+	caste = "qmaid"
+	eggsac = FALSE
+	icon = 'icons/mob/alienqueen.dmi'
+	alt_inhands_file = 'icons/mob/alienqueen.dmi'
+	icon_state = "alienqmaid"
+
 /datum/action/maid
 	name = "Maidify"
 	desc = "Permanently take on a maidly appearance. This cannot be undone."

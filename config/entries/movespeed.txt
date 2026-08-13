@@ -8,26 +8,36 @@
 ## To speed things up make the number negative, to slow things down, make the number positive.
 
 ## These modify the run/walk speed of all mobs before the mob-specific modifiers are applied.
-RUN_DELAY 2.5
-WALK_DELAY 5
+## Значения обязаны быть кратны world.tick_lag (при FPS 20 это 0.5), иначе
+## интервал между шагами начинает прыгать между соседними тиками и движение
+## выглядит рваным. Код всё равно подтянет задержку к ближайшему кратному, но
+## тогда конфиг будет врать о реальной скорости.
+## 1.5 = 3 тика, 3.0 = 6 тиков. Для сравнения: у tg 1.5 и 4, у Baystation 2 и 4
+## при 40 fps.
+RUN_DELAY 1.5
+WALK_DELAY 3
 
 ## The variables below affect the movement of specific mob types. THIS AFFECTS ALL SUBTYPES OF THE TYPE YOU CHOOSE!
 ## Entries completely override all subtypes. Later entries have precedence over earlier entries.
 ## This means if you put /mob 0 on the last entry, it will null out all changes, while if you put /mob as the first entry and
 ## /mob/living/carbon/human on the last entry, the last entry will override the first.
-MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien -1
-MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/sentinel -0.75
-MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/drone -0.5
-MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/royal/praetorian 0
-MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/royal/queen 2
-MULTIPLICATIVE_MOVESPEED /mob/living/silicon/robot -0.25
+##MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien -0.5
+##MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/sentinel -0.5
+##MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/drone -0.25
+##MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/royal/praetorian 0
+##MULTIPLICATIVE_MOVESPEED /mob/living/carbon/alien/humanoid/royal/queen 2
+##MULTIPLICATIVE_MOVESPEED /mob/living/silicon/robot -1
+##MULTIPLICATIVE_MOVESPEED /mob/living/simple_animal/slaughter -0.5
+##MULTIPLICATIVE_MOVESPEED /mob/living/simple_animal/hostile/blob -0.5
 
 ## The above, only when a mob is FLOATING
-MULTIPLICATIVE_MOVESPEED_FLOATING /mob/living/carbon -0.5
-MULTIPLICATIVE_MOVESPEED_FLOATING /mob/living 0
+##MULTIPLICATIVE_MOVESPEED_FLOATING /mob/living/carbon -0.5
+##MULTIPLICATIVE_MOVESPEED_FLOATING /mob/living 0
 
 ## Whether or not sprint is enabled
-SPRINT_ENABLED
+## Выключен намеренно. Значения в этом файле - боевые, с прода; master отстаёт,
+## так что сверять их диффом с master и "восстанавливать" оттуда нельзя.
+SPRINT_ENABLED 0
 
 ## When sprint is off, how much does getting staggered slow you
 SPRINTLESS_STAGGER_SLOWDOWN 0.5
@@ -39,7 +49,11 @@ SPRINTLESS_OFF_BALANCE_SLOWDOWN 0.85
 MELEE_STAGGER_FACTOR 1
 
 ## Sprint speed increase
-SPRINT_SPEED_INCREASE 1.5
+## Тоже обязан быть кратен тику: он вычитается из задержки, и результат всё
+## равно выровняется. 0.35 при беге 1.5 давал 1.15, что округлялось до 1.0 -
+## то есть спринт разгонял на треть вместо заявленной четверти. 0.5 = один тик,
+## и конфиг наконец совпадает с тем, что происходит.
+SPRINT_SPEED_INCREASE 0.5
 
 ## Max tiles/second increase from sprint
 SPRINT_MAX_TILES_INCREASE 5
@@ -47,11 +61,14 @@ SPRINT_MAX_TILES_INCREASE 5
 ## Absolute max speed sprint can make someone go (tiles/second)
 SPRINT_ABSOLUTE_MAX_TILES 13
 
+## Экономика спринта. Пока SPRINT_ENABLED выключен, эти три числа ни на что не влияют -
+## они лежат наготове и вступят в силу, если спринт снова включат.
+
 ## Max sprint buffer
-SPRINT_BUFFER_MAX 24
+SPRINT_BUFFER_MAX 36
 
 ## Stamina/tile when bufer empty
-SPRINT_STAMINA_COST 10
+SPRINT_STAMINA_COST 4
 
 ## Buffer regen/decisecond - 0.4 = 4/second
-SPRINT_BUFFER_REGEN_PER_DS 0.5
+SPRINT_BUFFER_REGEN_PER_DS 0.4

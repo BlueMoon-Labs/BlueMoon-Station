@@ -12,6 +12,10 @@
 	var/sanity_level = 3 //To track what stage of sanity they're on
 	var/mood_modifier = 1 //Modifier to allow certain mobs to be less affected by moodlets
 	var/list/datum/mood_event/mood_events = list()
+	/// Ассоциативный список "категория мудлета" -> id таймера его истечения.
+	/// Без него снятый досрочно мудлет оставлял висеть таймер до самого срока (а это до
+	/// 30 минут), и колесо SStimer копило сотни мёртвых записей при полном сервере.
+	var/list/mood_event_timers = list()
 	var/insanity_effect = 0 //is the owner being punished for low mood? If so, how much?
 	var/atom/movable/screen/mood/screen_obj
 	var/datum/skill_modifier/bad_mood/malus
@@ -285,7 +289,7 @@
 			clear_event(null, category)
 		else
 			if(the_event.timeout)
-				addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), the_event.timeout, TIMER_UNIQUE|TIMER_OVERRIDE)
+				schedule_event_timeout(category, the_event.timeout)
 			return FALSE //Don't have to update the event.
 	the_event = new type(src, param)//This causes a runtime for some reason, was this me? No - there's an event floating around missing a definition.
 
@@ -293,9 +297,24 @@
 	update_mood()
 
 	if(the_event.timeout)
-		addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), the_event.timeout, TIMER_UNIQUE|TIMER_OVERRIDE)
+		schedule_event_timeout(category, the_event.timeout)
+
+/// Взводит таймер истечения мудлета, снимая предыдущий таймер той же категории.
+/datum/component/mood/proc/schedule_event_timeout(category, timeout)
+	clear_event_timer(category)
+	mood_event_timers[category] = addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), timeout, TIMER_STOPPABLE)
+
+/// Снимает таймер истечения мудлета, если он был взведён. Повторный вызов безопасен:
+/// deltimer уже отработавшего или несуществующего id - это no-op.
+/datum/component/mood/proc/clear_event_timer(category)
+	var/timer_id = mood_event_timers[category]
+	mood_event_timers -= category
+	if(isnull(timer_id))
+		return
+	deltimer(timer_id)
 
 /datum/component/mood/proc/clear_event(datum/source, category)
+	clear_event_timer(category)
 	var/datum/mood_event/event = mood_events[category]
 	if(!event)
 		return FALSE
@@ -304,12 +323,15 @@
 	qdel(event)
 	update_mood()
 
-/datum/component/mood/proc/remove_temp_moods() //Removes all temp moodsfor(var/i in mood_events)
-	for(var/i in mood_events)
-		var/datum/mood_event/moodlet = mood_events[i]
+/datum/component/mood/proc/remove_temp_moods() //Removes all temp moods
+	// Список правится прямо в цикле, поэтому идём по копии ключей: иначе сдвиг индексов
+	// пропускал каждый второй временный мудлет, и он оставался висеть вместе с таймером.
+	for(var/category in mood_events.Copy())
+		var/datum/mood_event/moodlet = mood_events[category]
 		if(!moodlet || !moodlet.timeout)
 			continue
-		mood_events -= i
+		clear_event_timer(category)
+		mood_events -= category
 		qdel(moodlet)
 	update_mood()
 

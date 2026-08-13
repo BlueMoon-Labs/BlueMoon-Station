@@ -64,3 +64,12 @@
 #_maps/RandomRuins/SpaceRuins/BlueMoon/drugpost.dmm
 #_maps/RandomRuins/SpaceRuins/BlueMoon/clockworkhaven.dmm
 #_maps/RandomRuins/SpaceRuins/BlueMoon/fisher_store.dmm
+#_maps/RandomRuins/SpaceRuins/BlueMoon/allamericandiner
+#_maps/RandomRuins/SpaceRuins/BlueMoon/anomaly_research
+#_maps/RandomRuins/SpaceRuins/BlueMoon/atmosasteroidruin
+#_maps/RandomRuins/SpaceRuins/BlueMoon/commsbuoy_nt
+#_maps/RandomRuins/SpaceRuins/BlueMoon/dangerous_research
+#_maps/RandomRuins/SpaceRuins/BlueMoon/hilbertresearchfacility
+#_maps/RandomRuins/SpaceRuins/BlueMoon/Lutertenship
+#_maps/RandomRuins/SpaceRuins/BlueMoon/piratefort
+#_maps/RandomRuins/SpaceRuins/BlueMoon/whiteshipruin_box

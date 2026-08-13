@@ -66,6 +66,15 @@
 	if(istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move())
 		return MOVELOOP_SKIP_STEP
 
+	//Пристёгнутый моб при Move() толкает незаанкоренный стул вместо собственного
+	//шага (living_movement.dm). Легаси-пул это знал (simple_animal.dm гейтит
+	//брождение по !buckled), контроллеры при миграции гард потеряли - и мобы
+	//поехали кататься. Единая точка: через этот прок проходят оба лупа.
+	var/mob/living/living_pawn = pawn
+	if(isliving(living_pawn) && living_pawn.buckled)
+		controller.request_unbuckle()
+		return MOVELOOP_SKIP_STEP
+
 	var/can_move = TRUE
 	if(controller.ai_traits & STOP_MOVING_WHEN_PULLED && pawn.pulledby)
 		can_move = FALSE

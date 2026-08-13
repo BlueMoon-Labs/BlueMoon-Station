@@ -384,14 +384,14 @@
 				H.reagents.add_reagent(/datum/reagent/zauker, max(0, 1 - existing))
 			breath.adjust_moles(GAS_ZAUKER, -gas_breathed)
 
-	// Healium — лечит брутал и берн при дыхании (не breath_reagent: иначе газ вычитается до этого блока и лечение не срабатывает)
+	// Healium — кладём реагент в кровь (как заукер выше), а не лечим напрямую:
+	// иначе облако газа лечило бесплатно и мимо любого баланса реагента
 		gas_breathed = breath.get_moles(GAS_HEALIUM)
 		if (gas_breathed > 0.0001)
 			var/healium_pp = PP(breath, GAS_HEALIUM)
-			var/heal_amount = clamp(round(healium_pp * 6), 3, 18)
-			H.adjustBruteLoss(-heal_amount)
-			H.adjustFireLoss(-heal_amount)
-			H.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+			if(healium_pp > gas_stimulation_min)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/healium)
+				H.reagents.add_reagent(/datum/reagent/healium, max(0, 1 - existing))
 			breath.adjust_moles(GAS_HEALIUM, -gas_breathed)
 
 	// Helium — high-pitched voice
