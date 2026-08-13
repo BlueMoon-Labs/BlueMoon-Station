@@ -2237,6 +2237,7 @@
 #include "code\modules\arousal\arousal.dm"
 #include "code\modules\arousal\genitals.dm"
 #include "code\modules\arousal\genitals_sprite_accessories.dm"
+#include "code\modules\arousal\love_offer.dm"
 #include "code\modules\arousal\organs\breasts.dm"
 #include "code\modules\arousal\organs\butt.dm"
 #include "code\modules\arousal\organs\penis.dm"
