@@ -439,7 +439,7 @@ Burning extracts:
 
 /obj/item/melee/severed_boneblade/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/butchering, 60, 80) //кость - инструмент грубый
+	AddComponent(/datum/component/butchering, 6 SECONDS, 80) //кость - инструмент грубый
 
 /obj/item/kitchen/knife/rainbowknife
 	name = "Rainbow Knife"

@@ -5,6 +5,8 @@
 #define ARMYKNIFE_SCREWDRIVER 2
 #define ARMYKNIFE_WIRECUTTER 3
 #define ARMYKNIFE_BLADE 4
+///Складные отвёртка и кусачки медленнее полноценного инструмента - так было и до переделки.
+#define ARMYKNIFE_TOOL_SPEED 1.1
 
 /obj/item/armyknife
 	name = "Army Multitool"
@@ -50,7 +52,7 @@
 	flags_1 &= ~CONDUCT_1
 	sharpness = SHARP_NONE
 	throwforce = initial(throwforce)
-	toolspeed = 1.1
+	toolspeed = ARMYKNIFE_TOOL_SPEED
 	lefthand_file = initial(lefthand_file)
 	righthand_file = initial(righthand_file)
 	switch(mode)
@@ -114,6 +116,7 @@
 #undef ARMYKNIFE_SCREWDRIVER
 #undef ARMYKNIFE_WIRECUTTER
 #undef ARMYKNIFE_BLADE
+#undef ARMYKNIFE_TOOL_SPEED
 
 /datum/design/armyknife
 	name = "Army Multitool"

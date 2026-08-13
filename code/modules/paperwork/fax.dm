@@ -277,9 +277,14 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			if (!loaded)
 				return
 			var/destination = params["id"]
+			// Имя получателя берём у самой машины, а не из params["name"]: то приходит от
+			// клиента и подделывается кем угодно, а строка уходит и в лог, и в эфир.
+			var/obj/machinery/fax/target_fax = get_fax_by_id(destination)
+			if(!target_fax)
+				return
 			if(send(loaded, destination))
-				log_fax(loaded, destination, params["name"])
-				Radio.talk_into(src, "Внимание. Отправлен факс от [fax_name]/[fax_id] на [params["name"]].", RADIO_CHANNEL_COMMAND)
+				log_fax(loaded, destination, target_fax.fax_name)
+				announce_dispatch(target_fax.fax_name)
 				loaded_item_ref = null
 				update_appearance()
 				return TRUE
@@ -355,20 +360,33 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * id - The network ID of the fax machine you want to send the item to.
  */
 /obj/machinery/fax/proc/send(obj/item/loaded, id)
+	var/obj/machinery/fax/FAX = get_fax_by_id(id)
+	if (!FAX)
+		return FALSE
+	if (FAX.jammed)
+		do_sparks(5, TRUE, src)
+		balloon_alert(usr, "destination port jammed")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		return FALSE
+	FAX.receive(loaded, fax_name, fax_id)
+	history_add("Send", FAX.fax_name)
+	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "send"))
+	playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, FALSE)
+	return TRUE
+
+/**
+ * Ищет машину сети по её ID.
+ *
+ * Единственный доверенный источник имени получателя: fax_name на клиенте переименовывается
+ * мультитулом и приходит в ui_act вместе с параметрами, а ID выдаётся машиной при инициализации.
+ * Arguments:
+ * * id - сетевой ID искомой машины.
+ */
+/obj/machinery/fax/proc/get_fax_by_id(id)
 	for(var/obj/machinery/fax/FAX as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/fax))
-		if (FAX.fax_id != id)
-			continue
-		if (FAX.jammed)
-			do_sparks(5, TRUE, src)
-			balloon_alert(usr, "destination port jammed")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-			return FALSE
-		FAX.receive(loaded, fax_name)
-		history_add("Send", FAX.fax_name)
-		INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "send"))
-		playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, FALSE)
-		return TRUE
-	return FALSE
+		if (FAX.fax_id == id)
+			return FAX
+	return null
 
 /**
  * Procedure for accepting papers from another fax machine.
@@ -376,16 +394,17 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * The procedure is called in proc/send() of the other fax. It receives a paper-like object and "prints" it.
  * Arguments:
  * * loaded - The object to be printed.
- * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations.
+ * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations. Renameable with a multitool, so it proves nothing.
+ * * sender_id - The sender's network ID, if the fax came from an actual machine. Assigned on init and not user-editable.
  */
-/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name)
+/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id)
 	playsound(src, 'sound/effects/printer.ogg', 50, FALSE)
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "receive"))
-	say("Received correspondence from [sender_name].")
+	say("Получена корреспонденция от [sender_name].")
 	history_add("Receive", sender_name)
 	//Об отправке рапортует отправитель, но факс ЦК вещает в свою рацию, до станции она не достаёт.
 	//Поэтому о получении говорит сам приёмник - иначе о факсе с ЦК узнают только случайно.
-	announce_receipt(sender_name)
+	announce_receipt(sender_name, sender_id)
 
 	// Добавляем в лог сообщений для панели тикетов
 	var/paper_text
@@ -420,17 +439,36 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	addtimer(CALLBACK(src, PROC_REF(vend_item), loaded), 1.9 SECONDS)
 
 /**
- * Объявляет по командному каналу о полученной корреспонденции.
+ * Можно ли этой машине вообще говорить в эфир станции.
  *
  * Подпольные и снятые с сети аппараты молчат: факс синдиката и машина с перерезанным
- * сигнальным проводом не должны светиться в эфире станции.
- * Arguments:
- * * sender_name - имя отправителя, как его показал передающий факс.
+ * сигнальным проводом не должны светиться в командном канале ни при отправке, ни при получении.
  */
-/obj/machinery/fax/proc/announce_receipt(sender_name)
-	if(syndicate_network || !visible_to_network)
+/obj/machinery/fax/proc/can_announce()
+	return !syndicate_network && visible_to_network
+
+/**
+ * Объявляет по командному каналу об отправленной корреспонденции.
+ * Arguments:
+ * * destination_name - имя машины-получателя, взятое у неё самой, а не из параметров клиента.
+ */
+/obj/machinery/fax/proc/announce_dispatch(destination_name)
+	if(!can_announce())
 		return
-	Radio?.talk_into(src, "Внимание. Получен факс от [sender_name].", RADIO_CHANNEL_COMMAND)
+	Radio?.talk_into(src, "Внимание. Отправлен факс от [fax_name]/[fax_id] на [destination_name].", RADIO_CHANNEL_COMMAND)
+
+/**
+ * Объявляет по командному каналу о полученной корреспонденции.
+ * Arguments:
+ * * sender_name - имя отправителя, как его показал передающий факс. Переименовывается мультитулом,
+ * поэтому идёт в эфир вместе с ID - ровно так же, как в объявлении об отправке.
+ * * sender_id - сетевой ID отправителя, если факс пришёл от машины, а не от ЦК или админа.
+ */
+/obj/machinery/fax/proc/announce_receipt(sender_name, sender_id)
+	if(!can_announce())
+		return
+	var/sender_label = sender_id ? "[sender_name]/[sender_id]" : sender_name
+	Radio?.talk_into(src, "Внимание. Получен факс от [sender_label].", RADIO_CHANNEL_COMMAND)
 
 /**
  * Procedure for animating an object entering or leaving the fax machine.

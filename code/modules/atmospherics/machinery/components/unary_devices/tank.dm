@@ -26,8 +26,10 @@
 	setPipingLayer(piping_layer)
 
 //Разобранный или разбитый бак обязан вывалить содержимое наружу, а не растворить его в пустоте.
-//deconstruct() ловит оба пути: аккуратную разборку ломом и obj_destruction() от урона.
-/obj/machinery/atmospherics/components/unary/tank/deconstruct(disassembled = TRUE)
+//Точка перехвата - именно Destroy(): deconstruct() покрывает разборку ломом и obj_destruction(),
+//но взрыв первой категории (/obj/ex_act), acid_melt() и burn() зовут qdel(src) напрямую мимо него.
+//Выпускаем до ..(): родительский Destroy() первым же делом чистит airs через nullifyNode().
+/obj/machinery/atmospherics/components/unary/tank/Destroy()
 	if(!(flags_1 & NODECONSTRUCT_1))
 		release_contents()
 	return ..()
