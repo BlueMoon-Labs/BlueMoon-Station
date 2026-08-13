@@ -2,14 +2,20 @@
 
 /obj/item/love_offer
 	name = "ERP Ticket"
-	desc = "What is ERP?"
+	desc = "What is ERP? You don't know.\nIt's a sex offer, yes, on paper."
 	icon = 'icons/obj/bureaucracy.dmi'
-	icon_state = "paper_talisman"
-	item_state = "paper"
+	icon_state = "erp_ticket"
+	custom_price = 5
+	custom_premium_price = 25
 	var/proposer_name = ""
 	var/recipient_name = ""
-	var/offer_text = "Ты заслуживаешь перерыва.\nПочему бы не провести его с тем,\nкто знает, как сделать его\nнезабываемым?"
+	var/offer_text = "Ты заслуживаешь перерыва.\nПочему бы не провести его вместе\nи сделать незабываемым?"
 	var/saved = FALSE
+
+/obj/item/love_offer/examine(mob/user)
+	. = ..()
+	if(saved)
+		. += span_love("Это предложение от [proposer_name] для [recipient_name].")
 
 /obj/item/love_offer/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

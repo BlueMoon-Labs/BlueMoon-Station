@@ -15,7 +15,7 @@ export const LoveOffer = (props) => {
   const CHARS_PER_LINE = 47;
   const LINE_HEIGHT = 18;
   const PADDING = 18;
-  const LINE_PLUS_AFTER_SAVE = 16;
+  const LINE_PLUS_AFTER_SAVE = 18;
   const LINE_PLUS_BEFORE_SAVE = 10;
 
   const linesCount = offer_text
