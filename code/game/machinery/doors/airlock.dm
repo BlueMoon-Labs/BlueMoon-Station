@@ -1238,9 +1238,8 @@
 			to_chat(user, "<span class='warning'>It's welded, it won't budge!</span>")
 			return
 
-		var/time_to_open = 5
 		if(hasPower() && !prying_so_hard)
-			time_to_open = 50
+			var/time_to_open = 5 SECONDS
 			playsound(src, 'sound/machines/airlock_alien_prying.ogg',100,1) //is it aliens or just the CE being a dick?
 			prying_so_hard = TRUE
 			if(do_after(user, time_to_open,target = src))

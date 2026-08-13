@@ -546,6 +546,26 @@
 				steps = 5
 	else
 		steps = step
+
+	// Диагональный шаг - это движение сразу по двум осям, и заслон нужен для
+	// каждой из них. switch() ниже знает только четыре кардинальных дира: на
+	// диагонали dir2 и dir3 оставались нулём, боковые клетки в список не
+	// попадали, и проверка вырождалась в один турф по диагонали. Сами поля не
+	// плотные (density = FALSE), физически сингу держит только этот прок, так
+	// что угол клетки полей был проходим насквозь.
+	if(ISDIAGONALDIR(direction))
+		var/vertical = direction & (NORTH|SOUTH)
+		var/horizontal = direction & (EAST|WEST)
+		if(!vertical || !horizontal)
+			return FALSE
+		if(!check_turfs_in(vertical, steps) || !check_turfs_in(horizontal, steps))
+			return FALSE
+		// Обе грани могут быть чисты, а угол между ними - нет.
+		var/turf/corner = src.loc
+		for(var/i in 1 to steps)
+			corner = get_step(corner, direction)
+		return isturf(corner) && can_move(corner)
+
 	var/list/turfs = list()
 	var/turf/T = src.loc
 	for(var/i = 1 to steps)

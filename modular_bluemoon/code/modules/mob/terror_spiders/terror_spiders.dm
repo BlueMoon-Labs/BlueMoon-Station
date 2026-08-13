@@ -165,6 +165,8 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/get_status_tab_items()
 	. = ..()
 	. += "Intent: [a_intent]"
+	if(stat == CONSCIOUS && degenerate)
+		. += "Связь с ульем: оборвана! Ты умираешь..."
 
 // --------------------------------------------------------------------------------
 // --------------------- TERROR SPIDERS: SHARED ATTACK CODE -----------------------
@@ -425,15 +427,6 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	if(!.)
 		for(var/obj/structure/spider/S in range(1, get_turf(src)))
 			return S
-
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/Stat()
-	..()
-	// Determines what shows in the "Status" tab for player-controlled spiders. Used to help players understand spider health regeneration mechanics.
-	// Uses <font color='#X'> because the status panel does NOT accept <span class='X'>.
-	if(statpanel("Status") && ckey && stat == CONSCIOUS)
-		if(degenerate)
-			stat(null, "<font color='#eb4034'>Hivemind Connection Severed! Dying...</font>") // color=red
-			return
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/DoRemoteView()
 	if(!isturf(loc))

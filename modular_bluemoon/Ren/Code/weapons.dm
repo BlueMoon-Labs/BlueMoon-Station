@@ -47,7 +47,7 @@
 /obj/item/gun/energy/pulse/pistol/inteq
 	name = "Melter"
 	desc = "<span class='danger'>Не направлять рабочую часть на органику</span>"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	icon_state = "melter"
 	charge_delay = 4
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/melter, /obj/item/ammo_casing/energy/laser/melter/destroy)
@@ -97,7 +97,7 @@
 	desc = "Энергетический пистолет довольно старого образца. Создан для использования спецслужбами Солнечной Федерации, но со временем был замещён более удачными образцами. Выглядит сильно модернизированным."
 	icon_state = "canceller"
 	item_state = "canceller"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler)
@@ -113,7 +113,7 @@
 	name = "AA12 magazine (12g buckshot)"
 	desc = "Здоровый коробчатый магазин для патрон 12 калибра"
 	icon_state = "mag-aa-small"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 8
 
@@ -125,7 +125,7 @@
 	name = "AA12 drum magazine (12g buckshot)"
 	desc = "Здоровый барабанный магазин для патрон 12 калибра"
 	icon_state = "mag-aa"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = "shotgun"
@@ -142,7 +142,7 @@
 	item_state = "minotaur"
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file =  'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 2
@@ -189,7 +189,7 @@
 	item_state = "m240_0"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/m2a100)
 	attack_verb = list("attacked", "bumped", "hited")
 	force = 12

@@ -223,13 +223,18 @@
 
 /datum/action/item_action/chameleon/change/proc/update_look(mob/user, obj/item/picked_item)
 	if(isliving(user))
-		var/mob/living/C = user
-		if(C.stat != CONSCIOUS)
+		var/mob/living/L = user
+		if(L.stat != CONSCIOUS)
 			return
 
 		update_item(picked_item)
 		var/obj/item/thing = target
 		thing.update_slot_icon()
+		if(iscarbon(user))
+			var/mob/living/carbon/C = user
+			if(C.head == target || C.wear_mask == target)
+				C.head_update(target, TRUE)
+
 	UpdateButtons()
 
 /datum/action/item_action/chameleon/change/proc/update_item(obj/item/picked_item)
@@ -242,15 +247,32 @@
 		chameleon_item.desc = initial(picked_item.desc)
 	chameleon_item.icon_state = initial(picked_item.icon_state)
 	chameleon_item.item_state = initial(picked_item.item_state)
-	var/obj/item/clothing/CL = chameleon_item
-	var/obj/item/clothing/PCL = new picked_item
-	if(istype(CL) && istype(PCL))
+
+	if(istype(chameleon_item, /obj/item/clothing) && ispath(picked_item, /obj/item/clothing))
+		var/obj/item/clothing/CL = chameleon_item
+		var/obj/item/clothing/PCL = new picked_item
 		CL.flags_cover = PCL.flags_cover
 		CL.flags_inv = PCL.flags_inv
 		CL.mutantrace_variation = PCL.mutantrace_variation
 		CL.mob_overlay_icon = PCL.mob_overlay_icon
+		CL.alternate_worn_layer = PCL.alternate_worn_layer
+		CL.anthro_mob_worn_overlay = PCL.anthro_mob_worn_overlay
+		CL.tail_suit_worn_overlay = PCL.tail_suit_worn_overlay
+
 		if(istype(CL, /obj/item/clothing/under) && istype(PCL, /obj/item/clothing/under))
-			CL:fitted = PCL:fitted
+			var/obj/item/clothing/under/CL_under = CL
+			var/obj/item/clothing/under/PCL_under = PCL
+			CL_under.fitted = PCL_under.fitted
+
+		if(istype(CL, /obj/item/clothing/suit))
+			var/obj/item/clothing/suit/CL_suit = CL
+			CL_suit.taur_types_icon_whitelist = initial(CL_suit.taur_types_icon_whitelist)
+			CL_suit.taur_mob_worn_overlay = initial(CL_suit.taur_mob_worn_overlay)
+			if(istype(PCL, /obj/item/clothing/suit))
+				var/obj/item/clothing/suit/PCL_suit = PCL
+				CL_suit.taur_types_icon_whitelist = PCL_suit.taur_types_icon_whitelist.Copy()
+				CL_suit.taur_mob_worn_overlay = PCL_suit.taur_mob_worn_overlay
+
 		qdel(PCL)
 	chameleon_item.icon = initial(picked_item.icon)
 	chameleon_item.update_icon()

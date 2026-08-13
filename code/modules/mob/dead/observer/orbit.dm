@@ -172,4 +172,4 @@
 /datum/orbit_menu/ui_assets()
 	. = ..() || list()
 	. += get_asset_datum(/datum/asset/simple/orbit)
-	. += get_asset_datum(/datum/asset/spritesheet/jobs)
+	. += get_asset_datum(/datum/asset/spritesheet_batched/jobs)

@@ -766,42 +766,6 @@
 	var/obj/item/tank/internals/emergency_oxygen/recharge/I = new(src)
 	H.equip_to_slot_or_del(I, ITEM_SLOT_RPOCKET)
 
-/mob/living/carbon/get_status_tab_items()
-	. = ..()
-	var/obj/item/organ/alien/plasmavessel/vessel = getorgan(/obj/item/organ/alien/plasmavessel)
-	if(vessel)
-		. += "Plasma Stored: [vessel.storedPlasma]/[vessel.max_plasma]"
-	if(locate(/obj/item/assembly/health) in src)
-		. += "Health: [health]"
-	var/obj/item/organ/heart/vampire/darkheart = getorgan(/obj/item/organ/heart/vampire)
-	if(darkheart)
-		. += "Current blood level: [blood_volume]/[BLOOD_VOLUME_MAXIMUM]."
-	if(!ishuman(src))
-		return
-	var/mob/living/carbon/human/H = src
-	if(istype(H.wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
-		var/obj/item/clothing/suit/space/hardsuit/nano/NS = H.wear_suit
-		var/datum/gas_mixture/environment = H.loc?.return_air()
-		var/pressure = environment?.return_pressure() || 0
-		. += ""
-		. += "Crynet Protocols: [!NS.shutdown ? "Engaged" : "Disengaged"]"
-		. += "Energy Charge: [NS.cellon ? "[round(NS.cell.percent())]%" : "offline"]"
-		. += "Mode: [NS.mode]"
-		. += "Overall Status: [NS.healthon ? "[H.health]% healthy" : "offline"]"
-		. += "Nutrition: [NS.healthon ? "[H.nutrition]" : "offline"]"
-		. += "Oxygen Loss: [NS.healthon ? "[H.getOxyLoss()]" : "offline"]"
-		. += "Toxins: [NS.healthon ? "[H.getToxLoss()]" : "offline"]"
-		. += "Burns: [NS.healthon ? "[H.getFireLoss()]" : "offline"]"
-		. += "Brute: [NS.healthon ? "[H.getBruteLoss()]" : "offline"]"
-		. += "Radiation: [NS.radon ? "[H.radiation] rads" : "offline"]"
-		. += "Body Temperature: [NS.healthon ? "[round(H.bodytemperature - T0C, 0.1)] C" : "offline"]"
-		. += "Atmospheric Pressure: [NS.atmoson ? "[pressure] kPa" : "offline"]"
-		if(NS.atmoson && environment)
-			. += "Atmospheric Temperature: [round(environment.return_temperature() - T0C, 0.01)] C"
-	else if(istype(H.wear_suit, /obj/item/clothing/suit/space/space_ninja))
-		var/obj/item/clothing/suit/space/space_ninja/NS = H.wear_suit
-		. += NS.get_status_readout(H)
-
 /mob/living/carbon/human/Move(NewLoc, direct)
 	. = ..()
 	if(.)
@@ -1064,14 +1028,12 @@
 /obj/attack_nanosuit(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	return attack_heavy_melee(user, does_attack_animation)
 
-/obj/attacked_by(obj/item/I, mob/living/user)
-	if(I.force && I.damtype == BRUTE && ishuman(user))
+/obj/item/get_damage_to_obj(obj/O, mob/living/user)
+	. = ..()
+	if(. && damtype == BRUTE && ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.mind?.has_martialart(MARTIALART_NANOSUIT) || H.has_heavy_melee())
-			visible_message(span_danger("[H] бьёт [src] с невероятной силой при помощи [I.name]!") , null, null, COMBAT_MESSAGE_RANGE)
-			take_damage(I.force*1.75, I.damtype, "melee", TRUE)//take 75% more damage with strength on
-			return
-	return ..()
+			. *= 1.75
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, quickstart = TRUE, params)
 	if(thrower && ishuman(thrower))

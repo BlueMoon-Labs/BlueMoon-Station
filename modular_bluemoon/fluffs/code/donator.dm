@@ -688,7 +688,7 @@
 	name = "Black coat"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/h_soul_coat
-	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda")
+	ckeywhitelist = list("hateredsoul", "ggishka", "arion1234", "swgitty", "sw00ty", "sierraiv", "ordinarylife", "milidead", "blatoff", "angelnedemon", "moun4l", "foxrtotlimda", "hartty")
 
 /datum/gear/donator/bm/tricorne
 	name = "Tricorne"
@@ -2508,7 +2508,7 @@
 	name = "Propeller beanie"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/stupid_cap
-	ckeywhitelist = list("angelnedemon")
+	ckeywhitelist = list("angelnedemon", "keerw1n")
 
 /datum/gear/donator/bm/infovisor
 	name = "Infovisor"
@@ -2540,3 +2540,11 @@
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/yun_sneakers
 	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/antique_cape
+	name = "Antique cape"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/donator/bm/antique_cape
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#777777", "#FFFFCC", "#66FFFF")
+	ckeywhitelist = list("ingvarr3313", "shizalrp", "herobrine998")

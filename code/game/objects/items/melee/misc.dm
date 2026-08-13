@@ -98,6 +98,9 @@
 	attack_verb = list("attacked", "impaled", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 
 /obj/item/melee/synthetic_arm_blade/Initialize(mapload)
 	. = ..()
