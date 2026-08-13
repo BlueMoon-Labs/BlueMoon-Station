@@ -2269,6 +2269,7 @@
 #include "code\modules\asset_cache\assets\adventure.dm"
 #include "code\modules\asset_cache\assets\arcade.dm"
 #include "code\modules\asset_cache\assets\chat.dm"
+#include "code\modules\asset_cache\assets\chem_dispenser_recipes.dm"
 #include "code\modules\asset_cache\assets\circuits.dm"
 #include "code\modules\asset_cache\assets\common.dm"
 #include "code\modules\asset_cache\assets\condiments.dm"
