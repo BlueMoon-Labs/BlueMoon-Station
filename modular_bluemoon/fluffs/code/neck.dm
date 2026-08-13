@@ -78,8 +78,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 
-///////////////////////////////////////////////
-
 /obj/item/clothing/neck/cloak/wintercape
 	name = "Winter Cape"
 	desc = "The cape is made of fairly thick fabric and trimmed with gold. The cape itself is designed in a wintery style, with icy accents and prominent gold shoulder straps, clearly identifying it as belonging to a Lieutenant Commander."
@@ -87,6 +85,8 @@
 	item_state = "wintercape"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+
+///////////////////////////////////////////////
 
 /obj/item/clothing/neck/donator/bm/antique_cape
 	name = "Antique cape"
