@@ -111,7 +111,7 @@
 	ranged = 1
 	retreat_distance = 4
 	minimum_distance = 4
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	icon_state = "infiltrator_sniper"
 	icon_living = "infiltrator_sniper"
 	casingtype = /obj/item/ammo_casing/p50
@@ -136,7 +136,7 @@
 	wound_bonus = 40
 	bare_wound_bonus = 15
 	sharpness = SHARP_EDGED
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	icon_state = "infiltrator_mele"
 	icon_living = "infiltrator_mele"
 	loot = list(/obj/effect/gibspawner/human)
@@ -154,7 +154,7 @@
 	sharpness = SHARP_EDGED
 	wound_bonus = 10
 	bare_wound_bonus = 10
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	var/number
 
 /mob/living/simple_animal/hostile/skeleton/meatguy/Initialize(mapload)
@@ -168,7 +168,7 @@
 	name = "Red alert"
 	icon_state = "komunist"
 	icon_living = "komunist"
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	maxHealth = 180
 	health = 180
 	casingtype = /obj/item/ammo_casing/a9x39

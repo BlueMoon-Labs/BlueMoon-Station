@@ -1,4 +1,3 @@
-import { classes } from 'common/react';
 import { createSearch } from 'common/string';
 import { useState } from 'react';
 
@@ -17,6 +16,7 @@ import {
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { DesignIcon } from './common/DesignIcon';
 import { MaterialAmount, MaterialFormatting, Materials } from './common/Materials';
 
 const COLOR_NONE = 0;
@@ -400,7 +400,8 @@ export const FabricatorContent = (props) => {
 };
 
 const ItemList = (props) => {
-  const { act } = useBackend();
+  const { act, data } = useBackend();
+  const { design_sizes = {} } = data;
   const {
     items,
     materialsObj,
@@ -473,7 +474,7 @@ const ItemList = (props) => {
           >
             <Flex align="center">
               <Flex.Item mr={1}>
-                <span className={classes(['design32x32', item.id])} />
+                <DesignIcon id={item.id} sizeClass={design_sizes[item.id]} />
               </Flex.Item>
               <Flex.Item color={COLOR_KEYS[color1]}>
                 <b style={{ lineHeight: ROW_BTN_HEIGHT }}>{item.name}</b>

@@ -158,7 +158,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/machinery/cryopod
 	name = "cryogenic freezer"
 	desc = "Suited for Cyborgs and Humanoids, the pod is a safe place for personnel affected by the Space Sleep Disorder to get some rest."
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "cryopod-open"
 	density = TRUE
 	anchored = TRUE

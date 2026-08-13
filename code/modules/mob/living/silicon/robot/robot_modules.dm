@@ -971,7 +971,7 @@
 			dogborg = TRUE
 		if("Kittyborg")
 			cyborg_base_icon = "engi"
-			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/kittyborg_engi.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_engi.dmi'
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
 		if("Dullahan (Taur)")
@@ -1276,7 +1276,7 @@
 			dogborg = TRUE
 		if("Kittyborg")
 			cyborg_base_icon = "sec"
-			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/kittyborg_sec.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi'
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
 		if("Dragon") // WhiteMoon Port (Dragonborg)

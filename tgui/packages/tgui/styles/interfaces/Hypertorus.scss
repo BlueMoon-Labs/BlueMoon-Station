@@ -4,6 +4,7 @@
  * при обновлении. Свечения нет намеренно - панель должна читаться как железо
  * в машинном отделении, а не как экранная заставка.
  */
+@use 'sass:color';
 @use '../colors.scss';
 
 // Сталь корпуса: рамки, фаски, разделители.
@@ -56,7 +57,7 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
   padding: 0.5em 0.75em;
   margin-bottom: 0.5em;
   border: 1px solid $steel-line;
-  border-top-color: lighten($steel-line, 6%);
+  border-top-color: color.adjust($steel-line, $lightness: 6%);
   border-bottom-color: $steel-line-dark;
   background: $panel-bg;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -175,7 +176,7 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
   min-width: 1.4em;
   margin-left: 0.4em;
   padding: 0 0.3em;
-  border: 1px solid darken($lamp-alarm, 10%);
+  border: 1px solid color.adjust($lamp-alarm, $lightness: -10%);
   background: $lamp-alarm;
   color: colors.$white;
   font-family: $readout-font;
@@ -189,7 +190,7 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 .Hypertorus__step {
   padding: 0.4em 0.5em;
   border: 1px solid $steel-line;
-  border-top-color: lighten($steel-line, 6%);
+  border-top-color: color.adjust($steel-line, $lightness: 6%);
   background: $panel-bg;
 }
 
@@ -220,7 +221,7 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 }
 
 .Hypertorus__chainArrow {
-  color: lighten($steel-line, 12%);
+  color: color.adjust($steel-line, $lightness: 12%);
 }
 
 .Hypertorus__chainArrow--live {
@@ -358,7 +359,7 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 .Hypertorus__recipe {
   padding: 0.5em;
   border: 1px solid $steel-line;
-  border-top-color: lighten($steel-line, 6%);
+  border-top-color: color.adjust($steel-line, $lightness: 6%);
   border-bottom-color: $steel-line-dark;
   background: $panel-bg;
 }

@@ -78,7 +78,14 @@
 				if (childname == "[child.type]")
 					var/list/tree = splittext(childname, "/")
 					childname = tree[tree.len]
-				.[child.type] = "parent=[url_encode(type)];name=[childname]"
+				// winset parses spaces in its parameter string as separators. Passing a
+				// display name such as "Chat Box Spam" verbatim therefore turns "Box"
+				// into a bogus property lookup on the menu element. list2params escapes
+				// both values using the format winset expects.
+				.[child.type] = list2params(list(
+					"parent" = "[type]",
+					"name" = "[childname]",
+				))
 				. += childlist
 
 	for (var/thing in verblist)

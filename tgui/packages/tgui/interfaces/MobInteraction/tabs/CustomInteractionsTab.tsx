@@ -490,7 +490,7 @@ export const CustomInteractionsTab = (props) => {
         <Box color="label">
           {custom.required_body_parts
             ? <>Оголено: <b>{bodyPartsLabel}</b></>
-            : <><b>Всегда доступно</b></>}
+            : <b>Всегда доступно</b>}
         </Box>
         <Box color="label">
           {custom.partner_orgasm ? <>Оргазм партнёра · </> : null}
