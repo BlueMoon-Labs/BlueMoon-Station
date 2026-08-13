@@ -45,6 +45,8 @@
 	var/list/sheet_files = list()
 	/// "foo_bar" -> описание иконки в списочном виде (см. /datum/universal_icon/to_list)
 	var/list/entries = list()
+	/// Ленивый кэш oversized_icon_classes(): считается один раз на собранный лист.
+	var/list/oversized_classes
 	/// Сколько спрайтов кладём в один шард.
 	var/sprites_per_shard = SPRITES_PER_SHARD_DEFAULT
 
@@ -217,6 +219,7 @@
 
 	sizes = list()
 	sprites = list()
+	oversized_classes = null
 	sheet_files = list()
 	unread_dmi_paths = list()
 	retry_timer_id = null
@@ -364,6 +367,7 @@
 	log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - похоже, деплой ещё копирует дерево иконок. Пересборка через [UNREAD_DMI_RETRY_DELAY / 10] с, осталось попыток: [unread_retries_left]. [describe_unread_dmis()]")
 	sizes = list()
 	sprites = list()
+	oversized_classes = null
 	sheet_files = list()
 	retry_timer_id = addtimer(CALLBACK(SSasset_loading, TYPE_PROC_REF(/datum/controller/subsystem/asset_loading, queue_asset), src), UNREAD_DMI_RETRY_DELAY, TIMER_STOPPABLE)
 
@@ -696,6 +700,27 @@
 	if(!sprite)
 		return null
 	return "[name][sprite[SPR_SIZE]]"
+
+/**
+ * Карта "спрайт -> класс размера" для всех спрайтов, чей размер не равен тайлу
+ * (в листе дизайнов это только крупные - широкие машины и высокие шкафы).
+ *
+ * Интерфейсу нужен размер, чтобы не рисовать широкую иконку в коробке 32x32 и не
+ * резать её пополам. Слать класс каждому дизайну - лишние килобайты статики на
+ * ровном месте: спрайтов не в тайл в листе единицы, остальным хватает дефолта.
+ */
+/datum/asset/spritesheet_batched/proc/oversized_icon_classes()
+	RETURN_TYPE(/list)
+	if(!isnull(oversized_classes))
+		return oversized_classes
+	oversized_classes = list()
+	var/tile_size_id = "[world.icon_size]x[world.icon_size]"
+	for(var/sprite_name in sprites)
+		var/list/sprite = sprites[sprite_name]
+		if(sprite[SPR_SIZE] == tile_size_id)
+			continue
+		oversized_classes[sprite_name] = "[name][sprite[SPR_SIZE]]"
+	return oversized_classes
 
 #undef SPR_SIZE
 #undef SPR_IDX

@@ -34,6 +34,7 @@
 	unregister()
 	entries = list()
 	sprites = list()
+	oversized_classes = null
 	sizes = list()
 	sheet_files = list()
 	job_id = null
@@ -128,6 +129,31 @@
 	var/datum/asset_cache_item/reforged = SSassets.cache[png_name]
 	TEST_ASSERT_NOTNULL(reforged, "png не зарегистрирован после пересборки")
 	TEST_ASSERT_EQUAL(md5asfile(reforged.resource), md5asfile(file(clobbered_png)), "зарегистрированный слепок не совпал с пересобранным png")
+
+/**
+ * Карта размеров для интерфейсов: списки производства ужимают по ней крупный
+ * спрайт до тайла, а спрайту ровно в тайл размер не шлётся вовсе.
+ */
+/datum/unit_test/spritesheet_batched_oversized_classes
+
+/datum/unit_test/spritesheet_batched_oversized_classes/Run()
+	var/datum/asset/spritesheet_batched/test_batched/sheet = new()
+	sheet.reset_state()
+	drop_spritesheet_artifacts(sheet)
+	sheet.register()
+	TEST_ASSERT(sheet.fully_generated, "лист не собрался")
+
+	var/list/oversized = sheet.oversized_icon_classes()
+	TEST_ASSERT_EQUAL(oversized["composed"], "test_batched128x64", "спрайт 128x64 не попал в карту размеров: [json_encode(oversized)]")
+	for(var/item in sheet.items)
+		var/sprite_id = sheet.sprite_id_for(item)
+		TEST_ASSERT_NULL(oversized[sprite_id], "спрайт [sprite_id] ростом в тайл попал в карту размеров - это лишняя статика")
+
+	// Пересборка обязана сбросить кэш карты, иначе интерфейс продолжит ужимать
+	// иконки по прошлой раскладке.
+	sheet.reset_state()
+	sheet.register()
+	TEST_ASSERT_EQUAL(json_encode(sheet.oversized_icon_classes()), json_encode(oversized), "карта размеров после пересборки разошлась с исходной")
 
 /**
  * Тот же лист, но по отложенному пути (yield = TRUE) - так его собирает

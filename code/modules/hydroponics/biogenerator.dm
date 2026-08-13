@@ -321,6 +321,10 @@
 			))
 		data["categories"] += list(cat)
 
+	// Крупные спрайты дизайнов интерфейс ужимает до тайла, для чего ему нужен их размер.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	data["design_sizes"] = design_sheet.oversized_icon_classes()
+
 	return data
 
 /obj/machinery/biogenerator/ui_act(action, list/params)

@@ -14,6 +14,19 @@ import { NtosWindow, Window } from '../layouts';
 // Ячейка сетки плиток дизайнов - один тайл BYOND.
 const DESIGN_CELL_SIZE = 32;
 const DESIGN_SIZE_REGEX = /design(\d+)x(\d+)/;
+// Класс размера идёт первым словом и только в паре с числами: id вроде
+// design_disk на "design" тоже начинается, а размер ему всё равно нужен.
+const DESIGN_SIZE_CLASS_REGEX = /^design\d+x\d+\s/;
+
+/**
+ * Дописывает дефолтный класс размера дизайнам, которым DM его не прислал:
+ * без него у плитки нет ни ширины, ни высоты, и иконка не рисуется вовсе.
+ */
+export const withDesignSizeClass = classes => (
+  DESIGN_SIZE_CLASS_REGEX.test(classes)
+    ? classes
+    : `design${DESIGN_CELL_SIZE}x${DESIGN_CELL_SIZE} ${classes}`
+);
 
 /**
  * Спрайт шире или выше тайла занимает столько ячеек сетки, сколько реально
@@ -69,7 +82,7 @@ const selectRemappedStaticData = data => {
     design_cache[remapId(id)] = {
       name,
       hacked_only,
-      class: classes.startsWith("design") ? classes : `design32x32 ${classes}`,
+      class: withDesignSizeClass(classes),
     };
   }
 

@@ -3,7 +3,7 @@
  * только классом вида design64x32, поэтому разбор класса - единственное, что
  * удерживает крупный спрайт в его ячейках и не даёт ему двигать соседей.
  */
-import { designGridSpan } from './Techweb';
+import { designGridSpan, withDesignSizeClass } from './Techweb';
 
 describe('designGridSpan', () => {
   test('обычный спрайт не занимает лишних ячеек', () => {
@@ -39,5 +39,23 @@ describe('designGridSpan', () => {
     expect(designGridSpan('')).toBeUndefined();
     expect(designGridSpan(undefined)).toBeUndefined();
     expect(designGridSpan('someothersheet32x32 thing')).toBeUndefined();
+  });
+});
+
+describe('withDesignSizeClass', () => {
+  test('присланный размер остаётся как есть', () => {
+    expect(withDesignSizeClass('design64x32 experimentor'))
+      .toBe('design64x32 experimentor');
+  });
+
+  test('без размера дописывается тайл', () => {
+    expect(withDesignSizeClass('beaker')).toBe('design32x32 beaker');
+  });
+
+  test('id, начинающийся на design, тоже получает размер', () => {
+    // design_disk без класса размера рисовался плиткой 0x0 - иконки просто не было.
+    expect(withDesignSizeClass('design_disk')).toBe('design32x32 design_disk');
+    expect(withDesignSizeClass('design_disk_adv'))
+      .toBe('design32x32 design_disk_adv');
   });
 });
