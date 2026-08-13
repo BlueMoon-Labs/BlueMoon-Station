@@ -29,15 +29,19 @@ cp -r strings/* $1/strings/
 #иконок лист приезжает пустым, поэтому в деплой едут все .dmi всех деревьев кода.
 #config сюда не попадает намеренно: конфиг серверу подкладывают снаружи, а созданный
 #заранее каталог сломал бы тому же CI его собственный mkdir.
+#find вырезает каталог деплоя по относительному пути вида ./x, поэтому $1 заранее
+#приводится к нему: абсолютный путь, ./-префикс или хвостовой слеш иначе тихо ломают
+#-prune, и повторный деплой утащит уже разложенные DMI внутрь $1/$1.
+deploy_prune=$(realpath -m --relative-base=. -- "$1")
 find . \
     -path ./.git -prune -o \
     -path ./.claude -prune -o \
     -path ./config -prune -o \
     -path ./data -prune -o \
     -path ./tools -prune -o \
-    -path "./$1" -prune -o \
+    -path "./$deploy_prune" -prune -o \
     -name "*.dmi" -print0 \
-    | xargs -0 -r cp --parents -t $1/
+    | xargs -0 -r cp --parents -t "$1/"
 
 #remove .dm files from _maps
 
