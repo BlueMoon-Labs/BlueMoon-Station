@@ -230,9 +230,9 @@
 		update_item(picked_item)
 		var/obj/item/thing = target
 		thing.update_slot_icon()
-		if(ispath(picked_item, /obj/item/clothing/head) && iscarbon(user))
+		if(iscarbon(user))
 			var/mob/living/carbon/C = user
-			if(C.head == target)
+			if(C.head == target || C.wear_mask == target)
 				C.head_update(target, TRUE)
 
 	UpdateButtons()
