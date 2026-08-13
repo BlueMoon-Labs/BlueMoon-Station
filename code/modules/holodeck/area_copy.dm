@@ -20,6 +20,24 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 	/obj/item/gun/energy = "ammo_type"
 	)))
 
+//Дополнительный запрет для копирования ВАРОВ ТУРФА: в отличие от DuplicateObject
+//турф не создаётся заново, а перекрашивается через ChangeTurf, и слепое присваивание
+//утаскивало на приёмник ещё и состояние освещения шаблона:
+//lc_* - углы шаблона с его координатами. Источник света рядом с копией брал их из
+//соседнего турфа и лез в таблицу затухания по смещению в десятки тайлов
+//("list index out of bounds" в LUM_FALLOFF, 166 рантаймов за один ресет тандердома).
+//lighting_object/lighting_corners_initialised - настоящий оверлей приёмника терялся
+//без qdel и уходил в харддел, а флаг инициализации врал про наличие четырёх углов.
+//light/light_sources - источники, принадлежащие атомам шаблона.
+//has_opaque_atom/shadow_weight_sum/cached_lumcount/dynamic_lumcount/luminosity -
+//производные величины, их пересчитывает сам ChangeTurf.
+GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
+	"light", "light_sources", "lighting_object", "lighting_corners_initialised",
+	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
+	"has_opaque_atom", "shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
+	"luminosity"
+	))
+
 /proc/DuplicateObject(atom/original, perfectcopy = TRUE, sameloc = FALSE, atom/newloc = null, nerf = FALSE, holoitem=FALSE)
 	RETURN_TYPE(original.type)
 	if(!original)
@@ -144,13 +162,7 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 			copiedobjs += SM
 			copiedobjs += SM.GetAllContents()
 
-		for(var/V in T.vars - GLOB.duplicate_forbidden_vars)
-			if(V == "air")
-				var/turf/open/O1 = B
-				var/turf/open/O2 = T
-				O1.air.copy_from(O2.return_air())
-				continue
-			B.vars[V] = T.vars[V]
+		B.copy_template_vars(T)
 		toupdate += B
 
 	if(toupdate.len)
@@ -160,3 +172,35 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 	rebuild_duplicated_proximity_monitors(copiedobjs)
 
 	return copiedobjs
+
+/**
+ * Переносит вары турфа-шаблона на этот турф (голодек, ресет тандердома).
+ *
+ * Правила те же, что у DuplicateObject: список копируется, а не шарится (иначе
+ * геймплей в копии мутировал бы списки шаблона), одиночная ссылка на датум не
+ * переносится вовсе - она сломается, как только оригинал удалят. Сверх этого
+ * отсекается лайтинг-состояние, см. GLOB.turf_copy_forbidden_vars.
+ */
+/turf/proc/copy_template_vars(turf/template)
+	if(!template)
+		return
+	for(var/varname in template.vars - GLOB.duplicate_forbidden_vars - GLOB.turf_copy_forbidden_vars)
+		if(varname == "air")
+			var/turf/open/open_copy = src
+			var/turf/open/open_template = template
+			if(istype(open_copy) && istype(open_template))
+				open_copy.air.copy_from(open_template.return_air())
+			continue
+		var/template_value = template.vars[varname]
+		if(islist(template_value))
+			var/list/template_list = template_value
+			vars[varname] = template_list.Copy()
+			continue
+		if(istype(template_value, /datum))
+			continue
+		vars[varname] = template_value
+	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
+	//заводим/гасим собственный по свежим light_range/light_power/light_on.
+	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов
+	if(light || light_range)
+		update_light()

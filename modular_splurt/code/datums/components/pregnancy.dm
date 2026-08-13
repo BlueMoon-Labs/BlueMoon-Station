@@ -148,7 +148,9 @@
 	if(stage < 2)
 		return FALSE
 
-	if(receiver && isliving(target))
+	//receiver приходит не только гениталией: оральный контакт передаёт сюда желудок,
+	//у которого нет genital_flags - откладываем на пол, как и в остальных случаях
+	if(isgenital(receiver) && isliving(target))
 		if(CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
 			return lay_eg(receiver, senders_cum)
 	return lay_eg(get_turf(carrier), senders_cum)
