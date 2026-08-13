@@ -779,6 +779,12 @@
 	// сама доводила состояние до правильного прямо перед тем, как его напечатать.
 	// Три сессии разбора смотрели на почищенную ею картину и потому не сходились.
 	parts += "light in APC cache: [(test_light in test_apc.cached_area_lights) ? "yes" : "NO"] (cache size [length(test_apc.cached_area_lights)], dirty=[test_apc.light_cache_dirty])"
+	// Питание области и состояние лампы: подпись "цвет застыл + световой датум мёртв"
+	// означает, что лампу погасили мимо ночной смены, и без этих полей неизвестно,
+	// кто именно - канал области, статус плафона или последовательность гашения.
+	parts += "area: requires_power=[test_area.requires_power] lightswitch=[test_area.lightswitch] power_light=[test_area.power_light]"
+	parts += "lamp: on=[test_light.on] status=[test_light.status] loss_stage=[test_light.power_loss_stage] emergency=[test_light.emergency_mode] switchcount=[test_light.switchcount] datum=[test_light.light ? "жив" : "МЁРТВ"]"
+	parts += "APC power: operating=[test_apc.operating] lighting=[test_apc.lighting] shorted=[test_apc.shorted] failure_timer=[test_apc.failure_timer]"
 	parts += "queues: apc=[length(GLOB.nightshift_apc_queue)] light=[length(GLOB.nightshift_light_queue)]"
 	parts += "light queued globally: [(test_light in GLOB.nightshift_light_queue) ? "yes" : "no"]"
 	parts += "SSnightshift: active=[SSnightshift.nightshift_active] can_fire=[SSnightshift.can_fire] refresh_running=[SSnightshift.nightshift_refresh_running]"
@@ -795,11 +801,14 @@
 	var/light_flag_at_check = test_light.nightshift_enabled
 	TEST_ASSERT_EQUAL(light_flag_at_check, expected_enabled, "[message_prefix] fixture nightshift flag should match the expected mode. Захвачено при сравнении: [light_flag_at_check], перечитано при отчёте: [test_light.nightshift_enabled], лампа [REF(test_light)]. [fixture_diagnostics()]")
 	TEST_ASSERT_EQUAL(test_light.nightshift_level, expected_level, "[message_prefix] fixture nightshift level should update immediately. [fixture_diagnostics()]")
-	TEST_ASSERT_EQUAL(lowertext(test_light.light_color), expected_color_value, "[message_prefix] fixture light color should update immediately.")
-	TEST_ASSERT_EQUAL(test_light.light_power, expected_power_value, "[message_prefix] fixture light power should update immediately.")
-	TEST_ASSERT(test_light.light, "[message_prefix] fixture should keep a live light datum.")
-	TEST_ASSERT_EQUAL(lowertext(test_light.light.light_color), expected_color_value, "[message_prefix] live emitted light color should update immediately.")
-	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power_value, "[message_prefix] live emitted light power should update immediately.")
+	// Диагностика и здесь: в CI (layenia, 2026-08-13) падали именно эти строки -
+	// цвет застыл на прошлом значении, световой датум мёртв, а флаги выше прошли.
+	// Без снимка питания такое падение неотличимо от застрявшей очереди.
+	TEST_ASSERT_EQUAL(lowertext(test_light.light_color), expected_color_value, "[message_prefix] fixture light color should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.light_power, expected_power_value, "[message_prefix] fixture light power should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT(test_light.light, "[message_prefix] fixture should keep a live light datum. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(lowertext(test_light.light.light_color), expected_color_value, "[message_prefix] live emitted light color should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power_value, "[message_prefix] live emitted light power should update immediately. [fixture_diagnostics()]")
 	var/list/current_overlays = test_light.update_overlays()
 	TEST_ASSERT(length(current_overlays) >= 2, "[message_prefix] lit fixtures should expose visible and emissive overlays.")
 	for(var/mutable_appearance/O as anything in current_overlays)
