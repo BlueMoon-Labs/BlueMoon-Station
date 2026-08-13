@@ -33,7 +33,7 @@
 
 /obj/machinery/rnd/server/process()
 	if(!(machine_stat & NOPOWER) && working)
-		produce_heat(base_mining_income[1])
+		produce_heat() //аргументов не принимает: раньше сюда уходил ключ ассоциативного списка
 	if(get_env_temp() >= (temp_tolerance_high + 50) || get_env_temp() <= temp_tolerance_low)
 		if(working)
 			working = FALSE
@@ -107,9 +107,11 @@
 
 /obj/machinery/rnd/server/proc/mine()
 	. = base_mining_income.Copy()
-	var/turf/open/floor/circuit/c_floor = get_turf(src)
-	var/effectiveness = get_exponential_multiplier() // Чем больше серверов - тем меньше доход от сервера
-	var/penalty = max((get_env_temp() - temp_tolerance_high), 0) * temp_penalty_coefficient * (c_floor ? 1 : 2)
+	var/effectiveness = get_exponential_multiplier()
+	//Раньше множитель штрафа зависел от "схемного пола" под сервером, но DM не проверяет тип при
+	//присваивании турфа в типизированную переменную - ветка была истинной на любом полу и не
+	//работала ни дня. Включать скрытую механику задним числом - отдельное балансное решение.
+	var/penalty = max((get_env_temp() - temp_tolerance_high), 0) * temp_penalty_coefficient
 	for(var/i in .)
 		.[i] = max(((.[i] * income_gen) - penalty) * effectiveness, 0)
 
@@ -125,15 +127,16 @@
 			env.adjust_heat((heating_power * heat_gen)*0.8)
 			air_update_turf()
 
-/// Прок считает экспоненту серверов в зависимости от их количества. Больше - меньше эффективности выработки.
+/// Общий множитель выработки сервера.
+///
+/// Убывающую отдачу от количества серверов считает SSresearch.calculate_server_coefficient()
+/// - sqrt(100/N) на всю ферму. Здесь раньше висела ВТОРАЯ такая кривая, персональная: сервера
+/// с четвёртого получали ещё и личный штраф по позиции в списке. Две кривые перемножались, и
+/// суммарный доход фермы переставал расти - пятый сервер давал станции МЕНЬШЕ очков, чем четыре
+/// (≈40*ig против 46*ig). Отсюда и жалобы "чинится доп. серверами... а нет, не чинится".
+/// Оставлен только прежний бонус, чтобы выработка одиночного сервера не изменилась.
 /obj/machinery/rnd/server/proc/get_exponential_multiplier()
-	var/position = GLOB.rndservers_list.Find(src)
-	// Первые 3 сервера получат бонус, остальные получат штраф по логарифмической кривой
-	if(position <= 3)
-		return 1.2
-	var/exponent = 0.35
-	var/effectiveness = 1 / (1 + ((position - 4) ** exponent)) // 4-й сервер будет работать с эффективностью 1.0
-	return effectiveness
+	return 1.2
 
 /proc/fix_noid_research_servers()
 	var/list/no_id_servers = list()

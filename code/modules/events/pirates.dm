@@ -372,10 +372,18 @@
 
 /obj/machinery/computer/piratepad_control
 	name = "cargo hold control terminal"
+	//В этом терминале живёт весь прогресс антагонистов-грабителей. Разбитая консоль обнуляла
+	//добычу за раунд и лишала команду цели, поэтому трюмный пульт неразрушаем. Гражданский
+	//пульт наград ниже возвращает себе обычную хрупкость станционной машины.
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	var/status_report = "Ready for delivery."
 	var/obj/machinery/piratepad/pad
 	var/sending = FALSE
 	var/points = 0
+	///Всё, что через этот терминал вообще прошло. points - это остаток на счету, его обнуляет
+	///снятие кредитов, и цель "собрать на N кредитов" оказывалась невыполненной у команды,
+	///которая свою добычу уже обналичила.
+	var/total_collected = 0
 	var/datum/export_report/total_report
 	var/sending_timer
 	var/cargo_hold_id
@@ -393,6 +401,7 @@
 	pad = null
 	for(var/datum/objective/loot/booty in GLOB.objectives)
 		if(booty.cargo_hold == src)
+			booty.get_loot_value() //снимок набранного до того, как ссылка на терминал оборвётся
 			booty.cargo_hold = null
 	return ..()
 
@@ -552,8 +561,10 @@
 
 	/// Ransom cr for pirates is applied in /datum/ransom_extraction/aftermath_capture; only ex items here.
 	points += value
+	total_collected += value
 	if(queued_pirate_ransom)
 		points -= queued_pirate_ransom
+		total_collected -= queued_pirate_ransom
 
 	if(!value)
 		status_report += "Nothing"

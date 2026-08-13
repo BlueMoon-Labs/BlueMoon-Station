@@ -226,6 +226,7 @@
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "bugreports_2026_07.dm"
+#include "bugreports_2026_08.dm"
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
 #include "director_beat_cost.dm"

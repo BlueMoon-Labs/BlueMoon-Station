@@ -171,6 +171,7 @@
 	var/obj/machinery/computer/piratepad_control/ppc = pirate_console?.resolve()
 	if(ppc && pirate_gang_value)
 		ppc.points += pirate_gang_value
+		ppc.total_collected += pirate_gang_value
 	pirate_gang_value = 0
 	pirate_console = null
 

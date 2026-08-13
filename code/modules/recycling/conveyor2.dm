@@ -17,6 +17,10 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 
 	var/id = ""			// the control ID	- must match controller ID
 	var/verted = 1		// Inverts the direction the conveyor belt moves.
+	//Последняя команда свитча. operating - фактическое состояние, оно обнуляется на любое
+	//отключение питания, а PROCESS_KILL вышвыривает ленту из SSfastprocess. Без запомненной
+	//команды лента после восстановления питания оставалась стоять до ручного передёргивания рычага.
+	var/last_command = 0
 	speed_process = TRUE
 
 /obj/machinery/conveyor/centcom_auto
@@ -35,23 +39,8 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // Auto conveyour is always on unless unpowered
 
 /obj/machinery/conveyor/auto/Initialize(mapload, newdir)
+	last_command = 1 //до ..(): базовый Initialize уже зовёт update_move_direction()
 	. = ..()
-	operating = TRUE
-	update_move_direction()
-
-/obj/machinery/conveyor/auto/update()
-	if(machine_stat & BROKEN)
-		icon_state = "conveyor-broken"
-		operating = FALSE
-		return
-	else if(!operable)
-		operating = FALSE
-	else if(machine_stat & NOPOWER)
-		operating = FALSE
-	else
-		operating = TRUE
-		START_PROCESSING(SSfastprocess, src)
-	icon_state = "conveyor[operating * verted]"
 
 // create a conveyor
 /obj/machinery/conveyor/Initialize(mapload, newdir, newid)
@@ -106,22 +95,23 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		var/temp = forwards
 		forwards = backwards
 		backwards = temp
-	if(operating == 1)
-		movedir = forwards
-	else
-		movedir = backwards
 	update()
 
 /obj/machinery/conveyor/proc/update()
 	if(machine_stat & BROKEN)
 		icon_state = "conveyor-broken"
-		operating = FALSE
+		operating = 0
 		return
-	if(!operable)
-		operating = FALSE
-	if(machine_stat & NOPOWER)
-		operating = FALSE
+	//Питание/целостность решают, можем ли мы крутиться, но не в какую сторону: направление
+	//задаёт последняя команда свитча, иначе лента после блэкаута стоит с включённым рычагом.
+	if(!operable || (machine_stat & NOPOWER))
+		operating = 0
+	else
+		operating = last_command
+	movedir = (operating == 1) ? forwards : backwards
 	icon_state = "conveyor[operating * verted]"
+	if(operating)
+		START_PROCESSING(SSfastprocess, src)
 
 	// machine process
 	// move items to the target location
@@ -276,10 +266,8 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 /obj/machinery/conveyor_switch/proc/do_process()
 	set waitfor = FALSE
 	for(var/obj/machinery/conveyor/C in GLOB.conveyors_by_id[id])
-		C.operating = position
-		C.update_move_direction()
-		if(position)
-			START_PROCESSING(SSfastprocess, C)
+		C.last_command = position
+		C.update_move_direction() //внутри update(): состояние, направление, иконка и возврат в SSfastprocess
 		CHECK_TICK
 
 // attack with hand, switch position

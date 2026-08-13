@@ -151,6 +151,39 @@
 	STOP_PROCESSING(SSfastprocess, auto_belt)
 	auto_belt.operating = 0
 
+/// B2c: лента, включённая свитчем, обязана пережить блэкаут. PROCESS_KILL вышвыривает её из
+/// SSfastprocess и обнуляет operating, поэтому после восстановления питания update() должен
+/// сам вернуть ленту в строй - иначе рычаг стоит в положении "вкл", а конвейер стоит колом.
+/datum/unit_test/conveyor_survives_power_loss/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor, floor, EAST, "unit_test_blackout")
+	var/obj/machinery/conveyor_switch/toggle = allocate(/obj/machinery/conveyor_switch, floor, "unit_test_blackout")
+	belt.set_machine_stat(0) // резервация без питания, снимаем NOPOWER руками
+
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	toggle.interact(user)
+	TEST_ASSERT(toggle.position != 0, "interact() must flip the switch position")
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "a powered belt must follow the switch")
+	TEST_ASSERT(belt in SSfastprocess.processing, "a running belt must be in SSfastprocess")
+
+	// Блэкаут: power_change() -> update() гасит ленту, а process() просит выкинуть её из подсистемы.
+	belt.set_machine_stat(NOPOWER)
+	belt.update()
+	TEST_ASSERT_EQUAL(belt.operating, 0, "an unpowered belt must stop")
+	TEST_ASSERT_EQUAL(belt.process(2), PROCESS_KILL, "an unpowered belt's process() must return PROCESS_KILL")
+	STOP_PROCESSING(SSfastprocess, belt) // то, что делает с этим ответом подсистема
+
+	// Питание вернулось, рычаг всё это время стоял во включённом положении.
+	belt.set_machine_stat(0)
+	belt.update()
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "a belt must resume the switch's last command when power returns")
+	TEST_ASSERT_EQUAL(belt.movedir, belt.forwards, "a resumed belt must know which way to move")
+	TEST_ASSERT(belt in SSfastprocess.processing, "a resumed belt must re-register itself in SSfastprocess")
+
+	STOP_PROCESSING(SSfastprocess, belt)
+	belt.last_command = 0
+	belt.operating = 0
+
 /// Counts how many times the warden re-scans for targets.
 /obj/structure/destructible/clockwork/ocular_warden/unit_test_scan_counter
 	var/scan_count = 0

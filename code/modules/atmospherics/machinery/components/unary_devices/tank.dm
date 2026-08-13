@@ -25,6 +25,23 @@
 		name = "[name] ([GLOB.gas_data.names[gas_type]])"
 	setPipingLayer(piping_layer)
 
+//Разобранный или разбитый бак обязан вывалить содержимое наружу, а не растворить его в пустоте.
+//deconstruct() ловит оба пути: аккуратную разборку ломом и obj_destruction() от урона.
+/obj/machinery/atmospherics/components/unary/tank/deconstruct(disassembled = TRUE)
+	if(!(flags_1 & NODECONSTRUCT_1))
+		release_contents()
+	return ..()
+
+/obj/machinery/atmospherics/components/unary/tank/proc/release_contents()
+	var/datum/gas_mixture/stored_air = airs[1]
+	if(!stored_air || !stored_air.total_moles())
+		return
+	var/turf/local_turf = get_turf(src)
+	if(!local_turf)
+		return
+	local_turf.assume_air(stored_air)
+	air_update_turf()
+
 /obj/machinery/atmospherics/components/unary/tank/air
 	icon_state = "grey"
 	name = "pressure tank (Air)"
