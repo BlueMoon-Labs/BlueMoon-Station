@@ -1,5 +1,6 @@
-/datum/asset/spritesheet_batched/mafia
+/datum/asset/spritesheet/mafia
 	name = "mafia"
 
-/datum/asset/spritesheet_batched/mafia/create_spritesheets()
-	insert_all_icons("", 'icons/obj/mafia.dmi')
+/datum/asset/spritesheet/mafia/register()
+	InsertAll("", 'icons/obj/mafia.dmi')
+	..()

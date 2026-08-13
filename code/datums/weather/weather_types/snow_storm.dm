@@ -1,5 +1,4 @@
 /datum/weather/snow_storm
-	parallax_profile = "planet_snow_storm"
 	name = "snow storm"
 	desc = "Harsh snowstorms roam the topside of this arctic planet, burying any area unfortunate enough to be in its path."
 	probability = 90

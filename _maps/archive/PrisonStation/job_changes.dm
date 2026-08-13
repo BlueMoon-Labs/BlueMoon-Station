@@ -32,7 +32,6 @@
 
 /datum/job/hop/New()
 	..()
-	MAP_JOB_CHECK
 	total_positions = 1
 	spawn_positions = 1
 

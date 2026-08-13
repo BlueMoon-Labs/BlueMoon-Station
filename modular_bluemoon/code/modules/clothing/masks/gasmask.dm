@@ -18,16 +18,9 @@
 	item_state = "hahun_mask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	actions_types = list(/datum/action/item_action/masktakedown)
-	var/static/list/halt_sounds = list(
-		'modular_bluemoon/sound/effects/hahun_halt.ogg',
-		'modular_bluemoon/sound/effects/hahun_dontmove.ogg',
-		'modular_bluemoon/sound/effects/hahun_hold.ogg',
-		'modular_bluemoon/sound/effects/hahun_verdict.ogg'
-	)
 
-/obj/item/clothing/mask/gas/syndicate/hahun_mask/ui_action_click(mob/user, action)
-	if(istype(action, /datum/action/item_action/masktakedown))
-		masktakedown()
+/datum/action/item_action/masktakedown
+	name = "TAKING DOWN!"
 
 /obj/item/clothing/mask/gas/syndicate/hahun_mask/verb/masktakedown()
 	set category = "Object"
@@ -38,16 +31,24 @@
 	if(!can_use(usr))
 		return
 
-	var/phrase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
-	phrase = reject_bad_text(phrase)
-	if(!phrase)
-		return
+	var/frase
+	frase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
 
-	usr.say(message = phrase, spans = list("big warning"))
-	playsound(src.loc, pick(halt_sounds), 100, 0)
+	if(frase)
+		usr.audible_message("<b>[usr]</b> halting, \"<font color='red' size='4'><b>[frase]</b></font>\"")
+		switch(rand(0,3))
+			if(0)
+				playsound(src.loc, 'modular_bluemoon/sound/effects/hahun_halt.ogg', 100, 0)
+			if(1)
+				playsound(src.loc, 'modular_bluemoon/sound/effects/hahun_dontmove.ogg', 100, 0)
+			if(2)
+				playsound(src.loc, 'modular_bluemoon/sound/effects/hahun_hold.ogg', 100, 0)
+			if(3)
+				playsound(src.loc, 'modular_bluemoon/sound/effects/hahun_verdict.ogg', 100, 0)
 
-/datum/action/item_action/masktakedown
-	name = "TAKING DOWN!"
+/obj/item/clothing/mask/gas/syndicate/hahun_mask/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/masktakedown))
+		masktakedown()
 
 /obj/item/clothing/mask/gas/syndicate/hahun_mask/eidovox
 	name = "EIDOVOX Type-3"

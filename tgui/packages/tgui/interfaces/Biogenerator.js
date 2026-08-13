@@ -1,3 +1,4 @@
+import { classes } from 'common/react';
 import { createSearch } from 'common/string';
 import { useState } from 'react';
 
@@ -5,7 +6,6 @@ import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Dimmer, Flex, Icon, Input, NoticeBox, NumberInput, Section, Table, Tabs } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
-import { DesignIcon } from './common/DesignIcon';
 
 const MAX_SEARCH_RESULTS = 25;
 
@@ -130,8 +130,7 @@ export const BiogeneratorContent = (props) => {
 };
 
 const ItemList = (props) => {
-  const { act, data } = useBackend();
-  const { design_sizes = {} } = data;
+  const { act } = useBackend();
   const [
     hoveredItem,
     setHoveredItem,
@@ -158,7 +157,11 @@ const ItemList = (props) => {
   return items.map(item => (
     <Table.Row key={item.id}>
       <Table.Cell>
-        <DesignIcon id={item.id} sizeClass={design_sizes[item.id]} />
+        <span
+          className={classes(['design32x32', item.id])}
+          style={{
+            verticalAlign: 'middle',
+          }} />
         {' '}<b>{item.name}</b>
       </Table.Cell>
       <Table.Cell collapsing>

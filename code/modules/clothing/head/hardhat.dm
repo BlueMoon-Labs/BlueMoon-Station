@@ -120,10 +120,6 @@
 	visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT
 	visor_flags_inv = HIDEEYES | HIDEFACE
 	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
-	// Для создания кастомных касок с щитком, чтобы использовать
-	var/visor_icon = 'icons/mob/clothing/head.dmi'
-	var/visor_icon_state = "weldvisor"
-	var/straps = TRUE // overlay ремешков
 
 /obj/item/clothing/head/hardhat/weldhat/Initialize(mapload)
 	. = ..()
@@ -146,15 +142,14 @@
 /obj/item/clothing/head/hardhat/weldhat/worn_overlays(isinhands, icon_file, used_state, style_flags = NONE)
 	. = ..()
 	if(!isinhands)
-		if(straps)
-			. += mutable_appearance('icons/mob/clothing/head.dmi', "weldhelmet")
+		. += mutable_appearance('icons/mob/clothing/head.dmi', "weldhelmet")
 		if(!up)
-			. += mutable_appearance(visor_icon, "[visor_icon_state]")
+			. += mutable_appearance('icons/mob/clothing/head.dmi', "weldvisor")
 
 /obj/item/clothing/head/hardhat/weldhat/update_overlays()
 	. = ..()
 	if(!up)
-		. += "[visor_icon_state]"
+		. += "weldvisor"
 
 /obj/item/clothing/head/hardhat/weldhat/orange
 	icon_state = "hardhat0_orange"

@@ -45,13 +45,6 @@ export const MainContent = (props) => {
               }>
               Interactions
             </Tabs.Tab>
-            <Tabs.Tab
-              className="Tab--custom"
-              icon="sliders"
-              color="yellow"
-              onClick={() => act('open_customs_window')}>
-              Custom
-            </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 1} onClick={() => setTabIndex(1)}>
               Genital Options
             </Tabs.Tab>

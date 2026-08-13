@@ -3,23 +3,25 @@
 /obj/item/projectile/bullet/n762
 	name = "7.62x38mmR bullet"
 	damage = 60
-	armour_penetration = BULLET_BR2
+	armour_penetration = 10
 	wound_bonus = 10
 	bare_wound_bonus = 4
 
-// .50AE — BR2 (крупный пистолетный, Desert Eagle)
+// .50AE (Desert Eagle)
+
 /obj/item/projectile/bullet/a50AE
 	name = ".50AE bullet"
 	damage = 60
-	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 20 → BR2(20), без изменений
+	armour_penetration = 20
 	wound_bonus = 15
 	bare_wound_bonus = 5
 
-// .38 — BR1 (Detective's Gun)
+// .38 (Detective's Gun)
+
 /obj/item/projectile/bullet/c38
 	name = ".38 bullet"
 	damage = 30
-	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 10 → BR1(10), без изменений
+	armour_penetration = 10
 	ricochets_max = 2
 	ricochet_chance = 100
 	ricochet_auto_aim_angle = 30
@@ -38,7 +40,6 @@
 	ricochet_decay_chance = 1
 	ricochet_decay_damage = 1
 	wound_bonus = 7
-	armour_penetration = BULLET_BR1
 
 /obj/item/projectile/bullet/c38/match/bouncy
 	name = ".38 Bouncy bullet" // уточняем название, чтобы не путули с резиной
@@ -50,16 +51,14 @@
 	ricochet_chance = 130
 	ricochet_decay_damage = 0.8
 	shrapnel_type = NONE
-	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
 
 // premium .38 ammo from cargo, weak against armor, lower base damage, but excellent at embedding and causing slice wounds at close range
 /obj/item/projectile/bullet/c38/dumdum
-
 	name = ".38 DumDum bullet"
 	damage = 15
-	armour_penetration = BULLET_BR0 - 30  // -30 (HP, хуже пробивает)
+	armour_penetration = -30
 	ricochets_max = 0
 	sharpness = SHARP_EDGED
 	wound_bonus = 20
@@ -67,7 +66,6 @@
 	embedding = list(embed_chance=75, fall_chance=3, jostle_chance=4, ignore_throwspeed_threshold=TRUE, pain_stam_pct=0.4, pain_mult=5, jostle_pain_mult=6, rip_time=10)
 	wound_falloff_tile = -5
 	embed_falloff_tile = -15
-
 
 /obj/item/projectile/bullet/c38/rubber
 	name = ".38 Rubber bullet"
@@ -79,7 +77,6 @@
 
 /obj/item/projectile/bullet/c38/trac
 	name = ".38 TRAC bullet"
-	armour_penetration = BULLET_BR0
 	damage = 5
 	ricochets_max = 0
 
@@ -105,7 +102,6 @@
 
 /obj/item/projectile/bullet/c38/hotshot //similar to incendiary bullets, but do not leave a flaming trail
 	name = ".38 Hot Shot bullet"
-	armour_penetration = BULLET_BR1
 	damage = 30
 	ricochets_max = 0
 
@@ -118,7 +114,6 @@
 
 /obj/item/projectile/bullet/c38/iceblox //see /obj/item/projectile/temp for the original code
 	name = ".38 Iceblox bullet"
-	armour_penetration = BULLET_BR1
 	damage = 20
 	var/temperature = 100
 	ricochets_max = 0
@@ -132,19 +127,18 @@
 
 // .357 (Syndie Revolver)
 
-// .357 — BR2 (мощный револьверный)
 /obj/item/projectile/bullet/a357
 	name = ".357 bullet"
 	damage = 65
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD: явно BR2(20), было 0
 	wound_bonus = 25
 	ricochets_max = 2
 	ricochet_chance = 100
+	ricochet_damage_mod = 1.1
 
 /obj/item/projectile/bullet/a357/ap
 	name = ".357 armor-piercing bullet"
 	damage = 50
-	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 45 → BR4(50)
+	armour_penetration = 45
 
 // admin only really, for ocelot memes
 /obj/item/projectile/bullet/a357/match
@@ -157,9 +151,9 @@
 	ricochet_decay_chance = 1
 
 /obj/item/projectile/bullet/a357/dumdum
-	name = ".357 DumDum bullet"
+	name = ".357 DumDum bullet" // the warcrime bullet
 	damage = 85
-	armour_penetration = BULLET_BR0 - 20  // -20 (HP)
+	armour_penetration = -20
 	wound_bonus = 45
 	bare_wound_bonus = 45
 	sharpness = SHARP_EDGED
@@ -169,9 +163,9 @@
 
 /// 12.7x55mm — The Central Requiem: тяжёлый урон, тупой удар (blunt) с сильным бонусом к ранам
 /obj/item/projectile/bullet/a357/requiem
-	name = "12.7x55mm bullet"          // тяжёлый тупой удар
+	name = "12.7x55mm bullet"
 	damage = 80
-	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 20 → BR2(20), без изменений
+	armour_penetration = 20
 	sharpness = SHARP_NONE
 	wound_bonus = 70
 	bare_wound_bonus = 80
@@ -180,10 +174,9 @@
 //.45-70 GOVT (Gunslinger's Derringer)
 //0bserver here. For all that is holy, do me a flavor, and do NOT allow people easy access to this ammo. This is meant for extremely lucky traitors, and nuclear operatives.
 
-// .45-70 Govt — BR3 (крупный охотничий калибр)
 /obj/item/projectile/bullet/g4570
 	name = ".45-70 Govt bullet"
 	damage = 60
-	armour_penetration = BULLET_BR3   // BLUEMOON EDIT: было 40 → BR3(35)
+	armour_penetration = 40
 	wound_bonus = 10
 

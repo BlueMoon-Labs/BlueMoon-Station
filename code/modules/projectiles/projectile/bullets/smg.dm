@@ -3,9 +3,7 @@
 /obj/item/projectile/bullet/c45
 	name = ".45 bullet"
 	damage = 30
-	armour_penetration = BULLET_BR1
-	wound_bonus = 15
-	bare_wound_bonus = 20 // Пуля тяжелая, должна делать бо-бо
+	wound_bonus = 6
 	wound_falloff_tile = -10
 
 /obj/item/projectile/bullet/c45_cleaning
@@ -68,24 +66,22 @@
 				cleaned_human.wash_cream()
 				cleaned_human.regenerate_icons()
 
-// 4.6x30mm (ВТ-550) — BR2 FMJ, BR3 AP
+// 4.6x30mm (Autorifles)
+
 /obj/item/projectile/bullet/c46x30mm
 	name = "4.6x30mm bullet"
 	damage = 19
-	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 0 → BR2(20)
-	wound_bonus = 15                    // BLUEMOON EDIT: было -5 → 15
-	bare_wound_bonus = 10
-	embed_falloff_tile = -1
+	wound_bonus = -5
+	bare_wound_bonus = 5
+	embed_falloff_tile = -4
 
 /obj/item/projectile/bullet/c46x30mm_ap
 	name = "4.6x30mm armor-piercing bullet"
-	damage = 16
-	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 40 → BR4(50) Бронебойность такая, изза общей проблемы. Патрон слабый, пробивает дай бог раз два, из 10. и то смешной урон если цель одета лучше чем кто либо.
-	wound_bonus = -2                   // BLUEMOON EDIT: было -5 → -2
+	damage = 15
+	armour_penetration = 40
 	embedding = null
 
 /obj/item/projectile/bullet/incendiary/c46x30mm
 	name = "4.6x30mm incendiary bullet"
 	damage = 15.5
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD: как базовый FMJ
 	fire_stacks = 1

@@ -7,10 +7,6 @@
 	var/SStun = 0 // stun variable
 	var/next_hunt_scan = 0 // world.time gate for the prey view() scan in handle_targets(); set only after a scan that found nothing
 	var/next_wander = 0 // world.time gate for aimless wandering in handle_targets()
-	/// Оценка голода (0/1/2), зафиксированная на всю текущую погоню. См. latch_chase_hunger().
-	var/chase_hunger = 0
-
-	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
 /// TRUE when this slime is allowed to take an aimless wander step this tick.
 /// Aimless wandering was the single biggest slime cost on a packed xenobio farm:
@@ -23,6 +19,8 @@
 /// Records that a wander step was taken, starting the cooldown.
 /mob/living/simple_animal/slime/proc/note_wander()
 	next_wander = world.time + SLIME_WANDER_COOLDOWN
+
+	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
 /mob/living/simple_animal/slime/BiologicalLife(delta_time, times_fired)
 	// Слайм в стазисе/бессознанке не доходит до AI-очистки ниже, поэтому удалённые
@@ -278,12 +276,6 @@
 				target_patience = 0
 				Target = null
 
-		//Погоня окончена - снимаем зафиксированную оценку голода, чтобы следующая
-		//цель взяла свежую. Цель могли обнулить и снаружи (give_up контроллера,
-		//дисциплина, вода), поэтому проверка стоит отдельно от блока терпения.
-		if(!Target)
-			chase_hunger = 0
-
 		//Стан-фриз погони (легаси "if(AIproc && SStun ...)") переехал в гейт
 		//исполнения /datum/ai_planning_subtree/slime_pursuit: стоим, цель не бросаем
 
@@ -291,47 +283,27 @@
 
 		if(hungry == 2 && !client) // if a slime is starving, it starts losing its friends
 			if(Friends.len > 0 && prob(1))
-				var/mob/living/nofriend = pick(Friends)
+				var/mob/nofriend = pick(Friends)
 				--Friends[nofriend]
-				// Отбор добычи проверяет ЧЛЕНСТВО в Friends, а не величину дружбы, поэтому
-				// уронить счётчик мало: дружок остаётся ключом списка и несъедобен навсегда,
-				// то есть весь механизм "голодный слайм теряет друзей" не работал. Хуже того,
-				// Reproduce() копирует список всем четырём детям - испорченный список тянется
-				// по всей линии, и выглядит это как "вот эти слаймы почему-то не едят".
-				if(Friends[nofriend] <= 0)
-					clear_friend(nofriend)
 
 		if(!Target)
 			if(world.time >= next_hunt_scan && (will_hunt() && hungry || attacked || rabid)) // Only add to the list if we need to
 				var/list/targets = list()
 
 				// Lever 3: AI_TARGETS grid channel instead of view(7) - a per-cell
-				// index of live mobs, no viewport build (~2x cheaper here) and an
-				// empty pen, which is the common case, costs nothing at all.
-				// get_dist clamps the grid's whole-cell over-return.
-				// До инициализации грида слаймы всё равно не живут (SSmobs заводится
-				// на RUNLEVEL_GAME), так что фолбэка на view() здесь нет.
-				var/list/scan_candidates = SSspatial_grid.initialized ? SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, SLIME_AI_PURSUIT_RANGE) : list()
+				// index of live mobs, no viewport build (~2x cheaper here). We do
+				// NOT re-add a per-candidate can_see() LOS check: benchmarking a
+				// dense pen showed the raytraces cost 2.2x more than view() saved,
+				// so the deliberate tradeoff is that a slime now senses prey through
+				// walls (irrelevant in an open pen; slimes are weak and can't reach
+				// through anyway). get_dist clamps the grid's whole-cell over-return.
+				var/list/scan_candidates = SSspatial_grid.initialized ? SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7) : view(7, src)
 				for(var/mob/living/L as anything in scan_candidates)
-
-					// хардделнутые мобы оставляют в ячейках грида null, а as anything
-					// его не фильтрует: L.stat падал бы на каждой такой записи
-					if(QDELETED(L))
-						continue
 
 					if(isslime(L) || L.stat == DEAD) // grid excludes DEAD; src is a slime so this also skips self
 						continue
 
-					// Погоня бросает выеденную добычу тем же тиком (slime_controller.dm,
-					// правило give_up по SLIME_AI_TARGET_SPENT_HEALTH), а отбор её берёт -
-					// и берёт ПЕРВОЙ попавшейся, с break. Мартышка живёт до -100, так что
-					// полоса от -70 до -100 вечная: одна недоеденная тушка в загоне
-					// навсегда закрывала слаймам доступ к здоровым соседкам, а ветка
-					// блуждания (она под if(!Target)) при занятой цели не отрабатывала.
-					if(L.health <= SLIME_AI_TARGET_SPENT_HEALTH)
-						continue
-
-					if(get_dist(src, L) > SLIME_AI_PURSUIT_RANGE) // grid returns whole cells - clamp to the real scan range
+					if(get_dist(src, L) > 7) // grid returns whole cells - clamp to the real scan range
 						continue
 
 					if(L in Friends) // No eating friends!
@@ -345,15 +317,6 @@
 							ally = TRUE
 							break
 					if(ally)
-						continue
-
-					//Грид не знает о стенах, а погоня знает: слайм бросает всё, чего нет
-					//в его view() (см. /datum/ai_behavior/slime_pursue_and_feed). Без этого
-					//гейта слайм в ксенобио брал целью мартышку за стеклом соседнего загона,
-					//тут же её бросал и на следующем тике брал снова - до добычи в своём
-					//загоне очередь не доходила. Луч стоит ПОСЛЕ дешёвых отсевов: соседи по
-					//загону - сами слаймы, а они отпадают первой же строкой цикла.
-					if(!can_see(src, L, SLIME_AI_PURSUIT_RANGE))
 						continue
 
 					if(issilicon(L) && (rabid || attacked)) // They can't eat silicons, but they can glomp them in defence
@@ -642,25 +605,6 @@
 		return 300
 	else
 		return 200
-
-///Оценка голода на всю погоню: снимается ОДИН раз и держится до конца погони.
-///
-///Легаси-AIprocess() брал `hungry` локальной переменной при входе в цикл и жил с
-///ней до самого конца преследования. get_hunger_drive() в среднем диапазоне
-///сытости возвращает 1 лишь с шансом 25%, поэтому пересъём оценки на каждом
-///проходе планировщика (два раза в секунду) рвал погоню в 75% случаев: сабтри
-///не планировал, SelectBehaviors снимал уже идущее поведение как "забытое", а
-///SSai_controllers гасил контроллер на AI_FAILED_PLANNING_COOLDOWN. Слайм с
-///ксенобио-фермы, которого регулярно кормят, сидит ровно в этом диапазоне и до
-///добычи так не доходил - пока nutrition за десятки минут не проседал ниже
-///get_hunger_nutrition(), где оценка становится детерминированной.
-///
-///Ноль означает "оценки ещё нет": следующий проход возьмёт свежую. Обнуляется в
-///handle_targets(), как только слайм остаётся без цели.
-/mob/living/simple_animal/slime/proc/latch_chase_hunger()
-	if(!chase_hunger)
-		chase_hunger = get_hunger_drive()
-	return chase_hunger
 
 ///Легаси-оценка голода (общая для handle_targets и драйва погони контроллера):
 ///2 - голодает и ест всё подряд, 1 - проголодался (средний диапазон с шансом 25%), 0 - сыт

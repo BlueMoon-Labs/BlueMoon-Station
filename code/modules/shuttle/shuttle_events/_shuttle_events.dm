@@ -18,13 +18,10 @@
 	port = null
 	return ..()
 
-/datum/shuttle_event/proc/start_up_event(evacuation_duration, immediate = FALSE)
+/datum/shuttle_event/proc/start_up_event(evacuation_duration)
 	if(!evacuation_duration)
 		evacuation_duration = 1
-	if(immediate)
-		activate_at = world.time
-	else
-		activate_at = world.time + evacuation_duration * activation_fraction
+	activate_at = world.time + evacuation_duration * activation_fraction
 
 /// Called when the event begins affecting the shuttle
 /datum/shuttle_event/proc/activate()
@@ -191,7 +188,9 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list())
 
 /proc/get_admin_forceable_hyperspace_events()
 	if(!length(GLOB.admin_forceable_hyperspace_events))
-		GLOB.admin_forceable_hyperspace_events = collect_admin_forceable_hyperspace_events()
+		var/list/collected = collect_admin_forceable_hyperspace_events()
+		if(length(collected))
+			GLOB.admin_forceable_hyperspace_events = collected
 	return GLOB.admin_forceable_hyperspace_events
 
 /proc/collect_admin_forceable_hyperspace_events()

@@ -7,13 +7,7 @@
 	icon_living = "drone3"
 	icon_dead = "drone_dead"
 	ranged = 1
-	//Прод 9881: 27.5 урона за луч, три луча за 0.25 с - 82 HP залпом, игрок с
-	//83 HP падал за полсекунды и добивался следующим заходом. Урон легаси, а вот
-	//попадать всеми тремя дрон научился только с новым ИИ, который проверяет
-	//реальную трассу снаряда. Режем залп и добавляем окно на реакцию.
-	rapid = 2
-	ranged_cooldown_time = 40
-	ranged_telegraph_duration = 0.6 SECONDS
+	rapid = 3
 	retreat_distance = 3
 	minimum_distance = 3
 	speak_chance = 5

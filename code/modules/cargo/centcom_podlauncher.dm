@@ -113,7 +113,7 @@
 
 /datum/centcom_podlauncher/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet_batched/supplypods),
+		get_asset_datum(/datum/asset/spritesheet/supplypods),
 	)
 
 /datum/centcom_podlauncher/proc/register_map_to_holder()

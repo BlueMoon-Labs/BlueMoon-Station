@@ -5,9 +5,7 @@
 	else
 		winset(src, "mainwindow", "is-maximized=false;can-resize=true;titlebar=true;menu=menu")
 		winset(src, "mainwindow", "is-maximized=true")
-	// Задержка обязана стоять аргументом addtimer: внутри CALLBACK она уходит
-	// в сам верб, и подгонка вьюпорта срабатывает мгновенно, дёргая winget.
-	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
+	addtimer(CALLBACK(src,.verb/fit_viewport, 10))
 
 /datum/keybinding/client/fullscreen_toggle
 	hotkey_keys = list("F11")

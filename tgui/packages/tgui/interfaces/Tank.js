@@ -48,7 +48,7 @@ export const Tank = (props) => {
             <LabeledControls.Item label="Pressure Regulator">
               <Button
                 icon="fast-backward"
-                disabled={data.releasePressure === data.minReleasePressure}
+                disabled={data.ReleasePressure === data.minReleasePressure}
                 onClick={() => act('pressure', {
                   pressure: 'min',
                 })} />
@@ -64,14 +64,14 @@ export const Tank = (props) => {
                 })} />
               <Button
                 icon="fast-forward"
-                disabled={data.releasePressure === data.maxReleasePressure}
+                disabled={data.ReleasePressure === data.maxReleasePressure}
                 onClick={() => act('pressure', {
                   pressure: 'max',
                 })} />
               <Button
                 icon="undo"
                 content=""
-                disabled={data.releasePressure === data.defaultReleasePressure}
+                disabled={data.ReleasePressure === data.defaultReleasePressure}
                 onClick={() => act('pressure', {
                   pressure: 'reset',
                 })} />

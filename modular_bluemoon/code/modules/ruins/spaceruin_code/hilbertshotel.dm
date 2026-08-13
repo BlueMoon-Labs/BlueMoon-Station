@@ -47,7 +47,6 @@
 	. += projection
 
 /obj/effect/projector/skyscraper
-	anchored = TRUE
 	color = null
 	projection_icon = 'modular_bluemoon/icons/projection/skyscraper_width.dmi'
 	projection_icon_state = "window"

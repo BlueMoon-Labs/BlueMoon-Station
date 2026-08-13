@@ -107,26 +107,6 @@
 			. += ""
 			. += "Chemical Storage: [changeling.chem_charges]/[changeling.chem_storage]"
 			. += "Absorbed DNA: [changeling.absorbedcount]"
-	if(istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
-		var/obj/item/clothing/suit/space/hardsuit/nano/nanosuit = wear_suit
-		var/datum/gas_mixture/environment = loc?.return_air()
-		. += ""
-		. += "Протоколы Crynet: [nanosuit.shutdown ? "отключены" : "активны"]"
-		. += "Заряд энергии: [(nanosuit.cellon && nanosuit.cell) ? "[round(nanosuit.cell.percent())]%" : "нет данных"]"
-		. += "Режим: [nanosuit.mode]"
-		. += "Общее состояние: [nanosuit.healthon ? "[health]% здоровья" : "нет данных"]"
-		. += "Питание: [nanosuit.healthon ? nutrition : "нет данных"]"
-		. += "Кислородное голодание: [nanosuit.healthon ? getOxyLoss() : "нет данных"]"
-		. += "Уровень токсинов: [nanosuit.healthon ? getToxLoss() : "нет данных"]"
-		. += "Ожоги: [nanosuit.healthon ? getFireLoss() : "нет данных"]"
-		. += "Механические травмы: [nanosuit.healthon ? getBruteLoss() : "нет данных"]"
-		. += "Уровень радиации: [nanosuit.radon ? "[radiation] рад" : "нет данных"]"
-		. += "Температура тела: [nanosuit.healthon ? "[bodytemperature - T0C] °C ([bodytemperature * 1.8 - 459.67] °F)" : "нет данных"]"
-		. += "Давление среды: [(nanosuit.atmoson && environment) ? "[environment.return_pressure()] кПа" : "нет данных"]"
-		. += "Температура среды: [(nanosuit.atmoson && environment) ? "[round(environment.return_temperature() - T0C, 0.01)] °C ([round(environment.return_temperature(), 0.01)] K)" : "нет данных"]"
-	else if(istype(wear_suit, /obj/item/clothing/suit/space/space_ninja))
-		var/obj/item/clothing/suit/space/space_ninja/ninja_suit = wear_suit
-		. += ninja_suit.get_status_readout(src)
 
 
 // called when something steps onto a human
@@ -745,10 +725,6 @@
 	cut_overlay(MA)
 
 /mob/living/carbon/human/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting = TRUE, silent = FALSE)
-	// Базовый /mob/proc/canUseTopic просто возвращает null и с null-целью живёт,
-	// а этот оверрайд разыменовывает M.loc ниже. За раунд 9838 это дало 39 рантаймов
-	if(isnull(M))
-		return FALSE
 	if(incapacitated() || (check_resting && !CHECK_MOBILITY(src, MOBILITY_STAND)))
 		if(!silent)
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
@@ -1569,7 +1545,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 				to_chat(src, span_warning("\The [S] pulls \the [hand] from your grip!"))
 
 ///Sets up the jump component for the mob. Proc args can be altered so different mobs have different 'default' jump settings
-/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 48, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE|PASSJUMP)
+/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 48, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE)
 	if(HAS_TRAIT(src, TRAIT_FREERUNNING))
 		AddComponent(/datum/component/jump, _jump_duration = duration, _jump_cooldown = cooldown, _stamina_cost = 32, _jump_height = height, _jump_sound = sound, _jump_flags = flags, _jumper_allow_pass_flags = flags_pass)
 	else

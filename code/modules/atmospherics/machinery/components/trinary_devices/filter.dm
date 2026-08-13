@@ -128,9 +128,6 @@
 		ui = new(user, src, "AtmosFilter", name)
 		ui.open()
 
-/obj/machinery/atmospherics/components/trinary/filter/ui_port_labels()
-	return list("Вход", "Фильтрат", "Выход")
-
 /obj/machinery/atmospherics/components/trinary/filter/ui_data()
 	var/data = list()
 	data["on"] = on
@@ -144,7 +141,6 @@
 			data["filter_types"] += list(list("name" = GLOB.gas_data.names[id], "id" = id, "selected" = (id == filter_type)))
 	for(var/group in GLOB.gas_data.groups)
 		data["filter_types"] += list(list("name" = group, "id" = group, "selected" = (group == filter_type)))
-	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/trinary/filter/ui_act(action, params)
@@ -202,17 +198,9 @@
 /obj/machinery/atmospherics/components/trinary/filter/layer1
 	piping_layer = 1
 	icon_state = "filter_off_map-1"
-
-/obj/machinery/atmospherics/components/trinary/filter/layer2
-	piping_layer = 2
-	icon_state = "filter_off_map-2"
-/obj/machinery/atmospherics/components/trinary/filter/layer4
-	piping_layer = 4
-	icon_state = "filter_off_map-4"
-
-/obj/machinery/atmospherics/components/trinary/filter/layer5
-	piping_layer = 5
-	icon_state = "filter_off_map-5"
+/obj/machinery/atmospherics/components/trinary/filter/layer3
+	piping_layer = 3
+	icon_state = "filter_off_map-3"
 
 /obj/machinery/atmospherics/components/trinary/filter/on
 	on = TRUE
@@ -221,17 +209,9 @@
 /obj/machinery/atmospherics/components/trinary/filter/on/layer1
 	piping_layer = 1
 	icon_state = "filter_on_map-1"
-
-/obj/machinery/atmospherics/components/trinary/filter/on/layer2
-	piping_layer = 2
-	icon_state = "filter_on_map-2"
-/obj/machinery/atmospherics/components/trinary/filter/on/layer4
-	piping_layer = 4
-	icon_state = "filter_on_map-4"
-
-/obj/machinery/atmospherics/components/trinary/filter/on/layer5
-	piping_layer = 5
-	icon_state = "filter_on_map-5"
+/obj/machinery/atmospherics/components/trinary/filter/on/layer3
+	piping_layer = 3
+	icon_state = "filter_on_map-3"
 
 /obj/machinery/atmospherics/components/trinary/filter/flipped
 	icon_state = "filter_off_f"
@@ -240,17 +220,9 @@
 /obj/machinery/atmospherics/components/trinary/filter/flipped/layer1
 	piping_layer = 1
 	icon_state = "filter_off_f_map-1"
-
-/obj/machinery/atmospherics/components/trinary/filter/flipped/layer2
-	piping_layer = 2
-	icon_state = "filter_off_f_map-2"
-/obj/machinery/atmospherics/components/trinary/filter/flipped/layer4
-	piping_layer = 4
-	icon_state = "filter_off_f_map-4"
-
-/obj/machinery/atmospherics/components/trinary/filter/flipped/layer5
-	piping_layer = 5
-	icon_state = "filter_off_f_map-5"
+/obj/machinery/atmospherics/components/trinary/filter/flipped/layer3
+	piping_layer = 3
+	icon_state = "filter_off_f_map-3"
 
 /obj/machinery/atmospherics/components/trinary/filter/flipped/on
 	on = TRUE
@@ -259,17 +231,9 @@
 /obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer1
 	piping_layer = 1
 	icon_state = "filter_on_f_map-1"
-
-/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer2
-	piping_layer = 2
-	icon_state = "filter_on_f_map-2"
-/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer4
-	piping_layer = 4
-	icon_state = "filter_on_f_map-4"
-
-/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer5
-	piping_layer = 5
-	icon_state = "filter_on_f_map-5"
+/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer3
+	piping_layer = 3
+	icon_state = "filter_on_f_map-3"
 
 /obj/machinery/atmospherics/components/trinary/filter/atmos //Used for atmos waste loops
 	on = TRUE

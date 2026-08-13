@@ -22,6 +22,21 @@ const ICON_BY_CATEGORY_NAME = {
   'Station Equipment': 'microchip',
 };
 
+const PAINT_COLORS = {
+  grey: '#bbbbbb',
+  amethyst: '#a365ff',
+  blue: '#4466ff',
+  brown: '#b26438',
+  cyan: '#48eae8',
+  dark: '#808080',
+  green: '#1edd00',
+  orange: '#ffa030',
+  purple: '#b535ea',
+  red: '#ff3333',
+  violet: '#6e00f6',
+  yellow: '#ffce26',
+};
+
 const TOOLS = [
   {
     name: 'Dispense',
@@ -47,7 +62,6 @@ export const RapidPipeDispenser = (props) => {
     category: rootCategoryIndex,
     categories = [],
     selected_color,
-    paint_colors = {},
     piping_layer,
     mode,
   } = data;
@@ -95,15 +109,15 @@ export const RapidPipeDispenser = (props) => {
               <Box
                 inline
                 width="64px"
-                color={paint_colors[selected_color]}>
+                color={PAINT_COLORS[selected_color]}>
                 {selected_color}
               </Box>
-              {Object.keys(paint_colors)
+              {Object.keys(PAINT_COLORS)
                 .map(colorName => (
                   <ColorBox
                     key={colorName}
                     ml={1}
-                    color={paint_colors[colorName]}
+                    color={PAINT_COLORS[colorName]}
                     onClick={() => act('color', {
                       paint_color: colorName,
                     })} />
@@ -116,7 +130,7 @@ export const RapidPipeDispenser = (props) => {
             <Section>
               {rootCategoryIndex === 0 && (
                 <Box mb={1}>
-                  {[1, 2, 3, 4, 5].map(layer => (
+                  {[1, 2, 3].map(layer => (
                     <Button.Checkbox
                       key={layer}
                       fluid

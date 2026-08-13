@@ -2153,7 +2153,6 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -3078,8 +3077,13 @@
 /turf/open/floor/plasteel,
 /area/construction)
 "IV" = (
-/obj/docking_port/stationary/escape_pod{
-	dir = 1
+/obj/docking_port/stationary{
+	dir = 1;
+	dwidth = 1;
+	height = 4;
+	name = "escape pod loader";
+	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
+	width = 3
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)
@@ -3472,7 +3476,7 @@
 /turf/open/floor/plasteel,
 /area/service/bar)
 "Sj" = (
-/obj/structure/table/optable/loaded,
+/obj/structure/table/optable,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},

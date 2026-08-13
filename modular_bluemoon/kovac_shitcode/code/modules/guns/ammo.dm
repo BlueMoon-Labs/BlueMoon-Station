@@ -1,9 +1,9 @@
-// 9x39mm (ВСС, командирская) — BR3 (дозвуковой, но тяжёлая пуля)
+//9x39 bullet
+
 /obj/item/projectile/bullet/a9x39
 	name = "9x39 bullet"
 	damage = 45
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD: BR3 — тяжёлая но дозвуковая
-	wound_bonus = 15
+	wound_bonus = 15 // Винтовка ВСС выдается только командиру НРИ, одна на всю игру. Её отвратную скорострельность и боезапас попробуем компенсировать вот таким уроном.
 
 /obj/item/ammo_casing/a9x39
 	name = "9x39 bullet casing"

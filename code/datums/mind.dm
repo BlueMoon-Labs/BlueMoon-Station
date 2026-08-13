@@ -139,7 +139,6 @@
 	SSticker.minds -= src
 	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
-	QDEL_LIST(ambition_objectives)
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()
 	set_assigned_heirloom(null)
@@ -306,10 +305,7 @@
 	LAZYREMOVE(antag_datums, instanced_datum)
 	if(. && !LAZYLEN(antag_datums))
 		ambitions = null
-		//разум без тела (тело удалено, дисконнект): remove_verb по null роняет CRASH,
-		//парный do_add_antag_datum гардит current точно так же
-		if(current)
-			remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
+		remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 
 /datum/mind/proc/remove_all_antag_datums() //For the Lazy amongst us.
@@ -547,15 +543,15 @@
 		all_objectives |= A.objectives
 
 	if(all_objectives.len)
-		output += "<B>Текущие цели:</B>"
+		output += "<B>Objectives:</B>"
 		var/obj_count = 1
 		for(var/datum/objective/objective in all_objectives)
-			output += "<br><B>Цель #[obj_count++]</B>: [objective.explanation_text]"
+			output += "<br><B>Objective #[obj_count++]</B>: [objective.explanation_text]"
 			var/list/datum/mind/other_owners = objective.get_owners() - src
 			if(other_owners.len)
 				output += "<ul>"
 				for(var/datum/mind/M in other_owners)
-					output += "<li>Сообщники: [M.name]</li>"
+					output += "<li>Conspirator: [M.name]</li>"
 				output += "</ul>"
 
 // Кнопки для амбиций и их отображение
@@ -1751,10 +1747,10 @@ GLOBAL_LIST(objective_choices)
 
 /datum/mind/proc/announce_objectives()
 	var/obj_count = 1
-	to_chat(current, span_notice("Ваши текущие цели:"))
+	to_chat(current, "<span class='notice'>Your current objectives:</span>")
 	for(var/objective in get_all_objectives())
 		var/datum/objective/O = objective
-		to_chat(current, "<B>Цель #[obj_count]</B>: [O.explanation_text]")
+		to_chat(current, "<B>Objective #[obj_count]</B>: [O.explanation_text]")
 		obj_count++
 
 /datum/mind/proc/find_syndicate_uplink()

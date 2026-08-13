@@ -130,8 +130,7 @@
 	item_state = "henchmen"
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS|HEAD
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEEARS|HIDEEYES|HIDEHAIR|HIDETAUR
-	mutantrace_variation = STYLE_DIGITIGRADE
-	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/suit/polychromic	//enables all three overlays to reduce copypasta and defines basic stuff
 	name = "polychromic suit"

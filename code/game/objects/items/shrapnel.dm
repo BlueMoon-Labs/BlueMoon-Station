@@ -32,8 +32,7 @@
 	name = "flying shrapnel shard"
 	damage = 14
 	range = 20
-	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было -30 → BR1(10). Шрапнель от гранаты
-	                                   // должна хоть немного пробивать лёгкую броню.
+	armour_penetration = -30
 	dismemberment = 5
 	ricochets_max = 2
 	ricochet_chance = 70
@@ -41,9 +40,7 @@
 	ricochet_incidence_leeway = 60
 	sharpness = SHARP_EDGED
 	wound_bonus = 40
-	hit_prone_targets = TRUE
-
-// mega — наследует BR1 от родителя, без изменений
+	hit_prone_targets = TRUE // BLUEMOON ADD START - гранаты со шрапнелью ранят даже лежачих (чтобы их применение вообще имело смысл при сомнительном уроне)
 
 /obj/item/projectile/bullet/shrapnel/mega
 	name = "flying shrapnel hunk"
@@ -56,7 +53,6 @@
 
 /obj/item/projectile/bullet/pellet/stingball
 	name = "stingball pellet"
-	armour_penetration = BULLET_BR0
 	damage = 3
 	stamina = 8
 	ricochets_max = 4
@@ -75,14 +71,12 @@
 
 /obj/item/projectile/bullet/pellet/stingball/breaker
 	name = "breakbang pellet"
-	armour_penetration = BULLET_BR0
 	damage = 10
 	wound_bonus = 40
 	sharpness = SHARP_NONE
 
 /obj/item/projectile/bullet/pellet/stingball/shred
 	name = "shredbang pellet"
-	armour_penetration = BULLET_BR0
 	damage = 10
 	wound_bonus = 30
 	sharpness = SHARP_EDGED

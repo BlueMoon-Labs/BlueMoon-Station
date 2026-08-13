@@ -1,8 +1,7 @@
 import { toFixed } from 'common/math';
 import { createSearch, toTitleCase } from 'common/string';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { resolveAsset } from '../../assets';
 import { useBackend } from '../../backend';
 import {
   Box,
@@ -40,68 +39,23 @@ const getChemMetadata = (chemicals) => {
   return _chemMetaCache;
 };
 
-// Книга рецептов в нагрузке tgui не ездит вовсе - сервер шлёт счётчик по
-// категориям для ярлыка вкладки, а сама книга приезжает JSON-файлом через
-// транспорт ассетов (см. useGameRecipesAsset).
-const getRecipesCountFromCounts = (counts, isDrinkDispenser) => {
-  let total = 0;
-  for (const category in counts) {
-    if (!isDrinkDispenser || DRINK_CATEGORIES.includes(category)) {
-      total += counts[category];
-    }
-  }
-  return total;
-};
+let _recipesCountCache = { key: null, count: 0, drinkCount: 0 };
 
-const RECIPES_FETCH_MAX_ATTEMPTS = 12;
-
-/**
- * Тянет книгу рецептов из JSON-ассета, когда открыта её вкладка.
- *
- * Файл может ещё не доехать в кэш клиента (BYOND отдаёт страницу "Cannot find"
- * вместо 404), поэтому загрузка ретраится. Если файл так и не находится -
- * например, окно пережило апгрейд диспенсера и маппинга нового файла у него
- * нет, - интерфейс просит сервер прислать ассет заново ('load_game_recipes').
- */
-const useGameRecipesAsset = (act, assetName, wanted) => {
-  const [loaded, setLoaded] = useState(null);
-  useEffect(() => {
-    if (!wanted || !assetName || (loaded && loaded.assetName === assetName)) {
-      return;
-    }
-    let cancelled = false;
-    const attemptLoad = (attempt) => {
-      if (cancelled) {
-        return;
+const getRecipesCount = (gameRecipes, isDrinkDispenser) => {
+  if (_recipesCountCache.key !== gameRecipes) {
+    _recipesCountCache.key = gameRecipes;
+    let drinkCount = 0;
+    let totalCount = 0;
+    for (const name in gameRecipes) {
+      totalCount++;
+      if (DRINK_CATEGORIES.includes(gameRecipes[name].category)) {
+        drinkCount++;
       }
-      const retry = () => {
-        if (attempt === 1) {
-          act('load_game_recipes');
-        }
-        if (attempt + 1 < RECIPES_FETCH_MAX_ATTEMPTS) {
-          setTimeout(() => attemptLoad(attempt + 1), 150 + attempt * 150);
-        }
-      };
-      fetch(resolveAsset(assetName))
-        .then((response) => response.text())
-        .then((body) => {
-          if (cancelled) {
-            return;
-          }
-          if (/^Cannot find/.test(body)) {
-            retry();
-            return;
-          }
-          setLoaded({ assetName, recipes: JSON.parse(body) });
-        })
-        .catch(retry);
-    };
-    attemptLoad(0);
-    return () => {
-      cancelled = true;
-    };
-  }, [wanted, assetName, loaded && loaded.assetName]);
-  return loaded && loaded.assetName === assetName ? loaded.recipes : null;
+    }
+    _recipesCountCache.count = totalCount;
+    _recipesCountCache.drinkCount = drinkCount;
+  }
+  return isDrinkDispenser ? _recipesCountCache.drinkCount : _recipesCountCache.count;
 };
 
 // Each tgui window runs in its own JS realm, so plain module-level
@@ -319,23 +273,6 @@ const resolveOptimisticAmount = (optAmount, data) => {
   return data.amount;
 };
 
-// Книга рецептов запрашивается по заходу на вкладку, поэтому первый кадр вкладки
-// показывает ожидание, а не пустой список.
-function GameRecipesPane(props) {
-  const { loaded, ...rest } = props;
-  if (!loaded) {
-    return (
-      <Section fill>
-        <Box color="label" mt={2} textAlign="center">
-          <Icon name="spinner" spin mr={1} />
-          Загрузка книги рецептов...
-        </Box>
-      </Section>
-    );
-  }
-  return <GameRecipesTab {...rest} />;
-}
-
 export const ChemDispenser = (props) => {
   const { act, data } = useBackend();
 
@@ -387,6 +324,7 @@ export const ChemDispenser = (props) => {
     chemicals = [],
     storedContents = [],
     beakerTransferAmounts = [],
+    gameRecipes = {},
     isDrinkDispenser = false,
   } = data;
 
@@ -405,17 +343,7 @@ export const ChemDispenser = (props) => {
       contents: data.recipes[name],
     }));
 
-  // Книга приезжает JSON-ассетом по первому заходу на вкладку рецептов,
-  // а не внутри нагрузки tgui.
-  const loadedGameRecipes = useGameRecipesAsset(
-    act,
-    data.gameRecipesAsset,
-    activeTab === 'gameRecipes'
-  );
-  const gameRecipesLoaded = !!loadedGameRecipes;
-  const gameRecipes = loadedGameRecipes || {};
-  const gameRecipesCount
-    = getRecipesCountFromCounts(data.gameRecipeCounts, isDrinkDispenser);
+  const gameRecipesCount = getRecipesCount(gameRecipes, isDrinkDispenser);
 
   const beakerContents = recording
     ? Object.keys(data.recordingRecipe || {}).map(id => ({
@@ -1032,8 +960,7 @@ export const ChemDispenser = (props) => {
                 )}
 
                 {activeTab === 'gameRecipes' && (
-                  <GameRecipesPane
-                    loaded={gameRecipesLoaded}
+                  <GameRecipesTab
                     gameRecipes={gameRecipes}
                     searchQuery={searchQuery}
                     isBeakerLoaded={displayIsBeakerLoaded}

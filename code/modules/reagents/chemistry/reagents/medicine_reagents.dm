@@ -647,13 +647,9 @@
 		if(M.stat == DEAD)
 			show_message = 0
 		if(method in list(INGEST, VAPOR))
-			// Отбойник по stat строкой выше глушит только ветку PATCH/TOUCH - до этой
-			// он не доходит. Труп не давится и не кашляет, а losebreath на мёртвом теле
-			// просто копится и портит шансы на дефибрилляцию.
-			if(M.stat != DEAD)
-				C.losebreath++
-				C.emote("cough")
-				to_chat(M, "<span class='danger'>You feel your throat closing up!</span>")
+			C.losebreath++
+			C.emote("cough")
+			to_chat(M, "<span class='danger'>You feel your throat closing up!</span>")
 		else if(method == INJECT)
 			return
 		else if(method in list(PATCH, TOUCH))
@@ -867,6 +863,7 @@
 	M.adjustOxyLoss(-3*REM, 0)
 	if(M.losebreath >= 4)
 		M.losebreath -= 2
+	M.Jitter(5)
 	..()
 	. = 1
 

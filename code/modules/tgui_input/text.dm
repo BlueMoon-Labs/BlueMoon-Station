@@ -104,8 +104,7 @@
  * the window was closed by the user.
  */
 /datum/tgui_input_text/proc/wait()
-	//См. tgui_input/list.dm: без проверки на QDELETED цикл переживает собственный датум.
-	while (!entry && !closed && !QDELETED(src))
+	while (!entry && !closed)
 		stoplag(1)
 
 /datum/tgui_input_text/ui_interact(mob/user, datum/tgui/ui)

@@ -35,8 +35,7 @@
 	desc = "A lightweight vest with a blueshield on it."
 	icon_state = "guard_armor"
 	item_state = "guard_armor"
-	armor = list("melee" = 35, "bullet" = 35, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
-	brc_mitigation_bonus = 10
+	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
 
 /obj/item/clothing/suit/armor/vest/blueshield/spacecoat
 	name = "Blueshield Peacekeeper Spacecoat"
@@ -78,17 +77,10 @@
 	dog_fashion = null
 
 /obj/item/clothing/suit/armor/vest/peacekeeper
-	name = "peacekeeper's armored vest"
-	desc = "A Type I armored vest that provides decent protection against most types of damage. This one is used by the peace-minded officer."
+	name = "peacekeeper armored vest"
+	desc = "A Type I armored vest that provides decent protection against most types of damage. This one is used by the peace minded officer"
 	icon_state = "peacekeeper"
 	item_state = "peacekeeper"
-	unique_reskin = list(
-		"Blue" = list(
-			"icon_state" = "bluepeacekeeper",
-			"item_state" = "bluepeacekeeper",
-			"name" = "peacekeeper's blue armored vest",
-			"desc" = "A Type I armored vest that provides decent protection against most types of damage. This one is used by your average peacekeeping force you could think of.")
-	)
 	dog_fashion = null
 
 /obj/item/clothing/suit/armor/vest/metrocop

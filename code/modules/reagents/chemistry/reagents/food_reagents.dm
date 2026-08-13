@@ -252,15 +252,15 @@
 	description = "This is what makes chilis hot."
 	color = "#B31008" // rgb: 179, 16, 8
 	taste_description = "hot peppers"
-	taste_mult = 4.5
-	var/safe_heating = TRUE
+	taste_mult = 1.5
 
 /datum/reagent/consumable/capsaicin/on_mob_life(mob/living/carbon/M)
 	var/heating = 0
 	switch(current_cycle)
 		if(1 to 15)
 			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
-			holder.remove_reagent(/datum/reagent/cryostylane, 5)
+			if(holder.has_reagent(/datum/reagent/cryostylane))
+				holder.remove_reagent(/datum/reagent/cryostylane, 5)
 			if(isslime(M))
 				heating = rand(5,20)
 		if(15 to 25)
@@ -275,27 +275,8 @@
 			heating = 20 * TEMPERATURE_DAMAGE_COEFFICIENT
 			if(isslime(M))
 				heating = rand(20,25)
-	if(safe_heating)
-		M.adjust_bodytemperature(heating, max_temp = BODYTEMP_HEAT_DAMAGE_LIMIT)
-	else
-		M.adjust_bodytemperature(heating)
-		if(prob(8))
-			M.blur_eyes(3)
-			to_chat(M, span_warning(pick("Язык жжет огнем!", "Мой рот в огне!", "ОЧЕНЬ остро!")))
+	M.adjust_bodytemperature(heating)
 	..()
-
-/datum/reagent/consumable/capsaicin/reaper
-	name = "Reaper Capsaicin Oil"
-	description = "The spiciest thing you can eat, your tongue will experience hell."
-	color = "#a60800"
-	taste_description = "very, VERY HOT"
-	taste_mult = 10
-	safe_heating = FALSE
-
-/datum/reagent/consumable/capsaicin/reaper/on_mob_metabolize(mob/living/L)
-	. = ..()
-	L.adjust_bodytemperature(20 * TEMPERATURE_DAMAGE_COEFFICIENT)
-	to_chat(L, span_warning("Вы чувствуете нестерпимое жжение на языке, ОЧЕНЬ ОСТРО!"))
 
 /datum/reagent/consumable/frostoil
 	name = "Frost Oil"
@@ -310,7 +291,8 @@
 	switch(current_cycle)
 		if(1 to 15)
 			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
+			if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
+				holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
 			if(isslime(M))
 				cooling = -rand(5,20)
 		if(15 to 25)

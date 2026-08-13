@@ -210,7 +210,7 @@
 // Lower/upper here refers to the actual map template's parsed coordinates, NOT ACTUAL COORDINATES! Figure it out yourself my head hurts too much to implement that too.
 /datum/parsed_map/proc/_load_impl(x_offset = 1, y_offset = 1, z_offset = world.maxz + 1, cropMap = FALSE, no_changeturf = FALSE, x_lower = -INFINITY, x_upper = INFINITY, y_lower = -INFINITY, y_upper = INFINITY, placeOnTop = FALSE, orientation = SOUTH, annihilate_tiles = FALSE, datum/map_orientation_pattern/forced_pattern)
 	var/list/areaCache = list()
-	var/list/modelCache = build_cache()
+	var/list/modelCache = build_cache(no_changeturf)
 	var/space_key = modelCache[SPACE_KEY]
 	var/list/bounds
 	var/did_expand = FALSE
@@ -310,16 +310,10 @@
 
 	return TRUE
 
-/datum/parsed_map/proc/build_cache(bad_paths=null)
+/datum/parsed_map/proc/build_cache(no_changeturf, bad_paths=null)
 	if(modelCache && !bad_paths)
 		return modelCache
-	// Built into a local and published only once complete: this proc CHECK_TICKs,
-	// and every consumer treats a non-null modelCache as a finished product. A
-	// half-built list published up front could be handed to a concurrent load of
-	// the same parse (the eager template prebuilds run outside the map-loading
-	// lock) and CRASH it on a model key that simply was not stored yet.
-	var/list/cache = list()
-	. = cache
+	. = modelCache = list()
 	var/list/grid_models = src.grid_models
 	for(var/model_key in grid_models)
 		var/model = grid_models[model_key]
@@ -371,14 +365,17 @@
 
 			CHECK_TICK
 
-		// The space-key shortcut: an entry like "XXX" = (/turf/default, /area/default)
-		// with no attributes matches what a fresh z-level is already filled with, so
-		// a load running without AfterChange skips such tiles wholesale. Record the
-		// marker but store the model entry anyway: whether to take the shortcut is
-		// the load's decision (no_afterchange in _load_impl), and keeping the entry
-		// lets one cache serve both kinds of load instead of being rebuilt whenever
-		// a kept template's loads alternate across the SSatoms-init boundary.
-		if(!(cache[SPACE_KEY]) \
+		//check and see if we can just skip this turf
+		//So you don't have to understand this horrid statement, we can do this if
+		// 1. no_changeturf is set
+		// 2. the space_key isn't set yet
+		// 3. there are exactly 2 members
+		// 4. with no attributes
+		// 5. and the members are world.turf and world.area
+		// Basically, if we find an entry like this: "XXX" = (/turf/default, /area/default)
+		// We can skip calling this proc every time we see XXX
+		if(no_changeturf \
+			&& !(.[SPACE_KEY]) \
 			&& members.len == 2 \
 			&& members_attributes.len == 2 \
 			&& length(members_attributes[1]) == 0 \
@@ -386,10 +383,11 @@
 			&& (world.area in members) \
 			&& (world.turf in members))
 
-			cache[SPACE_KEY] = model_key
+			.[SPACE_KEY] = model_key
+			continue
 
-		cache[model_key] = list(members, members_attributes)
-	modelCache = cache
+
+		.[model_key] = list(members, members_attributes)
 
 /datum/parsed_map/proc/build_coordinate(list/areaCache, list/model, turf/crds, no_changeturf as num, placeOnTop as num, turn_angle as num, annihilate_tiles = FALSE, swap_xy, invert_y, invert_x)
 	// BLUEMOON EDIT START: BAD TURFS

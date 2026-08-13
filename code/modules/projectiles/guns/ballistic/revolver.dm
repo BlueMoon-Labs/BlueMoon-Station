@@ -336,7 +336,6 @@
 
 /obj/item/gun/ballistic/revolver/doublebarrel
 	name = "double-barreled shotgun"
-	icon = 'icons/obj/guns/projectile.dmi'
 	desc = "A true classic."
 	icon_state = "dshotgun"
 	item_state = "dshotgun-wielded"

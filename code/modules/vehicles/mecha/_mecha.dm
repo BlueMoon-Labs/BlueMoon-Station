@@ -756,11 +756,7 @@
 
 	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
 		return FALSE
-	// Шаг меха живёт на собственном кулдауне, мимо /client/Move(), поэтому цену
-	// выравнивать по тику приходится здесь же. Дробный movedelay набегает от
-	// сканмодулей и капаситоров, а кулдаун всё равно проверяется только на тике.
-	var/step_cost = movement_quantize_delay(movedelay, world.tick_lag)
-	COOLDOWN_START(src, cooldown_vehicle_move, step_cost)
+	COOLDOWN_START(src, cooldown_vehicle_move, movedelay)
 	if(internal_tank?.connected_port)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
 			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while connected to the air system port!</span>")
@@ -794,7 +790,7 @@
 
 	var/olddir = dir
 
-	set_glide_size(DELAY_TO_GLIDE_SIZE(step_cost))
+	set_glide_size(DELAY_TO_GLIDE_SIZE(movedelay))
 	use_power(step_energy_drain)
 
 	var/turf/current_loc = get_turf(src)

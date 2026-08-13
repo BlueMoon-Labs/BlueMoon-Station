@@ -25,15 +25,16 @@ SUBSYSTEM_DEF(decay)
 	var/static/list/activation_chances = list(10, 32, 53, 75, 50)
 
 /datum/controller/subsystem/decay/Initialize()
+	. = ..()
 	if(CONFIG_GET(flag/ssdecay_disabled))
 		message_admins("SSDecay was disabled in config.")
 		log_world("SSDecay was disabled in config.")
-		return ..()
+		return SS_INIT_NO_NEED
 
 	if(SSmapping.config.map_name in station_filter)
 		message_admins("SSDecay was disabled due to map filter.")
 		log_world("SSDecay was disabled due to map filter.")
-		return ..()
+		return SS_INIT_NO_NEED
 
 	var/configured_intensity = CONFIG_GET(number/ssdecay_intensity)
 	configured_intensity = clamp(configured_intensity || 5, 1, 5)
@@ -42,7 +43,7 @@ SUBSYSTEM_DEF(decay)
 	if(!prob(activation_chance))
 		message_admins("SSDecay did not activate this round (rolled against [activation_chance]% chance for intensity [configured_intensity]).")
 		log_world("SSDecay did not activate this round (rolled against [activation_chance]% chance for intensity [configured_intensity]).")
-		return ..()
+		return SS_INIT_NO_NEED
 
 	for(var/area/iterating_area as anything in GLOB.all_areas)
 		if(!is_station_level(iterating_area.z))
@@ -58,7 +59,7 @@ SUBSYSTEM_DEF(decay)
 	if(!length(possible_turfs))
 		message_admins("SSDecay had no possible turfs to use.")
 		log_world("SSDecay had no possible turfs to use.")
-		return ..()
+		return SS_INIT_NO_NEED
 
 	severity_modifier = configured_intensity
 	if(severity_modifier == 5)
@@ -70,7 +71,7 @@ SUBSYSTEM_DEF(decay)
 	do_common()
 	do_maintenance()
 
-	return ..()
+	return SS_INIT_SUCCESS
 
 /// Structural decay across the station — rusted walls and missing floor tiles.
 /datum/controller/subsystem/decay/proc/do_common()

@@ -2,7 +2,6 @@
 	name ="explosive bolt"
 	icon_state= "bolter"
 	damage = 50
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD
 
 /obj/item/projectile/bullet/gyro/on_hit(atom/target, blocked = FALSE)
 	..()
@@ -14,8 +13,7 @@
 	name = "\improper HE rocket"
 	desc = "Boom."
 	icon_state= "missile"
-	damage = 150
-	armour_penetration = BULLET_BR5   // BLUEMOON ADD: ракета = BR5
+	damage = 200
 	sharpness = NONE
 	shrapnel_type = null
 	ricochets_max = 0
@@ -70,8 +68,7 @@ among other potential differences. This granularity is helpful for things like t
 	name ="\improper HE missile"
 	desc = "Boom."
 	icon_state = "missile"
-	damage = 100
-	armour_penetration = BULLET_BR5   // BLUEMOON ADD
+	damage = 150
 	dismemberment = 50
 	anti_armour_damage = 100
 

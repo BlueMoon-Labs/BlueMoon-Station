@@ -309,7 +309,7 @@
 	name = "Kiss of Death"
 	desc = "Невероятно ядовитый тюбик помады, сделанный из яда ужасной Жёлтой Пятнистой Космической Ящерицы — смертельно и стильно. Постарайтесь не размазать!"
 	item = /obj/item/lipstick/black/death
-	cost = 4
+	cost = 12
 	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/dangerous/sniper

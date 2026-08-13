@@ -22,7 +22,7 @@
 /area/shuttle/supply)
 "d" = (
 /obj/structure/sign/warning/fire,
-/turf/closed/wall/mineral/titanium/nodiagonal,
+/turf/closed/wall/mineral/titanium/spaceship/nodiagonal,
 /area/shuttle/supply)
 "g" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -192,7 +192,7 @@
 	dir = 1;
 	pixel_y = 32
 	},
-/turf/closed/wall/mineral/titanium/nodiagonal,
+/turf/closed/wall/mineral/titanium/spaceship/nodiagonal,
 /area/shuttle/supply)
 "K" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -234,6 +234,9 @@
 /obj/structure/marker_beacon/burgundy,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/supply)
+"V" = (
+/turf/closed/wall/mineral/titanium/spaceship/nodiagonal,
+/area/shuttle/supply)
 "X" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/caution/white{
@@ -257,8 +260,8 @@
 /area/shuttle/supply)
 
 (1,1,1) = {"
-C
-C
+V
+V
 Y
 k
 n
@@ -341,8 +344,8 @@ Z
 C
 "}
 (7,1,1) = {"
-C
-C
+V
+V
 U
 C
 C

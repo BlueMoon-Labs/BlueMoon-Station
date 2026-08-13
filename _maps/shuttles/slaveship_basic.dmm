@@ -537,12 +537,6 @@
 /obj/machinery/recharge_station,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/slaveship)
-"YN" = (
-/obj/item/bodybag/containment/prisoner,
-/obj/item/bodybag/containment/prisoner,
-/obj/item/bodybag/containment/prisoner,
-/turf/open/floor/plating/rust,
-/area/shuttle/slaveship)
 "ZR" = (
 /obj/structure/bed/pod,
 /obj/effect/decal/cleanable/semen/femcum,
@@ -760,7 +754,7 @@ yT
 yT
 Wk
 aN
-YN
+rc
 Iu
 ax
 "}

@@ -28,7 +28,7 @@
 /turf/open/floor/plasteel/white/side,
 /area/awaymission/InteQ/lvl3)
 "aco" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
@@ -52,7 +52,7 @@
 "adZ" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "aek" = (
@@ -78,13 +78,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "afR" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "afW" = (
@@ -113,7 +113,7 @@
 "ahr" = (
 /obj/structure/chair/stool/bar/directional/north,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/plasteel,
@@ -190,13 +190,13 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "aml" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
 	dir = 4;
 	volume_rate = 200
 	},
@@ -268,7 +268,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -296,7 +296,7 @@
 /area/awaymission/InteQ/lvl3)
 "atV" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /mob/living/simple_animal/hostile/brute/leaper,
@@ -329,7 +329,7 @@
 	name = "Engineering";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plasteel/dark,
@@ -339,7 +339,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -431,7 +431,7 @@
 /obj/structure/shuttle/engine/propulsion/burst{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
@@ -525,7 +525,7 @@
 /area/awaymission/InteQ/lvl2)
 "aGy" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -534,7 +534,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
 	dir = 5
 	},
 /obj/structure/lattice/catwalk,
@@ -615,7 +615,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "aKk" = (
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "aKW" = (
@@ -632,7 +632,7 @@
 	name = "Engineering";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plasteel/dark,
@@ -645,7 +645,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "aLM" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -677,7 +677,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "aMA" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -705,7 +705,7 @@
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -779,7 +779,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/InteQ)
 "aSX" = (
@@ -811,7 +811,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "aTV" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
 	dir = 1;
 	volume_rate = 200
 	},
@@ -831,7 +831,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "aVO" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /turf/open/floor/wood,
 /area/awaymission/InteQ)
 "aWw" = (
@@ -840,7 +840,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "aWR" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -917,7 +917,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -932,11 +932,11 @@
 	},
 /area/awaymission/InteQ/lvl2)
 "bbO" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -991,7 +991,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "bem" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/closed/indestructible/syndicate,
@@ -1062,7 +1062,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "bhj" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -1103,7 +1103,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -1119,7 +1119,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "blR" = (
@@ -1135,14 +1135,14 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "bmc" = (
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "boO" = (
 /turf/open/floor/plasteel/white/side,
 /area/awaymission/InteQ/lvl3)
 "bpB" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -1213,7 +1213,7 @@
 /area/awaymission/InteQ/lvl2)
 "brK" = (
 /obj/structure/barricade/sandbags,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -1294,7 +1294,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -1319,7 +1319,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "bzO" = (
@@ -1338,7 +1338,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "bAz" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 8
 	},
 /obj/structure/dresser,
@@ -1361,7 +1361,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "bCd" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -1409,7 +1409,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/bedsheet,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -1485,7 +1485,7 @@
 /area/awaymission/InteQ/lvl2)
 "bKe" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "bKw" = (
@@ -1512,11 +1512,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/inteq/melee/ushm,
+/mob/living/simple_animal/hostile/syndicate/melee/ushm,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "bMK" = (
@@ -1528,7 +1528,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -1543,14 +1543,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "bPG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -1734,7 +1734,7 @@
 	faction = list("syndicate","xenomorph");
 	loot = list(/obj/effect/gibspawner/xeno)
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -1762,7 +1762,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/structure/reagent_dispensers/water_cooler,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -1926,7 +1926,7 @@
 /obj/structure/rack/shelf,
 /obj/item/reagent_containers/glass/bucket,
 /obj/item/mop,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
@@ -1997,13 +1997,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "cpN" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "cqm" = (
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "cqo" = (
@@ -2020,7 +2020,7 @@
 "crn" = (
 /obj/machinery/door/airlock/hatch,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -2162,7 +2162,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -2206,7 +2206,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "cBA" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/machinery/firealarm{
@@ -2357,10 +2357,10 @@
 /turf/open/floor/grass/grass3,
 /area/awaymission/InteQ/lvl2)
 "cLe" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -2409,7 +2409,7 @@
 /obj/effect/decal/cleanable/glass,
 /obj/structure/closet/crate/trashcart,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -2531,7 +2531,7 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/awaymission/InteQ)
 "cTR" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/closed/indestructible/syndicate,
 /area/awaymission/InteQ/lvl2)
@@ -2580,10 +2580,10 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "cVw" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
@@ -2615,7 +2615,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
 	dir = 6
 	},
 /obj/structure/lattice/catwalk,
@@ -2644,7 +2644,7 @@
 /area/awaymission/InteQ/lvl2)
 "cXN" = (
 /obj/machinery/door/airlock/centcom,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -2658,7 +2658,7 @@
 "cYF" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -2895,7 +2895,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "dnf" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/closed/wall/r_wall/syndicate,
@@ -2999,7 +2999,7 @@
 "dtv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "dtN" = (
@@ -3049,7 +3049,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "dvR" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/computer/monitor/secret,
@@ -3137,7 +3137,7 @@
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "dys" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -3160,7 +3160,7 @@
 /area/awaymission/InteQ)
 "dzq" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -3237,7 +3237,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -3355,7 +3355,7 @@
 	pixel_y = -24
 	},
 /obj/machinery/atmospherics/pipe/simple/orange,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
@@ -3376,7 +3376,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "dLd" = (
@@ -3426,7 +3426,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -3455,7 +3455,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -3489,7 +3489,7 @@
 /area/awaymission/InteQ/lvl2)
 "dRv" = (
 /obj/structure/barricade/sandbags,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -3522,7 +3522,7 @@
 /area/awaymission/InteQ)
 "dSP" = (
 /obj/machinery/atmospherics/pipe/simple/orange,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/closed/indestructible/syndicate,
@@ -3559,7 +3559,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supplymain{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -3572,12 +3572,12 @@
 /area/awaymission/InteQ)
 "dVk" = (
 /obj/effect/turf_decal/bot,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "dVn" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -3604,7 +3604,7 @@
 "dXl" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "dYe" = (
@@ -3633,7 +3633,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -3685,7 +3685,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ebu" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /obj/structure/closet/secure_closet{
@@ -3731,7 +3731,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "edw" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
@@ -3802,7 +3802,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -3850,7 +3850,7 @@
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/closet/firecloset/full,
@@ -3954,7 +3954,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -4070,7 +4070,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "exI" = (
@@ -4105,7 +4105,7 @@
 "eAO" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /mob/living/simple_animal/hostile/brute/leaper,
@@ -4264,7 +4264,7 @@
 /area/awaymission/InteQ/lvl2)
 "eNL" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -4297,11 +4297,11 @@
 	},
 /area/awaymission/InteQ/lvl2)
 "ePI" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
@@ -4314,17 +4314,17 @@
 /area/awaymission/InteQ/lvl2)
 "eQE" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
 	},
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "eSc" = (
-/mob/living/simple_animal/hostile/inteq/melee/spacebattle,
+/mob/living/simple_animal/hostile/syndicate/melee/spacebattle,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "eSh" = (
@@ -4341,7 +4341,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "eSp" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral{
@@ -4383,7 +4383,7 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "eTI" = (
@@ -4442,7 +4442,7 @@
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -4553,7 +4553,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -4563,7 +4563,7 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
@@ -4574,7 +4574,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fcO" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/closed/indestructible/syndicate,
@@ -4688,7 +4688,7 @@
 	pixel_x = 2
 	},
 /obj/effect/turf_decal/bot/white,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white/textured/large,
@@ -4767,7 +4767,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -4804,7 +4804,7 @@
 /area/awaymission/InteQ)
 "foP" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -4813,7 +4813,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -4837,13 +4837,13 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "fqY" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/light/dim/directional/east,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
@@ -4861,7 +4861,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -4872,7 +4872,7 @@
 /area/awaymission/InteQ)
 "fsx" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fsz" = (
@@ -4940,7 +4940,7 @@
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/awaymission/InteQ/lvl2)
 "fwG" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "fwW" = (
@@ -4955,7 +4955,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -4971,7 +4971,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fxN" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "fyh" = (
@@ -5042,7 +5042,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -5093,7 +5093,7 @@
 /turf/closed/indestructible/rock,
 /area/awaymission/InteQ/lvl2)
 "fIi" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
@@ -5145,7 +5145,7 @@
 "fLv" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/o2{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /turf/open/floor/plating,
@@ -5201,7 +5201,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "fOh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -5216,7 +5216,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -5239,7 +5239,7 @@
 /area/awaymission/InteQ)
 "fQU" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fRa" = (
@@ -5269,7 +5269,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ)
 "fTO" = (
@@ -5305,7 +5305,7 @@
 /area/awaymission/InteQ)
 "fVD" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -5375,7 +5375,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "fZv" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 1
 	},
 /turf/closed/wall/r_wall,
@@ -5483,7 +5483,7 @@
 /mob/living/simple_animal/bot/cleanbot{
 	faction = list("InteQ")
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "gcX" = (
@@ -5512,10 +5512,10 @@
 /area/awaymission/InteQ)
 "geN" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -5625,7 +5625,7 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
 "gli" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -5672,8 +5672,8 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -5707,7 +5707,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -5756,7 +5756,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/firealarm{
@@ -5835,7 +5835,7 @@
 	name = "Intersection";
 	req_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/plasteel/dark,
@@ -5888,7 +5888,7 @@
 /turf/open/floor/plating/airless,
 /area/awaymission/InteQ)
 "gAy" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -5918,7 +5918,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -5940,7 +5940,7 @@
 	name = "Bar";
 	req_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -5957,7 +5957,7 @@
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/small,
@@ -5973,7 +5973,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "gEN" = (
@@ -5996,7 +5996,7 @@
 /area/awaymission/InteQ)
 "gGC" = (
 /obj/effect/spawner/structure/window/plastitanium,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -6011,7 +6011,7 @@
 "gHw" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/structure/chair,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -6113,7 +6113,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "gLU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/machinery/light,
@@ -6160,9 +6160,9 @@
 /area/awaymission/InteQ/lvl2)
 "gOJ" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/inteq/ranged/sniper,
+/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
@@ -6179,11 +6179,11 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ/lvl2)
 "gPG" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown,
@@ -6193,7 +6193,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "gPM" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/closet/secure_closet/engineering_welding,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -6244,7 +6244,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "gSm" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -6271,7 +6271,7 @@
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/tank_holder/extinguisher,
@@ -6343,7 +6343,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -6398,7 +6398,7 @@
 "gYo" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/plasma{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /turf/open/floor/plating,
@@ -6526,7 +6526,7 @@
 /area/awaymission/InteQ)
 "hgA" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -6556,14 +6556,14 @@
 /area/awaymission/InteQ/lvl2)
 "hhM" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "hiH" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
@@ -6575,7 +6575,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "hjX" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -6765,7 +6765,7 @@
 	name = "Engineering";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -6777,7 +6777,7 @@
 "hsd" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "hsJ" = (
@@ -6877,7 +6877,7 @@
 /area/awaymission/InteQ/lvl2)
 "hxD" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -6989,10 +6989,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white/smooth/small,
@@ -7007,7 +7007,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -7016,7 +7016,7 @@
 "hEd" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -7024,12 +7024,12 @@
 "hEu" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
 "hEE" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
@@ -7065,7 +7065,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "hHQ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/window/reinforced/survival_pod{
 	dir = 8
 	},
@@ -7108,7 +7108,7 @@
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ/lvl3)
 "hKq" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -7121,7 +7121,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -7154,7 +7154,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "hNH" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
@@ -7242,7 +7242,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "hRB" = (
@@ -7265,7 +7265,7 @@
 /area/awaymission/InteQ/lvl2)
 "hSO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -7347,7 +7347,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "hWi" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -7364,14 +7364,14 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ/lvl3)
 "hXu" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 5
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown,
@@ -7404,7 +7404,7 @@
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ)
 "hZA" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/structure/chair/office/light{
@@ -7576,7 +7576,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ijo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -7590,7 +7590,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -7684,7 +7684,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "ipr" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -7735,7 +7735,7 @@
 /area/awaymission/InteQ)
 "isx" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -7758,7 +7758,7 @@
 /obj/item/stack/ore/bluespace_crystal,
 /obj/item/stack/ore/bluespace_crystal,
 /obj/item/stack/ore/bluespace_crystal,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -7829,7 +7829,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "iwh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -7866,7 +7866,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/cable/yellow{
@@ -7899,7 +7899,7 @@
 "izp" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/n2{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -7978,11 +7978,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "iCT" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "iDN" = (
@@ -8169,7 +8169,7 @@
 /obj/effect/turf_decal/tile/dark_green/half/contrasted{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -8221,7 +8221,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -8254,7 +8254,7 @@
 /area/awaymission/InteQ/lvl2)
 "iRx" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -8422,7 +8422,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -8546,7 +8546,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "jeC" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark/side{
 	dir = 4
 	},
@@ -8627,7 +8627,7 @@
 /mob/living/simple_animal/bot/cleanbot{
 	faction = list("InteQ")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -8766,7 +8766,7 @@
 /area/awaymission/InteQ)
 "jrV" = (
 /obj/machinery/door/poddoor/preopen,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -8794,8 +8794,8 @@
 	},
 /area/awaymission/InteQ/lvl2)
 "jtB" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -8917,7 +8917,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/decal/cleanable/blood/xtracks,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -8959,7 +8959,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -9061,7 +9061,7 @@
 	dir = 4
 	},
 /obj/structure/alien/resin/wall,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -9074,7 +9074,7 @@
 /area/awaymission/InteQ/lvl2)
 "jHn" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -9090,7 +9090,7 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ/lvl2)
 "jHJ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/machinery/door/airlock/engineering{
@@ -9102,7 +9102,7 @@
 "jHV" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/o2{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -9158,7 +9158,7 @@
 /area/awaymission/InteQ/lvl2)
 "jLc" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/machinery/light,
@@ -9168,7 +9168,7 @@
 /obj/machinery/shower{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -9272,7 +9272,7 @@
 /area/awaymission/InteQ)
 "jQs" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -9330,7 +9330,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "jSF" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -9338,7 +9338,7 @@
 /area/awaymission/InteQ/lvl2)
 "jSO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -9406,7 +9406,7 @@
 /area/awaymission/InteQ/lvl2)
 "jXA" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply{
@@ -9492,14 +9492,14 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "kbJ" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -9529,7 +9529,7 @@
 /mob/living/simple_animal/bot/cleanbot{
 	faction = list("InteQ")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -9604,7 +9604,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ)
 "khb" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
 "khE" = (
@@ -9635,7 +9635,7 @@
 "kka" = (
 /obj/machinery/door/airlock/highsecurity,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "kkl" = (
@@ -9701,7 +9701,7 @@
 	name = "Cafeteria Room"
 	},
 /obj/effect/turf_decal/tile/dark_green/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -9827,7 +9827,7 @@
 "kqq" = (
 /obj/machinery/door/airlock/hatch,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "kqy" = (
@@ -9863,7 +9863,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ksA" = (
@@ -9960,7 +9960,7 @@
 	req_one_access_txt = "152"
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -9986,7 +9986,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -10001,14 +10001,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "kCr" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
@@ -10126,7 +10126,7 @@
 /area/awaymission/InteQ/lvl2)
 "kHC" = (
 /obj/effect/turf_decal/tile/brown/half,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -10200,7 +10200,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -10291,7 +10291,7 @@
 /area/awaymission/InteQ)
 "kQb" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -10317,15 +10317,15 @@
 /area/awaymission/InteQ/ForChasmArea)
 "kSf" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/closed/indestructible/syndicate,
 /area/awaymission/InteQ)
 "kSx" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown,
@@ -10348,7 +10348,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -10374,7 +10374,7 @@
 /area/awaymission/InteQ/lvl2)
 "kTe" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -10418,7 +10418,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -10557,11 +10557,11 @@
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/InteQ/lvl2)
 "lcb" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 6
 	},
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
@@ -10572,7 +10572,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "lcU" = (
@@ -10644,7 +10644,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -10672,7 +10672,7 @@
 /area/awaymission/InteQ/lvl2)
 "liD" = (
 /obj/structure/closet/emcloset,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/sign/warning/radiation{
@@ -10703,14 +10703,14 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "lkN" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/plasma{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -10757,9 +10757,9 @@
 	name = "Dormitory"
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "lnj" = (
@@ -10780,7 +10780,7 @@
 	name = "Engineering";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -10882,10 +10882,10 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
 "lvb" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark/side{
@@ -10977,7 +10977,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -10996,7 +10996,7 @@
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
@@ -11045,7 +11045,7 @@
 /turf/open/floor/plasteel/white,
 /area/awaymission/InteQ/lvl2)
 "lDz" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "lDN" = (
@@ -11057,7 +11057,7 @@
 /area/awaymission/InteQ)
 "lDZ" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -11179,7 +11179,7 @@
 /area/awaymission/InteQ/ForChasmArea)
 "lLS" = (
 /obj/effect/turf_decal/tile/brown,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -11263,7 +11263,7 @@
 /area/awaymission/InteQ)
 "lQl" = (
 /obj/structure/closet,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -11274,7 +11274,7 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ)
 "lQz" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /turf/closed/indestructible/syndicate,
@@ -11288,7 +11288,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl3)
 "lQN" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -11524,7 +11524,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "mdo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -11555,7 +11555,7 @@
 /obj/structure/rack{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -11605,7 +11605,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "mfZ" = (
@@ -11698,7 +11698,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -11735,13 +11735,13 @@
 "mnF" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/item/stack/sheet/metal,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "mnQ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -11825,7 +11825,7 @@
 /area/awaymission/InteQ/lvl2)
 "mqz" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -11858,7 +11858,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "mrN" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
 	dir = 4;
 	volume_rate = 200
 	},
@@ -11866,7 +11866,7 @@
 /area/awaymission/InteQ)
 "mrW" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/structure/table,
@@ -11998,7 +11998,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "mwO" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/structure/table,
@@ -12058,7 +12058,7 @@
 /area/awaymission/InteQ/lvl2)
 "mAL" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -12084,7 +12084,7 @@
 /turf/open/chasm/gateInteQ,
 /area/awaymission/InteQ)
 "mFn" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
@@ -12106,7 +12106,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -12138,7 +12138,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "mHr" = (
@@ -12157,7 +12157,7 @@
 	dir = 1
 	},
 /obj/structure/barricade/sandbags,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -12205,7 +12205,7 @@
 /obj/structure/rack/shelf,
 /obj/effect/spawner/lootdrop/maintenance,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -12281,7 +12281,7 @@
 	name = "Intersection";
 	req_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -12395,7 +12395,7 @@
 "mUs" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/n2{
 	dir = 1;
-	piping_layer = 4;
+	piping_layer = 3;
 	on = 0
 	},
 /turf/open/floor/plating,
@@ -12447,13 +12447,13 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "mZR" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "mZV" = (
 /obj/structure/table/wood/fancy/black,
 /obj/item/toy/cards/deck,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
@@ -12468,7 +12468,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "naA" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
@@ -12483,7 +12483,7 @@
 	req_access_txt = "150"
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
@@ -12566,7 +12566,7 @@
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/awaymission/InteQ/lvl3)
 "ngt" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/closed/indestructible/syndicate,
@@ -12594,7 +12594,7 @@
 /obj/structure/closet/radiation,
 /obj/effect/turf_decal/delivery,
 /obj/item/clothing/glasses/meson/engine,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -12660,10 +12660,10 @@
 	pixel_x = -32
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
 	},
 /obj/structure/barricade/sandbags,
@@ -12697,9 +12697,9 @@
 /turf/open/floor/plating/airless,
 /area/awaymission/InteQ/lvl2)
 "nmY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/brown,
@@ -12755,7 +12755,7 @@
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -12854,7 +12854,7 @@
 /area/awaymission/InteQ/lvl2)
 "nue" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -12869,7 +12869,7 @@
 "nux" = (
 /obj/structure/chair/stool/bar/directional/north,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -12912,7 +12912,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "nwF" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -12935,7 +12935,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "nxj" = (
@@ -12948,7 +12948,7 @@
 "nxm" = (
 /obj/machinery/light/small,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -12972,7 +12972,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "nyk" = (
@@ -12984,7 +12984,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "nyy" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer3,
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 4
 	},
@@ -13014,8 +13014,8 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "nAP" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark/side{
@@ -13114,12 +13114,12 @@
 "nEH" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /obj/structure/alien/resin/wall,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "nFl" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/machinery/computer/security/telescreen/turbine{
@@ -13228,7 +13228,7 @@
 /turf/open/floor/plasteel/bluespace,
 /area/awaymission/InteQ/ForChasmArea)
 "nKS" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -13241,7 +13241,7 @@
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/InteQ/lvl2)
 "nLB" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/components/trinary/mixer/flipped{
 	dir = 1
 	},
@@ -13394,7 +13394,7 @@
 "nRQ" = (
 /obj/structure/barricade/sandbags,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -13403,7 +13403,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "nSM" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
 	},
 /obj/structure/window/reinforced/survival_pod{
@@ -13419,7 +13419,7 @@
 	name = "Cell 2"
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -13499,7 +13499,7 @@
 /turf/open/floor/grass/grass0,
 /area/awaymission/InteQ/lvl2)
 "oat" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -13558,7 +13558,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "odC" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -13631,7 +13631,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ogM" = (
@@ -13666,7 +13666,7 @@
 "ohr" = (
 /obj/structure/table,
 /obj/structure/bedsheetbin,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
@@ -13710,7 +13710,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "oiW" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/structure/chair/office/dark{
 	dir = 1
 	},
@@ -13758,7 +13758,7 @@
 "olq" = (
 /obj/structure/rack/shelf,
 /obj/effect/spawner/lootdrop/maintenance,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
@@ -13790,7 +13790,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "onS" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
 	dir = 4;
 	icon_state = "manifold-2"
@@ -13798,7 +13798,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ooP" = (
@@ -14012,7 +14012,7 @@
 "ozZ" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/structure/chair,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -14138,7 +14138,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "oIo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -14178,10 +14178,10 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -14241,10 +14241,10 @@
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/awaymission/InteQ/lvl2)
 "oMi" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -14256,7 +14256,7 @@
 /area/awaymission/InteQ/lvl2)
 "oNs" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /mob/living/simple_animal/bot/cleanbot{
 	faction = list("InteQ")
 	},
@@ -14265,11 +14265,11 @@
 /area/awaymission/InteQ)
 "oNC" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "oOc" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/machinery/light/small,
@@ -14401,7 +14401,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -14418,7 +14418,7 @@
 /turf/open/space/basic,
 /area/awaymission/InteQ)
 "oYJ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -14433,7 +14433,7 @@
 /area/awaymission/InteQ)
 "oZr" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/plasteel/dark,
@@ -14487,11 +14487,11 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "paS" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ)
 "pbw" = (
@@ -14505,14 +14505,14 @@
 /area/awaymission/InteQ)
 "pbU" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "pcf" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/item/bodybag/containment/prisoner,
@@ -14625,7 +14625,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pkn" = (
@@ -14643,7 +14643,7 @@
 /mob/living/simple_animal/hostile/gigachad_inteq/shooter/sniper{
 	faction = list("InteQ")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -14663,7 +14663,7 @@
 /obj/effect/turf_decal/tile/brown,
 /obj/structure/closet/crate/bin,
 /obj/machinery/light,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -14672,7 +14672,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
 	dir = 10
 	},
 /obj/structure/lattice/catwalk,
@@ -14685,8 +14685,8 @@
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ/lvl3)
 "pnM" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/mob/living/simple_animal/hostile/inteq/space,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/mob/living/simple_animal/hostile/syndicate/space,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "poh" = (
@@ -14695,13 +14695,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "poq" = (
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "pow" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/box/donkpockets,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
@@ -14730,7 +14730,7 @@
 /area/awaymission/InteQ)
 "ppH" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/open/floor/plasteel,
@@ -14751,14 +14751,14 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "pqC" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -14849,7 +14849,7 @@
 "pvw" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
@@ -14859,7 +14859,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pwg" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -14913,7 +14913,7 @@
 /area/awaymission/InteQ/lvl2)
 "pyE" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
@@ -14960,7 +14960,7 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
@@ -15213,7 +15213,7 @@
 "pPp" = (
 /obj/machinery/light,
 /obj/item/kirbyplants/random,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -15240,7 +15240,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pQl" = (
@@ -15256,7 +15256,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -15275,7 +15275,7 @@
 "pRF" = (
 /obj/structure/closet,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -15310,7 +15310,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pTj" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
 /turf/open/floor/plasteel/kitchen{
 	dir = 4
 	},
@@ -15528,7 +15528,7 @@
 /obj/structure/sign/poster/contraband/inteq/inteq_no_sex{
 	pixel_y = 34
 	},
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ/lvl2)
 "qbC" = (
@@ -15566,7 +15566,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl3)
 "qeV" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/structure/cable/yellow{
@@ -15595,10 +15595,10 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -15704,7 +15704,7 @@
 	pixel_x = 2
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -15731,7 +15731,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "qlO" = (
@@ -15771,7 +15771,7 @@
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "qmE" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
@@ -15803,7 +15803,7 @@
 /turf/open/chasm/gateInteQ,
 /area/awaymission/InteQ)
 "qnY" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
 	},
 /obj/effect/turf_decal/siding/thinplating/dark,
@@ -15855,7 +15855,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "qsV" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -15944,7 +15944,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /mob/living/simple_animal/hostile/brute/leaper,
@@ -15972,7 +15972,7 @@
 	dir = 8
 	},
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -16094,7 +16094,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
 	dir = 9
 	},
 /obj/structure/lattice/catwalk,
@@ -16161,7 +16161,7 @@
 /area/awaymission/InteQ/lvl2)
 "qFt" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
@@ -16183,7 +16183,7 @@
 	},
 /area/space)
 "qGt" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/camera/autoname,
@@ -16215,7 +16215,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "qGN" = (
@@ -16277,7 +16277,7 @@
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -16287,7 +16287,7 @@
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "qJF" = (
@@ -16357,7 +16357,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "qMp" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -16394,7 +16394,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "qPa" = (
@@ -16514,7 +16514,7 @@
 /area/awaymission/InteQ/lvl2)
 "qVA" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "qVL" = (
@@ -16522,7 +16522,7 @@
 /obj/structure/chair/stool{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /mob/living/simple_animal/hostile/brute/leaper,
@@ -16552,7 +16552,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "qWd" = (
-/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "qWw" = (
@@ -16574,9 +16574,9 @@
 	name = "Dormitory"
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "qYh" = (
@@ -16584,16 +16584,16 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "qYo" = (
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "qYA" = (
@@ -16651,7 +16651,7 @@
 /area/awaymission/InteQ/lvl2)
 "raq" = (
 /obj/effect/mob_spawn/human/corpse/inteq_dead,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -16724,7 +16724,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -16745,7 +16745,7 @@
 	pixel_y = 11;
 	pixel_x = 9
 	},
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "rfn" = (
@@ -16771,7 +16771,7 @@
 /obj/structure/railing/corner{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
@@ -16869,7 +16869,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -16924,7 +16924,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -16962,7 +16962,7 @@
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/awaymission/InteQ)
 "rqG" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -17121,7 +17121,7 @@
 /area/awaymission/InteQ/lvl2)
 "rxb" = (
 /obj/effect/spawner/structure/window/plastitanium,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/structure/sign/poster/contraband/inteq/inteq_no_sex,
 /turf/open/floor/plasteel/dark,
@@ -17443,7 +17443,7 @@
 /area/awaymission/InteQ)
 "rMQ" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -17469,7 +17469,7 @@
 /turf/open/floor/plasteel/white/textured/large,
 /area/awaymission/InteQ)
 "rNu" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -17545,7 +17545,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/plasteel,
@@ -17554,7 +17554,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -17628,7 +17628,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ)
 "rXi" = (
@@ -17699,9 +17699,9 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "sax" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
@@ -17758,7 +17758,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "seh" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -17821,7 +17821,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "sjq" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 8
 	},
 /obj/structure/table,
@@ -17853,11 +17853,11 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "slJ" = (
-/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "slV" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /turf/closed/indestructible/syndicate,
@@ -17881,11 +17881,11 @@
 	name = "Cell 1"
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/decal/cleanable/blood/xtracks,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plasteel/dark,
@@ -17959,7 +17959,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -17991,7 +17991,7 @@
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "srZ" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /obj/structure/closet/secure_closet{
@@ -18023,13 +18023,13 @@
 "ssX" = (
 /obj/machinery/door/airlock/hatch,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "stz" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -18045,7 +18045,7 @@
 /obj/effect/portal/permanent{
 	id = 23
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -18089,7 +18089,7 @@
 /area/awaymission/InteQ/lvl2)
 "sxu" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "sxv" = (
@@ -18152,7 +18152,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ)
 "sAx" = (
@@ -18171,18 +18171,18 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "sAL" = (
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "sBn" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/sign/poster/contraband/inteq/inteq_no_sex,
 /turf/closed/indestructible/syndicate,
 /area/awaymission/InteQ/lvl2)
 "sBp" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -18351,7 +18351,7 @@
 	},
 /obj/machinery/door/airlock/hatch,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -18374,7 +18374,7 @@
 	color = "#DE3A3A";
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
@@ -18422,7 +18422,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
@@ -18510,9 +18510,9 @@
 	pixel_x = -11
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "sPH" = (
@@ -18583,7 +18583,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -18621,7 +18621,7 @@
 /area/awaymission/InteQ/lvl2)
 "sVj" = (
 /obj/effect/turf_decal/tile/brown/full,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -18671,7 +18671,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ)
 "sYR" = (
-/mob/living/simple_animal/hostile/inteq/melee,
+/mob/living/simple_animal/hostile/syndicate/melee,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
@@ -18705,7 +18705,7 @@
 	color = "red"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -18762,7 +18762,7 @@
 /turf/open/space/basic,
 /area/awaymission/InteQ/lvl2)
 "tfi" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -18785,7 +18785,7 @@
 /area/awaymission/InteQ/lvl2)
 "tgN" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -18898,7 +18898,7 @@
 /obj/machinery/door/airlock/grunge{
 	name = "Janitor Room"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plating/airless,
@@ -18927,7 +18927,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "tmv" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 5
 	},
 /obj/item/kirbyplants/hedge{
@@ -18939,7 +18939,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "tmB" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/padded,
@@ -18996,7 +18996,7 @@
 "tmX" = (
 /obj/item/trash/candy,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -19047,7 +19047,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "toJ" = (
@@ -19096,7 +19096,7 @@
 /obj/machinery/button/door{
 	pixel_x = 25
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
@@ -19114,7 +19114,7 @@
 	req_one_access_txt = "152"
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -19183,7 +19183,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "twr" = (
@@ -19269,11 +19269,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/inteq/melee,
+/mob/living/simple_animal/hostile/syndicate/melee,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "tAz" = (
@@ -19557,13 +19557,13 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ/lvl2)
 "tMs" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -19592,7 +19592,7 @@
 	icon_screen = "inteqshuttle";
 	name = "Molot Shuttle recall terminal"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -19616,7 +19616,7 @@
 	icon_state = "tracks"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /mob/living/simple_animal/hostile/brute/uber,
 /turf/open/floor/plasteel/dark,
@@ -19678,7 +19678,7 @@
 	},
 /area/awaymission/InteQ/lvl2)
 "tSQ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer3,
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 4
 	},
@@ -19710,7 +19710,7 @@
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -19760,7 +19760,7 @@
 	pixel_y = 34;
 	specialfunctions = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /obj/item/kirbyplants/hedge{
@@ -19777,7 +19777,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "tWO" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -19825,11 +19825,11 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "tYU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/structure/barricade/sandbags,
@@ -19868,7 +19868,7 @@
 	dir = 1
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
@@ -19876,10 +19876,10 @@
 /area/awaymission/InteQ)
 "ubB" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 6
 	},
 /turf/open/floor/plasteel/dark,
@@ -19957,7 +19957,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -20090,14 +20090,14 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "ulX" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown,
@@ -20151,12 +20151,12 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ/lvl2)
 "uqi" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/structure/table/wood/fancy/black,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "uqq" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -20265,7 +20265,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "utv" = (
@@ -20322,7 +20322,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "uvs" = (
@@ -20362,7 +20362,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/small,
@@ -20377,7 +20377,7 @@
 "uzj" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/effect/mob_spawn/human/corpse/inteq_dead,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -20390,7 +20390,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -20435,7 +20435,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -20459,7 +20459,7 @@
 /turf/open/floor/grass/grass1,
 /area/awaymission/InteQ/lvl2)
 "uBu" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /obj/structure/bed/double,
@@ -20508,7 +20508,7 @@
 	color = "red"
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -20598,17 +20598,17 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "uKA" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "uKJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light/dim/directional/west,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -20712,7 +20712,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ/lvl2)
 "uOT" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/door/airlock/grunge{
 	name = "Recreation";
 	req_one_access_txt = "152"
@@ -20731,7 +20731,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "uRh" = (
@@ -20766,7 +20766,7 @@
 /obj/structure/table,
 /obj/item/chair,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
@@ -20793,8 +20793,8 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ)
 "uUf" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -20874,7 +20874,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -20911,7 +20911,7 @@
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
@@ -20949,7 +20949,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supplymain{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/plating,
@@ -21012,7 +21012,7 @@
 "veB" = (
 /obj/structure/chair/stool/bar/directional/north,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 5
 	},
@@ -21056,7 +21056,7 @@
 /turf/open/floor/mineral/titanium,
 /area/awaymission/InteQ/lvl3)
 "vgh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/closed/indestructible/syndicate,
@@ -21064,7 +21064,7 @@
 "vgo" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/structure/barricade/sandbags,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -21077,7 +21077,7 @@
 /area/awaymission/InteQ)
 "vgM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -21109,7 +21109,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -21141,7 +21141,7 @@
 /area/awaymission/InteQ/lvl2)
 "vjY" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -21401,9 +21401,9 @@
 /area/awaymission/InteQ/lvl2)
 "vBR" = (
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/door/airlock/grunge{
 	id_tag = "TESBattlespire";
 	name = "Dormitory"
@@ -21455,7 +21455,7 @@
 /area/awaymission/InteQ/lvl3)
 "vFg" = (
 /obj/structure/table/reinforced,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -21538,7 +21538,7 @@
 /area/awaymission/InteQ/lvl2)
 "vJH" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -21629,7 +21629,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer2{
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
 	dir = 4
 	},
 /obj/structure/lattice/catwalk,
@@ -21696,7 +21696,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "vPX" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 4
 	},
@@ -21719,7 +21719,7 @@
 	pixel_y = -34;
 	specialfunctions = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/siding/wood{
@@ -21744,7 +21744,7 @@
 /area/awaymission/InteQ/lvl2)
 "vSb" = (
 /obj/effect/turf_decal/bot,
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "vSj" = (
@@ -21785,7 +21785,7 @@
 /obj/effect/turf_decal/tile/dark_green/half/contrasted{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -21859,7 +21859,7 @@
 "vXe" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -21886,10 +21886,10 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ)
 "vYA" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -21932,7 +21932,7 @@
 /area/awaymission/InteQ/lvl3)
 "wcn" = (
 /obj/structure/alien/weeds/node,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -21945,7 +21945,7 @@
 "wde" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -22144,7 +22144,7 @@
 /area/awaymission/InteQ)
 "wjO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -22158,7 +22158,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -22218,7 +22218,7 @@
 /area/awaymission/InteQ)
 "wpc" = (
 /obj/effect/turf_decal/siding/dark,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
@@ -22227,7 +22227,7 @@
 "wpv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -22268,7 +22268,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "wsQ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -22352,7 +22352,7 @@
 	specialfunctions = 4
 	},
 /obj/machinery/light/dim/directional/north,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /turf/open/floor/wood/wood_parquet,
@@ -22414,7 +22414,7 @@
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -22465,7 +22465,7 @@
 "wzo" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -22479,7 +22479,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "wzY" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
 	},
 /turf/closed/indestructible/syndicate,
@@ -22493,7 +22493,7 @@
 /area/awaymission/InteQ/lvl2)
 "wCe" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/junction,
-/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer2,
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer1,
 /obj/structure/lattice,
 /turf/open/floor/plating/asteroid{
 	heat_capacity = 1e+006;
@@ -22526,7 +22526,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ/lvl2)
 "wCL" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
@@ -22570,10 +22570,10 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "wEN" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
@@ -22588,14 +22588,14 @@
 /area/awaymission/InteQ)
 "wFe" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wFA" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wGz" = (
@@ -22683,7 +22683,7 @@
 	dir = 1
 	},
 /obj/machinery/light/dim/directional/north,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /obj/item/stock_parts/cell/bluespacereactor,
@@ -22709,7 +22709,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "wOI" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
 	dir = 8
 	},
@@ -22740,7 +22740,7 @@
 	icon_state = "tracks"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -22821,7 +22821,7 @@
 /area/awaymission/InteQ)
 "wWK" = (
 /obj/effect/turf_decal/tile/brown/half,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -22841,7 +22841,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "wWZ" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wXA" = (
@@ -22979,7 +22979,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "xdP" = (
@@ -23074,7 +23074,7 @@
 /area/awaymission/InteQ/lvl2)
 "xgZ" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
-	piping_layer = 3
+	piping_layer = 2
 	},
 /obj/machinery/light{
 	dir = 4
@@ -23105,7 +23105,7 @@
 /area/awaymission/InteQ)
 "xik" = (
 /obj/structure/alien/resin/wall,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -23146,7 +23146,7 @@
 /obj/effect/turf_decal/stripes/red{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -23164,7 +23164,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "xmG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/closed/wall/r_wall/syndicate,
@@ -23253,7 +23253,7 @@
 /obj/machinery/computer{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -23301,7 +23301,7 @@
 	icon_state = "tracks"
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
@@ -23325,7 +23325,7 @@
 	dir = 4
 	},
 /obj/structure/barricade/sandbags,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -23338,7 +23338,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
 /turf/open/floor/plasteel,
@@ -23353,7 +23353,7 @@
 /area/awaymission/InteQ)
 "xuh" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -23406,7 +23406,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -23520,7 +23520,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "xDJ" = (
@@ -23530,7 +23530,7 @@
 /obj/machinery/atmospherics/pipe/simple/supplymain{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -23575,7 +23575,7 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "xIy" = (
@@ -23623,7 +23623,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "xMU" = (
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "xMX" = (
@@ -23698,7 +23698,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "xRy" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -23736,7 +23736,7 @@
 /area/awaymission/InteQ/lvl3)
 "xTh" = (
 /obj/structure/shuttle/engine/propulsion/burst,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
@@ -23819,7 +23819,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "xZp" = (
@@ -23921,7 +23921,7 @@
 /area/awaymission/InteQ/lvl2)
 "yeZ" = (
 /obj/structure/rack,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -23931,14 +23931,14 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "yfw" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "yfB" = (
@@ -23946,15 +23946,15 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "yfT" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "ygF" = (
@@ -23992,7 +23992,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/inteq/civilian,
+/mob/living/simple_animal/hostile/syndicate/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "yid" = (
@@ -24006,7 +24006,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "yiT" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/closed/indestructible/syndicate,
@@ -24020,19 +24020,19 @@
 "yjC" = (
 /obj/structure/closet/crate/large,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "yjH" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating/dark/corner{
 	dir = 4
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown,

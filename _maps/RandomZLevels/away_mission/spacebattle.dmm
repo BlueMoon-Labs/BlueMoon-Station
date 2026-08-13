@@ -513,7 +513,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "ce" = (
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plasteel/airless,
 /area/awaymission/spacebattle/cruiser)
 "cf" = (
@@ -974,7 +974,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "dI" = (
-/mob/living/simple_animal/hostile/inteq/melee/sword/space,
+/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
 	},
@@ -1488,7 +1488,7 @@
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/syndicate4)
 "fm" = (
-/mob/living/simple_animal/hostile/inteq/melee/sword,
+/mob/living/simple_animal/hostile/syndicate/melee/sword,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "fn" = (
@@ -1997,7 +1997,7 @@
 	name = "Adam Smith"
 	},
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/inteq/melee/sword,
+/mob/living/simple_animal/hostile/syndicate/melee/sword,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "gG" = (
@@ -2779,7 +2779,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "jr" = (
-/mob/living/simple_animal/hostile/inteq/melee/space,
+/mob/living/simple_animal/hostile/syndicate/melee/space,
 /turf/open/floor/plating/airless,
 /area/awaymission/spacebattle/cruiser)
 "js" = (
@@ -3000,7 +3000,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "jY" = (
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plating/airless,
 /area/awaymission/spacebattle/cruiser)
 "jZ" = (
@@ -3188,7 +3188,6 @@
 /obj/item/ammo_casing/c10mm,
 /obj/item/ammo_casing/c10mm,
 /obj/item/ammo_casing/c10mm,
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
 /turf/open/floor/plasteel/freezer,
 /area/awaymission/spacebattle/cruiser)
 "kH" = (
@@ -3529,6 +3528,7 @@
 /obj/structure/table,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/brute,
@@ -3671,7 +3671,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/inteq/melee/ushm,
+/mob/living/simple_animal/hostile/syndicate/melee/ushm,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "nH" = (
@@ -4175,7 +4175,7 @@
 /area/awaymission/spacebattle/syndicate3)
 "ry" = (
 /obj/structure/toilet,
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
+/obj/effect/spawner/lootdrop/hostile/inteq,
 /turf/open/floor/plasteel/freezer,
 /area/awaymission/spacebattle/cruiser)
 "rz" = (
@@ -4469,7 +4469,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "tW" = (
-/mob/living/simple_animal/hostile/inteq/melee/sword/space,
+/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "tX" = (
@@ -5108,12 +5108,6 @@
 /obj/structure/sign/flag/nanotrasen,
 /turf/closed/wall/r_wall,
 /area/awaymission/spacebattle/cruiser)
-"yw" = (
-/obj/effect/spawner/lootdrop/hostile,
-/turf/open/floor/plasteel{
-	icon_state = "damaged2"
-	},
-/area/awaymission/spacebattle/cruiser)
 "yx" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -5181,10 +5175,6 @@
 /obj/machinery/porta_turret_construct,
 /turf/open/floor/plating/airless,
 /area/space/nearstation)
-"zg" = (
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
-/turf/open/floor/plasteel/white,
-/area/awaymission/spacebattle/cruiser)
 "zi" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/space/nearstation)
@@ -5297,6 +5287,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate6)
+"zO" = (
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
+/turf/open/floor/plating/airless,
+/area/awaymission/spacebattle/cruiser)
 "zR" = (
 /obj/item/soap/inteq,
 /turf/open/floor/plating/asteroid/airless,
@@ -5669,11 +5663,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
-"Ct" = (
-/obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
-/turf/open/floor/plasteel,
-/area/awaymission/spacebattle/cruiser)
 "Cv" = (
 /obj/structure/statue/plasma/scientist,
 /turf/open/floor/plasteel/rockvault/alien,
@@ -6048,7 +6037,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "EZ" = (
-/mob/living/simple_animal/hostile/inteq/melee/sword/space,
+/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate3)
 "Fa" = (
@@ -6566,7 +6555,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "Jx" = (
-/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/awaymission/spacebattle/secret)
 "JA" = (
@@ -6951,7 +6940,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Mq" = (
-/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/cruiser)
 "Ms" = (
@@ -6963,7 +6952,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate1)
 "Mx" = (
-/mob/living/simple_animal/hostile/inteq/melee/sword,
+/mob/living/simple_animal/hostile/syndicate/melee/sword,
 /turf/open/floor/plasteel/white,
 /area/awaymission/spacebattle/cruiser)
 "Mz" = (
@@ -7045,6 +7034,14 @@
 /obj/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/space/nearstation)
+"MZ" = (
+/obj/effect/turf_decal/tile/bar,
+/obj/effect/turf_decal/tile/bar{
+	dir = 1
+	},
+/obj/effect/spawner/lootdrop/hostile/inteq,
+/turf/open/floor/plasteel,
+/area/awaymission/spacebattle/cruiser)
 "Nc" = (
 /obj/machinery/vending/wardrobe/engi_wardrobe,
 /turf/open/floor/plasteel,
@@ -7256,7 +7253,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate2)
 "OB" = (
-/mob/living/simple_animal/hostile/inteq/melee/space,
+/mob/living/simple_animal/hostile/syndicate/melee/space,
 /turf/open/floor/plasteel/airless,
 /area/awaymission/spacebattle/cruiser)
 "OD" = (
@@ -7424,7 +7421,7 @@
 /area/awaymission/spacebattle/syndicate5)
 "Px" = (
 /obj/effect/decal/cleanable/plasma,
-/mob/living/simple_animal/hostile/inteq/melee/sword/space,
+/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/awaymission/spacebattle/secret)
 "PB" = (
@@ -7909,7 +7906,7 @@
 /turf/open/floor/plating/rust,
 /area/space/nearstation)
 "Tm" = (
-/mob/living/simple_animal/hostile/inteq/ranged/sniper,
+/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Tn" = (
@@ -7946,7 +7943,7 @@
 /area/awaymission/spacebattle/cruiser)
 "Tu" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/inteq/melee/sword/space,
+/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "Tw" = (
@@ -7978,6 +7975,14 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating/airless,
 /area/awaymission/spacebattle/syndicate3)
+"TE" = (
+/obj/effect/spawner/lootdrop/hostile/inteq,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/turf_decal/misc/recharge,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/spacebattle/cruiser)
 "TF" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
@@ -8045,7 +8050,7 @@
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/syndicate6)
 "Un" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Uo" = (
@@ -8756,6 +8761,11 @@
 	icon_state = "platingdmg2"
 	},
 /area/space/nearstation)
+"Zr" = (
+/obj/effect/decal/cleanable/blood,
+/obj/effect/spawner/lootdrop/hostile/inteq,
+/turf/open/floor/plasteel,
+/area/awaymission/spacebattle/cruiser)
 "Zu" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
@@ -20294,10 +20304,10 @@ ee
 eK
 eK
 eK
-eK
+ee
 Tb
 eK
-eK
+ee
 eK
 eK
 vV
@@ -20547,7 +20557,7 @@ ab
 dK
 hU
 Tc
-eK
+ee
 eK
 eK
 eK
@@ -26455,8 +26465,8 @@ cc
 cc
 cc
 cc
-sB
 cc
+FR
 cc
 cc
 bT
@@ -27457,7 +27467,7 @@ cL
 cc
 cr
 cr
-cr
+Zr
 bT
 ht
 tR
@@ -27483,7 +27493,7 @@ cc
 cc
 cc
 cc
-cc
+FR
 ht
 cc
 Fv
@@ -27957,7 +27967,7 @@ ab
 ab
 bJ
 bO
-bO
+KL
 bO
 bO
 bO
@@ -28219,7 +28229,7 @@ bR
 bR
 bR
 dN
-kj
+TE
 WE
 Wv
 bM
@@ -28254,7 +28264,7 @@ cc
 cc
 cc
 cc
-cc
+FR
 ht
 cc
 qc
@@ -28480,8 +28490,8 @@ bM
 bM
 bM
 cp
-cc
-yw
+FR
+cN
 cc
 cc
 cr
@@ -28795,7 +28805,7 @@ VL
 tn
 JF
 VL
-VL
+tn
 VL
 VL
 ku
@@ -29045,11 +29055,11 @@ ab
 dK
 dC
 Uz
+tn
 VL
 VL
 VL
-VL
-VL
+tn
 JF
 VL
 VL
@@ -29796,7 +29806,7 @@ cc
 cN
 gR
 cM
-sB
+cc
 cc
 Fw
 Fw
@@ -30277,7 +30287,7 @@ dK
 dK
 bT
 cc
-Ct
+cr
 cc
 cr
 cc
@@ -30310,7 +30320,7 @@ cc
 cc
 gR
 JV
-cc
+FR
 cM
 cN
 cN
@@ -31852,7 +31862,7 @@ cc
 gR
 Wa
 EL
-cc
+FR
 Xr
 cc
 cc
@@ -33140,7 +33150,7 @@ hX
 hW
 gR
 cc
-sB
+fm
 bT
 ab
 ab
@@ -34164,7 +34174,7 @@ hY
 ib
 hW
 hW
-hW
+FA
 hW
 gR
 cc
@@ -35243,7 +35253,7 @@ Og
 MS
 uo
 Og
-Og
+MS
 Og
 Og
 qO
@@ -35447,7 +35457,7 @@ hz
 gR
 gR
 gR
-hW
+FA
 hW
 hW
 hW
@@ -35493,11 +35503,11 @@ ab
 dK
 Ul
 zK
-Og
+MS
 Og
 MS
 Og
-Og
+MS
 uo
 Og
 Og
@@ -35709,7 +35719,7 @@ hW
 io
 io
 gR
-cc
+FR
 cc
 bT
 ab
@@ -37246,7 +37256,7 @@ gH
 gH
 gH
 gH
-gH
+zm
 im
 gH
 iq
@@ -37757,7 +37767,7 @@ gH
 gH
 gH
 gH
-zg
+zm
 gH
 gH
 gH
@@ -38004,7 +38014,7 @@ da
 da
 Yg
 gR
-cc
+FR
 cc
 rf
 gv
@@ -38257,7 +38267,7 @@ dR
 dS
 ep
 dx
-da
+MZ
 da
 HX
 gR
@@ -38269,7 +38279,7 @@ ta
 gH
 gW
 gW
-gH
+zm
 gH
 gH
 gH
@@ -39271,7 +39281,7 @@ bS
 bT
 bT
 ct
-cc
+FR
 cc
 cc
 cc
@@ -39539,7 +39549,7 @@ cc
 cc
 cc
 cc
-cc
+FR
 cc
 fL
 cn
@@ -39792,7 +39802,7 @@ cJ
 cJ
 ct
 cc
-sB
+FR
 ht
 ht
 ht
@@ -40840,7 +40850,7 @@ gL
 yC
 hg
 gy
-gy
+Hi
 gy
 hs
 cQ
@@ -42643,7 +42653,7 @@ cc
 cc
 Xr
 cc
-cc
+FR
 bT
 Gn
 WX
@@ -43904,7 +43914,7 @@ yE
 WX
 bT
 cc
-cc
+FR
 ht
 bT
 Lp
@@ -45719,7 +45729,7 @@ fT
 gg
 zr
 cZ
-cZ
+zO
 cZ
 cZ
 cZ
@@ -47009,7 +47019,7 @@ cZ
 cZ
 cZ
 cZ
-cZ
+jr
 ht
 cc
 cc
@@ -51879,7 +51889,7 @@ ek
 el
 bT
 cc
-sB
+FR
 cc
 bT
 ab
@@ -53429,7 +53439,7 @@ ab
 bT
 jS
 jS
-jS
+OB
 bT
 kd
 kd

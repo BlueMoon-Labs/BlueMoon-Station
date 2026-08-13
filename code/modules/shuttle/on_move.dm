@@ -114,20 +114,6 @@ All ShuttleMove procs go here
 		SSspatial_grid.exit_cell(src, oldT)
 		SSspatial_grid.enter_cell(src, newT)
 
-	//по той же причине руками переносим подписку на выброс газа: её ведёт элемент
-	//atmos_sensitive из react_to_move() по COMSIG_MOVABLE_MOVED, которого тут нет,
-	//поэтому запись оставалась в atmos_exposure_listeners покинутого турфа. Список
-	//ключуется слушателем, то есть турф держит на атом жёсткую ссылку, а Detach при
-	//удалении ищет запись на ТЕКУЩЕМ турфе и не находит - улетевшее с шаттлом
-	//стекло, решётка или канистра уходили в харддел на ~240мс каждая. ChangeTurf
-	//ещё и переносит список на замену турфа, так что ScrapeAway() после отлёта
-	//протухшую запись не чистил, а продлевал.
-	var/exposure_handler = LAZYACCESS(oldT.atmos_exposure_listeners, src)
-	if(exposure_handler)
-		unregister_turf_exposure(oldT)
-		register_turf_exposure(newT, exposure_handler)
-		atmos_conditions_changed()
-
 	return TRUE
 
 // Called on atoms after everything has been moved
@@ -172,9 +158,7 @@ All ShuttleMove procs go here
 
 	contents -= oldT
 	underlying_old_area.contents += oldT
-	// skip_machinery: содержимое шаттла ещё стоит на oldT (MOVE_CONTENTS идёт после MOVE_AREA),
-	// и переподписывать его на подстилающий космос нельзя - см. /turf/proc/change_area.
-	oldT.change_area(src, underlying_old_area, skip_blend = TRUE, skip_machinery = TRUE)
+	oldT.change_area(src, underlying_old_area, skip_blend = TRUE)
 	//The old turf has now been given back to the area that turf originaly belonged to
 
 	var/area/old_dest_area = newT.loc
@@ -183,15 +167,11 @@ All ShuttleMove procs go here
 	parallax_move_speed = old_dest_area.parallax_move_speed
 	old_dest_area.contents -= newT
 	contents += newT
-	// На newT содержимого шаттла ещё нет, а то, что стояло на месте назначения, разбирается
-	// собственным путём перелёта - машинерию тут трогать нечего.
-	newT.change_area(old_dest_area, src, skip_blend = TRUE, skip_machinery = TRUE)
+	newT.change_area(old_dest_area, src, skip_blend = TRUE)
 	return TRUE
 
 // Called on areas after everything has been moved
-// Скорость обязана иметь дефолт: летящая область без числовой скорости для держателя
-// параллакса неотличима от стоящей, и полёт перестаёт рисоваться.
-/area/proc/afterShuttleMove(new_parallax_dir, speed = PARALLAX_SHUTTLE_SCROLL_SPEED)
+/area/proc/afterShuttleMove(new_parallax_dir, speed)
 	if(!new_parallax_dir)
 		parallax_moving = FALSE
 		return
@@ -207,23 +187,6 @@ All ShuttleMove procs go here
 /************************************Area move procs************************************/
 
 /************************************Machinery move procs************************************/
-
-/**
- * Возвращает машинерию шаттла на её область после перелёта.
- *
- * Перелёт переносит содержимое присваиванием loc (/atom/movable/onShuttleMove), а областные
- * Entered/Exited в этой кодовой базе рассылают только Move() и doMove() - см. atoms_movement.dm.
- * Значит on_enter_area() тут не срабатывает и подписка на COMSIG_AREA_POWER_CHANGE осталась бы
- * там, где машина стояла до перелёта. Область шаттла при этом остаётся вообще без подписчиков:
- * apc.update() и выключатель света кладутся только на area.power_change(), и в проде это
- * выглядело как "АПЦ есть, питание полное, а свет не включается".
- *
- * Все прочие afterShuttleMove у подтипов машинерии в этом файле зовут ..(), так что хук доезжает.
- */
-/obj/machinery/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
-	. = ..()
-	register_power_change_area(get_area(src))
-	power_change()
 
 /obj/machinery/door/airlock/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
@@ -255,6 +218,11 @@ All ShuttleMove procs go here
 	. = ..()
 	recharging_turf = get_step(loc, dir)
 
+/obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
+	. = ..()
+	if(pipe_vision_img)
+		pipe_vision_img.loc = loc
+
 /obj/machinery/computer/auxillary_base/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	if(is_mining_level(z)) //Avoids double logging and landing on other Z-levels due to badminnery
@@ -273,10 +241,6 @@ All ShuttleMove procs go here
 
 /obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
-	// Картинка обзора труб живёт отдельным image со своим loc, и перелёт двигает
-	// машину присваиванием loc - картинку за собой он не тянет.
-	if(pipe_vision_img)
-		pipe_vision_img.loc = loc
 	var/missing_nodes = FALSE
 	for(var/i in 1 to device_type)
 		if(nodes[i])
@@ -335,16 +299,6 @@ All ShuttleMove procs go here
 /************************************Item move procs************************************/
 
 /obj/item/storage/pod/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
-	. = ..()
-	// If the pod was launched, the storage will always open. The CentCom check
-	// ignores the movement of the shuttle from the staging area on CentCom to
-	// the station as it is loaded in. Only unlock when we've left the station
-	// (pod actually launched), not during initial placement.
-	if (oldT && !is_centcom_level(oldT.z) && !is_station_level(z))
-		var/datum/component/storage/concrete/emergency/STR = GetComponent(/datum/component/storage/concrete/emergency)
-		STR?.unlock_me()
-
-/obj/item/storage/pod_luxury/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	// If the pod was launched, the storage will always open. The CentCom check
 	// ignores the movement of the shuttle from the staging area on CentCom to

@@ -1,5 +1,6 @@
-/datum/asset/spritesheet_batched/jobs
+/datum/asset/spritesheet/jobs
 	name = "jobs"
 
-/datum/asset/spritesheet_batched/jobs/create_spritesheets()
-	insert_all_icons("", 'icons/ui_icons/tgui/jobs.dmi')
+/datum/asset/spritesheet/jobs/register()
+	InsertAll("", 'icons/ui_icons/tgui/jobs.dmi')
+	..()

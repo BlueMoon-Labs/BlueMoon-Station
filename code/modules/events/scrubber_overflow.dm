@@ -130,11 +130,8 @@
 
 /datum/round_event/scrubber_overflow/start()
 	for(var/obj/machinery/atmospherics/components/unary/vent as anything in scrubbers)
-		// Между setup() и start() проходит несколько тиков - за это время вент
-		// могли снести (взрыв, фауна). CRASH здесь обрывал весь цикл на первом
-		// же снесённом венте и глушил событие целиком (раунд 9915).
-		if(QDELETED(vent) || !vent.loc)
-			continue
+		if(!vent.loc)
+			CRASH("SCRUBBER SURGE: [vent] has no loc somehow?")
 
 		var/datum/reagents/dispensed_reagent = new /datum/reagents(reagents_amount)
 		dispensed_reagent.my_atom = vent

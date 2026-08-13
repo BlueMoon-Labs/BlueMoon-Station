@@ -22,8 +22,11 @@
 		qdel(src)
 		return
 	var/datum/antagonist/gang/is_gangster = user.mind.has_antag_datum(/datum/antagonist/gang)
-	if(is_gangster?.starter_gangster && is_gangster.my_gang == team_to_use)
-		to_chat(user, "You started your family. You don't need to join it.")
+	if(is_gangster?.starter_gangster)
+		if(is_gangster.my_gang == team_to_use)
+			to_chat(user, "You started your family. You don't need to join it.")
+			return
+		to_chat(user, "You started your family. You can't turn your back on it now.")
 		return
 	attempt_join_gang(user)
 

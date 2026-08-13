@@ -255,7 +255,6 @@
 			species.update_glow(user, 5)
 			addtimer(CALLBACK(species, TYPE_PROC_REF(/datum/species/jelly/luminescent, update_glow), user, LUMINESCENT_DEFAULT_GLOW), 600)
 			to_chat(user, "<span class='notice'>You start glowing brighter.</span>")
-			return 600 //кулдаун по длительности самого свечения, иначе ветка возвращала null
 
 		if(SLIME_ACTIVATE_MAJOR)
 			user.visible_message("<span class='warning'>[user]'s skin starts flashing intermittently...</span>", "<span class='warning'>Your skin starts flashing intermittently...</span>")
@@ -460,10 +459,7 @@
 				return
 			to_chat(user, "<span class='notice'>You feel your skin harden and become more resistant.</span>")
 			species.armor += 25
-			// BLUEMOON ADD START - BRC второй бакет для адамантьевого экстракта
-			user.brc_mitigation += 30
-			// BLUEMOON ADD END
-			addtimer(CALLBACK(src, PROC_REF(reset_armor), species, user), 1200)
+			addtimer(CALLBACK(src, PROC_REF(reset_armor), species), 1200)
 			return 450
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -474,13 +470,9 @@
 				return
 			to_chat(user, "<span class='notice'>You stop feeding [src], and your body returns to its slimelike state.</span>")
 
-/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species, mob/living/M)
+/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species)
 	if(istype(species))
 		species.armor -= 25
-	// BLUEMOON ADD START
-	if(isliving(M) && !QDELETED(M))
-		M.brc_mitigation = max(0, M.brc_mitigation - 30)
-	// BLUEMOON ADD END
 
 /obj/item/slime_extract/bluespace
 	name = "bluespace slime extract"
