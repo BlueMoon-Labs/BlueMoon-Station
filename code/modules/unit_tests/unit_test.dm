@@ -154,50 +154,76 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	allocated += instance
 	return instance
 
-/// Сколько проходов SStimer ожидание обязано увидеть после того, как вышло окно по
-/// мировому времени. Мастер считает проход только за фактический незапаузенный
-/// прогон (master.dm, times_fired++ идёт после SS_PAUSED-ветки), поэтому счётчик
-/// стоит ровно тогда, когда подсистема не получает такта - а это и есть случай,
-/// в котором просроченный таймер не виноват.
-#define UNIT_TEST_WAIT_GRACE_FIRES 10
+/// Запас в тиках колеса бакетов сверх срока ожидания. Курсор, доехавший ровно до
+/// срока, гарантирует только то, что бакет вскрыт: колбек выдаётся через
+/// InvokeAsync и свою работу может доделывать уже следующим тиком.
+#define UNIT_TEST_WAIT_GRACE_TICKS 10
 /// Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
 /// от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
 /// потолок никогда не подрезал само окно на медленном мировом времени. Потолок
 /// щедрый сознательно: на перегруженном CI-раннере SStimer может не получать
 /// тактов дольше 10 реальных секунд (наблюдалось на layeniastation), и жадный
-/// потолок валит тест раньше, чем grace-проходы успевают набежать. Платим этим
-/// временем только в двух случаях - мёртвый SStimer или задушенный раннер, и в
-/// обоих спешить некуда.
+/// потолок валит тест раньше, чем колесо доедет до срока. Платим этим временем
+/// только в двух случаях - мёртвый SStimer или задушенный раннер, и в обоих
+/// спешить некуда.
 #define UNIT_TEST_WAIT_HARD_LIMIT (60 SECONDS)
 
 #define WAIT_BUDGET_WORLD_DEADLINE 1
 #define WAIT_BUDGET_REAL_DEADLINE 2
-#define WAIT_BUDGET_TIMER_DEADLINE 3
+#define WAIT_BUDGET_TIMER_FIRES 3
 #define WAIT_BUDGET_DESCRIPTION 4
 
 /// Бюджет одного ожидания отложенной работы, см. wait_budget_tick().
 /datum/unit_test/proc/new_wait_budget(max_wait, description)
 	return list(world.time + max_wait, null, null, description)
 
+/// Мировое время, до которого колесо бакетов SStimer уже разобрано. Таймер,
+/// назначенный на более поздний момент, физически не мог сработать: его бакет ещё
+/// не вскрывали. Курсор считается от head_offset, потому что при отставании колеса
+/// он уходит в прошлое относительно world.time - именно эта разница и есть
+/// опоздание таймеров.
+/datum/unit_test/proc/timer_wheel_time()
+	return SStimer.head_offset + TICKS2DS(SStimer.practical_offset - 1)
+
+/// Снимок состояния колеса для сообщения о таймауте. ТОЛЬКО прямые чтения полей:
+/// спящая диагностика чинит то, что описывает, и уводит разбор в сторону
+/// (история флака nightshift_admin_controls).
+/datum/unit_test/proc/wait_budget_diagnostics(list/budget)
+	var/wheel = timer_wheel_time()
+	return "world.time [world.time], срок [budget[WAIT_BUDGET_WORLD_DEADLINE]], курсор колеса [wheel] \
+		(отставание [max(0, world.time - wheel)] дс), проходов SStimer за ожидание \
+		[SStimer.times_fired - budget[WAIT_BUDGET_TIMER_FIRES]], state [SStimer.state], \
+		бакетов [SStimer.bucket_count], second_queue [length(SStimer.second_queue)]"
+
 /// Спит тик и отвечает, остался ли бюджет ожидания. FALSE = сдаёмся.
 ///
-/// Окно меряется мировым временем, но истёкшее окно само по себе не приговор:
-/// на перегруженном раннере world.time продолжает идти, пока мастер режет очередь
-/// по тик-лимиту, так что назначенный внутри окна таймер может ни разу не получить
-/// шанса исполниться - и тест падает на загрузке машины, а не на баге. Поэтому
-/// после окна ждём ещё UNIT_TEST_WAIT_GRACE_FIRES полных проходов SStimer.
-/// Реальный баг от этого быстрее не чинится: на здоровом сервере эти проходы
-/// набегают за доли секунды.
+/// Окно меряется мировым временем, но истёкшее окно само по себе не приговор: на
+/// перегруженном раннере world.time продолжает идти, пока колесо таймеров ползёт
+/// позади него, так что назначенный внутри окна таймер может ни разу не получить
+/// шанса исполниться - и тест падает на загрузке машины, а не на баге.
+///
+/// Раньше запасом служили десять полных проходов SStimer, и это был неверный
+/// счётчик: МК считает проход только за незапаузенный прогон
+/// (master.dm, times_fired++ стоит после SS_PAUSED-ветки), а задушенный SStimer
+/// паузится каждый фаер - то есть счётчик замирает ровно в том случае, ради
+/// которого запас и вводился. В CI это выглядело как три теста подряд (pet_bonus,
+/// insane_clown, bee_pollination), сжигающих по 60 секунд потолка и падающих с
+/// "SStimer так и не набрал положенных полных проходов".
+///
+/// Честный признак - позиция курсора колеса: пока он не прошёл срок, бакет с нашей
+/// отложкой ещё не вскрывали, и падать не за что. Прошёл - работа была выдана, и
+/// невыполненное условие уже настоящий баг. Потолок по реальному времени остаётся
+/// страховкой на случай совсем вставшего SStimer.
 /datum/unit_test/proc/wait_budget_tick(list/budget)
 	if(world.time >= budget[WAIT_BUDGET_WORLD_DEADLINE])
-		if(isnull(budget[WAIT_BUDGET_TIMER_DEADLINE]))
-			budget[WAIT_BUDGET_TIMER_DEADLINE] = SStimer.times_fired + UNIT_TEST_WAIT_GRACE_FIRES
+		if(isnull(budget[WAIT_BUDGET_REAL_DEADLINE]))
 			budget[WAIT_BUDGET_REAL_DEADLINE] = REALTIMEOFDAY + UNIT_TEST_WAIT_HARD_LIMIT
-		else if(SStimer.times_fired >= budget[WAIT_BUDGET_TIMER_DEADLINE])
-			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - окно вышло, SStimer отработал положенные полные проходы")
+			budget[WAIT_BUDGET_TIMER_FIRES] = SStimer.times_fired
+		else if(timer_wheel_time() > budget[WAIT_BUDGET_WORLD_DEADLINE] + TICKS2DS(UNIT_TEST_WAIT_GRACE_TICKS))
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - окно вышло, колесо таймеров его прошло: [wait_budget_diagnostics(budget)]")
 			return FALSE
 		else if(REALTIMEOFDAY >= budget[WAIT_BUDGET_REAL_DEADLINE])
-			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - потолок по реальному времени: SStimer так и не набрал положенных полных проходов")
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - потолок по реальному времени, колесо таймеров так и не дошло до срока: [wait_budget_diagnostics(budget)]")
 			return FALSE
 	sleep(world.tick_lag)
 	return TRUE
@@ -224,11 +250,11 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 			break
 	return QDELETED(target)
 
-#undef UNIT_TEST_WAIT_GRACE_FIRES
+#undef UNIT_TEST_WAIT_GRACE_TICKS
 #undef UNIT_TEST_WAIT_HARD_LIMIT
 #undef WAIT_BUDGET_WORLD_DEADLINE
 #undef WAIT_BUDGET_REAL_DEADLINE
-#undef WAIT_BUDGET_TIMER_DEADLINE
+#undef WAIT_BUDGET_TIMER_FIRES
 #undef WAIT_BUDGET_DESCRIPTION
 
 /// Reads repository source files for structural audit tests.
