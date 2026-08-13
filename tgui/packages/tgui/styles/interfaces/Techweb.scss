@@ -8,9 +8,12 @@
   margin-right: 0.4rem;
 }
 
-.Techweb__DesignIcon {
-  margin-left: 0.001rem;
-  margin-right: 0.001rem;
+.Techweb__DesignIcon,
+.Techweb__DesignIcon:last-child {
+  // Кнопка-плитка пуста, поэтому её baseline - нижняя кромка margin-bottom.
+  // Дефолтный margin-bottom у .Button вместе со сбросом в :last-child давал
+  // последней плитке ряда осадку на 2px - маргины обязаны быть одинаковыми у всех.
+  margin: 0 2px 2px 0;
 }
 
 .Techweb__HeaderSection {
