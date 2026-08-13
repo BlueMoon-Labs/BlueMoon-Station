@@ -901,8 +901,8 @@
 		return json_decode(string)
 	catch(var/exception/error)
 		//молчаливый null прятал источник битого JSON - оставляем след со стеком
-		//вызова, но по-прежнему не роняем вызывающего
-		stack_trace("safe_json_decode() failed: [error] | input: [copytext_char("[string]", 1, 100)]")
+		//вызова и началом входной строки, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input ([length("[string]")]): [copytext_char("[string]", 1, 200)]")
 		return null
 
 /**
