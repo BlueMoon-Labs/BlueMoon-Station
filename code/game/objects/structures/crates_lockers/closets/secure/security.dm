@@ -245,10 +245,10 @@
 	icon_state = "tac"
 
 /obj/structure/closet/secure_closet/lethalshots/proc/security_level_allows_access()
-	return GLOB.security_level >= SEC_LEVEL_AMBER
+	return GLOB.security_level >= SEC_LEVEL_BLUE
 
 /obj/structure/closet/secure_closet/lethalshots/proc/security_level_denied_message(mob/user)
-	to_chat(user, span_warning("Этот шкаф можно открыть только при уровне тревоги [SECURITY_LEVEL_COLORED(SEC_LEVEL_AMBER)] и выше. Текущий уровень: [SECURITY_LEVEL_COLORED(GLOB.security_level)]."))
+	to_chat(user, span_warning("Этот шкаф можно открыть только при уровне тревоги [SECURITY_LEVEL_COLORED(SEC_LEVEL_BLUE)] и выше. Текущий уровень: [SECURITY_LEVEL_COLORED(GLOB.security_level)]."))
 
 /obj/structure/closet/secure_closet/lethalshots/togglelock(mob/living/user, silent)
 	if(locked && !security_level_allows_access())
