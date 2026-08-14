@@ -39,6 +39,12 @@
 	icon_state = "labcoat_cmo"
 	item_state = "labcoat_cmo"
 
+/obj/item/clothing/suit/toggle/labcoat/cmo/doctor_tailcoat
+	name = "chief medical officer's tailcoat"
+	desc = "A sterile blue tailcoat worn by chief medical officers."
+	icon_state = "cmo_tailcoat"
+	item_state = "cmo_tailcoat"
+
 /obj/item/clothing/suit/toggle/labcoat/mad
 	name = "\proper The Mad's labcoat"
 	desc = "С ним вы выглядите как кто-то способный стукнуть кому-то по кумполу и запустить его прямиком в космос."

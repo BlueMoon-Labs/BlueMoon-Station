@@ -3,6 +3,10 @@
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 	slot = ITEM_SLOT_OCLOTHING
 
+/datum/gear/suit/cmo_tailcoat
+	name = "Chief medical officer's tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/cmo/doctor_tailcoat
+
 /datum/gear/suit/poncho
 	name = "Poncho"
 	path = /obj/item/clothing/suit/poncho
