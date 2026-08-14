@@ -31,8 +31,21 @@
 	/// can only run if its key gas is present, so mixtures without exotic gases skip
 	/// the full 28-reaction requirement scan entirely. Built by auxtools_update_reactions().
 	var/list/reactions_by_key_gas
+	/// Пол требований по бакету: gas id -> минимальное по бакету min_requirements
+	/// для этого же газа. Присутствия ключа мало - реакция не пойдёт, пока молей
+	/// меньше её собственного порога, и цикл реакций это всё равно проверяет
+	/// (см. react(), сравнение с min_reqs). Пол выносит ту же проверку в сбор
+	/// кандидатов, до копии списка, total_moles() и сортировки. Реакция лежит
+	/// ровно в одном бакете, пол - минимум по бакету, поэтому газ ниже пола не
+	/// удовлетворяет ни одну его реакцию: отсечение точное, а не приближённое.
+	/// Построен auxtools_update_reactions() вместе с индексом.
+	var/list/reactions_key_gas_floor
 	/// Reactions with no gas requirement at all (assoc: reaction -> its TEMP gate).
 	var/list/temp_gated_reactions
+	/// Subset of the above that also requires FIRE_REAGENTS (assoc: reaction -> TRUE).
+	/// Those cannot fire without a gas at its ignition temperature, which react()
+	/// checks far more cheaply than assembling them as candidates.
+	var/list/temp_gated_needs_fuel
 	/// Lowest TEMP gate among temp_gated_reactions, for a single cheap precheck.
 	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
 
@@ -582,7 +595,9 @@
 
 /datum/controller/subsystem/air/proc/auxtools_update_reactions()
 	var/list/by_gas = list()
+	var/list/floors = list()
 	var/list/temp_gated = list()
+	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
@@ -605,12 +620,29 @@
 				bucket = list()
 				by_gas[key_gas] = bucket
 			bucket += reaction
+			// Требование может быть нулевым или отсутствовать - тогда пол падает в
+			// ноль и бакет не отсекается никогда, то есть поведение прежнее.
+			var/reaction_floor = reqs[key_gas]
+			if(isnull(reaction_floor))
+				reaction_floor = 0
+			var/bucket_floor = floors[key_gas]
+			floors[key_gas] = isnull(bucket_floor) ? reaction_floor : min(bucket_floor, reaction_floor)
 		else
 			var/temp_gate = reqs["TEMP"] || 0
 			temp_gated[reaction] = temp_gate
 			gate_floor = min(gate_floor, temp_gate)
+			// Реакции, которым нужно горючее, отмечаются отдельно: react() умеет
+			// отсеять их дешёвым присутствием топлива, не собирая кандидатов.
+			// Остальные безгазовые реакции (если появятся) гейтом не задеваются.
+			// Строго > 0, а не !isnull(). Цикл реакций сравнивает get_fuel_amount()
+			// с порогом, и порог 0 проходит ВСЕГДА - такую реакцию гейт обязан
+			// пропускать, а не отсекать по отсутствию горячего газа.
+			if(reqs["FIRE_REAGENTS"] > 0)
+				needs_fuel[reaction] = TRUE
 	reactions_by_key_gas = by_gas
+	reactions_key_gas_floor = floors
 	temp_gated_reactions = temp_gated
+	temp_gated_needs_fuel = needs_fuel
 	temp_gated_min_temp = gate_floor
 
 /proc/auxtools_atmos_init(gas_data)
@@ -650,6 +682,10 @@
 	if(!istype(src, /turf/open))
 		return
 	var/turf/open/open_turf = src
+	// Датум смеси у турфа мог смениться (ChangeTurf, маплоадер). Мемо оверлея
+	// ключуется по mutation_rev, а у свежей смеси он начинается с нуля и может
+	// совпасть с запомненным - сбрасываем ключ, чтобы гейт не дал ложное попадание.
+	open_turf.atmos_visual_rev = -1
 	if(flag == -1 || flag == 0 || open_turf.blocks_air || !open_turf.air)
 		SSair.remove_from_active(open_turf)
 		return
@@ -713,8 +749,16 @@
 /datum/gas_mixture/proc/get_moles(gas_id)
 	return gases[gas_id] || 0
 
-// Мутаторы ниже бампают mutation_rev - контракт sleeping edges (см. деклара-
-// цию). Прямых записей в gases мимо этих проков в кодбазе нет (проверено).
+// Мутаторы ниже бампают mutation_rev - контракт sleeping edges и мемо обходов
+// газ-листа (см. декларацию в gas_mixture.dm).
+//
+// Прямая запись в gases мимо этих проков в кодбазе допустима ровно в двух местах,
+// и оба бампают ревизию сами: equalize_all_gases_in_list() выше и mix_zone() при
+// разборе excited-группы (LINDA_turf_tile.dm). Любой НОВЫЙ прямой писатель обязан
+// сделать то же - молчаливая правка списка оставит и сумму молей, и теплоёмкость,
+// и архив, и оверлей турфа описывающими прежнее содержимое до конца раунда.
+// Единственным нарушителем был диагностический GAS_GARBAGE_COLLECT в догборг-
+// сканере: он подчищал околонулевые ключи ЖИВОЙ смеси турфа ради вывода в чат.
 /datum/gas_mixture/proc/set_moles(gas_id, amt_val)
 	if(gc_share)
 		return FALSE
@@ -751,17 +795,39 @@
 
 // Горячие циклы ниже ходят двухпеременной итерацией (tg 7312275a5fb): value
 // приезжает вместе с ключом, без второго хеш-чтения list[id] на каждый шаг.
+// Соглашение действует для всей секции; там, где значение не нужно вовсе
+// (has_ignitable_fuel), однопеременная форма остаётся правильной.
+//
+// Свёртки газ-листа идут нативными редукциями BYOND 516 (values_sum/values_dot)
+// вместо DM-цикла: редукция выполняется в движке за один вызов, тогда как цикл
+// платит интерпретатором за каждый ключ. tg перевёл свои же три прока на них в
+// #96448 и намерил около -20% на process_cell; у нас газ-лист уже плоский
+// assoc "id -> моли", а GLOB.gas_data.specific_heats - готовый вектор
+// коэффициентов, так что переносится ровно тело.
+//
+// Мемо по mutation_rev оставлено: оно закрывает ПОПАДАНИЯ (осевший турф, где
+// свёртка не нужна вовсе), а редукция удешевляет ПРОМАХИ - двигающийся турф,
+// у которого каждый шер бампает ревизию обоих концов. Это разные половины
+// нагрузки, и убирать одну ради другой нечего.
+//
+// Контракт редукций (пустой список, ключ без коэффициента, порядок аргументов)
+// закреплён тестом atmos_vector_reductions - он же поймает смену поведения в
+// будущем BYOND.
 /datum/gas_mixture/proc/total_moles()
-	. = 0
-	for(var/id, gas_moles in gases)
-		. += gas_moles
+	if(total_moles_rev == mutation_rev)
+		return total_moles_cache
+	. = values_sum(gases)
+	total_moles_cache = .
+	total_moles_rev = mutation_rev
 
 /datum/gas_mixture/proc/heat_capacity()
-	. = 0
-	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	for(var/id, gas_moles in gases)
-		. += (gas_moles || 0) * (cached_gasheats[id] || 0)
-	. = max(., min_heat_capacity)
+	if(heat_capacity_rev == mutation_rev)
+		return heat_capacity_cache
+	// Ключ, которого нет в specific_heats, даёт нулевой вклад - ровно то, что
+	// делал `cached_gasheats[id] || 0` в снятом цикле.
+	. = max(values_dot(gases, GLOB.gas_data.specific_heats), min_heat_capacity)
+	heat_capacity_cache = .
+	heat_capacity_rev = mutation_rev
 
 /datum/gas_mixture/proc/thermal_energy()
 	return temperature * heat_capacity()
@@ -780,7 +846,16 @@
 
 /datum/gas_mixture/proc/archive()
 	temperature_archived = temperature
+	// Копия списка - аллокация на турф на цикл. Если с прошлого снимка смесь не
+	// правили, прежний архив побайтово равен тому, что дал бы Copy() сейчас, и
+	// пересниматься незачем. Температура пишется безусловно: она в архив входит
+	// отдельным полем и от списка не зависит.
+	if(gas_archive && archive_mutation_rev == mutation_rev)
+		return TRUE
 	gas_archive = gases.Copy()
+	archive_mutation_rev = mutation_rev
+	// Инвалидация мемо архивной теплоёмкости: она считается по gas_archive.
+	archive_gen++
 	return TRUE
 
 /datum/gas_mixture/proc/get_gases()
@@ -811,12 +886,15 @@
 	return TRUE
 
 /datum/gas_mixture/proc/archived_heat_capacity()
-	. = 0
-	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	var/list/archive = gas_archive || gases
-	for(var/id, archived_moles in archive)
-		. += (archived_moles || 0) * (cached_gasheats[id] || 0)
-	. = max(., min_heat_capacity)
+	// Без архива значение зависит от живой смеси (LINDA_fire обнуляет gas_archive
+	// намеренно) - тогда это обычная теплоёмкость с её собственным мемо.
+	if(!gas_archive)
+		return heat_capacity()
+	if(archived_heat_capacity_gen == archive_gen)
+		return archived_heat_capacity_cache
+	. = max(values_dot(gas_archive, GLOB.gas_data.specific_heats), min_heat_capacity)
+	archived_heat_capacity_cache = .
+	archived_heat_capacity_gen = archive_gen
 
 /datum/gas_mixture/proc/__remove(datum/gas_mixture/into, amount_arg)
 	if(gc_share)
@@ -905,6 +983,20 @@
 			var/temperature_scale = max(0, 1 - (t_ox / max(temp, TCMB)))
 			. += (gas_moles || 0) * (oxidation_rates[id] || 0) * temperature_scale
 	return .
+
+/// TRUE when at least one gas in the mixture has reached its own ignition
+/// temperature. Deliberately ignores moles and burn rates: this is a gate in
+/// front of the fire reactions, so it must never answer FALSE where
+/// get_fuel_amount() would have returned something positive.
+/datum/gas_mixture/proc/has_ignitable_fuel(temp)
+	if(isnull(temp))
+		temp = return_temperature()
+	var/list/fuel_temps = GLOB.gas_data.fire_temperatures
+	for(var/id in gases)
+		var/t_f = fuel_temps[id]
+		if(t_f && temp >= t_f)
+			return TRUE
+	return FALSE
 
 /datum/gas_mixture/proc/get_fuel_amount(temp)
 	if(isnull(temp))
@@ -1168,6 +1260,11 @@
 	if(gc_share)
 		return FALSE
 	min_heat_capacity = max(0, arg_min)
+	// Пол теплоёмкости входит в её значение (max в конце heat_capacity), но
+	// mutation_rev при этом не двигается - мемо надо сбить руками, иначе кэш
+	// переживёт смену пола.
+	heat_capacity_rev = -1
+	archived_heat_capacity_gen = -1
 	return TRUE
 
 /datum/gas_mixture/proc/temperature_share(datum/gas_mixture/sharer, conduction_coefficient, sharer_temperature, sharer_heat_capacity)
@@ -1196,11 +1293,16 @@
 /datum/gas_mixture/proc/react(datum/holder)
 	. = NO_REACTION
 	var/list/cached_gases = gases
+	// Оба поля подсистемы читаются ниже второй раз (гейт температуры и сбор
+	// кандидатов). Глобальное чтение SSair - не бесплатное, а прок зовут на каждый
+	// активный турф, каждый пайпнет и каждый переносной баллон каждый фаер.
+	var/datum/controller/subsystem/air/air_controller = SSair
+	var/list/reaction_index = air_controller.reactions_by_key_gas
+	var/gated_min_temp = air_controller.temp_gated_min_temp
 	// The overwhelming turf case is cool O2/N2 air. The reaction index is
 	// authoritative, so only skip when neither common gas owns a candidate and
 	// no temperature-only reaction can be eligible.
-	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < SSair.temp_gated_min_temp)
-		var/list/reaction_index = SSair.reactions_by_key_gas
+	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < gated_min_temp)
 		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
 			if(length(reaction_results))
 				reaction_results.Cut()
@@ -1216,11 +1318,31 @@
 	// order and the reaction loop never mutates the list, so both the copy and
 	// the re-sort below are only needed once a second source gets appended.
 	var/candidates_owned = FALSE
-	var/list/by_gas = SSair.reactions_by_key_gas
+	var/list/by_gas = reaction_index
+	var/list/key_gas_floor = air_controller.reactions_key_gas_floor
 	if(by_gas)
-		for(var/id in cached_gases)
+		for(var/id, gas_moles in cached_gases)
 			var/list/bucket = by_gas[id]
 			if(!bucket)
+				continue
+			// Ключ есть, но молей меньше самого мягкого требования бакета: ни одна
+			// его реакция не пройдёт сравнение с min_reqs в цикле ниже, а до этого
+			// цикла мы бы уже заплатили за копию кандидатов, total_moles(), Cut() и
+			// сортировку вставками. Тот же отказ, вынесенный на несколько десятков
+			// строк выше. Пустой пол читается как ноль и не отсекает ничего, так
+			// что смесь без построенного индекса ведёт себя как прежде.
+			//
+			// ИНВАРИАНТ: моли читаются здесь, на СБОРЕ кандидатов, а цикл реакций
+			// ниже перечитывает их заново. Реакция, чей ключевой газ переваливает
+			// через порог благодаря другой реакции ТОГО ЖЕ вызова, поэтому
+			// откладывается на один фаер SSair. На текущем наборе такой пары нет:
+			// производитель ключевого газа всегда идёт приоритетом НИЖЕ бакета
+			// этого газа, либо его собственные min_requirements уже держат газ выше
+			// пола (fusion требует FUSION_MOLE_THRESHOLD плазмы раньше, чем поднимет
+			// её для plasmafire). Реакция с БОЛЕЕ ВЫСОКИМ приоритетом, производящая
+			// чужой ключевой газ, инвариант сломает - проверять при добавлении.
+			var/bucket_floor = key_gas_floor?[id]
+			if(bucket_floor && gas_moles < bucket_floor)
 				continue
 			if(!candidates)
 				candidates = bucket
@@ -1229,17 +1351,45 @@
 					candidates = candidates.Copy()
 					candidates_owned = TRUE
 				candidates += bucket
-		if(temp >= SSair.temp_gated_min_temp)
-			var/list/temp_gated = SSair.temp_gated_reactions
+		if(temp >= gated_min_temp)
+			var/list/temp_gated = air_controller.temp_gated_reactions
+			var/list/needs_fuel = air_controller.temp_gated_needs_fuel
+			// Проверка топлива откладывается до первой реакции, которой оно нужно,
+			// и делается один раз на вызов.
+			var/fuel_checked = FALSE
+			var/has_fuel = FALSE
 			for(var/r, min_temp in temp_gated)
-				if(temp >= min_temp)
-					if(!candidates)
-						candidates = list()
-						candidates_owned = TRUE
-					else if(!candidates_owned)
-						candidates = candidates.Copy()
-						candidates_owned = TRUE
-					candidates += r
+				if(temp < min_temp)
+					continue
+				// Реакция с требованием FIRE_REAGENTS не может сделать ничего, если
+				// в смеси нет ни одного газа, доросшего до своей температуры
+				// возгорания: get_fuel_amount() вернёт ноль, и реакция выйдет с
+				// NO_REACTION, оплатив до этого сбор кандидатов, сортировку и ДВА
+				// полных обхода газ-листа (топливо и окислитель).
+				//
+				// Почему это вообще происходит на обычной станции: единственная
+				// безгазовая реакция - genericfire, её порог TEMP считается как
+				// max(минимум по окислителям, минимум по топливу), а минимум по
+				// топливу задаёт флогистон с fire_temperature = T20C+1 = 294.15 K.
+				// Воздух турфа - 293.15 K, то есть запас ровно один градус, и любой
+				// подогретый людьми или лампами тайл проваливался сюда.
+				//
+				// Гейт - консервативная надоценка того же условия, что и внутри
+				// get_fuel_amount(): моли и скорость горения он не смотрит, поэтому
+				// пропустить реакцию, которая бы сработала, он не может.
+				if(needs_fuel?[r])
+					if(!fuel_checked)
+						fuel_checked = TRUE
+						has_fuel = has_ignitable_fuel(temp)
+					if(!has_fuel)
+						continue
+				if(!candidates)
+					candidates = list()
+					candidates_owned = TRUE
+				else if(!candidates_owned)
+					candidates = candidates.Copy()
+					candidates_owned = TRUE
+				candidates += r
 	else
 		candidates = SSair.gas_reactions.Copy()
 		candidates_owned = TRUE
@@ -1259,9 +1409,10 @@
 			reaction_results.Cut()
 		return
 
-	var/total = 0
-	for(var/id, gas_moles in cached_gases)
-		total += gas_moles
+	// Через мемоизированный прок, а не своим циклом: на этом же фаере сумму уже
+	// посчитал process_cell для порогов значимости (LINDA_turf_tile.dm), ревизия
+	// с тех пор не менялась, и здесь это попадание в кэш вместо второго обхода.
+	var/total = total_moles()
 	if(!total)
 		// A mixture that reacted on a previous call and has since been emptied
 		// must not leave stale per-call results (hotspots read them after react()).

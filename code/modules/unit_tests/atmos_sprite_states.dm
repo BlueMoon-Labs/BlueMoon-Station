@@ -232,7 +232,11 @@
 	var/list/saved_overlays = room.atmos_overlay_types
 
 	room.air = new /datum/gas_mixture(CELL_VOLUME)
-	room.atmos_overlay_types = null
+	// set_visuals(), а не голое обнуление списка: оно заодно сбрасывает ключ мемо
+	// оверлея. Подменённая мимо update_air_ref() смесь начинает ревизию с нуля и
+	// может совпасть с запомненной от прежней - гейт update_visuals() тогда
+	// вернёт "уже посчитано" и тест померяет чужой оверлей.
+	room.set_visuals(null)
 	room.air.set_moles(GAS_PLASMA, MOLES_GAS_VISIBLE * 12)
 	room.air.set_moles(GAS_TRITIUM, MOLES_GAS_VISIBLE * 2)
 	room.air.set_temperature(T20C)
@@ -246,7 +250,7 @@
 
 	// Flip the balance: the trace gas that is furthest past its own visibility
 	// threshold owns the tile, regardless of raw mole counts.
-	room.atmos_overlay_types = null
+	room.set_visuals(null)
 	room.air.set_moles(GAS_PLASMA, MOLES_GAS_VISIBLE * 1.1)
 	room.air.set_moles(GAS_TRITIUM, MOLES_GAS_VISIBLE * 30)
 	room.update_visuals()

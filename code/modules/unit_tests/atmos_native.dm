@@ -1795,3 +1795,90 @@
 	emptied.reaction_results = list("fire" = 1)
 	TEST_ASSERT_EQUAL(emptied.react(null), NO_REACTION, "смесь без молей отчиталась о реакции")
 	TEST_ASSERT(!length(emptied.reaction_results), "смесь без молей сохранила результат прошлой реакции")
+
+///Пол требований по бакету выносит сравнение с min_requirements из цикла реакций
+///в сбор кандидатов - до копии списка кандидатов, total_moles(), Cut() и
+///сортировки. Отсечение обязано быть ТОЧНЫМ, а не приближённым: пол это минимум
+///по бакету, реакция лежит ровно в одном бакете, поэтому газ ниже пола не
+///удовлетворяет ни одну реакцию бакета и цикл реакций отверг бы их все до
+///единой. Тест закрепляет этот инвариант и проверяет его следствие напрямую -
+///вердикт react() с гейтом и без него обязан совпадать.
+/datum/unit_test/atmos_reaction_floor_gate/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair не инициализирован")
+	// Индекс мог остаться снятым от упавшего соседа: пересобираем его перед
+	// снимком, иначе тест закрепит инвариант на пустом месте.
+	SSair.auxtools_update_reactions()
+	var/list/by_gas = SSair.reactions_by_key_gas
+	var/list/floors = SSair.reactions_key_gas_floor
+	TEST_ASSERT(islist(by_gas), "индекс реакций по ключевому газу не построен")
+	TEST_ASSERT(islist(floors), "пол требований по бакету не построен")
+	TEST_ASSERT_EQUAL(length(floors), length(by_gas), "у пола и индекса разное число бакетов: [length(floors)] против [length(by_gas)]")
+
+	// Инвариант точности. Пол ниже любого требования бакета - гейт не имеет права
+	// срезать реакцию, у которой был шанс пойти; пол выше минимума - гейт
+	// перестал бы быть точным выносом проверки и стал бы правкой баланса.
+	for(var/id in by_gas)
+		var/list/bucket = by_gas[id]
+		var/floor_value = floors[id]
+		TEST_ASSERT_NOTNULL(floor_value, "бакет [id] остался без пола")
+		TEST_ASSERT(floor_value >= 0, "пол бакета [id] отрицательный ([floor_value])")
+		var/expected
+		for(var/datum/gas_reaction/reaction as anything in bucket)
+			var/reaction_floor = reaction.min_requirements[id]
+			if(isnull(reaction_floor))
+				reaction_floor = 0
+			TEST_ASSERT(reaction_floor >= floor_value, "реакция [reaction.id] требует [reaction_floor] газа [id] - ниже пола бакета [floor_value], гейт срежет её незаконно")
+			expected = isnull(expected) ? reaction_floor : min(expected, reaction_floor)
+		TEST_ASSERT_EQUAL(floor_value, expected, "пол бакета [id] не равен минимуму по бакету: [floor_value] против [expected]")
+
+	// Смеси для дифференциала. Первые две - обычный воздух и та самая смесь с
+	// макроскопическими трейсами, на которой микробенч намерил девятикратный
+	// разрыв против инертной. Дальше по паре на каждый бакет с положительным
+	// полом: ровно на полу (гейт обязан пропустить) и вдвое ниже (гейт режет).
+	var/list/probes = list()
+	probes += list(list(GAS_O2 = MOLES_O2STANDARD, GAS_N2 = MOLES_N2STANDARD))
+	probes += list(list(GAS_O2 = MOLES_O2STANDARD, GAS_N2 = MOLES_N2STANDARD, GAS_CO2 = 4, GAS_H2O = 0.05, GAS_NITROUS = 0.1))
+	var/list/heats = GLOB.gas_data.specific_heats
+	for(var/id in floors)
+		var/floor_value = floors[id]
+		if(floor_value <= 0 || !heats[id])
+			continue
+		// Ключ - переменная, поэтому список собирается присваиванием, а не
+		// литералом list(id = ...): в литерале левая часть читается неоднозначно.
+		var/list/at_floor = list()
+		at_floor[id] = floor_value
+		probes += list(at_floor)
+		var/list/below_floor = list()
+		below_floor[id] = floor_value * 0.5
+		probes += list(below_floor)
+
+	for(var/list/recipe as anything in probes)
+		var/datum/gas_mixture/ungated = new
+		var/datum/gas_mixture/gated = new
+		for(var/gas_id in recipe)
+			ungated.set_moles(gas_id, recipe[gas_id])
+			gated.set_moles(gas_id, recipe[gas_id])
+		ungated.set_temperature(T20C)
+		gated.set_temperature(T20C)
+		var/verdict_ungated
+		var/moles_ungated
+		// Пол снимается только на время прогона и возвращается ДО ассертов. Возврат
+		// идёт и по исключению: рантайм внутри react() (вырожденная смесь - ровно то,
+		// что здесь и собирается) рвёт стек до самого RunUnitTest, и оставленный null
+		// уехал бы во все последующие атмос-тесты как молчаливо снятый гейт.
+		try
+			SSair.reactions_key_gas_floor = null
+			verdict_ungated = ungated.react(null)
+			moles_ungated = ungated.total_moles()
+		catch(var/exception/probe_error)
+			SSair.reactions_key_gas_floor = floors
+			qdel(ungated)
+			qdel(gated)
+			throw probe_error
+		SSair.reactions_key_gas_floor = floors
+		var/verdict_gated = gated.react(null)
+		var/moles_gated = gated.total_moles()
+		qdel(ungated)
+		qdel(gated)
+		TEST_ASSERT_EQUAL(verdict_gated, verdict_ungated, "гейт изменил вердикт react() на смеси [json_encode(recipe)]")
+		TEST_ASSERT_EQUAL(moles_gated, moles_ungated, "гейт изменил итоговые моли смеси [json_encode(recipe)]")
