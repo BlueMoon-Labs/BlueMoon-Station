@@ -41,7 +41,14 @@
 	LAssailant = null
 	movespeed_modification = null
 	if(length(progressbars))
-		stack_trace("[src] destroyed with elements in its progressbars list.")
+		//COMSIG_PARENT_QDELETING уходит до Destroy и чистит список через on_user_delete,
+		//так что дожившая до сюда полоска - это do_after, заведённый уже поверх удаляемого
+		//моба. Без перечисления целей понять, чей это do_after, по трейсу невозможно.
+		var/list/leaked = list()
+		for(var/bar_target in progressbars)
+			var/list/bars = progressbars[bar_target]
+			leaked += "[bar_target || "null"] ([islist(bars) ? length(bars) : "не список"])"
+		stack_trace("[src] destroyed with elements in its progressbars list: [leaked.Join(", ")]")
 		progressbars = null
 	if(alerts) //у /mob/oranges_ear списки алертов обнулены на уровне типа
 		for (var/alert in alerts.Copy())

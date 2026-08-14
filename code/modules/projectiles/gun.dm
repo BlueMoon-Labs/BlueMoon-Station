@@ -884,9 +884,11 @@
 		if(target_cli.prefs.extremeharm == "No")
 			to_chat(user, span_warning("Стрелять по яйцам?... Слишком жестоко для [target.ru_nego()]..."))
 			return FALSE
+		/* Оставлено на игроков
 		if(user != target && target_cli.prefs.nonconpref == "No")
 			to_chat(user, span_warning("Стрелять по яйцам?... [capitalize(target.ru_who())] явно не хочет сексуального насилия..."))
 			return FALSE
+		*/
 
 	if(user == target)
 		target.visible_message(span_warning("[user] вдавливает дуло [src] к своим яйцам, в готовности спустить курок..."), \
@@ -911,10 +913,12 @@
 
 	var/chambered_damage_type
 	var/chambered_damage = 0
-	if(chambered && chambered.BB)
+	var/const/balls_explode_damage = 20
+	if(chambered?.BB)
 		chambered.BB.damage *= 3
 		chambered_damage = chambered.BB.damage
 		chambered_damage_type = chambered.BB.damage_type
+		chambered.BB.wound_bonus = CANT_WOUND
 	process_fire(target, user, TRUE, zone_override = BODY_ZONE_PRECISE_GROIN, stam_cost = getstamcost(user))
 	if(chambered_damage_type == BRUTE)
 		target.emote("realagony")
@@ -929,7 +933,7 @@
 		target.confused += 30
 		target.stuttering += 30
 		var/pain_message = "А-А-А-А-А-А!!! МОИ БУБЕНЦЫ!!!"
-		if(chambered_damage > 20)
+		if(chambered_damage > balls_explode_damage)
 			pain_message = "А-А-А-А-А-А!!! МОИМ БУБЕНЦАМ КОНЕЦ!!!"
 			balls.Remove()
 			var/obj/effect/gibspawner/generic/Gibbis = new /obj/effect/gibspawner/generic(get_turf(target))
