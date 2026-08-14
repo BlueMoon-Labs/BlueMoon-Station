@@ -570,3 +570,68 @@
 			continue
 		if(!ispath(tank, owner))
 			TEST_FAIL("[initial(tank.name)] и [initial(owner.name)] делят спрайт '[state]', не будучи роднёй")
+
+/// Горящий воздух не имеет права греть сам себя. Обобщённое горение считает
+/// продукты по числам из gas_data (моль азота = ДВЕ моли нитрика), и пока
+/// коэффициент терялся, каждый цикл списывал теплоёмкость при неизменной
+/// тепловой энергии: температура удваивалась сама по себе, без единого джоуля
+/// извне. Раунд 9965 - смесь дошла до 2e12 K, где включается конденсация
+/// Хагедорна, и та высыпала на станцию кварковую материю с антинобелием;
+/// последний шаг выгорал в ноль молей и ронял react() делением на ноль (204
+/// рантайма).
+/datum/unit_test/gas_generic_fire_no_runaway
+
+/datum/unit_test/gas_generic_fire_no_runaway/Run()
+	var/datum/gas_reaction/generic_fire
+	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
+		if(candidate.id == "genericfire")
+			generic_fire = candidate
+			break
+	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
+
+	// --- Стехиометрия, ОДИН проход ---
+	// Проверяется напрямую, а не через температуру: температуру реакция теперь
+	// оставляет на месте при нулевой энтальпии в любом случае, поэтому ассерт на
+	// неё сам по себе потери коэффициента не заметит. Азот объявлен как
+	// fire_products = list(GAS_NITRIC = 2), и именно эта двойка терялась.
+	var/datum/gas_mixture/stoich = new(CELL_VOLUME)
+	stoich.set_moles(GAS_N2, MOLES_N2STANDARD * 10)
+	stoich.set_moles(GAS_O2, MOLES_O2STANDARD * 10)
+	stoich.set_temperature(2500)
+	var/n2_before = stoich.get_moles(GAS_N2)
+	generic_fire.react(stoich, null)
+	var/n2_burned = n2_before - stoich.get_moles(GAS_N2)
+	var/nitric_made = stoich.get_moles(GAS_NITRIC)
+	qdel(stoich)
+	TEST_ASSERT(n2_burned > 0, "предпосылка: азот не загорелся при 2500 K, стехиометрию не на чем проверять")
+	TEST_ASSERT(abs(nitric_made - n2_burned * 2) < n2_burned * 0.01,
+		"моль азота обязана давать ДВЕ моли нитрика (gas_data): сожжено [n2_burned], получено [nitric_made]")
+
+	var/datum/gas_mixture/mixture = new(CELL_VOLUME)
+	mixture.set_moles(GAS_N2, MOLES_N2STANDARD * 10)
+	mixture.set_moles(GAS_O2, MOLES_O2STANDARD * 10)
+	// Выше 2300 K, с которых азот считается топливом обобщённого горения.
+	var/starting_temperature = 2500
+	mixture.set_temperature(starting_temperature)
+	var/starting_moles = mixture.total_moles()
+
+	// Реакция гоняется в одиночку: проверяется её собственный учёт, а не то, что
+	// получится после всей цепочки азотной химии.
+	for(var/i in 1 to 100)
+		generic_fire.react(mixture, null)
+
+	// У азота и кислорода энтальпия нулевая - гореть тут нечему, и температура
+	// обязана остаться там же, где была. Со старым учётом (одна моль нитрика
+	// вместо двух плюс двойное списание окислителя) смесь теряла теплоёмкость
+	// каждый цикл и грелась на ~2% за проход: те же сто проходов давали 23 000 K,
+	// а турф в раунде успевал дойти до 2e12 K и порога Хагедорна.
+	var/final_moles = mixture.total_moles()
+	var/final_temperature = mixture.return_temperature()
+	var/final_nitric = mixture.get_moles(GAS_NITRIC)
+	qdel(mixture)
+	TEST_ASSERT(final_nitric > 0,
+		"предпосылка: обобщённое горение вообще не сработало на горячем воздухе")
+	TEST_ASSERT(final_temperature <= starting_temperature + 10,
+		"горящий воздух разогрел сам себя с [starting_temperature] K до [final_temperature] K без источника энергии")
+	TEST_ASSERT(final_moles > starting_moles * 0.5,
+		"горение съело больше половины массы: было [starting_moles] моль, стало [final_moles]")

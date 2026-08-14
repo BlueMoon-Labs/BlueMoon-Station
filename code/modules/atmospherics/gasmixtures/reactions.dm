@@ -416,20 +416,52 @@
 	fuels += oxidizers
 	var/list/fire_products = GLOB.gas_data.fire_products
 	var/list/fire_enthalpies = GLOB.gas_data.enthalpies
-	for(var/fuel in fuels + oxidizers)
-		var/amt = fuels[fuel]
-		if(!burn_results[fuel])
-			burn_results[fuel] = 0
-		burn_results[fuel] -= amt
-		energy_released += amt * fire_enthalpies[fuel]
-		for(var/product in fire_products[fuel])
+	// Один проход по уже объединённому списку. Раньше горящее перечислялось как
+	// `fuels + oxidizers`, хотя строкой выше окислители в fuels уже влиты:
+	// каждый окислитель списывался со смеси и выделял энтальпию ДВАЖДЫ.
+	for(var/burning in fuels)
+		var/amt = fuels[burning]
+		if(!burn_results[burning])
+			burn_results[burning] = 0
+		burn_results[burning] -= amt
+		energy_released += amt * fire_enthalpies[burning]
+		var/list/products = fire_products[burning]
+		for(var/product in products)
 			if(!burn_results[product])
 				burn_results[product] = 0
-			burn_results[product] += amt
-	var/final_energy = air.thermal_energy() + energy_released
+			// Число в gas_data - стехиометрия (моль азота даёт ДВЕ моли
+			// нитрика), и она молча терялась: продукт всегда добавлялся один к
+			// одному. Горящий воздух из-за этого каждый цикл терял теплоёмкость
+			// при неизменной тепловой энергии, то есть грелся сам по себе, без
+			// единого джоуля извне: замер на стандартном воздухе при 2500 K
+			// давал +0.24% за проход, а это порог Хагедорна за час раунда.
+			burn_results[product] += amt * (products[product] || 1)
 	for(var/result in burn_results)
 		air.adjust_moles(result, burn_results[result])
-	air.set_temperature(final_energy / air.heat_capacity())
+	// Смесь может выгореть в ноль (окислитель списывается без продуктов) - делить
+	// тогда не на что. Это была единственная реакция файла без гейта по
+	// теплоёмкости, и она роняла react() рантаймом посреди работы: 204 падения
+	// за раунд 9965, все на голодеке.
+	var/new_heat_capacity = air.heat_capacity()
+	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
+		// Уничтоженная масса уносит СВОЁ тепло с собой, а выделенная энергия
+		// раскладывается по тому, что осталось. Соседние реакции файла (plasmafire,
+		// tritfire) считают по (T*C_old + Q)/C_new, то есть оставляют тепловую
+		// энергию исчезнувших молей в остатке - для них это верно, у них масса
+		// сохраняется. У обобщённого горения нет: окислитель списывается БЕЗ
+		// продуктов (у /datum/gas/oxygen нет ни fire_products, ни enthalpy), и та
+		// формула превращает каждое падение теплоёмкости в нагрев из ниоткуда. При
+		// сломанной стехиометрии (одна моль нитрика вместо двух) это и разогнало
+		// воздух раунда 9965 до 2e12 K, за порог конденсации Хагедорна, высыпав на
+		// станцию кварковую материю и антинобелий.
+		//
+		// Стехиометрия починена строкой выше, и на станционном воздухе перепад
+		// теплоёмкости теперь и так нулевой (моль N2 даёт две моли NO по 20 против
+		// 20, минус кислород) - но полагаться на это нельзя: любая пара "топливо без
+		// продуктов" воспроизводит разгон, только медленнее. Форма ниже закрывает
+		// его по построению - при нулевой энтальпии температура не меняется вообще,
+		// а горение с реальной энтальпией греет на всю выделенную энергию.
+		air.set_temperature(max(TCMB, temperature + energy_released / new_heat_capacity))
 	var/list/cached_results = air.reaction_results
 	cached_results["fire"] = min(total_fuel, oxidation_power) * 2
 	return cached_results["fire"] ? REACTING : NO_REACTION

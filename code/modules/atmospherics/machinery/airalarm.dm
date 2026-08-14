@@ -969,10 +969,19 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 				send_signal(device_id, list(
 					"power" = 0
 				))
+			// Потолок вместо снятой проверки. С "checks" = 0 вент не имел границы
+			// вообще: pressure_delta оставался равным стартовым 10000 кПа, порог
+			// ATMOS_VENT_PRESSURE_EPSILON не достигался никогда, вент не уходил в
+			// простой, а assume_air_moles переактивировал турф каждый фаер до конца
+			// смены - устойчивого состояния у режима не существовало по построению.
+			// EXT_BOUND на верхнем клапане клампа (ONE_ATMOSPHERE*50, см.
+			// vent_pump.dm) оставляет комнату смертельной барокамерой на 5066 кПа,
+			// то есть замысел режима цел, но атмос получает конечное состояние.
 			for(var/device_id in A.air_vent_names)
 				send_signal(device_id, list(
 					"power" = 1,
-					"checks" = 0,
+					"checks" = 1,
+					"set_external_pressure" = ONE_ATMOSPHERE * 50,
 					"is_pressurizing" = 1
 				))
 				send_signal(device_id, list(
@@ -1108,7 +1117,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	// Adaptive backoff: read every fire while danger_level is moving (or we're mid-air-replacement
 	// and watching for the pressure cutoff); coast at AALARM_MAX_PROCESS_INTERVAL once it settles.
 	// A turf parked outside active atmos exchange cannot drift at all, so coast much longer there.
-	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT)
+	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT || mode == AALARM_MODE_PANIC)
 		process_interval = 1
 	else
 		var/max_interval = AALARM_MAX_PROCESS_INTERVAL
@@ -1118,9 +1127,24 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 		process_interval = min(process_interval + 1, max_interval)
 	process_skips_left = process_interval - 1
 
-	if(mode == AALARM_MODE_REPLACEMENT && environment_pressure < ONE_ATMOSPHERE * 0.05)
-		mode = AALARM_MODE_SCRUBBING
-		apply_mode()
+	// Аварийная откачка делит набор команд с прокачкой (общий case в
+	// apply_mode_commands), но отсечки по давлению у неё не было ни одной:
+	// widenet-скруббер по своей ветке в process_atmos() не умеет уходить в
+	// простой, поэтому режим молотил уже пустую комнату до конца смены, а
+	// перекушенный провод PANIC вешал его вообще навсегда. Механизм выхода
+	// написан и отлажен на соседнем режиме - распространяем на этот.
+	//
+	// Уходим в Off, а не в Фильтрацию: цель режима достигнута, и надувать отсек
+	// заново - не то, чего просил тот, кто его включил. Воздух назад не пойдёт,
+	// венты погашены той же командой режима.
+	if(environment_pressure < ONE_ATMOSPHERE * 0.05)
+		if(mode == AALARM_MODE_REPLACEMENT)
+			mode = AALARM_MODE_SCRUBBING
+			apply_mode()
+		else if(mode == AALARM_MODE_PANIC)
+			mode = AALARM_MODE_OFF
+			apply_mode()
+			investigate_log("вышел из аварийной откачки в Off: отсек стравлен до [round(environment_pressure, 0.1)] кПа", INVESTIGATE_ATMOS)
 
 	return
 

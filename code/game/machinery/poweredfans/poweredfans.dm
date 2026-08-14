@@ -14,6 +14,11 @@
 	CanAtmosPass = ATMOS_PASS_NO
 	var/obj/machinery/fan_assembly/assembly
 
+/obj/machinery/poweredfans/Destroy()
+	CanAtmosPass = ATMOS_PASS_YES
+	air_update_turf(TRUE)
+	return ..()
+
 /obj/machinery/poweredfans/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		if(!assembly)
@@ -41,6 +46,12 @@
 		assembly = new(src)
 		assembly.build_state = 3
 	refresh_atmos_barrier(TRUE)
+
+// Барьер поверфана держит и тепло - ровно пока держит воздух (то есть пока
+// есть питание). refresh_atmos_barrier() уже дёргает пересчёт соседства, так
+// что состояние кондукции меняется вместе с газовым.
+/obj/machinery/poweredfans/BlockThermalConductivity()
+	return CanAtmosPass == ATMOS_PASS_NO
 
 /obj/machinery/poweredfans/power_change()
 	..()
