@@ -599,13 +599,21 @@
 	stoich.set_moles(GAS_O2, MOLES_O2STANDARD * 10)
 	stoich.set_temperature(2500)
 	var/n2_before = stoich.get_moles(GAS_N2)
+	var/o2_before = stoich.get_moles(GAS_O2)
 	generic_fire.react(stoich, null)
 	var/n2_burned = n2_before - stoich.get_moles(GAS_N2)
+	var/o2_burned = o2_before - stoich.get_moles(GAS_O2)
 	var/nitric_made = stoich.get_moles(GAS_NITRIC)
 	qdel(stoich)
 	TEST_ASSERT(n2_burned > 0, "предпосылка: азот не загорелся при 2500 K, стехиометрию не на чем проверять")
 	TEST_ASSERT(abs(nitric_made - n2_burned * 2) < n2_burned * 0.01,
 		"моль азота обязана давать ДВЕ моли нитрика (gas_data): сожжено [n2_burned], получено [nitric_made]")
+	// Окислители вливаются в fuels ДО прохода списания, поэтому старый
+	// `for(var/burning in fuels + oxidizers)` списывал кислород и выделял его
+	// энтальпию дважды. При oxidation_rate = 1 (дефолт кислорода) баланс после
+	// нормировки ровный: сколько молей топлива, столько и окислителя.
+	TEST_ASSERT(abs(o2_burned - n2_burned) < n2_burned * 0.01,
+		"окислитель списан не один раз: азота сожжено [n2_burned], кислорода [o2_burned]")
 
 	var/datum/gas_mixture/mixture = new(CELL_VOLUME)
 	mixture.set_moles(GAS_N2, MOLES_N2STANDARD * 10)
@@ -635,3 +643,90 @@
 		"горящий воздух разогрел сам себя с [starting_temperature] K до [final_temperature] K без источника энергии")
 	TEST_ASSERT(final_moles > starting_moles * 0.5,
 		"горение съело больше половины массы: было [starting_moles] моль, стало [final_moles]")
+
+/// Водород — игровое топливо genericfire. Энтальпия обязана быть положительной:
+/// при нуле T + Q/C оставляет смесь холодной, и пожар H2→H2O не греет вообще.
+/datum/unit_test/gas_generic_fire_hydrogen_heats
+
+/datum/unit_test/gas_generic_fire_hydrogen_heats/Run()
+	var/datum/gas_reaction/generic_fire
+	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
+		if(candidate.id == "genericfire")
+			generic_fire = candidate
+			break
+	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
+
+	var/datum/gas_mixture/mixture = new(CELL_VOLUME)
+	mixture.set_moles(GAS_HYDROGEN, 20)
+	mixture.set_moles(GAS_O2, 20)
+	var/starting_temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 50
+	mixture.set_temperature(starting_temperature)
+	generic_fire.react(mixture, null)
+	var/final_temperature = mixture.return_temperature()
+	var/hydrogen_left = mixture.get_moles(GAS_HYDROGEN)
+	qdel(mixture)
+	TEST_ASSERT(hydrogen_left < 20, "водород не загорелся при [starting_temperature] K")
+	TEST_ASSERT(final_temperature > starting_temperature + 1,
+		"горение водорода не нагрело смесь: было [starting_temperature] K, стало [final_temperature] K")
+
+/// Ни одно топливо genericfire не имеет права ОХЛАЖДАТЬ смесь. Метан, аммиак и
+/// метилбромид держали в поле enthalpy энтальпию ОБРАЗОВАНИЯ (-74600, -45900,
+/// -35400), а реакция читает его как "выделяется на моль сгоревшего" - и пожар
+/// работал холодильником на 35-75 кДж/моль.
+/datum/unit_test/gas_generic_fire_fuels_never_cool
+
+/datum/unit_test/gas_generic_fire_fuels_never_cool/Run()
+	var/datum/gas_reaction/generic_fire
+	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
+		if(candidate.id == "genericfire")
+			generic_fire = candidate
+			break
+	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
+
+	// Азот сюда не входит намеренно: у него и у кислорода энтальпия нулевая, и
+	// воздух обязан гореть термически нейтрально - это предмет соседнего теста.
+	for(var/fuel_id in list(GAS_HYDROGEN, GAS_METHANE, GAS_AMMONIA, GAS_METHYL_BROMIDE))
+		var/fuel_temperature = GLOB.gas_data.fire_temperatures[fuel_id]
+		TEST_ASSERT_NOTNULL(fuel_temperature, "[fuel_id] перестал быть топливом обобщённого горения")
+		var/datum/gas_mixture/mixture = new(CELL_VOLUME)
+		mixture.set_moles(fuel_id, 20)
+		mixture.set_moles(GAS_O2, 40)
+		var/starting_temperature = fuel_temperature + 50
+		mixture.set_temperature(starting_temperature)
+		generic_fire.react(mixture, null)
+		var/fuel_left = mixture.get_moles(fuel_id)
+		var/final_temperature = mixture.return_temperature()
+		qdel(mixture)
+		TEST_ASSERT(fuel_left < 20, "[fuel_id] не загорелся при [starting_temperature] K")
+		TEST_ASSERT(final_temperature > starting_temperature,
+			"горение [fuel_id] охладило смесь: было [starting_temperature] K, стало [final_temperature] K")
+
+/// Гейт по теплоёмкости. Почти пустая смесь не имеет права разгоняться от
+/// деления на околоноль - и роняла react() рантаймом, когда выгорала в чистый
+/// ноль (204 падения за раунд 9965).
+/datum/unit_test/gas_generic_fire_empty_mix_gate
+
+/datum/unit_test/gas_generic_fire_empty_mix_gate/Run()
+	var/datum/gas_reaction/generic_fire
+	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
+		if(candidate.id == "genericfire")
+			generic_fire = candidate
+			break
+	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
+
+	// Теплоёмкость смеси - около 1e-6 * 60, то есть заведомо ниже
+	// MINIMUM_HEAT_CAPACITY (0.0003). Топливо взято с ненулевой энтальпией, иначе
+	// проверять было бы нечего: без гейта энергия делится на околоноль и
+	// выбрасывает температуру в тысячи кельвинов из микрограмма водорода.
+	var/datum/gas_mixture/mixture = new(CELL_VOLUME)
+	mixture.set_moles(GAS_HYDROGEN, 1e-6)
+	mixture.set_moles(GAS_O2, 1e-6)
+	var/starting_temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 50
+	mixture.set_temperature(starting_temperature)
+	TEST_ASSERT(mixture.heat_capacity() < MINIMUM_HEAT_CAPACITY,
+		"предпосылка: смесь для теста гейта обязана быть легче MINIMUM_HEAT_CAPACITY")
+	generic_fire.react(mixture, null)
+	var/final_temperature = mixture.return_temperature()
+	qdel(mixture)
+	TEST_ASSERT_EQUAL(final_temperature, starting_temperature,
+		"гейт теплоёмкости пропустил почти пустую смесь: [starting_temperature] K превратились в [final_temperature] K")
