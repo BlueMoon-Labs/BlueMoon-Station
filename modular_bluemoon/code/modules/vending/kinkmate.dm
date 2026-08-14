@@ -173,6 +173,7 @@
 			"name" = "Miscellaneous",
 			"icon" = "question",
 			"products" = list(
+				/obj/item/love_offer = 32,
 				/obj/item/fancy_pillow = 32,
 				/obj/item/storage/daki = 4,
 				/obj/item/clothing/underwear/briefs/panties/maebari = 3,

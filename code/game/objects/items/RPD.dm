@@ -301,7 +301,7 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 
 /obj/item/pipe_dispenser/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/pipes),
+		get_asset_datum(/datum/asset/spritesheet_batched/pipes),
 	)
 
 /obj/item/pipe_dispenser/ui_interact(mob/user, datum/tgui/ui)

@@ -275,7 +275,7 @@
 
 /obj/machinery/biogenerator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
 	)
 
 /obj/machinery/biogenerator/ui_interact(mob/user, datum/tgui/ui)
@@ -320,6 +320,10 @@
 				"cost" = ceil(D.materials[SSmaterials.GetMaterialRef(/datum/material/biomass)]/efficiency),
 			))
 		data["categories"] += list(cat)
+
+	// Крупные спрайты дизайнов интерфейс ужимает до тайла, для чего ему нужен их размер.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	data["design_sizes"] = design_sheet.oversized_icon_classes()
 
 	return data
 

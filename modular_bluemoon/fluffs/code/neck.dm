@@ -1,3 +1,7 @@
+/obj/item/clothing/neck/donator/bm
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+
 /obj/item/clothing/neck/SMART_fabric_boatcloak
 	name = "SMART-fabric boatcloak"
 	desc = "The tissue is capable of changing its structure by reading small nerve impulses from the body."
@@ -82,3 +86,13 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
 
+///////////////////////////////////////////////
+
+/obj/item/clothing/neck/donator/bm/antique_cape
+	name = "Antique cape"
+	desc = "An antique cape reminiscent of bygone times."
+	icon_state = "antique_cape"
+
+/obj/item/clothing/neck/donator/bm/antique_cape/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#777777", "#FFFFCC", "#66FFFF"), 3)

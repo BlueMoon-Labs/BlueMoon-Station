@@ -148,7 +148,9 @@
 	if(stage < 2)
 		return FALSE
 
-	if(receiver && isliving(target))
+	//receiver приходит не только гениталией: оральный контакт передаёт сюда желудок,
+	//у которого нет genital_flags - откладываем на пол, как и в остальных случаях
+	if(isgenital(receiver) && isliving(target))
 		if(CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
 			return lay_eg(receiver, senders_cum)
 	return lay_eg(get_turf(carrier), senders_cum)
@@ -253,11 +255,32 @@
 	playsound(parent, 'sound/effects/splat.ogg', 70, TRUE)
 	var/mob/living/babby = new baby_type(get_turf(parent))
 
-	if(ishuman(babby))
+	/// Clone the attacker's identity using aikofication-style DNA transfer
+	if(ishuman(user) && ishuman(babby))
+		var/mob/living/carbon/human/human_attacker = user
+		var/datum/dna/attacker_dna = new /datum/dna
+		human_attacker.dna.copy_dna(attacker_dna)
+		var/mob/living/carbon/human/babby_human = babby
+		attacker_dna.transfer_identity(babby_human, TRUE)
+		babby_human.real_name = attacker_dna.real_name
+
+		var/obj/item/modular_computer/pda/worn = human_attacker.wear_id
+		var/obj/item/card/id/W = human_attacker.wear_id?.GetID()
+		if(W)
+			W.registered_name = babby_human.real_name
+			W.update_label()
+			if(worn && istype(worn, /obj/item/modular_computer/pda))
+				worn.owner = W.registered_name
+				worn.update_label()
+
+		babby_human.updateappearance(mutcolor_update=1)
+		babby_human.domutcheck()
+	else
 		determine_baby_features(babby)
 		determine_baby_dna(babby)
 
-	player.transfer_ckey(babby, TRUE)
+	if(player)
+		player.transfer_ckey(babby, TRUE)
 
 	to_chat(babby, "You are the son (or daughter) of [mother_name ? mother_name : "someone"]!")
 
@@ -270,7 +293,7 @@
 		name = input(babby, "What will be your name?", "Name yourself") as null|text
 
 	if(!name)
-		babby.real_name = random_unique_name(babby.gender, )
+		babby.real_name = random_unique_name(babby.gender)
 		babby.update_name()
 	else
 		babby.real_name = name
@@ -352,44 +375,6 @@
 	eggo.forceMove(location)
 
 	return TRUE
-
-//not how genetics work but okay
-/datum/component/pregnancy/proc/determine_baby_dna(mob/living/carbon/human/babby)
-	if(mother_dna && father_dna)
-		mother_dna.transfer_identity_random(father_dna, babby)
-	else if(mother_dna && !father_dna)
-		mother_dna.transfer_identity_random(babby.dna, babby)
-	else if(!mother_dna && father_dna)
-		father_dna.transfer_identity_random(babby.dna, babby)
-
-/datum/component/pregnancy/proc/determine_baby_features(mob/living/carbon/human/babby)
-
-	var/list/final_features = list()
-
-	transfer_randomized_list(final_features, mother_features, father_features)
-
-	if(final_features["skin_tone"])
-		babby.skin_tone = final_features["skin_tone"]
-	if(final_features["hair_color"])
-		babby.hair_color = final_features["hair_color"]
-	if(final_features["facial_hair_color"])
-		babby.facial_hair_color = final_features["facial_hair_color"]
-	if(final_features["left_eye_color"])
-		babby.left_eye_color = final_features["left_eye_color"]
-	if(final_features["right_eye_color"])
-		babby.right_eye_color = final_features["right_eye_color"]
-
-	babby.hair_style = pick("Bedhead", "Bedhead 2", "Bedhead 3")
-	babby.facial_hair_style = "Shaved"
-	babby.underwear = "Nude"
-	babby.undershirt = "Nude"
-	babby.socks = "Nude"
-
-	/*
-	babby.saved_underwear = babby.underwear
-	babby.saved_undershirt = babby.undershirt
-	babby.saved_socks = babby.socks
-	*/
 
 /datum/component/pregnancy/proc/generic_pragency_start()
 	if(revealed)

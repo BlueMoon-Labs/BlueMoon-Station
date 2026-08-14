@@ -146,8 +146,15 @@
 
 	/// Cached game recipes for this dispenser's current reagent set.
 	var/list/cached_dispenser_game_recipes
+	/// Категория -> сколько в ней рецептов. Едет в нагрузке вместо самой книги.
+	var/list/cached_dispenser_recipe_counts
 	/// Hash of dispensable_reagents used to validate the instance cache.
 	var/cached_dispensable_reagents_hash = ""
+	/// Книга рецептов этого набора реагентов, зарегистрированная как JSON-ассет.
+	/// Сама книга в нагрузку tgui не попадает вовсе: одно такое сообщение - это
+	/// непрерывный мегабайт-другой памяти у 32-битного DreamDaemon (краш раунда
+	/// 9948, предупреждение раунда 9954 на 1.17 МБ). Интерфейс тянет её файлом.
+	var/datum/asset/json/chem_dispenser_recipes/cached_dispenser_recipes_asset
 	/// Current manipulator tier (1-6).
 	var/manipulator_tier = 1
 	/// Cached capacitor rating used for beaker pH display precision.
@@ -160,6 +167,11 @@
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
 	var/static/list/shared_dispenser_recipe_caches
+	/// Shared cache: reagent hash -> категория рецепта -> сколько их.
+	var/static/list/shared_dispenser_recipe_count_caches
+
+	/// Shared cache: reagent hash -> экземпляр JSON-ассета книги рецептов.
+	var/static/list/shared_dispenser_recipe_asset_caches
 
 	/// Maps reagent type to dispenser type bitflags that can provide it.
 	var/static/list/reagent_to_dispenser_type
@@ -594,6 +606,32 @@
 		beaker = null
 		update_icon()
 
+/**
+ * Ассет книги рецептов для текущего набора реагентов.
+ *
+ * Кодирование и регистрация происходят один раз на набор: все диспенсеры с тем же
+ * набором делят готовый файл. Создаётся лениво - при первом открытии интерфейса,
+ * а не на инициализации машины: на старте раунда книга никому не нужна.
+ */
+/obj/machinery/chem_dispenser/proc/ensure_recipes_asset()
+	RETURN_TYPE(/datum/asset/json/chem_dispenser_recipes)
+	build_game_recipes_cache()
+	build_dispenser_recipes_cache()
+	if(cached_dispenser_recipes_asset)
+		return cached_dispenser_recipes_asset
+	if(!shared_dispenser_recipe_asset_caches)
+		shared_dispenser_recipe_asset_caches = list()
+	cached_dispenser_recipes_asset = shared_dispenser_recipe_asset_caches[cached_dispensable_reagents_hash]
+	if(!cached_dispenser_recipes_asset)
+		// Ключ кэша - это длинная строка из путей реагентов; в имя файла идёт её md5.
+		cached_dispenser_recipes_asset = new(rustg_hash_string(RUSTG_HASH_MD5, cached_dispensable_reagents_hash), cached_dispenser_game_recipes)
+		shared_dispenser_recipe_asset_caches[cached_dispensable_reagents_hash] = cached_dispenser_recipes_asset
+	return cached_dispenser_recipes_asset
+
+/obj/machinery/chem_dispenser/ui_assets(mob/user)
+	. = ..() || list()
+	. += ensure_recipes_asset()
+
 /obj/machinery/chem_dispenser/ui_interact(mob/user, datum/tgui/ui)
 	if(HAS_TRAIT(user, TRAIT_PACIFISM) && !istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter))
 		to_chat(user, span_notice("Я боюсь использовать [src]... Вдруг это приведёт к катастрофическим последствиям?"))
@@ -833,9 +871,11 @@
 
 /obj/machinery/chem_dispenser/ui_static_data(mob/user)
 	var/list/data = list()
-	build_game_recipes_cache()
-	build_dispenser_recipes_cache()
-	data["gameRecipes"] = cached_dispenser_game_recipes
+	// Книга рецептов в нагрузку не входит - она уезжает файлом через транспорт
+	// ассетов (см. ui_assets), здесь только имя файла и счётчик по категориям
+	// для ярлыка вкладки.
+	data["gameRecipesAsset"] = "[ensure_recipes_asset().name].json"
+	data["gameRecipeCounts"] = cached_dispenser_recipe_counts
 
 	data["dispenserType"] = dispenser_type
 	data["isDrinkDispenser"] = !!(dispenser_type & DISPENSER_TYPE_DRINKS)
@@ -985,11 +1025,15 @@
 		shared_dispenser_recipe_caches = list()
 	if(shared_dispenser_recipe_caches[current_hash])
 		cached_dispenser_game_recipes = shared_dispenser_recipe_caches[current_hash]
+		cached_dispenser_recipe_counts = shared_dispenser_recipe_count_caches?[current_hash]
+		cached_dispenser_recipes_asset = shared_dispenser_recipe_asset_caches?[current_hash]
 		cached_dispensable_reagents_hash = current_hash
 		return
 
 	cached_dispenser_game_recipes = list()
 	cached_dispensable_reagents_hash = current_hash
+	// Набор реагентов сменился (апгрейд, emag) - у нового набора свой файл книги.
+	cached_dispenser_recipes_asset = null
 
 	// Assign upgrade tiers first so RefreshParts() reagents keep proper tier
 	var/list/reagent_tiers = list()
@@ -1199,6 +1243,17 @@
 
 	shared_dispenser_recipe_caches[current_hash] = cached_dispenser_game_recipes
 
+	// Счётчик по категориям заменяет книгу на вкладке, пока её не открыли: интерфейсу
+	// нужно только число на ярлыке, а сортировку по «напиткам» он делает сам.
+	cached_dispenser_recipe_counts = list()
+	for(var/recipe_name in cached_dispenser_game_recipes)
+		var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+		var/category = recipe_data["category"] || "other"
+		cached_dispenser_recipe_counts[category] += 1
+	if(!shared_dispenser_recipe_count_caches)
+		shared_dispenser_recipe_count_caches = list()
+	shared_dispenser_recipe_count_caches[current_hash] = cached_dispenser_recipe_counts
+
 /obj/machinery/chem_dispenser/ui_act(action, params)
 	if(..())
 		return
@@ -1208,6 +1263,14 @@
 		if(!COOLDOWN_FINISHED(src, dispense_cooldown))
 			return
 	switch(action)
+		if("load_game_recipes")
+			// Страховка для окна, пережившего смену набора реагентов (апгрейд, emag):
+			// открытые окна не получают маппинг нового файла сами, интерфейс просит
+			// его повторной отправкой ассета, когда fetch не нашёл файл.
+			var/datum/tgui/ui = SStgui.get_open_ui(usr, src)
+			if(ui)
+				ui.send_asset(ensure_recipes_asset())
+			. = TRUE
 		if("toggle_view")
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)

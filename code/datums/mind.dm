@@ -661,7 +661,8 @@
 				output += "<a href='?src=[REF(src)];req_obj_ping=1'>Ping the admins</a><br>"
 			if(is_admin)
 				output += "<a href='?src=[REF(src)];req_obj_ping_cd_clear=1'>Clear ping cooldown</a><br>"
-	output += "<br><b>[current.real_name]'s Ambitions:</b>"
+	//у отвязанного разума (тело съел клон/госта ещё не вселили) current == null
+	output += "<br><b>[current ? current.real_name : name]'s Ambitions:</b>"
 	if(LAZYLEN(ambitions) < CONFIG_GET(number/max_ambitions))
 		output += " <a href='?src=[REF(src)];add_ambition=1'>Add Ambition</a>"
 	output += "<ul>"

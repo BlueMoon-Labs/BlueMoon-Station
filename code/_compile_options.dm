@@ -62,6 +62,9 @@
 #if defined(UNIT_TESTS)
 // Хуки записи found_refs/should_save_refs для тестов рефтрекера (find_reference_sanity и др.).
 #define REFERENCE_TRACKING_DEBUG
+// Ассеты собираются на инициализации, а не в лобби: прогон тестов до RUNLEVEL_LOBBY
+// не доходит, и отложенные листы никто бы не собрал.
+#define DO_NOT_DEFER_ASSETS
 #endif
 
 #ifdef TGS

@@ -47,6 +47,10 @@
 	return ..()
 
 /datum/ai_behavior/run_away_from_target/perform(delta_time, datum/ai_controller/controller, target_key, hiding_location_key)
+	//Паун мог быть удалён между планированием и perform (цель при этом жива):
+	//can_see(null, ...) рантаймит, а finish_action оставляет мув-луп сиротой
+	if(QDELETED(controller.pawn))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	if(controller.blackboard[BB_AI_STOP_FLEEING])
 		return AI_BEHAVIOR_DELAY
 	var/atom/target = controller.blackboard[hiding_location_key] || controller.blackboard[target_key]

@@ -15,6 +15,10 @@
 /datum/ai_movement/proc/stop_moving_towards(datum/ai_controller/controller)
 	controller.pathing_attempts = 0
 	moving_controllers -= controller
+	//Луп сносим по прямой ссылке: путь через pawn.move_packet рвётся, когда
+	//харддел уже занулил pawn, и осиротевший луп жил бы на SSai_movement до ребута.
+	//QDEL_NULL заодно синхронно чистит ссылку, даже если сигнал qdel не дошёл
+	QDEL_NULL(controller.active_move_loop)
 	SSmove_manager.stop_looping(controller.pawn, SSai_movement)
 
 /datum/ai_movement/proc/increment_pathing_failures(datum/ai_controller/controller)

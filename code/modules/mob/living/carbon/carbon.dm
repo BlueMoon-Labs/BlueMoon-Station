@@ -753,6 +753,9 @@
 
 	if(see_override)
 		see_invisible = see_override
+	if(is_hilbert_hotel_zlevel(z))
+		sight = initial(sight)
+
 	. = ..()
 
 
