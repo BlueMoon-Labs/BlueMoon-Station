@@ -5,12 +5,17 @@
 
 /datum/status_effect/water_affected/on_apply()
 	//We should be inside a liquid turf if this is applied
+	var/turf/owner_turf = get_turf(owner)
+	if(!owner_turf?.liquids)
+		return FALSE
 	calculate_water_slow()
-	return TRUE
+	return ..()
 
 /datum/status_effect/water_affected/proc/calculate_water_slow()
 	//Factor in swimming skill here?
 	var/turf/T = get_turf(owner)
+	if(!T?.liquids)
+		return
 	var/slowdown_amount = T.liquids.liquid_state * 0.5
 	owner.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/status_effect/water_slowdown, multiplicative_slowdown = slowdown_amount)
 
@@ -29,6 +34,7 @@
 
 /datum/status_effect/water_affected/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/status_effect/water_slowdown)
+	return ..()
 
 /datum/movespeed_modifier/status_effect/water_slowdown
 	variable = TRUE

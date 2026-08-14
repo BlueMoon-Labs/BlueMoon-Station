@@ -339,6 +339,7 @@
 			air.set_temperature(air.return_temperature() - heat / total_heat_capacity)
 			if(!target.liquids.immutable)
 				target.liquids.temp += heat / target_heat_capacity
+			mark_dirty()
 			return TRUE
 
 		if(modeled_location.blocks_air)

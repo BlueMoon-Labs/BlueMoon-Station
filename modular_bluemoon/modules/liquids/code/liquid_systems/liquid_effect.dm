@@ -337,7 +337,7 @@
  */
 /obj/effect/abstract/liquid_turf/proc/queue_smooth()
 	calculate_smoothing()
-	update_overlays()
+	update_icon(UPDATE_OVERLAYS)
 
 /obj/effect/abstract/liquid_turf/proc/calculate_smoothing()
 	if(!my_turf || no_effects)
@@ -622,7 +622,7 @@
 				to_chat(falling_carbon, span_userdanger("You fall in the [reagents_to_text()]!"))
 			else
 				var/datum/reagents/tempr = take_reagents_flat(CHOKE_REAGENTS_INGEST_ON_FALL_AMOUNT)
-				tempr.trans_to(falling_carbon, tempr.total_volume, methods = INGEST)
+				tempr.trans_to(falling_carbon, tempr.total_volume)
 				qdel(tempr)
 				falling_carbon.adjustOxyLoss(5)
 				//C.emote("cough")
@@ -673,6 +673,7 @@
 /obj/effect/abstract/liquid_turf/immutable/Destroy(force)
 	if(force)
 		stack_trace("Something tried to hard destroy an immutable liquid.")
+		return QDEL_HINT_LETMELIVE
 	return ..()
 
 //Exposes my turf with simulated reagents

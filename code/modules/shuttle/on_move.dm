@@ -56,7 +56,7 @@ All ShuttleMove procs go here
 	//LIQUIDS ADD - clear destination liquids, move ours along
 	if(newT.liquids)
 		if(newT.liquids.immutable)
-			newT.liquids.remove_turf(src)
+			newT.liquids.remove_turf(newT)
 		else
 			qdel(newT.liquids, TRUE)
 	if(liquids)

@@ -15,6 +15,7 @@
 
 /datum/element/liquids_interaction/proc/item_interaction(datum/source, mob/living/user, atom/target, modifiers)
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
 
 	var/turf/turf_target = target
 	if(!isturf(target) || !turf_target.liquids)

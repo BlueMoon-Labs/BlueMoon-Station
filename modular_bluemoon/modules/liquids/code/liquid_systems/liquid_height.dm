@@ -4,6 +4,8 @@
  * Used for reinforced tables, sandbags, and the likes.
  */
 /datum/element/liquids_height
+	element_flags = ELEMENT_BESPOKE | ELEMENT_DETACH
+	id_arg_index = 2
 
 	///Height applied by this element
 	var/height_applied
@@ -38,9 +40,9 @@
 
 	if(isturf(OldLoc))
 		var/turf/old_turf = OldLoc
-		old_turf.liquid_height += height_applied
+		old_turf.liquid_height -= height_applied
 		old_turf.reasses_liquids()
 	if(isturf(source.loc))
 		var/turf/new_turf = source.loc
-		new_turf.liquid_height -= height_applied
+		new_turf.liquid_height += height_applied
 		new_turf.reasses_liquids()

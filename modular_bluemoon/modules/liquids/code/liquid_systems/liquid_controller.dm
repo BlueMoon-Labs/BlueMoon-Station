@@ -56,7 +56,7 @@ SUBSYSTEM_DEF(liquids)
 		if(!currentrun_active_turfs.len)
 			run_type = SSLIQUIDS_RUN_TYPE_GROUPS
 	if (run_type == SSLIQUIDS_RUN_TYPE_GROUPS)
-		for(var/g in active_groups)
+		for(var/g in active_groups.Copy())
 			var/datum/liquid_group/LG = g
 			if(LG.dirty)
 				LG.share()
@@ -67,26 +67,27 @@ SUBSYSTEM_DEF(liquids)
 					//Perhaps check if any turfs in here can spread before removing it? It's not unlikely they would
 					LG.break_group()
 			if(MC_TICK_CHECK)
-				run_type = SSLIQUIDS_RUN_TYPE_IMMUTABLES //No currentrun here for now
-				break
+				return
 		resumed = FALSE
 		run_type = SSLIQUIDS_RUN_TYPE_IMMUTABLES
 	if(run_type == SSLIQUIDS_RUN_TYPE_IMMUTABLES)
 		for(var/t in active_immutables)
 			var/turf/T = t
 			T.process_immutable_liquid()
+			if(MC_TICK_CHECK)
+				return
 		resumed = FALSE
 		run_type = SSLIQUIDS_RUN_TYPE_EVAPORATION
 
 	if(run_type == SSLIQUIDS_RUN_TYPE_EVAPORATION)
 		evaporation_counter++
 		if(evaporation_counter >= REQUIRED_EVAPORATION_PROCESSES)
-			for(var/t in evaporation_queue)
+			for(var/t in evaporation_queue.Copy())
 				var/turf/T = t
 				if(prob(EVAPORATION_CHANCE))
 					T.liquids.process_evaporation()
 				if(MC_TICK_CHECK)
-					break
+					return
 			resumed = FALSE
 			evaporation_counter = 0
 		run_type = SSLIQUIDS_RUN_TYPE_FIRE
@@ -94,11 +95,13 @@ SUBSYSTEM_DEF(liquids)
 	if(run_type == SSLIQUIDS_RUN_TYPE_FIRE)
 		fire_counter++
 		if(fire_counter >= REQUIRED_FIRE_PROCESSES)
-			for(var/t in processing_fire)
+			for(var/t in processing_fire.Copy())
 				var/turf/T = t
+				if(!T.liquids)
+					continue
 				T.liquids.process_fire()
-			if(MC_TICK_CHECK)
-				return
+				if(MC_TICK_CHECK)
+					return
 			resumed = FALSE
 			fire_counter = 0
 		run_type = SSLIQUIDS_RUN_TYPE_TURFS

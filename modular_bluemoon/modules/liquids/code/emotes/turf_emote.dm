@@ -26,7 +26,8 @@
 
 /obj/structure/mark_turf/proc/turf_check(mob/living/user) //This gets called when a player leaves their turf
 	QDEL_IN(src, 15 SECONDS)
-	user.owned_turf = null
+	if(user.owned_turf == src)
+		user.owned_turf = null
 
 /datum/emote/sound/human/water
 	name = "Вода"
@@ -46,6 +47,8 @@
 		return FALSE
 
 	var/mob/living/living_user = user
+	if(living_user.owned_turf)
+		QDEL_NULL(living_user.owned_turf)
 	living_user.owned_turf = new /obj/structure/mark_turf(get_turf(living_user), "water")
 	living_user.owned_turf.dir = living_user.dir
 	RegisterSignal(living_user, COMSIG_MOVABLE_MOVED, PROC_REF(turf_owner), override = TRUE)

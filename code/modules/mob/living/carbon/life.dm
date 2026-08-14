@@ -153,7 +153,7 @@
 					else
 						//Try and drink water
 						var/datum/reagents/tempr = our_turf.liquids.take_reagents_flat(CHOKE_REAGENTS_INGEST_ON_BREATH_AMOUNT)
-						tempr.trans_to(src, tempr.total_volume, methods = INGEST)
+						tempr.trans_to(src, tempr.total_volume)
 						qdel(tempr)
 						visible_message("<span class='warning'>[src] chokes on [our_turf.liquids.reagents_to_text()]!</span>", \
 									"<span class='userdanger'>You're choking on [our_turf.liquids.reagents_to_text()]!</span>")

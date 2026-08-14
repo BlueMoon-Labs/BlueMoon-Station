@@ -6,10 +6,10 @@
 	icon_state = "active_input"
 	anchored = FALSE
 	density = FALSE
-	active_power_usage = 1000
-	buffer = 300
-	rcd_cost = 20
-	rcd_delay = 20
+	active_power_usage = LIQUID_FLOOR_PUMP_POWER
+	buffer = LIQUID_FLOOR_PUMP_BUFFER
+	rcd_cost = LIQUID_FLOOR_PUMP_RCD_COST
+	rcd_delay = LIQUID_FLOOR_PUMP_RCD_DELAY
 
 	/// Pump is turned on by engineer, etc.
 	var/turned_on = FALSE
@@ -20,9 +20,9 @@
 	var/duct_layer = 0
 
 	/// Base amount to drain
-	var/drain_flat = 20
+	var/drain_flat = LIQUID_FLOOR_PUMP_DRAIN_FLAT
 	/// Additional ratio of liquid volume to drain
-	var/drain_percent = 0.4
+	var/drain_percent = LIQUID_FLOOR_PUMP_DRAIN_PERCENT
 
 	/// Currently pumping.
 	var/is_pumping = FALSE
@@ -244,7 +244,7 @@
 	if(target_value > reagents.total_volume)
 		target_value = reagents.total_volume
 
-	var/datum/reagents/tempr = new(10000)
+	var/datum/reagents/tempr = new(LIQUID_PUMP_MAX_VOLUME)
 	reagents.trans_to(tempr, target_value, no_react = TRUE)
 	affected_turf.add_liquid_from_reagents(tempr)
 	qdel(tempr)

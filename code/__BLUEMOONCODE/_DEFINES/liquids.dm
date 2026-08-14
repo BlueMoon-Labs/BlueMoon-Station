@@ -58,6 +58,27 @@
 #define LIQUID_FIRE_STATE_HUGE		4
 #define LIQUID_FIRE_STATE_INFERNO	5
 
+// Drain structure parameters
+#define DRAIN_STANDARD_FLAT 5
+#define DRAIN_STANDARD_PERCENT 0.1
+#define DRAIN_BIG_FLAT 15
+#define DRAIN_BIG_PERCENT 0.3
+#define DRAIN_WELD_TIME 2 SECONDS
+
+// Portable liquid pump parameters
+#define LIQUID_PUMP_MAX_VOLUME 10000
+#define LIQUID_PUMP_SPEED_PERCENT 0.4
+#define LIQUID_PUMP_SPEED_FLAT 20
+#define LIQUID_PUMP_UNFASTEN_TIME 4 SECONDS
+
+// Underfloor plumbing pump parameters
+#define LIQUID_FLOOR_PUMP_POWER 1000
+#define LIQUID_FLOOR_PUMP_BUFFER 300
+#define LIQUID_FLOOR_PUMP_RCD_COST 20
+#define LIQUID_FLOOR_PUMP_RCD_DELAY 2 SECONDS
+#define LIQUID_FLOOR_PUMP_DRAIN_FLAT 20
+#define LIQUID_FLOOR_PUMP_DRAIN_PERCENT 0.4
+
 //Threshold at which we "choke" on the water, instead of holding our breath
 #define OXYGEN_DAMAGE_CHOKING_THRESHOLD 15
 

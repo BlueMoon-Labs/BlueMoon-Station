@@ -43,10 +43,13 @@
 		calculate_height()
 
 /turf/proc/liquid_fraction_delete(fraction)
+	if(!liquids)
+		return
 	for(var/r_type in liquids.reagent_list)
 		var/volume_change = liquids.reagent_list[r_type] * fraction
 		liquids.reagent_list[r_type] -= volume_change
 		liquids.total_reagents -= volume_change
+	liquids.has_cached_share = FALSE
 
 /turf/proc/liquid_fraction_share(turf/T, fraction)
 	if(!liquids)
@@ -219,7 +222,8 @@
 	liquids.reagent_list[reagent] += amount
 	liquids.total_reagents += amount
 
-	liquids.temp = ((amount * chem_temp) + prev_thermal_energy) / liquids.total_reagents
+	if(liquids.total_reagents)
+		liquids.temp = ((amount * chem_temp) + prev_thermal_energy) / liquids.total_reagents
 
 	if(!no_react)
 		//We do react so, make a simulation

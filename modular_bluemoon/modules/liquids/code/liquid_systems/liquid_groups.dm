@@ -90,6 +90,8 @@ GLOBAL_VAR_INIT(liquid_debug_colors, FALSE)
 		for(var/t in current_adjacent)
 			var/turf/T2 = t
 			for(var/y in T2.GetAtmosAdjacentTurfs())
+				if(!members[y])
+					continue
 				if(!recursive_adjacent[y])
 					new_adjacent[y] = TRUE
 					recursive_adjacent[y] = TRUE
@@ -226,7 +228,7 @@ GLOBAL_VAR_INIT(liquid_debug_colors, FALSE)
 			if(T.liquid_height != T2.liquid_height)
 				var/my_liquid_height = T.liquid_height + T.liquids.height
 				var/target_liquid_height = T2.liquid_height + T2.liquids.height
-				if(my_liquid_height > target_liquid_height+2)
+				if(my_liquid_height > 0 && my_liquid_height > target_liquid_height+2)
 					var/coeff = (T.liquids.height / (T.liquids.height + abs(T.liquid_height)))
 					var/height_diff = min(0.4,abs((target_liquid_height / my_liquid_height)-1)*coeff)
 					T.liquid_fraction_delete(height_diff)
@@ -251,7 +253,7 @@ GLOBAL_VAR_INIT(liquid_debug_colors, FALSE)
 		if(T.liquid_height != T2.liquid_height)
 			var/my_liquid_height = T.liquid_height + T.liquids.height
 			var/target_liquid_height = T2.liquid_height + (T2.liquids ? T2.liquids.height : 0)
-			if(my_liquid_height > target_liquid_height+1)
+			if(my_liquid_height > 0 && my_liquid_height > target_liquid_height+1)
 				var/coeff = (T.liquids.height / (T.liquids.height + abs(T.liquid_height)))
 				var/height_diff = min(0.4,abs((target_liquid_height / my_liquid_height)-1)*coeff)
 				T.liquid_fraction_share(T2, height_diff)

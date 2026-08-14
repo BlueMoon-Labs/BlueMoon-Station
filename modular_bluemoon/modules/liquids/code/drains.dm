@@ -9,8 +9,8 @@
 	layer = GAS_SCRUBBER_LAYER
 	anchored = TRUE
 	var/processing = FALSE
-	var/drain_flat = 5
-	var/drain_percent = 0.1
+	var/drain_flat = DRAIN_STANDARD_FLAT
+	var/drain_percent = DRAIN_STANDARD_PERCENT
 	var/welded = FALSE
 	var/turf/my_turf //need to keep track of it for the signal, if in any bizarre cases something would be moving the drain
 
@@ -28,7 +28,7 @@
 
 	playsound(src, 'sound/items/Welder2.ogg', 50, TRUE)
 	to_chat(user, span_notice("You start [welded ? "unwelding" : "welding"] [src]..."))
-	if(I.use_tool(src, user, 20))
+	if(I.use_tool(src, user, DRAIN_WELD_TIME))
 		to_chat(user, span_notice("You [welded ? "unweld" : "weld"] [src]."))
 		welded = !welded
 		update_icon()
@@ -60,6 +60,7 @@
 
 /obj/structure/drain/proc/liquids_signal()
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
 	if(processing || welded)
 		return
 	START_PROCESSING(SSobj, src)
@@ -75,5 +76,5 @@
 /obj/structure/drain/big
 	desc = "Drainage inlet embedded in the floor to prevent flooding. This one seems large."
 	icon_state = "bigdrain"
-	drain_percent = 0.3
-	drain_flat = 15
+	drain_percent = DRAIN_BIG_PERCENT
+	drain_flat = DRAIN_BIG_FLAT

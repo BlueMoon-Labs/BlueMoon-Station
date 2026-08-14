@@ -3,6 +3,9 @@
 	if(!in_range(user, target_turf))
 		return FALSE
 
+	if(liquids.fire_state)
+		return TRUE
+
 	var/free_space = reagents.maximum_volume - reagents.total_volume
 	if(free_space <= 0)
 		to_chat(user, span_warning("Your [src] can't absorb any more liquid!"))

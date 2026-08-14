@@ -9,19 +9,19 @@
 	anchored = FALSE
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	/// How many reagents at maximum can it hold
-	var/max_volume = 10000
+	var/max_volume = LIQUID_PUMP_MAX_VOLUME
 	/// Whether spewing reagents out, instead of siphoning them
 	var/spewing_mode = FALSE
 	/// Whether it's turned on and processing
 	var/turned_on = FALSE
 	/// How fast does the pump work, in percentages relative to the volume we're working with
-	var/pump_speed_percentage = 0.4
+	var/pump_speed_percentage = LIQUID_PUMP_SPEED_PERCENT
 	/// How fast does the pump work, in flat values. Flat values on top of percentages to help processing
-	var/pump_speed_flat = 20
+	var/pump_speed_flat = LIQUID_PUMP_SPEED_FLAT
 
 /obj/structure/liquid_pump/wrench_act(mob/living/user, obj/item/I)
 	. = ..()
-	default_unfasten_wrench(user, I, 40)
+	default_unfasten_wrench(user, I, LIQUID_PUMP_UNFASTEN_TIME)
 	if(!anchored && turned_on)
 		toggle_working()
 	return TRUE
@@ -55,7 +55,7 @@
 	if(spewing_mode)
 		if(!reagents.total_volume)
 			return
-		var/datum/reagents/tempr = new(10000)
+		var/datum/reagents/tempr = new(max_volume)
 		reagents.trans_to(tempr, (reagents.total_volume * pump_speed_percentage) + pump_speed_flat, no_react = TRUE)
 		T.add_liquid_from_reagents(tempr)
 		qdel(tempr)
