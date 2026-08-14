@@ -11,6 +11,7 @@
 /obj/item/projectile/bullet/c45/lethal
 	name = ".45 bullet"
 	damage = 25
+	stamina = 0
 	armour_penetration = BULLET_BR1
 	wound_bonus = 15
 	bare_wound_bonus = 20 // Пуля тяжелая, должна делать бо-бо
@@ -32,6 +33,7 @@
 /obj/item/projectile/bullet/c45/trac
 	name = ".45 TRAC bullet"
 	damage = 15
+	stamina = 0
 	armour_penetration = BULLET_BR0   // трекер не про пробитие
 
 /obj/item/projectile/bullet/c45/ion

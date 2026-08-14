@@ -220,6 +220,8 @@
 
 	var/pressure_decrease_active = FALSE
 	var/pressure_decrease = 0.25
+	/// Баллистические подтипы КА не слабеют вне лавалэнда - штраф давления к ним не применяется
+	var/ignores_pressure_penalty = FALSE
 	var/obj/item/gun/energy/kinetic_accelerator/kinetic_gun
 
 /obj/item/projectile/kinetic/Destroy()
@@ -234,6 +236,8 @@
 		var/list/mods = kinetic_gun.modkits
 		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
 			modkit.projectile_prehit(src, target, kinetic_gun)
+	if(ignores_pressure_penalty)
+		return
 	var/hit_turf = get_turf(target)
 	if(!pressure_decrease_active && !lavaland_equipment_pressure_check(hit_turf))
 		name = "weakened [name]"
