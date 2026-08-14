@@ -50,6 +50,7 @@
 	name = "tactical pants"
 	desc = "A pair of tactical pants, designed for military use."
 	icon_state = "tactical_pants"
+	item_state = "tactical_pants"
 
 /obj/item/clothing/under/pants/polypants
 	name = "polychromic pants"

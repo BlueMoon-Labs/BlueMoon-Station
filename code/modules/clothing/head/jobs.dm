@@ -328,6 +328,7 @@
 	name = "paramedic beret"
 	desc = "For finding corpses in style!"
 	icon_state = "beret_paramedic"
+	item_state = "beret_paramedic"
 
 /obj/item/clothing/head/beret/chem
 	name = "chemist's beret"
