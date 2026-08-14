@@ -102,6 +102,17 @@
 		return NO_REACTION
 	if (air.return_temperature() <= WATER_VAPOR_FREEZE)
 		if(location && location.freon_gas_act())
+			// Пар обязан РАСХОДОВАТЬСЯ и на морозной ветке, ровно как на тёплой
+			// строкой ниже. Без этого ветка возвращала REACTING вечно: пар не
+			// убывал, порог MOLES_GAS_VISIBLE не переставал выполняться, а конец
+			// process_cell() при REACTING не снимает турф с актива и не даёт ему
+			// уснуть в одиночку. Турф на любом мороженом покрытии (FROZEN_ATMOS
+			// 180K, TCOMMS_ATMOS 80K - обе ниже порога 200K), куда попал пар от
+			// огнетушителя, лопнувшей трубы или погоды, оставался активным до
+			// конца раунда и платил полную стоимость турф-фазы каждый цикл.
+			// Заодно freon_gas_act() перестаёт два раза сканировать contents и
+			// звать MakeSlippery() на том же турфе бесконечно.
+			air.adjust_moles(GAS_H2O, -MOLES_GAS_VISIBLE)
 			return REACTING
 	else if(location && location.water_vapor_gas_act())
 		air.adjust_moles(GAS_H2O,-MOLES_GAS_VISIBLE)

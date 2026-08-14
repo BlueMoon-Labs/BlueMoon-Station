@@ -86,6 +86,35 @@
 /// Side of the square hull breach punched into the middle of the station.
 #define ATMOS_BENCH_STATION_BREACH_SIDE 5
 
+// sustained-leak geometry. A grid of rooms joined by permanent doorways, fed
+// from the west edge and open to space at the east one, so the arena holds a
+// standing gradient instead of settling. Sized to park the active set in the
+// 1500-2500 band - the range where production rounds cross saturation_ratio 1.0
+// and the cost feedback loop engages (9958 at 1817, 9956 at 1894, 9946 at 1946).
+#define ATMOS_BENCH_LEAK_COLS 8
+#define ATMOS_BENCH_LEAK_ROWS 6
+#define ATMOS_BENCH_LEAK_ROOM 10
+/// Pressure the supply strip is topped back up to every event interval. Above
+/// one atmosphere so the gradient never runs out while the breach drains.
+#define ATMOS_BENCH_LEAK_SUPPLY_RATIO 3
+/// Exhaled CO2 carried by the supply air, per standard mole of oxygen.
+///
+/// Pure O2/N2 at exactly T20C is not what an occupied station looks like, and
+/// the difference is not cosmetic: several hot paths keep a two-key fast lane
+/// (react's clean-air early out, share(), update_visuals), and a room where
+/// anybody has breathed leaves all of them for good. An arena without a third
+/// gas measures a station nobody lives on and reports the cheap half of the
+/// cost curve.
+#define ATMOS_BENCH_LEAK_CO2_RATIO 0.004
+/// Supply temperature. Deliberately above the 294.15 K floor that genericfire's
+/// TEMP requirement lands on (phlogiston sets the lowest fire_temperature at
+/// T20C+1), because a real station sits above it - lights, machinery and bodies
+/// all push a room past 21 C - and the reaction fast path behaves differently on
+/// either side of that one-degree margin.
+#define ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE (T20C + 2)
+/// Openings punched through the east hull, spread one per room row.
+#define ATMOS_BENCH_LEAK_BREACH_WIDTH 2
+
 /// Conductive divider for the heat-wall scenario: standard walls ship with
 /// WALL_HEAT_TRANSFER_COEFFICIENT = 0 (a deliberate balance choice, same as
 /// tg), so the superconduction canary needs its own thermally live wall.
@@ -117,6 +146,8 @@
 	var/list/headless_wake_tally = list()
 	/// icemoon-blast: эпицентр, зафиксированный на построении сценария.
 	var/turf/headless_bench_blast_turf
+	/// sustained-leak: турфы, в которые событие каждый интервал доливает газ.
+	var/list/turf/open/headless_bench_supply_turfs = list()
 
 /// Build dispatch: called async from atmos_headless_bench_tick when a scenario
 /// is requested but not yet built.
@@ -135,6 +166,8 @@
 			atmos_headless_bench_build_giant_hall()
 		if("room-grid")
 			atmos_headless_bench_build_room_grid()
+		if("sustained-leak")
+			atmos_headless_bench_build_sustained_leak()
 		if("pipenet-stress")
 			atmos_headless_bench_build_pipenet_stress()
 		if("heat-wall")
@@ -173,6 +206,11 @@
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_open_event_turfs()
+		if("sustained-leak")
+			// Every cycle, deliberately: the supply strip is a boundary condition.
+			// On an interval it would become a sawtooth of refill-and-settle, which
+			// is the decay tail this scenario exists to avoid measuring.
+			atmos_headless_bench_prime_supply_strip()
 		if("pipenet-stress")
 			// Recurring: retarget the vents every interval so the machinery,
 			// its wake paths and the pipenets never settle into sleep.
@@ -453,6 +491,112 @@
 		"room_turfs" = length(headless_bench_room_turfs),
 		"doorways" = length(headless_bench_event_turfs),
 	))
+
+// ---------------------------------------------------------------------------
+// sustained-leak: a standing gradient that never settles.
+//
+// Every other arena here measures SETTLING - disturb once, watch the curve come
+// back down - and the whole suite therefore reports how fast a transient
+// decays. Production does not fail that way. It fails by parking a few thousand
+// turfs active for tens of minutes around a source nobody removes: five air
+// alarms left in Flood mode for the rest of the shift (round 9946), a runaway
+// energy ball pulsing every 22 seconds for 39 minutes (9956). Cost per turf and
+// group lifetime both behave differently in that regime than in a decay tail,
+// so a benchmark made only of decay tails cannot rank changes aimed at it.
+//
+// The arena is a room lattice fed at the west edge and holed at the east one.
+// The supply strip is topped back up EVERY cycle - that is what a Flood vent
+// does - so the gradient is a boundary condition rather than an initial one,
+// and the active set settles onto a plateau instead of a curve. Nothing here
+// uses prob(), mobs or map content, so two runs of the same build differ only
+// by the machine's own timing noise.
+// ---------------------------------------------------------------------------
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_sustained_leak()
+	can_fire = FALSE
+	var/span = ATMOS_BENCH_LEAK_ROOM + 1
+	var/outer_w = ATMOS_BENCH_LEAK_COLS * span + 1
+	var/outer_h = ATMOS_BENCH_LEAK_ROWS * span + 1
+	if(!atmos_headless_bench_reserve(outer_w, outer_h))
+		return
+	var/base_x = headless_bench_reservation.bottom_left_coords[1]
+	var/base_y = headless_bench_reservation.bottom_left_coords[2]
+	var/base_z = headless_bench_reservation.bottom_left_coords[3]
+	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Sustained Leak")
+
+	for(var/x in base_x to base_x + outer_w - 1)
+		for(var/y in base_y to base_y + outer_h - 1)
+			var/turf/T = locate(x, y, base_z)
+			if(T.loc != room_area)
+				var/area/old_area = T.loc
+				room_area.contents += T
+				T.change_area(old_area, room_area, skip_blend = TRUE)
+			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
+			if(on_wall)
+				T.ChangeTurf(/turf/closed/wall)
+			else
+				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
+				headless_bench_room_turfs += floor
+			CHECK_TICK
+	room_area.reg_in_areas_in_z()
+
+	// Doorways are carved at build time, not fired as an event: the point of this
+	// arena is the steady state, so the connected zone has to exist from cycle 1.
+	var/room_center = round(ATMOS_BENCH_LEAK_ROOM / 2) + 1
+	for(var/col in 0 to ATMOS_BENCH_LEAK_COLS - 1)
+		for(var/row in 0 to ATMOS_BENCH_LEAK_ROWS - 1)
+			var/cell_x = base_x + col * span
+			var/cell_y = base_y + row * span
+			if(col < ATMOS_BENCH_LEAK_COLS - 1)
+				var/turf/east_wall = locate(cell_x + span, cell_y + room_center, base_z)
+				if(east_wall)
+					headless_bench_room_turfs += east_wall.ChangeTurf(/turf/open/floor/plasteel)
+			if(row < ATMOS_BENCH_LEAK_ROWS - 1)
+				var/turf/north_wall = locate(cell_x + room_center, cell_y + span, base_z)
+				if(north_wall)
+					headless_bench_room_turfs += north_wall.ChangeTurf(/turf/open/floor/plasteel)
+			CHECK_TICK
+
+	// Sink: holes through the east hull, one cluster per room row.
+	for(var/row in 0 to ATMOS_BENCH_LEAK_ROWS - 1)
+		var/hole_y = base_y + row * span + room_center
+		for(var/offset in 0 to ATMOS_BENCH_LEAK_BREACH_WIDTH - 1)
+			var/turf/hull = locate(base_x + outer_w - 1, hole_y + offset, base_z)
+			if(hull)
+				headless_bench_event_turfs += hull.ChangeTurf(/turf/open/space)
+			CHECK_TICK
+
+	// Source: the whole west room column, held above one atmosphere.
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		if(!T.air)
+			continue
+		if(T.x < base_x + span)
+			headless_bench_supply_turfs += T
+		T.air.set_moles(GAS_O2, MOLES_O2STANDARD)
+		T.air.set_moles(GAS_N2, MOLES_N2STANDARD)
+		T.air.set_moles(GAS_CO2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_CO2_RATIO)
+		T.air.set_temperature(ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE)
+		CHECK_TICK
+
+	atmos_headless_bench_prime_supply_strip()
+	atmos_headless_bench_activate_floors()
+	atmos_headless_bench_mark_ready(list(
+		"rooms" = ATMOS_BENCH_LEAK_COLS * ATMOS_BENCH_LEAK_ROWS,
+		"room_turfs" = length(headless_bench_room_turfs),
+		"supply_turfs" = length(headless_bench_supply_turfs),
+		"breach_turfs" = length(headless_bench_event_turfs),
+	))
+
+/// Tops the supply strip back up to its target pressure. Called every cycle, so
+/// the west edge behaves as a fixed boundary rather than a finite reservoir.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_prime_supply_strip()
+	for(var/turf/open/T as anything in headless_bench_supply_turfs)
+		if(!T.air)
+			continue
+		T.air.set_moles(GAS_O2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO)
+		T.air.set_moles(GAS_N2, MOLES_N2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO)
+		T.air.set_moles(GAS_CO2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO * ATMOS_BENCH_LEAK_CO2_RATIO)
+		T.air.set_temperature(ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE)
+		add_to_active(T)
 
 // ---------------------------------------------------------------------------
 // pipenet-stress: a row of rooms, each with a vent fed from a distribution

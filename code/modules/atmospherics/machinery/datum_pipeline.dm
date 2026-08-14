@@ -411,6 +411,9 @@
 
 /datum/pipeline/proc/reconcile_air()
 	var/list/datum/gas_mixture/GL = get_all_connected_airs()
-	if(null in GL)
-		listclearnulls(GL)
+	// Чистки нулей тут не было смысла: equalize_all_gases_in_list() обходит список
+	// типизированным `for(var/datum/gas_mixture/mix in gas_list)`, который нули
+	// отфильтровывает сам, и следом ещё раз проверяет `if(!mix)`. А `null in GL` -
+	// это линейный скан по всему списку на каждую грязную сеть каждый фаер; на
+	// станционной подаче Box это под три сотни элементов впустую.
 	equalize_all_gases_in_list(GL)

@@ -508,6 +508,15 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 #define ATMOS_HEADLESS_ROOM_GAP 4
 #define ATMOS_HEADLESS_ROOM_COUNT 4
 #define ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE 20
+/// Границы полос переписи газ-листов. Верхняя - порог, ниже которого реакции
+/// перестают считать газ присутствующим, то есть граница "значимого" ключа;
+/// две нижние разделяют пыль, доживающую до фактического пола вырезания (шаг
+/// QUANTIZE, 5e-8), от хвостов, которые реакции и скрубберы оставляют за собой.
+#define ATMOS_CENSUS_BAND_HIGH 0.01
+#define ATMOS_CENSUS_BAND_MID 0.0001
+#define ATMOS_CENSUS_BAND_LOW 0.000001
+/// Все газ-листы длиннее этого сводятся в одно ведро гистограммы.
+#define ATMOS_CENSUS_KEY_BUCKET_TOP 6
 
 GLOBAL_VAR_INIT(atmos_headless_bench_path, "data/atmos_headless_bench_[time2text(world.realtime, "YYYY-MM-DD_hh.mm.ss")].jsonl")
 GLOBAL_VAR_INIT(atmos_headless_bench_snapshot_running, FALSE)
@@ -530,6 +539,8 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	/// Number of MC invocations used by the currently completing SSair fire.
 	var/headless_bench_mc_slices = 1
 	var/headless_bench_scenario_checked = FALSE
+	/// Arms the per-pair stopwatches inside process_cell's neighbour loop.
+	var/headless_bench_deep_profile = FALSE
 	var/headless_bench_scenario
 	var/headless_bench_scenario_building = FALSE
 	var/headless_bench_scenario_ready = FALSE
@@ -550,10 +561,38 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	if(headless_bench_scenario_checked)
 		return
 	headless_bench_scenario_checked = TRUE
-	// A/B-рычаг спящих рёбер: "atmos-bench-sleeping-edges=1" включает фичу на
-	// весь прогон, любое другое значение/отсутствие - оставляет конфигный дефолт.
-	if(world.params["atmos-bench-sleeping-edges"] == "1")
+	// A/B-рычаг спящих рёбер, двусторонний: "1" включает фичу на весь прогон, "0"
+	// выключает, отсутствие параметра оставляет конфигный дефолт.
+	//
+	// Выключать понадобилось после замера на sustained-leak: кэш пар срабатывает
+	// там на 0.03 пары из 3.61 на турф, то есть почти никогда, а лукап и запись
+	// в assoc по ключу-датуму платятся на каждой подходящей паре. Прошлые A/B
+	// фичи гонялись на осевшей комнате (-22%) и на giant-hall (нейтрально) -
+	// режима постоянной нагрузки среди них не было.
+	var/edges_param = world.params["atmos-bench-sleeping-edges"]
+	if(edges_param == "1")
 		sleeping_edges_enabled = TRUE
+	else if(edges_param == "0")
+		sleeping_edges_enabled = FALSE
+	// isnull(), а не истинность: ноль - это законный и самый интересный конец
+	// обоих рычагов ("порога нет вообще"), а `if(number)` его молча съедает и
+	// возвращает дефолтную сборку под чужим тегом. text2num() на мусоре тоже даёт
+	// null, поэтому опечатка в значении так и остаётся отказом с дефолтом.
+	var/quiet_param = text2num(world.params["atmos-bench-edge-quiet"])
+	if(!isnull(quiet_param))
+		edge_sleep_min_quiet_fires = max(0, quiet_param)
+	var/rest_param = text2num(world.params["atmos-bench-rest-cycles"])
+	if(!isnull(rest_param))
+		individual_rest_cycles = max(0, rest_param)
+	// Гейт кандидатов по порогу требований снимается обнулением индекса полов -
+	// ровно то, что делает A/B в микробенче, только на весь прогон. Даёт честную
+	// пару "одна сборка, один сид, одна арена": без этого сравнивать пришлось бы
+	// два разных dmb, а build-to-build разброс на этом стенде и есть главный шум.
+	if(world.params["atmos-bench-reaction-floor"] == "0")
+		reactions_key_gas_floor = null
+	// Читается ДО раннего выхода без сценария: глубокий профиль осмыслен и на
+	// обычном оседании карты, где сценария нет вовсе.
+	headless_bench_deep_profile = world.params["atmos-bench-deep-profile"] == "1"
 	headless_bench_scenario = world.params["atmos-bench-scenario"]
 	if(!headless_bench_scenario)
 		headless_bench_scenario_ready = TRUE
@@ -694,6 +733,7 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 /datum/controller/subsystem/air/proc/atmos_headless_bench_turf_profile(cycle)
 	if(GLOB.atmos_tprof_active)
 		GLOB.atmos_tprof_active = FALSE
+		GLOB.atmos_tprof_deep = FALSE
 		var/list/slots = list()
 		var/parts_ms = 0
 		for(var/slot in GLOB.atmos_tprof_ms)
@@ -722,6 +762,11 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	GLOB.atmos_tprof_ms.Cut()
 	GLOB.atmos_tprof_counts.Cut()
 	GLOB.atmos_tprof_active = TRUE
+	// Deep slots stay off unless the run asked for them: they fire per neighbour
+	// pair rather than per turf and visibly inflate the phase they measure, so a
+	// deep run answers "where inside the pair loop" and must never be one side of
+	// an A/B. dd -params "atmos-bench-deep-profile=1".
+	GLOB.atmos_tprof_deep = headless_bench_deep_profile
 
 /// Cycle budget: world.params override (dd -params "atmos-bench-cycles=600") wins
 /// over the compile-time default, so run length changes need no rebuild.
@@ -857,6 +902,18 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	// bridges between two skies, ruin floors, seam rings) are named directly.
 	var/list/sharer_signatures = list()
 	var/list/sharer_examples = list()
+	// Перепись газ-листов. Быстрые пути react(), share() и update_visuals()
+	// требуют ровно двух ключей, поэтому "сколько турфов их потеряли и из-за
+	// какого газа" - вопрос о распределении ключей, а не о времени, и счётчик
+	// отвечает на него точно там, где таймер утонул бы в шуме. Живёт в этом
+	// проке намеренно: он крутится асинхронно, вне фазы SSair, и измеряемую
+	// кривую не искажает.
+	var/list/key_hist = list()
+	var/list/orphan_gas = list()
+	var/list/band_hist = list()
+	// Турфы, которым вернуло бы быстрый путь исчезновение всего незначимого:
+	// значимых ключей ровно два, и это кислород с азотом.
+	var/prunable_two = 0
 	var/temp_max = 0
 	var/pressure_max = 0
 	var/list/snapshot = active_turfs.Copy()
@@ -895,6 +952,29 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 				sharer_examples[signature] = examples
 			if(length(examples) < 4)
 				examples += "[T.x],[T.y],[T.z] ls=[round(T.air.last_share, 0.01)] t=[round(T.air.return_temperature(), 0.1)]"
+		var/list/tile_gases = T.air.gases
+		var/key_count = length(tile_gases)
+		key_hist[key_count >= ATMOS_CENSUS_KEY_BUCKET_TOP ? "[ATMOS_CENSUS_KEY_BUCKET_TOP]+" : "[key_count]"]++
+		if(key_count > 2)
+			var/significant = 0
+			var/list/bands = list()
+			for(var/gas_id, gas_moles in tile_gases)
+				if(gas_id != GAS_O2 && gas_id != GAS_N2)
+					orphan_gas[gas_id]++
+				if(gas_moles >= ATMOS_CENSUS_BAND_HIGH)
+					significant++
+				else if(gas_moles >= ATMOS_CENSUS_BAND_MID)
+					bands["mid"] = TRUE
+				else if(gas_moles >= ATMOS_CENSUS_BAND_LOW)
+					bands["low"] = TRUE
+				else if(gas_moles > 0)
+					bands["dust"] = TRUE
+			for(var/band in bands)
+				band_hist[band]++
+			// Именно кислород с азотом: два значимых ключа из другой пары быстрый
+			// путь не вернут, его условие смотрит на конкретные два газа.
+			if(significant == 2 && (tile_gases[GAS_O2] || 0) >= ATMOS_CENSUS_BAND_HIGH && (tile_gases[GAS_N2] || 0) >= ATMOS_CENSUS_BAND_HIGH)
+				prunable_two++
 		var/turf_temp = T.air.return_temperature()
 		temp_max = max(temp_max, turf_temp)
 		pressure_max = max(pressure_max, T.air.return_pressure())
@@ -957,6 +1037,10 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"temp_max" = temp_max,
 		"pressure_max" = pressure_max,
 		"groups" = group_records,
+		"keys" = key_hist,
+		"orphan" = orphan_gas,
+		"bands" = band_hist,
+		"prunable2" = prunable_two,
 	)
 	var/encoded = json_encode(record)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
@@ -1221,5 +1305,9 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 #undef ATMOS_HEADLESS_ROOM_GAP
 #undef ATMOS_HEADLESS_ROOM_COUNT
 #undef ATMOS_HEADLESS_DEFAULT_BREACH_CYCLE
+#undef ATMOS_CENSUS_BAND_HIGH
+#undef ATMOS_CENSUS_BAND_MID
+#undef ATMOS_CENSUS_BAND_LOW
+#undef ATMOS_CENSUS_KEY_BUCKET_TOP
 
 #endif // ifdef ATMOS_HEADLESS_BENCH
