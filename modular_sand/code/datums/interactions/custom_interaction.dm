@@ -303,6 +303,11 @@
 	if(user != target)
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
+	
+	// logs
+	user.log_message("Применяет[is_hidden ? " (скрытно)" : null] Custom интеракцию к [user == target ? "себе" : target]: «[use_message]»", LOG_ATTACK)
+	if(user != target)
+		target.log_message("Подвергся[is_hidden ? " (скрытно)" : null] Custom интеракции от [user]: «[use_message]»", LOG_VICTIM, log_globally = FALSE)
 	return TRUE
 
 /datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/owner_mob, key)

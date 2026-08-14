@@ -1085,7 +1085,6 @@
 /datum/component/interaction_menu_granter/proc/log_custom_interaction(mob/living/user, action, datum/interaction/custom/custom)
 	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
 	log_admin(log_text)
-	message_admins(log_text)
 
 /datum/component/interaction_menu_granter/proc/open_customs_window(mob/living/user)
 	if(!user?.client)
