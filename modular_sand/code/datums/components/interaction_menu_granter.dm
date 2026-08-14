@@ -592,15 +592,23 @@
 		.["no_disco_dance"] = 			!CHECK_BITFIELD(prefs.cit_toggles, NO_DISCO_DANCE) //By SmiLeY
 
 	var/list/custom_interactions_sent = list()
-	if(self.client?.prefs?.custom_verb_consent && length(self.client.prefs.custom_interactions))
-		var/list/customs = self.client.prefs.custom_interactions
-		for(var/i in 1 to length(customs))
-			var/datum/interaction/custom/custom = customs[i]
-			if(!custom?.name || !custom.message)
-				continue
-			if(target && !custom.pass_requirement_gate(self, target))
-				continue
-			custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][self.ckey]:[i]", self.real_name))
+	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
+		var/list/customs_mob = list()
+		if(LAZYLEN(self.client.prefs.custom_interactions))
+			customs_mob[self] += self.client.prefs.custom_interactions
+		if(target && self != target && LAZYLEN(target.client.prefs.custom_interactions))
+			customs_mob[target] += target.client.prefs.custom_interactions
+
+		for(var/mob/living/customs_owner as anything in customs_mob)
+			var/list/customs = customs_mob[customs_owner]
+			var/i = 0
+			for(var/datum/interaction/custom/custom as anything in customs)
+				i++
+				if(!custom || !custom.name || !custom.message)
+					continue
+				if(!custom.pass_requirement_gate(customs_owner, target || customs_owner))
+					continue
+				custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][customs_owner.ckey]:[i]", customs_owner.real_name))
 	.["custom_interactions_list"] = custom_interactions_sent
 
 	var/list/own_customs = list()
@@ -711,11 +719,7 @@
 			var/is_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
 				? !!hidden_interactions[interaction_key] \
 				: FALSE
-			var/datum/interaction/o
-			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
-				o = SSinteractions.get_custom_interaction(parent_mob, interaction_key)
-			else
-				o = SSinteractions.interactions[interaction_key]
+			var/datum/interaction/o = SSinteractions.interactions[interaction_key] || SSinteractions.get_custom_interaction(parent_mob, target, interaction_key)
 			if(!o)
 				return FALSE
 
@@ -733,11 +737,7 @@
 			return TRUE
 		if("toggle_auto_interaction")
 			var/interaction_key = params["interaction"]
-			var/datum/interaction/o
-			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
-				o = SSinteractions.get_custom_interaction(parent_mob, interaction_key)
-			else
-				o = SSinteractions.interactions[interaction_key]
+			var/datum/interaction/o = SSinteractions.interactions[interaction_key] || SSinteractions.get_custom_interaction(parent_mob, target, interaction_key)
 			if(!o || (currently_active_interaction == o) && (auto_interaction_target == target))
 				auto_interaction_target = null
 				currently_active_interaction = null
@@ -749,7 +749,7 @@
 			return TRUE
 		if("favorite")
 			var/interaction_key = params["interaction"]
-			if(!(interaction_key in SSinteractions.interactions) && findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) != 1)
+			if(!(interaction_key in SSinteractions.interactions) && !findtext(interaction_key, CUSTOM_INTERACTION_PREFIX))
 				return FALSE
 			var/datum/preferences/prefs = parent_mob?.client?.prefs
 			if(!prefs)

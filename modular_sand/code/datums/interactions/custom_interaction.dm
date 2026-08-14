@@ -161,21 +161,23 @@
 /datum/interaction/custom/proc/has_telekinesis(mob/living/M)
 	return M.check_mutation(TK) || HAS_TRAIT(M, TRAIT_TK_POTENTIAL)
 
-/datum/interaction/custom/proc/pass_requirement_gate(mob/living/user, mob/living/target)
-	if(requires_tail && !(user.has_tail() || (target && target.has_tail())))
+/datum/interaction/custom/proc/pass_requirement_gate(mob/living/custom_owner, mob/living/target)
+	if(requires_tail && !(custom_owner.has_tail() || (target && target.has_tail())))
 		return FALSE
-	if(requires_telekinesis && !(has_telekinesis(user) || (target && has_telekinesis(target))))
+	if(requires_telekinesis && !(has_telekinesis(custom_owner) || (target && has_telekinesis(target))))
 		return FALSE
 	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
 		if(!(required_body_parts & requirement))
 			continue
-		if(!is_body_part_exposed(user, requirement) && !(target && is_body_part_exposed(target, requirement)))
+		if(!is_body_part_exposed(custom_owner, requirement) && !(target && is_body_part_exposed(target, requirement)))
 			return FALSE
-	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && user != target)
-		return FALSE
-	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && user == target)
-		return FALSE
-	return TRUE
+	switch(scope)
+		if(CUSTOM_INTERACTION_SCOPE_SELF)
+			return custom_owner == target
+		if(CUSTOM_INTERACTION_SCOPE_OTHERS)
+			return custom_owner != target
+		else
+			return TRUE
 
 /datum/interaction/custom/proc/check_requirements(mob/living/user, mob/living/target, silent = TRUE)
 	if(requires_tail && !(user.has_tail() || (target && target.has_tail())))
@@ -198,11 +200,19 @@
 			if(!silent)
 				to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
 			return FALSE
-	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && user != target)
+	var/mob/living/custom_owner
+	if(findtext(key, user?.ckey))
+		custom_owner = user
+	else if(findtext(key, target?.ckey))
+		custom_owner = target
+
+	if(!custom_owner)
+		return FALSE
+	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && custom_owner != target)
 		if(!silent)
 			to_chat(user, span_warning("Это действие доступно только на себе."))
 		return FALSE
-	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && user == target)
+	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && custom_owner == target)
 		if(!silent)
 			to_chat(user, span_warning("Это действие доступно только на других."))
 		return FALSE
@@ -232,11 +242,11 @@
 		if(CUSTOM_INTERACTION_TYPE_UNHOLY)
 			if(user.client && user.client.prefs.unholypref == "No")
 				if(!silent)
-					to_chat(user, span_warning("Ты не даёшь согласие на такое."))
+					to_chat(user, span_warning("Ты не даёшь согласие на сексуальное насилие."))
 				return FALSE
 			if(target.client && target.client.prefs.unholypref == "No")
 				if(!silent)
-					to_chat(user, span_warning("[target] не даёт согласие на такое."))
+					to_chat(user, span_warning("[target] не даёт согласие на сексуальное насилие."))
 				return FALSE
 	return TRUE
 
@@ -310,15 +320,24 @@
 		target.log_message("Подвергся[is_hidden ? " (скрытно)" : null] Custom интеракции от [user]: «[use_message]»", LOG_VICTIM, log_globally = FALSE)
 	return TRUE
 
-/datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/owner_mob, key)
-	if(!owner_mob?.client?.prefs || findtext(key, CUSTOM_INTERACTION_PREFIX) != 1)
-		return null
+/datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/user, mob/living/target, key)
+	if(!findtext(key, CUSTOM_INTERACTION_PREFIX))
+		return
+
+	var/mob/living/custom_owner
+	if(findtext(key, user?.ckey))
+		custom_owner = user
+	else if(findtext(key, target?.ckey))
+		custom_owner = target
+
+	if(!custom_owner?.client?.prefs)
+		return
 	var/index = text2num(copytext(key, findlasttext(key, ":") + 1))
-	var/list/customs = owner_mob.client.prefs.custom_interactions
+	var/list/customs = custom_owner.client.prefs.custom_interactions
 	if(!length(customs) || !index || index > length(customs))
-		return null
+		return
 	var/datum/interaction/custom/custom = customs[index]
 	if(!custom?.name || !custom.message)
-		return null
+		return
 	custom.custom_interaction_key = key
 	return custom
