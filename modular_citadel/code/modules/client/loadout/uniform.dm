@@ -6,6 +6,7 @@
 /datum/gear/uniform/tactical_pants
 	name = "Tactical pants"
 	path = /obj/item/clothing/under/pants/tactical
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_PANTS
 
 /datum/gear/uniform/suit
 	name = "Black suit"
