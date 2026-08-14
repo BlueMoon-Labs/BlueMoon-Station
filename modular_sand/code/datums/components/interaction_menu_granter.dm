@@ -715,7 +715,7 @@
 			if(params["type"] == "set")
 				src.pixel_shift_x = clamp(round(text2num(params["dx"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
 				src.pixel_shift_y = clamp(round(text2num(params["dy"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
-				src.pixel_shift_speed = clamp(round(text2num(params["speed"])), 1, 30)
+				src.pixel_shift_speed = clamp(round(text2num(params["speed"])), 1, 60)
 				if(params["play_animation"])
 					play_pixel_shift_animation(parent_mob)
 				return TRUE

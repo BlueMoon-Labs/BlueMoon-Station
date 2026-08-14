@@ -169,7 +169,7 @@ export const Pixelshift = (props) => {
                 size={1.4}
                 value={speed}
                 minValue={1}
-                maxValue={30}
+                maxValue={60}
                 step={1}
                 onChange={(e, value) => handleSpeed(value)}
               />
@@ -179,7 +179,7 @@ export const Pixelshift = (props) => {
                 width="64px"
                 value={speed}
                 minValue={1}
-                maxValue={30}
+                maxValue={60}
                 step={1}
                 unit="px/s"
                 onChange={(e, value) => handleSpeed(value)}
