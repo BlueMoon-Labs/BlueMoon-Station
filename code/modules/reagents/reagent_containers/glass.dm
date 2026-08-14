@@ -344,11 +344,24 @@
 /obj/item/reagent_containers/glass/bucket/attackby(obj/O, mob/user, params)
 	if(istype(O, /obj/item/mop))
 		var/obj/item/mop/MOP = O
+		var/list/modifiers = params2list(params)
+		if(modifiers["ctrl"] || user.a_intent == INTENT_HARM) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the bucket
+			if(MOP.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			if(reagents.total_volume >= reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[src] is full!</span>")
+				return
+			MOP.reagents.remove_all(MOP.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			MOP.reagents.trans_to(src, MOP.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [O] out into [src].</span>")
+			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
+			return
 		if(reagents.total_volume < 1)
-			to_chat(user, "<span class='warning'>[src] не имеет воды!</span>")
+			to_chat(user, "<span class='warning'>[src] �� ����� ����!</span>")
 		else
 			reagents.trans_to(O, MOP.mopcap, log = "reagentcontainer-bucket fill mop")
-			to_chat(user, "<span class='notice'>Вы смочили [O] в [src].</span>")
+			to_chat(user, "<span class='notice'>�� ᬮ稫� [O] � [src].</span>")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
 	else if(isprox(O))
 		to_chat(user, "<span class='notice'>Вы добавили [O] в [src].</span>")

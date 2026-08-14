@@ -56,15 +56,15 @@
 	if(iscarbon(user))
 		var/mob/living/carbon/jumper = user
 		if(jumping)
-			to_chat(user, "<span class='notice'>Someone else is already making a jump!</span>")
+			to_chat(user, "<span class='notice'>Кто-то уже готовится к прыжку!</span>")
 			return
 		var/turf/T = get_turf(src)
 		if(HAS_TRAIT(user, TRAIT_SWIMMING))
 			return
 		else
 			if(Adjacent(jumper))
-				jumper.visible_message("<span class='notice'>[user] climbs up \the [src]!</span>", \
-									 "<span class='notice'>You climb up \the [src] and prepares to jump!</span>")
+				jumper.visible_message("<span class='notice'>[user] забирается на \the [src]!</span>", \
+									 "<span class='notice'>Вы забираетесь на \the [src] и готовитесь прыгнуть!</span>")
 				jumper.Stun(40)
 				jumping = TRUE
 				var/original_layer = jumper.layer
@@ -82,24 +82,24 @@
 /obj/structure/pool/Lboard/proc/dive(mob/living/carbon/jumper, original_layer, original_px, original_py)
 	switch(rand(1, 100))
 		if(1 to 20)
-			jumper.visible_message("<span class='notice'>[jumper] goes for a small dive!</span>", \
-								 "<span class='notice'>You go for a small dive.</span>")
+			jumper.visible_message("<span class='notice'>[jumper] совершает маленький прыжок!</span>", \
+								 "<span class='notice'>Вы совершаете маленький прыжок.</span>")
 			sleep(15)
 			backswim()
 			var/atom/throw_target = get_edge_target_turf(src, dir)
 			jumper.throw_at(throw_target, 1, 1, callback = CALLBACK(src, PROC_REF(on_finish_jump), jumper))
 
 		if(21 to 40)
-			jumper.visible_message("<span class='notice'>[jumper] goes for a dive!</span>", \
-								 "<span class='notice'>You're going for a dive!</span>")
+			jumper.visible_message("<span class='notice'>[jumper] прыгает!</span>", \
+								 "<span class='notice'>Вы прыгаете!</span>")
 			sleep(20)
 			backswim()
 			var/atom/throw_target = get_edge_target_turf(src, dir)
 			jumper.throw_at(throw_target, 2, 1, callback = CALLBACK(src, PROC_REF(on_finish_jump), jumper))
 
 		if(41 to 60)
-			jumper.visible_message("<span class='notice'>[jumper] goes for a long dive! Stay far away!</span>", \
-					"<span class='notice'>You're going for a long dive!!</span>")
+			jumper.visible_message("<span class='notice'>[jumper] совершает долгий прыжок! Отойдите подальше!</span>", \
+					"<span class='notice'>Вы совершаете долгий прыжок!!</span>")
 			sleep(25)
 			backswim()
 			var/atom/throw_target = get_edge_target_turf(src, dir)

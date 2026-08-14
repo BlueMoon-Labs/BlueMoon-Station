@@ -138,6 +138,27 @@
 				breath = loc_as_obj.handle_internal_lifeform(src, BREATH_VOLUME)
 
 			else if(isturf(loc)) //Breathe from loc as turf
+				//LIQUIDS ADD - underwater breathing
+				var/turf/our_turf = loc
+				if(our_turf.liquids && !HAS_TRAIT(src, TRAIT_NOBREATH) && ((body_position == LYING_DOWN && our_turf.liquids.liquid_state >= LIQUID_STATE_WAIST) || (body_position == STANDING_UP && our_turf.liquids.liquid_state >= LIQUID_STATE_FULLTILE)))
+					//Officially trying to breathe underwater
+					if(HAS_TRAIT(src, TRAIT_WATER_BREATHING))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
+					breath = null // uh oh where'd the air go
+					check_breath(breath)
+					if(oxyloss <= OXYGEN_DAMAGE_CHOKING_THRESHOLD && !(stat >= UNCONSCIOUS || stat >= SOFT_CRIT))
+						to_chat(src, "<span class='userdanger'>You hold in your breath!</span>")
+					else
+						//Try and drink water
+						var/datum/reagents/tempr = our_turf.liquids.take_reagents_flat(CHOKE_REAGENTS_INGEST_ON_BREATH_AMOUNT)
+						tempr.trans_to(src, tempr.total_volume, methods = INGEST)
+						qdel(tempr)
+						visible_message("<span class='warning'>[src] chokes on [our_turf.liquids.reagents_to_text()]!</span>", \
+									"<span class='userdanger'>You're choking on [our_turf.liquids.reagents_to_text()]!</span>")
+					return FALSE
+
 				var/breath_ratio = 0
 				if(environment)
 					breath_ratio = BREATH_VOLUME/environment.return_volume()

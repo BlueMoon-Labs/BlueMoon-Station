@@ -4,7 +4,7 @@
 	desc = "You're safer here than in the deep."
 	icon_state = "pool_tile"
 	heat_capacity = INFINITY
-	var/filled = TRUE
+	var/filled = FALSE //BLUEMOON: pools spawn empty, water comes from the controller/fill cycle instead of from round start
 	var/next_splash = 0
 	var/obj/machinery/pool/controller/controller
 	var/obj/effect/overlay/water/watereffect
@@ -12,7 +12,31 @@
 
 /turf/open/pool/Initialize(mapload)
 	. = ..()
+	RegisterSignal(src, COMSIG_TURF_LIQUIDS_CREATION, PROC_REF(on_pool_liquids_created))
+	RegisterSignal(src, COMSIG_TURF_LIQUIDS_CHANGE, PROC_REF(on_pool_liquids_change))
+	update_filled_from_liquids()
 	update_icon()
+
+// BLUEMOON: pool tiles are real liquid basins. When a pool tile accumulates
+// enough liquid, it gains its filled state (name, water overlay, footstep) so the
+// pool visibly fills up gradually as liquid spreads across it.
+/turf/open/pool/proc/on_pool_liquids_created(obj/effect/abstract/liquid_turf/L)
+	SIGNAL_HANDLER
+	update_filled_from_liquids(L)
+
+/turf/open/pool/proc/on_pool_liquids_change(new_state)
+	SIGNAL_HANDLER
+	update_filled_from_liquids()
+
+/turf/open/pool/proc/update_filled_from_liquids(obj/effect/abstract/liquid_turf/L)
+	var/obj/effect/abstract/liquid_turf/check_liquids = L || liquids
+	var/new_filled = !isnull(check_liquids) && check_liquids.height >= LIQUID_ANKLES_LEVEL_HEIGHT
+	if(new_filled == filled)
+		return
+	filled = new_filled
+	update_icon()
+	if(filled && controller?.drained)
+		controller.drained = FALSE
 
 /turf/open/pool/Destroy()
 	if(controller)
@@ -29,11 +53,19 @@
 		desc = "No diving!"
 		QDEL_NULL(watereffect)
 		QDEL_NULL(watertop)
+		footstep = FOOTSTEP_FLOOR
+		barefootstep = FOOTSTEP_HARD_BAREFOOT
+		clawfootstep = FOOTSTEP_HARD_CLAW
+		heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	else
 		name = "poolwater"
 		desc = "You're safer here than in the deep."
 		watereffect = new /obj/effect/overlay/water(src)
 		watertop = new /obj/effect/overlay/water/top(src)
+		footstep = FOOTSTEP_WATER
+		barefootstep = FOOTSTEP_WATER
+		clawfootstep = FOOTSTEP_WATER
+		heavyfootstep = FOOTSTEP_WATER
 
 /obj/effect/overlay/water
 	name = "water"
@@ -49,12 +81,15 @@
 	icon_state = "top"
 	layer = BELOW_MOB_LAYER
 
-// Mousedrop hook to normal turfs to get out of pools.
-/turf/open/MouseDrop_T(atom/from, mob/living/user)
+// BLUEMOON EDIT: shared drag-out check so the liquids module override of /turf/open/MouseDrop_T
+// doesn't eat the pool climb-out. The user must be able to use their hands to pull themselves out.
+/turf/open/proc/check_pool_drag_out(atom/from, mob/living/user)
 	if(!istype(user))
-		return ..()
+		return FALSE
+	if(isliving(from) && HAS_TRAIT(from, TRAIT_SWIMMING))
+		stack_trace("check_pool_drag_out: from=[from] ([from?.type]) user=[user] ([user?.type]) self=[user == from] canreach=[user.CanReach(from)] mobi=[CHECK_MOBILITY(user, MOBILITY_USE)] pool_target=[istype(src, /turf/open/pool)] src=[src] ([src?.type])")
 	// I could make this /open/floor and not have the !istype but ehh - kev
-	if(HAS_TRAIT(from, TRAIT_SWIMMING) && isliving(user) && ((user == from) || user.CanReach(from)) && !CHECK_MOBILITY(user, MOBILITY_USE) && !istype(src, /turf/open/pool))
+	if(HAS_TRAIT(from, TRAIT_SWIMMING) && ((user == from) || (isliving(user) && user.CanReach(from))) && CHECK_MOBILITY(user, MOBILITY_USE) && !istype(src, /turf/open/pool))
 		var/mob/living/L = from
 		//The element only exists if you're on water and a living mob, so let's skip those checks.
 		var/pre_msg
@@ -69,8 +104,11 @@
 		if(do_mob(user, L, 20))
 			L.visible_message(post_msg)
 			L.forceMove(src)
-	else
-		return ..()
+		return TRUE
+	return FALSE
+
+// Mousedrop hook to normal turfs to get out of pools.
+// (Consolidated into the base /turf/open/MouseDrop_T in code/game/turfs/open.dm)
 
 // Exit check
 /turf/open/pool/Exit(atom/movable/AM, atom/newloc)
@@ -85,6 +123,8 @@
 			return ..()			//human weak, monkey (and anyone else) ook ook eek eek strong
 		if(isliving(AM) && (locate(/obj/structure/pool/ladder) in src))
 			return ..()			//climbing out
+		if(!filled)				//BLUEMOON: no deep water on this tile - just walk out
+			return ..()
 		return istype(newloc, /turf/open/pool)
 	return ..()
 
@@ -182,18 +222,18 @@
 	var/mob/living/victim = from
 	if(user.stat || user.lying || !Adjacent(user) || !from.Adjacent(user) || !iscarbon(user) || !victim.has_gravity(src) || HAS_TRAIT(victim, TRAIT_SWIMMING))
 		return
-	var/victimname = victim == user? "themselves" : "[victim]"
-	var/starttext = victim == user? "[user] is descending into [src]." : "[user] is lowering [victim] into [src]."
+	var/victimname = victim == user? "себя" : "[victim]"
+	var/starttext = victim == user? "[user] спускается в [src]." : "[user] опускает [victim] в [src]."
 	user.visible_message("<span class='notice'>[starttext]</span>")
 	if(do_mob(user, victim, 20))
-		user.visible_message("<span class='notice'>[user] lowers [victimname] into [src].</span>")
+		user.visible_message("<span class='notice'>[user] опускает [victimname] в [src].</span>")
 		victim.AddElement(/datum/element/swimming)		//make sure they have it so they don't fall/whatever
 		victim.forceMove(src)
 
 /turf/open/pool/attackby(obj/item/W, mob/living/user)
 	if(istype(W, /obj/item/mop) && filled)
 		W.reagents.add_reagent("water", 5)
-		to_chat(user, "<span class='notice'>You wet [W] in [src].</span>")
+		to_chat(user, "<span class='notice'>Вы намочили [W] в [src].</span>")
 		playsound(src, 'sound/effects/slosh.ogg', 25, TRUE)
 	else
 		return ..()
@@ -212,3 +252,14 @@
 			if(!H.wear_mask && (H.stat == CONSCIOUS))
 				H.emote("cough")
 			H.adjustStaminaLoss(4)
+
+// Pool tiles participate in the liquids system like any other open turf, so
+// spilled/poured liquid forms a real, spreading puddle on them instead of being
+// absorbed on contact. Spreading is kept inside the pool basin via the
+// can_share_liquids_with() override, and the tile's filled state follows the
+// water level (see update_filled_from_liquids()).
+/turf/open/pool/add_liquid_from_reagents(datum/reagents/giver, no_react = FALSE, reagent_multiplier = 1, atom/thrown_from = null, atom/thrown_to = null)
+	return ..()
+
+/turf/open/pool/add_liquid(reagent, amount, no_react = FALSE, chem_temp = 300)
+	return ..()

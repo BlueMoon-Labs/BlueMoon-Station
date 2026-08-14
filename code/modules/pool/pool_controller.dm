@@ -63,7 +63,7 @@
 
 /obj/machinery/pool/controller/examine(mob/user)
 	. = ..()
-	. += "<span class='boldnotice'>Alt click to drain reagents.</span>"
+	. += "<span class='boldnotice'>Альт-клик, чтобы слить реагенты.</span>"
 
 /obj/machinery/pool/controller/Initialize(mapload)
 	. = ..()
@@ -73,6 +73,13 @@
 		reagents.reagents_holder_flags |= NO_REACT
 	set_wires(new /datum/wires/poolcontroller(src))
 	scan_things()
+	// BLUEMOON: pools spawn empty now - sync our drained flag with actual turf state so
+	// the controller doesn't try to process/drown people in an empty pool.
+	drained = TRUE
+	for(var/turf/open/pool/P as anything in linked_turfs)
+		if(P.filled)
+			drained = FALSE
+			break
 
 /obj/machinery/pool/controller/Destroy()
 	// Initialize регистрирует нас в SSfastprocess - снимать надо оттуда же,
@@ -145,7 +152,7 @@
 /obj/machinery/pool/controller/emag_act(mob/user)
 	. = ..()
 	if(!(obj_flags & EMAGGED)) //If it is not already emagged, emag it.
-		to_chat(user, "<span class='warning'>You disable the [src]'s safety features.</span>")
+		to_chat(user, "<span class='warning'>Вы отключаете предохранители [src].</span>")
 		do_sparks(5, TRUE, src)
 		obj_flags |= EMAGGED
 		temperature_unlocked = TRUE
@@ -153,7 +160,7 @@
 		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 		message_admins("[key_name_admin(user)] emagged [src] at [AREACOORD(src)]")
 	else
-		to_chat(user, "<span class='warning'>The interface on [src] is already too damaged to short it again.</span>")
+		to_chat(user, "<span class='warning'>Интерфейс [src] уже слишком повреждён, чтобы взорвать его снова.</span>")
 		return
 
 /obj/machinery/pool/controller/AltClick(mob/living/user)
@@ -162,14 +169,14 @@
 		return FALSE
 	if(!user.Adjacent(src) || !user.CanReach(src) || !CHECK_MOBILITY(user, MOBILITY_USE))
 		return FALSE
-	visible_message("<span class='boldwarning'>[user] starts to drain [src]!</span>")
+	visible_message("<span class='boldwarning'>[user] начинает сливать [src]!</span>")
 	draining = TRUE
 	if(!do_after(user, 50, target = src))
 		draining = FALSE
 		return TRUE
 	reagents.remove_all(INFINITY)
-	visible_message("<span class='boldnotice'>[user] drains [src].</span>")
-	say("Reagents cleared.")
+	visible_message("<span class='boldnotice'>[user] сливает [src].</span>")
+	say("Реагенты удалены.")
 	update_color()
 	draining = FALSE
 	return TRUE
@@ -181,19 +188,19 @@
 		return
 	if(istype(W,/obj/item/reagent_containers))
 		if(W.reagents.total_volume) //check if there's reagent
-			user.visible_message("<span class='boldwarning'>[user] is feeding [src] some chemicals from [W].</span>")
+			user.visible_message("<span class='boldwarning'>[user] заправляет [src] химикатами из [W].</span>")
 			if(do_after(user, 50, target = src))
 				for(var/datum/reagent/R in W.reagents.reagent_list)
 					if(R.type in GLOB.blacklisted_pool_reagents)
-						to_chat(user, "[src] cannot accept [R.name].")
+						to_chat(user, "[src] не может принять [R.name].")
 						return
 					if(R.reagent_state == SOLID)
-						to_chat(user, "The pool cannot accept reagents in solid form!.")
+						to_chat(user, "Бассейн не может принять реагенты в твёрдой форме!")
 						return
 				reagents.clear_reagents()
 				// This also reacts them. No nitroglycerin deathpools, sorry gamers :(
 				W.reagents.trans_to(reagents, max_beaker_transfer, log = "pool fill from reagent container")
-				user.visible_message("<span class='notice'>[src] makes a slurping noise.</span>", "<span class='notice'>All of the contents of [W] are quickly suctioned out by the machine!</span")
+				user.visible_message("<span class='notice'>[src] издаёт чмокающий звук.</span>", "<span class='notice'>Всё содержимое [W] мгновенно засасывается машиной!</span")
 				updateUsrDialog()
 				var/list/reagent_names = list()
 				var/list/rejected = list()
@@ -210,10 +217,10 @@
 					message_admins(msg)
 				if(length(rejected))
 					rejected = english_list(rejected)
-					to_chat(user, "<span class='warning'>[src] rejects the following chemicals as they do not have at least [min_reagent_amount] units of volume: [rejected]</span>")
+					to_chat(user, "<span class='warning'>[src] отклоняет следующие химикаты, так как в них меньше [min_reagent_amount] единиц объёма: [rejected]</span>")
 				update_color()
 		else
-			to_chat(user, "<span class='notice'>[src] beeps unpleasantly as it rejects the beaker. Why are you trying to feed it an empty beaker?</span>")
+			to_chat(user, "<span class='notice'>[src] неприятно пищит, отклоняя колбу. Зачем вы пытаетесь скормить ему пустую колбу?</span>")
 			return
 	else if(panel_open && is_wire_tool(W))
 		wires.interact(user)
@@ -226,7 +233,7 @@
 		return TRUE
 	cut_overlays()
 	panel_open = !panel_open
-	to_chat(user, "You [panel_open ? "open" : "close"] the maintenance panel.")
+	to_chat(user, "Вы [panel_open ? "открываете" : "закрываете"] сервисную панель.")
 	W.play_tool_sound(src)
 	if(panel_open)
 		add_overlay("wires")
@@ -346,6 +353,8 @@
 	old_rcolor = rcolor
 	for(var/X in linked_turfs)
 		var/turf/open/pool/color1 = X
+		if(!color1.watereffect) //BLUEMOON: pool can be empty/drained, skip it then
+			continue
 		if(bloody)
 			if(rcolor)
 				var/thecolor = BlendRGB(rgb(150, 20, 20), rcolor, 0.5)
@@ -391,7 +400,7 @@
 		return
 	if(href_list["IncreaseTemp"])
 		if(CanUpTemp(usr))
-			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
+			visible_message("<span class='warning'>[usr] нажимает кнопку на [src].</span>")
 			temperature++
 			update_temp()
 			var/msg = "POOL: [key_name(usr)] increased [src]'s pool temperature at [COORD(src)] to [temperature]"
@@ -400,7 +409,7 @@
 			interact_delay = world.time + 15
 	if(href_list["DecreaseTemp"])
 		if(CanDownTemp(usr))
-			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
+			visible_message("<span class='warning'>[usr] нажимает кнопку на [src].</span>")
 			temperature--
 			update_temp()
 			var/msg = "POOL: [key_name(usr)] decreased [src]'s pool temperature at [COORD(src)] to [temperature]"
@@ -412,7 +421,7 @@
 			var/msg = "POOL: [key_name(usr)] activated [src]'s pool drain in [linked_drain.filling? "FILLING" : "DRAINING"] mode at [COORD(src)]"
 			log_game(msg)
 			message_admins(msg)
-			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
+			visible_message("<span class='warning'>[usr] нажимает кнопку на [src].</span>")
 			mist_off()
 			interact_delay = world.time + 60
 			linked_drain.set_active(TRUE)

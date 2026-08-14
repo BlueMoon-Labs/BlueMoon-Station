@@ -323,6 +323,24 @@
 		target_temperature = modeled_location.GetTemperature()
 		target_heat_capacity = modeled_location.GetHeatCapacity()
 
+		//LIQUIDS ADD - heat exchange with liquids instead of the turf
+		if(target.liquids?.liquid_state >= LIQUID_STATE_FOR_HEAT_EXCHANGERS)
+			target_temperature = target.liquids.temp
+			target_heat_capacity = target.liquids.total_reagents * REAGENT_HEAT_CAPACITY
+
+			if(target_heat_capacity <= 0 || partial_heat_capacity <= 0)
+				return TRUE
+
+			var/delta_temperature = air.return_temperature() - target_temperature
+
+			var/heat = thermal_conductivity * delta_temperature * \
+				(partial_heat_capacity * target_heat_capacity / (partial_heat_capacity + target_heat_capacity))
+
+			air.set_temperature(air.return_temperature() - heat / total_heat_capacity)
+			if(!target.liquids.immutable)
+				target.liquids.temp += heat / target_heat_capacity
+			return TRUE
+
 		if(modeled_location.blocks_air)
 
 			if((modeled_location.heat_capacity>0) && (partial_heat_capacity>0))

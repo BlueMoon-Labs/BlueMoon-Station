@@ -1,0 +1,5 @@
+/datum/reagent/drying_agent/reaction_turf(turf/open/T, reac_volume)
+	if(istype(T) && T.liquids && !T.liquids.immutable)
+		T.liquids.liquid_simple_delete_flat(reac_volume * 5)
+	if(istype(T))
+		T.MakeDry(ALL, TRUE, reac_volume * 5 SECONDS)

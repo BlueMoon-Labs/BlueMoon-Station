@@ -662,6 +662,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	return
 
 /turf/handle_fall(mob/faller, forced)
+	SEND_SIGNAL(src, COMSIG_TURF_MOB_FALL, faller) //LIQUIDS ADD
 	faller.lying = pick(90, 270)
 	if(!forced)
 		return
