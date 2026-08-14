@@ -26,6 +26,12 @@
 	var/datum/interaction/currently_active_interaction
 	var/next_interaction_time
 	var/auto_interaction_pace = 1 SECONDS
+	/// Текущий пиксель-сдвиг, заданный в панели PixelShift Navigation
+	var/pixel_shift_x = 0
+	var/pixel_shift_y = 0
+	var/pixel_shift_speed = 10
+	/// Базовый transform, от которого считается отклонение, чтобы оно не накапливалось
+	var/matrix/pixel_shift_base_transform
 
 /datum/component/interaction_menu_granter/process(delta_time)
 	if(QDELETED(parent) || !isliving(parent))
@@ -706,6 +712,20 @@
 			hidden_interactions[interaction_key] = !current
 			refresh_interaction_panels()
 			return TRUE
+		if("pixel_shift")
+			if(params["type"] == "set")
+				src.pixel_shift_x = clamp(round(text2num(params["dx"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
+				src.pixel_shift_y = clamp(round(text2num(params["dy"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
+				src.pixel_shift_speed = clamp(round(text2num(params["speed"])), 1, 30)
+				if(params["play_animation"])
+					play_pixel_shift_animation(parent_mob)
+				return TRUE
+			if(params["type"] == "reset")
+				src.pixel_shift_x = 0
+				src.pixel_shift_y = 0
+				pixel_shift_base_transform = matrix(parent_mob.transform)
+				return TRUE
+			return FALSE
 		if("interact")
 			var/interaction_key = params["interaction"]
 			var/is_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
@@ -724,6 +744,7 @@
 				return TRUE
 
 			o.do_action(parent_mob, target, TRUE, is_hidden)
+			play_pixel_shift_animation(parent_mob)
 			return TRUE
 		if("interaction_pace")
 			var/speed = params["speed"]
@@ -977,6 +998,24 @@
 			return custom_delete(parent_mob, params)
 		if("open_customs_window")
 			return open_customs_window(parent_mob)
+
+/// Анимирует пиксель-сдвиг персонажа к заданным координатам и обратно.
+/datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
+	if(!mob || (!pixel_shift_x && !pixel_shift_y))
+		return
+	if(!pixel_shift_base_transform)
+		pixel_shift_base_transform = matrix(mob.transform)
+	// Смещение считается строго от базовой точки (текущее выставленное значение), не от текущего положения
+	var/matrix/original = matrix(pixel_shift_base_transform)
+	var/matrix/target = matrix(original)
+	target.Translate(pixel_shift_x, pixel_shift_y)
+	// Чем выше скорость (px/s), тем быстрее анимация
+	var/distance = abs(pixel_shift_x) + abs(pixel_shift_y)
+	var/duration = max(round(distance * 10 / pixel_shift_speed), 2)
+	// Уезжаем в сторону сдвига...
+	animate(mob, transform = target, time = duration, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	// ...и возвращаемся обратно
+	animate(mob, transform = original, time = duration, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 
 /datum/component/interaction_menu_granter/proc/build_custom_interaction_entry(datum/interaction/custom/custom, key, owner_name)
 	var/list/interaction = list()
