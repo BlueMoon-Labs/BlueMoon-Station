@@ -285,18 +285,27 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	set category = "OOC"
 	set desc = "Fit the width of the map window to match the viewport"
 
+	// Явную просьбу игрока исполняем всегда. Гейт медленного скина глушит только
+	// автоподгонку - см. fit_viewport_auto().
+	fit_viewport_internal(FALSE)
+
+/// Автоматическая подгонка: логин, смена вида, разворот на весь экран.
+///
+/// Гейт стоит ПЕРЕД первым winget, а не только перед циклом коррекций: именно
+/// этот вызов и есть тот round-trip, по которому slow_skin_until взводится, и
+/// именно он самый дорогой из всех. Сюда приходят без спроса каждому клиенту, так
+/// что на медленном скине проку остаётся спать, держа клиента и моба жёсткими
+/// ссылками во фрейме всё окно варнфейла сборщика. Автоподгонка - косметика.
+/client/proc/fit_viewport_auto()
+	fit_viewport_internal(TRUE)
+
+/client/proc/fit_viewport_internal(automatic)
+	if(automatic && !skin_call_optional_allowed(src))
+		return
+
 	// Fetch aspect ratio
 	var/view_size = getviewsize(view)
 	var/aspect_ratio = view_size[1] / view_size[2]
-
-	// Гейт стоит ПЕРЕД первым winget, а не только перед циклом коррекций: именно
-	// этот вызов и есть тот round-trip, по которому slow_skin_until взводится, и
-	// именно он самый дорогой из всех. Вьюпорт подгоняется автоматически каждому
-	// клиенту на логине и при смене вида (client_procs.dm), так что на медленном
-	// скине сюда приходят без спроса - и спят здесь, держа клиента и моба жёсткими
-	// ссылками во фрейме всё окно варнфейла сборщика. Весь верб - косметика.
-	if(!skin_call_optional_allowed(src))
-		return
 
 	// Calculate desired pixel width using window size and aspect ratio
 	var/list/sizes = params2list(tracked_winget(src, "mainwindow.split;mapwindow", "size"))
@@ -343,7 +352,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		// (см. комментарий у FIT_VIEWPORT_MAX_CORRECTIONS) и стоят по round-trip'у
 		// каждая. На медленном скине это секунды сна на клиента - выходим с тем,
 		// что получилось.
-		if(!skin_call_optional_allowed(src))
+		if(automatic && !skin_call_optional_allowed(src))
 			return
 		var/after_size = tracked_winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
