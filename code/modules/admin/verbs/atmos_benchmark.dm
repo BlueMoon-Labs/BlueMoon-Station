@@ -725,9 +725,12 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 /// record. Arming for one cycle at a time is what keeps the instrumentation
 /// from distorting the very curve the benchmark is measuring.
 ///
-/// The "space" slot is nested inside "neighbors" and is therefore excluded
-/// from the parts total; comparing that total against phase_ms shows how much
-/// the stopwatches themselves cost. Overlay counters also pick up the
+/// The "space" slot and every deep `nb_*` slot are nested inside "neighbors"
+/// and are therefore excluded from the parts total - counting them would bill
+/// the same microseconds twice, which is exactly the attribution the deep
+/// switch exists to provide. Comparing that total against phase_ms shows how
+/// much the stopwatches themselves cost. Keep ATMOS_TPROF_NESTED_SLOTS in sync
+/// with NESTED_SLOTS in tools/atmos_bench/analyze.py. Overlay counters also pick up the
 /// update_visuals calls that excited-group breakdown makes in the same cycle,
 /// which is deliberate: those are part of the same per-cycle overlay budget.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_turf_profile(cycle)
@@ -735,11 +738,12 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		GLOB.atmos_tprof_active = FALSE
 		GLOB.atmos_tprof_deep = FALSE
 		var/list/slots = list()
+		var/list/nested_slots = ATMOS_TPROF_NESTED_SLOTS
 		var/parts_ms = 0
 		for(var/slot in GLOB.atmos_tprof_ms)
 			var/value = round(GLOB.atmos_tprof_ms[slot], 0.001)
 			slots[slot] = value
-			if(slot != "space")
+			if(!(slot in nested_slots))
 				parts_ms += value
 		var/list/record = list(
 			"rec" = "tprof",
