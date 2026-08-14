@@ -184,7 +184,8 @@ def stress_report(hb, events, mprofs):
 # "space" is nested inside "neighbors", and the nb_* slots are nested inside it
 # too, so none of them may be added to the parts total - their time is already
 # counted once by the enclosing stopwatch.
-NESTED_SLOTS = {"space", "nb_compare", "nb_share", "nb_archive", "nb_sky"}
+# Keep in sync with ATMOS_TPROF_NESTED_SLOTS in code/__DEFINES/atmospherics.dm.
+NESTED_SLOTS = {"space", "nb_compare", "nb_share", "nb_archive", "nb_sky_compare"}
 
 
 def turf_profile_stats(tprofs, subset=None):

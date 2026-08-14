@@ -859,6 +859,11 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 /// For sites whose only statement would be a count: an empty macro must not
 /// leave a bodyless `if` behind in production builds.
 #define ATMOS_TPROF_COUNT_IF(condition, slot) if(GLOB.atmos_tprof_active && (condition)) { GLOB.atmos_tprof_counts[slot] += 1 }
+/// Слоты, чьё время уже входит в "neighbors". В parts_ms их складывать нельзя -
+/// иначе те же микросекунды учитываются дважды, и атрибуция, ради которой deep
+/// и заведён, ломается именно на deep-прогоне. Держать синхронно с NESTED_SLOTS
+/// в tools/atmos_bench/analyze.py.
+#define ATMOS_TPROF_NESTED_SLOTS list("space", "nb_compare", "nb_share", "nb_archive", "nb_sky_compare")
 /// Wake-source tally: every mid-round add_to_active call site names itself, the
 /// harvest lands in the per-cycle `hb` record ("wake") and resets. Unlike the
 /// armed tprof counters this runs every cycle - mass-wake events are single
