@@ -201,9 +201,9 @@
 				to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
 			return FALSE
 	var/mob/living/custom_owner
-	if(findtext(key, user?.ckey))
+	if(findtext(custom_interaction_key, user?.ckey))
 		custom_owner = user
-	else if(findtext(key, target?.ckey))
+	else if(findtext(custom_interaction_key, target?.ckey))
 		custom_owner = target
 
 	if(!custom_owner)
