@@ -26,12 +26,13 @@
 	var/datum/interaction/currently_active_interaction
 	var/next_interaction_time
 	var/auto_interaction_pace = 1 SECONDS
-	/// Текущий пиксель-сдвиг, заданный в панели PixelShift Navigation
+	// BLUEMOON ADD
 	var/pixel_shift_x = 0
 	var/pixel_shift_y = 0
 	var/pixel_shift_speed = 10
-	/// Базовый transform, от которого считается отклонение, чтобы оно не накапливалось
 	var/matrix/pixel_shift_base_transform
+	var/pixel_shift_animating = FALSE
+	// BLUEMOON ADD
 
 /datum/component/interaction_menu_granter/process(delta_time)
 	if(QDELETED(parent) || !isliving(parent))
@@ -104,7 +105,6 @@
 	open_panel(clicker, clicked)
 	return COMSIG_MOB_CANCEL_CLICKON
 
-/// Открывает панель взаимодействия на цель, по одной панели на цель
 /datum/component/interaction_menu_granter/proc/open_panel(mob/living/user, mob/living/panel_target)
 	if(QDELETED(panel_target))
 		return
@@ -125,7 +125,6 @@
 			panels.Cut(i, i + 1)
 			qdel(panel)
 
-/// Закрытие панели: пользователь закрыл окно или панель больше не нужна
 /datum/component/interaction_menu_granter/proc/panel_ui_close(datum/interaction_menu_panel/panel, mob/living/user)
 	UnregisterSignal(panel.panel_target, COMSIG_PARENT_QDELETING)
 	panels -= panel
@@ -1001,14 +1000,18 @@
 
 /// Анимирует пиксель-сдвиг персонажа к заданным координатам и обратно.
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
-	if(!mob || (!pixel_shift_x && !pixel_shift_y))
+	if(!mob || pixel_shift_animating || (!pixel_shift_x && !pixel_shift_y))
 		return
+	// Жёсткий запрет: пока анимация играет, новые нажатия игнорируются,
+	// чтобы параллельные animate() не накапливали transform и персонаж не улетал дальше положенного
+	pixel_shift_animating = TRUE
+	// Если база ещё не сохранена, фиксируем текущий transform как точку отсчёта
 	if(!pixel_shift_base_transform)
 		pixel_shift_base_transform = matrix(mob.transform)
 	// Смещение считается строго от базовой точки (текущее выставленное значение), не от текущего положения
 	var/matrix/original = matrix(pixel_shift_base_transform)
 	var/matrix/target = matrix(original)
-	target.Translate(pixel_shift_x, pixel_shift_y)
+	target.Translate(clamp(pixel_shift_x, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM), clamp(pixel_shift_y, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM))
 	// Чем выше скорость (px/s), тем быстрее анимация
 	var/distance = abs(pixel_shift_x) + abs(pixel_shift_y)
 	var/duration = max(round(distance * 10 / pixel_shift_speed), 2)
@@ -1016,6 +1019,11 @@
 	animate(mob, transform = target, time = duration, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	// ...и возвращаемся обратно
 	animate(mob, transform = original, time = duration, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+	// Снимаем запрет после того, как анимация должна была завершиться
+	addtimer(CALLBACK(src, PROC_REF(pixel_shift_animation_finished)), duration * 2)
+
+/datum/component/interaction_menu_granter/proc/pixel_shift_animation_finished()
+	pixel_shift_animating = FALSE
 
 /datum/component/interaction_menu_granter/proc/build_custom_interaction_entry(datum/interaction/custom/custom, key, owner_name)
 	var/list/interaction = list()
