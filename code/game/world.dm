@@ -297,6 +297,11 @@ GLOBAL_LIST(topic_status_cache)
 	qdel(src)	//shut it down
 
 /world/Reboot(reason = 0, fast_track = FALSE)
+	// Правки префов идут через дебаунс, а ребут таймеры не доигрывает.
+	// Master.Shutdown() зовётся только в обычной ветке; fast_track/reason её
+	// пропускают, поэтому сброс стоит здесь, до развилки.
+	for(var/client/online_client as anything in GLOB.clients)
+		online_client.prefs?.flush_pending_saves()
 	if (reason || fast_track) //special reboot, do none of the normal stuff
 		if (usr)
 			log_admin("[key_name(usr)] Has requested an immediate world restart via client side debugging tools")

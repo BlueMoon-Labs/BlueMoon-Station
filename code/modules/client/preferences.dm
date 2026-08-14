@@ -574,8 +574,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	C?.ensure_keys_set(src)
 	real_name = pref_species.random_name(gender,1)
 	if(!loaded_preferences_successfully)
-		save_preferences()
-	save_character()		//let's save this new random character so it doesn't keep generating new ones.
+		save_preferences(TRUE)
+	save_character(TRUE)		//let's save this new random character so it doesn't keep generating new ones.
 	menuoptions = list()
 	return
 
@@ -5776,10 +5776,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					QDEL_IN(barkbox, total_delay)
 
 				if("save")
-					save_preferences()
-					save_character()
+					save_preferences(TRUE)
+					save_character(TRUE)
 
 				if("load")
+					// Load читает диск в память. Если оставить очередь, отложенный
+					// колбэк потом запишет уже перечитанный (или ещё не сброшенный)
+					// снимок обратно и сотрёт смысл кнопки.
+					cancel_pending_saves()
 					load_preferences()
 					load_character()
 
@@ -5795,7 +5799,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!load_character(text2num(href_list["num"])))
 						random_character()
 						real_name = random_unique_name(gender)
-						save_character()
+						// Тот же случай, что и в preferences/New(): случайного
+						// персонажа надо закрепить на диске сразу, иначе следующий
+						// заход в пустой слот сгенерирует другого.
+						save_character(TRUE)
 					if(user.client?.prefs) //custom emote panel is attached to the character
 						var/list/payload = user.client.prefs.custom_emote_panel
 						user.client.tgui_panel?.window.send_message("emotes/setList", payload)

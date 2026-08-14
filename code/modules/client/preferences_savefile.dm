@@ -1109,6 +1109,18 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 /datum/preferences/proc/should_defer_saves()
 	return istype(parent)
 
+/// Снимает отложенные записи без записи на диск. Нужно Load'у: иначе
+/// сработавший позже таймер затрёт только что прочитанный слот.
+/datum/preferences/proc/cancel_pending_saves()
+	if(pref_queue)
+		deltimer(pref_queue)
+		pref_queue = null
+		pref_queue_deadline = 0
+	if(char_queue)
+		deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
+
 /// Досрочно доводит отложенные записи до диска.
 ///
 /// Дебаунс склеивает пачку правок в одну запись, но между последней правкой и

@@ -35,6 +35,11 @@
 /datum/unit_test/preferences_save_debounce/Run()
 	var/datum/preferences/unit_test_debounce/prefs = new
 	prefs.load_path("unit_test_save_debounce")
+	// New() закрепляет случайного персонажа на диске СРАЗУ (save_preferences(TRUE)
+	// и save_character(TRUE)) - иначе следующий заход сгенерировал бы другого. Это
+	// не дебаунс, а его штатное исключение, поэтому счётчик обнуляем.
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "первичное создание префов перестало писать случайного персонажа на диск сразу")
+	prefs.disk_writes = 0
 
 	// Пачка правок подряд - ровно то, что делает игрок в меню настроек.
 	for(var/i in 1 to 10)
@@ -56,6 +61,17 @@
 	prefs.flush_pending_saves()
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "сброс на логауте не довёл отложенную запись до диска")
 	TEST_ASSERT_NULL(prefs.pref_queue, "сброс не снял отложенный таймер")
+
+	// Load обязан снять очередь БЕЗ записи, иначе колбэк затрёт прочитанный слот.
+	prefs.save_preferences()
+	TEST_ASSERT_NOTNULL(prefs.pref_queue, "правка после сброса не зарядила новую очередь")
+	prefs.cancel_pending_saves()
+	TEST_ASSERT_NULL(prefs.pref_queue, "Load не снял отложенный таймер")
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "отмена очереди не должна писать на диск")
+
+	// Явный Save бьёт в диск сразу.
+	prefs.save_preferences(TRUE)
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "явный Save не пробил дебаунс")
 
 	// Двадцать правок сложились в одну запись - это и есть предмет теста.
 	prefs.pref_queue = null
