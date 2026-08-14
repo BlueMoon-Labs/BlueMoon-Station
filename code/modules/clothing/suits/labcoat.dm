@@ -33,6 +33,12 @@
 	togglename = "buttons"
 	species_exception = list(/datum/species/golem)
 
+/obj/item/clothing/suit/toggle/labcoat/doctor_tailcoat
+	name = "medical tailcoat"
+	desc = "A sterile white and blue coat worn by bunny themed doctors. Great for keeping the blood off."
+	icon_state = "doctor"
+	item_state = "doctor"
+
 /obj/item/clothing/suit/toggle/labcoat/cmo
 	name = "chief medical officer's labcoat"
 	desc = "Голубее чем стандартная модель."
@@ -60,6 +66,12 @@
 	name = "chemist labcoat"
 	desc = "Халат, защищающий от небольших химических утечек и пролитых веществ. С оранжевой полосой на плечах."
 	icon_state = "labcoat_chem"
+
+/obj/item/clothing/suit/toggle/labcoat/chemist/doctor_tailcoat
+	name = "chemist's tailcoat"
+	desc = "A sterile white and orange coat worn by bunny themed chemists. The open chest isn't the greatest when working with dangerous substances."
+	icon_state = "chem"
+	item_state = "chem"
 
 /obj/item/clothing/suit/toggle/labcoat/virologist
 	name = "virologist labcoat"
