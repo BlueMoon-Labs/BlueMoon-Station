@@ -218,6 +218,7 @@
 	fire_products = list(GAS_H2O = 1)
 	fire_burn_rate = 2
 	fire_temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST - 50
+	enthalpy = FIRE_HYDROGEN_ENERGY_RELEASED
 
 /datum/gas/bz
 	id = GAS_BZ
@@ -286,7 +287,11 @@
 			alert_type = /atom/movable/screen/alert/too_much_ch4
 		)
 	)
-	enthalpy = -74600
+	// Было -74600 - энтальпия ОБРАЗОВАНИЯ метана. genericfire читает это поле как
+	// "сколько выделяет моль сгоревшего", поэтому минус означал пожар, который
+	// охлаждает воздух. Здесь и ниже стоит теплота сгорания, посчитанная по Гессу
+	// из той же таблицы: -74600 - (CO2 -393500 + 2*H2O -241800) = 802500.
+	enthalpy = 802500
 	fire_temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST
 
 /datum/gas/methyl_bromide
@@ -310,7 +315,8 @@
 		)
 	)
 	fire_products = list(GAS_CO2 = 1, GAS_H2O = 1.5, GAS_BROMINE = 0.5)
-	enthalpy = -35400
+	// -35400 - (CO2 -393500 + 1.5*H2O -241800 + 0.5*Br2 193) = 720700.
+	enthalpy = 720700
 	fire_burn_rate = 4 / 7 // oh no
 	fire_temperature = 808 // its autoignition; it apparently doesn't spark readily, so i don't put it lower
 
@@ -341,7 +347,8 @@
 	odor_strength = 0.01
 	flags = GAS_FLAG_DANGEROUS | GAS_FLAG_CHEMICAL
 	group = GAS_GROUP_CHEMICALS
-	enthalpy = -45900
+	// -45900 - (1.5*H2O -241800 + 0.5*N2 0) = 316800.
+	enthalpy = 316800
 	breath_reagent = /datum/reagent/ammonia
 	fire_products = list(GAS_H2O = 1.5, GAS_N2 = 0.5)
 	fire_burn_rate = 4/3

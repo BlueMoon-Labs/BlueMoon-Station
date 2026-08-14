@@ -85,7 +85,7 @@
 #define AALARM_MODE_PANIC 3 //like siphon, but stronger (enables widenet)
 #define AALARM_MODE_REPLACEMENT 4 //sucks off all air, then refill and swithes to scrubbing
 #define AALARM_MODE_OFF 5
-#define AALARM_MODE_FLOOD 6 //Emagged mode; turns off scrubbers and pressure checks on vents
+#define AALARM_MODE_FLOOD 6 //Emagged mode; fills to the vent maximum (50 atm)
 #define AALARM_MODE_SIPHON 7 //Scrubbers suck air
 #define AALARM_MODE_CONTAMINATED 8 //Turns on all filtering and widenet scrubbing.
 #define AALARM_MODE_REFILL 9 //just like normal, but with triple the air output
@@ -162,7 +162,7 @@
 	id = AALARM_MODE_FLOOD
 	name = "Flood"
 	ui_name = "Затопление"
-	description = "Снимает проверки давления и открывает подающую сеть."
+	description = "Заполняет помещение до максимума вентов (50 атм)."
 	danger = TRUE
 	emag_only = TRUE
 
