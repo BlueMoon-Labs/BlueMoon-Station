@@ -71,6 +71,7 @@
 	new /obj/item/clothing/glasses/hud/health(src)
 	new /obj/item/pinpointer/crew(src)
 	new /obj/item/sensor_device(src)
+	new /obj/item/clothing/shoes/magboots/paramedic(src) // BlueMoon | Добавления магнитых боитнок парамдеика
 	return
 
 /obj/structure/closet/secure_closet/paramedic_mine
