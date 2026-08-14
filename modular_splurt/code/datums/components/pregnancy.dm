@@ -275,9 +275,6 @@
 
 		babby_human.updateappearance(mutcolor_update=1)
 		babby_human.domutcheck()
-	else
-		determine_baby_features(babby)
-		determine_baby_dna(babby)
 
 	if(player)
 		player.transfer_ckey(babby, TRUE)

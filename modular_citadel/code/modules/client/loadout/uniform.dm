@@ -3,6 +3,10 @@
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_GENERAL
 	slot = ITEM_SLOT_ICLOTHING
 
+/datum/gear/uniform/tactical_pants
+	name = "Tactical pants"
+	path = /obj/item/clothing/under/pants/tactical
+
 /datum/gear/uniform/suit
 	name = "Black suit"
 	path = /obj/item/clothing/under/suit/black
