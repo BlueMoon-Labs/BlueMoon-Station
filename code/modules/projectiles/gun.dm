@@ -918,8 +918,7 @@
 		chambered.BB.damage *= 3
 		chambered_damage = chambered.BB.damage
 		chambered_damage_type = chambered.BB.damage_type
-		if(chambered_damage <= balls_explode_damage)
-			chambered.BB.wound_bonus = CANT_WOUND
+		chambered.BB.wound_bonus = CANT_WOUND
 	process_fire(target, user, TRUE, zone_override = BODY_ZONE_PRECISE_GROIN, stam_cost = getstamcost(user))
 	if(chambered_damage_type == BRUTE)
 		target.emote("realagony")
