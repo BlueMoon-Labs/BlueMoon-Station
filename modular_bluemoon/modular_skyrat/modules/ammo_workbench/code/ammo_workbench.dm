@@ -462,7 +462,8 @@
 		time_efficiency -= new_micro_laser.rating * 2
 	time_per_round = clamp(time_efficiency, 1, 20)
 	base_time_per_round = time_per_round
-	turbo_time_per_round = time_efficiency / 8
+	// пара лазеров пятого-шестого ранга уводит time_efficiency в минус, поэтому турбо считаем от уже зажатого значения
+	turbo_time_per_round = base_time_per_round / 8
 
 	var/efficiency = 1.4
 	for(var/obj/item/stock_parts/manipulator/new_manipulator in component_parts)

@@ -373,12 +373,22 @@
 	. = ..()
 	attached_items += I
 	RegisterSignal(I, COMSIG_MOVABLE_MOVED, PROC_REF(RemoveItemFromTable)) //Listen for the pickup event, unregister on pick-up so we aren't moved
+	// Удаление предмета сигнала MOVED не даёт: /datum/Destroy снимает подписку
+	// раньше, чем Destroy уводит предмет в nullspace, а doMove(null) Moved() и не
+	// зовёт. Без подписки на qdel стол держал потраченный или слитый стек до конца
+	// раунда - и тот уезжал в харддел, который морозит весь процесс.
+	RegisterSignal(I, COMSIG_PARENT_QDELETING, PROC_REF(ForgetItemOnTable))
+
+/obj/structure/table/rolling/proc/ForgetItemOnTable(datum/source)
+	SIGNAL_HANDLER
+	attached_items -= source
+	UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 
 /obj/structure/table/rolling/proc/RemoveItemFromTable(datum/source, newloc, dir)
 	if(newloc != loc) //Did we not move with the table? because that shit's ok
 		return FALSE
 	attached_items -= source
-	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(source, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 
 /obj/structure/table/rolling/Moved(atom/OldLoc, Dir)
 	. = ..()

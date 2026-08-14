@@ -279,20 +279,21 @@
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "anxiety_upon", /datum/mood_event/inteq_drop)
 
 /obj/item/clothing/suit/armor/hank/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	// run_block отдаёт битфилд BLOCK_*, а не BULLET_ACT_*: на отказ уворота возвращаем результат родителя нетронутым
 	. = ..()
 	if((!IS_INTEQ(owner)) && (owner.client))
-		return BULLET_ACT_HIT
+		return
 	if(owner.incapacitated(FALSE, TRUE))
-		return BULLET_ACT_HIT
+		return
 	if(!CHECK_ALL_MOBILITY(owner, MOBILITY_USE|MOBILITY_STAND))
-		return BULLET_ACT_HIT
+		return
 	if(!isturf(owner.loc))
-		return BULLET_ACT_HIT
+		return
 	if((attack_type & ATTACK_TYPE_PROJECTILE) && (rand(3) != 1))
 		owner.visible_message(pick("<span class='danger'>[owner] чудом уворачивается от пули, выгнувшись спиной в последний момент!</span>", "<span class='danger'>[owner] ловко уходит в сторону, предугадав траекторию выстрела!</span>", "<span class='danger'>[owner] делает резкий рывок, едва успевая уйти из под огня!</span>"))
 		playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
-		return BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL
-	return ..()
+		return . | BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL
+	return .
 
 ///Ошейники для заложников.
 /obj/item/electropack/shockcollar/bomb

@@ -15,9 +15,18 @@
 
 /datum/tattoo_manager/Destroy(force, ...)
 	save_pending_removals()
+	// Запись в GLOB.tattoo_managers жила до конца раунда: её нигде не снимали, и
+	// каждый, кто хоть раз открыл менеджер, платил за это хардделом клиента на
+	// своём дисконнекте (клиентский харддел идёт синхронно и морозит процесс).
+	if(owner_client)
+		GLOB.tattoo_managers -= owner_client.ckey
 	owner_client = null
 	SStgui.close_uis(src)
 	return ..()
+
+/datum/tattoo_manager/ui_close(mob/user)
+	. = ..()
+	qdel(src)
 
 /datum/tattoo_manager/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

@@ -232,7 +232,7 @@
 				if(!M.stat && Adjacent(M))
 					emote("me", EMOTE_VISIBLE, "splats \the [M]!")
 					M.splat()
-					movement_target = null
+					set_prey_target(null)
 					stop_automated_movement = 0
 					break
 			for(var/obj/item/toy/cattoy/T in view(1,src))
@@ -250,18 +250,55 @@
 			walk_to(src,0)
 			turns_since_scan = 0
 			if((movement_target) && !(isturf(movement_target.loc) || ishuman(movement_target.loc) ))
-				movement_target = null
+				set_prey_target(null)
 				stop_automated_movement = 0
 			if( !movement_target || !(movement_target.loc in oview(src, 3)) )
-				movement_target = null
+				set_prey_target(null)
 				stop_automated_movement = 0
 				for(var/mob/living/simple_animal/mouse/snack in oview(src,3))
 					if(isturf(snack.loc) && !snack.stat)
-						movement_target = snack
+						set_prey_target(snack)
 						break
 			if(movement_target)
 				stop_automated_movement = 1
 				walk_to(src,movement_target,0,3)
+
+/// Мышь удаляет себя в death() (превращается в предмет-труп), а `movement_target`
+/// чистится ТОЛЬКО внутри handle_automated_movement - до которого кот без игрока
+/// рядом не доходит: и SSnpcpool, и SSidlenpcpool отсекают его по has_nearby_player()
+/// раньше вызова. Кот в пустом техтоннеле держал последнюю мышь до конца раунда.
+/// Заодно снимаем нативный walk_to: его внутренний цикл держит цель ссылкой,
+/// невидимой рефтрекеру.
+/mob/living/simple_animal/pet/cat/proc/on_prey_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	// Подписка живёт ровно на текущей цели, но сигнал мог прийти и от прошлой,
+	// если её отпустили без отписки. Чужой труп бросать погоню не должен.
+	if(source != movement_target)
+		return
+	// Без set_prey_target(): источник уже разбирает себя, его signal_procs снимет
+	// /datum/Destroy, а UnregisterSignal посреди рассылки того же сигнала - лишний
+	// риск на ровном месте.
+	movement_target = null
+	stop_automated_movement = 0
+	walk(src, 0)
+
+/// Единственная точка смены цели охоты. Подписка обязана сниматься со СТАРОЙ цели:
+/// override = TRUE перекрывает только регистрацию на том же источнике, поэтому кот,
+/// переключившийся с мыши A на мышь B, оставался подписан на A - и держал её
+/// жёсткой ссылкой в собственном signal_procs, а её смерть срывала ему охоту на B.
+/mob/living/simple_animal/pet/cat/proc/set_prey_target(atom/movable/new_target)
+	if(movement_target == new_target)
+		return
+	if(movement_target)
+		UnregisterSignal(movement_target, COMSIG_PARENT_QDELETING)
+	movement_target = new_target
+	if(movement_target)
+		RegisterSignal(movement_target, COMSIG_PARENT_QDELETING, PROC_REF(on_prey_qdeleting), override = TRUE)
+
+/mob/living/simple_animal/pet/cat/Destroy()
+	walk(src, 0)
+	set_prey_target(null)
+	return ..()
 
 /mob/living/simple_animal/pet/cat/cak //I told you I'd do it, Remie
 	name = "Keeki"

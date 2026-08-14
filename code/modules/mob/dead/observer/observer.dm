@@ -225,7 +225,10 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	if(mind?.current == src)
 		mind.set_current(null)
 	mind = null
-	return ..()
+	. = ..()
+	// Страховка на случай, если какой-то другой путь в цепочке разрушения тоже
+	// заведёт анимацию: гасим ещё раз уже после родителя.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 
 /*
  * This proc will update the icon of the ghost itself, with hair overlays, as well as the ghost image.
@@ -604,6 +607,14 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/stop_orbit(datum/component/orbiter/orbits)
 	. = ..()
+	// Разрушение зовёт нас из /atom/movable/Destroy (end_orbit -> stop_orbit), уже
+	// ПОСЛЕ того как Destroy() погасил вечный float. Перезавести его здесь значит
+	// вернуть на удаляемого госта внутреннюю ссылку BYOND: рефтрекеру она не видна,
+	// и гост уезжал в харддел с "внешних ссылок 1" и пустым сканом держателей.
+	// gc_destroyed выставляется ДО вызова Destroy() (garbage.dm), поэтому здесь
+	// QDELING уже TRUE и отдельного флага не нужно.
+	if(QDELING(src))
+		return
 	//restart our floating animation after orbit is done.
 	pixel_z = 0
 	animate(src, pixel_z = 2, time = 10, loop = -1, flags = ANIMATION_RELATIVE)

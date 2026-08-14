@@ -33,6 +33,25 @@
 	return ..()
 
 /datum/element/atmos_sensitive/Detach(atom/source)
+	// Снимаемся с ТОГО турфа, где подписка реально висит, а не с текущего loc.
+	// Запись в turf.atmos_exposure_listeners ключуется слушателем, то есть это
+	// жёсткая ссылка турфа на нас; любой путь, сменивший loc мимо Moved()
+	// (перелёт шаттла, doMove(null), голое присваивание loc), оставлял её на
+	// покинутом турфе - и оттуда её больше нечем достать. Два таких пути уже
+	// латали поимённо; здесь закрывается класс целиком.
+	//
+	// Источник истины - собственный список подписок: его пишет тот же
+	// register_turf_exposure, что и запись на турфе, поэтому разойтись они не
+	// могут. Собираем турфы заранее: unregister_turf_exposure правит signal_procs.
+	var/list/turf/registered_turfs
+	for(var/datum/registered as anything in source.signal_procs)
+		if(!isturf(registered))
+			continue
+		var/list/registered_signals = source.signal_procs[registered]
+		if(registered_signals?[COMSIG_TURF_EXPOSE])
+			LAZYADD(registered_turfs, registered)
+	for(var/turf/registered as anything in registered_turfs)
+		source.unregister_turf_exposure(registered)
 	if(isturf(source.loc))
 		source.unregister_turf_exposure(source.loc)
 	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)

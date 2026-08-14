@@ -160,9 +160,17 @@
 ///Removes an alarm to our alarms list, you probably shouldn't be calling this manually
 ///It should all be handled by the signal listening we do, unless you want to only remove an alarm to one listener
 /datum/alarm_listener/proc/clear_alarm(datum/source, datum/alarm_handler/handler, alarm_type, area/source_area)
-	if(!accepting_alarm_changes)
-		return
-
+	// СНЯТИЕ проходит и на замороженном слушателе - подавляется только оповещение
+	// (см. ниже). Заморозку взводит смерть борга или дрона (COMSIG_LIVING_PREDEATH)
+	// и обесточенная консоль тревог, то есть состояние на десятки минут. Пока она
+	// держалась, каждое снятие молча терялось, и alarm_handler оставался в списке
+	// sources НАВСЕГДА - включая тот, который прямо сейчас разбирает себя в
+	// Destroy(). Это 26 хардделов /datum/alarm_handler на 6.4 секунды заморозки
+	// мира за 16 раундов, все с одной внешней ссылкой.
+	//
+	// Обратная сторона (показать на замороженной консоли на одну тревогу меньше)
+	// безопаснее прямой: удержание снятой тревоги - это ложная тревога, которую
+	// никто не сбросит.
 	var/list/alarms_of_our_type = alarms[alarm_type]
 
 	if(!alarms_of_our_type)
@@ -179,6 +187,8 @@
 		return //Return if there's still sources left, no sense clearing the list or bothering anyone about it
 
 	alarms_of_our_type -= source_area.name
+	if(!accepting_alarm_changes)
+		return
 	SEND_SIGNAL(src, COMSIG_ALARM_CLEARED, alarm_type, source_area)
 
 ///Does what it says on the tin, exists for signal hooking

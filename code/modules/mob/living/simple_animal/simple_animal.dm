@@ -219,7 +219,12 @@
 		nest.spawned_mobs -= src
 		nest = null
 
-	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
+	// Гейт по AIStatus снят по той же причине, по которой его сняли у бакетов
+	// GLOB.simple_animals десятью строками выше: прямое присвоение AIStatus (карпы,
+	// конструкты, хайверлорд, свармеры - около десятка мест) оставляет страндед-
+	// запись, которой этот гейт слеп. idle_mobs_by_zlevel - статический список на
+	// весь раунд, то есть ровно одна вечная ссылка на труп.
+	if (islist(SSidlenpcpool.idle_mobs_by_zlevel))
 		// Регистрация в idle_mobs_by_zlevel шла по турфу НА МОМЕНТ toggle_ai(AI_Z_OFF);
 		// если моба с тех пор переместили между z (или он уже в nullspace), чистка по
 		// текущему турфу промахнётся - поэтому выписываемся из всех z-списков

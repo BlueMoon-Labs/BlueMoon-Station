@@ -648,16 +648,38 @@ multiple modular subtrees with behaviors
 			if(!(additional_flags & AI_PREVENT_CANCEL_ACTIONS))
 				CancelActions()
 			stop_ai_movement()
+			clear_perception_caches()
 			return
 		if(AI_STATUS_IDLE)
 			//полный сон: никакой обработки; действия отменяем, чтобы не висели
 			CancelActions()
 			stop_ai_movement()
+			clear_perception_caches()
 			return
 	if(!length(current_behaviors))
 		add_to_unplanned_controllers()
 		return
 	start_ai_processing()
+
+/// Отпускает кэши восприятия (get_nearby_threats / get_nearby_allies).
+///
+/// Оба пишутся в блэкборд СЫРЫМ присваиванием `blackboard[key] = ...`, а не через
+/// set_blackboard_key(), то есть на qdel попавших в них мобов никто не подписан -
+/// шапка _ai_controller прямо это запрещает. Живут они ровно один тик планирования,
+/// но чистятся только пересборкой на следующем запросе, а спящий или выключенный
+/// контроллер запроса больше не делает. Итог: замерший после боя ИИ держал жёсткой
+/// ссылкой каждого соседа, попавшего в последний скан, до конца раунда - и каждый
+/// такой труп уезжал в харддел на 150-500 мс заморозки мира.
+///
+/// AI_STATUS_OFF - это смерть павна или z-уровень без клиентов, AI_STATUS_IDLE -
+/// отсутствие клиента в окне грида; обычное состояние после перестрелки, и держится
+/// оно до возвращения игрока.
+/datum/ai_controller/proc/clear_perception_caches()
+	blackboard[BB_AI_THREAT_CACHE] = null
+	blackboard[BB_AI_THREAT_CACHE_AT] = null
+	blackboard[BB_AI_ALLY_CACHE] = null
+	blackboard[BB_AI_ALLY_CACHE_AT] = null
+	blackboard[BB_AI_ALLY_CACHE_RANGE] = null
 
 /datum/ai_controller/proc/start_ai_processing()
 	if(ai_status == AI_STATUS_ON)

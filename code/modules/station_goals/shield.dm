@@ -251,7 +251,11 @@ GLOBAL_DATUM_INIT(shield_goal_coverage_dummy, /datum/station_goal/station_shield
 // BLUEMOON ADD START - добавление спутника в глобальный список спутников
 /obj/machinery/satellite/meteor_shield/Initialize(mapload)
 	. = ..()
-	GLOB.meteor_satellites += src
+	// Родитель уже положил нас в GLOB.meteor_satellites. Второе `+=` давало в
+	// списке ДВА вхождения, а `-=` в Destroy() снимает ровно одно - каждый щит
+	// оставлял по себе вечную ссылку и уходил в харддел на полсекунды заморозки
+	// мира. Дубль заодно считался дважды в meteor_wave и вдвое обесценивал гейт
+	// `satellties_count >= 2` в electrical_storm.
 	camera.view_range = kill_range
 
 /obj/machinery/satellite/meteor_shield/examine(mob/user)

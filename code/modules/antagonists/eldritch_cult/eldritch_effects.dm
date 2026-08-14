@@ -349,13 +349,13 @@
 ///Makes the mind able to see this effect
 /obj/effect/reality_smash/proc/AddMind(datum/mind/e_cultie)
 	minds |= e_cultie
-	if(e_cultie.current.client)
+	if(e_cultie.current?.client)
 		e_cultie.current.client.images |= img
 
 ///Makes the mind not able to see this effect
 /obj/effect/reality_smash/proc/RemoveMind(datum/mind/e_cultie)
 	minds -= e_cultie
-	if(e_cultie.current.client)
+	if(e_cultie.current?.client)
 		e_cultie.current.client.images -= img
 
 #undef RIFT_AFTERUSE_NAMES

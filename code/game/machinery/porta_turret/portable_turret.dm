@@ -1029,8 +1029,18 @@ DEFINE_BITFIELD(turret_flags, list(
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/turretid/Destroy()
+	for(var/obj/machinery/porta_turret/turret as anything in turrets)
+		UnregisterSignal(turret, COMSIG_PARENT_QDELETING)
+		if(turret.cp == src)
+			turret.cp = null
 	turrets.Cut()
 	return ..()
+
+/// Панель обязана отпустить турель сама: `cp` у турели один, а панелей,
+/// залинковавших её, может быть несколько (см. Initialize).
+/obj/machinery/turretid/proc/on_turret_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	turrets -= source
 
 /obj/machinery/turretid/Initialize(mapload) //map-placed turrets autolink turrets
 	. = ..()
@@ -1047,8 +1057,16 @@ DEFINE_BITFIELD(turret_flags, list(
 		control_area = get_area(src)
 
 	for(var/obj/machinery/porta_turret/T in control_area)
-		turrets |= T
+		if(T in turrets)
+			continue
+		turrets += T
 		T.cp = src
+		// Одну и ту же турель может залинковать НЕСКОЛЬКО панелей с одинаковым
+		// control_area (на forgotten_ship их три), а `cp` помнит только последнюю -
+		// Destroy() турели вычёркивал себя ровно из одного списка, остальные
+		// держали её до конца раунда. Каждая пережившая ссылка добавляет ~90 мс к
+		// хардделу: одиночно залинкованная турель стоит 426 мс, тройная - 610.
+		RegisterSignal(T, COMSIG_PARENT_QDELETING, PROC_REF(on_turret_qdeleting))
 
 /obj/machinery/turretid/examine(mob/user)
 	. += ..()
@@ -1062,7 +1080,14 @@ DEFINE_BITFIELD(turret_flags, list(
 
 	if(I.tool_behaviour == TOOL_MULTITOOL)
 		if(I.buffer && istype(I.buffer, /obj/machinery/porta_turret))
-			turrets |= I.buffer
+			if(!(I.buffer in turrets))
+				turrets += I.buffer
+				// Ручной линк держит турель тем же списком, что и автолинк по
+				// control_area, и точно так же переживает её Destroy(): турель
+				// вычёркивает себя только из `cp.turrets`, а `cp` помнит одну панель.
+				// Без подписки мультитул-линк оставался тем самым внешним держателем,
+				// ради снятия которого автолинк её и завёл.
+				RegisterSignal(I.buffer, COMSIG_PARENT_QDELETING, PROC_REF(on_turret_qdeleting), override = TRUE)
 			to_chat(user, "<span class='notice'>You link \the [I.buffer] with \the [src].</span>")
 			return
 

@@ -28,10 +28,32 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 	if(target)
 		target_mob = target
 		target_client = target.client
+		// Панель живёт, пока АДМИН не закроет окно, а цель за это время могут
+		// гибнуть, борговать или удалить админкой. Жёсткая ссылка на чужое тело в
+		// датуме с раундовым временем жизни - это ровно тот один внешний держатель,
+		// с которым труп уезжал в харддел на ~300 мс заморозки мира. Для логов
+		// хватает сохранённого ckey.
+		target_ckey_stored = target.ckey || target_client?.ckey
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
 		if(target_client)
+			// Клиент держится ровно тем же способом и стоит дороже моба: у /client
+			// Destroy возвращает QDEL_HINT_HARDDEL_NOW, то есть выход игрока с
+			// открытой у админа панелью - это синхронный харддел на ~600 мс прямо
+			// в момент дисконнекта. ui_data всё равно откатывается на
+			// target_ckey_stored, так что терять тут нечего.
+			RegisterSignal(target_client, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
 			source_type = LOGSRC_CLIENT
 		else
 			source_type = LOGSRC_MOB
+
+/datum/log_viewer/proc/on_target_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	// Сигнал приходит с двух источников (моб и его клиент), а уходят они порознь:
+	// снимаем только тот конец, который действительно умирает.
+	if(source == target_client)
+		target_client = null
+		return
+	target_mob = null
 
 /datum/log_viewer/Destroy()
 	target_mob = null

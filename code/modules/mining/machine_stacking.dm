@@ -92,6 +92,10 @@
 /obj/machinery/mineral/stacking_machine/Destroy()
 	CONSOLE = null
 	materials = null
+	// Листы лежат и в contents, и здесь. Родитель qdel'ит содержимое, а stack_list
+	// остаётся единственной внешней ссылкой на уже удалённые стеки - и каждый из
+	// них уходит в харддел.
+	stack_list = null
 	return ..()
 
 /obj/machinery/mineral/stacking_machine/HasProximity(atom/movable/AM)

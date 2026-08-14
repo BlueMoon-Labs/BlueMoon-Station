@@ -744,6 +744,8 @@ There are several things that need to be remembered:
 
 		if(wear_suit)
 			var/obj/item/clothing/suit/S = wear_suit
+			// в слот верхней одежды лезут и не-костюмы (полотенца, кулеры), а taur_types_icon_whitelist объявлен только на /obj/item/clothing/suit
+			var/obj/item/clothing/suit/taur_suit = istype(S) ? S : null
 			wear_suit.screen_loc = ui_oclothing
 			if(client && hud_used && hud_used.hud_shown)
 				if(hud_used.inventory_shown)
@@ -764,7 +766,7 @@ There are several things that need to be remembered:
 
 			if(S.mutantrace_variation)
 
-				if(T?.taur_mode && isemptylist(S.taur_types_icon_whitelist))
+				if(T?.taur_mode && (!taur_suit || isemptylist(taur_suit.taur_types_icon_whitelist)))
 					var/init_worn_icon = worn_icon
 					variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
 					switch(variation_flag)
@@ -787,9 +789,9 @@ There are several things that need to be remembered:
 					worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
 					variation_flag |= STYLE_DIGITIGRADE
 
-			if(!isemptylist(S.taur_types_icon_whitelist))
-				for(var/special_taur_icon in S.taur_types_icon_whitelist)
-					if(dna.features["taur"] in S.taur_types_icon_whitelist[special_taur_icon])
+			if(taur_suit && !isemptylist(taur_suit.taur_types_icon_whitelist))
+				for(var/special_taur_icon in taur_suit.taur_types_icon_whitelist)
+					if(dna.features["taur"] in taur_suit.taur_types_icon_whitelist[special_taur_icon])
 						worn_icon = 'modular_bluemoon/icons/mob/clothing/taur_custom_clothing.dmi'
 						worn_state += special_taur_icon
 						center = !isnull(T) ? T.center : TRUE

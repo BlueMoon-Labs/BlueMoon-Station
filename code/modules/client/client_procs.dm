@@ -1171,6 +1171,18 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	if(credits)
 		QDEL_LIST(credits)
+	// Ментор-датум лежит в GLOB.mentor_datums весь раунд и держит клиента дважды:
+	// полем owner и записью в GLOB.mentors. Админская пара тремя строками ниже
+	// снимается на логауте, а менторская - нет; клиент уезжал в харддел, а он у
+	// нас идёт синхронно (QDEL_HINT_HARDDEL_NOW) и морозит процесс на ~600 мс.
+	if(mentor_datum)
+		// Только если датум всё ещё указывает на НАС: на быстром реконнекте BYOND
+		// успевает построить новый клиент (тот переставит owner на себя) до Del()
+		// старого, и безусловное обнуление стёрло бы живую сессию.
+		if(mentor_datum.owner == src)
+			mentor_datum.owner = null
+		mentor_datum = null
+	GLOB.mentors -= src
 	if(holder)
 		adminGreet(1)
 		holder.owner = null

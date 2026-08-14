@@ -538,13 +538,12 @@
 	if(user in buckled_mobs)// fixes buckle ventcrawl edgecase fuck bug
 		return
 
-	var/obj/machinery/atmospherics/components/unary/vent_found
 	var/obj/machinery/atmospherics/target_move = findConnecting(direction, user.ventcrawl_layer)
 	if(target_move)
 		if(target_move.can_crawl_through())
 			if(is_type_in_typecache(target_move, GLOB.ventcrawl_machinery))
 				user.visible_message("<span class='notice'>Что-то вылезает из вентиляции...</span>", "<span class='notice'>Ты вылезаешь из вентиляции.")
-				if(!do_after(user, 2 SECONDS, target = vent_found))
+				if(!do_after(user, 2 SECONDS, target = target_move))
 					return
 				user.forceMove(target_move.loc) //handle entering and so on.
 
@@ -559,9 +558,9 @@
 					playsound(src, 'sound/machines/ventcrawl.ogg', 50, 1, -3)
 	else if(is_type_in_typecache(src, GLOB.ventcrawl_machinery) && can_crawl_through()) //if we move in a way the pipe can connect, but doesn't - or we're in a vent
 		user.visible_message("<span class='notice'>Что-то вылезает из вентиляции...</span>", "<span class='notice'>Ты вылезаешь из вентиляции.")
-		if(!do_after(user, 2 SECONDS, target = vent_found))
+		if(!do_after(user, 2 SECONDS, target = src))
 			return
-		user.forceMove(target_move.loc) //handle entering and so on.
+		user.forceMove(loc) // в эту ветку попадаем только когда соединения нет, так что вылезаем через сам вент
 
 /obj/machinery/atmospherics/AltClick(mob/living/L)
 	if(is_type_in_typecache(src, GLOB.ventcrawl_machinery))

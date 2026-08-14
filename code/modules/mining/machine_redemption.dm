@@ -58,6 +58,12 @@
 		. += "<span class='notice'>The status display reads: Smelting <b>[ore_multiplier]</b> sheet(s) per piece of ore.<br>Reward point generation at <b>[point_upgrade*100]%</b>.<br>Ore pickup speed at <b>[ore_pickup_rate]</b>.</span>"
 
 /obj/machinery/mineral/ore_redemption/proc/smelt_ore(obj/item/stack/ore/O)
+	// Снятие с буфера идёт ПЕРВЫМ делом, до единого отказа. Руда уже внутри машины,
+	// а любой выход мимо этой строки оставлял её в ore_buffer до конца раунда
+	// жёсткой ссылкой: выход по refined_type == null (переработанные и искусственные
+	// кристаллы, шлак), по уничтоженному стеку и по отсутствующему контейнеру.
+	ore_buffer -= O
+
 	if(QDELETED(O))
 		return
 	var/datum/component/material_container/mat_container = materials.mat_container
@@ -66,8 +72,6 @@
 
 	if(O.refined_type == null)
 		return
-
-	ore_buffer -= O
 
 	if(O && O.refined_type)
 		points += O.points * point_upgrade * O.amount
@@ -165,7 +169,10 @@
 
 	if(LAZYLEN(ore_buffer))
 		message_sent = FALSE
-		process_ores(ore_buffer)
+		// По КОПИИ: smelt_ore() вычёркивает руду из ore_buffer, а обход list в DM
+		// идёт по индексу - отдав сюда сам буфер, цикл перепрыгивал бы через каждую
+		// вторую руду и оставлял её лежать в машине до следующей загрузки.
+		process_ores(ore_buffer.Copy())
 	else if(!message_sent)
 		send_console_message()
 

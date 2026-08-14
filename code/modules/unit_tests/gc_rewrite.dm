@@ -452,10 +452,18 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/obj/structure/disposalholder, "Disposalholder")
 
-/datum/unit_test/gc_rewrite_qdel_in_uses_legacy_strong_ref_threshold
+/// Отложенный qdel обязан держать цель СЛАБОЙ ссылкой при любом сроке.
+///
+/// Прежде короткие таймеры (<= GC_FILTER_QUEUE) клали в колбэк жёсткую ссылку.
+/// Окно варнфейла сборщика равно тем же двум минутам, поэтому объект, удалённый
+/// другим путём раньше срока, гарантированно не собирался и уезжал в харддел -
+/// а харддел морозит весь процесс на 150-690 мс. В проде это 26 хардделов
+/// /obj/effect/temp_visual/dir_setting/space_wind на 4.3 секунды заморозки за 16
+/// раундов, все с одной внешней ссылкой.
+/datum/unit_test/gc_rewrite_qdel_in_always_uses_weakref
 	parent_type = /datum/unit_test/gc_rewrite_base
 
-/datum/unit_test/gc_rewrite_qdel_in_uses_legacy_strong_ref_threshold/Run()
+/datum/unit_test/gc_rewrite_qdel_in_always_uses_weakref/Run()
 	var/obj/effect/gc_rewrite_test_object/short_lived = allocate(/obj/effect/gc_rewrite_test_object)
 	var/obj/effect/gc_rewrite_test_object/long_lived = allocate(/obj/effect/gc_rewrite_test_object)
 	var/short_timer_id = QDEL_IN_STOPPABLE(short_lived, GC_SOFTCHECK_TIMEOUT + 1)
@@ -466,10 +474,12 @@
 	TEST_ASSERT_NOTNULL(short_timer, "The short qdel timer was not created")
 	TEST_ASSERT_NOTNULL(long_timer, "The long qdel timer was not created")
 
-	var/short_arg = short_timer.callBack.arguments[1]
-	var/long_arg = long_timer.callBack.arguments[1]
-	TEST_ASSERT_EQUAL(short_arg, short_lived, "A qdel timer shorter than GC_FILTER_QUEUE unexpectedly used a weakref")
-	TEST_ASSERT(istype(long_arg, /datum/weakref), "A qdel timer longer than GC_FILTER_QUEUE did not use a weakref")
+	var/datum/weakref/short_arg = short_timer.callBack.arguments[1]
+	var/datum/weakref/long_arg = long_timer.callBack.arguments[1]
+	TEST_ASSERT(istype(short_arg, /datum/weakref), "Короткий отложенный qdel положил в колбэк жёсткую ссылку")
+	TEST_ASSERT(istype(long_arg, /datum/weakref), "Длинный отложенный qdel положил в колбэк жёсткую ссылку")
+	TEST_ASSERT_EQUAL(short_arg.resolve(), short_lived, "Слабая ссылка короткого таймера не разрешается в цель")
+	TEST_ASSERT_EQUAL(long_arg.resolve(), long_lived, "Слабая ссылка длинного таймера не разрешается в цель")
 
 	deltimer(short_timer_id)
 	deltimer(long_timer_id)

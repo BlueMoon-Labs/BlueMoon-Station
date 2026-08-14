@@ -344,6 +344,11 @@
 				var/turf/old_grid_turf = get_turf(oldloc)
 				if(old_grid_turf)
 					SSspatial_grid.exit_cell(src, old_grid_turf)
+			//по той же причине снимаем подписку на выброс газа: она ключуется
+			//слушателем в turf.atmos_exposure_listeners, то есть покинутый турф
+			//держит нас жёсткой ссылкой, а искать её потом будет уже нечем
+			if(isturf(oldloc))
+				unregister_turf_exposure(oldloc)
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)

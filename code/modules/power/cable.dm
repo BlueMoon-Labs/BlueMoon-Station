@@ -130,12 +130,26 @@ By design, d1 is the smallest direction and d2 is the highest
 	if(powernet)
 		cut_cable_from_powernet()				// update the powernets
 	GLOB.cable_list -= src							//remove it from global cable list
+	// Моток создаётся в nullspace (см. Initialize), то есть в contents его нет и
+	// `stored` - единственная ссылка на него. Родитель такой моток не подберёт, а
+	// после deconstruct кабель продолжал держать уже выложенный на пол моток весь
+	// свой GC-период: слей его с другим стеком за это время - и слитый уезжает в
+	// харддел с одной внешней ссылкой.
+	if(stored)
+		if(isnull(stored.loc))
+			qdel(stored)
+		stored = null
 	return ..()									// then go ahead and delete the cable
 
 /obj/structure/cable/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		var/turf/T = loc
-		stored.forceMove(T)
+		// stored теперь обнуляется здесь и в Destroy(), поэтому второй заход на тот
+		// же кабель (а deconstruct зовут из нескольких мест) уронил бы
+		// null.forceMove(). До обнуления такого захода просто не существовало.
+		if(stored)
+			stored.forceMove(T)
+			stored = null
 	qdel(src)
 
 ///////////////////////////////////
