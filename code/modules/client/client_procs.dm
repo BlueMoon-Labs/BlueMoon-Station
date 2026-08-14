@@ -836,6 +836,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /// Зовётся таймером после логина: winexists ждёт ответа скина, и на входе в игру
 /// такое ожидание не нужно никому.
 /client/proc/warn_if_no_asset_cache_browser()
+	// Продукт этого вызова - одна строчка в чат. На медленном скине сам запрос
+	// стоил до 165 секунд сна (замер по 16 раундам), и всё это время фрейм держал
+	// клиента жёсткой ссылкой. Косметика того не стоит.
+	if(!skin_call_optional_allowed(src))
+		return
 	if(tracked_winexists(src, "asset_cache_browser"))
 		return
 	to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
@@ -1171,6 +1176,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	if(credits)
 		QDEL_LIST(credits)
+	// Правки префов идут через дебаунс, а ребут мира отложенные таймеры не
+	// доигрывает - доводим их до диска здесь. Одна запись на логаут против сотни
+	// правок за сессию.
+	prefs?.flush_pending_saves()
 	// Ментор-датум лежит в GLOB.mentor_datums весь раунд и держит клиента дважды:
 	// полем owner и записью в GLOB.mentors. Админская пара тремя строками ниже
 	// снимается на логауте, а менторская - нет; клиент уезжал в харддел, а он у

@@ -5784,8 +5784,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					load_character()
 
 				if("changeslot")
-					if(char_queue)
-						deltimer(char_queue) // Do not dare.
+					// Отложенную запись здесь НЕЛЬЗЯ просто снять: она пишет в
+					// `/character[default_slot]`, а load_character ниже сменит
+					// default_slot - сработавший позже таймер положил бы старого
+					// персонажа в новый слот. Раньше её отменяли ("Do not dare"), и
+					// это стоило потери правок; с тех пор как правки идут через
+					// дебаунс, терялась бы вся сессия редактирования. Доводим её до
+					// диска в ТЕКУЩИЙ слот и только потом переключаемся.
+					flush_pending_saves()
 					if(!load_character(text2num(href_list["num"])))
 						random_character()
 						real_name = random_unique_name(gender)

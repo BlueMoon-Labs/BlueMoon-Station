@@ -45,6 +45,17 @@
 		//OTHER//
 		/////////
 	var/datum/preferences/prefs = null
+	/// Сколько запросов к скину (winget/winexists) прямо сейчас СПЯТ на этом клиенте.
+	/// Спящий фрейм держит src и аргументы жёсткими ссылками, которых не видит ни
+	/// один DM-скан - отсюда класс утечек "внешних ссылок 1, найдено 0". Счётчик
+	/// выводится в лог варнфейла рядом с pending_native_prompts, чтобы такие случаи
+	/// опознавались сразу.
+	var/pending_skin_calls = 0
+	/// world.time, до которого скин клиента считается медленным. Пока метка держится,
+	/// НЕОБЯЗАТЕЛЬНЫЕ запросы к скину не отправляются: за 16 прод-раундов winget и
+	/// winexists проспали суммарно больше миллиона секунд, а одиночные вызовы
+	/// доходили до 567 секунд - это гарантированный варнфейл всего, что держит фрейм.
+	var/slow_skin_until = 0
 	/// The client's UI DPI multiplier reported by BYOND. 1 equals 100% Windows scaling.
 	var/window_scaling = 1
 	/// Current DPI acquisition retry count for delayed post-login reads.

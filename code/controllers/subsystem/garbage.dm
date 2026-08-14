@@ -835,6 +835,18 @@ SUBSYSTEM_DEF(garbage)
 				var/mob/leaked_mob = D
 				if (leaked_mob.pending_native_prompts > 0)
 					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
+			// Спящий winget/winexists держит клиента и его моба жёсткими ссылками
+			// прямо во фрейме - ни один DM-скан их не видит, и утечка выглядит как
+			// "внешних ссылок 1, найдено 0". Ненулевой счётчик называет держателя сразу.
+			// Только через моба: /client не наследуется от /datum и в очередь
+			// сборщика не попадает вовсе - его Destroy() возвращает
+			// QDEL_HINT_HARDDEL_NOW и уезжает в HardDelete напрямую.
+			var/client/leaked_client
+			if (ismob(D))
+				var/mob/skin_owner = D
+				leaked_client = skin_owner.client
+			if (leaked_client && leaked_client.pending_skin_calls > 0)
+				prompt_note += ", спящих запросов к скину: [leaked_client.pending_skin_calls]"
 			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D)]) --")
 			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
 			var/datum/gc_failure_viewer/gc_failure_entry/logged_failure = GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)

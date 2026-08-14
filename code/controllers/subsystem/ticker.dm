@@ -814,6 +814,13 @@ SUBSYSTEM_DEF(ticker)
 	world.Reboot()
 
 /datum/controller/subsystem/ticker/Shutdown()
+	// Правки префов идут через дебаунс, а ребут таймеры не доигрывает: обычный
+	// конец раунда до них дотягивает только потому, что сам длится минуты. Быстрый
+	// ребут (world.Reboot(fast_track = TRUE), краш-рестарт, админская перезагрузка)
+	// не длится ничего - и теряет до PREF_SAVE_MAX_DEFER правок у КАЖДОГО
+	// онлайн-игрока. Сброс идемпотентен: без заряженного таймера он ничего не пишет.
+	for(var/client/online_client as anything in GLOB.clients)
+		online_client.prefs?.flush_pending_saves()
 	gather_newscaster() //called here so we ensure the log is created even upon admin reboot
 	save_admin_data()
 	update_everything_flag_in_db()

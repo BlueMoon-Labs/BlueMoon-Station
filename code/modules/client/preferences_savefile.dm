@@ -917,9 +917,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
+		// Правка от живого клиента НИКОГДА не пишется на диск сразу - только через
+		// дебаунс. Запись savefile синхронная: она морозит весь процесс, а не
+		// вызывающего. За 16 прод-раундов это 79 280 записей на 443 секунды
+		// заморозки, то есть 15-32% суммарного дрифта спайков по аттрибуции самого
+		// сервера. Замер в DM: одна WRITE_FILE стоит 0.016 мс, то есть платим за
+		// поход на диск, а не за две сотни полей - лечится только числом походов.
+		//
+		// Прежний гейт откладывал ТОЛЬКО попадание в двухсекундный кулдаун, а
+		// игрок в меню создания персонажа щёлкает медленнее двух секунд: почти
+		// каждый клик уходил в отдельную запись. Теперь пачка правок склеивается в
+		// одну, а крайний срок в queue_save_pref (PREF_SAVE_MAX_DEFER) не даёт
+		// бесконечно откладывать поток правок.
+		//
+		// Без клиента (юнит-тесты, админские инструменты, экспорт) откладывать
+		// некому и незачем - там прежний синхронный путь.
+		if(should_defer_saves())
+			queue_save_pref(PREF_SAVE_COOLDOWN, silent, announce_delay = FALSE)
+			return FALSE
 		if(world.time < saveprefcooldown)
-			if(istype(parent))
-				queue_save_pref(PREF_SAVE_COOLDOWN, silent)
 			return FALSE
 		COOLDOWN_START(src, saveprefcooldown, PREF_SAVE_COOLDOWN)
 	if(pref_queue)
@@ -1086,8 +1102,37 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	blocking_call_finish(blocking_started_ms, "savefile (запись)", "префы [parent?.ckey || "?"]")
 	return S
 
-/datum/preferences/proc/queue_save_pref(save_in, silent)
-	if(parent && !silent)
+/// Откладывать ли правки вместо немедленной записи на диск.
+///
+/// Отдельным проком, а не инлайновым `istype(parent)`: живой /client в юнит-тесте
+/// не создать, а поведение дебаунса проверять надо.
+/datum/preferences/proc/should_defer_saves()
+	return istype(parent)
+
+/// Досрочно доводит отложенные записи до диска.
+///
+/// Дебаунс склеивает пачку правок в одну запись, но между последней правкой и
+/// срабатыванием таймера есть окно, а ребут мира таймеры не доигрывает. Логаут -
+/// естественная точка сброса: одна запись на игрока за раунд против сотни правок.
+/datum/preferences/proc/flush_pending_saves()
+	if(pref_queue)
+		deltimer(pref_queue)
+		pref_queue = null
+		pref_queue_deadline = 0
+		save_preferences(TRUE, TRUE)
+	if(char_queue)
+		deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
+		save_character(TRUE, TRUE)
+
+/// announce_delay: сказать игроку "запись через N секунд". Дебаунс его НЕ говорит:
+/// через него теперь идёт каждая правка подряд, а раньше сюда попадали только
+/// попадания в кулдаун. Иначе один щелчок галочки давал две строки в чат вместо
+/// одной, и строка эта врала на раннем выходе ниже - там таймер не перезаряжается.
+/// Подтверждение "Saved preferences!" отложенный вызов печатает как и прежде.
+/datum/preferences/proc/queue_save_pref(save_in, silent, announce_delay = TRUE)
+	if(parent && !silent && announce_delay)
 		to_chat(parent, span_notice("Saving preferences in [save_in * 0.1] second\s."))
 	if(pref_queue)
 		// Крайний срок уже наступил: пусть заряженный таймер отработает, иначе
@@ -1974,15 +2019,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
+		// См. save_preferences(): правка от живого клиента идёт через дебаунс.
+		// Экспорт - исключение: он единственный, кто читает возвращённый savefile,
+		// и отложить его значит вернуть вызывающему FALSE вместо файла.
+		if(!export && should_defer_saves())
+			queue_save_char(PREF_SAVE_COOLDOWN, silent, announce_delay = FALSE)
+			return FALSE
 		if(world.time < savecharcooldown)
-			if(istype(parent))
-				queue_save_char(PREF_SAVE_COOLDOWN, silent)
 			return FALSE
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
-	if(char_queue)
-		deltimer(char_queue)
-	char_queue = null
-	char_queue_deadline = 0
+	// Экспорт пишет в savefile В ПАМЯТИ (new /savefile(null) ниже) и до диска не
+	// доходит вовсе - снимать отложенную запись он не имеет права. Раньше окно было
+	// узким (только при попадании в кулдаун), с дебаунсом же char_queue заряжен
+	// после КАЖДОЙ правки: игрок красит волосы и в те же две секунды жмёт "Экспорт
+	// слота" - таймер снят, на диск не ушло ничего, правка потеряна.
+	if(!export)
+		if(char_queue)
+			deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
 	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
@@ -2278,8 +2333,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	blocking_call_finish(blocking_started_ms, "savefile (запись)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
-/datum/preferences/proc/queue_save_char(save_in, silent)
-	if(parent && !silent)
+/// announce_delay: см. queue_save_pref().
+/datum/preferences/proc/queue_save_char(save_in, silent, announce_delay = TRUE)
+	if(parent && !silent && announce_delay)
 		to_chat(parent, span_notice("Saving character in [save_in * 0.1] second\s."))
 	if(char_queue)
 		// См. queue_save_pref: перенос отложенной записи ограничен крайним сроком.

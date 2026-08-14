@@ -31,6 +31,42 @@
  * включая крупнейший на 9782мс).
  */
 
+/// Ответ скина дольше этого порога означает, что клиент на линии медленный.
+#define SKIN_CALL_SLOW_MS 500
+/// Насколько долго после такого ответа не отправляем НЕОБЯЗАТЕЛЬНЫЕ запросы.
+#define SKIN_CALL_SLOW_COOLDOWN (30 SECONDS)
+
+/// Клиент цели, если он есть. Обёртки принимают и клиент, и моба.
+/proc/skin_call_client(target)
+	if(istype(target, /client))
+		return target
+	if(ismob(target))
+		var/mob/target_mob = target
+		return target_mob.client
+	return null
+
+/// Можно ли отправить НЕОБЯЗАТЕЛЬНЫЙ запрос к скину этого клиента.
+///
+/// Обязательные запросы (без ответа скина функция просто не работает) этот гейт не
+/// спрашивают. Необязательные - косметика вроде подгонки вьюпорта на пару пикселей
+/// или предупреждения о кастомном скине - на медленном клиенте стоят секунд, а
+/// платит за них не только он: спящий фрейм держит клиента и моба жёсткими
+/// ссылками, и по истечении окна сборщика они уезжают в харддел, который морозит
+/// весь процесс на сотни миллисекунд.
+/proc/skin_call_optional_allowed(target)
+	var/client/skin_client = skin_call_client(target)
+	if(!skin_client)
+		return TRUE
+	return skin_client.slow_skin_until <= world.time
+
+/// Отмечает клиента как медленного, если вызов не уложился в порог.
+/proc/mark_skin_call_cost(target, cost_ms)
+	if(cost_ms < SKIN_CALL_SLOW_MS)
+		return
+	var/client/skin_client = skin_call_client(target)
+	if(skin_client)
+		skin_client.slow_skin_until = world.time + SKIN_CALL_SLOW_COOLDOWN
+
 /// Имя цели для описания замера. Принимает и клиент, и моба.
 /proc/blocking_call_target_name(target)
 	if(istype(target, /client))
@@ -55,8 +91,14 @@
 	// классификатор спайка не отличит "мы тут и стояли" от "мы просто финишировали в
 	// чужом столле" - см. шапку файла.
 	var/started_world = world.time
+	var/client/pinned = skin_call_client(target)
+	if(pinned)
+		pinned.pending_skin_calls++
 	. = winget(target, control_id, params)
+	if(pinned)
+		pinned.pending_skin_calls--
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
+	mark_skin_call_cost(target, cost_ms)
 	// Описание собираем ТОЛЬКО для дорогих вызовов: в статистику по типам идёт каждый,
 	// а имя нужно лишь тем, кто попадёт в кольцо. Интерполяция строки на каждом вызове
 	// стоила бы дороже самого замера
@@ -68,8 +110,14 @@
 		return winexists(target, control_id)
 	var/started_ms = SStick_spikes.now_ms()
 	var/started_world = world.time
+	var/client/pinned = skin_call_client(target)
+	if(pinned)
+		pinned.pending_skin_calls++
 	. = winexists(target, control_id)
+	if(pinned)
+		pinned.pending_skin_calls--
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
+	mark_skin_call_cost(target, cost_ms)
 	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms, started_world)
 
 /**
@@ -92,3 +140,6 @@
 	if(isnull(started_ms) || !SStick_spikes)
 		return
 	SStick_spikes.record_blocking_call(kind, desc, SStick_spikes.now_ms() - started_ms, started_world)
+
+#undef SKIN_CALL_SLOW_MS
+#undef SKIN_CALL_SLOW_COOLDOWN
