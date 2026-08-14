@@ -58,20 +58,22 @@
 		. += "<span class='notice'>The status display reads: Smelting <b>[ore_multiplier]</b> sheet(s) per piece of ore.<br>Reward point generation at <b>[point_upgrade*100]%</b>.<br>Ore pickup speed at <b>[ore_pickup_rate]</b>.</span>"
 
 /obj/machinery/mineral/ore_redemption/proc/smelt_ore(obj/item/stack/ore/O)
-	// Снятие с буфера идёт ПЕРВЫМ делом, до единого отказа. Руда уже внутри машины,
-	// а любой выход мимо этой строки оставлял её в ore_buffer до конца раунда
-	// жёсткой ссылкой: выход по refined_type == null (переработанные и искусственные
-	// кристаллы, шлак), по уничтоженному стеку и по отсутствующему контейнеру.
-	ore_buffer -= O
-
+	// С буфера снимаем только терминальные исходы. QDELETED и refined_type == null
+	// больше не переплавятся; отсутствие сило — временное, следующий process
+	// должен повторить попытку. Иначе руда вычёркивается из ore_buffer и остаётся
+	// в contents, а process_all_ores сканирует только соседний турф/ящик.
 	if(QDELETED(O))
+		ore_buffer -= O
 		return
 	var/datum/component/material_container/mat_container = materials.mat_container
 	if (!mat_container)
 		return
 
 	if(O.refined_type == null)
+		ore_buffer -= O
 		return
+
+	ore_buffer -= O
 
 	if(O && O.refined_type)
 		points += O.points * point_upgrade * O.amount

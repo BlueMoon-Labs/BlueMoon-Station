@@ -26,25 +26,38 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 /datum/log_viewer/New(mob/target)
 	GLOB.log_viewer_instances += src
 	if(target)
-		target_mob = target
-		target_client = target.client
-		// Панель живёт, пока АДМИН не закроет окно, а цель за это время могут
-		// гибнуть, борговать или удалить админкой. Жёсткая ссылка на чужое тело в
-		// датуме с раундовым временем жизни - это ровно тот один внешний держатель,
-		// с которым труп уезжал в харддел на ~300 мс заморозки мира. Для логов
-		// хватает сохранённого ckey.
-		target_ckey_stored = target.ckey || target_client?.ckey
-		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
-		if(target_client)
-			// Клиент держится ровно тем же способом и стоит дороже моба: у /client
-			// Destroy возвращает QDEL_HINT_HARDDEL_NOW, то есть выход игрока с
-			// открытой у админа панелью - это синхронный харддел на ~600 мс прямо
-			// в момент дисконнекта. ui_data всё равно откатывается на
-			// target_ckey_stored, так что терять тут нечего.
-			RegisterSignal(target_client, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
-			source_type = LOGSRC_CLIENT
-		else
-			source_type = LOGSRC_MOB
+		set_target(target)
+
+/// Единственная точка смены цели. New() и select_ckey обязаны идти сюда:
+/// иначе старый моб остаётся подписанным, а новый снова держится сильно.
+/datum/log_viewer/proc/set_target(mob/new_target)
+	if(target_mob)
+		UnregisterSignal(target_mob, COMSIG_PARENT_QDELETING)
+	if(target_client)
+		UnregisterSignal(target_client, COMSIG_PARENT_QDELETING)
+	target_mob = null
+	target_client = null
+	if(!new_target)
+		return
+	// Панель живёт, пока АДМИН не закроет окно, а цель за это время могут
+	// гибнуть, борговать или удалить админкой. Жёсткая ссылка на чужое тело в
+	// датуме с раундовым временем жизни - это ровно тот один внешний держатель,
+	// с которым труп уезжал в харддел на ~300 мс заморозки мира. Для логов
+	// хватает сохранённого ckey.
+	target_mob = new_target
+	target_client = new_target.client
+	target_ckey_stored = new_target.ckey || target_client?.ckey
+	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
+	if(target_client)
+		// Клиент держится ровно тем же способом и стоит дороже моба: у /client
+		// Destroy возвращает QDEL_HINT_HARDDEL_NOW, то есть выход игрока с
+		// открытой у админа панелью - это синхронный харддел на ~600 мс прямо
+		// в момент дисконнекта. ui_data всё равно откатывается на
+		// target_ckey_stored, так что терять тут нечего.
+		RegisterSignal(target_client, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdeleting))
+		source_type = LOGSRC_CLIENT
+	else
+		source_type = LOGSRC_MOB
 
 /datum/log_viewer/proc/on_target_qdeleting(datum/source)
 	SIGNAL_HANDLER
@@ -56,8 +69,7 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 	target_mob = null
 
 /datum/log_viewer/Destroy()
-	target_mob = null
-	target_client = null
+	set_target(null)
 	GLOB.log_viewer_instances -= src
 	SStgui.close_uis(src)
 	return ..()
@@ -180,13 +192,7 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 			var/ckey = params["ckey"]
 			if(ckey)
 				target_ckey_stored = ckey
-				var/mob/M = get_mob_by_ckey(ckey)
-				if(M)
-					target_mob = M
-					target_client = M.client
-				else
-					target_mob = null
-					target_client = null
+				set_target(get_mob_by_ckey(ckey))
 			return TRUE
 
 		if("set_source")

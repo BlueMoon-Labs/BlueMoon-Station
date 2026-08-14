@@ -484,6 +484,50 @@
 	deltimer(short_timer_id)
 	deltimer(long_timer_id)
 
+	// Слабая ссылка в колбэке - средство, а не цель. Цель в том, чтобы цель,
+	// удалённая ДРУГИМ путём при живом таймере, честно собралась сборщиком.
+	configure_immediate_gc()
+	var/pending_timer = arm_qdel_in_then_destroy_early()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_no_gc_failures(/obj/effect/gc_rewrite_test_object, "Цель отложенного qdel'а с ещё не сработавшим таймером")
+	deltimer(pending_timer)
+
+/// Весь жизненный цикл объекта живёт в отдельном фрейме - см. предупреждение о
+/// фантомных держателях у configure_immediate_gc().
+/datum/unit_test/gc_rewrite_qdel_in_always_uses_weakref/proc/arm_qdel_in_then_destroy_early()
+	var/obj/effect/gc_rewrite_test_object/early = allocate(/obj/effect/gc_rewrite_test_object)
+	. = QDEL_IN_STOPPABLE(early, GC_SOFTCHECK_TIMEOUT + 1)
+	allocated -= early
+	qdel(early)
+
+/// Не-датумы обязаны лежать в колбэке сами собой: WEAKREF() на /client даёт null,
+/// и AFK-кик в SSserver_maint (QDEL_IN(C, 1)) стал бы тихим no-op.
+/// Заодно проверяем, что аргумент макроса вычисляется РОВНО один раз: в тресерах
+/// есть QDEL_IN(new /obj/effect/projectile_lighting(...), ...), и вторая подстановка
+/// оставила бы лишний светящийся эффект, которого уже никто не удалит.
+/datum/unit_test/gc_rewrite_qdel_in_keeps_non_datums_strong
+	parent_type = /datum/unit_test/gc_rewrite_base
+	var/argument_evaluations = 0
+
+/datum/unit_test/gc_rewrite_qdel_in_keeps_non_datums_strong/proc/count_evaluation(target)
+	argument_evaluations++
+	return target
+
+/datum/unit_test/gc_rewrite_qdel_in_keeps_non_datums_strong/Run()
+	var/list/not_a_datum = list("клиент на AFK-кике")
+	var/non_datum_timer = QDEL_IN_STOPPABLE(not_a_datum, 10 MINUTES)
+	var/datum/timedevent/non_datum_event = SStimer.timer_id_dict[non_datum_timer]
+	TEST_ASSERT_NOTNULL(non_datum_event, "Отложенный qdel не-датума не создал таймер")
+	TEST_ASSERT_EQUAL(non_datum_event.callBack.arguments[1], not_a_datum,
+		"Не-датум ушёл в колбэк не самим собой - значит WEAKREF() дал null и отложенный qdel стал no-op")
+	deltimer(non_datum_timer)
+
+	var/obj/effect/gc_rewrite_test_object/subject = allocate(/obj/effect/gc_rewrite_test_object)
+	var/single_eval_timer = QDEL_IN_STOPPABLE(count_evaluation(subject), 10 MINUTES)
+	TEST_ASSERT_EQUAL(argument_evaluations, 1,
+		"QDEL_IN вычислил свой аргумент [argument_evaluations] раз(а) вместо одного")
+	deltimer(single_eval_timer)
+
 /datum/unit_test/gc_rewrite_recover_preserves_queue_times
 	parent_type = /datum/unit_test/gc_rewrite_base
 
