@@ -1547,6 +1547,12 @@
 	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "tiny fan did not block air")
 	TEST_ASSERT(!length(room.atmos_adjacent_turfs), "a tiny fan left its turf atmos-adjacent to its neighbours")
 
+	// Печать фана распространяется и на тепло: запечатанный им проём раньше
+	// тащил температуру камеры наружу коэффициентом окна.
+	TEST_ASSERT(tiny_fan.BlockThermalConductivity(), "тинифан не объявил себя барьером для тепла")
+	TEST_ASSERT_EQUAL(room.conductivity_blocked_directions & (NORTH|SOUTH|EAST|WEST), (NORTH|SOUTH|EAST|WEST), "тинифан не перекрыл теплопроводность своего турфа")
+	TEST_ASSERT(!room.conductivity_directions(), "conductivity_directions всё ещё отдаёт направление сквозь тинифан")
+
 	// The pressure difference the old safety clutch used to fail open on is
 	// exactly what the fan is built for.
 	var/datum/gas_mixture/room_air = room.return_air()
@@ -1562,9 +1568,11 @@
 	powered_fan.use_power = NO_POWER_USE
 	powered_fan.refresh_atmos_barrier()
 	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_NO, "powered fan did not block air while powered")
+	TEST_ASSERT(powered_fan.BlockThermalConductivity(), "поверфан под питанием держит воздух, но не тепло")
 	powered_fan.use_power = ACTIVE_POWER_USE
 	powered_fan.refresh_atmos_barrier()
 	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_YES, "unpowered fan still blocked air")
+	TEST_ASSERT(!powered_fan.BlockThermalConductivity(), "обесточенный поверфан продолжил держать тепло")
 
 	for(var/turf/open/test_turf as anything in test_turfs)
 		var/datum/gas_mixture/snapshot = saved_air[test_turf]

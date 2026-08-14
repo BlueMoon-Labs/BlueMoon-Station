@@ -71,6 +71,7 @@
 
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
+#include "airalarm_mode_cutoff.dm"
 #include "airalarm_thresholds.dm"
 #include "atmos_engineering_fixes.dm"
 #include "atmos_exposure_consumers.dm"
