@@ -123,7 +123,7 @@
 	// Арифметический рост: каждый проц увеличивает интенсивность на internal_injury_increment.
 	// Полностью останавливается как только начато лечение (gelled == TRUE).
 	// Бинт (limb.current_gauze) не останавливает, но сильно ЗАМЕДЛЯЕТ рост - отсрочка до хирургии, не замена ей.
-	if(internal_injury_intensity > 0 && !gelled && (limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD))
+	if(!victim_appears_dead() && internal_injury_intensity > 0 && !gelled && (limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD))
 		internal_injury_tick_counter++
 		if(internal_injury_tick_counter >= internal_injury_tick_interval)
 			internal_injury_tick_counter = 0
