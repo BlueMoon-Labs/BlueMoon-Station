@@ -745,7 +745,7 @@ There are several things that need to be remembered:
 		if(wear_suit)
 			var/obj/item/clothing/suit/S = wear_suit
 			// в слот верхней одежды лезут и не-костюмы (полотенца, кулеры), а taur_types_icon_whitelist объявлен только на /obj/item/clothing/suit
-			var/obj/item/clothing/suit/taur_suit = istype(S) ? S : null
+			var/obj/item/clothing/suit/taur_suit = astype(S, /obj/item/clothing/suit)
 			wear_suit.screen_loc = ui_oclothing
 			if(client && hud_used && hud_used.hud_shown)
 				if(hud_used.inventory_shown)

@@ -35,27 +35,28 @@ def load(path):
         "hb": [], "snapshot": [], "event": [], "breakdown": [],
         "mprof": [], "tprof": [], "summary": None, "features": None,
     }
-    for lineno, line in enumerate(open(path, encoding="utf-8"), start=1):
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            rec = json.loads(line)
-        except json.JSONDecodeError:
-            # A run killed on TIMEOUT_SECONDS leaves the world mid-append, so the
-            # last line is half-written. Everything before it is still good data
-            # and is the only record of what the timed-out run managed to do -
-            # dying on a traceback here would make it unreachable.
-            print(
-                f"WARNING: {path}:{lineno}: skipping malformed line "
-                f"(truncated run?)", file=sys.stderr
-            )
-            continue
-        kind = rec.get("rec")
-        if kind in ("summary", "features"):
-            records[kind] = rec
-        elif kind in records:
-            records[kind].append(rec)
+    with open(path, encoding="utf-8") as handle:
+        for lineno, line in enumerate(handle, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                # A run killed on TIMEOUT_SECONDS leaves the world mid-append, so
+                # the last line is half-written. Everything before it is still good
+                # data and is the only record of what the timed-out run managed to
+                # do - dying on a traceback here would make it unreachable.
+                print(
+                    f"WARNING: {path}:{lineno}: skipping malformed line "
+                    f"(truncated run?)", file=sys.stderr
+                )
+                continue
+            kind = rec.get("rec")
+            if kind in ("summary", "features"):
+                records[kind] = rec
+            elif kind in records:
+                records[kind].append(rec)
     return records
 
 
@@ -188,7 +189,7 @@ def stress_report(hb, events, mprofs):
 NESTED_SLOTS = {"space", "nb_compare", "nb_share", "nb_archive", "nb_sky_compare"}
 
 
-def turf_profile_stats(tprofs, subset=None):
+def turf_profile_stats(records):
     """Pool every armed tprof cycle into one budget.
 
     The driver arms the profiler once every ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY
@@ -202,7 +203,6 @@ def turf_profile_stats(tprofs, subset=None):
     nothing across runs whose turf counts differ; microseconds per processed turf
     is comparable, and it is the number that multiplies out to the phase cost.
     """
-    records = tprofs if subset is None else subset
     if not records:
         return None
     slots = {}
@@ -285,8 +285,8 @@ def turf_profile_report(tprofs):
     print_turf_budget("whole run", pooled)
     loaded, settled = split_tprofs(tprofs)
     if loaded and settled:
-        print_turf_budget("loaded half", turf_profile_stats(tprofs, loaded))
-        print_turf_budget("settled half", turf_profile_stats(tprofs, settled))
+        print_turf_budget("loaded half", turf_profile_stats(loaded))
+        print_turf_budget("settled half", turf_profile_stats(settled))
     counts = pooled["counts"]
     if counts:
         interesting = sorted(counts.items(), key=lambda item: -item[1])
@@ -669,7 +669,14 @@ def compare_turf_profile(baseline_paths, candidate_paths, warmup):
         cand_per = cand["counts"].get(name, 0) / cand["turfs"]
         if base_per < 0.01 and cand_per < 0.01:
             continue
-        if base_per and abs(cand_per - base_per) / base_per > 0.05:
+        if not base_per:
+            # Work that did not exist on the base side at all. Relative change is
+            # undefined, and skipping the counter reported "nothing shifted" for
+            # the single most interesting case: the candidate invented new work.
+            shifted.append(f"{name} NEW ->{cand_per:.3f}/turf")
+        elif not cand_per:
+            shifted.append(f"{name} {base_per:.3f}->GONE")
+        elif abs(cand_per - base_per) / base_per > 0.05:
             shifted.append(f"{name} {base_per:.3f}->{cand_per:.3f}/turf")
     if shifted:
         print("  work-per-turf shifted: " + ", ".join(shifted))

@@ -121,14 +121,21 @@ GLOBAL_LIST_EMPTY(log_viewer_instances)
 	.["ckeys_list"] = get_all_logged_ckeys()
 
 	var/list/log_source
-	if(target_mob)
+	if(source_type == LOGSRC_CLIENT)
+		// Клиентские логи живут в player_details, а не в мобе, и переживают и
+		// смерть тела, и дисконнект. Живого клиента спрашиваем напрямую, иначе
+		// идём в GLOB по сохранённому ckey: панель остаётся открытой после
+		// COMSIG_PARENT_QDELETING, и откат на target_mob.logging подменял бы
+		// клиентские логи мобовскими молча, под той же подписью "Client".
+		var/client/logging_client = target_mob?.client || target_client
+		if(logging_client)
+			log_source = logging_client.player_details?.logging
+		if(!log_source && target_ckey_stored)
+			var/datum/player_details/PD = GLOB.player_details[target_ckey_stored]
+			if(PD)
+				log_source = PD.logging
+	else if(target_mob)
 		log_source = target_mob.logging
-		if(source_type == LOGSRC_CLIENT && target_mob.client)
-			log_source = target_mob.client.player_details.logging
-	else if(target_ckey_stored && source_type == LOGSRC_CLIENT)
-		var/datum/player_details/PD = GLOB.player_details[target_ckey_stored]
-		if(PD)
-			log_source = PD.logging
 
 	if(!log_source)
 		.["logs"] = list()

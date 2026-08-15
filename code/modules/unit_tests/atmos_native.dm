@@ -1820,7 +1820,20 @@
 	var/list/floors = SSair.reactions_key_gas_floor
 	TEST_ASSERT(islist(by_gas), "индекс реакций по ключевому газу не построен")
 	TEST_ASSERT(islist(floors), "пол требований по бакету не построен")
-	TEST_ASSERT_EQUAL(length(floors), length(by_gas), "у пола и индекса разное число бакетов: [length(floors)] против [length(by_gas)]")
+	TEST_ASSERT(length(floors) <= length(by_gas), "пол выдан газу без бакета: [length(floors)] полов против [length(by_gas)] бакетов")
+
+	// Газ, который производит реакция, идущая РАНЬШЕ последнего потребителя из его
+	// бакета, обязан остаться без пола: моли на сборе кандидатов ещё нулевые, а к
+	// моменту потребителя их уже хватает. Фреон - живой пример (freonformation с
+	// приоритетом 33 против freonfire с -12).
+	var/list/last_consumer_index = list()
+	var/list/first_producer_index = list()
+	for(var/datum/gas_reaction/reaction as anything in SSair.gas_reactions)
+		if(reaction.synthesis_gas && isnull(first_producer_index[reaction.synthesis_gas]))
+			first_producer_index[reaction.synthesis_gas] = reaction.sort_index
+	for(var/id in by_gas)
+		for(var/datum/gas_reaction/reaction as anything in by_gas[id])
+			last_consumer_index[id] = reaction.sort_index
 
 	// Инвариант точности. Пол ниже любого требования бакета - гейт не имеет права
 	// срезать реакцию, у которой был шанс пойти; пол выше минимума - гейт
@@ -1828,6 +1841,11 @@
 	for(var/id in by_gas)
 		var/list/bucket = by_gas[id]
 		var/floor_value = floors[id]
+		var/producer_index = first_producer_index[id]
+		var/fed_before_use = !isnull(producer_index) && producer_index < last_consumer_index[id]
+		if(fed_before_use)
+			TEST_ASSERT_NULL(floor_value, "у газа [id] есть производитель раньше потребителя, но бакету всё равно выдали пол [floor_value] - реакция отложится на фаер")
+			continue
 		TEST_ASSERT_NOTNULL(floor_value, "бакет [id] остался без пола")
 		TEST_ASSERT(floor_value >= 0, "пол бакета [id] отрицательный ([floor_value])")
 		var/expected

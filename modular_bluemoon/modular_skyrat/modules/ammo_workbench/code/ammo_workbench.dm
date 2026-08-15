@@ -1,3 +1,6 @@
+/// Во сколько раз турборежим ускоряет печать одного патрона.
+#define AMMO_WORKBENCH_TURBO_SPEEDUP 8
+
 /obj/machinery/ammo_workbench
 	name = "ammunitions workbench"
 	desc = "A machine, somewhat akin to a lathe, made specifically for manufacturing ammunition. It has a slot for magazines, ammo boxes, clips... anything that holds ammo."
@@ -463,7 +466,7 @@
 	time_per_round = clamp(time_efficiency, 1, 20)
 	base_time_per_round = time_per_round
 	// пара лазеров пятого-шестого ранга уводит time_efficiency в минус, поэтому турбо считаем от уже зажатого значения
-	turbo_time_per_round = base_time_per_round / 8
+	turbo_time_per_round = base_time_per_round / AMMO_WORKBENCH_TURBO_SPEEDUP
 
 	var/efficiency = 1.4
 	for(var/obj/item/stock_parts/manipulator/new_manipulator in component_parts)
@@ -681,3 +684,5 @@
 			A.disabled = !mend
 		if(WIRE_ZAP)
 			A.shock(usr, 50)
+
+#undef AMMO_WORKBENCH_TURBO_SPEEDUP

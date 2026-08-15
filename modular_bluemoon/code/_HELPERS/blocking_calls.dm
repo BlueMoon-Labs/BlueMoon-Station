@@ -98,7 +98,11 @@
 	if(pinned)
 		pinned.pending_skin_calls--
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
-	mark_skin_call_cost(target, cost_ms)
+	// Клиент берётся закреплённый, а не перерешивается по target: за время
+	// round-trip игрок мог отвалиться, и у моба client уже null - отметка
+	// "этот скин медленный" потерялась бы ровно на тех клиентах, из-за
+	// которых её и ставят.
+	mark_skin_call_cost(pinned, cost_ms)
 	// Описание собираем ТОЛЬКО для дорогих вызовов: в статистику по типам идёт каждый,
 	// а имя нужно лишь тем, кто попадёт в кольцо. Интерполяция строки на каждом вызове
 	// стоила бы дороже самого замера
@@ -117,7 +121,8 @@
 	if(pinned)
 		pinned.pending_skin_calls--
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
-	mark_skin_call_cost(target, cost_ms)
+	// Тот же закреплённый клиент, что и в tracked_winget: см. комментарий там.
+	mark_skin_call_cost(pinned, cost_ms)
 	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms, started_world)
 
 /**

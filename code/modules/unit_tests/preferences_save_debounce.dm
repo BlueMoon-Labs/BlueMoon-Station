@@ -30,6 +30,18 @@
 		return TRUE
 	return ..()
 
+/// Половина фичи - это очередь ПЕРСОНАЖА, и без этой подмены она не только не
+/// проверялась, но и уходила в настоящую запись на диск прямо из юнит-теста.
+/datum/preferences/unit_test_debounce/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+	if(bypass_cooldown)
+		disk_writes++
+		if(char_queue)
+			deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
+		return TRUE
+	return ..()
+
 /datum/unit_test/preferences_save_debounce
 
 /datum/unit_test/preferences_save_debounce/Run()
@@ -38,7 +50,7 @@
 	// New() закрепляет случайного персонажа на диске СРАЗУ (save_preferences(TRUE)
 	// и save_character(TRUE)) - иначе следующий заход сгенерировал бы другого. Это
 	// не дебаунс, а его штатное исключение, поэтому счётчик обнуляем.
-	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "первичное создание префов перестало писать случайного персонажа на диск сразу")
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "первичное создание префов перестало писать случайного персонажа на диск сразу")
 	prefs.disk_writes = 0
 
 	// Пачка правок подряд - ровно то, что делает игрок в меню настроек.
@@ -57,21 +69,41 @@
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "вторая пачка правок пробила дебаунс")
 	TEST_ASSERT_EQUAL(prefs.pref_queue_deadline, deadline, "перенос сдвинул крайний срок записи")
 
+	// Очередь ПЕРСОНАЖА - вторая половина фичи, со своим таймером и своим сроком.
+	// Правки слота идут по ней, и в проде их не меньше, чем правок настроек.
+	for(var/i in 1 to 10)
+		prefs.save_character()
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "правка персонажа ушла на диск сразу, вместо дебаунса")
+	TEST_ASSERT_NOTNULL(prefs.char_queue, "пачка правок персонажа не зарядила отложенную запись")
+	var/char_deadline = prefs.char_queue_deadline
+	TEST_ASSERT(char_deadline > world.time, "крайний срок отложенной записи персонажа не выставлен")
+	for(var/i in 1 to 10)
+		prefs.save_character()
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "вторая пачка правок персонажа пробила дебаунс")
+	TEST_ASSERT_EQUAL(prefs.char_queue_deadline, char_deadline, "перенос сдвинул крайний срок записи персонажа")
+
 	// Логаут обязан довести отложенное до диска: ребут мира таймеры не доигрывает.
+	// Очередей две, значит и записей две.
 	prefs.flush_pending_saves()
-	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "сброс на логауте не довёл отложенную запись до диска")
-	TEST_ASSERT_NULL(prefs.pref_queue, "сброс не снял отложенный таймер")
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "сброс на логауте не довёл обе отложенные записи до диска")
+	TEST_ASSERT_NULL(prefs.pref_queue, "сброс не снял отложенный таймер настроек")
+	TEST_ASSERT_NULL(prefs.char_queue, "сброс не снял отложенный таймер персонажа")
 
 	// Load обязан снять очередь БЕЗ записи, иначе колбэк затрёт прочитанный слот.
 	prefs.save_preferences()
-	TEST_ASSERT_NOTNULL(prefs.pref_queue, "правка после сброса не зарядила новую очередь")
+	prefs.save_character()
+	TEST_ASSERT_NOTNULL(prefs.pref_queue, "правка после сброса не зарядила новую очередь настроек")
+	TEST_ASSERT_NOTNULL(prefs.char_queue, "правка после сброса не зарядила новую очередь персонажа")
 	prefs.cancel_pending_saves()
-	TEST_ASSERT_NULL(prefs.pref_queue, "Load не снял отложенный таймер")
-	TEST_ASSERT_EQUAL(prefs.disk_writes, 1, "отмена очереди не должна писать на диск")
+	TEST_ASSERT_NULL(prefs.pref_queue, "Load не снял отложенный таймер настроек")
+	TEST_ASSERT_NULL(prefs.char_queue, "Load не снял отложенный таймер персонажа")
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "отмена очереди не должна писать на диск")
 
-	// Явный Save бьёт в диск сразу.
+	// Явный Save бьёт в диск сразу - обоими путями.
 	prefs.save_preferences(TRUE)
-	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "явный Save не пробил дебаунс")
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 3, "явный Save настроек не пробил дебаунс")
+	prefs.save_character(TRUE)
+	TEST_ASSERT_EQUAL(prefs.disk_writes, 4, "явный Save персонажа не пробил дебаунс")
 
 	// Двадцать правок сложились в одну запись - это и есть предмет теста.
 	prefs.pref_queue = null

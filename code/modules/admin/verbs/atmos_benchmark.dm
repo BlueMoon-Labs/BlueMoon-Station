@@ -791,8 +791,17 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 			INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_build_scenario))
 		return
 	headless_bench_cycles++
+	// Событие сценария идёт ВНУТРИ фаера SSair, то есть его стоимость сидит в общем
+	// `cost` записи. У sustained-leak это долив полосы подачи каждый цикл - и он там
+	// намеренно, полоса и есть граничное условие сценария. Асинхронно его не увести
+	// (долив обязан лечь между фазами, а не когда-нибудь), поэтому вклад просто
+	// измеряется и пишется отдельным полем: A/B он не искажает в любом случае, но
+	// абсолютный `cost` без этой поправки завышен.
+	var/bench_event_ms = 0
 	if(headless_bench_scenario)
+		var/event_started = TICK_USAGE_REAL
 		atmos_headless_bench_scenario_event(headless_bench_cycles)
+		bench_event_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - event_started)
 	var/largest_group = 0
 	var/scenario_largest_group = 0
 	var/track_scenario_areas = length(headless_bench_areas) > 0
@@ -847,6 +856,9 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"largest_eg" = largest_group,
 		"scenario_at" = track_scenario_areas ? scenario_active_turfs : null,
 		"scenario_largest_eg" = track_scenario_areas ? scenario_largest_group : null,
+		// Стоимость самого харнесса внутри этого фаера: она уже сидит в "cost", и
+		// абсолютные числа надо читать как cost - c_bench.
+		"c_bench" = round(bench_event_ms, 0.01),
 		"mc" = headless_bench_mc_slices,
 		"td_c" = round(SStime_track.time_dilation_current, 0.01),
 		"scenario" = headless_bench_scenario,
