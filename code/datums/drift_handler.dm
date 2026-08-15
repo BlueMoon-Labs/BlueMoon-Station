@@ -181,8 +181,6 @@
 	if(!drifting_loop)
 		return
 	if(parent.Process_Spacemove(angle2dir(drifting_loop.angle), continuous_move = TRUE))
-		if(isnull(drifting_loop) || is_thrust_active())
-			return
 		glide_to_halt(visual_delay)
 		return
 	ignore_next_glide = TRUE
@@ -215,17 +213,6 @@
 	if(ignore_next_glide)
 		ignore_next_glide = FALSE
 		return
-	var/mob/living/C = parent
-	if(iscarbon(C))
-		var/obj/item/thruster = C.get_jetpack() || C.getorganslot(ORGAN_SLOT_THRUSTERS)
-		if(istype(thruster, /obj/item/tank/jetpack))
-			var/obj/item/tank/jetpack/pack = thruster
-			if(pack.on && pack.stabilizers)
-				return
-		else if(istype(thruster, /obj/item/mod/module/jetpack))
-			var/obj/item/mod/module/jetpack/module = thruster
-			if(module.active && module.stabilizers)
-				return
 	// Defer the drift at most once per loop cycle. A held thrust/move key fires a glide update on every step
 	// (vehicle_move's set_glide_size, plus Move()'s glide_size_override from step()); re-pausing on each one keeps
 	// shoving the loop's next fire past the key-repeat interval, so the drift never advances and the mech "freezes"
@@ -249,19 +236,6 @@
 		drifting_loop = null
 		QDEL_IN(L, 0)
 	QDEL_IN(src, max(world.tick_lag, glide_for))
-
-/datum/drift_handler/proc/is_thrust_active()
-	var/mob/living/C = parent
-	if(!iscarbon(C))
-		return FALSE
-	var/obj/item/thruster = C.get_jetpack() || C.getorganslot(ORGAN_SLOT_THRUSTERS)
-	if(istype(thruster, /obj/item/tank/jetpack))
-		var/obj/item/tank/jetpack/pack = thruster
-		return pack.on && pack.stabilizers
-	else if(istype(thruster, /obj/item/mod/module/jetpack))
-		var/obj/item/mod/module/jetpack/module = thruster
-		return module.active && module.stabilizers
-	return FALSE
 
 /// Bracing / scrubbing speed when something to push against is in range (see /mob/get_spacemove_backup)
 /datum/drift_handler/proc/attempt_halt(movement_dir, continuous_move, atom/backup)
