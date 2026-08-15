@@ -31,12 +31,6 @@ const HoldButton = (props) => {
       }}
       onMouseUp={stopHolding}
       onMouseLeave={stopHolding}
-      onKeyDown={(e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onHoldRef.current();
-        }
-      }}
     />
   );
 };
@@ -73,7 +67,7 @@ export const Pixelshift = (props) => {
   const { act } = useBackend();
   const [offsetX, setOffsetX] = useLocalState('pixelshift_offset_x', 0);
   const [offsetY, setOffsetY] = useLocalState('pixelshift_offset_y', 0);
-  const [speed, setSpeed] = useLocalState('pixelshift_speed', 10);
+  const [speed, setSpeed] = useLocalState('pixelshift_speed', 30);
   const [animateOnClick, setAnimateOnClick] = useLocalState('pixelshift_animate_on_click', false);
 
   const syncOffset = (x, y, newSpeed, playAnimation) => {

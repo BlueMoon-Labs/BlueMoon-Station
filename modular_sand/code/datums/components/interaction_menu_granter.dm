@@ -29,8 +29,7 @@
 	// BLUEMOON ADD
 	var/pixel_shift_x = 0
 	var/pixel_shift_y = 0
-	var/pixel_shift_speed = 10
-	var/matrix/pixel_shift_base_transform
+	var/pixel_shift_speed = 30
 	var/pixel_shift_animating = FALSE
 	// BLUEMOON ADD
 
@@ -723,7 +722,6 @@
 			if(params["type"] == "reset")
 				src.pixel_shift_x = 0
 				src.pixel_shift_y = 0
-				pixel_shift_base_transform = matrix(parent_mob.transform)
 				return TRUE
 			return FALSE
 		if("interact")
@@ -999,18 +997,14 @@
 		if("open_customs_window")
 			return open_customs_window(parent_mob)
 
-/// Анимирует пиксель-сдвиг персонажа к заданным координатам и обратно.
-//BLUEMOON ADD
+//BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
 	if(!mob || pixel_shift_animating || (!pixel_shift_x && !pixel_shift_y))
 		return
 
 	pixel_shift_animating = TRUE
 
-	if(!pixel_shift_base_transform)
-		pixel_shift_base_transform = matrix(mob.transform)
-
-	var/matrix/original = matrix(pixel_shift_base_transform)
+	var/matrix/original = matrix(mob.transform)
 	var/matrix/target = matrix(original)
 	target.Translate(clamp(pixel_shift_x, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM), clamp(pixel_shift_y, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM))
 	var/distance = abs(pixel_shift_x) + abs(pixel_shift_y)
@@ -1018,7 +1012,7 @@
 	animate(mob, transform = target, time = duration, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	animate(mob, transform = original, time = duration, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 	addtimer(CALLBACK(src, PROC_REF(pixel_shift_animation_finished)), duration * 2)
-//BLUEMOON ADD
+//BLUEMOON ADD END
 
 /datum/component/interaction_menu_granter/proc/pixel_shift_animation_finished()
 	pixel_shift_animating = FALSE
