@@ -13,6 +13,7 @@
 	icon_state = "tattoo_gun"
 	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
+	custom_premium_price = PRICE_REALLY_EXPENSIVE
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	throwforce = 0

@@ -897,9 +897,17 @@
 
 //json decode that will return null on parse error instead of runtiming.
 /proc/safe_json_decode(string, default = list())
+	//пустой вход - это отсутствующая запись сейвфайла (новый персонаж, поле ещё не
+	//мигрировало), а не битый JSON. Логировать такое незачем: за раунд набегало
+	//под две сотни трейсов на ровном месте
+	if(isnull(string) || !length("[string]"))
+		return null
 	try
 		return json_decode(string)
-	catch
+	catch(var/exception/error)
+		//молчаливый null прятал источник битого JSON - оставляем след со стеком
+		//вызова и началом входной строки, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input ([length("[string]")]): [copytext_char("[string]", 1, 200)]")
 		return null
 
 /**

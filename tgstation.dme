@@ -5128,7 +5128,6 @@
 #include "modular_bluemoon\code\modules\tattoo\tattoo_gun.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_persistence.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_prefs_ui.dm"
-#include "modular_bluemoon\code\modules\tattoo\tattoo_supply.dm"
 #include "modular_bluemoon\code\modules\tattoo\tattoo_surgery.dm"
 #include "modular_bluemoon\code\modules\tgui\states\portal_device.dm"
 #include "modular_bluemoon\code\modules\tgui_panel\telemetry.dm"

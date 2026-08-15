@@ -18,6 +18,7 @@
 	icon_state = "tube-construct-item"
 	result_path = /obj/structure/light_construct
 	inverse = TRUE
+	allow_mouse_position = FALSE
 
 /obj/item/wallframe/light_fixture/small
 	name = "small light fixture frame"
