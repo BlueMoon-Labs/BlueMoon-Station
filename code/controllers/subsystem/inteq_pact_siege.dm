@@ -56,6 +56,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return bm_get_round_chaos() >= CONFIG_GET(number/chaos_for_a_hard_dynamic)
 
 /datum/inteq_pact_siege/proc/siege_mode_blocked_reason()
+	if(GLOB.round_type != ROUNDTYPE_EXTENDED && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)
+		return "Протокол осады доступен только в безопасных условиях."
 	var/required = CONFIG_GET(number/chaos_for_a_hard_dynamic)
 	var/chaos = bm_get_round_chaos()
 	if(chaos < required)
