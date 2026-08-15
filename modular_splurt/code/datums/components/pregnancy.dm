@@ -255,7 +255,6 @@
 	playsound(parent, 'sound/effects/splat.ogg', 70, TRUE)
 	var/mob/living/babby = new baby_type(get_turf(parent))
 
-	/// Clone the attacker's identity using aikofication-style DNA transfer
 	if(ishuman(user) && ishuman(babby))
 		var/mob/living/carbon/human/human_attacker = user
 		var/datum/dna/attacker_dna = new /datum/dna
