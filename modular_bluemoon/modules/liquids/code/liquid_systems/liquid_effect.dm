@@ -573,6 +573,8 @@
 	var/mob/living/carbon/human/H = AM
 	if(H.covered_in_cum)
 		return FALSE
+	if(!(H.client?.prefs.cit_toggles & CUM_ONTO))
+		return FALSE
 	for(var/r_type in reagent_list)
 		var/datum/reagent/R = GLOB.chemical_reagents_list[r_type]
 		if(R && istype(R, /datum/reagent/consumable/semen))
