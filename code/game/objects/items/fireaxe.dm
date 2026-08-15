@@ -91,6 +91,11 @@
 /obj/item/fireaxe/metal_h2_axe
 	icon = 'icons/obj/weapons/fireaxe.dmi'
 	icon_state = "metalh2_axe0"
+	//В руках спрайт берётся по item_state, а его нет - значит по icon_state, и в общих
+	//axes_*hand.dmi стейта metalh2_axe не было: топор был невидим на персонаже. Свои файлы,
+	//чтобы не переписывать общий апстримный лист целиком.
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/metalh2_axe_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/metalh2_axe_righthand.dmi'
 	name = "metal hydrogen fire axe"
 	desc = "Монтировочный топор с очень острым лезвием из металлического водорода — прочнее и опаснее обычного пожарного. Удобно носить в слоте костюма Elder Atmosian, не занимая рюкзак."
 	armour_penetration = 40

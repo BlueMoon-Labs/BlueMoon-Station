@@ -23360,8 +23360,7 @@
 	dir = 1
 	},
 /obj/effect/mob_spawn/human/lavaland_syndicate{
-	dir = 4;
-	faction = list("Syndicate")
+	dir = 4
 	},
 /turf/open/floor/carpet/blackred,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
@@ -29447,8 +29446,7 @@
 	dir = 1
 	},
 /obj/effect/mob_spawn/human/lavaland_syndicate{
-	dir = 4;
-	faction = list("Syndicate")
+	dir = 4
 	},
 /turf/open/floor/carpet/blackred,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)

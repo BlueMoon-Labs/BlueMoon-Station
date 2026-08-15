@@ -48,7 +48,11 @@
 
 /obj/item/ammo_casing/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Пробитие: BR[get_br_level()] ([BB.armour_penetration]% AP)</span>"
+	//у стреляной гильзы BB уже нет - осмотр такой падал на armour_penetration
+	if(!BB)
+		. += span_notice("Пробитие: гильза стреляная.")
+		return
+	. += span_notice("Пробитие: BR[get_br_level()] ([BB.armour_penetration]% AP)")
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"
