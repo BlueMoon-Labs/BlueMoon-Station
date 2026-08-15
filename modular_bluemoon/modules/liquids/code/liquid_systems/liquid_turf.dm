@@ -285,7 +285,7 @@
 
 	var/difference = abs(target_height - my_liquid_height)
 	//The: sand effect or "piling" Very good for performance
-	if(difference > 1) //SHOULD BE >= 1 or > 1? '>= 1' can lead into a lot of unnessecary processes, while ' > 1' will lead to a "piling" phenomena
+	if(difference > 2) //SHOULD BE >= 1 or > 1? '>= 1' can lead into a lot of unnessecary processes, while ' > 1' will lead to a "piling" phenomena
 		return TRUE
 	return FALSE
 
