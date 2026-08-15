@@ -291,7 +291,9 @@
 					H.right_eye_color = right_color
 					H.dna.update_ui_block(DNA_LEFT_EYE_COLOR_BLOCK)
 					H.dna.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
-					H.dna.species.handle_body()
+					// Без аргумента прок получал H = null и падал на remove_overlay:
+					// смена цвета глаз в зеркале не доезжала до спрайта.
+					H.dna.species.handle_body(H)
 	if(choice)
 		curse(user)
 

@@ -94,6 +94,9 @@
 		. += "cell-o1_blink"
 
 /obj/item/stock_parts/cell/proc/percent()		// return % charge of cell
+	// Ячейка без ёмкости - это ячейка, которой нет: ноль процентов, а не рантайм.
+	if(!maxcharge)
+		return 0
 	return 100*charge/maxcharge
 
 // use power from a cell

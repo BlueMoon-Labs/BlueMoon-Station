@@ -14,6 +14,31 @@
 	check_forbidden_vars()
 	check_debris_isolation()
 	check_component_parts_isolation()
+	check_appearance_list_survives()
+
+/// overlays и underlays - спец-списки BYOND: ассоциативного хранилища у них нет, и
+/// `source[аппиранс]` валится "bad index". copy_template_list лезла туда за значением
+/// на каждом оверлее, и копирование турфа рвалось на первом же - загрузка программы
+/// голодека давала 310 рантаймов за раунд (9972), а турфы приезжали недокопированными.
+///
+/// Список собирается НЕ литералом: обычный list() ассоциативное чтение переживает и
+/// вернул бы null вместо падения, то есть тест был бы зелёным и до фикса.
+/datum/unit_test/holodeck_copy_isolation/proc/check_appearance_list_survives()
+	var/turf/template = run_loc_floor_top_right
+	var/turf/receiver = run_loc_floor_bottom_left
+	TEST_ASSERT_NOTNULL(template, "тесту нужен турф-шаблон")
+	TEST_ASSERT_NOTNULL(receiver, "тесту нужен турф-приёмник")
+
+	template.add_overlay(mutable_appearance('icons/turf/floors.dmi', "grass"))
+	TEST_ASSERT(length(template.overlays), "предпосылка: у шаблона не появился оверлей")
+
+	var/list/copied = copy_template_list(template.overlays)
+	TEST_ASSERT_NOTNULL(copied, "копия overlays не вернулась - прок упал на ассоциативном чтении спец-списка")
+	TEST_ASSERT_EQUAL(length(copied), length(template.overlays), "копия overlays потеряла элементы: [length(copied)] против [length(template.overlays)]")
+
+	// И через настоящий путь голодека: оверлей обязан доехать до приёмника целиком.
+	receiver.copy_template_vars(template)
+	TEST_ASSERT_EQUAL(length(receiver.overlays), length(template.overlays), "копирование варов турфа не донесло оверлеи: [length(receiver.overlays)] против [length(template.overlays)]")
 
 /datum/unit_test/holodeck_copy_isolation/proc/check_forbidden_vars()
 	for(var/forbidden_var in list("component_parts", "debris", "actions"))

@@ -32,9 +32,7 @@
 	R.module.basic_modules += exptool
 	R.module.add_module(exptool, FALSE, TRUE)
 	var/newtool_index = R.module.modules.Find(exptool)
-	for(exptool in R.module) // Можно оформить и для старой сварки, здесь сделано для новой, без разницы.
-		R.module.modules.Swap(oldtool_index, newtool_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldtool_index, newtool_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, oldtool_index, newtool_index)
 	R.module.remove_module(oldtool, TRUE) // Замена произошла - избавляемся от старой сварки
 
 /obj/item/borg/upgrade/xwelding/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -53,10 +51,8 @@
 	R.module.basic_modules += oldtool
 	R.module.add_module(oldtool, FALSE, TRUE)
 	var/oldtool_index = R.module.modules.Find(oldtool)
-	for(oldtool in R.module)
-		R.module.modules.Swap(newtool_index, oldtool_index)
-		R.module.basic_modules.Swap(newtool_index, oldtool_index)
-		R.module.remove_module(exptool, TRUE)
+	robot_module_swap_slots(R.module, newtool_index, oldtool_index)
+	R.module.remove_module(exptool, TRUE)
 
 /* Shit doesnt work, work on it later
 /obj/item/borg/upgrade/plasma
@@ -123,9 +119,7 @@
 	R.module.basic_modules += BRPD
 	R.module.add_module(BRPD, FALSE, TRUE)
 	var/BRPD_index = R.module.modules.Find(BRPD)
-	for(BRPD in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RPD_index, BRPD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RPD_index, BRPD_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, RPD_index, BRPD_index)
 	R.module.remove_module(RPD, TRUE) // Замена произошла - избавляемся от старого инструмента
 
 /obj/item/borg/upgrade/bsrpd/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -144,10 +138,8 @@
 	R.module.basic_modules += RPD
 	R.module.add_module(RPD, FALSE, TRUE)
 	var/RPD_index = R.module.modules.Find(RPD)
-	for(RPD in R.module)
-		R.module.modules.Swap(BRPD_index, RPD_index)
-		R.module.basic_modules.Swap(BRPD_index, RPD_index)
-		R.module.remove_module(BRPD, TRUE)
+	robot_module_swap_slots(R.module, BRPD_index, RPD_index)
+	R.module.remove_module(BRPD, TRUE)
 
 /obj/item/borg/upgrade/expand/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()

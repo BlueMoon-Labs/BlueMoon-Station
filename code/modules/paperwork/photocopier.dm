@@ -239,6 +239,11 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 		if("remove_toner")
 			if(check_busy(usr))
 				return FALSE
+			// Кнопка доезжает и до уже пустого копира (второй клик, гонка с чужим
+			// извлечением): без проверки put_in_hands(null) отдаёт ложь, и следующая
+			// строка дёргает forceMove у null.
+			if(!toner_cartridge)
+				return FALSE
 			var/success = usr.put_in_hands(toner_cartridge)
 			if(!success)
 				toner_cartridge.forceMove(drop_location())

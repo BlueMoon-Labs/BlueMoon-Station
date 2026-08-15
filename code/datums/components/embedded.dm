@@ -428,6 +428,11 @@
 /// Someone is ripping out the item from the turf by hand
 /datum/component/embedded/Topic(datum/source, href_list)
 	var/mob/living/us = usr
+	// Предмет мог исчезнуть, пока ссылка висела в чужом окне осмотра. Тогда
+	// locate() тоже вернёт null, сравнение null == null пройдёт, и do_after
+	// закончится вызовом unembedded() у null.
+	if(QDELETED(weapon))
+		return
 	if(in_range(us, parent) && locate(href_list["embedded_object"]) == weapon)
 		if(harmful)
 			us.visible_message("<span class='notice'>[us] пытается достать [weapon] из [parent].</span>", "<span class='notice'>Вы пытаетесь достать [weapon] из [parent]...</span>")

@@ -230,6 +230,10 @@ GLOBAL_LIST_INIT_TYPED(skill_datums, /datum/skill, init_skill_datums())
 			mod_names |= M.name
 			level = M.apply_modifier(level, type, H, MODIFIER_TARGET_LEVEL)
 
+		// Модификатор навыка ничем не ограничен и легко выносит уровень за границы
+		// списка порогов - панель навыков падала "list index out of bounds" на любом
+		// забаффанном навыке. next_index строкой ниже клампится, а сам level - нет.
+		level = clamp(level, 0, max_levels)
 		if(level)
 			current_lvl_xp_sum = associative ? levels[levels[level]] : levels[level]
 		else

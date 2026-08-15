@@ -111,9 +111,13 @@
 	return ..()
 
 /obj/item/projectile/broom/proc/drop_everything()
+	// Снаряд может доехать сюда уже без турфа (каскад Destroy, попадание в линзу):
+	// get_step(null, dir) отдаёт null, и следующая строка читает у него contents.
 	var/turf/proj_turf = get_turf(src)
+	if(!proj_turf)
+		return
 	var/turf/next_turf = get_step(proj_turf, dir)
-	var/obj/machinery/disposal/bin/target_bin = locate(/obj/machinery/disposal/bin) in next_turf.contents
+	var/obj/machinery/disposal/bin/target_bin = next_turf ? (locate(/obj/machinery/disposal/bin) in next_turf.contents) : null
 	for(var/thing in pushedstuff)
 		var/atom/movable/AM = thing
 		if(target_bin)

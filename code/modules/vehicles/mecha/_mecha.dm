@@ -457,7 +457,12 @@
 			if(get_charge())
 				spark_system.start()
 				cell.charge -= min(20,cell.charge)
-				cell.maxcharge -= min(20,cell.maxcharge)
+				// Пол в единицу, а не в ноль. Замыкание съедало номинал ровно до нуля,
+				// и дальше ячейка кирпич навсегда (give() делает min(maxcharge, ...)),
+				// а каждое чтение процента заряда - деление на ноль: марудер с
+				// незалатанным замыканием дал 135 рантаймов за раунд 9972, из них 104
+				// прямо в тике SSobj.
+				cell.maxcharge = max(cell.maxcharge - 20, 1)
 
 	if(internal_temp_regulation)
 		if(cabin_air && cabin_air.return_volume() > 0)
@@ -493,7 +498,9 @@
 	if(LAZYLEN(occupants))
 		for(var/i in occupants)
 			var/mob/living/occupant = i
-			if(cell)
+			// maxcharge может быть нулевым (ячейка, поставленная картой без ёмкости) -
+			// без гарда это деление на ноль каждый process меха.
+			if(cell?.maxcharge > 0)
 				var/cellcharge = cell.charge/cell.maxcharge
 				switch(cellcharge)
 					if(0.75 to INFINITY)

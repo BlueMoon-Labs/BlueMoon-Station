@@ -1,6 +1,35 @@
 // robot_upgrades.dm
 // Contains various borg upgrades.
 
+/**
+ * Ставит новый инструмент киборга на место старого в обоих списках модуля.
+ *
+ * Индексы приходят из .Find(), и у ненайденного инструмента это ноль, а Swap(0, N) -
+ * "list index out of bounds". Рантайм рвёт прок ПОСРЕДИ замены: uneq_all() и
+ * held_items[slot] = null уже не отрабатывают, и следующий за этим qdel уносит
+ * предмет в харддел ссылкой из руки борга (раунд 9972: мешок мусора и швабра
+ * уборочного, плюс их robot_energy_storage). Ловится любым обрезом провода
+ * Reset Module, потому что ResetModule() пересобирает modules заново.
+ *
+ * Прежний код вместо проверки индексов крутил `for(item in R.module)` ВОКРУГ обмена:
+ * на двух подходящих предметах в модуле два обмена схлопывались обратно в no-op, а
+ * на нуле совпадений замена не происходила вовсе.
+ *
+ * basic_modules индексируется теми же числами, что и modules - так этот код писали
+ * с самого начала; здесь только добавлена проверка границ, семантика прежняя.
+ */
+/proc/robot_module_swap_slots(obj/item/robot_module/module, index_old, index_new)
+	if(!module || !index_old || !index_new || index_old == index_new)
+		return FALSE
+	var/list/module_list = module.modules
+	if(index_old > length(module_list) || index_new > length(module_list))
+		return FALSE
+	module_list.Swap(index_old, index_new)
+	var/list/basic_list = module.basic_modules
+	if(index_old <= length(basic_list) && index_new <= length(basic_list))
+		basic_list.Swap(index_old, index_new)
+	return TRUE
+
 /obj/item/borg/upgrade
 	name = "borg upgrade module."
 	desc = "Защищено FRM."
@@ -200,9 +229,7 @@
 	R.module.basic_modules += DD
 	R.module.add_module(DD, FALSE, TRUE)
 	var/DD_index = R.module.modules.Find(DD)
-	for(DD in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(D_index, DD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(D_index, DD_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, D_index, DD_index)
 	R.module.remove_module(D, TRUE) // Замена произошла - избавляемся от старого инструмента
 	R.module.remove_module(S, TRUE)
 
@@ -224,10 +251,8 @@
 	R.module.basic_modules += S
 	R.module.add_module(S, FALSE, TRUE)
 	var/D_index = R.module.modules.Find(D)
-	for(D in R.module)
-		R.module.modules.Swap(DD_index, D_index)
-		R.module.basic_modules.Swap(DD_index, D_index)
-		R.module.remove_module(DD, TRUE)
+	robot_module_swap_slots(R.module, DD_index, D_index)
+	R.module.remove_module(DD, TRUE)
 
 /obj/item/borg/upgrade/advcutter
 	name = "mining cyborg advanced plasma cutter"
@@ -337,9 +362,7 @@
 	R.module.basic_modules += bsbag
 	R.module.add_module(bsbag, FALSE, TRUE)
 	var/bsbag_index = R.module.modules.Find(bsbag)
-	for(bsbag in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(oldbag_index, bsbag_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldbag_index, bsbag_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, oldbag_index, bsbag_index)
 	R.module.remove_module(oldbag, TRUE) // Замена произошла - избавляемся от старого инструмента
 
 /obj/item/borg/upgrade/tboh/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -358,10 +381,8 @@
 	R.module.basic_modules += oldbag
 	R.module.add_module(oldbag, FALSE, TRUE)
 	var/oldbag_index = R.module.modules.Find(oldbag)
-	for(oldbag in R.module)
-		R.module.modules.Swap(bsbag_index, oldbag_index)
-		R.module.basic_modules.Swap(bsbag_index, oldbag_index)
-		R.module.remove_module(bsbag, TRUE)
+	robot_module_swap_slots(R.module, bsbag_index, oldbag_index)
+	R.module.remove_module(bsbag, TRUE)
 
 /obj/item/borg/upgrade/amop
 	name = "janitor cyborg advanced mop"
@@ -396,9 +417,7 @@
 	R.module.basic_modules += advmop
 	R.module.add_module(advmop, FALSE, TRUE)
 	var/advmop_index = R.module.modules.Find(advmop)
-	for(advmop in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(oldmop_index, advmop_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldmop_index, advmop_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, oldmop_index, advmop_index)
 	R.module.remove_module(oldmop, TRUE) // Замена произошла - избавляемся от старой сварки
 
 /obj/item/borg/upgrade/amop/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -417,10 +436,8 @@
 	R.module.basic_modules += oldmop
 	R.module.add_module(oldmop, FALSE, TRUE)
 	var/oldmop_index = R.module.modules.Find(oldmop)
-	for(oldmop in R.module)
-		R.module.modules.Swap(advmop_index, oldmop_index)
-		R.module.basic_modules.Swap(advmop_index, oldmop_index)
-		R.module.remove_module(advmop, TRUE)
+	robot_module_swap_slots(R.module, advmop_index, oldmop_index)
+	R.module.remove_module(advmop, TRUE)
 
 /obj/item/borg/upgrade/syndicate
 	name = "illegal equipment module"
@@ -700,9 +717,7 @@
 	R.module.basic_modules += AHAdv
 	R.module.add_module(AHAdv, FALSE, TRUE)
 	var/AHAdv_index = R.module.modules.Find(AHAdv)
-	for(AHAdv in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(AHBasic_index, AHAdv_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(AHBasic_index, AHAdv_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, AHBasic_index, AHAdv_index)
 	R.module.remove_module(AHBasic, TRUE) // Замена произошла - избавляемся от старого РПД
 
 /obj/item/borg/upgrade/advhealth/deactivate(mob/living/silicon/robot/R, user = usr) // BLUEMOON FIX you forgot to change processor to advhealth
@@ -721,10 +736,8 @@
 	R.module.basic_modules += AHBasic
 	R.module.add_module(AHBasic, FALSE, TRUE)
 	var/AHBasic_index = R.module.modules.Find(AHBasic)
-	for(AHBasic in R.module)
-		R.module.modules.Swap(AHAdv_index, AHBasic_index)
-		R.module.basic_modules.Swap(AHAdv_index, AHBasic_index)
-		R.module.remove_module(AHAdv, TRUE)
+	robot_module_swap_slots(R.module, AHAdv_index, AHBasic_index)
+	R.module.remove_module(AHAdv, TRUE)
 
 /obj/item/borg/upgrade/ai
 	name = "B.O.R.I.S. module"
@@ -830,9 +843,7 @@
 	R.module.basic_modules += BSRPED
 	R.module.add_module(BSRPED, FALSE, TRUE)
 	var/BSRPED_index = R.module.modules.Find(BSRPED)
-	for(BSRPED in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RPED_index, BSRPED_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RPED_index, BSRPED_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, RPED_index, BSRPED_index)
 	SEND_SIGNAL(RPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(RPED, TRUE) // Замена произошла - избавляемся от старого инструмента
 	RPED = null
@@ -853,9 +864,7 @@
 	R.module.basic_modules += RPED
 	R.module.add_module(RPED, FALSE, TRUE)
 	var/RPED_index = R.module.modules.Find(RPED)
-	for(RPED in R.module)
-		R.module.modules.Swap(BSRPED_index, RPED_index)
-		R.module.basic_modules.Swap(BSRPED_index, RPED_index)
+	robot_module_swap_slots(R.module, BSRPED_index, RPED_index)
 	SEND_SIGNAL(BSRPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(BSRPED, TRUE)
 	BSRPED = null

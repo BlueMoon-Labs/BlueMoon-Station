@@ -109,9 +109,7 @@
 	R.module.basic_modules += IRCD
 	R.module.add_module(IRCD, FALSE, TRUE)
 	var/IRCD_index = R.module.modules.Find(IRCD)
-	for(IRCD in R.module) // Можно оформить и для старого РЦД, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RCD_index, IRCD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RCD_index, IRCD_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, RCD_index, IRCD_index)
 	R.module.remove_module(RCD, TRUE) // Замена произошла - избавляемся от старого РЦД
 
 /obj/item/borg/upgrade/rcdsyndi/deactivate(mob/living/silicon/robot/R, user)
@@ -130,10 +128,8 @@
 	R.module.basic_modules += RCD
 	R.module.add_module(RCD, FALSE, TRUE)
 	var/RCD_index = R.module.modules.Find(RCD)
-	for(RCD in R.module)
-		R.module.modules.Swap(IRCD_index, RCD_index)
-		R.module.basic_modules.Swap(IRCD_index, RCD_index)
-		R.module.remove_module(IRCD, TRUE)
+	robot_module_swap_slots(R.module, IRCD_index, RCD_index)
+	R.module.remove_module(IRCD, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -235,9 +231,7 @@
 	R.module.basic_modules += analyzer_adv
 	R.module.add_module(analyzer_adv, FALSE, TRUE)
 	var/analyzer_adv_index = R.module.modules.Find(analyzer_adv)
-	for(analyzer_adv in R.module) // Можно оформить и для старого анализатора, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(analyzer_index, analyzer_adv_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(analyzer_index, analyzer_adv_index) // как и `basic_modules +=` и `add.module` выше
+	robot_module_swap_slots(R.module, analyzer_index, analyzer_adv_index)
 	R.module.remove_module(analyzer, TRUE) // Замена произошла - избавляемся от старого
 
 /obj/item/borg/upgrade/gasanalyzer_advanced/deactivate(mob/living/silicon/robot/R, user)
@@ -256,9 +250,7 @@
 	R.module.basic_modules += analyzer
 	R.module.add_module(analyzer, FALSE, TRUE)
 	var/analyzer_index = R.module.modules.Find(analyzer)
-	for(analyzer in R.module)
-		R.module.modules.Swap(analyzer_adv_index, analyzer_index)
-		R.module.basic_modules.Swap(analyzer_adv_index, analyzer_index)
-		R.module.remove_module(analyzer_adv, TRUE)
+	robot_module_swap_slots(R.module, analyzer_adv_index, analyzer_index)
+	R.module.remove_module(analyzer_adv, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,9 @@
 
 /datum/numbered_display/New(obj/item/sample, _number = 1, datum/component/storage/parent)
 	if(!istype(sample))
+		// Без выхода конструктор продолжал работу на уже удалённом датуме и заводил
+		// экранный объект, который никто потом не снимет.
 		qdel(src)
+		return
 	sample_object = new /atom/movable/screen/storage/item_holder(null, null, parent, sample)
 	number = _number

@@ -480,7 +480,10 @@
 	if(!icon)
 		return
 	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
-	if(cell)
+	// maxcharge может быть нулём: у мараудера ячейка ставится картой без ёмкости, и
+	// деление на ноль рвало diag_hud_set_mechcell на каждом тике SSobj (104 рантайма
+	// за раунд с одной машины). Ячейка без ёмкости - это ячейка, которой нет.
+	if(cell?.maxcharge > 0)
 		var/chargelvl = cell.charge/cell.maxcharge
 		holder.icon_state = "hudbatt[RoundDiagBar(chargelvl)]"
 	else

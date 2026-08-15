@@ -56,6 +56,11 @@
 	desc = "One or more of your legs has been wounded, slowing down steps with that leg! Get it fixed, or at least splinted!"
 
 /datum/status_effect/limp/proc/check_step(mob/whocares, OldLoc, Dir, forced)
+	SIGNAL_HANDLER
+	// Обработчик COMSIG_MOVABLE_MOVED, а эффект могут снять посреди перемещения:
+	// owner уже null, а подписка ещё жива - отсюда чтение null.client.
+	if(QDELETED(owner))
+		return
 	if(!owner.client || !(owner.mobility_flags & MOBILITY_STAND) || !owner.has_gravity() || (owner.movement_type & FLYING) || forced)
 		return
 	var/determined_mod = 1

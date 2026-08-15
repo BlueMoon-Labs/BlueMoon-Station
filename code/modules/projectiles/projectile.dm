@@ -983,7 +983,11 @@
 	trajectory_ignore_forcemove = FALSE
 	starting = get_turf(source)
 	original = target
-	if(targloc || !params)
+	// Было `targloc || !params`: без цели И без параметров мыши ветка всё равно
+	// заходила и читала null.y. Тело целиком про targloc, так что второе слагаемое
+	// не могло дать ничего, кроме рантайма; случай "нет ни того, ни другого" ловит
+	// stack_trace в else ниже.
+	if(targloc)
 		yo = targloc.y - curloc.y
 		xo = targloc.x - curloc.x
 		setAngle(get_projectile_angle(src, targloc) + spread)

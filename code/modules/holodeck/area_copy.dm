@@ -192,8 +192,14 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 		var/key = source[index]
 		if(IS_BORROWED_TEMPLATE_REF(key))
 			continue
-		//число и null ключами ассоциации не бывают, а source[число] - это доступ по индексу
-		var/value = (isnum(key) || isnull(key)) ? null : source[key]
+		//Белый список, а не чёрный: ассоциативно спрашиваем ТОЛЬКО текст и путь.
+		//Число и null ключами ассоциации не бывают (source[число] - это доступ по
+		//индексу), датум отсеян строкой выше, а аппиранс и картинка живут в overlays и
+		//underlays - это спец-списки BYOND без ассоциативного хранилища, и source[аппиранс]
+		//валится "bad index", рвя копирование турфа на первом же оверлее (310 рантаймов за
+		//раунд 9972 на одной загрузке программы голодека). Реальные ассоциативные вары
+		//турфа ключуются текстом или путём, так что запрет ничего не теряет.
+		var/value = (istext(key) || ispath(key)) ? source[key] : null
 		if(IS_BORROWED_TEMPLATE_REF(value))
 			continue
 		if(islist(key))
