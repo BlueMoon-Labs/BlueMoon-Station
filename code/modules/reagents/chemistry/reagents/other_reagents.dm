@@ -2989,6 +2989,17 @@
 		return
 	add_atom_colour(mix_color_from_reagents(reagents.reagent_list), FIXED_COLOUR_PRIORITY)
 
+// BLUEMOON ADD START: Cum decals are decorative stains, not a scoopable reagent farm.
+// Blocking the scoop prevents the infinite "scoop the decal -> pour -> new puddle + new
+// decal" loop that multiplied semen into a flood.
+/obj/effect/decal/cleanable/semen/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food/drinks))
+		. = 1 // Prevent the container from splashing onto / scooping the decal
+		to_chat(user, span_notice("Слишком тягуче, чтобы собрать в ёмкость."))
+		return
+	return ..()
+// BLUEMOON ADD END
+
 /datum/reagent/consumable/semen/femcum
 	name = "Female Ejaculate"
 	description = "Vaginal lubricant found in most mammals and other animals of similar nature. Where you found this is your own business."
