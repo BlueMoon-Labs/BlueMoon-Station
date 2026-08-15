@@ -17,3 +17,17 @@
 	qdel(tempr)
 	user.changeNext_move(CLICK_CD_MELEE)
 	return TRUE
+
+// Advanced mop has a self-refilling condenser, so it has no room to soak up
+// liquids into its reagents. Instead it straight up removes the whole puddle.
+/obj/item/mop/advanced/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	if(!in_range(user, target_turf))
+		return FALSE
+
+	if(liquids.fire_state)
+		return TRUE
+
+	liquids.liquid_simple_delete_flat(liquids.total_reagents)
+	to_chat(user, span_notice("You soak up the liquids with \the [src]."))
+	user.changeNext_move(CLICK_CD_MELEE)
+	return TRUE

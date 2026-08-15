@@ -249,6 +249,16 @@
 		my_turf.liquids_change(new_state)
 	update_icon(UPDATE_OVERLAYS)
 	update_liquid_footsteps()
+	update_cleanbot_targetability()
+
+///Keeps this puddle registered in the cleanbot target grid, but only while it is a standalone puddle.
+/obj/effect/abstract/liquid_turf/proc/update_cleanbot_targetability()
+	if(immutable)
+		return
+	if(liquid_state == LIQUID_STATE_PUDDLE)
+		become_cleanbot_targetable()
+	else
+		lose_cleanbot_targetable()
 
 /// Sets or restores the turf's footstep vars so walking on liquid makes wading sounds.
 /obj/effect/abstract/liquid_turf/proc/update_liquid_footsteps()
@@ -644,6 +654,7 @@
 
 		SEND_SIGNAL(my_turf, COMSIG_TURF_LIQUIDS_CREATION, src)
 
+	update_cleanbot_targetability()
 	update_icon(UPDATE_OVERLAYS)
 	update_liquid_footsteps()
 	if(!no_effects)
@@ -653,6 +664,7 @@
 /obj/effect/abstract/liquid_turf/Destroy(force)
 	if(force)
 		restore_liquid_footsteps()
+		lose_cleanbot_targetable()
 		var/turf/old_turf = my_turf
 		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
 		if(my_turf.lgroup)
@@ -699,9 +711,11 @@
 		SSliquids.processing_fire -= my_turf
 		SSliquids.processing_fire[NewT] = TRUE
 	my_turf.liquids = null
+	lose_cleanbot_targetable() //Unregister from the old turf before we move
 	my_turf = NewT
 	NewT.liquids = src
 	loc = NewT
+	update_cleanbot_targetability() //Re-register on the new turf if it's still a puddle
 	RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
 	RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
 	if(!no_effects)
