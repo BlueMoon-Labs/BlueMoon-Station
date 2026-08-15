@@ -63,21 +63,29 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	/// The gateway this destination points at
 	var/obj/machinery/gateway/target_gateway
 
+// Назначение переживает свою вертушку: Destroy() машины обнуляет target_gateway, а
+// ссылки на само назначение могут ещё лежать у чужих консолей и в target. Каждый
+// прок ниже поэтому проверяет цель, а не верит в неё.
+
 /* We set the target gateway target to activator gateway */
 /datum/gateway_destination/gateway/activate(obj/machinery/gateway/activated)
-	if(!target_gateway.target)
+	if(target_gateway && !target_gateway.target)
 		target_gateway.activate(activated)
 
 /* We turn off the target gateway if it's linked with us */
 /datum/gateway_destination/gateway/deactivate(obj/machinery/gateway/deactivated)
-	if(target_gateway.target == deactivated.destination)
+	if(target_gateway?.target == deactivated?.destination)
 		target_gateway.deactivate()
 
 /datum/gateway_destination/gateway/is_available()
+	if(!target_gateway)
+		return FALSE
 	return ..() && target_gateway.calibrated && !target_gateway.target && target_gateway.powered()
 
 /datum/gateway_destination/gateway/get_available_reason()
 	. = ..()
+	if(!target_gateway)
+		return "Exit gateway offline."
 	if(!target_gateway.calibrated)
 		. = "Exit gateway malfunction. Manual recalibration required."
 	if(target_gateway.target)
@@ -86,10 +94,14 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		. = "Exit gateway unpowered."
 
 /datum/gateway_destination/gateway/get_target_turf()
+	if(!target_gateway?.portal)
+		return null
 	return get_step(target_gateway.portal, target_gateway.dir)
 
 /datum/gateway_destination/gateway/post_transfer(atom/movable/AM)
 	. = ..()
+	if(!target_gateway)
+		return
 	addtimer(CALLBACK(AM, TYPE_PROC_REF(/atom/movable, setDir), target_gateway.dir),0)
 
 /* Special home destination, so we can check exile implants */
@@ -205,10 +217,27 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	return ..()
 
 /obj/machinery/gateway/Destroy()
-	QDEL_NULL(portal_visuals)
-	destination.target_gateway = null
-	GLOB.gateway_destinations -= destination
+	// Бампер держит на нас жёсткую ссылку (gateway), а deactivate() зовут не всегда:
+	// разобранная или удалённая админкой вертушка уезжала в харддел ровно через него.
+	QDEL_NULL(portal)
+	// Свою сторону связи рвём ПЕРВОЙ, до чужих deactivate() ниже: те уходят обратно
+	// в наше же назначение, а оттуда - в src. С уже обнулённым target_gateway такой
+	// заход становится тихим отказом вместо работы на полуразобранном объекте.
+	target = null
+	var/datum/gateway_destination/gateway/our_destination = destination
 	destination = null
+	if(our_destination)
+		our_destination.target_gateway = null
+		GLOB.gateway_destinations -= our_destination
+		// Чужая вертушка, нацеленная на нас, осталась бы с назначением на удалённый
+		// объект: её процессы читали бы target_gateway.portal/dir/calibrated у null
+		// (19 рантаймов за раунд 9972) и роняли игроков в нульспейс.
+		for(var/obj/machinery/gateway/other_gateway in GLOB.machines)
+			if(other_gateway == src)
+				continue
+			if(other_gateway.target == our_destination)
+				other_gateway.deactivate()
+	QDEL_NULL(portal_visuals)
 	return ..()
 
 /obj/machinery/gateway/proc/generate_destination()
@@ -221,12 +250,14 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/datum/gateway_destination/dest = target
 	target = null
 	playsound(src, 'sound/machines/gateway/gateway_close.ogg', 140, TRUE, TRUE, SOUND_RANGE)
-	dest.deactivate(src)
+	// Оба гарда - на случай захода из чужого Destroy: цели могло уже не быть, а
+	// визуал мог уехать вместе с машиной.
+	dest?.deactivate(src)
 	QDEL_NULL(portal)
 	use_power(IDLE_POWER_USE)
 	transport_active = FALSE
 	update_appearance()
-	portal_visuals.reset_visuals()
+	portal_visuals?.reset_visuals()
 
 /obj/machinery/gateway/process()
 	if((machine_stat & (NOPOWER)) && use_power)
@@ -248,7 +279,11 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		return FALSE
 	if(istype(possible_destination, /datum/gateway_destination/gateway))
 		var/datum/gateway_destination/gateway/gateway_dest = possible_destination
-		if(gateway_dest.target_gateway == gateway_dest.target_gateway)
+		// Сравнение переменной с самой собой всегда истинно, то есть отбраковывались
+		// ВСЕ вертушечные назначения: список направлений в консоли выходил пустым, а
+		// process() никогда не поднимал teleportion_possible по другой вертушке.
+		// Проверять надо, не смотрит ли назначение обратно на нас (паритет с tg).
+		if(gateway_dest.target_gateway == src)
 			return FALSE
 	return TRUE
 
@@ -293,7 +328,13 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /obj/machinery/gateway/proc/Transfer(atom/movable/AM)
 	if(!target || !target.incoming_pass_check(AM))
 		return
-	AM.forceMove(target.get_target_turf())
+	// forceMove(null) - это отправка в нульспейс, а не отказ: с назначением, у
+	// которого не стало вертушки, игроки просто исчезали из мира. attack_ghost
+	// ниже такой гард уже имеет, а основной путь - нет.
+	var/turf/destination_turf = target.get_target_turf()
+	if(isnull(destination_turf))
+		return
+	AM.forceMove(destination_turf)
 	target.post_transfer(AM)
 
 /obj/machinery/gateway/attack_ghost(mob/user)
@@ -340,6 +381,9 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(!target)
 		if(!GLOB.the_gateway)
 			to_chat(user,span_warning("Home gateway is not responding!"))
+			// Без выхода следующая же строка читала .target у null: "вертушка не
+			// отвечает" оборачивалось рантаймом вместо отказа.
+			return
 		if(GLOB.the_gateway.target)
 			GLOB.the_gateway.deactivate() //this will turn the home gateway off so that it's free for us to connect to
 		activate(GLOB.the_gateway.destination)

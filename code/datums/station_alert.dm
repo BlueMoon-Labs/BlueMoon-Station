@@ -22,6 +22,9 @@
 
 /datum/station_alert/Destroy()
 	QDEL_NULL(listener)
+	// holder - это консоль, которая нас завела. Ссылка односторонняя, но пережить
+	// нас она не должна: датум висит в очереди GC и держит машину всё это время.
+	holder = null
 	return ..()
 
 /datum/station_alert/ui_interact(mob/user, datum/tgui/ui)

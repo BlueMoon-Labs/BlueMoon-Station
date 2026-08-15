@@ -34,8 +34,10 @@
 	power_change()
 
 /obj/machinery/computer/Destroy()
-	. = ..()
+	// Своё разрушаем ДО родителя: после ..() датум уже прошёл всю цепочку Destroy,
+	// и работа с его полями идёт на полуразобранном объекте.
 	QDEL_NULL(soundloop_press)
+	return ..()
 
 /obj/machinery/computer/ui_close(mob/user)
 	. = ..()

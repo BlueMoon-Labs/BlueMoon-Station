@@ -314,6 +314,14 @@
 	layer = FLY_LAYER
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	/// Контроллер бассейна, который нас завёл. Душевой туман его не ставит.
+	var/obj/machinery/pool/controller/pool_owner
+
+/obj/effect/mist/Destroy()
+	if(pool_owner)
+		pool_owner.linked_mist -= src
+		pool_owner = null
+	return ..()
 
 /obj/machinery/shower/interact(mob/M)
 	on = !on

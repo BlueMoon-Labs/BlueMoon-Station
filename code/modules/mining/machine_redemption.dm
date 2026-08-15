@@ -70,7 +70,12 @@
 		return
 
 	if(O.refined_type == null)
+		// Руда уже лежит в contents (process_all_ores затащил её туда до вызова), а
+		// сканирует он только соседний турф и ящик. Просто вычеркнуть её из буфера
+		// значило бы копить непереплавляемое внутри машины до конца смены -
+		// выкладываем на выход, откуда её можно забрать.
 		ore_buffer -= O
+		unload_mineral(O)
 		return
 
 	ore_buffer -= O
@@ -122,8 +127,20 @@
 /obj/machinery/mineral/ore_redemption/proc/process_ores(list/ores_to_process)
 	var/current_amount = 0
 	for(var/ore in ores_to_process)
+		// Счётчик не двигался, то есть отсечка по ore_pickup_rate была мёртвой: с
+		// живым буфером цикл всё равно перепрыгивал через руду и сам себя ограничивал,
+		// а с копией (её завёл фикс пропусков) машина стала переплавлять весь ящик
+		// за один process() - сотни insert_item в одном тике. Ограничение вернули:
+		// апгрейд манипулятора снова означает то, что написано в examine, а остаток
+		// буфера доедет следующим тиком.
+		//
+		// Уступки тика здесь намеренно НЕТ, хотя работа и режется на порции: снаружи
+		// стоит `set waitfor = FALSE`, и сон посреди прохода пускает следующий фаер
+		// SSmachines во второй process_all_ores по тому же буферу. Порция ограничена
+		// апгрейдом манипулятора (15-60 руд), этого хватает, чтобы не рвать тик.
 		if(current_amount >= ore_pickup_rate)
 			break
+		current_amount++
 		smelt_ore(ore)
 
 /obj/machinery/mineral/ore_redemption/proc/send_console_message()

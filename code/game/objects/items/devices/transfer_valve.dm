@@ -20,7 +20,12 @@
 	return TRUE
 
 /obj/item/transfer_valve/Destroy()
-	attached_device = null
+	// Голое обнуление рвало связь только с нашей стороны: у сборки оставался holder,
+	// указывающий на удалённый вентиль, и она уезжала в харддел вместе с ним.
+	// on_detach() - штатный путь отвязки, им же пользуются обе ветки Topic ниже.
+	if(attached_device)
+		attached_device.on_detach()
+		attached_device = null
 	QDEL_NULL(tank_one)
 	QDEL_NULL(tank_two)
 	return ..()

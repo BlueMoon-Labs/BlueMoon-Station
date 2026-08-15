@@ -435,6 +435,13 @@ multiple modular subtrees with behaviors
 ///Proc for deinitializing the pawn to the old controller
 /datum/ai_controller/proc/UnpossessPawn(destroy)
 	SHOULD_CALL_PARENT(TRUE)
+	// Кэши восприятия держат ЖИВЫЕ ссылки на чужих мобов, а чистит их только
+	// set_ai_status() - и то лишь когда статус реально меняется (ранний выход по
+	// совпадению). Контроллер, доживший до сноса в AI_STATUS_OFF, уносил с собой
+	// последний скан: в раунде 9972 форма счётчика ссылок у элитных мобов совпадала
+	// с числом выживших соседей по скану. Отсюда же покрывается и Destroy() - он
+	// зовёт этот прок первым делом.
+	clear_perception_caches()
 	if(isnull(pawn))
 		//Либо контроллер завели без пауна, либо пауна унёс харддел - в DM ссылка
 		//на удалённый объект молча становится null. Во втором случае выход без

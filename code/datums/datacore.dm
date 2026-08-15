@@ -72,15 +72,31 @@
 	var/icon/photo_icon = capture_record_photo(H, assigned_role, prefs, show_directions)
 	if(!photo_icon)
 		return
+	// Закрытая запись забирает готовую иконку и не платит ни за что: делаем её до
+	// уступок ниже, иначе выход по удалённой общей записи забрал бы её с собой.
+	if(!QDELETED(locked_record))
+		locked_record.fields["image"] = photo_icon
 	if(!QDELETED(general_record))
+		// Имя снимается ДО первой уступки: ниже прок спит, и к моменту сборки
+		// подписи моб может быть уже удалён - "[H]" отдал бы мусор.
+		var/subject_name = "[H]"
+		// Хвост съёмки тоже не бесплатный. getFlatIcon уже сорвал тик, а за ним
+		// без единой уступки шли две операции icon(dir=) и два new /obj/item/photo:
+		// в проде это добирало блок с ~135 мс (одна дирекция) до 270 мс. Прок
+		// зовут из таймерного колбэка через дренаж очереди - спать здесь можно.
+		CHECK_TICK
 		var/datum/picture/picture_front = new
-		picture_front.picture_name = "[H]"
-		picture_front.picture_desc = "This is [H]."
+		picture_front.picture_name = subject_name
+		picture_front.picture_desc = "This is [subject_name]."
 		picture_front.picture_image = icon(photo_icon, dir = SOUTH)
+		CHECK_TICK
 		var/datum/picture/picture_side = new
-		picture_side.picture_name = "[H]"
-		picture_side.picture_desc = "This is [H]."
+		picture_side.picture_name = subject_name
+		picture_side.picture_desc = "This is [subject_name]."
 		picture_side.picture_image = icon(photo_icon, dir = WEST)
+		// Между уступками запись могли удалить - перепроверяем перед записью в неё.
+		if(QDELETED(general_record))
+			return
 		var/obj/item/photo/photo_front = general_record.fields["photo_front"]
 		if(istype(photo_front))
 			photo_front.set_picture(picture_front, TRUE, TRUE)
@@ -91,8 +107,6 @@
 			photo_side.set_picture(picture_side, TRUE, TRUE)
 		else
 			general_record.fields["photo_side"] = new /obj/item/photo(null, picture_side)
-	if(!QDELETED(locked_record))
-		locked_record.fields["image"] = photo_icon
 
 /// Registers a record in the appropriate index lists. Call after adding to medical/security/general lists.
 /datum/datacore/proc/register_record(datum/data/record/R, record_type)

@@ -783,6 +783,12 @@
 
 /datum/centcom_podlauncher/proc/clearBay() //Clear all objs and mobs from the selected bay
 	for (var/obj/O in bay.GetAllContents())
+		// Единственный обход залива, который забыл про ignored_atoms - а список
+		// заведён ровно ради indicator и selector этой панели. setDropoff паркует
+		// indicator внутри залива, и "Clear Bay" убивал собственный индикатор
+		// панели, оставляя её с ссылкой на удалённый эффект (харддел).
+		if(ignored_atoms[O.type])
+			continue
 		qdel(O)
 	for (var/mob/living/M in bay.GetAllContents())
 		qdel(M)

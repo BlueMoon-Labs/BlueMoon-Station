@@ -79,7 +79,9 @@
 	// иначе контроллер остаётся в processing/currentrun и уходит в харддел
 	STOP_PROCESSING(SSfastprocess, src)
 	// Обратные ссылки: турфы и машины держат нас, пока сами их не обнулим
-	for(var/turf/open/pool/linked_turf as anything in linked_turfs)
+	// Без as anything: турф бассейна могли заменить (шаттл увёз пол), и ссылка в
+	// списке стала указывать на обычный космос - у него вара controller нет.
+	for(var/turf/open/pool/linked_turf in linked_turfs)
 		if(linked_turf.controller == src)
 			linked_turf.controller = null
 	if(linked_drain?.controller == src)
@@ -96,7 +98,8 @@
 
 /obj/machinery/pool/controller/proc/scan_things()
 	// Drop old links (large pools can extend beyond the initial scan radius).
-	for(var/turf/open/pool/T as anything in linked_turfs)
+	// Тот же istype-фильтр, что и в Destroy(): в списке может лежать заменённый турф.
+	for(var/turf/open/pool/T in linked_turfs)
 		if(T.controller == src)
 			T.controller = null
 	linked_turfs.Cut()
@@ -344,8 +347,10 @@
 	if(rcolor == old_rcolor)
 		return // small performance upgrade hopefully?
 	old_rcolor = rcolor
-	for(var/X in linked_turfs)
-		var/turf/open/pool/color1 = X
+	// Типизированный обход вместо слепого каста: в linked_turfs оседали и не-
+	// бассейновые турфы (бассейн на шаттле оставлял за собой /turf/open/space), а
+	// каст их не отсеивал - дальше шло чтение варов, которых у них нет.
+	for(var/turf/open/pool/color1 in linked_turfs)
 		if(bloody)
 			if(rcolor)
 				var/thecolor = BlendRGB(rgb(150, 20, 20), rcolor, 0.5)
@@ -487,10 +492,14 @@
 		return
 	mist_off()			//make sure it cycles and deletes everything
 	mist_state = TRUE
-	for(var/X in linked_turfs)
-		var/turf/open/pool/W = X
+	// Тот же типизированный обход, см. комментарий в update_water_state().
+	for(var/turf/open/pool/W in linked_turfs)
 		if(W.filled)
-			var/M = new /obj/effect/mist(W)
+			var/obj/effect/mist/M = new(W)
+			// Обратная ссылка: туман снимает себя из списка сам. Убить его может кто
+			// угодно (взрыв, clear_mist душа, замена турфа), а чистка была только в
+			// mist_off() - мёртвая запись оставалась держателем до конца раунда.
+			M.pool_owner = src
 			linked_mist += M
 
 /obj/machinery/pool/controller/proc/mist_off() //Delete all /obj/effect/mist from all linked pool tiles.
