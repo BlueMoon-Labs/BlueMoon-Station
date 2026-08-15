@@ -1,5 +1,45 @@
+import { useRef } from 'react';
+
 import { useBackend, useLocalState } from '../../../backend';
 import { Button, Icon, Knob, NumberInput, Section, Stack } from '../../../components';
+
+const HoldButton = (props) => {
+  const { onHold, holdInterval = 60, ...rest } = props;
+  const timerRef = useRef(null);
+  const onHoldRef = useRef(onHold);
+  onHoldRef.current = onHold;
+
+  const stopHolding = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startHolding = () => {
+    onHoldRef.current();
+    stopHolding();
+    timerRef.current = setInterval(() => onHoldRef.current(), holdInterval);
+  };
+
+  return (
+    <Button
+      {...rest}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        startHolding();
+      }}
+      onMouseUp={stopHolding}
+      onMouseLeave={stopHolding}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          onHoldRef.current();
+        }
+      }}
+    />
+  );
+};
 
 const ROWS = [
   [
@@ -74,11 +114,11 @@ export const Pixelshift = (props) => {
               {row.map((direction) => (
                 <Stack.Item mx={1} key={direction ? direction.key : 'stop'}>
                   {direction ? (
-                    <Button
+                    <HoldButton
                       icon={direction.icon}
                       iconRotation={direction.iconRotation}
                       tooltip={directionLabel(direction.dx, direction.dy)}
-                      onClick={() => handleDirection(direction)}
+                      onHold={() => handleDirection(direction)}
                     />
                   ) : (
                     <Button

@@ -63,6 +63,7 @@
 		auto_interaction_target = null
 		currently_active_interaction = null
 		return PROCESS_KILL
+	play_pixel_shift_animation(granter)
 
 /datum/component/interaction_menu_granter/Initialize(...)
 	if(!ismob(parent))
