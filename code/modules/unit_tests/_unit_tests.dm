@@ -235,6 +235,7 @@
 #include "can_inject_clothing.dm"
 #include "director_beat_cost.dm"
 #include "disposal_holder.dm"
+#include "fit_viewport_splitter.dm"
 #include "fov_hearers.dm"
 #include "gc_refcount.dm"
 #include "ghost_role_limbs.dm"

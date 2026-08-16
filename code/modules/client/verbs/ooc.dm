@@ -280,6 +280,29 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 /// пара лишних пикселей у карты, за которые не стоит держать клиента на линии.
 #define FIT_VIEWPORT_MAX_CORRECTIONS 3
 
+/// На сколько процентных пунктов коррекциям позволено увести сплиттер от
+/// арифметической оценки.
+///
+/// Оценка считается из размеров, которые скин только что вернул, и по построению
+/// здорова: ширина карты в ней зажата резервом в 300 пикселей под чат. Коррекции
+/// ниже нужны лишь на округление и ширину рукоятки сплиттера, то есть на доли
+/// процента. Но winget в цикле читает размер ДО того, как клиент применил
+/// предыдущий winset, и тогда поправка считается по чужой ширине: если скин
+/// отвечает старым размером окна (1024 из skin.dmf) при ещё не развёрнутом
+/// mainwindow, delta выходит около -108 пунктов, сплиттер уезжает в минус, карта
+/// схлопывается в полоску, а чат занимает весь экран. Раньше это лечилось само -
+/// следующая итерация читала результат и разворачивала delta, - но с гейтом
+/// медленного скина следующей итерации может не быть. Потолок делает слепую
+/// поправку безвредной независимо от того, дошли мы до проверки или нет.
+#define FIT_VIEWPORT_MAX_DRIFT 5
+
+/// Куда встаёт сплиттер после очередной коррекции.
+///
+/// Отдельным проком, а не строчкой в цикле: весь смысл здесь в потолке, а живого
+/// скина в юнит-тесте не бывает - проверять слепую поправку иначе нечем.
+/proc/fit_viewport_corrected_splitter(estimate_pct, applied_pct, delta)
+	return clamp(applied_pct + delta, estimate_pct - FIT_VIEWPORT_MAX_DRIFT, estimate_pct + FIT_VIEWPORT_MAX_DRIFT)
+
 /client/verb/fit_viewport()
 	set name = "Fit Viewport"
 	set category = "OOC"
@@ -291,18 +314,22 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 /// Автоматическая подгонка: логин, смена вида, разворот на весь экран.
 ///
-/// Гейт стоит ПЕРЕД первым winget, а не только перед циклом коррекций: именно
-/// этот вызов и есть тот round-trip, по которому slow_skin_until взводится, и
-/// именно он самый дорогой из всех. Сюда приходят без спроса каждому клиенту, так
-/// что на медленном скине проку остаётся спать, держа клиента и моба жёсткими
-/// ссылками во фрейме всё окно варнфейла сборщика. Автоподгонка - косметика.
+/// Гейт медленного скина здесь НЕ стоит, хотя раньше стоял. Метку slow_skin_until
+/// взводит первый же round-trip сессии - синхронный acquire_dpi() в /client/New(),
+/// который на логин-хендшейке дороже полусекунды у большинства клиентов. Таймер
+/// подгонки ставится ПОСЛЕ него и стреляет через секунду, то есть гейт на входе не
+/// пропускал почти никого: вьюпорт переставал подгоняться вообще, а сплиттер
+/// оставался на 53 от normalize_ui_layout().
+///
+/// Ради чего гейт заводили, при этом сохраняется. На медленном скине сюда доходит
+/// РОВНО ОДИН winget с оценкой и один winset, а цикл коррекций (до трёх round-trip'ов
+/// подряд, каждый - спящий фрейм с жёсткими ссылками на клиента и моба) гейт по
+/// прежнему отсекает. Мастер гонял весь цикл безусловно, так что это строго дешевле
+/// мастера - цель коммита 15a25cc475 выполняется.
 /client/proc/fit_viewport_auto()
 	fit_viewport_internal(TRUE)
 
 /client/proc/fit_viewport_internal(automatic)
-	if(automatic && !skin_call_optional_allowed(src))
-		return
-
 	// Fetch aspect ratio
 	var/view_size = getviewsize(view)
 	var/aspect_ratio = view_size[1] / view_size[2]
@@ -342,22 +369,29 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Calculate and apply a best estimate
 	// +4 pixels are for the width of the splitter's handle
-	var/pct = 100 * (desired_width + 4) / split_width
-	winset(src, "mainwindow.split", "splitter=[pct]")
+	var/estimate_pct = 100 * (desired_width + 4) / split_width
+	winset(src, "mainwindow.split", "splitter=[estimate_pct]")
 
 	// Apply an ever-lowering offset until we finish or fail
 	var/delta
+	// Последнее заявленное скину значение.
+	var/applied_pct = estimate_pct
+	// Последнее значение, результат которого мы успели прочитать. Ровно его и
+	// возвращаем, если выходим досрочно: непроверенная коррекция - это слепой
+	// скачок по устаревшему ответу скина, и исправить его больше некому.
+	var/validated_pct = estimate_pct
 	for(var/safety in 1 to FIT_VIEWPORT_MAX_CORRECTIONS)
 		// Оценка выше уже применена; коррекции доводят ширину на считанные пиксели
 		// (см. комментарий у FIT_VIEWPORT_MAX_CORRECTIONS) и стоят по round-trip'у
 		// каждая. На медленном скине это секунды сна на клиента - выходим с тем,
 		// что получилось.
 		if(automatic && !skin_call_optional_allowed(src))
-			return
+			break
 		var/after_size = tracked_winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
 		if(length(map_size) != 2)
-			return
+			break
+		validated_pct = applied_pct
 		var/got_width = text2num(map_size[1])
 
 		if (got_width == desired_width)
@@ -370,10 +404,18 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 			// if we overshot, halve the delta and reverse direction
 			delta = -delta/2
 
-		pct += delta
-		winset(src, "mainwindow.split", "splitter=[pct]")
+		// Последнюю поправку проверить уже нечем - применять её значит оставить
+		// клиента с непроверенным значением, ровно тем, ради чего стоит потолок.
+		if(safety == FIT_VIEWPORT_MAX_CORRECTIONS)
+			break
+		applied_pct = fit_viewport_corrected_splitter(estimate_pct, applied_pct, delta)
+		winset(src, "mainwindow.split", "splitter=[applied_pct]")
+
+	if(applied_pct != validated_pct)
+		winset(src, "mainwindow.split", "splitter=[validated_pct]")
 
 #undef FIT_VIEWPORT_MAX_CORRECTIONS
+#undef FIT_VIEWPORT_MAX_DRIFT
 
 /client/verb/fix_stat_panel()
 	set name = "Fix Stat Panel"

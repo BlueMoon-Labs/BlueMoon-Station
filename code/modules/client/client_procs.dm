@@ -829,7 +829,12 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	normalize_ui_layout()
 	// Подгонка вьюпорта - самая тяжёлая пачка round-trip'ов на логине: winget на размеры
 	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
-	addtimer(CALLBACK(src, PROC_REF(fit_viewport_auto)), LOGIN_FIT_VIEWPORT_DELAY)
+	//
+	// TIMER_UNIQUE|TIMER_OVERRIDE, потому что на логине подгонку заказывают дважды:
+	// отсюда и из ToggleFullscreen() выше. Две подряд - это лишняя пачка round-trip'ов
+	// и лишний шанс прочитать размер окна, которое ещё разворачивается. Пусть будет
+	// одна, через секунду после ПОСЛЕДНЕГО заказа.
+	addtimer(CALLBACK(src, PROC_REF(fit_viewport_auto)), LOGIN_FIT_VIEWPORT_DELAY, TIMER_UNIQUE | TIMER_OVERRIDE)
 	Master.UpdateTickRate()
 
 /// Отсутствие окна кэша ассетов означает кастомный скин - предупреждаем и только.
@@ -1849,8 +1854,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		M.update_damage_hud()
 	if (prefs.auto_fit_viewport)
 		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
-		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
-		addtimer(CALLBACK(src, PROC_REF(fit_viewport_auto)), 1 SECONDS)
+		// аргументом addtimer: внутри CALLBACK она уходит в сам прок, и таймер срабатывает сразу.
+		addtimer(CALLBACK(src, PROC_REF(fit_viewport_auto)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
 /client/proc/generate_clickcatcher()

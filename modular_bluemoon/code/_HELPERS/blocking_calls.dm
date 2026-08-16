@@ -59,10 +59,29 @@
 		return TRUE
 	return skin_client.slow_skin_until <= world.time
 
+/// Какую долю настенного времени вызова мир обязан был отработать, чтобы медленный
+/// ответ можно было записать на счёт КЛИЕНТА, а не сервера.
+#define SKIN_CALL_WORLD_PROGRESS_RATIO 0.5
+
 /// Отмечает клиента как медленного, если вызов не уложился в порог.
-/proc/mark_skin_call_cost(target, cost_ms)
+///
+/// Замер честен только пока мир крутится. Прок спит внутри winget, мир в это время
+/// работает, и world.time идёт с настенным в такт - тогда дорогой round-trip
+/// действительно принадлежит соединению клиента (в прод-логах в одном тике рядом
+/// стоят 38 мс и 2774 мс у разных ckey, то есть метрика клиентов различает).
+///
+/// А вот пока мир НЕ крутится - на инициализации, до старта цикла Мастера -
+/// world.time не двигается вовсе, и настенное время вызова целиком принадлежит
+/// серверу. Именно в это окно приходит вся волна реконнекта после рестарта, и без
+/// этой проверки медленными помечались бы разом все, кто вошёл на старте раунда.
+/// Порог по ходу часов отделяет одно от другого.
+/proc/mark_skin_call_cost(target, cost_ms, started_world)
 	if(cost_ms < SKIN_CALL_SLOW_MS)
 		return
+	if(!isnull(started_world))
+		var/world_elapsed_ms = (world.time - started_world) * 100
+		if(world_elapsed_ms < cost_ms * SKIN_CALL_WORLD_PROGRESS_RATIO)
+			return
 	var/client/skin_client = skin_call_client(target)
 	if(skin_client)
 		skin_client.slow_skin_until = world.time + SKIN_CALL_SLOW_COOLDOWN
@@ -102,7 +121,7 @@
 	// round-trip игрок мог отвалиться, и у моба client уже null - отметка
 	// "этот скин медленный" потерялась бы ровно на тех клиентах, из-за
 	// которых её и ставят.
-	mark_skin_call_cost(pinned, cost_ms)
+	mark_skin_call_cost(pinned, cost_ms, started_world)
 	// Описание собираем ТОЛЬКО для дорогих вызовов: в статистику по типам идёт каждый,
 	// а имя нужно лишь тем, кто попадёт в кольцо. Интерполяция строки на каждом вызове
 	// стоила бы дороже самого замера
@@ -122,7 +141,7 @@
 		pinned.pending_skin_calls--
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
 	// Тот же закреплённый клиент, что и в tracked_winget: см. комментарий там.
-	mark_skin_call_cost(pinned, cost_ms)
+	mark_skin_call_cost(pinned, cost_ms, started_world)
 	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms, started_world)
 
 /**
@@ -148,3 +167,4 @@
 
 #undef SKIN_CALL_SLOW_MS
 #undef SKIN_CALL_SLOW_COOLDOWN
+#undef SKIN_CALL_WORLD_PROGRESS_RATIO
