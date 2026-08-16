@@ -115,10 +115,7 @@
 	name = "Ящик с Магазинами под калибр 5.56"
 	desc = "Универсальные магазины под калибр 5.56."
 	cost = 12500
-	contains = list(/obj/item/gun/ballistic/automatic/ar,
-					/obj/item/gun/ballistic/automatic/ar,
-					/obj/item/gun/ballistic/automatic/ar,
-					/obj/item/ammo_box/magazine/m556,
+	contains = list(/obj/item/ammo_box/magazine/m556,
 					/obj/item/ammo_box/magazine/m556,
 					/obj/item/ammo_box/magazine/m556)
 
