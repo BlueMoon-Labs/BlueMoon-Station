@@ -1,8 +1,8 @@
 #define OFFER_TEXT_MAX_LINES 12
 
 /obj/item/love_offer
-	name = "ERP Ticket"
-	desc = "What is ERP? You don't know.\nIt's a sex offer, yes, on paper."
+	name = "Sex Time Ticket"
+	desc = "It's a sex offer, yes, on paper."
 	icon = 'icons/obj/bureaucracy.dmi'
 	icon_state = "erp_ticket"
 	throwforce = 0
