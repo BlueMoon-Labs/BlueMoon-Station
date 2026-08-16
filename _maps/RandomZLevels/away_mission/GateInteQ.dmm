@@ -4329,7 +4329,6 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 9
 	},
-/obj/machinery/pool/drain,
 /obj/structure/curtain,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/awaymission/InteQ)
@@ -5900,7 +5899,6 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "gnS" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -9211,7 +9209,6 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
-/obj/machinery/pool/drain,
 /obj/structure/curtain,
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4
@@ -15467,7 +15464,6 @@
 /turf/closed/indestructible/syndicate,
 /area/awaymission/InteQ)
 "pXZ" = (
-/obj/machinery/pool/drain,
 /obj/item/fuel_rod,
 /turf/open/pool,
 /area/awaymission/InteQ/lvl2)
@@ -17621,9 +17617,6 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "rRk" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},

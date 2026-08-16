@@ -26024,9 +26024,6 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "iSX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/commons/fitness/pool)
 "iTi" = (
@@ -27280,7 +27277,6 @@
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "jsz" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "jsH" = (
@@ -37917,7 +37913,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
 "nan" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding{
 	dir = 4
 	},

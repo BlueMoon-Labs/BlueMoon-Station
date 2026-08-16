@@ -468,10 +468,6 @@
 /obj/machinery/shower{
 	pixel_y = 16
 	},
-/obj/machinery/pool/drain{
-	pixel_x = -2;
-	pixel_y = -13
-	},
 /obj/structure/pool/ladder{
 	dir = 8;
 	pixel_x = 0;
@@ -1867,7 +1863,6 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark/end{
 	dir = 1
 	},
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wood/thin/end{
 	dir = 1
 	},
@@ -2265,10 +2260,6 @@
 /turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "Mg" = (
-/obj/machinery/pool/drain{
-	pixel_x = 0;
-	pixel_y = 17
-	},
 /turf/open/pool,
 /area/hilbertshotel)
 "Mr" = (

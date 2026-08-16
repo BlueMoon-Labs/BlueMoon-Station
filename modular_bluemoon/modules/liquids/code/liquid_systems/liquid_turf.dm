@@ -253,16 +253,12 @@
 		return FALSE
 
 	//BLUEMOON: pool turfs are isolated basins. Liquid only spreads between pool
-	//turfs of the same pool (same controller); it never leaks onto the surrounding
-	//floor, nor does floor liquid flow into the pool.
+	//turfs; it never leaks onto the surrounding floor, nor does floor liquid
+	//flow into the pool.
 	var/is_pool_here = istype(src, /turf/open/pool)
 	var/is_pool_there = istype(T, /turf/open/pool)
 	if(is_pool_here || is_pool_there)
 		if(!is_pool_here || !is_pool_there)
-			return FALSE
-		var/turf/open/pool/pool_here = src
-		var/turf/open/pool/pool_there = T
-		if(pool_here.controller && pool_there.controller && pool_here.controller != pool_there.controller)
 			return FALSE
 
 	if(T.liquids && T.liquids.immutable)

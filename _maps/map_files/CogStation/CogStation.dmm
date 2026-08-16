@@ -5377,7 +5377,6 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/commons/toilet/restrooms)
 "apy" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/white,
 /area/commons/fitness/cogpool)
 "apz" = (
@@ -6219,9 +6218,6 @@
 /turf/open/floor/plasteel,
 /area/security/checkpoint/customs/auxiliary)
 "asi" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
 /turf/open/pool,
 /area/commons/fitness/cogpool)
 "asj" = (
@@ -6597,7 +6593,6 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "atb" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/cogpool)
 "atc" = (

@@ -135,7 +135,6 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/hilbertshotel)
 "mc" = (
-/obj/machinery/pool/controller,
 /obj/structure/railing{
 	dir = 8
 	},
@@ -161,9 +160,6 @@
 "oz" = (
 /obj/structure/railing{
 	dir = 8
-	},
-/obj/machinery/pool/filter{
-	pixel_y = -17
 	},
 /obj/structure/railing,
 /turf/open/floor/plasteel/white,
@@ -408,7 +404,6 @@
 /turf/open/floor/plasteel/white/textured,
 /area/hilbertshotel)
 "Gf" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/hilbertshotel)
 "Gm" = (

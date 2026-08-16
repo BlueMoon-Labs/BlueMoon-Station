@@ -36336,7 +36336,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "ehQ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "eii" = (
@@ -109815,9 +109814,6 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "tKJ" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
 /turf/open/pool,
 /area/commons/fitness/pool)
 "tKL" = (
@@ -122802,7 +122798,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "wuR" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},

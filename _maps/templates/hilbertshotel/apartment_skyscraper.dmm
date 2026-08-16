@@ -407,7 +407,6 @@
 /obj/effect/turf_decal/siding/wood/thin/end{
 	dir = 4
 	},
-/obj/machinery/pool/controller,
 /obj/structure/railing{
 	dir = 8
 	},
@@ -1040,10 +1039,6 @@
 /turf/open/floor/plasteel/dark/smooth/half,
 /area/hilbertshotel)
 "TR" = (
-/obj/machinery/pool/drain{
-	pixel_x = 0;
-	pixel_y = 17
-	},
 /turf/open/pool{
 	icon_state = "dark_small"
 	},

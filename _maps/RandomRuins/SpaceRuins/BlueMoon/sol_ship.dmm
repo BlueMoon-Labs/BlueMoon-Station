@@ -6205,7 +6205,6 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 9
 	},
-/obj/machinery/pool/drain,
 /obj/structure/curtain,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig_shower)
@@ -8861,7 +8860,6 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
-/obj/machinery/pool/drain,
 /obj/structure/curtain,
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4

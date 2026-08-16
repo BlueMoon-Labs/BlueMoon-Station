@@ -145,7 +145,6 @@
 /obj/structure/window/reinforced/tinted{
 	dir = 1
 	},
-/obj/machinery/pool/controller,
 /turf/open/floor/wood,
 /area/survivalpod/nonpowered)
 "aA" = (
@@ -322,7 +321,6 @@
 /turf/open/floor/carpet/royalblack,
 /area/survivalpod/nonpowered)
 "bg" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/survivalpod/nonpowered)
 "bi" = (

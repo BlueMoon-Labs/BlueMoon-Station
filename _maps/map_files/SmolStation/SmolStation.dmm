@@ -16416,7 +16416,6 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "lOW" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding,
 /area/commons/dorms)
 "lPS" = (
@@ -21238,9 +21237,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "puN" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/commons/dorms)
 "pvd" = (
@@ -21448,7 +21444,6 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
 "pAq" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/dorms)
 "pAu" = (

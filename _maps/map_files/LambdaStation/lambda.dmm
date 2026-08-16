@@ -82930,7 +82930,6 @@
 /turf/open/floor/wood,
 /area/commons/vacant_room/office)
 "pLT" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "pMk" = (
@@ -92018,9 +92017,6 @@
 "wor" = (
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/effect/turf_decal/trimline/blue/filled/line,
-/obj/machinery/pool/filter{
-	pixel_y = -20
-	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
 "woy" = (
@@ -93927,7 +93923,6 @@
 "xHL" = (
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/effect/turf_decal/trimline/blue/filled/line,
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
 "xHW" = (

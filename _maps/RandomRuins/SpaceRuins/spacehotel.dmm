@@ -506,9 +506,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "pn" = (
@@ -617,7 +614,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "pZ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "qg" = (
@@ -5021,7 +5017,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "YA" = (

@@ -20348,9 +20348,6 @@
 /turf/open/floor/plasteel/freezer,
 /area/medical/surgery)
 "gtj" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/commons/fitness/pool)
 "gto" = (
@@ -56451,7 +56448,6 @@
 /turf/open/floor/plasteel/dark,
 /area/medical/morgue)
 "rLH" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/glass,
 /area/commons/fitness/pool)
@@ -58419,7 +58415,6 @@
 /turf/open/floor/plasteel/textured,
 /area/engineering/break_room)
 "soZ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "spe" = (

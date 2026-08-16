@@ -9245,9 +9245,6 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
 "aAd" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness/recreation)
 "aAe" = (
@@ -10253,7 +10250,6 @@
 	},
 /area/engineering/engine_smes)
 "aDQ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/recreation)
 "aDW" = (
@@ -63419,7 +63415,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/brig)
 "pQx" = (
-/obj/machinery/pool/controller,
 /obj/machinery/light{
 	dir = 1
 	},

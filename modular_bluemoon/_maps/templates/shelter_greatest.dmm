@@ -463,7 +463,6 @@
 /turf/open/floor/wood/wood_large,
 /area/survivalpod)
 "bs" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
@@ -1655,7 +1654,6 @@
 /turf/open/floor/pod/dark,
 /area/survivalpod)
 "MS" = (
-/obj/machinery/pool/drain,
 /turf/open/pool{
 	icon_state = "dark_small"
 	},

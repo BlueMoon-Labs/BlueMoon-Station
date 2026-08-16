@@ -217,9 +217,6 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "hn" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/engineering/main)
 "hH" = (
@@ -273,7 +270,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "iQ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/engineering/main)
 "iY" = (
@@ -692,7 +688,6 @@
 /turf/closed/wall,
 /area/engineering/main)
 "uQ" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},

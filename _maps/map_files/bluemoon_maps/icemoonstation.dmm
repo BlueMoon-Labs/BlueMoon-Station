@@ -803,7 +803,6 @@
 	color = "#9cd6ff"
 	},
 /obj/effect/turf_decal/trimline/white,
-/obj/machinery/pool/drain,
 /turf/open/pool{
 	icon_state = "drained"
 	},
@@ -31644,9 +31643,6 @@
 /turf/open/floor/engine,
 /area/science/test_area)
 "fLR" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool{
 	icon_state = "drained"
 	},
@@ -52100,7 +52096,6 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "jzf" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
@@ -57190,7 +57185,6 @@
 	},
 /area/hallway/primary/fore)
 "krk" = (
-/obj/machinery/pool/drain,
 /turf/open/pool{
 	icon_state = "drained"
 	},
@@ -64374,7 +64368,6 @@
 /obj/structure/sink/kitchen/directional/south{
 	pixel_y = 25
 	},
-/obj/machinery/pool/drain,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "lFP" = (
@@ -65812,7 +65805,6 @@
 	},
 /area/science)
 "lVO" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/loading_area{
 	icon_state = "drain";
@@ -76568,10 +76560,6 @@
 /obj/machinery/shower/directional/south{
 	pixel_y = 15
 	},
-/obj/machinery/pool/drain{
-	pixel_x = -1;
-	pixel_y = 1
-	},
 /obj/structure/curtain,
 /turf/open/floor/plasteel/smooth/small,
 /area/mine/storage)
@@ -77690,7 +77678,6 @@
 /obj/machinery/shower/directional/west{
 	dir = 4
 	},
-/obj/machinery/pool/drain,
 /obj/machinery/firealarm{
 	dir = 1;
 	pixel_y = -24
@@ -79307,7 +79294,6 @@
 /obj/machinery/shower/directional/west{
 	dir = 4
 	},
-/obj/machinery/pool/drain,
 /turf/open/floor/plasteel/smooth/small,
 /area/science/xenobiology)
 "osC" = (
@@ -82310,9 +82296,6 @@
 /turf/open/floor/plating,
 /area/medical/morgue)
 "oVu" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "oVz" = (
@@ -117455,7 +117438,6 @@
 /area/medical/medbay/central)
 "vgt" = (
 /obj/item/fuel_rod/material,
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/engineering/main/reactor_core)
 "vgu" = (
@@ -127241,7 +127223,6 @@
 /area/ai_monitored/turret_protected/ai)
 "wUY" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/pool/drain,
 /turf/open/floor/noslip,
 /area/engineering/main/reactor_control)
 "wVa" = (

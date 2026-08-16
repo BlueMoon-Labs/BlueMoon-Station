@@ -3,91 +3,30 @@
 	name = "poolwater"
 	desc = "You're safer here than in the deep."
 	icon_state = "pool_tile"
+	// BLUEMOON: pools are sunken basins. This blocks walking out (see
+	// /turf/open/CanPass in the liquids module) and makes falling in a real drop,
+	// so the only way out is climbing/dragging yourself up.
+	turf_height = -30
 	heat_capacity = INFINITY
-	var/filled = FALSE //BLUEMOON: pools spawn empty, water comes from the controller/fill cycle instead of from round start
+	footstep = FOOTSTEP_WATER
+	barefootstep = FOOTSTEP_WATER
+	clawfootstep = FOOTSTEP_WATER
+	heavyfootstep = FOOTSTEP_WATER
+	/// How much water each pool tile starts with. Pools are dry at round start
+	/// and get filled by whatever pours water into them.
+	var/start_liquid = 0
 	var/next_splash = 0
-	var/obj/machinery/pool/controller/controller
-	var/obj/effect/overlay/water/watereffect
-	var/obj/effect/overlay/water/top/watertop
 
 /turf/open/pool/Initialize(mapload)
 	. = ..()
-	RegisterSignal(src, COMSIG_TURF_LIQUIDS_CREATION, PROC_REF(on_pool_liquids_created))
-	RegisterSignal(src, COMSIG_TURF_LIQUIDS_CHANGE, PROC_REF(on_pool_liquids_change))
-	update_filled_from_liquids()
-	update_icon()
-
-// BLUEMOON: pool tiles are real liquid basins. When a pool tile accumulates
-// enough liquid, it gains its filled state (name, water overlay, footstep) so the
-// pool visibly fills up gradually as liquid spreads across it.
-/turf/open/pool/proc/on_pool_liquids_created(obj/effect/abstract/liquid_turf/L)
-	SIGNAL_HANDLER
-	update_filled_from_liquids(L)
-
-/turf/open/pool/proc/on_pool_liquids_change(new_state)
-	SIGNAL_HANDLER
-	update_filled_from_liquids()
-
-/turf/open/pool/proc/update_filled_from_liquids(obj/effect/abstract/liquid_turf/L)
-	var/obj/effect/abstract/liquid_turf/check_liquids = L || liquids
-	var/new_filled = !isnull(check_liquids) && check_liquids.height >= LIQUID_ANKLES_LEVEL_HEIGHT
-	if(new_filled == filled)
-		return
-	filled = new_filled
-	update_icon()
-	if(filled && controller?.drained)
-		controller.drained = FALSE
-
-/turf/open/pool/Destroy()
-	if(controller)
-		controller.linked_turfs -= src
-		controller = null
-	QDEL_NULL(watereffect)
-	QDEL_NULL(watertop)
-	return ..()
-
-/turf/open/pool/update_icon()
-	. = ..()
-	if(!filled)
-		name = "drained pool"
-		desc = "No diving!"
-		QDEL_NULL(watereffect)
-		QDEL_NULL(watertop)
-		footstep = FOOTSTEP_FLOOR
-		barefootstep = FOOTSTEP_HARD_BAREFOOT
-		clawfootstep = FOOTSTEP_HARD_CLAW
-		heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	else
-		name = "poolwater"
-		desc = "You're safer here than in the deep."
-		watereffect = new /obj/effect/overlay/water(src)
-		watertop = new /obj/effect/overlay/water/top(src)
-		footstep = FOOTSTEP_WATER
-		barefootstep = FOOTSTEP_WATER
-		clawfootstep = FOOTSTEP_WATER
-		heavyfootstep = FOOTSTEP_WATER
-
-/obj/effect/overlay/water
-	name = "water"
-	icon = 'icons/turf/pool.dmi'
-	icon_state = "bottom"
-	density = FALSE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	layer = ABOVE_MOB_LAYER
-	anchored = TRUE
-	resistance_flags = INDESTRUCTIBLE
-
-/obj/effect/overlay/water/top
-	icon_state = "top"
-	layer = BELOW_MOB_LAYER
+	if(!liquids && start_liquid > 0)
+		add_liquid("water", start_liquid)
 
 // BLUEMOON EDIT: shared drag-out check so the liquids module override of /turf/open/MouseDrop_T
 // doesn't eat the pool climb-out. The user must be able to use their hands to pull themselves out.
 /turf/open/proc/check_pool_drag_out(atom/from, mob/living/user)
 	if(!istype(user))
 		return FALSE
-	if(isliving(from) && HAS_TRAIT(from, TRAIT_SWIMMING))
-		stack_trace("check_pool_drag_out: from=[from] ([from?.type]) user=[user] ([user?.type]) self=[user == from] canreach=[user.CanReach(from)] mobi=[CHECK_MOBILITY(user, MOBILITY_USE)] pool_target=[istype(src, /turf/open/pool)] src=[src] ([src?.type])")
 	// I could make this /open/floor and not have the !istype but ehh - kev
 	if(HAS_TRAIT(from, TRAIT_SWIMMING) && ((user == from) || (isliving(user) && user.CanReach(from))) && CHECK_MOBILITY(user, MOBILITY_USE) && !istype(src, /turf/open/pool))
 		var/mob/living/L = from
@@ -110,38 +49,12 @@
 // Mousedrop hook to normal turfs to get out of pools.
 // (Consolidated into the base /turf/open/MouseDrop_T in code/game/turfs/open.dm)
 
-// Exit check
-/turf/open/pool/Exit(atom/movable/AM, atom/newloc)
-	if(!AM.has_gravity(src))
-		return ..()
-	if(isliving(AM) || isstructure(AM))
-		if(AM.throwing)
-			return ..()			//WHEEEEEEEEEEE
-		if(istype(AM, /obj/structure) && isliving(AM.pulledby))
-			return ..()			//people pulling stuff out of pool
-		if(!ishuman(AM))
-			return ..()			//human weak, monkey (and anyone else) ook ook eek eek strong
-		if(isliving(AM) && (locate(/obj/structure/pool/ladder) in src))
-			return ..()			//climbing out
-		if(!filled)				//BLUEMOON: no deep water on this tile - just walk out
-			return ..()
-		return istype(newloc, /turf/open/pool)
-	return ..()
-
-// Exited logic
-/turf/open/pool/Exited(atom/A, atom/newLoc)
-	. = ..()
-	if(isliving(A))
-		var/turf/open/pool/P = newLoc
-		if(!istype(P) || (P.controller != controller))
-			controller?.mobs_in_pool -= A
-
 // Entered logic
 /turf/open/pool/Entered(atom/movable/AM, atom/oldloc)
 	if(istype(AM, /obj/effect/decal/cleanable))
 		var/obj/effect/decal/cleanable/C = AM
 		if(prob(C.bloodiness))
-			controller?.set_bloody(TRUE)
+			visible_message("<span class='warning'>[C] washes away in the pool water.</span>")
 		QDEL_IN(AM, 25)
 		animate(AM, alpha = 10, time = 20)
 		return ..()
@@ -149,57 +62,27 @@
 		return ..()
 	if(isliving(AM))
 		var/mob/living/victim = AM
-		if(ishuman(victim) && isrobotic(victim) && HAS_TRAIT(victim, TRAIT_BLUEMOON_WATER_VULNERABILITY) && victim.stat == CONSCIOUS && prob(60))
-			var/mob/living/carbon/human/iphonemaxpro = victim
-			var/protected = FALSE
-			if (iphonemaxpro.wear_suit && iphonemaxpro.head && istype(iphonemaxpro.wear_suit, /obj/item/clothing) && istype(iphonemaxpro.head, /obj/item/clothing))
-				var/obj/item/clothing/worn_suit = iphonemaxpro.wear_suit
-				var/obj/item/clothing/worn_helmet = iphonemaxpro.head
-				if (worn_suit.clothing_flags & worn_helmet.clothing_flags & STOPSPRESSUREDAMAGE)
-					protected = TRUE
-			if (!protected)
-				if(prob(80))
-					iphonemaxpro.visible_message(span_warning("[iphonemaxpro] сильно искрит, когда [iphonemaxpro.ru_ego()] схемы замыкает попавшая влага!"), span_boldwarning("Влага замыкает ваши схемы!"))
-					do_sparks(2, TRUE, iphonemaxpro)
-					iphonemaxpro.AdjustConfused(30 SECONDS)
-					iphonemaxpro.Jitter(15)
-					iphonemaxpro.apply_damage(15, BURN)
-				else
-					iphonemaxpro.visible_message(span_warning("[iphonemaxpro] отключается от короткого замыкания и идёт ко дну!"), span_boldwarning("ПЛАВАТЬ БЫЛО ПЛОХОЙ ИДЕ..."))
-					do_sparks(4, TRUE, iphonemaxpro)
-					iphonemaxpro.apply_damage(40, BURN)
-					iphonemaxpro.AdjustUnconscious(100)
-		if(filled && !HAS_TRAIT(victim, TRAIT_SWIMMING) && !isrobotic(victim))		//poor guy not swimming time to dunk them!
-			victim.AddElement(/datum/element/swimming)
-			controller?.mobs_in_pool += victim
-			if(locate(/obj/structure/pool/ladder) in src)		//safe climbing
-				return
-			if(iscarbon(AM))		//FUN TIME!
+		// Synthetics with the water-vulnerability quirk short out in water (below),
+		// but the fall damage itself is identical for everyone.
+		var/vulnerable_robo = isrobotic(victim) && HAS_TRAIT(victim, TRAIT_BLUEMOON_WATER_VULNERABILITY)
+		// A pool is "empty" when there's no meaningful water - a dry basin you fall into
+		// and hit the bottom. Detect by liquid state so a lingering empty liquid turf
+		// (drained but not yet destroyed) still counts as empty.
+		var/water_level = liquids ? liquids.liquid_state : LIQUID_STATE_PUDDLE
+		if(water_level <= LIQUID_STATE_PUDDLE)
+			// BLUEMOON: drained/empty pool - falling in hits the hard bottom. The same for everyone.
+			if(iscarbon(victim) && !HAS_TRAIT(victim, TRAIT_SWIMMING) && !istype(oldloc, /turf/open/pool))
 				var/mob/living/carbon/H = victim
-				if(filled)
-					if (H.wear_mask && H.wear_mask.flags_cover & MASKCOVERSMOUTH)
-						H.visible_message("<span class='danger'>[H] falls in the water!</span>",
-											"<span class='userdanger'>You fall in the water!</span>")
-						playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
-						H.DefaultCombatKnockdown(20)
-						return
-					else
-						H.DefaultCombatKnockdown(60)
-						H.adjustOxyLoss(5)
-						H.emote("cough")
-						H.visible_message("<span class='danger'>[H] falls in and takes a drink!</span>",
-											"<span class='userdanger'>You fall in and swallow some water!</span>")
-						playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
-				else if(!H.head || !(H.head.armor.getRating(MELEE) > 20))
+				if(!H.head || !(H.head.armor.getRating(MELEE) > 20))
 					if(prob(75))
 						H.visible_message("<span class='danger'>[H] falls in the drained pool!</span>",
-													"<span class='userdanger'>You fall in the drained pool!</span>")
+											"<span class='userdanger'>You fall in the drained pool!</span>")
 						H.adjustBruteLoss(7)
 						H.DefaultCombatKnockdown(80)
 						playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
 					else
-						H.visible_message("<span class='danger'>[H] falls in the drained pool, and cracks his skull!</span>",
-													"<span class='userdanger'>You fall in the drained pool, and crack your skull!</span>")
+						H.visible_message("<span class='danger'>[H] falls in the drained pool, and cracks [H.ru_ego()] skull!</span>",
+											"<span class='userdanger'>You fall in the drained pool, and crack your skull!</span>")
 						H.apply_damage(15, BRUTE, "head")
 						H.DefaultCombatKnockdown(200) // This should hurt. And it does.
 						playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
@@ -209,19 +92,59 @@
 										"<span class='userdanger'>You fall in the drained pool, but you had an helmet!</span>")
 					H.DefaultCombatKnockdown(40)
 					playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
-		else if(filled)
+		else if(water_level >= LIQUID_STATE_ANKLES && !HAS_TRAIT(victim, TRAIT_SWIMMING))		//poor guy not swimming time to dunk them!
+			victim.AddElement(/datum/element/swimming)
+			if(locate(/obj/structure/pool/ladder) in src)		//safe climbing
+				return
+			if(iscarbon(AM))		//FUN TIME!
+				var/mob/living/carbon/H = victim
+				if(vulnerable_robo)
+					H.visible_message("<span class='danger'>[H] sparks and shorts out as the water hits [H.ru_ego()] circuits!</span>",
+										"<span class='userdanger'>The water shorts out your circuits!</span>")
+					do_sparks(4, TRUE, H)
+					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
+					playsound(src, 'sound/machines/hiss.ogg', 40, FALSE)
+					if(H.stat == CONSCIOUS)
+						H.apply_damage(25, BURN)
+						H.AdjustConfused(30 SECONDS)
+						H.Jitter(15)
+						H.DefaultCombatKnockdown(40)
+				else if(isrobotic(H))
+					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
+										"<span class='userdanger'>You fall in the water!</span>")
+					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
+					H.adjustBruteLoss(5)
+					H.DefaultCombatKnockdown(60)
+				else if (H.wear_mask && H.wear_mask.flags_cover & MASKCOVERSMOUTH)
+					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
+										"<span class='userdanger'>You fall in the water!</span>")
+					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
+					H.adjustBruteLoss(3)
+					H.DefaultCombatKnockdown(20)
+					return
+				else
+					H.visible_message("<span class='danger'>[H] falls in and takes a drink!</span>",
+										"<span class='userdanger'>You fall in and swallow some water!</span>")
+					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
+					H.adjustBruteLoss(5)
+					H.DefaultCombatKnockdown(60)
+					H.adjustOxyLoss(5)
+					H.emote("cough")
+		else if(liquids)
 			if(iscarbon(victim))
 				victim.adjustStaminaLoss(1)
 			playsound(src, "water_wade", 20, TRUE)
 	return ..()
 
 /turf/open/pool/MouseDrop_T(atom/from, mob/user)
-	. = ..()
+	// Handle the drag-in BEFORE the base /turf/open/MouseDrop_T generic height
+	// climbing, so the victim has TRAIT_SWIMMING before being moved into the pool
+	// and Entered's fall damage doesn't trigger on a deliberate lowering.
 	if(!isliving(from))
-		return
+		return ..()
 	var/mob/living/victim = from
 	if(user.stat || user.lying || !Adjacent(user) || !from.Adjacent(user) || !iscarbon(user) || !victim.has_gravity(src) || HAS_TRAIT(victim, TRAIT_SWIMMING))
-		return
+		return ..()
 	var/victimname = victim == user? "себя" : "[victim]"
 	var/starttext = victim == user? "[user] спускается в [src]." : "[user] опускает [victim] в [src]."
 	user.visible_message("<span class='notice'>[starttext]</span>")
@@ -229,9 +152,10 @@
 		user.visible_message("<span class='notice'>[user] опускает [victimname] в [src].</span>")
 		victim.AddElement(/datum/element/swimming)		//make sure they have it so they don't fall/whatever
 		victim.forceMove(src)
+	return TRUE
 
 /turf/open/pool/attackby(obj/item/W, mob/living/user)
-	if(istype(W, /obj/item/mop) && filled)
+	if(istype(W, /obj/item/mop) && liquids)
 		W.reagents.add_reagent("water", 5)
 		to_chat(user, "<span class='notice'>Вы намочили [W] в [src].</span>")
 		playsound(src, 'sound/effects/slosh.ogg', 25, TRUE)
@@ -242,7 +166,7 @@
 	. = ..()
 	if(.)
 		return
-	if((user.loc != src) && !user.IsStun() && !user.IsKnockdown() && !user.incapacitated() && Adjacent(user) && HAS_TRAIT(user, TRAIT_SWIMMING) && filled && (next_splash < world.time))
+	if((user.loc != src) && !user.IsStun() && !user.IsKnockdown() && !user.incapacitated() && Adjacent(user) && HAS_TRAIT(user, TRAIT_SWIMMING) && liquids && (next_splash < world.time))
 		playsound(src, 'sound/effects/watersplash.ogg', 8, TRUE, 1)
 		next_splash = world.time + 25
 		var/obj/effect/splash/S = new(src)
@@ -252,14 +176,3 @@
 			if(!H.wear_mask && (H.stat == CONSCIOUS))
 				H.emote("cough")
 			H.adjustStaminaLoss(4)
-
-// Pool tiles participate in the liquids system like any other open turf, so
-// spilled/poured liquid forms a real, spreading puddle on them instead of being
-// absorbed on contact. Spreading is kept inside the pool basin via the
-// can_share_liquids_with() override, and the tile's filled state follows the
-// water level (see update_filled_from_liquids()).
-/turf/open/pool/add_liquid_from_reagents(datum/reagents/giver, no_react = FALSE, reagent_multiplier = 1, atom/thrown_from = null, atom/thrown_to = null)
-	return ..()
-
-/turf/open/pool/add_liquid(reagent, amount, no_react = FALSE, chem_temp = 300)
-	return ..()

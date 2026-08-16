@@ -11,7 +11,7 @@
 /obj/item/stack/tile/plasteel/pool
 	name = "pool floor tile"
 	singular_name = "pool floor tile"
-	turf_type = /turf/open/floor/plasteel/pool
+	turf_type = /turf/open/pool/pool_floor
 	tile_reskin_types = list(
 		/obj/item/stack/tile/plasteel/pool,
 		/obj/item/stack/tile/plasteel/pool/cobble,
@@ -22,31 +22,28 @@
 /obj/item/stack/tile/plasteel/pool/cobble
 	name = "cobblestone pool floor tile"
 	singular_name = "cobblestone pool floor tile"
-	turf_type = /turf/open/floor/plasteel/pool/cobble
+	turf_type = /turf/open/pool/cobble
 
 /obj/item/stack/tile/plasteel/pool/cobble/side
 	name = "cobblestone side pool floor tile"
 	singular_name = "cobblestone side pool floor tile"
-	turf_type = /turf/open/floor/plasteel/pool/cobble/side
+	turf_type = /turf/open/pool/cobble/side
 
 /obj/item/stack/tile/plasteel/pool/cobble/corner
 	name = "cobblestone corner pool floor tile"
 	singular_name = "cobblestone corner pool floor tile"
-	turf_type = /turf/open/floor/plasteel/pool/cobble/corner
+	turf_type = /turf/open/pool/cobble/corner
 
-/turf/open/floor/plasteel/pool
+// BLUEMOON: buildable pool tiles are real /turf/open/pool basins, so every pool
+// variant shares the exact same logic - free exit, liquid fill, swimming.
+// They are not just a custom visual floor type anymore.
+/turf/open/pool/pool_floor
 	name = "pool floor"
-	floor_tile = /obj/item/stack/tile/plasteel/pool
 	icon = 'modular_bluemoon/modules/liquids/icons/turf/pool_tile.dmi'
 	base_icon_state = "pool_tile"
 	icon_state = "pool_tile"
-	liquid_height = -30
-	turf_height = -30
 
-/turf/open/floor/plasteel/pool/rust_heretic_act()
-	return
-
-/turf/open/floor/plasteel/pool/cobble
+/turf/open/pool/cobble
 	name = "cobblestone pool floor"
 	icon = 'modular_bluemoon/modules/liquids/icons/turf/floor.dmi'
 	base_icon_state = "cobble"
@@ -56,11 +53,11 @@
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 
-/turf/open/floor/plasteel/pool/cobble/side
+/turf/open/pool/cobble/side
 	base_icon_state = "cobble_side"
 	icon_state = "cobble_side"
 
-/turf/open/floor/plasteel/pool/cobble/corner
+/turf/open/pool/cobble/corner
 	base_icon_state = "cobble_corner"
 	icon_state = "cobble_corner"
 

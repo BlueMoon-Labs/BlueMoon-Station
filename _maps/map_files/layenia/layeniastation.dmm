@@ -22796,7 +22796,6 @@
 	},
 /area/security/brig)
 "dtQ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/security/prison)
 "dtR" = (
@@ -39406,7 +39405,6 @@
 /turf/open/floor/plating,
 /area/construction)
 "fQJ" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -64367,13 +64365,9 @@
 /turf/open/floor/wood,
 /area/engineering/break_room)
 "jwT" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "jwU" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
@@ -70101,9 +70095,6 @@
 	},
 /area/engineering/main)
 "kmj" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /obj/effect/turf_decal/loading_area{
 	dir = 8;
 	icon_state = "ledge_pool";
@@ -81856,9 +81847,6 @@
 /turf/closed/wall,
 /area/maintenance/port/fore)
 "lSn" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /obj/effect/turf_decal/loading_area{
 	dir = 4;
 	icon_state = "ledge_pool";
@@ -123382,7 +123370,6 @@
 	icon_state = "drain";
 	name = "drain"
 	},
-/obj/machinery/pool/controller,
 /turf/open/floor/plating/layeniaredder{
 	initial_gas_mix = "TEMP=2.7"
 	},
@@ -131731,7 +131718,6 @@
 	},
 /area/maintenance/fore)
 "thL" = (
-/obj/machinery/pool/controller,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/siding/yellow,
@@ -157716,7 +157702,6 @@
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
 "wUK" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/yellow,
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
@@ -162559,7 +162544,6 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "xHo" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/engineering/main/reactor_core)
 "xHr" = (

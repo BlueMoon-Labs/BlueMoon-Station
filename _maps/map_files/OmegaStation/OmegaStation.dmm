@@ -31409,9 +31409,6 @@
 	},
 /area/engineering/atmos)
 "bhX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
 /turf/open/pool,
 /area/maintenance/starboard/aft)
 "bhZ" = (
@@ -34129,7 +34126,6 @@
 	},
 /area/science/xenobiology)
 "cGA" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "cLO" = (
@@ -37536,7 +37532,6 @@
 /turf/open/floor/plasteel/dark/corner,
 /area/maintenance/disposal/incinerator)
 "nXb" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/maintenance/starboard/aft)
 "oaV" = (

@@ -966,9 +966,6 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "adj" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
@@ -990,7 +987,6 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "ads" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -1111,7 +1107,6 @@
 /turf/open/pool,
 /area/engineering/main/reactor_core)
 "aeg" = (
-/obj/machinery/pool/drain,
 /obj/item/fuel_rod,
 /turf/open/pool,
 /area/engineering/main/reactor_core)

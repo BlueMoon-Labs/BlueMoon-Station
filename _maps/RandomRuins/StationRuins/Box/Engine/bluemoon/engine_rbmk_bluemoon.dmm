@@ -301,9 +301,6 @@
 /turf/closed/wall/r_wall,
 /area/engineering/main/reactor_core)
 "hn" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/engineering/main/reactor_core)
 "hH" = (
@@ -369,7 +366,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "iQ" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/engineering/main/reactor_core)
 "iY" = (
@@ -871,7 +867,6 @@
 /turf/closed/wall/r_wall,
 /area/engineering/main/reactor_core)
 "uQ" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},

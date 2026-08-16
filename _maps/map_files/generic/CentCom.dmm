@@ -13590,10 +13590,6 @@
 	dir = 5
 	},
 /obj/structure/chair/pew/right,
-/obj/machinery/pool/filter{
-	pixel_x = 14;
-	pixel_y = 15
-	},
 /turf/open/pool,
 /area/centcom/holding)
 "eNu" = (
@@ -15733,7 +15729,6 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
 "gMA" = (
-/obj/machinery/pool/controller,
 /turf/open/indestructible/cobble/side,
 /area/centcom/holding)
 "gNq" = (
@@ -21618,9 +21613,6 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "msc" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /turf/open/indestructible/cobble/side,
 /area/centcom/holding)
 "mtt" = (
@@ -26164,7 +26156,6 @@
 /area/centcom/control)
 "qUn" = (
 /obj/effect/turf_decal/trimline/brown/filled,
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/centcom/holding)
 "qUu" = (
@@ -28097,7 +28088,6 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "sDh" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/centcom/holding)
 "sDP" = (
@@ -30671,7 +30661,6 @@
 /obj/item/pool/pool_noodle/yellow,
 /obj/item/pool/pool_noodle/yellow,
 /obj/item/pool/pool_noodle/yellow,
-/obj/machinery/pool/controller,
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "vaZ" = (
@@ -33015,10 +33004,6 @@
 	dir = 4;
 	pixel_y = 8;
 	pixel_x = -3
-	},
-/obj/machinery/pool/drain{
-	pixel_x = -3;
-	pixel_y = 2
 	},
 /obj/machinery/door/window/brigdoor/security{
 	req_access_txt = "109"

@@ -43520,7 +43520,6 @@
 /turf/open/floor/plasteel/damturf/damage2,
 /area/maintenance/port/aft)
 "gva" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/commons/fitness/recreation)
@@ -83723,9 +83722,6 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
 "wUU" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/commons/fitness/recreation)
@@ -86398,7 +86394,6 @@
 	},
 /area/security/processing)
 "yeV" = (
-/obj/machinery/pool/drain,
 /turf/open/pool{
 	icon_state = "dark_small"
 	},
