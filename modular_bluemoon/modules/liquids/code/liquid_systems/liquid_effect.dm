@@ -131,6 +131,37 @@
 	if(fire_state)
 		set_fire_state(LIQUID_FIRE_STATE_NONE)
 
+/// Firefighting reagents (water, firefighting foam) splashed onto a flammable or burning
+/// liquid are absorbed into it. This dilutes the flammable content until the per-unit fire
+/// power drops below REQUIRED_FIRE_POWER_PER_UNIT, so the fire stays out instead of being
+/// instantly re-lit by the spread from adjacent burning turfs or a leftover hotspot.
+/obj/effect/abstract/liquid_turf/proc/exposed_to_firefighting_reagents(atom/source, list/reagents, datum/reagents/source_reagents, methods, volume_modifier, show_message, from_gas)
+	SIGNAL_HANDLER
+	// Pure non-flammable puddles don't need firefighting, and growing them pointlessly on
+	// every water exposure is just noise.
+	var/datum/reagent/reagent //Faster declaration
+	var/has_flammable_content = FALSE
+	for(var/reagent_type in reagent_list)
+		reagent = reagent_type
+		if(initial(reagent.liquid_fire_power))
+			has_flammable_content = TRUE
+			break
+	if(!has_flammable_content && !fire_state)
+		return
+	var/firefighting_type
+	var/firefighting_volume = 0
+	for(var/reagent_type in reagents)
+		if(!ispath(reagent_type, /datum/reagent/water) && !ispath(reagent_type, /datum/reagent/firefighting_foam))
+			continue
+		if(!firefighting_type)
+			firefighting_type = reagent_type
+		firefighting_volume += reagents[reagent_type]
+	if(!firefighting_type || firefighting_volume <= 0)
+		return
+	if(fire_state)
+		set_fire_state(LIQUID_FIRE_STATE_NONE)
+	my_turf.add_liquid(firefighting_type, firefighting_volume, TRUE, T20C)
+
 /obj/effect/abstract/liquid_turf/proc/process_fire()
 	if(!fire_state)
 		SSliquids.processing_fire -= my_turf
@@ -652,6 +683,7 @@
 		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
 		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
 		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
+		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
 		SSliquids.add_active_turf(my_turf)
 
 		SEND_SIGNAL(my_turf, COMSIG_TURF_LIQUIDS_CREATION, src)
@@ -669,6 +701,7 @@
 		lose_cleanbot_targetable()
 		var/turf/old_turf = my_turf
 		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
+		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
 		if(my_turf.lgroup)
 			my_turf.lgroup.remove_from_group(my_turf)
 		if(SSliquids.evaporation_queue[my_turf])
