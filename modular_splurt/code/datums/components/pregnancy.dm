@@ -235,6 +235,7 @@
 	if(stage < max_stage)
 		return
 
+	balloon_alert(src.loc, "Вы пытаетесь вылупить яйцо!")
 	INVOKE_ASYNC(src, PROC_REF(hatch), source, I, user, params)
 
 /datum/component/pregnancy/proc/hatch(datum/source, obj/item/I, mob/user, params)
