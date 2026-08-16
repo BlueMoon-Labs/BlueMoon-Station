@@ -35,11 +35,7 @@
 	var/lowest_fire_temp = INFINITY
 	for(var/gas_id in fire_temperatures)
 		lowest_fire_temp = min(lowest_fire_temp, fire_temperatures[gas_id])
-	var/datum/gas_reaction/generic_fire
-	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
-		if(candidate.id == "genericfire")
-			generic_fire = candidate
-			break
+	var/datum/gas_reaction/generic_fire = unit_test_find_gas_reaction("genericfire")
 	TEST_ASSERT_NOTNULL(generic_fire, "genericfire must be registered - the whole fuel gate hangs off its TEMP requirement")
 	var/generic_fire_temp = generic_fire.min_requirements["TEMP"]
 	TEST_ASSERT(generic_fire_temp >= lowest_fire_temp, "genericfire's TEMP requirement ([generic_fire_temp]) sits below the lowest ignition temperature in the game ([lowest_fire_temp]): the gate would be reached where nothing can burn at all")

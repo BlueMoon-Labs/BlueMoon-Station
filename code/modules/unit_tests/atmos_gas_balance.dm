@@ -582,11 +582,7 @@
 /datum/unit_test/gas_generic_fire_no_runaway
 
 /datum/unit_test/gas_generic_fire_no_runaway/Run()
-	var/datum/gas_reaction/generic_fire
-	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
-		if(candidate.id == "genericfire")
-			generic_fire = candidate
-			break
+	var/datum/gas_reaction/generic_fire = unit_test_find_gas_reaction("genericfire")
 	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
 
 	// --- Стехиометрия, ОДИН проход ---
@@ -649,11 +645,7 @@
 /datum/unit_test/gas_generic_fire_hydrogen_heats
 
 /datum/unit_test/gas_generic_fire_hydrogen_heats/Run()
-	var/datum/gas_reaction/generic_fire
-	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
-		if(candidate.id == "genericfire")
-			generic_fire = candidate
-			break
+	var/datum/gas_reaction/generic_fire = unit_test_find_gas_reaction("genericfire")
 	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
 
 	var/datum/gas_mixture/mixture = new(CELL_VOLUME)
@@ -676,11 +668,7 @@
 /datum/unit_test/gas_generic_fire_fuels_never_cool
 
 /datum/unit_test/gas_generic_fire_fuels_never_cool/Run()
-	var/datum/gas_reaction/generic_fire
-	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
-		if(candidate.id == "genericfire")
-			generic_fire = candidate
-			break
+	var/datum/gas_reaction/generic_fire = unit_test_find_gas_reaction("genericfire")
 	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
 
 	// Азот сюда не входит намеренно: у него и у кислорода энтальпия нулевая, и
@@ -707,11 +695,7 @@
 /datum/unit_test/gas_generic_fire_empty_mix_gate
 
 /datum/unit_test/gas_generic_fire_empty_mix_gate/Run()
-	var/datum/gas_reaction/generic_fire
-	for(var/datum/gas_reaction/candidate as anything in SSair.gas_reactions)
-		if(candidate.id == "genericfire")
-			generic_fire = candidate
-			break
+	var/datum/gas_reaction/generic_fire = unit_test_find_gas_reaction("genericfire")
 	TEST_ASSERT_NOTNULL(generic_fire, "реакция обобщённого горения пропала из SSair.gas_reactions")
 
 	// Теплоёмкость смеси - около 1e-6 * 60, то есть заведомо ниже

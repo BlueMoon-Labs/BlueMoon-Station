@@ -599,10 +599,20 @@
 	var/list/temp_gated = list()
 	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
+	// Позиция ПОСЛЕДНЕЙ реакции бакета и позиция ПЕРВОГО производителя этого же
+	// газа. Пол бакета читается на сборе кандидатов, до цикла реакций, поэтому
+	// он верен только пока никакая реакция того же вызова не может поднять газ
+	// над порогом. Пара freonformation (приоритет 33, synthesis_gas = фреон) и
+	// freonfire (приоритет -12, бакет фреона) ровно такая: производитель идёт
+	// РАНЬШЕ потребителя, и пол отложил бы горение на один фаер SSair.
+	var/list/bucket_last_index = list()
+	var/list/producer_first_index = list()
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
 		index++
 		reaction.sort_index = index
+		if(reaction.synthesis_gas && isnull(producer_first_index[reaction.synthesis_gas]))
+			producer_first_index[reaction.synthesis_gas] = index
 		var/list/reqs = reaction.min_requirements
 		var/key_gas
 		for(var/id in reqs)
@@ -627,6 +637,7 @@
 				reaction_floor = 0
 			var/bucket_floor = floors[key_gas]
 			floors[key_gas] = isnull(bucket_floor) ? reaction_floor : min(bucket_floor, reaction_floor)
+			bucket_last_index[key_gas] = index
 		else
 			var/temp_gate = reqs["TEMP"] || 0
 			temp_gated[reaction] = temp_gate
@@ -639,6 +650,16 @@
 			// пропускать, а не отсекать по отсутствию горячего газа.
 			if(reqs["FIRE_REAGENTS"] > 0)
 				needs_fuel[reaction] = TRUE
+	// Газ, который кто-то производит РАНЬШЕ, чем отработает последняя реакция его
+	// бакета, пола не получает: моли на сборе кандидатов ещё нулевые, а к моменту
+	// потребителя их уже хватает. Бакет без пола ведёт себя как до гейта - полную
+	// проверку min_requirements всё равно делает цикл реакций.
+	for(var/gas_id in producer_first_index)
+		var/last_consumer = bucket_last_index[gas_id]
+		if(isnull(last_consumer))
+			continue
+		if(producer_first_index[gas_id] < last_consumer)
+			floors -= gas_id
 	reactions_by_key_gas = by_gas
 	reactions_key_gas_floor = floors
 	temp_gated_reactions = temp_gated
@@ -1334,13 +1355,12 @@
 			//
 			// ИНВАРИАНТ: моли читаются здесь, на СБОРЕ кандидатов, а цикл реакций
 			// ниже перечитывает их заново. Реакция, чей ключевой газ переваливает
-			// через порог благодаря другой реакции ТОГО ЖЕ вызова, поэтому
-			// откладывается на один фаер SSair. На текущем наборе такой пары нет:
-			// производитель ключевого газа всегда идёт приоритетом НИЖЕ бакета
-			// этого газа, либо его собственные min_requirements уже держат газ выше
-			// пола (fusion требует FUSION_MOLE_THRESHOLD плазмы раньше, чем поднимет
-			// её для plasmafire). Реакция с БОЛЕЕ ВЫСОКИМ приоритетом, производящая
-			// чужой ключевой газ, инвариант сломает - проверять при добавлении.
+			// через порог благодаря другой реакции ТОГО ЖЕ вызова, откладывалась бы
+			// на один фаер SSair. Такие газы пола не получают вовсе:
+			// auxtools_update_reactions() сверяет позицию первого производителя
+			// (synthesis_gas) с позицией последней реакции бакета и снимает пол,
+			// если производитель идёт раньше. Новой реакции достаточно объявить
+			// synthesis_gas - руками тут править нечего.
 			var/bucket_floor = key_gas_floor?[id]
 			if(bucket_floor && gas_moles < bucket_floor)
 				continue

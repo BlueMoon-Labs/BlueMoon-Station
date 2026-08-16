@@ -4,7 +4,7 @@
 # cycles and collects data/atmos_headless_bench_*.jsonl. The server shuts itself
 # down when done (see atmos_benchmark.dm, ATMOS_HEADLESS_BENCH section).
 #
-# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile]
+# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor]
 #   tag        label for the result file (e.g. baseline, fix1)
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
@@ -41,7 +41,7 @@
 set -u
 cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
 
-TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle]}"
+TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] - see header for what each does}"
 MAP="${2:-icemoonstation}"
 SKIP_BUILD="${3:-}"
 CYCLES="${4:-}"

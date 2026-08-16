@@ -529,10 +529,17 @@ What are the archived variables for?
 		var/their_moles = values_sum(sharer_gases)
 		. = (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
 
+	// Ревизию бампает сама чистка, а не гейт по abs_moved_moles выше: проход, на
+	// котором ни одного моля не сдвинулось, всё равно может выкинуть ключ, и тогда
+	// мемо total_moles/heat_capacity/archive продолжало бы отдавать сумму с уже
+	// удалённым газом до следующей настоящей мутации. Инвариант простой: список
+	// изменился - ревизия изменилась.
 	if(zero_ours)
 		cached_gases.Remove(zero_ours)
+		mutation_rev++
 	if(zero_theirs)
 		sharer_gases.Remove(zero_theirs)
+		sharer.mutation_rev++
 	return .
 
 /// One-sided share() against an immutable template mixture (planetary atmosphere):

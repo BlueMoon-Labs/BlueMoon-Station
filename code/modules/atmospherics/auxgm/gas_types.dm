@@ -218,6 +218,12 @@
 	fire_products = list(GAS_H2O = 1)
 	fire_burn_rate = 2
 	fire_temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST - 50
+	// НАМЕРЕННО игровое число, а не табличное. Гесс по H2 + 0.5 O2 -> H2O даёт
+	// 241800 (см. enthalpy у water_vapor выше), но выделенная реакция горения
+	// водорода и трития в reactions.dm списывает FIRE_HYDROGEN_ENERGY_RELEASED =
+	// 280000 на моль. Обобщённое горение читает это же поле, и разойдись оно с
+	// выделенной реакцией - один и тот же водород грел бы смесь по-разному в
+	// зависимости от того, какая из двух его подобрала.
 	enthalpy = FIRE_HYDROGEN_ENERGY_RELEASED
 
 /datum/gas/bz
