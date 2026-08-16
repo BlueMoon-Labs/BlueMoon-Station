@@ -40,6 +40,11 @@
 	/// удовлетворяет ни одну его реакцию: отсечение точное, а не приближённое.
 	/// Построен auxtools_update_reactions() вместе с индексом.
 	var/list/reactions_key_gas_floor
+	/// TRUE, если хоть у одной реакции проставлен synthesis_followup_gas. Гейт
+	/// для дополнительного прохода по кандидатам в react(): реакций-производителей
+	/// с потребителем ПОЗЖЕ себя в игре единицы, а проход стоял бы на каждом
+	/// активном турфе, пайпнете и баллоне каждый фаер.
+	var/reactions_have_synthesis_followups = FALSE
 	/// Reactions with no gas requirement at all (assoc: reaction -> its TEMP gate).
 	var/list/temp_gated_reactions
 	/// Subset of the above that also requires FIRE_REAGENTS (assoc: reaction -> TRUE).
@@ -599,20 +604,18 @@
 	var/list/temp_gated = list()
 	var/list/needs_fuel = list()
 	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
-	// Позиция ПОСЛЕДНЕЙ реакции бакета и позиция ПЕРВОГО производителя этого же
-	// газа. Пол бакета читается на сборе кандидатов, до цикла реакций, поэтому
-	// он верен только пока никакая реакция того же вызова не может поднять газ
-	// над порогом. Пара freonformation (приоритет 33, synthesis_gas = фреон) и
-	// freonfire (приоритет -12, бакет фреона) ровно такая: производитель идёт
-	// РАНЬШЕ потребителя, и пол отложил бы горение на один фаер SSair.
+	// Позиция ПОСЛЕДНЕЙ реакции бакета. Пол бакета читается на сборе кандидатов,
+	// до цикла реакций, поэтому он верен только пока никакая реакция того же
+	// вызова не может поднять газ над порогом. Пара freonformation (приоритет 33,
+	// synthesis_gas = фреон) и freonfire (приоритет -12, бакет фреона) ровно
+	// такая: производитель идёт РАНЬШЕ потребителя, и пол отложил бы горение на
+	// один фаер SSair.
 	var/list/bucket_last_index = list()
-	var/list/producer_first_index = list()
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
 		index++
 		reaction.sort_index = index
-		if(reaction.synthesis_gas && isnull(producer_first_index[reaction.synthesis_gas]))
-			producer_first_index[reaction.synthesis_gas] = index
+		reaction.synthesis_followup_gas = null
 		var/list/reqs = reaction.min_requirements
 		var/key_gas
 		for(var/id in reqs)
@@ -651,17 +654,30 @@
 			if(reqs["FIRE_REAGENTS"] > 0)
 				needs_fuel[reaction] = TRUE
 	// Газ, который кто-то производит РАНЬШЕ, чем отработает последняя реакция его
-	// бакета, пола не получает: моли на сборе кандидатов ещё нулевые, а к моменту
-	// потребителя их уже хватает. Бакет без пола ведёт себя как до гейта - полную
-	// проверку min_requirements всё равно делает цикл реакций.
-	for(var/gas_id in producer_first_index)
-		var/last_consumer = bucket_last_index[gas_id]
-		if(isnull(last_consumer))
+	// бакета, требует двух поблажек сразу, и снятого пола мало.
+	//
+	// 1. Пол бакета снимается: моли на сборе кандидатов ещё нулевые, а к моменту
+	//    потребителя их уже хватает. Бакет без пола ведёт себя как до гейта -
+	//    полную проверку min_requirements всё равно делает цикл реакций.
+	// 2. Производитель помечается followup-газом. Пол спасает только тот случай,
+	//    когда газ в смеси УЖЕ есть, пусть и ниже порога: сбор кандидатов идёт
+	//    по ключам gases, и бакет газа, которого в смеси нет вовсе, не заводится
+	//    ни при каком поле. Обычный случай freonformation именно такой (плазма +
+	//    CO2 + BZ, фреона ноль), и без метки freonfire откладывался бы на фаер.
+	var/has_followups = FALSE
+	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
+		var/produced = reaction.synthesis_gas
+		if(!produced)
 			continue
-		if(producer_first_index[gas_id] < last_consumer)
-			floors -= gas_id
+		var/last_consumer = bucket_last_index[produced]
+		if(isnull(last_consumer) || reaction.sort_index >= last_consumer)
+			continue
+		floors -= produced
+		reaction.synthesis_followup_gas = produced
+		has_followups = TRUE
 	reactions_by_key_gas = by_gas
 	reactions_key_gas_floor = floors
+	reactions_have_synthesis_followups = has_followups
 	temp_gated_reactions = temp_gated
 	temp_gated_needs_fuel = needs_fuel
 	temp_gated_min_temp = gate_floor
@@ -1357,10 +1373,11 @@
 			// ниже перечитывает их заново. Реакция, чей ключевой газ переваливает
 			// через порог благодаря другой реакции ТОГО ЖЕ вызова, откладывалась бы
 			// на один фаер SSair. Такие газы пола не получают вовсе:
-			// auxtools_update_reactions() сверяет позицию первого производителя
+			// auxtools_update_reactions() сверяет позицию производителя
 			// (synthesis_gas) с позицией последней реакции бакета и снимает пол,
-			// если производитель идёт раньше. Новой реакции достаточно объявить
-			// synthesis_gas - руками тут править нечего.
+			// если производитель идёт раньше. Случай "газа в смеси нет совсем"
+			// пол не закрывает - его добирает проход по followup ниже. Новой
+			// реакции достаточно объявить synthesis_gas - руками тут править нечего.
 			var/bucket_floor = key_gas_floor?[id]
 			if(bucket_floor && gas_moles < bucket_floor)
 				continue
@@ -1410,6 +1427,35 @@
 					candidates = candidates.Copy()
 					candidates_owned = TRUE
 				candidates += r
+		// Потребитель газа, которого в смеси ещё НЕТ, а производитель уже в
+		// кандидатах и идёт раньше него. Сбор выше ходит по ключам gases, поэтому
+		// бакет такого газа не заводится ни при каком поле - именно так пара
+		// freonformation (плазма + CO2 + BZ) / freonfire теряла горение на один
+		// фаер SSair, хотя фреон рождался строкой выше в этом же вызове. Цикл
+		// реакций всё равно сверяет min_requirements по живым молям, так что
+		// лишний кандидат не может ничего запустить раньше времени.
+		if(candidates && air_controller.reactions_have_synthesis_followups)
+			var/list/followup_gases
+			for(var/datum/gas_reaction/producer as anything in candidates)
+				var/followup_gas = producer.synthesis_followup_gas
+				// Ключ в смеси уже есть - бакет собран основным циклом (пол с таких
+				// газов снят там же, где ставится метка, поэтому не срезан).
+				if(!followup_gas || !isnull(cached_gases[followup_gas]))
+					continue
+				if(!followup_gases)
+					followup_gases = list(followup_gas)
+				else if(!(followup_gas in followup_gases))
+					followup_gases += followup_gas
+			// Дописываем ПОСЛЕ обхода: candidates может быть одолженным бакетом, и
+			// править список, по которому идёт цикл, нельзя в любом случае.
+			for(var/followup_gas in followup_gases)
+				var/list/bucket = by_gas[followup_gas]
+				if(!length(bucket))
+					continue
+				if(!candidates_owned)
+					candidates = candidates.Copy()
+					candidates_owned = TRUE
+				candidates += bucket
 	else
 		candidates = SSair.gas_reactions.Copy()
 		candidates_owned = TRUE

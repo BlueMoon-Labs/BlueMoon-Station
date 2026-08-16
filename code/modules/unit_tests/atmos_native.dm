@@ -1826,14 +1826,21 @@
 	// бакета, обязан остаться без пола: моли на сборе кандидатов ещё нулевые, а к
 	// моменту потребителя их уже хватает. Фреон - живой пример (freonformation с
 	// приоритетом 33 против freonfire с -12).
+	// Явные min/max, а не "первый и последний встреченный": оба списка сейчас
+	// действительно идут в порядке sort_index, но тест закрепляет инвариант
+	// индекса, а не способ его сборки, и держаться за порядок обхода ему нечем.
 	var/list/last_consumer_index = list()
 	var/list/first_producer_index = list()
 	for(var/datum/gas_reaction/reaction as anything in SSair.gas_reactions)
-		if(reaction.synthesis_gas && isnull(first_producer_index[reaction.synthesis_gas]))
-			first_producer_index[reaction.synthesis_gas] = reaction.sort_index
+		var/produced = reaction.synthesis_gas
+		if(!produced)
+			continue
+		var/known_producer = first_producer_index[produced]
+		first_producer_index[produced] = isnull(known_producer) ? reaction.sort_index : min(known_producer, reaction.sort_index)
 	for(var/id in by_gas)
 		for(var/datum/gas_reaction/reaction as anything in by_gas[id])
-			last_consumer_index[id] = reaction.sort_index
+			var/known_consumer = last_consumer_index[id]
+			last_consumer_index[id] = isnull(known_consumer) ? reaction.sort_index : max(known_consumer, reaction.sort_index)
 
 	// Инвариант точности. Пол ниже любого требования бакета - гейт не имеет права
 	// срезать реакцию, у которой был шанс пойти; пол выше минимума - гейт
@@ -1891,15 +1898,15 @@
 		// Пол снимается только на время прогона и возвращается ДО ассертов. Возврат
 		// идёт и по исключению: рантайм внутри react() (вырожденная смесь - ровно то,
 		// что здесь и собирается) рвёт стек до самого RunUnitTest, и оставленный null
-		// уехал бы во все последующие атмос-тесты как молчаливо снятый гейт.
+		// уехал бы во все последующие атмос-тесты как молчаливо снятый гейт. Сами
+		// смеси на этом пути не убираем: прогон и так валится, а дублировать qdel в
+		// обеих ветках дороже, чем оставить их сборщику.
 		try
 			SSair.reactions_key_gas_floor = null
 			verdict_ungated = ungated.react(null)
 			moles_ungated = ungated.total_moles()
 		catch(var/exception/probe_error)
 			SSair.reactions_key_gas_floor = floors
-			qdel(ungated)
-			qdel(gated)
 			throw probe_error
 		SSair.reactions_key_gas_floor = floors
 		var/verdict_gated = gated.react(null)
@@ -1908,3 +1915,73 @@
 		qdel(gated)
 		TEST_ASSERT_EQUAL(verdict_gated, verdict_ungated, "гейт изменил вердикт react() на смеси [json_encode(recipe)]")
 		TEST_ASSERT_EQUAL(moles_gated, moles_ungated, "гейт изменил итоговые моли смеси [json_encode(recipe)]")
+
+///Сбор кандидатов идёт ПО КЛЮЧАМ газ-листа смеси, поэтому бакет газа, которого в
+///смеси нет вовсе, не заводится ни при каком поле требований. Реакция, чьё топливо
+///рождает другая реакция ТОГО ЖЕ вызова, из-за этого молча откладывалась на фаер
+///SSair: снятый пол спасал только случай "газ есть, но его мало". Инвариант
+///чинится меткой synthesis_followup_gas на производителе - тест закрепляет и
+///саму метку, и её следствие.
+///
+///Следствие проверяется на паре zauker_formation (приоритет 35) / zauker_decomp
+///(23), а не на фреоне: у фреона окна температур производителя и потребителя не
+///пересекаются (синтез от 473 К, горение до 273 К), поэтому пронаблюдать там
+///нечего - freonfire доезжает до цикла реакций и честно выходит с NO_REACTION.
+/datum/unit_test/atmos_reaction_synthesis_followup/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair не инициализирован")
+	// Индекс мог остаться снятым от упавшего соседа по файлу.
+	SSair.auxtools_update_reactions()
+	TEST_ASSERT(SSair.reactions_have_synthesis_followups, "ни одной реакции-производителя с потребителем позже себя - индекс собран неверно")
+
+	// Метка на самой паре, ради которой механизм и заведён.
+	var/datum/gas_reaction/freon_producer
+	var/datum/gas_reaction/zauker_producer
+	for(var/datum/gas_reaction/reaction as anything in SSair.gas_reactions)
+		if(istype(reaction, /datum/gas_reaction/freonformation))
+			freon_producer = reaction
+		else if(istype(reaction, /datum/gas_reaction/zauker_formation))
+			zauker_producer = reaction
+	TEST_ASSERT_NOTNULL(freon_producer, "freonformation не зарегистрирована в SSair")
+	TEST_ASSERT_NOTNULL(zauker_producer, "zauker_formation не зарегистрирована в SSair")
+	TEST_ASSERT_EQUAL(freon_producer.synthesis_followup_gas, GAS_FREON, "freonformation не тащит за собой бакет фреона - freonfire не станет кандидатом на пустом фреоне")
+	TEST_ASSERT_EQUAL(zauker_producer.synthesis_followup_gas, GAS_ZAUKER, "zauker_formation не тащит за собой бакет заукера")
+	TEST_ASSERT_NULL(SSair.reactions_key_gas_floor?[GAS_ZAUKER], "бакету заукера оставили пол - распад отложится и на молях выше нуля")
+
+	// Гипернобель строго ниже REACTION_OPPRESSION_THRESHOLD: иначе nobstop (тот же
+	// бакет, приоритет INFINITY) оборвал бы цикл реакций первым же кандидатом.
+	// Заукера в смеси НЕТ - в этом весь сценарий.
+	var/list/recipe = list(
+		GAS_HYPERNOB = 1,
+		GAS_NITRIUM = 1,
+		GAS_N2 = 5,
+	)
+	var/temperature = (ZAUKER_FORMATION_MIN_TEMPERATURE + ZAUKER_FORMATION_MAX_TEMPERATURE) * 0.5
+
+	// A/B в одном прогоне и по одной переменной: механизм снимается флагом, всё
+	// остальное (сборка, смесь, порядок реакций) у обеих сторон общее.
+	var/datum/gas_mixture/without_followup = new
+	var/datum/gas_mixture/with_followup = new
+	for(var/gas_id in recipe)
+		without_followup.set_moles(gas_id, recipe[gas_id])
+		with_followup.set_moles(gas_id, recipe[gas_id])
+	without_followup.set_temperature(temperature)
+	with_followup.set_temperature(temperature)
+
+	var/zauker_without
+	// Флаг возвращается и по исключению: оставленный FALSE уехал бы во все
+	// последующие атмос-тесты как молчаливо снятый механизм.
+	try
+		SSair.reactions_have_synthesis_followups = FALSE
+		without_followup.react(null)
+		zauker_without = without_followup.get_moles(GAS_ZAUKER)
+	catch(var/exception/probe_error)
+		SSair.reactions_have_synthesis_followups = TRUE
+		throw probe_error
+	SSair.reactions_have_synthesis_followups = TRUE
+	with_followup.react(null)
+	var/zauker_with = with_followup.get_moles(GAS_ZAUKER)
+	qdel(without_followup)
+	qdel(with_followup)
+
+	TEST_ASSERT(zauker_without > 0, "предпосылка: zauker_formation обязана была синтезировать заукер, получено [zauker_without] моль")
+	TEST_ASSERT(zauker_with < zauker_without, "распад заукера не попал в тот же вызов react(): [zauker_with] против [zauker_without] моль - потребитель отложен на фаер SSair")
