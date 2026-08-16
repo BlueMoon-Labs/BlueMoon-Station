@@ -13,11 +13,17 @@
 // работают без правок: неразрешившийся weakref означает "объекта уже нет", то
 // есть ровно то, ради чего отложенный qdel и заводили.
 //
-// /client — не /datum, WEAKREF() на нём даёт null. AFK-кик в SSserver_maint
-// делает QDEL_IN(C, 1) и обязан дойти до qdel(); для не-датумов оставляем
-// сильную ссылку. Развилка живёт в проке, а не в тернарнике макроса: аргумент
-// бывает выражением с побочным эффектом (QDEL_IN(new /obj/..., 5) в тресерах),
-// и двойная подстановка создала бы второй объект, который уже никто не удалит.
+// Исключений два, и оба идут сильной ссылкой. Первое - не-датумы (WEAKREF() на них
+// даёт null, и отложенный qdel стал бы no-op). Второе - /client: у нас он объявлен
+// с parent_type = /datum (client_defines.dm), то есть isdatum() на нём ИСТИНЕН и
+// без явной развилки клиент уехал бы слабой ссылкой. AFK-кик в SSserver_maint
+// делает QDEL_IN(C, 1) и обязан дойти до qdel(), а разрешаемость weakref'а на
+// клиенте (locate() по его \ref, сверка weak_reference) - лишний вопрос там, где
+// ссылку можно просто не ослаблять: держим её один тик, как было до этой правки.
+//
+// Развилка живёт в проке, а не в тернарнике макроса: аргумент бывает выражением с
+// побочным эффектом (QDEL_IN(new /obj/..., 5) в тресерах), и двойная подстановка
+// создала бы второй объект, который уже никто не удалит.
 #define QDEL_IN_TARGET(item) qdel_in_target(item)
 // This is a bit hacky, we do it to avoid people relying on a return value for the macro
 // If you need that you should use QDEL_IN_STOPPABLE instead
@@ -36,9 +42,11 @@
 #define QDEL_LIST_ASSOC(L) if(L) { var/list/qdel_list_snapshot = (L).Copy(); for(var/qdel_list_key in qdel_list_snapshot) { qdel(qdel_list_snapshot[qdel_list_key]); qdel(qdel_list_key); } (L).Cut(); }
 #define QDEL_LIST_ASSOC_VAL(L) if(L) { var/list/qdel_list_snapshot = (L).Copy(); for(var/qdel_list_key in qdel_list_snapshot) qdel(qdel_list_snapshot[qdel_list_key]); (L).Cut(); }
 
-/// Что именно кладётся в колбэк отложенного qdel'а: слабая ссылка на датум,
-/// сам объект - на всё остальное (в первую очередь /client).
+/// Что именно кладётся в колбэк отложенного qdel'а: слабая ссылка на датум, сам
+/// объект - на /client и на всё, что датумом не является. См. шапку файла.
 /proc/qdel_in_target(item)
+	if(istype(item, /client))
+		return item
 	return isdatum(item) ? WEAKREF(item) : item
 
 /proc/______qdel_list_wrapper(list/L) //the underscores are to encourage people not to use this directly.

@@ -505,6 +505,11 @@
 /// Заодно проверяем, что аргумент макроса вычисляется РОВНО один раз: в тресерах
 /// есть QDEL_IN(new /obj/effect/projectile_lighting(...), ...), и вторая подстановка
 /// оставила бы лишний светящийся эффект, которого уже никто не удалит.
+/// Двойник /client для проверки посылки, на которой стоит развилка в
+/// qdel_in_target(): корневой тип, объявленный с parent_type = /datum.
+/qdel_in_client_stand_in
+	parent_type = /datum
+
 /datum/unit_test/gc_rewrite_qdel_in_keeps_non_datums_strong
 	parent_type = /datum/unit_test/gc_rewrite_base
 	var/argument_evaluations = 0
@@ -514,13 +519,29 @@
 	return target
 
 /datum/unit_test/gc_rewrite_qdel_in_keeps_non_datums_strong/Run()
-	var/list/not_a_datum = list("клиент на AFK-кике")
+	var/list/not_a_datum = list("не-датум")
 	var/non_datum_timer = QDEL_IN_STOPPABLE(not_a_datum, 10 MINUTES)
 	var/datum/timedevent/non_datum_event = SStimer.timer_id_dict[non_datum_timer]
 	TEST_ASSERT_NOTNULL(non_datum_event, "Отложенный qdel не-датума не создал таймер")
 	TEST_ASSERT_EQUAL(non_datum_event.callBack.arguments[1], not_a_datum,
 		"Не-датум ушёл в колбэк не самим собой - значит WEAKREF() дал null и отложенный qdel стал no-op")
 	deltimer(non_datum_timer)
+
+	// Датум - наоборот, обязан уехать слабой ссылкой: ради этого вся правка и
+	// делалась. Проверяем сам селектор, а не таймер: макросы QDEL_IN* его же и зовут.
+	var/datum/weak_subject = new /datum
+	var/weakened = qdel_in_target(weak_subject)
+	TEST_ASSERT(istype(weakened, /datum/weakref),
+		"Датум ушёл в отложенный qdel не слабой ссылкой, а [weakened] - объект будет висеть до срабатывания таймера")
+
+	// Саму развилку по /client юнит-тестом не пройти - живого клиента в тесте не
+	// создать. Зато проверяется посылка, ради которой она стоит: у /client
+	// parent_type = /datum, то есть isdatum() на нём ИСТИНЕН, и без явной развилки
+	// клиент уехал бы в отложенный qdel слабой ссылкой. Двойник объявлен ровно с той
+	// же формой - корневой тип с parent_type = /datum.
+	var/qdel_in_client_stand_in/stand_in = new
+	TEST_ASSERT(isdatum(stand_in),
+		"корневой тип с parent_type = /datum перестал считаться датумом - развилку по /client в qdel_in_target() надо пересмотреть")
 
 	var/obj/effect/gc_rewrite_test_object/subject = allocate(/obj/effect/gc_rewrite_test_object)
 	var/single_eval_timer = QDEL_IN_STOPPABLE(count_evaluation(subject), 10 MINUTES)

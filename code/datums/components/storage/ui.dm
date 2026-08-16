@@ -103,6 +103,12 @@
 	if(islist(numbered_contents))
 		for(var/type in numbered_contents)
 			var/datum/numbered_display/ND = numbered_contents[type]
+			// Конструктор numbered_display отказывается работать с непригодным
+			// образцом и удаляет себя, не заводя экранный объект. Без этой проверки
+			// такой датум давал три рантайма подряд на записи в null и рвал сборку
+			// всего интерфейса хранилища.
+			if(QDELETED(ND) || !ND.sample_object)
+				continue
 			ND.sample_object.mouse_opacity = MOUSE_OPACITY_OPAQUE
 			ND.sample_object.screen_loc = "[cx]:[screen_pixel_x],[cy]:[screen_pixel_y]"
 			ND.sample_object.maptext = MAPTEXT("<font color='white'>[(ND.number > 1)? "[ND.number]" : ""]</font>")

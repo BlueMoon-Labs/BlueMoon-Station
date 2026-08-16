@@ -227,8 +227,9 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	mind = null
 	. = ..()
 	// Страховка на случай, если какой-то другой путь в цепочке разрушения тоже
-	// заведёт анимацию: гасим ещё раз уже после родителя.
-	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
+	// заведёт анимацию: гасим ещё раз уже после родителя. alpha назначается сама
+	// себе - анимация обрывается, а видимость не трогается (см. atoms_movable.dm).
+	animate(src, alpha = alpha, time = 0, flags = ANIMATION_END_NOW)
 
 /*
  * This proc will update the icon of the ghost itself, with hair overlays, as well as the ghost image.

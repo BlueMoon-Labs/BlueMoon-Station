@@ -112,7 +112,10 @@
 			return TRUE
 		if(client?.prefs && client.prefs.tgui_panel_state != state_json)
 			client.prefs.tgui_panel_state = state_json
-			client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+			// Через дебаунс, а не мимо него: состояние панели чата игрок меняет
+			// десятками кликов за сессию, а каждая синхронная запись savefile морозит
+			// весь процесс. Сброс на логауте и на ребуте доводит её до диска.
+			client.prefs.save_preferences(silent = TRUE)
 		return TRUE
 	if(type == "panel/theme_set")
 		var/theme
@@ -123,7 +126,8 @@
 		if(theme in list("default", "light", "dark"))
 			if(client?.prefs && client.prefs.tgui_panel_theme != theme)
 				client.prefs.tgui_panel_theme = theme
-				client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				// См. panel/state_set выше: пишем через дебаунс.
+				client.prefs.save_preferences(silent = TRUE)
 		return TRUE
 	if(type == "audio/setAdminMusicVolume")
 		client.admin_music_volume = payload["volume"]
