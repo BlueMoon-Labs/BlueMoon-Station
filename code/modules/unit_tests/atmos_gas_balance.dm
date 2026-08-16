@@ -714,3 +714,98 @@
 	qdel(mixture)
 	TEST_ASSERT_EQUAL(final_temperature, starting_temperature,
 		"гейт теплоёмкости пропустил почти пустую смесь: [starting_temperature] K превратились в [final_temperature] K")
+
+/// Сценарий из жалобы игрока: банная печь льёт пар, электролизёр разбирает его на
+/// водород с кислородом, и комнатка три на три «магическим образом» отдаёт тритий
+/// и прочую экзотику.
+///
+/// Реакции «пар в тритий» в игре нет ни одной: тритий делают ровно два места -
+/// пересыщенный кислородом плазменный пожар и облучение водорода. Ни плазмы, ни
+/// источника радиации в такой комнате нет, и появлялся тритий кружным путём -
+/// через разгон обобщённого горения. Смесь грелась сама (двойное списание
+/// окислителя плюс потерянная стехиометрия продуктов), доходила до порога
+/// Хагедорна, распад превращал её в QCD, а обратная конденсация высыпала обратно
+/// СЛУЧАЙНЫЕ газы - в том числе плазму, которая в оставшемся кислороде тут же
+/// давала тритий.
+///
+/// Поэтому тест гоняет весь react() целиком, как это делает SSair, а не одну
+/// реакцию: предмет проверки - что цепочка не приводит к экзотике, каким бы
+/// звеном её ни занесло.
+/datum/unit_test/gas_hydrogen_room_stays_mundane
+
+/datum/unit_test/gas_hydrogen_room_stays_mundane/Run()
+	var/datum/gas_mixture/room = new(CELL_VOLUME)
+	room.set_moles(GAS_N2, MOLES_N2STANDARD)
+	room.set_moles(GAS_O2, MOLES_O2STANDARD)
+	// Печь выдаёт 25 молей пара за проход при T20C+50 (sauna_oven.dm), электролизёр
+	// разбирает пар на две моли водорода и одну кислорода за моль.
+	room.set_moles(GAS_H2O, 25)
+	room.set_moles(GAS_HYDROGEN, 50)
+	// Водород загорается с 323 K (fire_temperature), баня стоит на 343 K - то есть
+	// комната воспламеняется сама, без всякой искры. Это и есть исходное состояние.
+	var/starting_temperature = T20C + 50
+	room.set_temperature(starting_temperature)
+	var/starting_hydrogen = room.get_moles(GAS_HYDROGEN)
+	var/starting_moles = room.total_moles()
+	var/starting_energy = room.thermal_energy()
+	// Вся химическая энергия смеси: горит здесь только водород, у азота с
+	// кислородом энтальпия нулевая, а пар и нитрик топливом не объявлены (нет
+	// fire_temperature). Это и есть потолок - реакция имеет право выделить
+	// столько и ни джоулем больше.
+	var/energy_budget = starting_hydrogen * GLOB.gas_data.enthalpies[GAS_HYDROGEN]
+	TEST_ASSERT(energy_budget > 0, "предпосылка: у водорода нулевая энтальпия, бюджет энергии не с чего считать")
+
+	// Полтысячи проходов - это около двадцати минут работы SSair по одному турфу.
+	// Старый учёт прибавлял к температуре порядка процента за проход, то есть
+	// уводил ту же смесь за сотню тысяч кельвинов задолго до конца цикла.
+	for(var/i in 1 to 500)
+		room.react(null)
+
+	var/final_temperature = room.return_temperature()
+	var/final_energy = room.thermal_energy()
+	var/final_hydrogen = room.get_moles(GAS_HYDROGEN)
+	var/final_vapor = room.get_moles(GAS_H2O)
+	var/final_moles = room.total_moles()
+	// Список именно тех газов, на которые жаловались: всё, что в такой комнате
+	// взяться не из чего.
+	var/list/exotic_gases = list(
+		GAS_TRITIUM,
+		GAS_PLASMA,
+		GAS_QCD,
+		GAS_ANTINOBLIUM,
+		GAS_HYPERNOB,
+		GAS_HEALIUM,
+		GAS_ZAUKER,
+		GAS_NITRIUM,
+		GAS_STIMULUM,
+		GAS_PLUOXIUM,
+		GAS_FREON,
+		GAS_BZ,
+		GAS_PROTO_NITRATE,
+	)
+	var/list/found_exotics = list()
+	for(var/gas_id in exotic_gases)
+		var/amount = room.get_moles(gas_id)
+		if(amount > 0)
+			found_exotics += "[gas_id]=[amount]"
+	qdel(room)
+
+	TEST_ASSERT(final_hydrogen < starting_hydrogen,
+		"предпосылка: водород в бане не загорелся, проверять нечего")
+	TEST_ASSERT(final_vapor > 25,
+		"водород сгорел не в воду: пара было 25 молей, стало [final_vapor]")
+	// Главный инвариант: закон сохранения. Смесь имеет право получить ровно
+	// энтальпию своего топлива и ни джоулем больше - именно эту границу пробивал
+	// старый учёт, и пробивал он её на ПЕРВОМ же проходе, а не на трёхтысячном.
+	// Неравенство одностороннее: выгорание уносит теплоёмкость вместе с массой,
+	// поэтому тепловая энергия имеет полное право и упасть.
+	TEST_ASSERT(final_energy <= starting_energy + energy_budget * 1.05,
+		"энергия из ниоткуда: было [starting_energy] Дж, бюджет топлива [energy_budget] Дж, стало [final_energy] Дж")
+	// Та же граница в кельвинах, для читаемости отчёта: 50 молей водорода по
+	// 280 кДж - это около четырёх тысяч кельвинов на теплоёмкости этой смеси.
+	TEST_ASSERT(final_temperature < 20000,
+		"комната разогналась до [final_temperature] K - в смеси нет столько химической энергии")
+	TEST_ASSERT(!length(found_exotics),
+		"в комнате с паром и водородом синтезировалась экзотика: [found_exotics.Join(", ")]")
+	TEST_ASSERT(final_moles < starting_moles * 3,
+		"масса выросла втрое: было [starting_moles] моль, стало [final_moles]")

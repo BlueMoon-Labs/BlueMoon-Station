@@ -1339,6 +1339,14 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 		new /obj/item/stack/cable_coil(loc, 3)
 	qdel(src)
 
+/// Полновесная пожарная тревога базового ареала по разгерметизации: сирена,
+/// захлоп файрлоков каждые десять секунд, ручной сброс с панели.
+///
+/// Единственный законный вызов - `SSair.handle_decompression_area()`, то есть уже
+/// ПОДТВЕРЖДЁННОЕ декомп-событие (зона обязана перевзвестись более поздним фаером,
+/// см. `queue_decompression_base`). Вешать этот прок на одиночный замер нельзя:
+/// сама тревога автоматически не снимается ничем, а одноразовый перепад давления
+/// даёт любой цикл шлюза и любой выпуск баллона в проёме.
 /obj/machinery/airalarm/proc/handle_decomp_alarm()
 	if(!is_operational || !COOLDOWN_FINISHED(src, decomp_alarm))
 		return
