@@ -830,8 +830,9 @@ GLOBAL_LIST_INIT(pipe_paint_colors, list(
 //
 // Timing is armed for one cycle at a time (see atmos_tprof_arm), so the
 // instrumentation cannot distort the cost curve it is supposed to measure.
-// Slots must not nest; the inner variants exist for the one place that needs
-// a second concurrent stopwatch (the space branch inside the neighbour loop).
+// Slots must not nest on the outer stopwatch; the inner/deep variants exist
+// for the stopwatches inside the neighbour loop (nb_*), which run several
+// times per turf while "neighbors" is still open.
 // ---------------------------------------------------------------------------
 #ifdef ATMOS_HEADLESS_BENCH
 GLOBAL_VAR_INIT(atmos_tprof_active, FALSE)
@@ -863,7 +864,12 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 /// иначе те же микросекунды учитываются дважды, и атрибуция, ради которой deep
 /// и заведён, ломается именно на deep-прогоне. Держать синхронно с NESTED_SLOTS
 /// в tools/atmos_bench/analyze.py.
-#define ATMOS_TPROF_NESTED_SLOTS list("space", "nb_compare", "nb_share", "nb_archive", "nb_sky_compare")
+///
+/// "space" сюда НЕ входит: его секундомер взводится уже после ATMOS_TPROF_ADD
+/// ("neighbors"), на том же внешнем __tprof_mark, то есть это самостоятельный
+/// отрезок, а не вложенный. В списке он занижал parts_ms на всю стоимость
+/// космической ветки - ровно там, где разгермы её и раздувают.
+#define ATMOS_TPROF_NESTED_SLOTS list("nb_compare", "nb_share", "nb_archive", "nb_sky_compare")
 /// Wake-source tally: every mid-round add_to_active call site names itself, the
 /// harvest lands in the per-cycle `hb` record ("wake") and resets. Unlike the
 /// armed tprof counters this runs every cycle - mass-wake events are single

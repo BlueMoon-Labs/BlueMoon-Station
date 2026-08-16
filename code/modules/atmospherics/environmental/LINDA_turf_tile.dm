@@ -1102,7 +1102,7 @@
 		// остывать и стравливаться к небу; планетарная спит, пока на неё не
 		// напишут по-настоящему (канистра, хотспот, assume_air будят её обычными
 		// путями, и до нового сна пара работает по-старому).
-		if(enemy_planet_atmos && !enemy_tile.excited)
+		if(enemy_planet_atmos && !enemy_tile.excited && air_controller)
 			var/datum/gas_mixture/sky_template = air_controller.get_planetary_template(enemy_tile)
 			if(sky_template)
 				ATMOS_TPROF_COUNT("sky_pairs")
@@ -1306,7 +1306,7 @@
 	ATMOS_TPROF_ADD("space")
 
 	ATMOS_TPROF_MARK
-	if(planet_atmos)
+	if(planet_atmos && air_controller)
 		var/datum/gas_mixture/template = air_controller.get_planetary_template(src)
 		if(our_air.compare(template))
 			ATMOS_TPROF_COUNT("planet_shares")
@@ -1361,7 +1361,7 @@
 	// Hot enough air starts creeping through the surrounding solids. The proc
 	// re-checks heat_enabled itself; with the flag off this is one var read.
 	ATMOS_TPROF_MARK
-	if(air_controller.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
 		ATMOS_TPROF_COUNT("superconduct_starts")
 		consider_superconductivity(starting = TRUE)
 	ATMOS_TPROF_ADD("superconduct")
@@ -2004,7 +2004,12 @@
 					if(SSair)
 						ATMOS_BENCH_WAKE(T, "breakdown_poke")
 						SSair.add_to_active(T, FALSE, wake_machines = FALSE)
-					T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+						// Ровно тот порог, по которому process_cell решает уложить
+						// члена группы обратно: бюджет одноразовый, и с константы
+						// он разъезжался бы с рычагом, как только тот покрутят.
+						T.atmos_cooldown = SSair.individual_rest_cycles
+					else
+						T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 				if(breakdown_cursor <= length(breakdown_to_poke))
 					return FALSE
 				finish_breakdown()
