@@ -17,6 +17,10 @@
 /obj/machinery/poweredfans/Destroy()
 	CanAtmosPass = ATMOS_PASS_YES
 	air_update_turf(TRUE)
+	// Сборка живёт внутри вентилятора (Initialize кладёт её в src), и родитель
+	// раздаёт содержимое сам. Ссылку снимаем до него: иначе удалённый
+	// вентилятор держит сборку за собой, и уходит в хардделы уже она.
+	assembly = null
 	return ..()
 
 /obj/machinery/poweredfans/deconstruct(disassembled = TRUE)

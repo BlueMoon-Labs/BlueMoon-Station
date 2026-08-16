@@ -70,16 +70,24 @@ done
 # next ordinary build silently inherits one of the two A/B artifacts.
 LIVE_DMB="tgstation.dmb"
 RESTORE_DMB=""
+LIVE_DMB_EXISTED=0
 if [ -f "$LIVE_DMB" ]; then
+    LIVE_DMB_EXISTED=1
     RESTORE_DMB="tgstation.ab-restore.dmb"
     cp "$LIVE_DMB" "$RESTORE_DMB"
 fi
 
 restore_live_dmb() {
-    if [ -n "$RESTORE_DMB" ] && [ -f "$RESTORE_DMB" ]; then
-        cp "$RESTORE_DMB" "$LIVE_DMB"
-        rm -f "$RESTORE_DMB"
+    if [ "$LIVE_DMB_EXISTED" -eq 1 ]; then
+        if [ -f "$RESTORE_DMB" ]; then
+            cp "$RESTORE_DMB" "$LIVE_DMB"
+            rm -f "$RESTORE_DMB"
+        fi
+        return
     fi
+    # Своего .dmb тут не было: оставить артефакт A/B значит подсунуть его
+    # следующему запуску как "уже собранное" - убираем, восстанавливаем пустоту.
+    rm -f "$LIVE_DMB"
 }
 trap restore_live_dmb EXIT INT TERM
 

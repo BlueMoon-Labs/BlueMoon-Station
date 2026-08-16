@@ -206,6 +206,16 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 /// no excited group): its air cannot drift, so reads only guard against missed excitations.
 #define AALARM_INACTIVE_PROCESS_INTERVAL 15
 
+/// Потолок, в который затопление гонит венты - он же верхний клапан клампа
+/// set_external_pressure в vent_pump.dm. Со снятой проверкой давления вент не
+/// имел границы вообще и не уходил в простой до конца смены; барокамера на
+/// 5066 кПа - тот же смертельный замысел режима, но с конечным состоянием.
+#define AALARM_FLOOD_TARGET_PRESSURE (ONE_ATMOSPHERE * 50)
+/// Отсек стравлен: ниже этого давления откачивать уже нечего, и режим снимает
+/// себя сам. Без отсечки widenet-скруббер щупает пустую комнату до конца смены -
+/// по своей ветке process_atmos() он в простой не уходит.
+#define AALARM_EMERGENCY_SIPHON_CUTOFF (ONE_ATMOSPHERE * 0.05)
+
 #define AALARM_OVERLAY_OFF		"alarm_off"
 #define AALARM_OVERLAY_GREEN	"alarm_green"
 #define AALARM_OVERLAY_WARN		"alarm_amber"
@@ -974,14 +984,14 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 			// ATMOS_VENT_PRESSURE_EPSILON не достигался никогда, вент не уходил в
 			// простой, а assume_air_moles переактивировал турф каждый фаер до конца
 			// смены - устойчивого состояния у режима не существовало по построению.
-			// EXT_BOUND на верхнем клапане клампа (ONE_ATMOSPHERE*50, см.
-			// vent_pump.dm) оставляет комнату смертельной барокамерой на 5066 кПа,
-			// то есть замысел режима цел, но атмос получает конечное состояние.
+			// EXT_BOUND на верхнем клапане клампа (AALARM_FLOOD_TARGET_PRESSURE,
+			// см. vent_pump.dm) оставляет комнату смертельной барокамерой на
+			// 5066 кПа: замысел режима цел, но атмос получает конечное состояние.
 			for(var/device_id in A.air_vent_names)
 				send_signal(device_id, list(
 					"power" = 1,
 					"checks" = 1,
-					"set_external_pressure" = ONE_ATMOSPHERE * 50,
+					"set_external_pressure" = AALARM_FLOOD_TARGET_PRESSURE,
 					"is_pressurizing" = 1
 				))
 				send_signal(device_id, list(
@@ -1137,7 +1147,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	// Уходим в Off, а не в Фильтрацию: цель режима достигнута, и надувать отсек
 	// заново - не то, чего просил тот, кто его включил. Воздух назад не пойдёт,
 	// венты погашены той же командой режима.
-	if(environment_pressure < ONE_ATMOSPHERE * 0.05)
+	if(environment_pressure < AALARM_EMERGENCY_SIPHON_CUTOFF)
 		if(mode == AALARM_MODE_REPLACEMENT)
 			mode = AALARM_MODE_SCRUBBING
 			apply_mode()
@@ -1366,3 +1376,5 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 #undef AALARM_MODE_REFILL
 #undef AALARM_REPORT_TIMEOUT
 #undef AALARM_THRESHOLD_VARS
+#undef AALARM_FLOOD_TARGET_PRESSURE
+#undef AALARM_EMERGENCY_SIPHON_CUTOFF

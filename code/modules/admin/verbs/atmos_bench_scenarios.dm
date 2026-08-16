@@ -428,6 +428,29 @@
 	)
 	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
 
+/// Раскладывает решётку комнат: стена на каждой границе span, пол внутри ячеек.
+/// Оба решётчатых сценария (room-grid и sustained-leak) строят её слово в слово
+/// и расходятся только тем, что делают с готовой решёткой дальше.
+///
+/// Двери и reg_in_areas_in_z() остаются за вызывающим: первые у сценариев разные
+/// (event против прорезанных на сборке), второй делается один раз после того, как
+/// все турфы переселены в область.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, area/room_area)
+	for(var/x in base_x to base_x + outer_w - 1)
+		for(var/y in base_y to base_y + outer_h - 1)
+			var/turf/T = locate(x, y, base_z)
+			if(T.loc != room_area)
+				var/area/old_area = T.loc
+				room_area.contents += T
+				T.change_area(old_area, room_area, skip_blend = TRUE)
+			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
+			if(on_wall)
+				T.ChangeTurf(/turf/closed/wall)
+			else
+				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
+				headless_bench_room_turfs += floor
+			CHECK_TICK
+
 // ---------------------------------------------------------------------------
 // room-grid: a lattice of small rooms with checkerboard pressures. Every room
 // has a sealed doorway in its shared walls; the event opens all of them in the
@@ -449,20 +472,7 @@
 	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Room Grid")
 
 	// Lattice: wall on every span boundary, floors inside cells.
-	for(var/x in base_x to base_x + outer_w - 1)
-		for(var/y in base_y to base_y + outer_h - 1)
-			var/turf/T = locate(x, y, base_z)
-			if(T.loc != room_area)
-				var/area/old_area = T.loc
-				room_area.contents += T
-				T.change_area(old_area, room_area, skip_blend = TRUE)
-			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
-			if(on_wall)
-				T.ChangeTurf(/turf/closed/wall)
-			else
-				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
-				headless_bench_room_turfs += floor
-			CHECK_TICK
+	atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, room_area)
 	room_area.reg_in_areas_in_z()
 
 	// Checkerboard pressures per cell, and one doorway per shared wall.
@@ -523,20 +533,7 @@
 	var/base_z = headless_bench_reservation.bottom_left_coords[3]
 	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Sustained Leak")
 
-	for(var/x in base_x to base_x + outer_w - 1)
-		for(var/y in base_y to base_y + outer_h - 1)
-			var/turf/T = locate(x, y, base_z)
-			if(T.loc != room_area)
-				var/area/old_area = T.loc
-				room_area.contents += T
-				T.change_area(old_area, room_area, skip_blend = TRUE)
-			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
-			if(on_wall)
-				T.ChangeTurf(/turf/closed/wall)
-			else
-				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
-				headless_bench_room_turfs += floor
-			CHECK_TICK
+	atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, room_area)
 	room_area.reg_in_areas_in_z()
 
 	// Doorways are carved at build time, not fired as an event: the point of this
