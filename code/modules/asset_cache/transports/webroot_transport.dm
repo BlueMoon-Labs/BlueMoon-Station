@@ -24,14 +24,35 @@
 		save_asset_to_webroot(ACI)
 
 /// Saves the asset to the webroot taking into account namespaces and hashes.
+///
+/// Имя файла в вебруте содержит хэш содержимого, поэтому раз записанный файл
+/// переписывать незачем - НО только если он записан целиком. fcopy не атомарен, а
+/// регистрация ассетов идёт на инициализации мира: убитый в этот момент процесс
+/// (15 августа таких смертей было три подряд) оставляет в вебруте обрезанный файл.
+/// Имя у него правильное, fexists его видит, и он раздаётся клиентам НАВСЕГДА -
+/// то есть бандл tgui не грузится и окно остаётся белым до ручной чистки вебрута.
+/// Поэтому размер сверяется с исходником, а несовпадение лечится перезаписью.
 /datum/asset_transport/webroot/proc/save_asset_to_webroot(datum/asset_cache_item/ACI)
 	var/webroot = CONFIG_GET(string/asset_cdn_webroot)
 	var/newpath = "[webroot][get_asset_suffex(ACI)]"
+	var/expected_size = length(ACI.resource)
 	if (fexists(newpath))
-		return
+		if (!expected_size || length(file(newpath)) == expected_size)
+			return TRUE
+		log_asset("ERROR: обрезанный ассет в вебруте: [newpath] - [length(file(newpath))] из [expected_size] байт, перезаписываем")
+		fdel(newpath)
 	if (fexists("[newpath].gz")) //its a common pattern in webhosting to save gzip'ed versions of text files and let the webserver serve them up as gzip compressed normal files, sometimes without keeping the original version.
+		return TRUE
+	. = fcopy(ACI.resource, newpath)
+	if (!.)
+		log_asset("ERROR: не удалось записать ассет `[ACI.name]` в вебрут ([newpath])")
 		return
-	return fcopy(ACI.resource, newpath)
+	// Сверяем и после записи: оборванный fcopy возвращает истину не всегда, а
+	// молча недописанный файл здесь и есть тот самый белый экран.
+	if (expected_size && length(file(newpath)) != expected_size)
+		log_asset("ERROR: ассет `[ACI.name]` записан в вебрут не полностью ([length(file(newpath))] из [expected_size] байт), удаляем")
+		fdel(newpath)
+		return FALSE
 
 /// Returns a url for a given asset.
 /// asset_name - Name of the asset.
