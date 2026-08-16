@@ -541,6 +541,12 @@ GLOBAL_LIST_EMPTY(ghost_records)
 		O.real_name = mob_occupant.real_name
 		for(var/i in storing)
 			var/obj/item/I = i
+			// Весь шмот сначала уехал в саму капсулу, а два одинаковых стека в одном
+			// loc сливаются - поглощённый экземпляр удаляется, но из storing никуда
+			// не девается. forceMove по нему упирался в гард doMove: 9 рантаймов за
+			// раунд на каждой криозаморозке со стеками.
+			if(QDELETED(I))
+				continue
 			I.forceMove(O)
 		O.forceMove(drop_to_ground ? mob_occupant.drop_location() : control_computer) //BLUEMOON CHANGE было control_computer.drop_location (не работало при отсутсвии контроль компьютера)
 		if((control_computer == control_computer) && !drop_to_ground)

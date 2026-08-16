@@ -121,6 +121,13 @@
 			if(choice == "Да")
 				message_admins("[key_name_admin(holder)] has rejuvenated all players.")
 				for(var/mob/living/M in GLOB.mob_list)
+					// Манекены пула предпросмотра тоже лежат в GLOB.mob_list: живут в
+					// нульспейсе, между wipe_state() и очередным copy_to() у них пустые
+					// dna и hand_bodyparts, а Life() - заглушка. revive() на таком идёт
+					// каскадом рантаймов по regenerate_limb/update_body (25 штук за один
+					// клик в раунде 9975) и не оживляет никого: оживлять там некого.
+					if(istype(M, /mob/living/carbon/human/dummy))
+						continue
 					M.revive(full_heal = 1, admin_revive = 1)
 		if("list_bombers")
 			var/dat = "<B>Bombing List</B><HR>"

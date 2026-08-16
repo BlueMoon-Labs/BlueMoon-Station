@@ -519,6 +519,10 @@
 /obj/machinery/disposal/deliveryChute/Bumped(atom/movable/AM) //Go straight into the chute
 	if(!AM.CanEnterDisposals())
 		return
+	// Сравнения ниже читают AM.loc.x/y, а Bump обрабатывается внутри Enter(): у
+	// брошенной вещи loc к этому моменту бывает уже пустым.
+	if(!isturf(AM.loc))
+		return
 	switch(dir)
 		if(NORTH)
 			if(AM.loc.y != loc.y+1)

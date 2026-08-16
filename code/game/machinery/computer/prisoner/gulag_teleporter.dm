@@ -94,6 +94,10 @@
 				return
 			if(!new_goal)
 				new_goal = default_goal
+			// Кнопка в интерфейсе есть и без вставленной карты - без этой проверки
+			// присваивание уходило в null.goal.
+			if(!contained_id)
+				return
 			contained_id.goal = clamp(new_goal, 0, 1000) //maximum 1000 points
 			return TRUE
 		if("toggle_open")

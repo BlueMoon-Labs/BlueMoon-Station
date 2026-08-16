@@ -332,13 +332,18 @@ field_generator power level display
 	//singulo eats the evidence". It's not fool-proof but better than nothing.
 	//I want to avoid using global variables.
 	spawn(1)
+		// За этот тик генератор успевает уехать в Destroy (сингулярность его и
+		// съела), а QDEL_NULL(radio) обнуляет рацию - предупреждение уходило в
+		// null.talk_into ровно в тот момент, ради которого его и писали.
+		if(QDELETED(src))
+			return
 		var/temp = 1 //stops spam
 		for(var/obj/singularity/gravitational/O in GLOB.singularities)
 			if(O.last_warning && temp)
 				if((world.time - O.last_warning) > 50) //to stop message-spam
 					temp = 0
 					var/turf/T = get_turf(src)
-					radio.talk_into(src, "A containment field has failed in [get_area_name(src, TRUE)] while a singularity exists.", null, language = get_selected_language())
+					radio?.talk_into(src, "A containment field has failed in [get_area_name(src, TRUE)] while a singularity exists.", null, language = get_selected_language())
 					message_admins("A singulo exists and a containment field has failed at [ADMIN_VERBOSEJMP(T)].")
 					investigate_log("has <font color='red'>failed</font> whilst a singulo exists at [AREACOORD(T)].", INVESTIGATE_SINGULO)
 			O.last_warning = world.time

@@ -1431,7 +1431,10 @@
 	var/message = "[what_done] [starget][postfix]"
 	user.log_message(message, LOG_ATTACK, color="red", target = target)
 
-	if(user != target)
+	// Площадные вещи (ментальный батарер) зовут log_combat без конкретной жертвы.
+	// В DM null не равен объекту, поэтому одно только `user != target` такой вызов
+	// не отсекает, и запись уходила в лог у null.
+	if(target && user != target)
 		var/reverse_message = "has been [what_done] by [ssource][postfix]"
 		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE, target = user)
 

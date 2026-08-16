@@ -21,11 +21,19 @@
 		physical.visible_message(span_notice("\The [src] breaks apart!"))
 		var/turf/newloc = get_turf(src)
 		new /obj/item/stack/sheet/metal(newloc, round(steel_sheet_cost/2))
-		for(var/C in all_components)
+		// Обход по копии: uninstall_component вычёркивает деталь из all_components
+		// прямо в теле цикла, а BYOND на удалении текущего элемента сдвигает индекс
+		// и пропускает каждую вторую.
+		for(var/C in all_components.Copy())
 			var/obj/item/computer_hardware/H = all_components[C]
 			if(QDELETED(H))
 				continue
 			uninstall_component(H)
+			// uninstall_component сам переносит деталь на турф, зовёт on_remove() и
+			// при потере питания глушит компьютер - после этой цепочки деталь может
+			// быть уже удалена, и второй forceMove бил по трупу.
+			if(QDELETED(H))
+				continue
 			H.forceMove(newloc)
 			if(prob(25))
 				H.take_damage(rand(10,30), BRUTE, 0, 0)

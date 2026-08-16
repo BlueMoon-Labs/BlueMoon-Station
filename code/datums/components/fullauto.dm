@@ -10,6 +10,14 @@
 	var/mouse_parameters
 	var/autofire_shot_delay = 0.3 SECONDS //Time between individual shots.
 	var/mouse_status = AUTOFIRE_MOUSEUP //This seems hacky but there can be two MouseDown() without a MouseUp() in between if the user holds click and uses alt+tab, printscreen or similar.
+	/// Номер текущего захода в start_autofiring(). Внутри есть сон
+	/// (on_autofire_start у миниганов делает do_after), и за это время очередь могут
+	/// остановить и начать заново - проснувшийся первый заход видит autofire_stat
+	/// снова FIRING, но принадлежит он уже ЧУЖОЙ очереди. Раньше он всё равно
+	/// доходил до RegisterSignal и бил по подписке второго захода: 25 стек-трейсов
+	/// "client_mousedrag overridden" подряд за раунд, и счёт подписок расходился со
+	/// счётом снятий.
+	var/firing_generation = 0
 
 	COOLDOWN_DECLARE(next_shot_cd)
 
@@ -157,6 +165,7 @@
 	if(autofire_stat == AUTOFIRE_STAT_FIRING)
 		return //Already pew-pewing.
 	autofire_stat = AUTOFIRE_STAT_FIRING
+	var/my_generation = ++firing_generation
 
 	clicker.mouse_override_icon = 'icons/effects/mouse_pointers/weapon_pointer.dmi'
 	clicker.mouse_pointer_icon = clicker.mouse_override_icon
@@ -174,6 +183,8 @@
 			return
 	if(autofire_stat != AUTOFIRE_STAT_FIRING)
 		return //Things may have changed while on_autofire_start() was being processed, due to do_after's sleep.
+	if(firing_generation != my_generation)
+		return //Очередь успели остановить и начать заново: дальше идёт чужая, а мы бы только перебили её подписки.
 
 	if(!process_shot()) //First shot is processed instantly.
 		return //If it fails, such as when the gun is empty, then there's no need to schedule a second shot.

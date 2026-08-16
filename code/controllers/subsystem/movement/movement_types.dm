@@ -493,7 +493,14 @@
 	// this check if we're on exactly the next tile may be overly brittle for dense objects who may get bumped slightly
 	// to the side while moving but could maybe still follow their path without needing a whole new path
 	if(get_turf(moving) == next_step)
-		movement_path.Cut(1,2)
+		// Режем только тот маршрут, ради которого делали шаг. Move() выше умеет
+		// уступать выполнение, а recalculate_path() ПЕРЕПРИСВАИВАЕТ movement_path
+		// (в том числе пустым списком) - к этой строке в переменной мог оказаться
+		// уже другой список. Тогда Cut(1,2) либо уходил за границы ("list index out
+		// of bounds", 10 рантаймов за раунд), либо молча откусывал первый шаг у
+		// только что проложенного маршрута.
+		if(length(movement_path) && movement_path[1] == next_step)
+			movement_path.Cut(1,2)
 	else
 		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 		return FALSE
