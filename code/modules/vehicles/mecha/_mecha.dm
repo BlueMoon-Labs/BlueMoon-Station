@@ -513,6 +513,12 @@
 						occupant.throw_alert("charge", /atom/movable/screen/alert/lowcell, 3)
 					else
 						occupant.throw_alert("charge", /atom/movable/screen/alert/emptycell)
+			else
+				// Ячейки нет вовсе или она без ёмкости. Раньше ветка молчала, и на
+				// пилоте оставалось висеть последнее выставленное предупреждение о
+				// заряде - хотя заряда нет никакого. throw_alert другого типа
+				// заодно снимает протухшее.
+				occupant.throw_alert("charge", /atom/movable/screen/alert/emptycell)
 
 			var/integrity = obj_integrity/max_integrity*100
 			switch(integrity)

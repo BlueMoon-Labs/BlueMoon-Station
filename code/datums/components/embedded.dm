@@ -440,6 +440,13 @@
 			us.visible_message("<span class='notice'>[us] пытается достать [weapon] из [parent].</span>", "<span class='notice'>Вы пытаетесь достать [weapon] из [parent]...</span>")
 
 		if(do_after(us, 30, target = parent))
+			// Три секунды - долгий срок для предмета, который лежит на турфе только
+			// по договорённости: взрыв уносит его с турфа, и подписка на
+			// COMSIG_MOVABLE_MOVED успевает отработать itemMoved() - тот уже вызвал
+			// unembedded() и удалил компонент. Проснувшийся здесь фрейм об этом не
+			// знает и делал всё второй раз, а на удалённом оружии - по null.
+			if(QDELETED(src) || QDELETED(weapon) || weapon.loc != parent)
+				return
 			us.put_in_hands(weapon)
 			weapon.unembedded()
 			qdel(src)

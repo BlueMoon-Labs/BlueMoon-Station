@@ -2,9 +2,15 @@
 ///
 /// Запись savefile синхронная: она морозит ВЕСЬ процесс, а не вызывающего. Замер по
 /// 16 прод-раундам (2026-08-12/13): 79 280 таких записей на 443 секунды заморозки,
-/// то есть 15-32% суммарного дрифта спайков по аттрибуции самого сервера. Замер в
-/// DM показал, что одна WRITE_FILE стоит 0.016 мс - платим за поход на диск, а не за
-/// две сотни полей, поэтому лечится только число походов.
+/// то есть 15-32% суммарного дрифта спайков по аттрибуции самого сервера. Это
+/// НАСТЕННОЕ время всего вызова целиком - открытие savefile, все поля, сброс на
+/// диск, - то есть в среднем 5.6 мс на одну запись.
+///
+/// Отдельный замер в DM дал 0.016 мс на одну WRITE_FILE, и это только запись поля в
+/// уже открытый savefile. Полей в save_preferences 122, в save_character 174, то
+/// есть на них уходит около 2.4 мс из тех 5.6 - примерно половина, вторая половина
+/// это открытие файла и сброс. Отсюда вывод: дешевле поля не сделать, и лечится
+/// только ЧИСЛО вызовов - оно убирает обе половины разом.
 ///
 /// Прежний гейт откладывал ТОЛЬКО попадание в двухсекундный кулдаун, а игрок в меню
 /// создания персонажа щёлкает медленнее двух секунд: почти каждый клик уходил в
@@ -42,6 +48,10 @@
 		return TRUE
 	return ..()
 
+/// Сколько правок подряд имитирует одна пачка. Игрок в меню настроек щёлкает
+/// именно так - подряд и чаще кулдауна.
+#define PREF_DEBOUNCE_TEST_BATCH 10
+
 /datum/unit_test/preferences_save_debounce
 
 /datum/unit_test/preferences_save_debounce/Run()
@@ -54,7 +64,7 @@
 	prefs.disk_writes = 0
 
 	// Пачка правок подряд - ровно то, что делает игрок в меню настроек.
-	for(var/i in 1 to 10)
+	for(var/i in 1 to PREF_DEBOUNCE_TEST_BATCH)
 		prefs.save_preferences()
 
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "правка от клиента ушла на диск сразу, вместо дебаунса")
@@ -64,20 +74,20 @@
 
 	// Ещё пачка: таймер переносится, но крайний срок НЕ уезжает - иначе игрок,
 	// который щёлкает чаще кулдауна, не сохранится до самого логаута.
-	for(var/i in 1 to 10)
+	for(var/i in 1 to PREF_DEBOUNCE_TEST_BATCH)
 		prefs.save_preferences()
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "вторая пачка правок пробила дебаунс")
 	TEST_ASSERT_EQUAL(prefs.pref_queue_deadline, deadline, "перенос сдвинул крайний срок записи")
 
 	// Очередь ПЕРСОНАЖА - вторая половина фичи, со своим таймером и своим сроком.
 	// Правки слота идут по ней, и в проде их не меньше, чем правок настроек.
-	for(var/i in 1 to 10)
+	for(var/i in 1 to PREF_DEBOUNCE_TEST_BATCH)
 		prefs.save_character()
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "правка персонажа ушла на диск сразу, вместо дебаунса")
 	TEST_ASSERT_NOTNULL(prefs.char_queue, "пачка правок персонажа не зарядила отложенную запись")
 	var/char_deadline = prefs.char_queue_deadline
 	TEST_ASSERT(char_deadline > world.time, "крайний срок отложенной записи персонажа не выставлен")
-	for(var/i in 1 to 10)
+	for(var/i in 1 to PREF_DEBOUNCE_TEST_BATCH)
 		prefs.save_character()
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 0, "вторая пачка правок персонажа пробила дебаунс")
 	TEST_ASSERT_EQUAL(prefs.char_queue_deadline, char_deadline, "перенос сдвинул крайний срок записи персонажа")
@@ -88,6 +98,10 @@
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "сброс на логауте не довёл обе отложенные записи до диска")
 	TEST_ASSERT_NULL(prefs.pref_queue, "сброс не снял отложенный таймер настроек")
 	TEST_ASSERT_NULL(prefs.char_queue, "сброс не снял отложенный таймер персонажа")
+	// Снятая очередь с невыставленным сроком - это протухший крайний срок: следующая
+	// постановка сверится с ним и решит, что срок давно наступил.
+	TEST_ASSERT_EQUAL(prefs.pref_queue_deadline, 0, "сброс снял очередь настроек, но оставил крайний срок")
+	TEST_ASSERT_EQUAL(prefs.char_queue_deadline, 0, "сброс снял очередь персонажа, но оставил крайний срок")
 
 	// Load обязан снять очередь БЕЗ записи, иначе колбэк затрёт прочитанный слот.
 	prefs.save_preferences()
@@ -97,6 +111,8 @@
 	prefs.cancel_pending_saves()
 	TEST_ASSERT_NULL(prefs.pref_queue, "Load не снял отложенный таймер настроек")
 	TEST_ASSERT_NULL(prefs.char_queue, "Load не снял отложенный таймер персонажа")
+	TEST_ASSERT_EQUAL(prefs.pref_queue_deadline, 0, "отмена сняла очередь настроек, но оставила крайний срок")
+	TEST_ASSERT_EQUAL(prefs.char_queue_deadline, 0, "отмена сняла очередь персонажа, но оставила крайний срок")
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 2, "отмена очереди не должна писать на диск")
 
 	// Явный Save бьёт в диск сразу - обоими путями.
@@ -105,7 +121,10 @@
 	prefs.save_character(TRUE)
 	TEST_ASSERT_EQUAL(prefs.disk_writes, 4, "явный Save персонажа не пробил дебаунс")
 
-	// Двадцать правок сложились в одну запись - это и есть предмет теста.
-	prefs.pref_queue = null
-	prefs.char_queue = null
+	// Уборка: снимаем очереди штатным проком, пока датум ещё жив. Голое обнуление
+	// полей оставило бы заряженные таймеры, которые потом сработают на удалённых
+	// префах.
+	prefs.cancel_pending_saves()
 	qdel(prefs)
+
+#undef PREF_DEBOUNCE_TEST_BATCH

@@ -85,7 +85,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /datum/gateway_destination/gateway/get_available_reason()
 	. = ..()
 	if(!target_gateway)
-		return "Exit gateway offline."
+		return "Выходной шлюз отключён."
 	if(!target_gateway.calibrated)
 		. = "Exit gateway malfunction. Manual recalibration required."
 	if(target_gateway.target)
@@ -250,9 +250,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/datum/gateway_destination/dest = target
 	target = null
 	playsound(src, 'sound/machines/gateway/gateway_close.ogg', 140, TRUE, TRUE, SOUND_RANGE)
-	// Оба гарда - на случай захода из чужого Destroy: цели могло уже не быть, а
-	// визуал мог уехать вместе с машиной.
-	dest?.deactivate(src)
+	if(dest)
+		dest.deactivate(src)
 	QDEL_NULL(portal)
 	use_power(IDLE_POWER_USE)
 	transport_active = FALSE
@@ -274,15 +273,16 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		update_appearance()
 		break
 
+/// Сравнение `target_gateway == target_gateway` ниже когда-то было сравнением
+/// переменной с самой собой, то есть всегда истинным: отбраковывались ВСЕ
+/// вертушечные назначения, список направлений в консоли выходил пустым, а process()
+/// никогда не поднимал teleportion_possible по другой вертушке. Проверять надо, не
+/// смотрит ли назначение обратно на нас (паритет с tg).
 /obj/machinery/gateway/proc/valid_destination(datum/gateway_destination/possible_destination)
 	if(possible_destination == destination)
 		return FALSE
 	if(istype(possible_destination, /datum/gateway_destination/gateway))
 		var/datum/gateway_destination/gateway/gateway_dest = possible_destination
-		// Сравнение переменной с самой собой всегда истинно, то есть отбраковывались
-		// ВСЕ вертушечные назначения: список направлений в консоли выходил пустым, а
-		// process() никогда не поднимал teleportion_possible по другой вертушке.
-		// Проверять надо, не смотрит ли назначение обратно на нас (паритет с tg).
 		if(gateway_dest.target_gateway == src)
 			return FALSE
 	return TRUE

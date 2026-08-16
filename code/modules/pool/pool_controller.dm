@@ -347,10 +347,8 @@
 	if(rcolor == old_rcolor)
 		return // small performance upgrade hopefully?
 	old_rcolor = rcolor
-	// Типизированный обход вместо слепого каста: в linked_turfs оседали и не-
-	// бассейновые турфы (бассейн на шаттле оставлял за собой /turf/open/space), а
-	// каст их не отсеивал - дальше шло чтение варов, которых у них нет.
-	for(var/turf/open/pool/color1 in linked_turfs)
+	for(var/X in linked_turfs)
+		var/turf/open/pool/color1 = X
 		if(bloody)
 			if(rcolor)
 				var/thecolor = BlendRGB(rgb(150, 20, 20), rcolor, 0.5)
@@ -492,7 +490,9 @@
 		return
 	mist_off()			//make sure it cycles and deletes everything
 	mist_state = TRUE
-	// Тот же типизированный обход, см. комментарий в update_water_state().
+	// Типизированный обход вместо слепого каста: в linked_turfs может лежать турф,
+	// который с тех пор заменили (бассейн на шаттле оставляет за собой космос), а
+	// каст такой не отсеивает - дальше шло бы чтение варов, которых у него нет.
 	for(var/turf/open/pool/W in linked_turfs)
 		if(W.filled)
 			var/obj/effect/mist/M = new(W)
