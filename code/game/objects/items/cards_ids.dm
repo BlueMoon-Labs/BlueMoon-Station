@@ -1024,6 +1024,16 @@
 	department_ID = ACCOUNT_SEC
 	department_name = ACCOUNT_SEC_NAME
 
+/obj/item/card/id/departmental_budget/tar
+	department_ID = ACCOUNT_TAR
+	department_name = ACCOUNT_TAR_NAME
+	withdraw_allowed = TRUE // BLUEMOON ADD - снятие разрешено любому держателю карты
+
+/obj/item/card/id/departmental_budget/ds
+	department_ID = ACCOUNT_DS
+	department_name = ACCOUNT_DS_NAME
+	withdraw_allowed = TRUE // BLUEMOON ADD - снятие разрешено любому держателю карты
+
 //Polychromatic Knight Badge
 
 /obj/item/card/id/knight
