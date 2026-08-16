@@ -50,11 +50,19 @@ SUBSYSTEM_DEF(title_bm)
 
 	_load_title_images()
 
-	if(fexists(loading_image))
-		loading_image = fcopy_rsc(loading_image)
-	else
+	if(!fexists(loading_image))
 		log_game("[name]: Файл загрузочного GIF '[loading_image]' не найден. Фон лобби будет пустым до подбора картинки.")
 		loading_image = null
+	else
+		// Загрузочный фон - худший случай из всех: его получает каждый, кто вошёл,
+		// включая тех, кто подключается, пока мир ещё инициализируется. См.
+		// BM_LOBBY_IMAGE_MAX_BYTES.
+		var/loading_bytes = length(file(loading_image))
+		if(loading_bytes > BM_LOBBY_IMAGE_MAX_BYTES)
+			log_game("[name]: загрузочный фон '[loading_image]' весит [round(loading_bytes / (1024 * 1024), 0.01)] МБ при потолке [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024))] МБ и НЕ будет отправляться: на волне реконнекта это гигабайты в исходящей очереди. Пережмите файл.")
+			loading_image = null
+		else
+			loading_image = fcopy_rsc(loading_image)
 	current_image = loading_image || BM_LOBBY_DEFAULT_IMAGE
 
 	RegisterSignal(SSticker, COMSIG_TICKER_ENTER_PREGAME, PROC_REF(_on_enter_pregame))
@@ -121,6 +129,12 @@ SUBSYSTEM_DEF(title_bm)
 		if(!is_image)
 			continue
 		var/full_path = "[dir_path][filename]"
+		// Каждая картинка отсюда уходит клиенту целиком и по игровому соединению -
+		// см. BM_LOBBY_IMAGE_MAX_BYTES. Слишком большую в пул не берём.
+		var/image_bytes = length(file(full_path))
+		if(image_bytes > BM_LOBBY_IMAGE_MAX_BYTES)
+			log_game("[name]: картинка лобби '[full_path]' весит [round(image_bytes / (1024 * 1024), 0.01)] МБ при потолке [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024))] МБ и пропущена: она уходит по игровому соединению каждому игроку в лобби. Пережмите её или уберите из каталога.")
+			continue
 		target_list += fcopy_rsc(full_path)
 
 /datum/controller/subsystem/title_bm/proc/_load_title_images()

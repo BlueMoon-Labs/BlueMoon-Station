@@ -27,6 +27,13 @@
 			var/new_file = input(user, "Выберите изображение для лобби (PNG / JPG / GIF / DMI):", "Картинка лобби") as icon|null
 			if(!new_file)
 				return
+			// Тот же потолок, что и у пула с диска: картинка уходит по игровому
+			// соединению отдельной копией каждому игроку в лобби, и на волне
+			// реконнекта многомегабайтный файл превращается в гигабайты исходящего.
+			var/uploaded_bytes = length(new_file)
+			if(uploaded_bytes > BM_LOBBY_IMAGE_MAX_BYTES)
+				to_chat(user, span_warning("Файл весит [round(uploaded_bytes / (1024 * 1024), 0.01)] МБ при потолке [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024))] МБ. Фон уходит по игровому соединению каждому игроку в лобби - пережмите файл."))
+				return
 			SStitle_bm.change_image(new_file)
 			message_admins("[key_name_admin(user)] установил новую картинку лобби (загружен файл).")
 
