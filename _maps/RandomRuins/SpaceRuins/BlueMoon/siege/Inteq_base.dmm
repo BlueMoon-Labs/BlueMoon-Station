@@ -109,10 +109,10 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
 "at" = (
-/obj/structure/window/reinforced,
-/obj/item/ammo_casing,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel/dark,
+/obj/structure/shuttle/engine/propulsion/burst{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "au" = (
 /obj/item/ammo_casing/spent,
@@ -365,11 +365,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "be" = (
-/obj/structure/bed,
-/obj/item/bedsheet/inteq,
-/obj/effect/mob_spawn/human/inteqspace/captain,
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/structure/lattice,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "bf" = (
 /obj/structure/cable,
 /obj/structure/cable{
@@ -441,13 +440,12 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
 "bo" = (
-/obj/machinery/light{
-	dir = 1
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4;
+	layer = 3
 	},
-/turf/open/floor/plating{
-	heat_capacity = 1e+006;
-	icon_state = "platingdmg2"
-	},
+/obj/machinery/autodoc,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "bp" = (
 /obj/item/clothing/glasses/material/mining/gar,
@@ -651,9 +649,9 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "bR" = (
-/obj/machinery/light,
-/turf/open/floor/glass,
-/area/InteQ_ship)
+/obj/structure/lattice,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "bS" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -781,7 +779,7 @@
 /area/InteQ_ship)
 "cq" = (
 /obj/item/staff,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "cr" = (
 /obj/structure/salvage/protolathe,
@@ -934,12 +932,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "cO" = (
-/obj/structure/displaycase{
-	req_one_access_txt = "152";
-	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
+/obj/machinery/light{
+	dir = 8
 	},
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/structure/closet/crate/bin,
+/obj/effect/turf_decal/tile/brown/full,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "cP" = (
 /obj/effect/turf_decal/tile/brown/full,
 /mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
@@ -968,11 +968,12 @@
 /area/InteQ_ship)
 "cU" = (
 /obj/item/crowbar/red,
-/turf/open/floor/plasteel,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "cW" = (
-/obj/structure/barricade/wooden,
-/turf/open/floor/plating,
+/obj/structure/lattice,
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "cX" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1003,11 +1004,10 @@
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
 "da" = (
-/obj/structure/shuttle/engine/propulsion{
-	dir = 8
-	},
-/turf/open/space/basic,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/effect/decal/cleanable/oil,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/InteQ_ship)
 "db" = (
 /obj/item/restraints/handcuffs/cable/zipties/used,
 /turf/open/floor/plasteel/dark,
@@ -1079,12 +1079,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "dk" = (
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/item/gun/ballistic/automatic/ak12/pindicate{
-	pixel_x = -2;
-	pixel_y = 12
+/obj/structure/chair/office/light{
+	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "dl" = (
 /obj/structure/salvage/computer{
@@ -1093,10 +1091,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
 "dm" = (
-/obj/structure/sign/flag/inteq{
-	pixel_y = 59
-	},
-/turf/open/floor/wood,
+/obj/effect/turf_decal/big_sign/enclave/bottom/middle,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "dn" = (
 /obj/structure/sign/flag/nanotrasen,
@@ -1121,11 +1117,21 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "dq" = (
-/obj/structure/fans/tiny,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
+/obj/machinery/light,
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj{
+	default_raw_text = "В рот того я блядь переебал того что придумывал конструкцию этого говна. Без спейс доков ЭТО ЧИНИТЬ НЕВОЗМОЖНО. Как прилетим на базу, я подаю адмиралу рапорт об увольнении. НУ НЕВОЗМОЖНО ЭТО."
 	},
-/area/InteQ_ship)
+/obj/structure/sign/flag/inteq{
+	pixel_y = -32
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 1;
+	pixel_x = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "ds" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/fans/tiny,
@@ -1363,10 +1369,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ed" = (
-/obj/effect/decal/cleanable/blood/old,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "ee" = (
 /obj/effect/decal/cleanable/blood/drip{
@@ -1392,7 +1399,15 @@
 /turf/open/space/basic,
 /area/space)
 "eg" = (
-/obj/structure/frame/machine,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/obj/machinery/vending/engivend{
+	shut_up = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "eh" = (
@@ -1401,20 +1416,9 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship5)
 "ei" = (
-/obj/structure/table/reinforced,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/item/gun/ballistic/automatic/hellgate_sg60,
-/obj/item/ammo_box/magazine/hellgate_sg60{
-	pixel_x = -11;
-	pixel_y = 13
-	},
-/obj/item/ammo_box/magazine/hellgate_sg60{
-	pixel_y = 13
-	},
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/item/toy/plush/borgplushie/meddrake,
+/turf/open/floor/wood/wood_parquet,
+/area/InteQ_ship)
 "ej" = (
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /obj/structure/cable/yellow{
@@ -1630,8 +1634,11 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
 "eO" = (
-/turf/open/floor/glass,
-/area/InteQ_ship)
+/obj/structure/shuttle/engine/huge{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "eP" = (
 /obj/effect/turf_decal/big_sign/chapel/center{
 	dir = 8
@@ -1675,25 +1682,14 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "eV" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
+/obj/structure/cable{
+	icon_state = "2-4"
 	},
-/obj/effect/turf_decal/siding/thinplating/dark{
+/obj/machinery/light{
 	dir = 1
 	},
-/obj/machinery/door/poddoor{
-	id = "fscaproom";
-	name = "Captain's blast door";
-	state_open = 1
-	},
-/obj/machinery/door/airlock/grunge{
-	name = "Captain's room";
-	req_one_access_txt = "152"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/area/InteQ_ship)
 "eW" = (
 /obj/structure/shuttle/engine/propulsion{
 	dir = 1
@@ -1814,18 +1810,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "fn" = (
-/obj/structure/table,
-/obj/machinery/reagentgrinder,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /obj/machinery/light{
-	dir = 4
+	dir = 8
 	},
-/turf/open/floor/plasteel/cafeteria,
+/obj/item/kirbyplants/hedge,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "fo" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2187,8 +2179,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "gr" = (
-/obj/structure/table/wood,
-/obj/item/folder/blue,
+/obj/effect/mob_spawn/human/corpse/inteq_dead,
+/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "gt" = (
@@ -2206,17 +2198,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "gw" = (
-/obj/structure/cable{
-	icon_state = "1-8"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/flour,
-/turf/open/floor/plasteel/cafeteria,
+/obj/structure/table/wood,
+/obj/item/hand_labeler,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "gx" = (
 /obj/machinery/light/small{
@@ -2422,10 +2407,8 @@
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
 "hc" = (
-/obj/structure/cable{
-	icon_state = "0-2"
-	},
-/obj/structure/filingcabinet/filingcabinet,
+/obj/machinery/photocopier,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hd" = (
@@ -2529,22 +2512,23 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hx" = (
-/obj/structure/rack,
-/obj/item/stock_parts/manipulator,
-/obj/item/stock_parts/subspace/filter,
-/obj/item/stack/sheet/rglass,
-/obj/item/stock_parts/manipulator,
-/turf/open/floor/glass/reinforced,
+/obj/structure/table,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/machinery/chem_dispenser/drinks{
+	dir = 8
+	},
+/turf/open/floor/plasteel/cafeteria,
 /area/InteQ_ship)
 "hz" = (
-/obj/structure/rack,
-/obj/item/circuitboard/machine/telecomms/relay,
-/obj/item/circuitboard/machine/stacking_machine,
-/obj/item/stack/sheet/metal,
-/obj/item/stack/sheet/rglass,
-/obj/item/stack/cable_coil/random,
-/obj/item/stock_parts/manipulator,
-/turf/open/floor/plasteel,
+/obj/structure/table/wood,
+/obj/item/dice/d20,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hA" = (
 /turf/open/floor/plating{
@@ -2601,8 +2585,10 @@
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "hE" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/kirbyplants/random,
+/obj/structure/kitchenspike,
+/obj/machinery/light{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hF" = (
@@ -2613,14 +2599,11 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/InteQ_ship)
 "hH" = (
-/obj/effect/turf_decal/tile/red{
-	dir = 1
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 4
 	},
-/obj/effect/turf_decal/tile/red{
-	dir = 8
-	},
-/obj/item/ammo_casing,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "hI" = (
 /obj/machinery/airalarm/syndicate{
@@ -2635,9 +2618,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
 "hK" = (
-/obj/structure/lattice,
-/turf/open/space/basic,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "hL" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/holopad,
@@ -2654,7 +2639,8 @@
 /turf/open/floor/plating/airless,
 /area/InteQ_ship/ship5)
 "hO" = (
-/obj/item/target/alien/anchored,
+/obj/item/ammo_casing,
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hP" = (
@@ -2758,25 +2744,15 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "hW" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4;
-	layer = 3
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
-/obj/machinery/autolathe/hacked,
+/obj/machinery/processor,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "hX" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/machinery/vending/dinnerware,
-/turf/open/floor/plasteel/cafeteria,
+/obj/effect/turf_decal/big_sign/enclave/top/middle,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "hY" = (
 /obj/structure/chair/comfy/shuttle{
@@ -2786,14 +2762,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship4)
 "hZ" = (
-/obj/item/pen/red,
-/obj/structure/table/reinforced{
-	color = "#777777"
-	},
 /obj/structure/cable{
-	icon_state = "1-2"
+	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/light/small,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ia" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2813,15 +2786,8 @@
 	},
 /area/InteQ_ship/ship6)
 "id" = (
-/obj/machinery/light{
-	dir = 8;
-	light_color = "#e8eaff"
-	},
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
-/turf/open/floor/plasteel/dark,
+/obj/item/kirbyplants/hedge,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ie" = (
 /obj/machinery/door/poddoor/preopen{
@@ -2883,12 +2849,11 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "iq" = (
-/obj/item/stack/ore/bluespace_crystal,
-/turf/open/floor/plasteel,
-/area/InteQ_ship)
+/turf/closed/indestructible/syndicate,
+/area/space)
 "is" = (
+/obj/structure/table/wood,
 /obj/effect/turf_decal/tile/brown/full,
-/obj/machinery/portable_atmospherics/scrubber,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "it" = (
@@ -3064,11 +3029,14 @@
 /turf/open/floor/plasteel/damturf,
 /area/InteQ_ship/ship4)
 "iT" = (
-/obj/machinery/light{
+/obj/structure/bed,
+/obj/structure/chair/wood/wings{
 	dir = 8
 	},
-/obj/item/kirbyplants/hedge,
-/turf/open/floor/plasteel/dark,
+/obj/effect/mob_spawn/human/inteqspace/captain{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "iV" = (
 /obj/structure/cable{
@@ -3377,10 +3345,9 @@
 /turf/open/floor/plating,
 /area/InteQ_ship/SOLVED)
 "jO" = (
-/obj/item/gun/ballistic/automatic/ak12/g36,
-/obj/structure/table/reinforced{
-	color = "#777777"
-	},
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/drinks/mug/tea,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "jP" = (
@@ -3734,8 +3701,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "kE" = (
-/obj/item/stock_parts/manipulator,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/atmospherics/components/unary/shuttle/heater{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "kF" = (
 /obj/item/clothing/glasses/welding,
@@ -3852,30 +3821,14 @@
 /area/space)
 "kR" = (
 /obj/structure/table/reinforced,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/item/reagent_containers/food/snacks/burger/mime,
-/obj/item/book/manual/wiki/barman_recipes,
-/turf/open/floor/plasteel/cafeteria,
+/obj/item/storage/briefcase,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "kS" = (
-/obj/machinery/light,
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/trimline/yellow/filled/line,
-/obj/item/paper/fluff/ruins/forgottenship/missionobj,
-/obj/structure/sign/flag/inteq{
-	pixel_y = -32
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 1;
-	pixel_x = -5
-	},
+/obj/structure/falsewall,
 /turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/area/InteQ_ship)
 "kT" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
@@ -3934,10 +3887,10 @@
 	},
 /area/InteQ_ship)
 "le" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/glass,
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood,
+/obj/item/toy/plush/bm/millie,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "lf" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -3964,6 +3917,9 @@
 "li" = (
 /obj/structure/table/wood,
 /obj/item/book/granter/spell/forcewall,
+/obj/machinery/light{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "lj" = (
@@ -4035,10 +3991,13 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/InteQ_ship)
 "lv" = (
-/obj/structure/table/wood,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
+/obj/structure/chair/office/light{
+	dir = 1
 	},
+/obj/structure/chair/wood/wings{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "lw" = (
 /obj/structure/cable{
@@ -4198,11 +4157,9 @@
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
 "lQ" = (
-/obj/structure/shuttle/engine/huge{
-	dir = 8
-	},
-/turf/open/space/basic,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/structure/lattice,
+/turf/closed/indestructible/syndicate,
+/area/space)
 "lR" = (
 /obj/structure/table/reinforced,
 /obj/effect/decal/cleanable/dirt,
@@ -4263,9 +4220,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "md" = (
-/obj/structure/table/wood,
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/structure/showcase/mecha/ripley{
+	name = "Ripley MK-III"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
@@ -4366,9 +4323,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "mq" = (
-/obj/structure/rack,
-/obj/item/stock_parts/subspace/ansible,
-/turf/open/floor/plasteel,
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "mr" = (
 /obj/machinery/door/airlock/grunge{
@@ -4415,10 +4373,8 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "mx" = (
-/obj/item/ammo_box/magazine/ak12/ap{
-	pixel_x = 9
-	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/big_sign/enclave/bottom/right,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "my" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -4430,9 +4386,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "mA" = (
-/obj/effect/decal/cleanable/blood/gibs,
-/mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
-/turf/open/floor/plasteel/dark,
+/obj/item/toy/plush/bm/zetta,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "mB" = (
 /obj/structure/lattice,
@@ -4567,26 +4522,29 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "mT" = (
-/obj/effect/turf_decal/stripes/yellow/line{
+/obj/structure/bed/double/pod{
 	dir = 4
 	},
-/obj/structure/fans/tiny/invisible,
-/obj/structure/table/reinforced{
-	color = "#777777"
+/obj/item/bedsheet/rd/double{
+	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
 	},
-/obj/item/ammo_box/magazine/hellgate_c77,
-/turf/open/floor/plasteel/dark,
+/obj/item/toy/plush/bm/shark{
+	name = "Izumi plushie";
+	desc = "Izumi's stuffed toy. She smells of vodka and cigarettes, and if you hug her for some reason, you get a strange feeling that someone wants to break your jaw..."
+	},
+/obj/effect/mob_spawn/human/inteqspace{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "mU" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
+/obj/structure/cable{
+	icon_state = "1-8"
 	},
-/obj/effect/turf_decal/tile/brown,
-/obj/structure/reagent_dispensers/keg/milk,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "mV" = (
 /obj/machinery/door/airlock/grunge{
@@ -4723,12 +4681,11 @@
 /turf/open/indestructible/gold,
 /area/space)
 "np" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/machinery/atmospherics/components/unary/shuttle/heater{
+	dir = 8
 	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "nq" = (
 /obj/structure/table_frame,
@@ -4741,10 +4698,9 @@
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship2)
 "nr" = (
-/obj/item/target,
-/obj/structure/target_stake,
+/obj/structure/lattice,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/space)
 "ns" = (
 /obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/light{
@@ -4762,25 +4718,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "nu" = (
-/obj/item/soap/syndie,
-/obj/item/reagent_containers/spray/cleaner,
-/obj/item/mop,
-/obj/item/reagent_containers/glass/bucket,
-/obj/structure/closet/crate/trashcart,
-/obj/machinery/power/apc/inteq{
-	dir = 4;
-	name = "InteQ Forgotten Ship APC";
-	pixel_x = 24;
-	start_charge = 100
-	},
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
+/obj/machinery/door/window{
+	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/area/InteQ_ship)
 "nv" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
@@ -4811,14 +4753,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "nA" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
+/obj/structure/fans/tiny,
+/turf/open/floor/plating{
+	heat_capacity = 1e+006;
+	icon_state = "platingdmg2"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/machinery/vending/cola,
-/turf/open/floor/plasteel/cafeteria,
 /area/InteQ_ship)
 "nB" = (
 /obj/effect/turf_decal/caution,
@@ -4983,8 +4922,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "nU" = (
-/obj/structure/kitchenspike,
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/obj/structure/reagent_dispensers/foamtank,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "nW" = (
 /obj/effect/spawner/lootdrop/salvage,
@@ -5220,14 +5162,17 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "oD" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/effect/turf_decal/big_sign/enclave/top/right,
+/obj/machinery/turretid{
+	control_area = "/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship";
+	icon_state = "control_kill";
+	lethal = 1;
+	name = "Ship turret control panel";
+	pixel_y = 42;
+	req_access = null;
+	req_one_access_txt = "152"
 	},
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/effect/mob_spawn/human/syndicatesoldier{
-	brute_damage = 200
-	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "oF" = (
 /obj/structure/hellgate_power_transformer,
@@ -5470,17 +5415,10 @@
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "pq" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/turf/open/floor/plasteel/cafeteria,
-/area/InteQ_ship)
+/obj/structure/bed,
+/obj/item/bedsheet/inteq,
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "pr" = (
 /obj/structure/deployable_barricade/metal,
 /obj/structure/deployable_barricade/metal{
@@ -5796,10 +5734,8 @@
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "qm" = (
-/obj/structure/table/wood,
-/obj/item/trash/boritos,
 /obj/structure/cable{
-	icon_state = "4-8"
+	icon_state = "2-4"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
@@ -6158,19 +6094,19 @@
 /turf/open/floor/grass/grass0,
 /area/InteQ_ship)
 "rh" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/structure/grille,
-/turf/open/floor/plasteel,
+/obj/structure/table/reinforced,
+/obj/item/paper/fluff/awaymissions/academy/console_maint,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "ri" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/syndicate,
+/obj/item/gun/ballistic/automatic/ak12/r,
+/obj/item/binoculars,
+/obj/effect/turf_decal/big_sign/enclave/top/left,
+/obj/item/storage/belt/esabre_belt,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "rj" = (
 /turf/open/floor/plating,
@@ -6187,9 +6123,10 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "rn" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/storage/toolbox/plastitanium,
-/turf/open/floor/plasteel/dark,
+/obj/item/toy/plush/bm/araminta,
+/obj/item/toy/plush/bm/araminta,
+/obj/item/toy/plush/bm/lissara,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "ro" = (
 /obj/structure/cable{
@@ -6350,13 +6287,11 @@
 /turf/open/space,
 /area/space)
 "rN" = (
-/obj/structure/noticeboard{
-	dir = 4;
-	pixel_x = -27
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 4
 	},
-/obj/machinery/light{
-	dir = 8
-	},
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "rO" = (
@@ -6498,10 +6433,11 @@
 /turf/open/space/basic,
 /area/InteQ_ship/ship2)
 "sg" = (
-/obj/effect/mob_spawn/human/syndicatesoldier{
-	brute_damage = 200
+/obj/structure/shuttle/engine/propulsion/burst{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "sh" = (
 /obj/structure/closet/crate,
@@ -6545,12 +6481,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "sm" = (
-/obj/structure/rack,
-/obj/item/circuitboard/machine/telecomms/bus,
-/obj/item/stack/sheet/metal,
-/obj/item/stack/cable_coil,
-/obj/item/stock_parts/scanning_module,
-/turf/open/floor/plasteel,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "sn" = (
 /obj/machinery/light{
@@ -6618,8 +6552,10 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/InteQ_ship/ship4)
 "sB" = (
-/obj/machinery/portable_atmospherics/canister/water_vapor,
-/turf/open/floor/plasteel,
+/obj/structure/table/reinforced,
+/obj/item/paper_bin,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "sC" = (
 /obj/effect/turf_decal/tile/brown/full,
@@ -6630,17 +6566,12 @@
 /turf/open/floor/plating/rust,
 /area/space)
 "sE" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/item/target/alien/anchored,
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "sF" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/turf/open/floor/wood,
+/obj/item/toy/plush/borgplushie/scrubpuppy,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "sG" = (
 /obj/structure/salvage/protolathe,
@@ -6729,7 +6660,9 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "sT" = (
 /obj/structure/barricade/wooden,
-/turf/open/floor/plasteel,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
 /area/InteQ_ship)
 "sV" = (
 /obj/effect/turf_decal/tile/bar,
@@ -6855,9 +6788,13 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/InteQ_ship/ship4)
 "tt" = (
-/obj/structure/table/wood,
-/obj/item/trash/pistachios,
-/turf/open/floor/mineral/plastitanium,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "tu" = (
 /obj/structure/shuttle/engine/heater{
@@ -6877,11 +6814,10 @@
 /turf/closed/wall/r_wall,
 /area/InteQ_ship/SOLVED)
 "ty" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
+/obj/structure/chair/wood/wings{
+	dir = 4
 	},
-/obj/effect/turf_decal/tile/brown,
-/obj/machinery/portable_atmospherics/scrubber,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "tz" = (
@@ -7027,10 +6963,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "tW" = (
-/obj/structure/table/reinforced{
-	color = "#777777"
-	},
-/turf/open/floor/plasteel/dark,
+/obj/item/target/alien/anchored,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "tX" = (
 /obj/machinery/button/door{
@@ -7154,24 +7088,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "up" = (
-/obj/structure/closet/syndicate{
-	anchored = 1;
-	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
-	desc = "A basic closet for all your villainous needs.";
-	locked = 1;
-	name = "Closet";
-	req_one_access_txt = "152";
-	secure = 1
+/obj/machinery/vending/kink{
+	shut_up = 1
 	},
-/obj/item/storage/box/firingpins/syndicate,
-/obj/structure/window/reinforced/spawner,
-/obj/effect/turf_decal/siding/wood,
-/obj/item/ammo_box/c9mm,
-/obj/item/flashlight/seclite,
-/obj/item/storage/belt/esabre_belt,
-/obj/item/crowbar/red,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/turf/open/floor/wood/wood_parquet,
+/area/InteQ_ship)
 "uq" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -7186,8 +7107,13 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "ur" = (
-/obj/structure/window/reinforced,
-/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/structure/table/reinforced{
+	color = "#777777"
+	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -7453,13 +7379,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "vj" = (
-/obj/item/ammo_box/magazine/ak12/ap{
-	pixel_y = 12;
-	pixel_x = 10
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4;
+	layer = 3
 	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "vl" = (
 /obj/item/stack/circuit_stack/full,
@@ -7866,15 +7790,21 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "ws" = (
-/obj/item/stack/cable_coil,
-/obj/item/wrench,
-/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/computer/crew/syndie,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "wt" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /obj/structure/table/wood,
-/obj/item/pen/red,
-/turf/open/floor/plasteel/dark,
+/obj/item/reagent_containers/food/drinks/mug/tea,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "wu" = (
 /obj/machinery/smartfridge/chemistry/preloaded,
@@ -7895,15 +7825,12 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "wy" = (
-/obj/structure/rack,
-/obj/item/stock_parts/manipulator,
-/obj/item/stock_parts/manipulator,
-/obj/item/stock_parts/subspace/crystal,
-/obj/item/stock_parts/subspace/filter,
-/obj/item/stock_parts/micro_laser/high,
-/obj/item/stock_parts/micro_laser/high,
-/obj/item/stack/sheet/metal,
-/turf/open/floor/glass/reinforced,
+/obj/structure/filingcabinet/filingcabinet,
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "wz" = (
 /obj/machinery/light{
@@ -7971,10 +7898,9 @@
 /turf/open/floor/plasteel/damturf,
 /area/InteQ_ship)
 "wI" = (
-/obj/item/stack/ore/bluespace_crystal{
-	amount = 5
-	},
-/turf/open/floor/plasteel,
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "wJ" = (
 /obj/structure/table/wood,
@@ -8180,7 +8106,7 @@
 "xn" = (
 /obj/item/stack/arcadeticket,
 /obj/effect/decal/cleanable/oil,
-/turf/open/floor/plasteel,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "xo" = (
 /mob/living/simple_animal/hostile/space_mosquito,
@@ -8332,8 +8258,11 @@
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "xL" = (
-/obj/machinery/vending/magivend,
-/turf/open/floor/wood,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj{
+	default_raw_text = "В рот того я блядь переебал того что придумывал конструкцию этого говна. Без спейс доков ЭТО ЧИНИТЬ НЕВОЗМОЖНО. Как прилетим на базу, я подаю адмиралу рапорт об увольнении. НУ НЕВОЗМОЖНО ЭТО."
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "xO" = (
 /obj/structure/fans/tiny,
@@ -8388,14 +8317,18 @@
 /turf/open/space/basic,
 /area/InteQ_ship/ship4)
 "xX" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
+/obj/structure/dresser{
+	pixel_y = 14
 	},
-/obj/structure/fans/tiny/invisible,
-/obj/structure/table/reinforced{
-	color = "#777777"
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/light{
+	dir = 8;
+	light_color = "#e8eaff"
+	},
+/obj/item/toy/plush/bm/expie,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "xY" = (
 /obj/structure/lattice/catwalk,
@@ -8588,9 +8521,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "yz" = (
-/obj/structure/window/reinforced,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/item/kirbyplants/hedge,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "yA" = (
 /obj/structure/cable{
@@ -8632,10 +8567,24 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
 "yE" = (
-/obj/machinery/light/small{
-	dir = 1
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/obj/item/storage/book/bible/syndicate{
+	pixel_y = -1;
+	pixel_x = -6
+	},
+/obj/item/storage/book{
+	pixel_x = -3
+	},
+/obj/item/storage/book/bible/booze,
+/obj/item/storage/book/bible/syndicate/inteq{
+	pixel_x = 4;
+	layer = 2.9
+	},
+/obj/item/toy/plush/bm/belinsky,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "yF" = (
 /turf/open/floor/holofloor/asteroid,
@@ -8753,6 +8702,7 @@
 /area/InteQ_ship/ship3)
 "zc" = (
 /obj/machinery/portable_atmospherics/scrubber,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "zd" = (
@@ -8816,13 +8766,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship1)
 "zo" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
-/obj/machinery/computer/mech_bay_power_console{
-	dir = 4
-	},
+/obj/machinery/grandfatherclock,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "zp" = (
@@ -9110,8 +9055,10 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/InteQ_ship/ship5)
 "Ag" = (
-/obj/machinery/vending/inteq_vendomat,
-/turf/open/floor/plasteel/dark,
+/obj/structure/chair/wood/wings{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Ah" = (
 /obj/effect/turf_decal/big_sign/chapel/center{
@@ -9127,8 +9074,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Aj" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/fans/tiny,
+/obj/item/pen/red,
+/obj/structure/table/reinforced{
+	color = "#777777"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/item/gun/grenadelauncher,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Ak" = (
@@ -9233,11 +9186,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Ay" = (
-/obj/item/banhammer,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
+/obj/structure/cable{
+	icon_state = "2-4"
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/item/kirbyplants/hedge,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Az" = (
 /obj/structure/girder/displaced,
@@ -9373,7 +9329,7 @@
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "AT" = (
 /obj/item/stack/tile/carpet/purple/ten,
-/turf/open/floor/plasteel,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "AU" = (
 /obj/machinery/power/smes{
@@ -9492,9 +9448,33 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Bi" = (
-/obj/machinery/light,
-/obj/structure/closet/crate/bin,
-/turf/open/floor/glass,
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/coin/antagtoken,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/mod/control/pre_equipped/syndicate_empty/elite,
+/obj/item/encryptionkey/inteq,
+/obj/item/encryptionkey/inteq,
+/obj/item/disk/tech_disk/illegal,
+/obj/item/ai_module/core/full/inteq,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Bj" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -9665,13 +9645,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "BJ" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/turf/open/floor/plasteel/cafeteria,
+/obj/structure/table/reinforced,
+/obj/item/pen/red,
+/obj/effect/turf_decal/tile/brown/full,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "BK" = (
 /obj/structure/window/reinforced/spawner,
@@ -9732,17 +9710,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "BU" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/flour,
-/turf/open/floor/plasteel/cafeteria,
+/obj/effect/turf_decal/tile/red,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "BV" = (
 /obj/structure/table/reinforced,
@@ -9765,16 +9737,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "BX" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/structure/rack,
-/obj/item/stack/sheet/metal,
-/obj/structure/window/reinforced{
-	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
-	},
-/obj/item/stock_parts/manipulator,
-/turf/open/floor/glass/reinforced,
+/obj/structure/closet/secure_closet/freezer/fridge,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "BY" = (
 /obj/structure/sign/warning/nosmoking/circle,
@@ -9866,14 +9830,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "Ci" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/machinery/icecream_vat,
-/turf/open/floor/plasteel/cafeteria,
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Cj" = (
 /obj/machinery/porta_turret/inteq/energy/heavy{
@@ -9883,24 +9843,10 @@
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Ck" = (
-/obj/structure/closet/syndicate{
-	anchored = 1;
-	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
-	desc = "A basic closet for all your villainous needs.";
-	locked = 1;
-	name = "Closet";
-	req_one_access_txt = "152";
-	secure = 1
-	},
-/obj/item/crowbar/red,
-/obj/item/ammo_box/c10mm,
-/obj/item/flashlight/seclite,
-/obj/item/paper/fluff/ruins/forgottenship/missionobj,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/turf/open/floor/wood,
+/obj/structure/table/reinforced,
+/obj/item/coin/plasma,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Cl" = (
 /obj/structure/closet,
@@ -9914,18 +9860,18 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
 "Cn" = (
-/obj/structure/rack,
-/obj/item/stock_parts/subspace/ansible,
-/obj/item/circuitboard/machine/telecomms/processor,
-/obj/item/circuitboard/machine/stacking_machine,
-/turf/open/floor/plasteel,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Co" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
 	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/spawner/lootdrop/salvage,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Cp" = (
 /obj/machinery/suit_storage_unit/open,
@@ -10011,9 +9957,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "CA" = (
-/obj/structure/frame/machine,
-/obj/structure/barricade/wooden/crude,
-/turf/open/floor/plating,
+/obj/structure/table/reinforced{
+	color = "#777777"
+	},
+/obj/item/ammo_box/magazine/hellgate_c77,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "CB" = (
 /obj/effect/decal/cleanable/vomit/old,
@@ -10217,11 +10165,11 @@
 	},
 /area/InteQ_ship)
 "Db" = (
-/obj/structure/chair,
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/atmospherics/components/unary/shuttle/heater{
+	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Dc" = (
 /obj/structure/closet/syndicate{
@@ -10461,12 +10409,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "DF" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/structure/janitorialcart,
-/obj/item/mop/cyborg,
-/turf/open/floor/wood/wood_tiled,
+/obj/item/toy/plush/mal0,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "DG" = (
 /obj/structure/window/reinforced{
@@ -10540,16 +10484,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship4)
 "DT" = (
-/obj/machinery/door/window{
-	dir = 4
+/obj/structure/cable{
+	icon_state = "2-8"
 	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/item/ammo_box/magazine/ak12/ap{
-	pixel_x = 9
-	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "DU" = (
 /obj/structure/closet/syndicate{
@@ -10595,8 +10533,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "DX" = (
-/obj/structure/table/wood,
-/obj/item/paper_bin,
+/obj/structure/frame/computer{
+	anchored = 1
+	},
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "DY" = (
@@ -10667,15 +10607,8 @@
 /turf/open/floor/plasteel/white,
 /area/InteQ_ship)
 "El" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/item/reagent_containers/food/snacks/burger/roburger,
-/turf/open/floor/plasteel/cafeteria,
+/obj/item/toy/plush/bm/koteykomya,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "Em" = (
 /turf/open/floor/engine,
@@ -10797,8 +10730,9 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "EG" = (
-/obj/structure/table/wood,
-/turf/open/floor/mineral/plastitanium,
+/obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/computer/camera_advanced,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "EH" = (
 /obj/structure/salvage/computer{
@@ -10820,9 +10754,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "EK" = (
-/obj/structure/rack,
-/obj/item/circuitboard/machine/telecomms/bus,
-/turf/open/floor/plasteel,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "EL" = (
 /obj/item/stack/cable_coil/orange,
@@ -10854,7 +10789,7 @@
 /area/InteQ_ship)
 "EQ" = (
 /obj/item/stack/tile/carpet/purple/fifty,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "ER" = (
 /obj/effect/turf_decal{
@@ -10895,9 +10830,8 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "EV" = (
-/obj/item/stack/sheet/rglass,
-/obj/item/stack/cable_coil/random,
-/turf/open/floor/plating,
+/obj/structure/lattice,
+/turf/closed/indestructible/syndicate,
 /area/InteQ_ship)
 "EW" = (
 /obj/machinery/suit_storage_unit/syndicate/cybersun,
@@ -10999,10 +10933,11 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/InteQ_ship/ship3)
 "Fn" = (
-/obj/structure/table/wood,
-/obj/item/trash/can,
-/turf/open/floor/mineral/plastitanium,
-/area/InteQ_ship)
+/obj/structure/shuttle/engine/propulsion{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Fo" = (
 /obj/effect/turf_decal{
 	icon_state = "loadingarea_white";
@@ -11249,10 +11184,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "FV" = (
-/obj/structure/closet/crate/freezer,
-/obj/item/reagent_containers/food/drinks/ale,
-/obj/item/reagent_containers/food/snacks/blumpkinpieslice,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/syndicate/inteq,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "FW" = (
 /obj/effect/turf_decal/tile/bar,
@@ -11360,15 +11296,17 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Gj" = (
-/obj/machinery/door/airlock/freezer,
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/light{
+	dir = 1
 	},
-/turf/open/floor/plasteel/white,
+/obj/effect/turf_decal/tile/brown/full,
+/obj/machinery/vending/inteq_vendomat,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Gk" = (
-/obj/effect/mob_spawn/human/nanotrasensoldier,
-/turf/open/floor/plasteel/dark,
+/obj/item/target/alien/anchored,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Gl" = (
 /obj/machinery/airalarm/directional/west,
@@ -11651,8 +11589,17 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Hb" = (
-/mob/living/simple_animal/hostile/space_mosquito,
-/turf/open/floor/engine,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/apc/unlocked{
+	dir = 1;
+	pixel_y = 23;
+	req_access = null
+	},
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Hc" = (
 /obj/machinery/button/door{
@@ -11688,8 +11635,18 @@
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/InteQ_ship/ship2)
 "Hh" = (
-/obj/structure/closet/crate/bin,
-/turf/open/floor/glass,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/table/wood,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.9
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Hi" = (
 /obj/structure/cable/yellow{
@@ -11724,8 +11681,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Hm" = (
-/obj/item/target/alien/anchored,
-/obj/structure/fans/tiny,
+/obj/structure/table/reinforced,
+/obj/item/toy/figure/wizard,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Hn" = (
@@ -11800,14 +11758,14 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship/ship2)
 "Hz" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
 	},
-/turf/open/floor/plasteel/cafeteria,
+/turf/open/floor/plasteel,
 /area/InteQ_ship)
 "HB" = (
 /obj/effect/turf_decal{
@@ -11910,14 +11868,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "HN" = (
-/obj/machinery/door/window{
-	dir = 4
+/obj/structure/chair/wood/wings{
+	dir = 8
 	},
-/obj/item/ammo_casing,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "HO" = (
 /obj/structure/closet/crate/bin,
@@ -12008,11 +11962,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Id" = (
-/obj/structure/chair/wood/wings,
-/mob/living/simple_animal/hostile/nanotrasen/ranged/smg,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen/red,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Ie" = (
 /obj/structure/cable{
@@ -12053,21 +12007,19 @@
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
 "Ij" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/machinery/door/airlock/external{
+	name = "InteQ ship airlock";
+	req_one_access_txt = "152"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating{
-	heat_capacity = 1e+006;
-	icon_state = "platingdmg2"
-	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Ik" = (
-/obj/structure/sign/poster/contraband/inteq/inteq_better_dead{
-	pixel_x = -32
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 4
 	},
-/obj/machinery/autodoc,
-/turf/open/floor/plasteel/dark,
+/turf/closed/indestructible/syndicate,
 /area/InteQ_ship)
 "Il" = (
 /obj/effect/decal/cleanable/dirt,
@@ -12078,10 +12030,7 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
 "Im" = (
-/obj/machinery/door/airlock/grunge{
-	name = "Recreation";
-	req_one_access_txt = "152"
-	},
+/obj/item/kirbyplants/hedge,
 /turf/open/floor/carpet/royalblack,
 /area/InteQ_ship)
 "In" = (
@@ -12177,16 +12126,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "IB" = (
-/obj/effect/mob_spawn/human/inteqspace{
-	dir = 8
+/obj/structure/displaycase{
+	req_one_access_txt = "152";
+	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
 	},
-/obj/structure/sign/flag/inteq{
-	pixel_y = -32
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 8
-	},
-/turf/open/floor/wood,
+/obj/item/inteq/uplink/radio/nuclear,
+/turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "IC" = (
 /obj/structure/rack/shelf,
@@ -12229,9 +12174,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "II" = (
-/obj/item/gun/ballistic,
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/obj/machinery/porta_turret/inteq/energy{
+	name = "InteQ Ship Turret";
+	dir = 1
+	},
+/turf/closed/indestructible/syndicate,
+/area/InteQ_ship)
 "IJ" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Emergency Engine";
@@ -12343,15 +12291,18 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "IX" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
+/obj/machinery/door/airlock/grunge{
+	name = "Captain's room";
+	req_one_access_txt = "152"
 	},
-/obj/effect/decal/cleanable/flour,
-/obj/machinery/vending/coffee,
-/turf/open/floor/plasteel/cafeteria,
+/obj/machinery/door/airlock/grunge{
+	name = "Captain's room";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "IY" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
@@ -12373,19 +12324,16 @@
 	},
 /area/InteQ_ship)
 "Jb" = (
-/obj/structure/chair/comfy/black,
-/turf/open/floor/mineral/plastitanium,
-/area/InteQ_ship)
+/obj/machinery/porta_turret/syndicate/pod/toolbox{
+	faction = list("InteQ")
+	},
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Jc" = (
-/obj/effect/turf_decal/tile/red{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/red{
-	dir = 8
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
+/obj/structure/table/reinforced,
+/obj/item/folder/blue,
+/obj/item/folder/inteq,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Jd" = (
@@ -12555,9 +12503,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "JB" = (
-/obj/item/target,
 /turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/area/space)
 "JC" = (
 /obj/machinery/vending/cola/random,
 /turf/open/floor/plasteel/dark,
@@ -12737,13 +12684,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Kh" = (
-/obj/structure/chair/wood/wings{
-	dir = 1
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/power/port_gen/pacman,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Ki" = (
 /obj/structure/window/plastitanium/pirate,
@@ -12924,9 +12866,15 @@
 /turf/open/space,
 /area/space)
 "KG" = (
-/obj/effect/decal/cleanable/oil,
-/mob/living/simple_animal/hostile/space_mosquito,
-/turf/open/floor/engine,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "KH" = (
 /obj/machinery/photocopier{
@@ -12956,10 +12904,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "KL" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/space/basic,
+/obj/structure/sign/poster/contraband/inteq/inteq_better_dead,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "KM" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -13043,11 +12989,13 @@
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "Lb" = (
-/obj/machinery/light{
-	dir = 1
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/computer/secure_data/laptop{
+	dir = 1;
+	pixel_y = 5
 	},
-/obj/structure/closet/crate/bin,
-/turf/open/floor/glass,
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "Lc" = (
 /obj/structure/cable/yellow{
@@ -13117,14 +13065,10 @@
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
 "Lq" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Lr" = (
 /obj/effect/decal/cleanable/dirt,
@@ -13378,10 +13322,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "Mc" = (
-/obj/item/ammo_box/magazine/ak12/ap{
-	pixel_y = -7
-	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "Md" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
@@ -13425,11 +13367,9 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Mq" = (
-/obj/structure/closet/secure_closet/freezer/fridge,
-/obj/machinery/light{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/power/port_gen/pacman,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Mr" = (
 /mob/living/simple_animal/hostile/hivebot,
@@ -13605,20 +13545,14 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "MR" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/flour,
-/turf/open/floor/plasteel/cafeteria,
+/obj/structure/table/reinforced,
+/obj/item/laser_pointer/upgraded,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "MS" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/open/floor/glass,
+/obj/structure/chair/wood/wings,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "MT" = (
 /obj/structure/cable{
@@ -13739,7 +13673,7 @@
 /obj/item/ammo_box/magazine/ak12/ap{
 	pixel_y = 12
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Nn" = (
 /obj/effect/decal/cleanable/blood/gibs/old,
@@ -13856,9 +13790,9 @@
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship1)
 "NC" = (
-/obj/item/stack/sheet/rglass,
-/obj/item/wrench,
-/turf/open/floor/plating,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "NE" = (
 /obj/structure/closet/crate/large,
@@ -13958,13 +13892,11 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "NW" = (
-/obj/structure/table/wood,
-/obj/item/trash/energybar,
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/item/gun/ballistic/automatic/pistol/deagle/gold{
+	pixel_y = 17
 	},
-/turf/open/floor/mineral/plastitanium,
-/area/InteQ_ship)
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "NX" = (
 /obj/machinery/light{
 	dir = 8;
@@ -14025,7 +13957,9 @@
 /area/InteQ_ship)
 "Oe" = (
 /obj/effect/decal/cleanable/oil,
-/turf/open/floor/plasteel,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
 /area/InteQ_ship)
 "Of" = (
 /obj/structure/table/reinforced,
@@ -14210,12 +14144,19 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "OJ" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/item/soap/syndie,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/item/mop,
+/obj/item/reagent_containers/glass/bucket,
+/obj/structure/closet/crate/trashcart,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/InteQ_ship)
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "OK" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -14300,9 +14241,14 @@
 /area/InteQ_ship)
 "OZ" = (
 /obj/structure/table/wood,
-/obj/item/flashlight/lamp/green,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.9
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Pa" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -14485,10 +14431,12 @@
 	},
 /area/InteQ_ship/ship1)
 "PA" = (
-/obj/structure/mopbucket,
-/obj/item/soap,
-/turf/open/floor/wood/wood_tiled,
-/area/InteQ_ship)
+/obj/structure/table/reinforced,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "PB" = (
 /obj/effect/decal/cleanable/glass,
 /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq,
@@ -14700,10 +14648,11 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "Ql" = (
-/obj/effect/decal/cleanable/blood/gibs,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/light{
+	dir = 4
 	},
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Qm" = (
 /obj/effect/decal/cleanable/glass,
@@ -14797,16 +14746,23 @@
 /turf/open/floor/carpet/green,
 /area/InteQ_ship)
 "QE" = (
-/obj/structure/rack,
-/obj/item/circuitboard/machine/telecomms/broadcaster,
-/obj/item/circuitboard/machine/telecomms/receiver,
-/obj/item/circuitboard/machine/telecomms/relay,
-/obj/structure/window/reinforced{
-	dir = 1;
-	layer = 2.9
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
 	},
-/turf/open/floor/glass/reinforced,
-/area/InteQ_ship)
+/obj/item/storage/box/firingpins/syndicate,
+/obj/structure/window/reinforced/spawner,
+/obj/effect/turf_decal/siding/wood,
+/obj/item/ammo_box/c9mm,
+/obj/item/flashlight/seclite,
+/obj/item/crowbar/red,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "QF" = (
 /obj/effect/turf_decal/big_sign/chapel/center{
 	dir = 4
@@ -14905,14 +14861,10 @@
 	},
 /area/InteQ_ship)
 "QU" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/poddoor,
 /obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
+/turf/open/floor/plating,
+/area/space)
 "QV" = (
 /obj/structure/table/wood/bar,
 /obj/effect/decal/cleanable/dirt,
@@ -15073,7 +15025,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Rv" = (
-/obj/item/ammo_casing,
+/obj/structure/lattice,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Rw" = (
@@ -15091,7 +15043,7 @@
 	pixel_y = 12;
 	pixel_x = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Ry" = (
 /obj/machinery/door/airlock/grunge{
@@ -15399,17 +15351,20 @@
 /turf/open/space,
 /area/space)
 "Ss" = (
-/obj/structure/cable{
+/obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/lattice,
+/turf/open/floor/plating{
+	heat_capacity = 1e+006;
+	icon_state = "platingdmg2"
 	},
-/turf/open/floor/plasteel/cafeteria,
-/area/InteQ_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Su" = (
 /obj/effect/turf_decal/big_sign/chapel/center,
 /mob/living/simple_animal/hostile/nanotrasen/elite/akins,
@@ -15455,12 +15410,10 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space)
 "SD" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/item/stack/cable_coil/orange,
-/obj/structure/grille,
-/turf/open/floor/plating,
+/obj/structure/table/wood,
+/obj/item/pen/red,
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "SE" = (
 /obj/structure/cable{
@@ -15546,16 +15499,11 @@
 	},
 /area/InteQ_ship)
 "SP" = (
-/obj/machinery/light{
-	dir = 4;
-	light_color = "#c1caff";
-	pixel_x = 3
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
-/turf/open/floor/plasteel/dark,
+/obj/item/kirbyplants/hedge,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "SQ" = (
 /obj/machinery/firealarm{
@@ -15885,18 +15833,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "TG" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/machinery/vending/snack/random,
-/turf/open/floor/plasteel/cafeteria,
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/mech_bay_recharge_port,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "TH" = (
-/obj/machinery/door/airlock/freezer,
-/turf/open/floor/plasteel/white,
+/obj/effect/decal/cleanable/blood/old,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "TJ" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -15919,20 +15862,10 @@
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "TN" = (
-/obj/structure/table,
-/obj/machinery/light{
-	dir = 4
+/obj/machinery/porta_turret/syndicate/pod/toolbox{
+	faction = list("InteQ")
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/machinery/chem_dispenser/drinks{
-	dir = 8
-	},
-/turf/open/floor/plasteel/cafeteria,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "TO" = (
 /obj/effect/turf_decal/tile/brown/full,
@@ -16100,8 +16033,8 @@
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/InteQ_ship/ship2)
 "Us" = (
-/obj/structure/closet/crate/trashcart,
-/turf/open/floor/glass,
+/obj/machinery/door/airlock/maintenance_hatch,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Ut" = (
 /obj/structure/table/reinforced,
@@ -16400,12 +16333,14 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Vg" = (
-/obj/machinery/door/airlock/freezer,
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/structure/sign/flag/inteq{
+	pixel_y = -32
 	},
-/turf/open/floor/plasteel/white,
-/area/InteQ_ship)
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Vh" = (
 /obj/effect/decal/cleanable/glass{
 	icon_state = "large"
@@ -16494,15 +16429,11 @@
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Vt" = (
-/obj/structure/rack,
-/obj/item/stock_parts/scanning_module,
-/obj/item/stock_parts/micro_laser,
-/obj/item/stock_parts/subspace/filter,
-/obj/item/stock_parts/subspace/ansible,
-/obj/item/stack/sheet/metal,
-/obj/item/stack/cable_coil/random,
-/obj/item/stock_parts/scanning_module,
-/turf/open/floor/glass/reinforced,
+/obj/structure/chair/wood/wings{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/full,
+/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Vu" = (
 /obj/structure/rack/shelf,
@@ -16547,24 +16478,22 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "VC" = (
-/obj/item/ammo_casing,
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
 	},
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "VD" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/bag/tray,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
+/obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/item/reagent_containers/food/snacks/beans,
-/obj/item/reagent_containers/food/snacks/beans,
-/turf/open/floor/plasteel/cafeteria,
+/obj/machinery/jukebox{
+	req_one_access = null;
+	pixel_x = -4
+	},
+/turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "VE" = (
 /mob/living/simple_animal/hostile/nanotrasen/elite/akins,
@@ -16574,12 +16503,9 @@
 	},
 /area/InteQ_ship)
 "VF" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/structure/sign/poster/contraband/inteq/inteq_better_dead{
-	pixel_x = -32
-	},
+/obj/structure/table/reinforced,
+/obj/item/pen/red,
+/obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "VG" = (
@@ -16697,11 +16623,10 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Wb" = (
-/obj/item/stack/sheet/rglass,
 /obj/item/ammo_box/magazine/ak12/ap{
 	pixel_x = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Wd" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -16745,14 +16670,12 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Wk" = (
-/obj/machinery/processor,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
+/obj/machinery/button/door{
+	id = "fscaproom";
+	name = "Room shutters control";
+	req_one_access_txt = "152"
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/turf/open/floor/plasteel/cafeteria,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "Wl" = (
 /mob/living/simple_animal/hostile/inteq/ranged/smg,
@@ -16834,6 +16757,7 @@
 /turf/open/floor/plating,
 /area/space)
 "Ww" = (
+/obj/machinery/vending/inteq_vendomat,
 /obj/structure/sign/poster/contraband/inteq/inteq_better_dead{
 	pixel_x = -32
 	},
@@ -16973,11 +16897,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "WT" = (
-/obj/item/gun/grenadelauncher,
-/obj/structure/table/reinforced{
-	color = "#777777"
+/obj/structure/table/wood,
+/obj/item/folder/blue,
+/obj/structure/window/reinforced{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/structure/window/reinforced,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "WU" = (
 /obj/item/wrench,
@@ -17000,7 +16926,7 @@
 	icon_state = "2-4"
 	},
 /obj/item/stack/cable_coil,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "WZ" = (
 /obj/item/ammo_casing/spent,
@@ -17118,18 +17044,10 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "Xq" = (
-/obj/structure/table/reinforced,
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/structure/chair/wood/wings{
+	dir = 1
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/item/reagent_containers/food/snacks/burger/roburger,
-/turf/open/floor/plasteel/cafeteria,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Xr" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -17212,13 +17130,13 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "XC" = (
-/obj/effect/turf_decal/tile/red{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/red{
+/obj/machinery/atmospherics/components/unary/shuttle/heater{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "XD" = (
 /obj/machinery/door/airlock/grunge/abandoned{
@@ -17266,12 +17184,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
-"XN" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/turf/open/floor/glass,
-/area/InteQ_ship)
 "XO" = (
 /obj/machinery/suit_storage_unit/open,
 /obj/structure/lattice,
@@ -17309,9 +17221,13 @@
 /turf/open/floor/engine/hull,
 /area/InteQ_ship/ship2)
 "XU" = (
-/obj/structure/fans/tiny,
-/obj/machinery/door/poddoor/preopen,
-/turf/open/floor/plasteel/dark,
+/obj/structure/table/reinforced{
+	color = "#777777"
+	},
+/obj/item/gun/ballistic/automatic/hellgate_sg60,
+/obj/item/ammo_box/magazine/hellgate_sg60,
+/obj/item/ammo_box/magazine/hellgate_sg60,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "XV" = (
 /obj/machinery/light/small{
@@ -17385,7 +17301,7 @@
 	icon_state = "4-8"
 	},
 /obj/item/stack/tile/carpet/purple/thirty,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/InteQ_ship)
 "Yh" = (
 /obj/item/storage/backpack/duffelbag/syndie/inteq/shotgun,
@@ -17534,10 +17450,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "YF" = (
-/obj/structure/cable{
-	icon_state = "1-4"
+/obj/structure/noticeboard{
+	dir = 4;
+	pixel_x = -27
 	},
-/obj/effect/decal/cleanable/blood/gibs,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/autolathe/hacked,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "YG" = (
@@ -17592,14 +17512,6 @@
 	heat_capacity = 1e+006;
 	icon_state = "platingdmg2"
 	},
-/area/InteQ_ship)
-"YK" = (
-/obj/structure/table/wood,
-/obj/item/ammo_box/magazine/ak12/ap{
-	pixel_y = 12;
-	pixel_x = 10
-	},
-/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "YL" = (
 /obj/effect/turf_decal,
@@ -17915,10 +17827,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "ZE" = (
-/obj/structure/chair/wood/wings,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "ZG" = (
 /obj/effect/mob_spawn/human/corpse/inteq_dead,
@@ -30683,13 +30593,13 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 AM
@@ -32369,14 +32279,14 @@ yp
 yp
 yp
 Ee
+Km
 Al
-Al
-oW
-Al
-Al
-rn
-YF
-ws
+BX
+NX
+hW
+KI
+tg
+Ee
 SV
 Mt
 Xk
@@ -32581,18 +32491,18 @@ FI
 mi
 FI
 uj
-ap
-gr
-DX
-mA
-Gk
-YK
-Kh
-Ku
-lD
-Ku
-lD
+ZH
+Ds
+Al
+Al
+Pp
+ZI
+rx
 Ee
+lD
+Ku
+lD
+Ek
 GC
 Al
 Al
@@ -32793,14 +32703,14 @@ XK
 Zn
 mv
 FI
-si
-ZE
-wt
-Nm
-dk
-fN
+ap
+Jl
+Vi
+Rl
+GI
 Wt
-MP
+MU
+Mc
 Tr
 Al
 Al
@@ -33005,14 +32915,14 @@ Hv
 Qa
 Al
 Yj
-YJ
-Id
-hf
-sg
-mx
-Ku
-Kh
-Ku
+Al
+hp
+Bo
+gT
+Xz
+Wt
+LS
+Ee
 lD
 Ku
 lD
@@ -33217,14 +33127,14 @@ Qa
 Fk
 fQ
 UY
-Ql
-YJ
-Mv
-vj
-Gk
-Al
-oD
-oW
+ap
+bG
+jB
+gT
+ul
+Wt
+FJ
+TH
 Al
 Tr
 oW
@@ -33429,14 +33339,14 @@ WH
 Ce
 mv
 Uc
-bo
-lv
-OZ
-oW
 Al
-Ku
-Kh
-Ku
+dj
+zu
+MY
+dh
+Wt
+Ju
+Ee
 lD
 vZ
 lD
@@ -33641,13 +33551,13 @@ FI
 mi
 FI
 YX
-Al
-oW
-Al
+MO
 Al
 Al
 Al
-Wt
+Ds
+Pp
+Ms
 Al
 Al
 Al
@@ -33853,14 +33763,14 @@ vB
 rM
 Ee
 Ee
-Al
-Al
-mA
-sg
-Al
+Ee
+RD
+Nx
+BW
+hx
 hE
-Wt
-Bn
+Al
+Ee
 Ul
 li
 lD
@@ -34071,7 +33981,7 @@ Ee
 Ee
 Ee
 Ee
-Wt
+Al
 Ee
 Ee
 Ee
@@ -34871,22 +34781,22 @@ AM
 AM
 AM
 AM
-wF
-wF
-AM
-pz
-pz
-lQ
 AM
 AM
-pz
-pz
-lQ
 AM
 AM
-pz
-pz
-lQ
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 vB
@@ -35083,24 +34993,24 @@ AM
 AM
 AM
 AM
-wF
-wF
-AM
-pz
-pz
-pz
 AM
 AM
-pz
-pz
-pz
 AM
 AM
-pz
-pz
-pz
 AM
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -35115,8 +35025,8 @@ vB
 vB
 vB
 vB
-vB
-vB
+AM
+AM
 vB
 dH
 fQ
@@ -35296,23 +35206,23 @@ AM
 AM
 AM
 AM
-wF
-da
-pz
-pz
-pz
-da
-da
-pz
-pz
-pz
-da
-da
-pz
-pz
-pz
-da
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -35508,23 +35418,23 @@ AM
 AM
 AM
 AM
-wF
-Sh
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-Sh
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -35720,23 +35630,23 @@ AM
 AM
 AM
 AM
-Cj
-Sh
-yl
-up
-DU
-nk
-pR
-AU
-gD
-hu
-pR
-Sh
-lF
-pR
-Vz
-Sh
-Js
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -35751,7 +35661,7 @@ rM
 DN
 Ee
 EX
-dm
+vz
 NQ
 Ee
 rd
@@ -35932,23 +35842,23 @@ AM
 AM
 AM
 AM
-pR
-Zi
-mH
-mH
-mH
-JE
-pR
-ej
-lM
-ya
-pR
-TC
-xi
-pR
-GX
-Dc
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -35966,7 +35876,7 @@ JF
 Ee
 AG
 Ee
-qJ
+vz
 JQ
 Ee
 Yj
@@ -36144,23 +36054,23 @@ AM
 AM
 AM
 AM
-pR
-be
-mH
-mH
-fj
-vd
-pR
-pR
-IJ
-pR
-pR
-pR
-Sy
-pR
-jZ
-pR
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -36356,23 +36266,23 @@ AM
 AM
 AM
 AM
-pR
-qg
-KS
-KS
-qg
-Fs
-pR
-hR
-uz
-hR
-pR
-nj
-yn
-LZ
-AD
-JR
-jT
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -36568,23 +36478,23 @@ AM
 AM
 AM
 AM
-jT
-KH
-mH
-II
-mH
-nX
-pR
-eU
-SW
-Fr
-pR
-Wj
-my
-hR
-QA
-kS
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 Wr
 vB
 vB
@@ -36598,7 +36508,7 @@ DN
 oN
 Wp
 Ee
-yX
+rd
 Ee
 Bn
 Al
@@ -36780,23 +36690,23 @@ AM
 AM
 AM
 AM
-pR
-Ut
-mH
-mH
-dB
-Hi
-eV
-KK
-Ly
-wf
-yB
-mZ
-No
-eK
-qG
-Pd
-MK
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -36810,7 +36720,7 @@ DN
 cE
 Wp
 Ee
-yX
+kg
 Ee
 Al
 Al
@@ -36992,23 +36902,23 @@ AM
 AM
 AM
 AM
-pR
-HP
-mH
-mH
-mH
-ei
-pR
-hR
-HK
-hR
-Sh
-pR
-yN
-pR
-Yr
-pR
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -37204,23 +37114,23 @@ AM
 AM
 AM
 AM
-pR
-cO
-mH
-mH
-qe
-It
-pR
-fS
-Vf
-rK
-pR
-TC
-Uu
-pR
-oY
-ay
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -37416,23 +37326,23 @@ AM
 AM
 AM
 AM
-Bm
-Sh
-gJ
-pR
-hD
-RI
-pR
-WV
-AX
-qU
-pR
-Sh
-xU
-pR
-IB
-Sh
-af
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -37627,35 +37537,35 @@ AM
 AM
 AM
 AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+vB
+rM
+Ee
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+Ee
 wF
-hK
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-Ry
-pR
-pR
-pR
-pR
-pR
-pR
-pR
-AM
-AM
-AM
-AM
-AM
-AM
-AM
 wF
 wF
 wF
 DN
-Wp
+Al
 Wp
 Ee
 NA
@@ -37839,35 +37749,35 @@ AM
 AM
 AM
 AM
-wF
 AM
-pR
-JT
-jt
-Th
-Wg
-mL
-gt
-dv
-hR
-pR
-lN
-iQ
-iQ
-Tg
-pR
-wF
 AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
+rM
+Dk
 Ee
+Hm
+rh
+rN
+jO
+rN
+kR
+Ck
 Ee
-Ee
+Dk
 DN
 DN
 DN
 Ee
 Ee
-Ee
-Im
 Ee
 Ee
 Ee
@@ -38051,35 +37961,35 @@ AM
 AM
 AM
 AM
-wF
 AM
-pR
-sS
-hR
-hR
-hR
-Jp
-pN
-dv
-vF
-pR
-Zz
-iQ
-iQ
-KO
-pR
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
 Ee
 Ee
-xy
-cN
-xy
+LJ
 An
-jL
-fx
-AK
-uu
+DV
+HN
+DV
+HN
+DV
 An
+LJ
+Ee
+Bp
+SD
+ML
+Ci
+gw
 nn
 Ee
 zR
@@ -38265,33 +38175,33 @@ AM
 AM
 AM
 AM
-pR
-OL
-Tj
-cz
-Ux
-cu
-Ns
-Gh
-vp
-mV
-xe
-iQ
-iQ
-rw
-pR
-wF
-XU
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
+DN
+cO
+An
+DV
+Im
 id
-eH
-wY
-eH
-wY
-wY
-wY
-wY
-wY
-wY
+yz
+id
+id
+DV
+gG
+Ee
+hc
+An
+Vt
+An
+Vt
 wY
 Ee
 ML
@@ -38476,40 +38386,40 @@ AM
 AM
 AM
 AM
-Bm
-Sh
-iY
-Sh
-dp
-hR
-hR
-mn
-dv
-hR
-Le
-pR
-pR
-pR
-pR
-Sh
-jT
-XU
-wY
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
+DN
+DX
+lv
+DV
+Ee
+Ee
+Ee
+Ee
+Ee
+DV
 zo
-wY
-zo
-wY
-wY
-wY
-wY
-wY
-wY
+Ee
+LJ
+An
+An
+An
+An
 Qv
 Ee
 LJ
 An
 DV
-DV
+TN
 ik
 DV
 HO
@@ -38684,43 +38594,43 @@ vB
 vB
 vB
 vB
-vB
 AM
 AM
 AM
-pR
-MA
-Ff
-MM
-dw
-hR
-hR
-ng
-dv
-hR
-po
-KP
-YG
-UQ
-nv
-LM
-xO
-XU
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
+DN
+VF
 DV
 DV
+KL
+ri
+oS
+FV
+Ee
+EK
+DV
+dV
 DV
 DV
-DV
-DV
-DV
-DV
-DV
+OZ
+WT
 DV
 DV
 dV
 DV
 DV
-DV
+TN
 ni
 mp
 DV
@@ -38900,34 +38810,34 @@ AM
 AM
 AM
 AM
-pR
-pR
-pR
-Sh
-vJ
-gM
-gM
-BK
-dv
-hR
-TJ
-cY
-hR
-hR
-hR
-cY
-eM
-XU
-wY
-wY
-YD
-GP
-Bw
-os
-wY
-wY
-wY
-wY
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+rM
+DN
+EG
+Xq
+qm
+IX
+hX
+ZE
+dm
+Ee
+FN
+An
+Ee
+Gj
+An
+nu
+MS
+hz
 wY
 Ee
 Ln
@@ -39112,34 +39022,34 @@ AM
 AM
 AM
 AM
-ai
-kq
-Cg
-Bd
-XS
-Cs
-MJ
-qx
-jM
-Lc
-mO
-rE
-Lc
-Lc
-Lc
-WB
-zH
-XU
-wY
-wY
-Tm
-jo
-gg
-oh
-wY
-wY
-wY
-wY
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+DN
+ws
+Xq
+hZ
+Wk
+oD
+sv
+mx
+Ee
+DV
+An
+Ee
+Gj
+An
+nu
+MS
+Id
 wY
 Ee
 Ln
@@ -39324,39 +39234,39 @@ AM
 AM
 AM
 AM
-pR
-TV
-Cp
-Ir
-iH
-rR
-my
-ue
-CH
-xS
-lf
-dT
-hR
-hR
-hR
-QH
-eM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+DN
+Jc
+dk
+Yd
+Ee
+iT
 XU
-DV
-DV
-DV
-DV
-DV
-DV
-DV
-DV
-DV
-DV
+Bi
+Ee
+eV
+Iz
+KG
+Iz
+Iz
+Hh
+wt
+Iz
 DV
 dV
 DV
 DV
-DV
+TN
 Kv
 ci
 Tq
@@ -39536,40 +39446,40 @@ AM
 AM
 AM
 AM
-pR
-CL
-IY
-Vj
-qv
-pV
-IU
-oy
-js
-hR
-lf
-uz
-hR
-hR
-zp
-fv
-df
-XU
-wY
-wY
-wY
-wY
-wY
-wY
-wY
-wY
-wY
-wY
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+DN
+DX
+Xq
+Yd
+Ee
+Ee
+Ee
+Ee
+Ee
+Yd
+zo
+Ee
+LJ
+An
+Mj
+Mj
+Mj
 Qv
 Ee
 XL
 Mj
 DV
-DV
+TN
 DV
 DV
 HO
@@ -39748,34 +39658,34 @@ AM
 AM
 AM
 AM
-Bm
-Sh
-fh
-ey
-sq
-LU
-MQ
-zO
-dv
-LO
-Zc
-nu
-ES
-Bj
-AY
-Sh
-dE
-XU
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+DN
+wy
+An
+DT
+Ay
 SP
-et
+fn
+SP
+SP
 mU
-ZD
-Iw
-wZ
+gG
+Ee
+HO
 ty
-yi
-wY
-wY
+ty
+An
+An
 wY
 Ee
 ko
@@ -39815,9 +39725,9 @@ Ee
 Ee
 Ee
 Ee
+KV
 Ee
-Ee
-yx
+Hz
 Ee
 Ee
 Ee
@@ -39961,32 +39871,32 @@ AM
 AM
 AM
 AM
-pR
-ki
-pR
-pR
-pR
-pR
-pR
-Gi
-pR
-pR
-pR
-pR
-pR
-pR
-pR
 AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
 Ee
 Ee
-PM
-ns
-Mo
-vU
-Fi
+Hb
+UT
+mU
+Ag
+DV
+Ag
+DV
+An
+LJ
+Ee
+Bp
 is
-ff
-sI
+gw
+Ci
 An
 iN
 Ee
@@ -40001,9 +39911,9 @@ Ee
 jm
 FY
 fl
+DV
 Xv
-DV
-DV
+Xv
 Yd
 Xv
 ec
@@ -40023,14 +39933,14 @@ Wt
 ny
 An
 Ee
+xL
+gr
+Ee
+tt
+Ms
+Ms
+nM
 Al
-Al
-Al
-eF
-hc
-nK
-Wt
-cT
 Ee
 XR
 Wt
@@ -40171,31 +40081,31 @@ AM
 AM
 AM
 AM
-wF
-wF
-hK
-AP
-pR
-fE
-wz
-oC
-hR
-dv
-hR
-Pm
-dd
-yq
-pR
-hK
-wF
-wF
 AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+vB
+vB
+Dk
 Ee
+hK
+sB
+VC
+MR
+VC
+wI
+BJ
 Ee
+Dk
 Ee
-DN
-DN
-DN
 Ee
 Ee
 Ee
@@ -40208,7 +40118,6 @@ LR
 Ee
 Ee
 LR
-Ee
 Ee
 Ee
 Ee
@@ -40216,7 +40125,8 @@ Ee
 Ee
 tB
 Ee
-np
+Ee
+tB
 Ee
 Ee
 Ee
@@ -40235,13 +40145,13 @@ sR
 Ee
 Ee
 Ee
-WT
+Ee
+kS
+Ee
+Wt
 Al
-nK
-Ms
-Db
-hZ
-nM
+Al
+Al
 Al
 Ee
 hm
@@ -40384,45 +40294,35 @@ AM
 AM
 AM
 AM
-pR
-pR
-pR
-pR
-kI
-xa
-fd
-LB
-Wa
-qd
-AS
-pV
-VI
-pR
-pR
-pR
-pR
 AM
 AM
 AM
 AM
 AM
 AM
+AM
+AM
+AM
+AM
+vB
+vB
+vB
+Ee
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+Ee
+wF
 wF
 wF
 DN
 ru
 Ph
 Al
-Ee
-sF
-LR
-Al
-eF
-eF
-Al
-Ee
-vz
-qJ
 Ee
 eF
 Al
@@ -40435,24 +40335,34 @@ Ee
 gm
 Al
 Al
-Ik
-rN
 Al
+YF
 Mu
+Al
 Ee
-Hh
-XN
-eO
-le
-XN
-Hh
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
+Al
 Ee
-jO
-Al
-Fg
+Wt
 Al
 Al
-Sf
 Al
 Al
 Ee
@@ -40595,24 +40505,24 @@ AM
 AM
 AM
 AM
-vB
-pR
-wg
-zy
-pR
-nJ
-Cz
-Tz
-hR
-dv
-hR
-VQ
-BC
-cf
-JN
-TA
-ps
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -40626,16 +40536,6 @@ ST
 Yi
 gn
 Ee
-xL
-Ee
-cT
-Ag
-CU
-Gn
-Ee
-rd
-JQ
-Ee
 Ai
 Ms
 Ms
@@ -40648,25 +40548,35 @@ Nt
 Al
 Al
 yo
+bo
+bo
 gA
-gA
-hW
 Ee
+Rv
+Rv
+Al
+hR
+hR
 eO
-DV
-DV
-Yd
-DV
+Al
+Al
+hR
+hR
 eO
+Al
+Al
+hR
+hR
+eO
+Al
+Al
+Al
 Ee
-tW
-Al
-Fg
-Al
+Wt
+xy
 Al
 Al
-Al
-Al
+xy
 Ee
 zZ
 bU
@@ -40807,24 +40717,24 @@ AM
 AM
 AM
 AM
-vB
-mI
-rP
-jA
-oI
-qK
-qK
-qK
-hl
-jf
-nI
-qK
-qK
-qK
-bj
-jK
-vL
-pR
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -40837,16 +40747,6 @@ DN
 wn
 Yi
 Al
-Ee
-Ee
-Ee
-Ee
-Ee
-Gz
-Ee
-Ee
-Ee
-Gz
 Ee
 Wt
 Al
@@ -40864,21 +40764,31 @@ DV
 DV
 DV
 Ee
-eO
-Jb
-EG
-md
-Jb
-eO
-Ee
+Rv
 Rv
 Al
-VC
+hR
+hR
+hR
 Al
-Mc
+Al
+hR
+hR
+hR
 Al
 Al
+hR
+hR
+hR
 Al
+Rv
+Al
+Ee
+Wt
+eH
+Al
+Al
+eH
 Ee
 mE
 Wt
@@ -41019,24 +40929,24 @@ AM
 AM
 AM
 AM
-vB
-DH
-Sh
-Gv
-pR
-RE
-di
-Pk
-hR
-dv
-hR
-mj
-aP
-Bl
-pR
-BP
-Sh
-HQ
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -41049,16 +40959,6 @@ DN
 DN
 un
 MH
-Ee
-DF
-Ee
-Bn
-VF
-Al
-xz
-Ee
-uF
-yX
 Ee
 Wt
 Ee
@@ -41076,21 +40976,31 @@ qi
 DV
 mo
 Ee
-eO
-DV
+Al
+Rv
 Fn
-md
-DV
-eO
+hR
+hR
+hR
+Fn
+Fn
+hR
+hR
+hR
+Fn
+Fn
+hR
+pz
+hR
+Fn
+Rv
+Al
 Ee
+Wt
 hH
-XC
-Jc
-hH
-hH
-XC
-XC
-Rm
+Al
+Al
+mq
 Ee
 lr
 MW
@@ -41231,24 +41141,24 @@ AM
 AM
 AM
 AM
-vB
 AM
-pR
-pR
-pR
-qf
-sy
-Fq
-vi
-Ru
-Iy
-Ab
-Vo
-rb
-pR
-pR
-pR
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -41261,16 +41171,6 @@ wF
 DN
 Yi
 gn
-Ee
-yX
-tB
-Al
-Al
-Al
-Al
-ze
-yX
-yX
 Ee
 uY
 Ee
@@ -41288,20 +41188,30 @@ DV
 DV
 bq
 Ee
-eO
-Jb
-EG
-md
-Jb
-eO
-Ee
-yz
+Al
 Rv
-ur
+Sh
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+Sh
+Rv
 Al
-at
+Ee
+Wt
 Al
-at
+Al
+Al
 Ee
 Ee
 Ee
@@ -41443,24 +41353,24 @@ AM
 AM
 AM
 AM
-vB
-wF
-wF
-Wx
-pR
-vv
-uD
-BA
-ot
-CE
-kc
-wG
-Bt
-CD
-pR
-Wx
-wF
-wF
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 vB
 vB
 vB
@@ -41473,16 +41383,6 @@ rM
 DN
 DN
 Yi
-Ee
-PA
-Ee
-Al
-Gn
-OH
-Al
-Ee
-vM
-yX
 Ee
 ol
 hV
@@ -41500,20 +41400,30 @@ uw
 DV
 WA
 Ee
-MS
-DV
-EG
-qm
-DV
-bR
+Al
+Cj
+Sh
+yl
+QE
+DU
+nk
+pR
+AU
+gD
+hu
+pR
+Sh
+lF
+pR
+Vz
+Sh
+Js
+Al
 Ee
-xX
-DT
-mT
-HN
-Ny
-cA
-tW
+Wt
+Al
+Al
+Al
 Ee
 Ee
 vm
@@ -41659,17 +41569,17 @@ AM
 AM
 AM
 AM
-Wx
-Et
-Et
-Et
-Et
-Et
-Et
-Et
-Et
-Et
-Wx
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -41685,16 +41595,6 @@ rM
 rM
 DN
 Yi
-Ee
-Ee
-Ee
-Je
-Ee
-Ee
-Je
-Ee
-Ee
-Gz
 Ee
 vQ
 je
@@ -41712,24 +41612,34 @@ Yd
 DV
 WA
 KV
-eO
-Jb
-tt
-md
-Jb
-eO
-Ee
-JB
 Al
+pR
+Zi
+mH
+mH
+mH
+JE
+pR
+ej
+lM
+ya
+pR
+TC
+xi
+pR
+GX
+Dc
+pR
+Al
+Ee
 Wt
-Al
-Al
-Al
-Al
+Ee
+Us
 Ee
 Ee
 Ee
-vR
+Ee
+yx
 Ee
 Ee
 Ee
@@ -41898,16 +41808,6 @@ EO
 DN
 Lw
 Ee
-Ck
-qJ
-NQ
-Ee
-vz
-JQ
-Ee
-qJ
-JQ
-Ee
 UZ
 RB
 je
@@ -41924,32 +41824,42 @@ Yd
 DV
 WA
 Ee
-eO
-qi
-EG
-md
-DV
-eO
-Ee
-yE
 Al
+pR
+pq
+mH
+mH
+fj
+vd
+pR
+pR
+IJ
+pR
+pR
+pR
+Sy
+pR
+jZ
+pR
+pR
+Al
+Ee
 Wt
+Ee
+Al
+BU
+Rm
+Ee
+fQ
+bS
+gl
+fQ
+fQ
 ck
 Al
 RB
 Al
 Al
-Ee
-PV
-Wt
-iT
-QE
-wy
-Vt
-hx
-BX
-cT
-sB
 Ee
 eJ
 Em
@@ -42110,16 +42020,6 @@ rM
 DN
 DN
 Ee
-JF
-Ee
-kg
-Ee
-rd
-Ee
-Ee
-qJ
-Ee
-Ee
 Lo
 NE
 si
@@ -42136,31 +42036,41 @@ vh
 sn
 WA
 Ee
-MS
-Jb
-EG
-md
-Jb
-bR
+Al
+pR
+qg
+KS
+KS
+qg
+Fs
+pR
+hR
+uz
+hR
+pR
+nj
+yn
+LZ
+AD
+JR
+jT
+Al
+Ee
+Wt
 Ee
 Al
-Ay
-QU
+BU
+hO
+CA
+WY
+Rx
+gQ
+Wb
+cq
 wK
 zG
 wK
 wK
-Al
-Ee
-WY
-Rx
-hT
-Wb
-cq
-kE
-Al
-Al
-bF
 Oe
 IL
 RP
@@ -42322,16 +42232,6 @@ vB
 rM
 EO
 Dk
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
 Ii
 Dt
 RT
@@ -42348,31 +42248,41 @@ VX
 RF
 RF
 Ee
-eO
-DV
-EG
-md
-DV
-eO
+Al
+jT
+KH
+mH
+NW
+Jb
+nX
+pR
+eU
+SW
+Fr
+pR
+Wj
+my
+hR
+QA
+dq
+pR
+Al
+Ee
+Wt
 Ee
 Al
-tA
-ri
+BU
+Al
+Ee
+Yg
+fQ
+EQ
+Nm
+Cn
 GR
 hf
 RB
 Tk
-Al
-Ee
-Yg
-Al
-EQ
-Nm
-Al
-bF
-Al
-bF
-bF
 sT
 Ee
 rs
@@ -42533,17 +42443,7 @@ vB
 vB
 vB
 rM
-AM
-AM
-AM
-AM
-AM
-LW
-LW
-LW
-LW
-LW
-Ee
+YM
 pQ
 je
 je
@@ -42553,39 +42453,49 @@ ZT
 SU
 Ee
 Ee
-Ek
-TH
-Ee
-Vg
 Ee
 Ee
 Ee
-eO
-Jb
-EG
-NW
-Jb
-eO
+Ee
+Ee
+Ee
 Ee
 Al
-dq
+pR
+Ut
+mH
+mH
+dB
+Hi
+Ss
+KK
+Ly
+wf
+yB
+mZ
+No
+eK
+qG
+Pd
+MK
+Al
 Ij
+ed
+Ee
+Al
+BU
+hO
+Ny
+bS
+AT
+cU
+fQ
+Cn
 LW
 DQ
 LW
 tA
-hO
-Ee
-rh
-AT
-cU
-sm
-Cn
-EK
-hz
-mq
-xn
-bF
+AZ
 Ee
 RP
 RP
@@ -42737,15 +42647,6 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-AM
 KQ
 FI
 FI
@@ -42755,7 +42656,6 @@ FI
 FI
 FI
 mi
-FI
 uj
 Nv
 BO
@@ -42764,40 +42664,50 @@ je
 px
 rf
 Ee
-Al
-Al
-Al
-NX
-Wt
-KI
-tg
-Ee
-eO
-DV
-EG
-md
-DV
-eO
-Ee
-Al
 Co
-KL
+fQ
+sm
+sm
+sm
+sm
+nU
+Ee
+Al
+pR
+HP
+mH
+Jb
+mH
+PA
+pR
+hR
+HK
+hR
+Sh
+pR
+yN
+pR
+Yr
+pR
+pR
+Al
+Ee
+Wt
+Ee
+Al
+BU
+Al
+Ee
+bS
+ca
+fQ
+fQ
+da
 LW
 LW
 hf
 tM
-Al
-Ee
-SD
-ca
-fQ
-ca
-gQ
-fQ
-fQ
-wI
-bF
-qs
+oH
 Ee
 VG
 Ee
@@ -42949,15 +42859,6 @@ AM
 AM
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-AM
 Hw
 jJ
 dF
@@ -42967,7 +42868,6 @@ PI
 dF
 WH
 Zn
-mv
 FI
 IZ
 om
@@ -42976,39 +42876,49 @@ RT
 ry
 MZ
 Ee
-ZH
-Ds
+Lq
+np
+Kh
+kE
+DV
+DV
+sE
+tB
 Al
+pR
+IB
+mH
+mH
+qe
+It
+pR
+fS
+Vf
+rK
+pR
+TC
+Uu
+pR
+oY
+ay
+pR
 Al
-Pp
-ZI
-rx
 Ee
-eO
-Jb
-Fn
-md
-Jb
-eO
+ed
 Ee
 Al
-Hm
-OJ
-hf
-GR
-hf
-IR
-oW
-Ee
+BU
+hO
+ur
 pG
 rk
 fQ
-NC
+WU
 fQ
-fQ
-ca
-bF
-Ew
+nA
+GR
+hf
+IR
 Ee
 Ee
 Ps
@@ -43161,15 +43071,6 @@ AM
 AM
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-AM
 uO
 Qa
 Qa
@@ -43179,7 +43080,6 @@ Qa
 Qa
 VJ
 IF
-fQ
 Yj
 RB
 hf
@@ -43188,38 +43088,48 @@ je
 KZ
 Lp
 Ee
-Al
-Al
-Al
-Al
-Al
-Wt
-FV
-Ee
-eO
-DV
-EG
-md
-DV
-eO
-Ee
-Al
-tM
 Lq
-ed
-Aj
-wK
-Hm
+sg
+at
+at
+kE
+DV
+TG
+Ee
+Al
+Bm
+Sh
+gJ
+pR
+hD
+RI
+pR
+WV
+AX
+qU
+pR
+Sh
+xU
+pR
+Vg
+Sh
+af
 Al
 Ee
-cW
-eg
+ed
+Ee
+nK
+Al
+nK
+Ee
 fQ
-oF
 fQ
-CA
-ca
-zc
+fQ
+fQ
+fQ
+Al
+Gk
+GG
 Ee
 Ee
 Ee
@@ -43373,15 +43283,6 @@ AM
 AM
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-yF
-AM
 uO
 Qa
 IF
@@ -43391,7 +43292,6 @@ Qa
 Qa
 Qa
 Fk
-fQ
 Ze
 ht
 si
@@ -43400,37 +43300,47 @@ Gm
 je
 bW
 Ee
-ap
-Jl
-Vi
-Rl
-GI
+Lq
+Mq
+DV
+DV
+Kh
+DV
+md
+Ee
+Al
+hR
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+Ry
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+JB
+Al
+Ee
 Wt
-MU
 Ee
-eO
-DV
-DV
-Yd
-DV
-Us
+Fg
+Al
+Aj
 Ee
-Al
-Al
-sE
-Al
-MP
-RB
-Al
-Al
-Ee
-cW
+fQ
 gQ
 Ac
-fQ
+tW
 mw
 fQ
-EV
+fQ
 Ee
 Ee
 vB
@@ -43585,15 +43495,6 @@ AM
 AM
 vB
 vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-AM
 gU
 OX
 UK
@@ -43603,7 +43504,6 @@ UK
 UK
 Kt
 Ce
-mv
 Uc
 je
 je
@@ -43612,29 +43512,39 @@ je
 je
 YC
 Ee
+Lq
+Db
+DV
+kE
+at
+DV
+sE
+tB
 Al
-hp
-Bo
-gT
-Xz
-Wt
-LS
-Ee
-Lb
-eO
-eO
-le
-eO
-Bi
-Ee
+Al
+pR
+JT
+jt
+Th
+Wg
+mL
+gt
+dv
+hR
+pR
+lN
+iQ
+iQ
+Tg
+pR
 nr
 Al
+Ee
 Wt
+Ee
+Fg
 Al
-Al
-Al
-AZ
-Al
+Sf
 Ee
 Ee
 Ee
@@ -43797,15 +43707,6 @@ AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-yF
-yF
 BG
 FI
 FI
@@ -43815,7 +43716,6 @@ FI
 FI
 FI
 mi
-FI
 Ee
 JD
 dg
@@ -43824,25 +43724,35 @@ dg
 JD
 Ee
 Ee
-ap
-bG
-jB
-gT
-ul
-Wt
-FJ
+eg
+fQ
+vj
+vj
+vj
+vj
+XC
 Ee
-El
-VD
-Hz
-Xq
-kR
-Hz
-Ee
-Ee
+Al
+Al
+pR
+sS
+hR
+hR
+hR
+Jp
+pN
+dv
+vF
+pR
+Zz
+iQ
+iQ
+KO
+pR
+nr
+Al
 Ee
 vR
-Ee
 Ee
 Ee
 Ee
@@ -44017,17 +43927,7 @@ AM
 AM
 AM
 yF
-yF
-yF
-yF
-yF
-yF
-yF
-AM
-AM
-vB
-vB
-vB
+WO
 eI
 Ee
 Ee
@@ -44036,35 +43936,45 @@ Ee
 Ee
 Ee
 Ee
+Ee
+Ee
+gz
+gz
+gz
+gz
+gz
+gz
 Al
-dj
-zu
-MY
-dh
-Wt
-Ju
+Al
+pR
+OL
+Tj
+cz
+Ux
+cu
+Ns
+Gh
+vp
+mV
+xe
+iQ
+iQ
+rw
+pR
+nr
+Al
 Ee
-nA
-BJ
-MR
-pq
-BJ
-Ci
-Ee
-Ee
-PV
-Wt
-iT
-QE
-wy
-Vt
-hx
-BX
-cT
-sB
+An
+cN
+An
+An
+jL
+fx
+AK
+uu
 Ee
 eJ
-Hb
+Em
 Em
 UX
 Pn
@@ -44228,56 +44138,56 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+wF
+wF
 AM
-yF
-yF
-yF
-yF
-yF
-yF
-wF
-wF
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-Ee
+gz
+gz
+gz
+xX
+DF
+mT
+yE
+gz
 Al
-Al
-Al
-Al
-Al
-Wt
-cT
-Ee
-IX
-BJ
-BJ
-pq
-BJ
-TG
+Bm
+Sh
+iY
+Sh
+dp
+hR
+hR
+mn
+dv
+hR
+Le
+pR
+pR
+pR
+pR
+Sh
+jT
 Ee
 Ee
-WY
-nM
-hT
-Mt
-cq
-kE
-Al
-Al
-bF
-Oe
+wY
+wY
+wY
+wY
+wY
+wY
+wY
+wY
 IL
 RP
 Em
-KG
+RP
 UX
 Pn
 AM
@@ -44439,56 +44349,56 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+qF
+qF
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-rM
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-Ee
-MO
+gz
+gz
+up
+sF
+ei
+Lb
+gz
 Al
-Al
-Al
-Ds
-Pp
-Ms
-Gj
-Ss
-Ss
-BU
-gw
-BJ
-TG
-Ee
-Ee
-Yg
-Al
-EQ
-Al
-Al
-bF
-Al
-bF
-bF
-sT
+pR
+MA
+Ff
+MM
+dw
+hR
+hR
+ng
+dv
+hR
+po
+KP
+YG
+UQ
+nv
+LM
+xO
+cW
+DV
+DV
+DV
+DV
+DV
+DV
+DV
+DV
+DV
 Ee
 rs
-Hb
+Em
 Zo
 UX
 Pn
@@ -44651,57 +44561,57 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+qF
+WO
+WO
 AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-vB
-rM
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-Dk
-Ee
-RD
-Nx
-BW
-nU
-nU
-Mq
-Ee
-hX
-Wk
-TN
-Km
-fn
-Ee
-Ee
-Ee
-rh
-AT
-cU
-sm
-Cn
-EK
-hz
-mq
+EV
+VD
+mA
+le
+gz
+Al
+pR
+pR
+pR
+Sh
+vJ
+gM
+gM
+BK
+dv
+hR
+TJ
+cY
+hR
+hR
+hR
+cY
+eM
+cW
+YD
+GP
+Bw
+os
+wY
+wY
+wY
 xn
-bF
+Al
 Ee
-KG
 RP
-Hb
+RP
+Em
 UX
 Pn
 AM
@@ -44864,52 +44774,52 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-vB
-vB
-rM
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-Ee
-vB
-Ee
-SD
-ca
-fQ
-ca
-gQ
-fQ
-fQ
-iq
-bF
-qs
+wF
+wF
+EV
+rn
+El
+tB
+Al
+ai
+kq
+Cg
+Bd
+XS
+Cs
+MJ
+qx
+jM
+Lc
+mO
+rE
+Lc
+Lc
+Lc
+WB
+zH
+cW
+Tm
+jo
+gg
+oh
+wY
+wY
+wY
+Al
+oH
 Ee
 VG
 Ee
@@ -45072,54 +44982,54 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-vB
-vB
-rM
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-wF
-rM
-rM
-rM
-rM
-rM
-vB
-Ee
-pG
-rk
-fQ
-NC
-fQ
-fQ
-ca
-bF
+gz
+gz
+gz
+Al
+pR
+TV
+Cp
+Ir
+iH
+rR
+my
+ue
+CH
+xS
+lf
+dT
+hR
+hR
+hR
+QH
+eM
+cW
+DV
+DV
+DV
+DV
+DV
+DV
+DV
 Ew
 Ee
 Ee
@@ -45283,59 +45193,59 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-vB
-vB
-vB
-rM
-rM
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-vB
-rM
-EO
-rM
-vB
-vB
-vB
-vB
-yF
-yF
-Ee
+iq
+Al
+pR
+CL
+IY
+Vj
+qv
+pV
+IU
+oy
+js
+hR
+lf
+uz
+hR
+hR
+zp
+fv
+df
 cW
-eg
-fQ
-oF
-fQ
-CA
-ca
+PM
+ZD
+yi
+et
+Iw
+wZ
 zc
-Ee
-Ee
-Ee
-Ee
+gz
+gz
+gz
+gz
 gx
 Nl
 DG
@@ -45495,63 +45405,63 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-Qq
-wF
-wF
-AM
-AM
-AM
-AM
-yF
-yF
-yF
-Ee
-cW
-gQ
-Ac
-fQ
-mw
-fQ
-EV
-Ee
-Ee
+iq
+Al
+Bm
+Sh
+fh
+ey
+sq
+LU
+MQ
+zO
+dv
+LO
+Zc
+OJ
+ES
+Bj
+AY
+Sh
+dE
+gz
+ns
+Mo
+ff
+sI
+vU
+Fi
+gz
+gz
 vB
 AM
-Ee
-Ee
-Ee
-Ee
-eI
+gz
+gz
+gz
+gz
+Ik
 AM
 vB
 AM
@@ -45708,54 +45618,54 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-yF
-yF
-yF
-Ee
-Ee
-Ee
-Ee
-fI
-fI
-Ee
-Ee
-Dk
+iq
+Al
+Al
+pR
+ki
+pR
+pR
+pR
+pR
+pR
+Gi
+pR
+pR
+pR
+pR
+pR
+pR
+pR
+Al
+gz
+gz
+gz
+EV
+EV
+gz
+gz
+II
 vB
 vB
 vB
@@ -45919,48 +45829,48 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-yF
-yF
-yF
-yF
-yF
+iq
+Rv
+Rv
+bR
+AP
+pR
+fE
+wz
+oC
+hR
+dv
+hR
+Pm
+dd
+yq
+pR
+Rv
+Rv
+Rv
+iq
 yF
 yF
 yF
@@ -46129,50 +46039,50 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-yF
-yF
-yF
-yF
+iq
+Al
+pR
+pR
+pR
+pR
+kI
+xa
+fd
+LB
+Wa
+qd
+AS
+pV
+VI
+pR
+pR
+pR
+pR
+iq
 yF
 yF
 yF
@@ -46338,53 +46248,53 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-yF
-yF
-yF
+iq
+Al
+pR
+wg
+zy
+pR
+nJ
+Cz
+Tz
+hR
+dv
+hR
+VQ
+BC
+cf
+JN
+TA
+ps
+pR
+iq
 yF
 yF
 yF
@@ -46550,53 +46460,53 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
+iq
+Al
+mI
+rP
+jA
+oI
+qK
+qK
+qK
+hl
+jf
+nI
+qK
+qK
+qK
+bj
+jK
+vL
+pR
+iq
 AM
 wF
 wF
@@ -46759,56 +46669,56 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
+iq
+Al
+DH
+Sh
+Gv
+pR
+RE
+di
+Pk
+hR
+dv
+hR
+mj
+aP
+Bl
+pR
+BP
+Sh
+HQ
+iq
 wF
 wF
 AM
@@ -46971,56 +46881,56 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
+lQ
+Al
+sN
+pR
+pR
+pR
+qf
+sy
+Fq
+vi
+Ru
+Iy
+Ab
+Vo
+rb
+pR
+pR
+pR
+be
+lQ
 wF
 AM
 AM
@@ -47183,56 +47093,56 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-AM
-AM
-AM
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-wF
-wF
-AM
+lQ
+sN
+be
+be
+Wx
+pR
+vv
+uD
+BA
+ot
+CE
+kc
+wG
+Bt
+CD
+pR
+Wx
+be
+be
+iq
 AM
 AM
 AM
@@ -47399,29 +47309,6 @@ AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
 WO
 WO
 WO
@@ -47429,22 +47316,45 @@ WO
 WO
 WO
 WO
-wF
-wF
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-wF
-wF
-AM
-AM
-AM
+iq
+sN
+sN
+sN
+sN
+Wx
+Et
+Et
+Et
+Et
+Et
+Et
+Et
+Et
+Et
+Wx
+sN
+sN
+sN
+iq
 AM
 AM
 AM
@@ -47619,21 +47529,6 @@ AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
 WO
 WO
 WO
@@ -47641,22 +47536,37 @@ WO
 WO
 WO
 WO
-wF
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
-AM
-AM
-AM
-AM
-AM
-wF
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
+iq
+NC
+sN
+sN
+Ql
+sN
+sN
+NC
+Al
+Al
+Al
+Al
+NC
+sN
+sN
+Ql
+sN
+sN
+NC
+iq
 AM
 AM
 AM
@@ -47831,22 +47741,12 @@ AM
 AM
 AM
 AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
-AM
+WO
+WO
+WO
+WO
+WO
+WO
 WO
 WO
 WO
@@ -47859,16 +47759,26 @@ WO
 WO
 WO
 AM
-wF
-wF
-wF
-AM
-AM
-AM
-AM
-AM
-AM
-AM
+iq
+iq
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+QU
+iq
 AM
 AM
 AM
@@ -48046,6 +47956,20 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
 AM
 AM
@@ -48055,23 +47979,9 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
 AM
 AM
 AM
@@ -48257,6 +48167,19 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
 AM
 AM
@@ -48266,24 +48189,11 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -48469,6 +48379,20 @@ AM
 AM
 AM
 AM
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
+WO
 AM
 AM
 AM
@@ -48478,27 +48402,13 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -48681,6 +48591,8 @@ AM
 AM
 AM
 AM
+WO
+WO
 AM
 AM
 AM
@@ -48693,24 +48605,22 @@ AM
 AM
 WO
 WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -48902,27 +48812,27 @@ AM
 AM
 AM
 AM
+AM
+AM
+AM
 WO
 WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -49112,29 +49022,29 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -49303,6 +49213,9 @@ AM
 AM
 AM
 AM
+vB
+vB
+vB
 AM
 AM
 AM
@@ -49321,32 +49234,29 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -49533,32 +49443,32 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -49742,35 +49652,35 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -49954,35 +49864,35 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -50166,35 +50076,35 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -50382,31 +50292,31 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -50602,23 +50512,23 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -50814,23 +50724,23 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -51029,20 +50939,20 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -51240,19 +51150,19 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -51452,20 +51362,20 @@ AM
 AM
 AM
 AM
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -51643,9 +51553,6 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
 AM
 AM
 AM
@@ -51664,8 +51571,6 @@ AM
 AM
 AM
 AM
-WO
-WO
 AM
 AM
 AM
@@ -51676,8 +51581,13 @@ AM
 AM
 AM
 AM
-WO
-WO
+AM
+AM
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -51855,9 +51765,6 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
 AM
 AM
 AM
@@ -51888,8 +51795,11 @@ AM
 AM
 AM
 AM
-WO
-WO
+AM
+AM
+AM
+AM
+AM
 AM
 AM
 AM
@@ -52067,9 +51977,9 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -52279,9 +52189,9 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -52491,9 +52401,9 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -52703,9 +52613,9 @@ vB
 vB
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -52915,9 +52825,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -53127,9 +53037,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -53339,9 +53249,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -53551,9 +53461,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -53763,9 +53673,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -53975,9 +53885,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -54187,9 +54097,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
@@ -54399,9 +54309,9 @@ WO
 WO
 vB
 vB
-vB
-vB
-vB
+AM
+AM
+AM
 AM
 AM
 AM
