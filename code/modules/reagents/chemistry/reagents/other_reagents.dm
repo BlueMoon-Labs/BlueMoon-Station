@@ -290,7 +290,7 @@
 /datum/reagent/water
 	name = "Water"
 	description = "An ubiquitous chemical substance that is composed of hydrogen and oxygen."
-	color = "#87D3F877" // rgb: 170, 170, 170, 77 (alpha)
+	color = "#87D3F877" // rgb: 135, 211, 248, 77 (alpha)
 	taste_description = "water"
 	chemical_flags = REAGENT_ALL_PROCESS
 	overdose_threshold = 150 //Imagine drinking a gallon of water
