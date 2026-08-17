@@ -1193,6 +1193,18 @@ SUBSYSTEM_DEF(air)
 		for(var/turf/open/neighbor as anything in planetary_turf.atmos_adjacent_turfs)
 			if(neighbor.initial_gas_mix == planetary_turf.initial_gas_mix)
 				continue
+			// Небо к небу и небо к космосу process_cell пропускает БЕЗУСЛОВНО
+			// (LINDA_turf_tile: пара двух шаблонов вечно регенерировала бы градиент,
+			// а вакуум планетарка просто игнорирует). Будить турф ради такой пары
+			// значит гонять его через фазу турфов ровно один раз, чтобы он там
+			// ничего не сделал и уснул: в раунде 10003 это 460 из 1366 записей
+			// стартового снимка, то есть треть списка, который лог называет
+			// "чинится на карте". Чинится он тут.
+			if(neighbor.planetary_atmos)
+				continue
+			var/datum/gas_mixture/neighbor_air = neighbor.air
+			if(!neighbor_air || neighbor_air.gc_share)
+				continue
 			// Смена ссылки газ не двигала: цикл на сверку нужен, окно отдыха - нет.
 			add_to_active(planetary_turf, FALSE, reset_stall = FALSE)
 			break
