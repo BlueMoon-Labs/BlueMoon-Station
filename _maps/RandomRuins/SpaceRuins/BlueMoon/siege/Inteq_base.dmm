@@ -938,7 +938,6 @@
 	req_one_access_txt = "152";
 	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
 	},
-/obj/item/inteq/uplink/radio/nuclear,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "cP" = (
@@ -9283,12 +9282,6 @@
 /obj/structure/hellgate_factory/roboticarm,
 /turf/open/floor/plating,
 /area/InteQ_ship)
-"AF" = (
-/obj/item/ammo_casing/spent,
-/obj/item/ammo_casing/spent,
-/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares,
-/turf/open/floor/mineral/plastitanium,
-/area/InteQ_ship/ship2)
 "AG" = (
 /obj/structure/sign/flag/inteq{
 	pixel_y = 32
@@ -29037,7 +29030,7 @@ AM
 AM
 vr
 Dh
-AF
+IO
 iw
 dP
 OV
