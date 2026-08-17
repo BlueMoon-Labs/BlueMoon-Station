@@ -6,8 +6,8 @@ import { MainContent } from './MainContent';
 export const MobInteraction = () => {
   return (
     <Window
-      width={430}
-      height={700}
+      width={600}
+      height={800}
       resizable>
       <Window.Content>
         <Stack vertical fill>

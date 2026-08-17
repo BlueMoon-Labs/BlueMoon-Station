@@ -61,6 +61,10 @@ multiple modular subtrees with behaviors
 	// Movement related things here
 	///Reference to the movement datum we use. Is a type on initialize but becomes a ref afterwards.
 	var/datum/ai_movement/ai_movement = /datum/ai_movement/dumb
+	///Активный мув-луп этого контроллера на SSai_movement. Держим прямую ссылку,
+	///потому что путь до лупа через pawn.move_packet пропадает вместе с пауном
+	///(харддел нулит ссылку), а сам луп при этом остаётся жить в подсистеме.
+	var/datum/move_loop/active_move_loop
 	///Delay between movements. This is on the controller so we can keep the movement datum singleton
 	var/movement_delay = 0.1 SECONDS
 	///Кулдаун перепрокладки JPS-пути (настраивается профилем, спека: 1.5-2 c)
@@ -125,8 +129,7 @@ multiple modular subtrees with behaviors
 		SSai_controllers.currentrun -= src
 	our_cells = null
 	set_movement_target(type, null)
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 	return ..()
 
 ///Whether this pawn has stable voluntary movement in vacuum and can survive
@@ -441,6 +444,7 @@ multiple modular subtrees with behaviors
 		release_pack_focus()
 		set_ai_status(AI_STATUS_OFF)
 		remove_from_unplanned_controllers()
+		stop_ai_movement()
 		if(destroy)
 			qdel(src)
 		return
@@ -452,8 +456,7 @@ multiple modular subtrees with behaviors
 	clear_able_to_run()
 	if(our_cells)
 		clear_tracked_cells()
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf && GLOB.ai_controllers_by_zlevel.len >= pawn_turf.z)
 		GLOB.ai_controllers_by_zlevel[pawn_turf.z] -= src
@@ -491,6 +494,11 @@ multiple modular subtrees with behaviors
 
 ///Runs any actions that are currently running
 /datum/ai_controller/process(delta_time)
+	//Харддел уносит пауна без единого сигнала - ссылка нулится молча, и контроллер
+	//продолжает гонять behavior'ы по null-пауну каждый тик до самого ребута.
+	if(QDELETED(pawn))
+		UnpossessPawn(FALSE)
+		return
 	for(var/datum/ai_behavior/current_behavior as anything in current_behaviors)
 
 		// Convert the current behaviour action cooldown to realtime seconds from deciseconds
@@ -678,8 +686,25 @@ multiple modular subtrees with behaviors
 	//лежит ТИПОПУТЬ, а не инстанс, и moving_controllers у него - разделяемый список-дефолт типа.
 	if(!istype(ai_movement))
 		return
-	if(ai_movement.moving_controllers[src])
+	//живой луп без записи в moving_controllers - тоже повод: finish_action успевает
+	//снять запись до того, как остановка лупа сорвётся на харддельнутом пауне
+	if(ai_movement.moving_controllers[src] || active_move_loop)
 		ai_movement.stop_moving_towards(src)
+
+///Запомнить созданный мув-луп. Ссылка живёт до qdel лупа и позволяет остановить
+///движение, когда pawn.move_packet уже недоступен (паун харддельнут).
+/datum/ai_controller/proc/track_move_loop(datum/move_loop/loop)
+	if(active_move_loop == loop)
+		return
+	if(active_move_loop)
+		UnregisterSignal(active_move_loop, COMSIG_PARENT_QDELETING)
+	active_move_loop = loop
+	RegisterSignal(loop, COMSIG_PARENT_QDELETING, PROC_REF(on_move_loop_qdeleting))
+
+/datum/ai_controller/proc/on_move_loop_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == active_move_loop)
+		active_move_loop = null
 
 /datum/ai_controller/proc/PauseAi(time)
 	paused_until = world.time + time
@@ -848,8 +873,7 @@ multiple modular subtrees with behaviors
 	release_pack_focus()
 	set_ai_status(AI_STATUS_OFF)
 	set_movement_target(type, null)
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 
 /// Use this proc to define how your controller defines what access the pawn has for the sake of pathfinding, likely pointing to whatever ID slot is relevant
 /datum/ai_controller/proc/get_access()

@@ -198,7 +198,9 @@
 		var/chem_name = R.name
 		if(istype(R, /datum/reagent/medicine/salglu_solution))
 			chem_name = "Saline-Glucose"
-		data["chems"] += list(list("name" = chem_name, "id" = R.type, "allowed" = chem_allowed(chem)))
+		data["chems"] += list(list("name" = chem_name, "id" = R.type, "allowed" = chem_allowed(chem),
+									"overdose_threshold" = R.overdose_threshold ? R.overdose_threshold : null,
+									"addiction_threshold" = R.addiction_threshold ? R.addiction_threshold : null))
 
 	data["occupant"] = list()
 	var/mob/living/mob_occupant = occupant

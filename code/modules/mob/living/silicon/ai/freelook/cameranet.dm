@@ -7,7 +7,7 @@
 GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 /datum/cameranet
-	var/name = "Camera Net" // Name to show for VV and stat()
+	var/name = "Camera Net" // Name to show in VV.
 
 	// The cameras on the map, no matter if they work or not. Updated in obj/machinery/camera.dm by New() and Del().
 	var/list/cameras = list()
@@ -23,9 +23,6 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 	/// world.time сборки кэша: c_tag/network мутируют в десятках мест
 	/// (переименование боргов и т.п.), все не перехватить - TTL страхует
 	var/camera_lookup_built_at = -1
-
-	// The object used for the clickable stat() button.
-	var/obj/effect/statclick/statclick
 
 	/// Шаблон образа камерной статики: клонируется на каждый скрытый от камер
 	/// турф, копия уезжает в client.images только тому, кто смотрит через
@@ -224,9 +221,3 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 		if(chunk.visibleTurfs[position])
 			return TRUE
 	return FALSE
-
-/datum/cameranet/proc/stat_entry()
-	if(!statclick)
-		statclick = new/obj/effect/statclick/debug(null, "Initializing...", src)
-
-	stat(name, statclick.update("Cameras: [GLOB.cameranet.cameras.len] | Chunks: [GLOB.cameranet.chunks.len]"))

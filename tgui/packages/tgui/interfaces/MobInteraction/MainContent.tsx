@@ -5,7 +5,6 @@ import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../compone
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
-  CustomInteractionsTab,
   GenitalTab,
   InteractionsTab,
 } from './tabs';
@@ -46,6 +45,13 @@ export const MainContent = (props) => {
               }>
               Interactions
             </Tabs.Tab>
+            <Tabs.Tab
+              className="Tab--custom"
+              icon="sliders"
+              color="yellow"
+              onClick={() => act('open_customs_window')}>
+              Custom
+            </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 1} onClick={() => setTabIndex(1)}>
               Genital Options
             </Tabs.Tab>
@@ -54,9 +60,6 @@ export const MainContent = (props) => {
             </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 3} onClick={() => setTabIndex(3)}>
               Preferences
-            </Tabs.Tab>
-            <Tabs.Tab selected={tabIndex === 4} onClick={() => setTabIndex(4)}>
-              Custom
             </Tabs.Tab>
           </Tabs>
         </Stack.Item>
@@ -90,8 +93,6 @@ export const MainContent = (props) => {
                   return <CharacterPrefsTab />;
                 case 3:
                   return <ContentPreferencesTab />;
-                case 4:
-                  return <CustomInteractionsTab />;
               }
             })()}
           </Section>

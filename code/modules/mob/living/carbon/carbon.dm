@@ -343,6 +343,8 @@
 	. = FALSE
 	if(!buckled)
 		return
+	if(istype(buckled, /obj/structure/bed/nest))
+		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
 		// too soon.
 		var/buckle_cd = 600
@@ -751,6 +753,9 @@
 
 	if(see_override)
 		see_invisible = see_override
+	if(is_hilbert_hotel_zlevel(z))
+		sight = initial(sight)
+
 	. = ..()
 
 

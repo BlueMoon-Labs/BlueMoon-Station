@@ -6,7 +6,7 @@
 	description = "What makes us tick."	//the MC, silly!
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("base")
-	design_ids = list("medicalkit", "hypokit", "chem_heater", "chem_master", "chem_dispenser", "sleeper", "vr_sleeper", "pandemic", "defibrillator", "defibmount", "operating", "soda_dispenser", "beer_dispenser", "healthanalyzer", "blood_bag", "bloodbankgen", "telescopiciv", "medspray","genescanner","chem_pack", "portable_chem_mixer", "surgicalcase")
+	design_ids = list("medicalkit", "hypokit", "chem_heater", "chem_master", "chem_dispenser", "sleeper", "vr_sleeper", "pandemic", "defibrillator", "defibmount", "operating", "soda_dispenser", "beer_dispenser", "healthanalyzer", "blood_bag", "bloodbankgen", "telescopiciv", "medspray","genescanner","chem_pack", "portable_chem_mixer", "surgicalcase", "normal_roller_bed", "heavy_roller_bed")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/adv_biotech

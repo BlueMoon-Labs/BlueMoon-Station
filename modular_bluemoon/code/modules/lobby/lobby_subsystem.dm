@@ -62,8 +62,7 @@ SUBSYSTEM_DEF(title_bm)
 
 	_build_static_html()
 
-	initialized = TRUE
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/title_bm/Destroy()
 	UnregisterSignal(SSticker, list(COMSIG_TICKER_ENTER_PREGAME, COMSIG_TICKER_ENTER_SETTING_UP))

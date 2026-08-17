@@ -229,9 +229,12 @@
 		mod = new mod_type(src)
 	if(storage_type)
 		storage = new storage_type(src)
-	if(mapload && state_open)
-		addtimer(CALLBACK(src, PROC_REF(take_mapload_contents)), 0)
 	update_icon()
+
+/obj/machinery/suit_storage_unit/LateInitialize()
+	. = ..()
+	if(state_open)
+		take_mapload_contents()
 
 /obj/machinery/suit_storage_unit/Destroy()
 	QDEL_NULL(suit)

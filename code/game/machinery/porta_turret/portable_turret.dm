@@ -545,9 +545,14 @@ DEFINE_BITFIELD(turret_flags, list(
 			var/obj/vehicle/sealed/mecha/mech = A
 			for(var/O in mech.occupants)
 				var/mob/living/occupant = O
-				if(!in_faction(occupant)) //If there is a user and they're not in our faction
+				if(in_faction(occupant))
+					continue
+				// assess_perp is human-only (get_id_name / records); non-humans use anomalous rules
+				if(ishuman(occupant))
 					if(assess_perp(occupant) >= 4)
 						targets += mech
+				else if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)
+					targets += mech
 
 	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
 		for(var/obj/structure/blob/B in view(scan_range, base))

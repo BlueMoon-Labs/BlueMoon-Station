@@ -10,7 +10,9 @@
 	range = 15
 
 /obj/item/projectile/bullet/flamethrower/on_hit(atom/target, blocked = FALSE)
-	. = call(/obj/item/projectile/proc/on_hit)(src, target, blocked)
+	//call(путь_прока)() зовёт прок как глобальный: src внутри null, а сам снаряд
+	//уезжает в первый аргумент. Родитель падал на fired_from каждым попаданием
+	. = ..()
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		M.adjust_fire_stacks(fire_stacks)

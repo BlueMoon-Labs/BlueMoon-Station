@@ -440,10 +440,19 @@
 
 	return data
 
+/datum/component/personal_crafting/ui_assets(mob/user)
+	return list(
+		get_asset_datum(/datum/asset/spritesheet_batched/crafting),
+	)
+
 /datum/component/personal_crafting/ui_static_data(mob/user)
 	var/list/data = list()
 
 	data["mode"] = mode
+
+	// Лист уже собран: open() отдаёт ассеты интерфейса до того, как соберёт нагрузку,
+	// а send() внутри дожидается готовности листа.
+	var/datum/asset/spritesheet_batched/crafting/sheet = get_asset_datum(/datum/asset/spritesheet_batched/crafting)
 
 	var/list/crafting_recipes = list()
 	for(var/rec in GLOB.crafting_recipes)
@@ -459,12 +468,12 @@
 			crafting_recipes[R.category] = list()
 
 		if(R.subcategory == CAT_NONE)
-			crafting_recipes[R.category] += list(build_recipe_data(R))
+			crafting_recipes[R.category] += list(build_recipe_data(R, sheet))
 		else
 			if(isnull(crafting_recipes[R.category][R.subcategory]))
 				crafting_recipes[R.category][R.subcategory] = list()
 				crafting_recipes[R.category]["has_subcats"] = TRUE
-			crafting_recipes[R.category][R.subcategory] += list(build_recipe_data(R))
+			crafting_recipes[R.category][R.subcategory] += list(build_recipe_data(R, sheet))
 
 	data["crafting_recipes"] = crafting_recipes
 	return data
@@ -572,7 +581,7 @@
 		return 1
 	return min(possible_counts)
 
-/datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R)
+/datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R, datum/asset/spritesheet_batched/crafting/sheet)
 	var/list/data = list()
 	data["name"] = R.name
 	data["desc"] = R.desc
@@ -582,7 +591,7 @@
 	data["complexity"] = R.complexity
 	data["mass_craftable"] = R.mass_craftable
 	if(R.result)
-		data["icon_data"] = get_cached_item_icon(R.result)
+		data["icon"] = sheet.icon_class_name(crafting_sprite_id(R.result))
 	var/req_text = ""
 	var/tool_text = ""
 	var/list/reqs_detail = list()
@@ -595,7 +604,7 @@
 		var/list/entry = list()
 		entry["name"] = initial(A.name)
 		entry["amount"] = R.reqs[A]
-		entry["icon_data"] = get_cached_item_icon(A)
+		entry["icon"] = sheet.icon_class_name(crafting_sprite_id(A))
 		reqs_detail += list(entry)
 	req_text = replacetext(req_text,",","",-1)
 	data["req_text"] = req_text
@@ -606,7 +615,7 @@
 		var/list/entry = list()
 		entry["name"] = initial(A.name)
 		entry["amount"] = R.chem_catalysts[A]
-		entry["icon_data"] = get_cached_item_icon(A)
+		entry["icon"] = sheet.icon_class_name(crafting_sprite_id(A))
 		catalysts_detail += list(entry)
 	data["catalysts_detail"] = catalysts_detail
 
@@ -616,7 +625,7 @@
 			tool_text += " [initial(b.name)],"
 			var/list/entry = list()
 			entry["name"] = initial(b.name)
-			entry["icon_data"] = get_cached_item_icon(b)
+			entry["icon"] = sheet.icon_class_name(crafting_sprite_id(b))
 			tools_detail += list(entry)
 		else
 			tool_text += " [a],"
@@ -626,20 +635,6 @@
 	data["tools_detail"] = tools_detail
 
 	return data
-
-/proc/get_cached_item_icon(atom/path)
-	var/static/list/icon_cache = list()
-	var/key = "[path]"
-	if(icon_cache[key])
-		return icon_cache[key]
-	var/icon_file = initial(path.icon)
-	if(!icon_file)
-		return null
-	var/icon/I = icon(icon_file, initial(path.icon_state), SOUTH, 1)
-	if(!isicon(I))
-		return null
-	. = icon2base64(I)
-	icon_cache[key] = .
 
 //Mind helpers
 

@@ -105,6 +105,7 @@
 				/obj/item/assembly/signaler = 3,
 				/obj/item/assembly/timer = 3,
 				/obj/item/fleshlight = 4,
+				/obj/item/borg/upgrade/dominatrix_module = 6,
 				/obj/item/storage/box/portallight = 4,
 				/obj/item/portallight = 4,
 				/obj/item/clothing/underwear/briefs/panties/portalpanties = 4,
@@ -172,6 +173,7 @@
 			"name" = "Miscellaneous",
 			"icon" = "question",
 			"products" = list(
+				/obj/item/love_offer = 32,
 				/obj/item/fancy_pillow = 32,
 				/obj/item/storage/daki = 4,
 				/obj/item/clothing/underwear/briefs/panties/maebari = 3,

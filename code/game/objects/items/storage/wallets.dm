@@ -62,6 +62,7 @@
 		/obj/item/clothing/accessory/hateredsoul_dogtag,
 		/obj/item/clothing/accessory/SATTdogtag,
 		/obj/item/clothing/accessory/indiv_number,
+		/obj/item/love_offer,
 		))
 	STR.cant_hold = wallet_cant_hold
 	STR.can_hold = wallet_can_hold

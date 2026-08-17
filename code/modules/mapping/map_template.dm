@@ -33,7 +33,20 @@
 		zdepth = bounds[MAP_MAXZ] - bounds[MAP_MINZ] + 1
 		if(force_cache || keep_cached_map)
 			cached_map = parsed
+			parsed.template_host = src
 	return bounds
+
+/// Records only the part of a map-loading phase during which the game clock did not
+/// advance. A CHECK_TICK-heavy load may take seconds of wall time without freezing
+/// clients; that healthy yielding must not be labeled as a synchronous stall.
+/datum/map_template/proc/record_synchronous_map_phase(kind, started_ms, started_world_time)
+	if(!SStick_spikes || isnull(started_ms))
+		return
+	var/wall_ms = max(SStick_spikes.now_ms() - started_ms, 0)
+	var/game_clock_ms = DS2MS(max(world.time - started_world_time, 0))
+	var/stall_ms = ping_server_component(wall_ms, game_clock_ms)
+	if(stall_ms >= SStick_spikes.slow_work_threshold_ms)
+		SStick_spikes.record_slow_work(kind, "[name] ([mappath]), wall [round(wall_ms, 0.01)]ms", round(stall_ms, 0.01))
 
 /datum/map_template/proc/get_parsed_bounds()
 	return preload_size(mappath)
@@ -191,12 +204,25 @@
 	// Accept cached maps, but don't save them automatically - we don't want
 	// ruins clogging up memory for the whole round.
 	var/is_cached = cached_map
-	var/datum/parsed_map/parsed = is_cached || new(file(mappath))
+	var/datum/parsed_map/parsed = is_cached
+	if(!parsed)
+		// Sampled only when the parse actually runs: now_ms() is a foreign call,
+		// and the cached path would take then discard both samples on every load.
+		var/parse_started_ms = SStick_spikes?.now_ms()
+		var/parse_started_world_time = world.time
+		parsed = new(file(mappath))
+		record_synchronous_map_phase("map parse", parse_started_ms, parse_started_world_time)
+	parsed.template_host = src
 
 	var/list/turf_blacklist = list()
 	update_blacklist(T, turf_blacklist)
 
 	cached_map = (force_cache || keep_cached_map) ? parsed : is_cached
+	if(!parsed.modelCache)
+		var/cache_started_ms = SStick_spikes?.now_ms()
+		var/cache_started_world_time = world.time
+		parsed.build_cache()
+		record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
 	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
 		return
 	var/list/bounds = parsed.bounds

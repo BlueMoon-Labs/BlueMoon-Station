@@ -352,7 +352,7 @@
 	if(HAS_TRAIT(I, TRAIT_NODROP) && !force)
 		return FALSE
 
-	I.randomize_pixel_position()
+	I.randomize_pixel_position(dropped_by = src)
 
 	var/hand_index = get_held_index_of_item(I)
 	if(hand_index)
