@@ -105,11 +105,14 @@
 
 	var/datum/excited_group/group = new
 	group.add_turf(subject)
-	group.breakdown_cooldown = 5
-	group.dismantle_cooldown = 3
+	// Любое ненулевое значение ниже потолка: проверяется, что тик очага его не
+	// трогает, а не конкретное число.
+	var/breakdown_before_tick = EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING - 1
+	group.breakdown_cooldown = breakdown_before_tick
+	group.dismantle_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES - 1
 
 	subject.eg_hotspot_tick()
-	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 5, "тик очага не должен обнулять breakdown_cooldown - иначе волатильный потолок недостижим")
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, breakdown_before_tick, "тик очага не должен обнулять breakdown_cooldown - иначе волатильный потолок недостижим")
 	TEST_ASSERT_EQUAL(group.dismantle_cooldown, 0, "тик очага обязан держать окно расформирования открытым")
 	TEST_ASSERT(group.turf_reactions & VOLATILE_REACTION, "тик очага обязан пометить группу волатильной")
 	TEST_ASSERT_EQUAL(subject.atmos_cooldown, 0, "тик очага обязан снимать индивидуальный отдых с горящего турфа")

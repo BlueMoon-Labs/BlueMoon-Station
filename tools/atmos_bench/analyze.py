@@ -47,6 +47,12 @@ def load(path):
                 # the last line is half-written. Everything before it is still good
                 # data and is the only record of what the timed-out run managed to
                 # do - dying on a traceback here would make it unreachable.
+                rec = None
+            # A truncated append can also leave behind a fragment that happens to
+            # parse as a bare scalar or list, and .get() on that is an
+            # AttributeError - i.e. the same traceback the guard above exists to
+            # avoid, taking the whole file's good records with it.
+            if not isinstance(rec, dict):
                 print(
                     f"WARNING: {path}:{lineno}: skipping malformed line "
                     f"(truncated run?)", file=sys.stderr

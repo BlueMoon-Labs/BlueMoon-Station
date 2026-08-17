@@ -96,3 +96,98 @@
 	qdel(station_air)
 	qdel(fire_mix)
 	qdel(cold_fuel)
+
+// ===== Клеймо прохода у свежего очага =====
+//
+// perform_exposure() пропускается ровно один раз - за тот проход, в котором её
+// уже отработал Initialize(). Булев флаг этого не выражал: очаг, рождённый
+// распространением ВНУТРИ фазы хотспотов, в снимок currentrun не попадал, а флаг
+// всё равно сгорал на первом же вызове process(), то есть глушил экспозицию и в
+// следующем проходе тоже. Фронт огня терял на этом полсекунды за шаг.
+//
+// Оба случая - рождение фазой турфов и рождение распространением - неотличимы по
+// клейму: очаг помнит проход, а не то, кто его создал. Различает их только то,
+// какому проходу принадлежит текущий process(), и обе половины этого контракта
+// проверяются ниже.
+//
+// Наблюдаем не за газом, а за содержимым турфа: perform_exposure() зовёт
+// fire_act() по нему на ЛЮБОЙ ветке, а реакция идёт только у не-bypassing очага,
+// и завязка на моли сделала бы тест заложником того, каким объёмом очаг родился.
+
+/obj/effect/atmos_fire_probe
+	name = "atmos fire probe"
+	resistance_flags = FIRE_PROOF | INDESTRUCTIBLE
+	/// Сколько раз по пробнику прошлась экспозиция очага.
+	var/fire_acts = 0
+
+/obj/effect/atmos_fire_probe/fire_act(exposed_temperature, exposed_volume)
+	fire_acts++
+	return ..()
+
+/datum/unit_test/hotspot_spawn_skip_is_one_pass_only
+	priority = TEST_LONGER
+
+/datum/unit_test/hotspot_spawn_skip_is_one_pass_only/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/subject = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(subject), "test needs an open turf under it")
+	TEST_ASSERT_NOTNULL(subject.air, "test turf must carry a gas mixture")
+
+	var/datum/gas_mixture/saved_air = subject.air.copy()
+	subject.air.clear()
+	subject.air.set_moles(GAS_PLASMA, 50)
+	subject.air.set_moles(GAS_O2, 50)
+	subject.air.set_temperature(PLASMA_MINIMUM_BURN_TEMPERATURE + 500)
+
+	var/obj/effect/atmos_fire_probe/probe = new(subject)
+
+	// Ровно то, что делает фаза турфов: реакция смеси зажигает плитку через
+	// hotspot_expose и заполняет reaction_results, из которых очаг берёт объём.
+	subject.air.react(subject)
+	var/obj/effect/hotspot/fire = subject.active_hotspot
+	TEST_ASSERT_NOTNULL(fire, "премиса: горящая смесь плазмы с кислородом обязана зажечь плитку")
+	TEST_ASSERT_EQUAL(fire.spawned_pass, SSair.times_fired, "свежий очаг обязан помнить проход своего рождения")
+	var/acts_at_spawn = probe.fire_acts
+	TEST_ASSERT(acts_at_spawn > 0, "премиса: рождение очага обязано экспонировать содержимое турфа")
+
+	// Тот же проход: экспозицию уже отработал Initialize(), второй раз нельзя.
+	// Так выглядит очаг, рождённый фазой турфов, - он попал в снимок currentrun.
+	TEST_ASSERT(fire.process(), "премиса: очаг не должен умереть на богатой смеси")
+	TEST_ASSERT_EQUAL(probe.fire_acts, acts_at_spawn, "экспозиция в проходе рождения обязана быть пропущена")
+
+	// Следующим проходом экспозиция обязана состояться.
+	SSair.times_fired++
+	TEST_ASSERT(fire.process(), "премиса: очаг не должен умереть на богатой смеси")
+	TEST_ASSERT_EQUAL(probe.fire_acts, acts_at_spawn + 1, "в следующем проходе очаг обязан экспонировать турф")
+
+	// А теперь то, ради чего тест и написан: очаг, рождённый распространением уже
+	// ВНУТРИ фазы хотспотов. Снимок списка снят до его рождения, поэтому первый
+	// process() наступает у него только СЛЕДУЮЩИМ проходом - и глушить там нечего,
+	// свою экспозицию он отработал проходом раньше. Булев флаг этого не различал:
+	// он доживал до чужого прохода и съедал его экспозицию.
+	subject.to_be_destroyed = FALSE
+	subject.max_fire_temperature_sustained = 0
+	qdel(fire)
+	SSair.times_fired++
+	subject.air.set_moles(GAS_PLASMA, 50)
+	subject.air.set_moles(GAS_O2, 50)
+	subject.air.set_temperature(PLASMA_MINIMUM_BURN_TEMPERATURE + 500)
+	subject.air.react(subject)
+	var/obj/effect/hotspot/spread_fire = subject.active_hotspot
+	TEST_ASSERT_NOTNULL(spread_fire, "премиса: плитку обязано зажечь повторно")
+	var/acts_at_spread_spawn = probe.fire_acts
+	// Проход рождения кончился, а process() в нём так и не пришёл.
+	SSair.times_fired++
+	TEST_ASSERT(spread_fire.process(), "премиса: очаг не должен умереть на богатой смеси")
+	TEST_ASSERT_EQUAL(probe.fire_acts, acts_at_spread_spawn + 1, "очаг, не попавший в снимок своего прохода, обязан экспонировать турф на первом же своём process()")
+	fire = spread_fire
+
+	// Cleanup. Снимаем приговор турфу до qdel очага: hotspot/Destroy зовёт
+	// DestroyTurf(), а тот по накопленной температуре может расплавить пол.
+	subject.to_be_destroyed = FALSE
+	subject.max_fire_temperature_sustained = 0
+	qdel(fire)
+	qdel(probe)
+	subject.air.copy_from(saved_air)
+	qdel(saved_air)
+	SSair.remove_from_active(subject)
