@@ -7,6 +7,8 @@
 //
 // Scenarios:
 //   plasma-fire    hotspots, volatile excited groups, firelock alarm cascade
+//   fire-storm     2400-плиточный зал, горящий целиком и подпитываемый каждый
+//                  цикл: установившийся станционный пожар, а не его фронт
 //   giant-hall     one 12k-turf excited group, share wave, resumable breakdown
 //   room-grid      120-room checkerboard: group creation/merge/dismantle churn
 //   pipenet-stress closed vent/scrubber/pump loop: machinery + pipenet cost
@@ -25,6 +27,19 @@
 #define ATMOS_BENCH_FIRE_CORRIDOR_WIDTH 3
 #define ATMOS_BENCH_FIRE_PLASMA_COLUMNS 25
 #define ATMOS_BENCH_FIRE_PLASMA_MOLES 80
+/// fire-storm: зал на 2400 плиток, чтобы очагов было столько же, сколько их было
+/// на проде (раунд 10003: 2200 хотспотов, фаза 192 мс). Коридор plasma-fire даёт
+/// максимум три сотни и меряет фронт распространения, а не установившийся пожар.
+#define ATMOS_BENCH_FIRESTORM_WIDTH 60
+#define ATMOS_BENCH_FIRESTORM_HEIGHT 40
+/// Топливо и окислитель, до которых арена доливается каждый цикл после поджога.
+/// Без долива зал выгорает за десяток циклов, и прогон меряет затухание.
+#define ATMOS_BENCH_FIRESTORM_PLASMA_MOLES 40
+#define ATMOS_BENCH_FIRESTORM_O2_MOLES 200
+/// Потолок температуры на доливе. Вечное горение без него уводит зал за пределы
+/// прод-режима (1400-3500 K) в экзотические ветки реакций, то есть в другую
+/// задачу. Долив держит арену ровно в той полосе, где стоял пожар 10003.
+#define ATMOS_BENCH_FIRESTORM_TEMPERATURE 2500
 #define ATMOS_BENCH_HALL_WIDTH 120
 #define ATMOS_BENCH_HALL_HEIGHT 100
 #define ATMOS_BENCH_HALL_PRESSURE_RATIO_HIGH 4
@@ -157,6 +172,8 @@
 			atmos_headless_bench_build_multi_breach()
 		if("plasma-fire")
 			atmos_headless_bench_build_plasma_fire()
+		if("fire-storm")
+			atmos_headless_bench_build_fire_storm()
 		if("giant-hall")
 			atmos_headless_bench_build_giant_hall()
 		if("giant-hall-eq")
@@ -202,6 +219,15 @@
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_ignite()
+		if("fire-storm")
+			// Поджиг один раз, дальше долив каждый цикл - как у sustained-leak и
+			// ровно по той же причине: интервальный долив дал бы пилу
+			// "вспыхнуло-выгорело", а нужен установившийся режим.
+			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
+				headless_bench_event_fired = TRUE
+				atmos_headless_bench_ignite()
+			else if(headless_bench_event_fired)
+				atmos_headless_bench_prime_fire_storm()
 		if("giant-hall", "giant-hall-eq", "room-grid")
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
@@ -358,6 +384,55 @@
 		"corridor_turfs" = length(headless_bench_room_turfs),
 		"firedoors" = length(headless_bench_firedoors),
 	))
+
+// ---------------------------------------------------------------------------
+// fire-storm: один большой зал, горящий целиком. Отличие от plasma-fire не в
+// размере ради размера: коридор меряет ФРОНТ (полсотни очагов на кромке плюс
+// выгоревший хвост), а прод-жалоба - про установившийся пожар, где очаг стоит на
+// каждой плитке и фаза платит за все две тысячи разом. Долив каждый цикл держит
+// этот режим весь прогон, поэтому число очагов не плавает и A/B сравнивает
+// одинаковую нагрузку.
+// ---------------------------------------------------------------------------
+/// fire-storm арена, см. блок дефайнов ATMOS_BENCH_FIRESTORM_* наверху файла.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_fire_storm()
+	can_fire = FALSE
+	var/outer_w = ATMOS_BENCH_FIRESTORM_WIDTH + 2
+	var/outer_h = ATMOS_BENCH_FIRESTORM_HEIGHT + 2
+	if(!atmos_headless_bench_reserve(outer_w, outer_h))
+		return
+	var/base_x = headless_bench_reservation.bottom_left_coords[1]
+	var/base_y = headless_bench_reservation.bottom_left_coords[2]
+	var/base_z = headless_bench_reservation.bottom_left_coords[3]
+	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Fire Storm")
+	atmos_headless_bench_fill_box(base_x, base_y, base_z, outer_w, outer_h, room_area)
+	room_area.reg_in_areas_in_z()
+
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		if(!T.air)
+			continue
+		T.air.set_moles(GAS_PLASMA, ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+		T.air.set_moles(GAS_O2, ATMOS_BENCH_FIRESTORM_O2_MOLES)
+		CHECK_TICK
+	// Поджигается весь зал сразу: фронт распространения - предмет plasma-fire.
+	headless_bench_event_turfs = headless_bench_room_turfs.Copy()
+	atmos_headless_bench_activate_floors()
+	atmos_headless_bench_mark_ready(list(
+		"room_turfs" = length(headless_bench_room_turfs),
+	))
+
+/// Долив топлива и окислителя плюс потолок температуры - см. дефайны наверху.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_prime_fire_storm()
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		var/datum/gas_mixture/mix = T.air
+		if(!mix)
+			continue
+		if(mix.get_moles(GAS_PLASMA) < ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+			mix.set_moles(GAS_PLASMA, ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+		if(mix.get_moles(GAS_O2) < ATMOS_BENCH_FIRESTORM_O2_MOLES)
+			mix.set_moles(GAS_O2, ATMOS_BENCH_FIRESTORM_O2_MOLES)
+		if(mix.return_temperature() > ATMOS_BENCH_FIRESTORM_TEMPERATURE)
+			mix.set_temperature(ATMOS_BENCH_FIRESTORM_TEMPERATURE)
+		add_to_active(T)
 
 /datum/controller/subsystem/air/proc/atmos_headless_bench_ignite()
 	for(var/turf/open/T as anything in headless_bench_event_turfs)

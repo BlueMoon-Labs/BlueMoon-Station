@@ -257,7 +257,11 @@ def print_turf_budget(label, stats):
         f"{stats['us_per_turf']:.1f}us/turf, {attributed:.0f}% attributed"
     )
     ranked = sorted(
-        ((name, ms) for name, ms in stats["slots"].items() if name not in NESTED_SLOTS),
+        (
+            (name, ms)
+            for name, ms in stats["slots"].items()
+            if name not in NESTED_SLOTS and not name.startswith("hs_")
+        ),
         key=lambda item: -item[1],
     )
     for name, ms in ranked:
@@ -273,6 +277,36 @@ def print_turf_budget(label, stats):
             for name, ms in sorted(nested_present, key=lambda item: -item[1])
         )
         print(f"    (nested, already inside the slot above) {inner}")
+
+
+def hotspot_profile_report(tprofs):
+    """Where the hotspot phase spends its time - the fire regime's second bill.
+
+    The hs_* slots share the tprof dictionary with the turf ones but belong to a
+    different phase, so they carry their own budget (hs_parts_ms against
+    hs_phase_ms) and are normalised per hotspot, not per turf.
+    """
+    hotspots = 0
+    phase_ms = 0.0
+    parts_ms = 0.0
+    slots = {}
+    for rec in tprofs:
+        hotspots += rec.get("hs") or 0
+        phase_ms += rec.get("hs_phase_ms") or 0
+        parts_ms += rec.get("hs_parts_ms") or 0
+        for name, value in (rec.get("slots") or {}).items():
+            if name.startswith("hs_"):
+                slots[name] = slots.get(name, 0.0) + value
+    if not hotspots or not slots:
+        return
+    attributed = (parts_ms / phase_ms * 100) if phase_ms else 0
+    print(
+        f"hotspot phase breakdown: {hotspots} hotspot-cycles, "
+        f"{phase_ms * 1000 / hotspots:.1f}us/hotspot, {attributed:.0f}% attributed"
+    )
+    for name, ms in sorted(slots.items(), key=lambda item: -item[1]):
+        share = (ms / parts_ms * 100) if parts_ms else 0
+        print(f"    {name:<14}{share:>6.0f}%{ms * 1000 / hotspots:>9.2f}us/hotspot")
 
 
 def turf_profile_report(tprofs):
@@ -380,6 +414,7 @@ def describe(path):
         metric_line("SSair total", metric_values(hb, "cost"))
         stress_report(hb, events, records["mprof"])
         turf_profile_report(records["tprof"])
+        hotspot_profile_report(records["tprof"])
         print(
             f"runtime: largest_group={max(r.get('largest_eg', 0) for r in hb)} "
             f"scenario_largest_group={max(r.get('scenario_largest_eg', 0) or 0 for r in hb)} "
@@ -610,7 +645,14 @@ def compare_turf_profile(baseline_paths, candidate_paths, warmup):
     print()
     print("  turf phase budget, us per processed turf")
     print(f"  {'slot':<20}{'baseline':>11}{'candidate':>11}{'delta':>11}{'%':>8}   verdict")
-    names = sorted(set(base["slots"]) | set(cand["slots"]))
+    # hs_* принадлежат фазе ХОТСПОТОВ и живут в общем словаре слотов только ради
+    # одной записи на цикл. В бюджете фазы турфов им не место: они завышали бы
+    # TOTAL PHASE стороны, где инструментовка вообще есть, - а в A/B двух сборок
+    # это ровно та сторона, которую и проверяют. Своя таблица ниже.
+    names = sorted(
+        name for name in (set(base["slots"]) | set(cand["slots"]))
+        if not name.startswith("hs_")
+    )
     rows = []
     for name in names:
         base_us = base["slots"].get(name, 0.0) * 1000 / base["turfs"]
@@ -666,6 +708,8 @@ def compare_turf_profile(baseline_paths, candidate_paths, warmup):
     # simulate the same thing, which invalidates a timing comparison outright.
     shifted = []
     for name in sorted(set(base["counts"]) | set(cand["counts"])):
+        if name.startswith("hs_"):
+            continue  # счётчики фазы хотспотов, своя таблица ниже
         base_per = base["counts"].get(name, 0) / base["turfs"]
         cand_per = cand["counts"].get(name, 0) / cand["turfs"]
         if base_per < 0.01 and cand_per < 0.01:

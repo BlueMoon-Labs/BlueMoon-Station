@@ -740,10 +740,16 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		var/list/slots = list()
 		var/list/nested_slots = ATMOS_TPROF_NESTED_SLOTS
 		var/parts_ms = 0
+		var/hotspot_parts_ms = 0
 		for(var/slot in GLOB.atmos_tprof_ms)
 			var/value = round(GLOB.atmos_tprof_ms[slot], 0.001)
 			slots[slot] = value
-			if(!(slot in nested_slots))
+			// Слоты фазы ХОТСПОТОВ живут в том же словаре, но сравнивать их надо с
+			// её собственной стоимостью: свалив их в parts_ms, мы бы мерили одну
+			// фазу бюджетом другой и получали больше 100% атрибуции на пожаре.
+			if(copytext(slot, 1, 4) == "hs_")
+				hotspot_parts_ms += value
+			else if(!(slot in nested_slots))
 				parts_ms += value
 		var/list/record = list(
 			"rec" = "tprof",
@@ -752,10 +758,13 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 			"t" = world.time,
 			"at" = length(active_turfs),
 			"eg" = length(excited_groups),
+			"hs" = length(hotspots),
 			"slots" = slots,
 			"counts" = GLOB.atmos_tprof_counts.Copy(),
 			"parts_ms" = round(parts_ms, 0.001),
 			"phase_ms" = round(cost_turfs_last, 0.001),
+			"hs_parts_ms" = round(hotspot_parts_ms, 0.001),
+			"hs_phase_ms" = round(cost_hotspots, 0.001),
 		)
 		rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
 		GLOB.atmos_tprof_ms.Cut()

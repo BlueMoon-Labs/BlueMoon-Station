@@ -849,6 +849,9 @@ GLOBAL_LIST_EMPTY(atmos_tprof_ms)
 GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 
 #define ATMOS_TPROF_VARS var/__tprof_mark = 0; var/__tprof_inner = 0
+/// Для проков, которым нужен только внешний секундомер: полный ATMOS_TPROF_VARS
+/// оставил бы в них неиспользованный __tprof_inner и предупреждение сборки.
+#define ATMOS_TPROF_VARS_OUTER var/__tprof_mark = 0
 #define ATMOS_TPROF_MARK if(GLOB.atmos_tprof_active) { __tprof_mark = TICK_USAGE_REAL }
 #define ATMOS_TPROF_ADD(slot) if(GLOB.atmos_tprof_active) { GLOB.atmos_tprof_ms[slot] += TICK_DELTA_TO_MS(TICK_USAGE_REAL - __tprof_mark) }
 #define ATMOS_TPROF_MARK_INNER if(GLOB.atmos_tprof_active) { __tprof_inner = TICK_USAGE_REAL }
@@ -909,6 +912,7 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 #define ATMOS_TPROF_WAKE_RATIO(share, threshold) if(GLOB.atmos_tprof_active) { atmos_tprof_tally_wake_ratio(share, threshold) }
 #else
 #define ATMOS_TPROF_VARS
+#define ATMOS_TPROF_VARS_OUTER
 #define ATMOS_TPROF_MARK
 #define ATMOS_TPROF_ADD(slot)
 #define ATMOS_TPROF_MARK_INNER

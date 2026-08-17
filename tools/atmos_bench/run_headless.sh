@@ -9,11 +9,13 @@
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
 #   cycles     SSair cycles to run, default 240 (compile-time default)
-#   scenario   synthetic arena: multi-breach, plasma-fire, giant-hall,
+#   scenario   synthetic arena: multi-breach, plasma-fire, fire-storm, giant-hall,
 #              giant-hall-eq, room-grid, sustained-leak, pipenet-stress,
 #              heat-wall, space-wind, reaction-zoo, he-loop, atom-churn,
 #              changeturf-storm;
 #              station-breach runs on the loaded map instead of a reservation
+#              fire-storm holds ~2400 simultaneous hotspots for the whole run -
+#              use it for the fire regime; plasma-fire measures the spread front
 #              sustained-leak holds a standing gradient for the whole run
 #              instead of decaying - use it for anything aimed at the regime
 #              production actually fails in, and give it 600+ cycles
