@@ -366,10 +366,16 @@
 				T.excited = FALSE
 			evict_active_turf(T)
 			continue
+		// last_share пишет только сама смесь и только в share() - никто его не
+		// обнуляет. Без сброса турф, отшеривший десять фаеров назад и с тех пор
+		// стоящий, продолжал считаться шерящим до конца раунда, и колонка
+		// air_sharing_turfs завышала работу тем сильнее, чем дольше шёл раунд.
+		// Сброс на входе делает её ровно тем, чем она заявлена: сколько активных
+		// турфов реально двинули газ в СВОЁМ process_cell этого прохода (в раунде
+		// 9868 таких было 307 из 2980). Симуляции сброс не виден: все читатели
+		// last_share стоят сразу после своего share(), который его и записал.
+		T.air.last_share = 0
 		T.process_cell(fire_count)
-		// Одно сравнение на турф, зато колонка отвечает на главный вопрос фазы:
-		// сколько активных турфов реально двигают газ. В раунде 9868 их было 307
-		// из 2980, и без этого числа стоимость фазы неотличима от честной работы.
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
 		maybe_sleep_low_pressure_turf(T)
@@ -1008,7 +1014,17 @@
 		return FALSE
 	return __transfer_ratio_direct(other, moles / sum)
 
-/datum/gas_mixture/proc/get_oxidation_power(temp)
+/// Суммарная окислительная способность смеси при температуре temp.
+///
+/// threshold - необязательный порог для вызывающих, которым нужен только ответ
+/// "хватает ли": сумма из неотрицательных слагаемых, поэтому как только она его
+/// перевалила, добирать остаток газ-листа незачем и цикл выходит. Возвращённое
+/// значение тогда усечено (оно >= threshold, но не полное) - сравнивать с ним
+/// можно, использовать как число нельзя. Без аргумента поведение прежнее.
+/// Мотив: гейт горящей плитки зовёт этот прок каждый проход на каждом очаге, а
+/// в пожаре кислорода заведомо больше порога и он находится на первом-втором
+/// газе из шести-девяти.
+/datum/gas_mixture/proc/get_oxidation_power(temp, threshold)
 	if(isnull(temp))
 		temp = return_temperature()
 	. = 0
@@ -1019,6 +1035,8 @@
 		if(t_ox && temp >= t_ox)
 			var/temperature_scale = max(0, 1 - (t_ox / max(temp, TCMB)))
 			. += (gas_moles || 0) * (oxidation_rates[id] || 0) * temperature_scale
+			if(threshold && . >= threshold)
+				return .
 	return .
 
 /// TRUE when at least one gas in the mixture has reached its own ignition
@@ -1035,7 +1053,9 @@
 			return TRUE
 	return FALSE
 
-/datum/gas_mixture/proc/get_fuel_amount(temp)
+/// Топливо смеси при температуре temp. threshold работает ровно как у
+/// get_oxidation_power() выше: усечённая сумма для гейтов, полная - без него.
+/datum/gas_mixture/proc/get_fuel_amount(temp, threshold)
 	if(isnull(temp))
 		temp = return_temperature()
 	. = 0
@@ -1046,6 +1066,8 @@
 		if(t_f && temp >= t_f)
 			var/temperature_scale = max(0, 1 - (t_f / max(temp, TCMB)))
 			. += ((gas_moles || 0) / max(fuel_rates[id], 0.01)) * temperature_scale
+			if(threshold && . >= threshold)
+				return .
 	return .
 
 /datum/gas_mixture/proc/equalize_with(datum/gas_mixture/total)
@@ -1533,7 +1555,9 @@
 				if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP" || id == REACTION_REQ_MIN_PRESSURE)
 					continue
 				if(id == "FIRE_REAGENTS")
-					if(get_oxidation_power(temp) < min_reqs[id] || get_fuel_amount(temp) < min_reqs[id])
+					// Оба прока тут - чистый гейт "хватает ли", поэтому берут порог
+					// и выходят на первом же газе, который его перекрыл.
+					if(get_oxidation_power(temp, min_reqs[id]) < min_reqs[id] || get_fuel_amount(temp, min_reqs[id]) < min_reqs[id])
 						continue reaction_loop
 					continue
 				if((cached_gases[id] || 0) < min_reqs[id])

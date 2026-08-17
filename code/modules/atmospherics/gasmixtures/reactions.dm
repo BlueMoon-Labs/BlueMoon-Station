@@ -287,18 +287,23 @@
 	else
 		temperature_scale = (temperature-PLASMA_MINIMUM_BURN_TEMPERATURE)/(PLASMA_UPPER_TEMPERATURE-PLASMA_MINIMUM_BURN_TEMPERATURE)
 	if(temperature_scale > 0)
+		// Оба числа читаются один раз: до set_moles ниже смесь не меняется, а
+		// раньше эта ветка делала до десяти вызовов прока за одну горящую плитку,
+		// и так на каждом активном очаге каждый проход.
+		var/plasma_moles = air.get_moles(GAS_PLASMA)
+		var/oxygen_moles = air.get_moles(GAS_O2)
 		oxygen_burn_rate = OXYGEN_BURN_RATE_BASE - temperature_scale
-		if(air.get_moles(GAS_O2) / air.get_moles(GAS_PLASMA) > SUPER_SATURATION_THRESHOLD) //supersaturation. Form Tritium.
+		if(oxygen_moles / plasma_moles > SUPER_SATURATION_THRESHOLD) //supersaturation. Form Tritium.
 			super_saturation = TRUE
-		if(air.get_moles(GAS_O2) > air.get_moles(GAS_PLASMA)*PLASMA_OXYGEN_FULLBURN)
-			plasma_burn_rate = (air.get_moles(GAS_PLASMA)*temperature_scale)/PLASMA_BURN_RATE_DELTA
+		if(oxygen_moles > plasma_moles*PLASMA_OXYGEN_FULLBURN)
+			plasma_burn_rate = (plasma_moles*temperature_scale)/PLASMA_BURN_RATE_DELTA
 		else
-			plasma_burn_rate = (temperature_scale*(air.get_moles(GAS_O2)/PLASMA_OXYGEN_FULLBURN))/PLASMA_BURN_RATE_DELTA
+			plasma_burn_rate = (temperature_scale*(oxygen_moles/PLASMA_OXYGEN_FULLBURN))/PLASMA_BURN_RATE_DELTA
 
 		if(plasma_burn_rate > MINIMUM_HEAT_CAPACITY)
-			plasma_burn_rate = min(plasma_burn_rate,air.get_moles(GAS_PLASMA),air.get_moles(GAS_O2)/oxygen_burn_rate) //Ensures matter is conserved properly
-			air.set_moles(GAS_PLASMA, QUANTIZE(air.get_moles(GAS_PLASMA) - plasma_burn_rate))
-			air.set_moles(GAS_O2, QUANTIZE(air.get_moles(GAS_O2) - (plasma_burn_rate * oxygen_burn_rate)))
+			plasma_burn_rate = min(plasma_burn_rate,plasma_moles,oxygen_moles/oxygen_burn_rate) //Ensures matter is conserved properly
+			air.set_moles(GAS_PLASMA, QUANTIZE(plasma_moles - plasma_burn_rate))
+			air.set_moles(GAS_O2, QUANTIZE(oxygen_moles - (plasma_burn_rate * oxygen_burn_rate)))
 			if (super_saturation)
 				air.adjust_moles(GAS_TRITIUM, plasma_burn_rate)
 				if(!synthesis_reported)
@@ -374,26 +379,34 @@
 
 /datum/gas_reaction/genericfire/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	var/turf/loc_turf = get_turf(holder)
 	// Mining/lavaland Z: N2 is not fuel here — removes only the generic N2+O2 (air) burn; methane etc. unchanged.
-	var/lavaland_block_n2 = loc_turf && is_mining_level(loc_turf.z)
+	// Считается лениво: нужен он только на ветке азота, а get_turf() +
+	// is_mining_level() платила каждая горящая плитка станции, где азот в
+	// топливо и так не идёт. -1 = ещё не спрашивали.
+	var/lavaland_block_n2 = -1
 	// tg-like pacing baseline: plasma combustion in tg is bounded by ~1/PLASMA_BURN_RATE_DELTA per processing step.
 	var/const/MAX_GENERIC_FIRE_FRACTION_PER_TICK = (1 / PLASMA_BURN_RATE_DELTA)
 	var/list/oxidation_temps = GLOB.gas_data.oxidation_temperatures
 	var/list/oxidation_rates = GLOB.gas_data.oxidation_rates
 	var/oxidation_power = 0
-	var/list/burn_results = list()
-	var/list/fuels = list()
-	var/list/oxidizers = list()
+	// Три ассоциативных списка на вызов - это три аллокации на каждой горящей
+	// плитке каждый проход. Прок не реентерабелен (ни adjust_moles, ни
+	// set_temperature, ни heat_capacity не могут вернуться сюда), поэтому одного
+	// комплекта скретчей хватает на всю станцию; Cut() на входе обязателен.
+	var/static/list/burn_results = list()
+	var/static/list/fuels = list()
+	var/static/list/oxidizers = list()
+	burn_results.Cut()
+	fuels.Cut()
+	oxidizers.Cut()
 	var/list/fuel_rates = GLOB.gas_data.fire_burn_rates
 	var/list/fuel_temps = GLOB.gas_data.fire_temperatures
 	var/total_fuel = 0
 	var/energy_released = 0
-	for(var/G in air.get_gases())
+	for(var/G, available_moles in air.gases)
 		var/oxidation_temp = oxidation_temps[G]
 		if(oxidation_temp && temperature >= oxidation_temp)
 			var/temperature_scale = max(0, 1 - (oxidation_temp / max(temperature, TCMB)))
-			var/available_moles = air.get_moles(G)
 			var/amt = available_moles * temperature_scale
 			amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 			oxidizers[G] = amt
@@ -403,9 +416,12 @@
 			if(fuel_temp && temperature >= fuel_temp)
 				if(G == GAS_PLASMA || G == GAS_TRITIUM) // handled by plasmafire / tritfire
 					continue
-				if(lavaland_block_n2 && G == GAS_N2)
-					continue
-				var/available_moles = air.get_moles(G)
+				if(G == GAS_N2)
+					if(lavaland_block_n2 == -1)
+						var/turf/loc_turf = get_turf(holder)
+						lavaland_block_n2 = (loc_turf && is_mining_level(loc_turf.z)) ? TRUE : FALSE
+					if(lavaland_block_n2)
+						continue
 				var/amt = (available_moles / fuel_rates[G]) * max(0, 1 - (fuel_temp / max(temperature, TCMB)))
 				amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 				fuels[G] = amt // we have to calculate the actual amount we're using after we get all oxidation together

@@ -346,9 +346,27 @@
 		sharer.temperature = max(sharer.temperature, TCMB)
 
 
-/turf/open/proc/eg_reset_cooldowns()
-	if(excited_group)
-		excited_group.reset_cooldowns()
+/// Тик живого очага для группы. Зовётся только из /obj/effect/hotspot/process().
+///
+/// Раньше это был полный reset_cooldowns(), и он запирал сам себя: фаза
+/// хотспотов идёт ПОСЛЕ фазы групп, поэтому breakdown_cooldown успевал вырасти
+/// до единицы и тут же обнулялся. Потолок EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING
+/// был недостижим, а evict_settled_members() - единственный способ выгнать
+/// осевших членов из вечно горящей группы, не усредняя её газ - не выполнялся
+/// ни разу за раунд. Ровно тот предохранитель против роста turf_list, ради
+/// которого потолок и заведён.
+///
+/// Что осталось: волатильный бит (он и держит усредняющий брейкдаун закрытым -
+/// дублирует пометку из process_cell, но не зависит от того, дошла ли до турфа
+/// фаза турфов), сброс окна расформирования и снятие индивидуального отдыха с
+/// самого турфа. Не осталось: обнуление breakdown_cooldown.
+/turf/open/proc/eg_hotspot_tick()
+	var/datum/excited_group/group = excited_group
+	if(group)
+		// Начатый до поджога брейкдаун дописал бы усреднённый газ поверх огня.
+		group.cancel_breakdown()
+		group.turf_reactions |= VOLATILE_REACTION
+		group.dismantle_cooldown = 0
 	atmos_cooldown = 0
 /turf/open/proc/eg_garbage_collect()
 	if(excited_group)

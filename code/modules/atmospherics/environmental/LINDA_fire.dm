@@ -8,7 +8,7 @@
 		return FALSE
 	if(air.get_moles(GAS_PLASMA) > 0.5 || air.get_moles(GAS_TRITIUM) > 0.5)
 		return TRUE
-	if(air.get_fuel_amount(temp) < 0.5)
+	if(air.get_fuel_amount(temp, 0.5) < 0.5)
 		return FALSE
 	if(!is_mining_level(z_level))
 		return TRUE
@@ -64,7 +64,7 @@
 	if(current_hotspot && !soh)
 		return
 
-	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
+	if (air.get_oxidation_power(exposed_temperature, 0.5) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
 		return
 	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature, z)
 	if(current_hotspot)
@@ -104,6 +104,14 @@
 	var/temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST
 	var/bypassing = FALSE
 	var/visual_update_tick = 0
+	///Температура, на которой цвет пламени пересчитывался в последний раз. Цвет -
+	///чистая функция температуры, а у осевшего очага она между проходами почти не
+	///ходит: сравнение дешевле, чем два перестроения appearance в update_color().
+	var/last_colored_temperature = 0
+	///Свежий очаг уже отработал perform_exposure() в Initialize(), включая обход
+	///содержимого турфа. Фаза хотспотов того же прохода прогоняла его повторно:
+	///вторая экспозиция и второй fire_act() по тем же вещам в тот же тик.
+	var/just_spawned = TRUE
 
 /obj/effect/hotspot/Initialize(mapload, starting_volume, starting_temperature)
 	. = ..()
@@ -254,21 +262,43 @@
 
 #define INSUFFICIENT(path) (location.air.get_moles(path) < 0.5)
 /obj/effect/hotspot/process()
+	ATMOS_TPROF_VARS_OUTER
 	var/turf/open/location = loc
 	if(!istype(location))
 		qdel(src)
 		return
 
-	location.eg_reset_cooldowns()
+	location.eg_hotspot_tick()
 
+	ATMOS_TPROF_MARK
 	if((temperature < FIRE_MINIMUM_TEMPERATURE_TO_EXIST) || (volume <= 1))
+		ATMOS_TPROF_ADD("hs_gate")
+		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)
 		return
-	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power() < 0.5 || !turf_has_fire_fuel(location.air, temperature, location.z))
+	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power(null, 0.5) < 0.5 || !turf_has_fire_fuel(location.air, temperature, location.z))
+		ATMOS_TPROF_ADD("hs_gate")
+		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)
 		return
+	ATMOS_TPROF_ADD("hs_gate")
 
-	perform_exposure()
+	// Свежий очаг уже отработал perform_exposure() внутри Initialize() - в том же
+	// проходе, потому что рождают его hotspot_expose из фазы турфов, а копия
+	// списка для фазы хотспотов снимается позже. Повторный вызов здесь означал
+	// вторую экспозицию и второй fire_act() по тем же вещам в тот же тик. Гейт
+	// стоит ТОЛЬКО на экспозиции: всё остальное (смерть по топливу, прожиг плитки,
+	// распространение) обязано идти с первого же прохода, иначе фронт огня
+	// замедляется на полсекунды за шаг.
+	if(just_spawned)
+		just_spawned = FALSE
+		ATMOS_TPROF_COUNT("hs_spawn_skip")
+	else
+		ATMOS_TPROF_MARK
+		perform_exposure()
+		ATMOS_TPROF_ADD("hs_expose")
+		ATMOS_TPROF_COUNT_IF(bypassing, "hs_bypassing")
+		ATMOS_TPROF_COUNT_IF(!bypassing, "hs_reacting")
 
 	// Writing an appearance var re-derives and re-hashes the whole appearance
 	// even when the value is unchanged, and a settled fire holds the same frame
@@ -284,6 +314,7 @@
 		icon_state = new_icon_state
 
 	if(bypassing)
+		ATMOS_TPROF_MARK
 		location.burn_tile()
 
 		//Possible spread due to radiated heat
@@ -293,9 +324,18 @@
 				var/turf/open/T = t
 				if(!T.active_hotspot)
 					T.hotspot_expose(radiated_temperature, CELL_VOLUME/4)
+		ATMOS_TPROF_ADD("hs_spread")
 
-	if((visual_update_tick++ % 7) == 0)
+	// Раз в семь проходов - и только если температура с прошлой перекраски ушла
+	// заметно. update_color() это три возведения в степень, cut_overlays() и две
+	// перестройки appearance подряд; у осевшего очага она каждый раз выдаёт тот
+	// же цвет. Порог относительный: цвет - гладкая функция температуры, два
+	// процента на глаз неразличимы даже на одиночном пламени.
+	if((visual_update_tick++ % 7) == 0 && abs(temperature - last_colored_temperature) > last_colored_temperature * 0.02)
+		ATMOS_TPROF_MARK
+		last_colored_temperature = temperature
 		update_color()
+		ATMOS_TPROF_ADD("hs_color")
 
 	if(temperature > location.max_fire_temperature_sustained)
 		location.max_fire_temperature_sustained = temperature
