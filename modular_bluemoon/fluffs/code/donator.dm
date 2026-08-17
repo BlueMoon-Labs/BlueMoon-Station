@@ -2084,13 +2084,13 @@
 	name = "BEAR Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/bear_patch
-	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty")
+	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty", "ordinarylife")
 
 /datum/gear/donator/bm/usec_patch
 	name = "USEC Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/usec_patch
-	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty")
+	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty", "ordinarylife")
 
 /datum/gear/donator/bm/transparent_gloves
 	name = "Transparent Gloves"
@@ -2548,3 +2548,9 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#777777", "#FFFFCC", "#66FFFF")
 	ckeywhitelist = list("ingvarr3313", "shizalrp", "herobrine998")
+
+/datum/gear/donator/bm/custom_helmet
+	name = "КРУТОЙ ШЛЕМ"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/custom_helmet
+	ckeywhitelist = list("hartty")
