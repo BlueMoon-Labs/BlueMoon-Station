@@ -6797,20 +6797,20 @@
 "aLY" = (
 /obj/item/rupee,
 /turf/open/floor/plating/ashplanet/wateryrock{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/awaymission/errorroom)
 "aLZ" = (
 /turf/open/floor/plating/ashplanet/wateryrock{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/awaymission/errorroom)
 "aMa" = (
 /obj/effect/landmark/error,
 /turf/open/floor/plating/ashplanet/wateryrock{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/awaymission/errorroom)
@@ -6821,7 +6821,7 @@
 	invisibility = 100
 	},
 /turf/open/floor/plating/ashplanet/wateryrock{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/awaymission/errorroom)
@@ -25358,7 +25358,7 @@
 /area/centcom/holding)
 "qkn" = (
 /turf/open/indestructible/necropolis{
-	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/centcom/arena)
 "qkA" = (
@@ -27023,7 +27023,7 @@
 	id = "west_point5"
 	},
 /turf/open/indestructible/necropolis{
-	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/centcom/arena)
 "rFA" = (
@@ -27313,7 +27313,7 @@
 "rTv" = (
 /obj/machinery/light/floor,
 /turf/open/indestructible/necropolis{
-	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/centcom/arena)
 "rTV" = (
@@ -30910,7 +30910,7 @@
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/centcom,
 /turf/open/indestructible/necropolis{
-	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/centcom/arena)
 "vkL" = (

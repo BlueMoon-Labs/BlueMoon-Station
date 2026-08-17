@@ -692,7 +692,7 @@
 	pixel_y = -1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "agC" = (
@@ -1172,7 +1172,7 @@
 	name = "drain"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "akY" = (
@@ -1838,7 +1838,7 @@
 /area/security/warden)
 "aqW" = (
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "arf" = (
@@ -2301,7 +2301,7 @@
 	pixel_y = 10
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "avc" = (
@@ -10518,7 +10518,7 @@
 	pixel_y = 24
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -10885,7 +10885,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "bHc" = (
@@ -18684,7 +18684,7 @@
 	},
 /obj/structure/flora/junglebush/c,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "cRe" = (
@@ -20429,12 +20429,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	name = "scrubbers pipe"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	name = "air supply pipe"
-	},
 /turf/open/floor/plasteel/dark{
 	icon_state = "darkfull_whole_alt"
 	},
@@ -20646,7 +20640,7 @@
 /obj/structure/railing,
 /obj/effect/turf_decal/stripes/yellow/box,
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -21565,7 +21559,7 @@
 "dkx" = (
 /obj/structure/flora/tree/jungle,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "dkz" = (
@@ -21895,7 +21889,7 @@
 "dmN" = (
 /obj/structure/flora/ausbushes/ppflowers,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "dmR" = (
@@ -30308,7 +30302,7 @@
 	name = "drain"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "ewx" = (
@@ -32286,7 +32280,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "eKR" = (
@@ -32801,7 +32795,7 @@
 	pixel_x = -25
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "ePq" = (
@@ -34442,9 +34436,6 @@
 	dir = 6
 	},
 /obj/structure/lattice/catwalk,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 6
-	},
 /turf/open/openspace,
 /area/ruin/space)
 "fdJ" = (
@@ -35065,7 +35056,7 @@
 "fjz" = (
 /obj/structure/flora/rock/pile,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "fjC" = (
@@ -43025,7 +43016,7 @@
 "gtL" = (
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "gug" = (
@@ -45990,14 +45981,6 @@
 	dir = 4;
 	name = "scrubbers pipe"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4;
-	name = "scrubbers pipe"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 8;
-	name = "air supply pipe"
-	},
 /turf/open/floor/plasteel{
 	dir = 8;
 	icon_state = "floor_whole_alt"
@@ -46555,7 +46538,7 @@
 "gWq" = (
 /obj/structure/bonfire,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "gWr" = (
@@ -47740,7 +47723,7 @@
 	pixel_y = -20
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -52304,7 +52287,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -55891,7 +55874,7 @@
 "imL" = (
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "imO" = (
@@ -56109,9 +56092,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -57032,7 +57012,7 @@
 	id = "Chapelconveyor"
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/service/chapel/main)
@@ -58076,7 +58056,7 @@
 "iCc" = (
 /obj/structure/flora/rock,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "iCd" = (
@@ -59270,7 +59250,7 @@
 "iLu" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "iLv" = (
@@ -63693,9 +63673,6 @@
 	dir = 9
 	},
 /obj/structure/lattice/catwalk,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 9
-	},
 /turf/open/openspace,
 /area/ruin/space)
 "jsq" = (
@@ -63712,7 +63689,7 @@
 	name = "drain"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "jsu" = (
@@ -72159,10 +72136,6 @@
 	dir = 4;
 	name = "scrubbers pipe"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4;
-	name = "scrubbers pipe"
-	},
 /obj/structure/chair/comfy/black{
 	dir = 4
 	},
@@ -73466,7 +73439,7 @@
 	name = "Port Auxiliary Solar Array"
 	},
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/space)
@@ -78835,7 +78808,7 @@
 	pixel_y = -16
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "lzd" = (
@@ -80480,7 +80453,7 @@
 	pixel_y = -1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/security/prison)
 "lJI" = (
@@ -87308,7 +87281,7 @@
 "mFc" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "mFi" = (
@@ -92364,10 +92337,6 @@
 	dir = 4;
 	name = "scrubbers pipe"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4;
-	name = "scrubbers pipe"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 8;
 	name = "air supply pipe"
@@ -92783,7 +92752,7 @@
 	pixel_y = -11
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "nwa" = (
@@ -94164,7 +94133,7 @@
 "nGs" = (
 /obj/structure/cable,
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -94299,7 +94268,7 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/barricade/wooden/snowed,
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/maintenance/port/aft)
@@ -94803,7 +94772,7 @@
 	pixel_y = 24
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -97387,14 +97356,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 8;
-	name = "air supply pipe"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4;
-	name = "scrubbers pipe"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -97511,7 +97472,7 @@
 /area/service/bar)
 "ogy" = (
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "ogA" = (
@@ -99622,7 +99583,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "ozd" = (
@@ -102320,7 +102281,7 @@
 	name = "Port Auxiliary Solar Array"
 	},
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/space)
@@ -104146,7 +104107,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/maintenance/port/aft)
@@ -104751,7 +104712,7 @@
 	pixel_x = -9
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "ple" = (
@@ -105074,7 +105035,7 @@
 /obj/effect/spawner/structure/window/plasma/reinforced,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/engineering/teg)
@@ -107307,7 +107268,7 @@
 	pixel_y = -1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "pFE" = (
@@ -108235,7 +108196,7 @@
 	icon_state = "0-4"
 	},
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -111984,7 +111945,7 @@
 	icon_state = "0-2"
 	},
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -113542,7 +113503,7 @@
 	name = "drain"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "qDh" = (
@@ -118354,12 +118315,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	name = "air supply pipe"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	name = "scrubbers pipe"
-	},
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "roE" = (
@@ -119649,7 +119604,7 @@
 	pixel_y = -20
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -121854,7 +121809,7 @@
 "rOH" = (
 /obj/structure/flora/junglebush,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/space)
 "rOK" = (
@@ -122775,7 +122730,7 @@
 	pixel_y = -1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "rWu" = (
@@ -122812,7 +122767,7 @@
 "rWw" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/security/prison)
 "rWz" = (
@@ -123398,7 +123353,7 @@
 	name = "steel pannel"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "saO" = (
@@ -124071,7 +124026,7 @@
 	dir = 5
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "sfA" = (
@@ -124080,7 +124035,7 @@
 	pixel_y = -13
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "sfB" = (
@@ -124788,7 +124743,7 @@
 	name = "drain"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "skp" = (
@@ -127583,7 +127538,7 @@
 	pixel_y = -5
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "sEv" = (
@@ -128358,7 +128313,7 @@
 /obj/machinery/power/tracker,
 /obj/structure/cable,
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/space)
@@ -133447,7 +133402,7 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/box,
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -133858,7 +133813,7 @@
 "tve" = (
 /obj/structure/flora/junglebush/b,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "tvf" = (
@@ -137848,7 +137803,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/maintenance/port/aft)
@@ -139073,7 +139028,7 @@
 "uit" = (
 /obj/structure/grille,
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/space)
@@ -143629,7 +143584,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "uWB" = (
@@ -143822,7 +143777,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "uYq" = (
@@ -145259,7 +145214,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/space)
@@ -146462,7 +146417,7 @@
 	name = "steel pannel"
 	},
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "vsC" = (
@@ -146572,7 +146527,7 @@
 	icon_state = "0-8"
 	},
 /turf/open/floor/plasteel/airless/solarpanel{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/ruin/space)
@@ -147126,20 +147081,12 @@
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 10;
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 1;
 	name = "air supply pipe"
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 9;
-	name = "scrubbers pipe"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 8;
-	name = "air supply pipe"
 	},
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
@@ -154985,7 +154932,7 @@
 "wBk" = (
 /obj/structure/flora/junglebush/c,
 /turf/open/floor/plating/dirt{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/service/hydroponics/garden)
 "wBs" = (
@@ -166366,7 +166313,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/maintenance/port/aft)
@@ -166655,7 +166602,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1
 	},
 /area/maintenance/port/aft)

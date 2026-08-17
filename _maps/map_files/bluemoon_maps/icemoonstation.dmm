@@ -4749,7 +4749,6 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/visible/layer4,
 /obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2,
-/obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/tcommsat/lounge)
 "aTR" = (
@@ -12349,7 +12348,6 @@
 /area/maintenance/aft)
 "cmJ" = (
 /obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 4
 	},
@@ -28603,9 +28601,6 @@
 /obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2{
-	dir = 4
-	},
 /obj/structure/cable{
 	icon_state = "2-4";
 	color = "#ff1616"
@@ -37607,7 +37602,6 @@
 	pixel_x = -7;
 	pixel_y = 24
 	},
-/obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/visible/layer4,
 /obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/visible/layer4,
 /obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2,
 /obj/effect/turf_decal/delivery,
@@ -63487,7 +63481,6 @@
 	name = "bridge blast door"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
@@ -72540,9 +72533,6 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/visible/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/multiz/supply/visible/layer2{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -102825,7 +102815,6 @@
 /area/service/library/lounge)
 "swt" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 1
 	},
@@ -106324,9 +106313,6 @@
 /turf/open/floor/plating/asteroid,
 /area/science)
 "tee" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /obj/effect/turf_decal/siding/blue,
 /obj/structure/disposalpipe/sorting/mail/flip{
@@ -117772,9 +117758,6 @@
 	},
 /obj/machinery/light,
 /obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral,
@@ -132158,7 +132141,6 @@
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 8
@@ -132676,7 +132658,6 @@
 /obj/machinery/camera/autoname{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/engine,

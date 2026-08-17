@@ -33953,7 +33953,6 @@
 	name = "Station Intercom";
 	pixel_x = 28
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/item/radio/intercom{
 	name = "Station Intercom";
 	pixel_x = 28
@@ -36001,7 +36000,6 @@
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "iUa" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 8
 	},
