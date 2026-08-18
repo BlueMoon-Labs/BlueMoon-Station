@@ -198,7 +198,11 @@
 
 /datum/asset/spritesheet_batched/proc/realize_spritesheets_owned(yield)
 	if(!length(entries))
+		#ifdef ABSOLUTE_MINIMUM_MODE
+		return
+		#else
 		CRASH("Спрайтшит [name] ([type]) пустой! Что он тут делает?")
+		#endif
 	if(sprites_per_shard <= 0)
 		CRASH("Спрайтшит [name] ([type]): невалидный sprites_per_shard [sprites_per_shard]")
 
