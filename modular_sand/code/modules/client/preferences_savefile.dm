@@ -67,7 +67,7 @@
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
 	for(var/interaction in favorite_interactions)
-		if(findtext(interaction, CUSTOM_INTERACTION_PREFIX) == 1)
+		if(findtext(interaction, CUSTOM_INTERACTION_PREFIX))
 			continue
 		var/datum/interaction/interaction_path = ispath(interaction) ? interaction : text2path(interaction)
 		if(!interaction_path)

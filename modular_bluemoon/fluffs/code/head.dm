@@ -598,3 +598,12 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
 	icon_state = "lapkee-helmet"
 	flags_inv = HIDEEARS|HIDEFACE
+
+/obj/item/clothing/head/donator/bm/custom_helmet
+	name = "Custom helmet"
+	desc = "An old helmet, well-built by an enthusiast. It looks like the real thing, but feels like a model because of how light it is. The plates have been removed, as has the electronics."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "custom_helmet"
+	item_state = "custom_helmet"
+	flags_inv = HIDEEARS|HIDEHAIR
