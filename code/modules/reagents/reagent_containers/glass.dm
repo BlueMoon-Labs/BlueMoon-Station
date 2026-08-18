@@ -121,6 +121,11 @@
 		if(user.a_intent == INTENT_HARM)
 			user.visible_message("<span class='danger'>[user] разливает содержимое [src] на [target]!</span>", \
 								"<span class='notice'>Вы вылили содержимое [src] на [target].</span>")
+			// LIQUIDS ADD - pouring (not throwing) also forms a puddle
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					target_turf.add_liquid_from_reagents(reagents)
 			reagents.reaction(target, TOUCH)
 			reagents.clear_reagents()
 
