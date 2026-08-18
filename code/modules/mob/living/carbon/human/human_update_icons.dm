@@ -754,7 +754,7 @@ There are several things that need to be remembered:
 			if(dna.species.icon_suit)
 				worn_icon = dna.species.icon_suit
 			if(istype(S) && S.taur_flags_inv_changed)
-				S.flags_inv = S.taur_flags_inv_changed
+				S.flags_inv |= S.taur_flags_inv_changed
 				S.taur_flags_inv_changed = NONE
 			var/worn_state = wear_suit.icon_state
 			var/center = FALSE
