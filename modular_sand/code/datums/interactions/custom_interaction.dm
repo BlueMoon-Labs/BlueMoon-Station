@@ -2,6 +2,12 @@
 	var/list/custom_interactions
 	var/custom_verb_consent = TRUE
 
+	var/show_heart_over_self = TRUE
+	var/show_heart_over_partner = TRUE
+	var/interaction_effect = INTERACTION_EFFECT_HEART
+	var/partner_interaction_effect = INTERACTION_EFFECT_HEART
+	var/block_partner_pixel_shift = FALSE
+
 /datum/preferences/proc/get_custom_interaction_limit()
 	var/user_ckey = parent?.ckey
 	if(user_ckey && is_donator_group(user_ckey, DONATOR_GROUP_TIER_2))
@@ -290,10 +296,10 @@
 		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null
 	)
 	if(is_lewd)
-		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(user.loc)
-		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(target.loc)
+		var/datum/preferences/user_prefs = user.client?.prefs
+		user.try_play_interaction_effect(target, is_hidden, user_prefs?.interaction_effect)
+		if(user != target)
+			target.try_play_interaction_effect(user, is_hidden, user_prefs?.partner_interaction_effect)
 	var/lust_amount = get_lust_amount()
 	if(!QDELETED(user))
 		if(self_orgasm)
@@ -313,7 +319,7 @@
 	if(user != target)
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
-	
+
 	// logs
 	user.log_message("Применяет[is_hidden ? " (скрытно)" : null] Custom интеракцию к [user == target ? "себе" : target]: «[use_message]»", LOG_ATTACK)
 	if(user != target)
