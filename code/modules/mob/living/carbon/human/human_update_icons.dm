@@ -753,8 +753,9 @@ There are several things that need to be remembered:
 			var/worn_icon = wear_suit.mob_overlay_icon || 'icons/mob/clothing/suit.dmi'
 			if(dna.species.icon_suit)
 				worn_icon = dna.species.icon_suit
-			if(initial(S.flags_inv) & HIDETAUR)
-				S.flags_inv |= HIDETAUR
+			if(istype(S) && S.taur_flags_inv_changed)
+				S.flags_inv = S.taur_flags_inv_changed
+				S.taur_flags_inv_changed = NONE
 			var/worn_state = wear_suit.icon_state
 			var/center = FALSE
 			var/dimension_x = 32
@@ -798,6 +799,7 @@ There are several things that need to be remembered:
 						dimension_x = T?.dimension_x || 64
 						dimension_y = T?.dimension_y || 32
 						S.flags_inv &= ~HIDETAUR
+						S.taur_flags_inv_changed |= HIDETAUR
 						break
 
 			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE)
