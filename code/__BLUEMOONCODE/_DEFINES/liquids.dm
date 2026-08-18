@@ -94,6 +94,10 @@
 //waist level without reaching the rim.
 #define POOL_START_LIQUID 250
 
+//Max units of reagent a decal created from a liquid puddle can hold, so
+//scooping the decal can't duplicate the puddle into an exploit.
+#define LIQUID_DECAL_CAP 5
+
 #define SSLIQUIDS_RUN_TYPE_TURFS 1
 #define SSLIQUIDS_RUN_TYPE_GROUPS 2
 #define SSLIQUIDS_RUN_TYPE_IMMUTABLES 3
