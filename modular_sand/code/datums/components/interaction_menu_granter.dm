@@ -26,6 +26,12 @@
 	var/datum/interaction/currently_active_interaction
 	var/next_interaction_time
 	var/auto_interaction_pace = 1 SECONDS
+	// BLUEMOON ADD
+	var/pixel_shift_x = 0
+	var/pixel_shift_y = 0
+	var/pixel_shift_speed = 30
+	var/pixel_shift_animating = FALSE
+	// BLUEMOON ADD
 
 /datum/component/interaction_menu_granter/process(delta_time)
 	if(QDELETED(parent) || !isliving(parent))
@@ -56,6 +62,7 @@
 		auto_interaction_target = null
 		currently_active_interaction = null
 		return PROCESS_KILL
+	play_pixel_shift_animation(granter)
 
 /datum/component/interaction_menu_granter/Initialize(...)
 	if(!ismob(parent))
@@ -98,7 +105,6 @@
 	open_panel(clicker, clicked)
 	return COMSIG_MOB_CANCEL_CLICKON
 
-/// Открывает панель взаимодействия на цель, по одной панели на цель
 /datum/component/interaction_menu_granter/proc/open_panel(mob/living/user, mob/living/panel_target)
 	if(QDELETED(panel_target))
 		return
@@ -119,7 +125,6 @@
 			panels.Cut(i, i + 1)
 			qdel(panel)
 
-/// Закрытие панели: пользователь закрыл окно или панель больше не нужна
 /datum/component/interaction_menu_granter/proc/panel_ui_close(datum/interaction_menu_panel/panel, mob/living/user)
 	UnregisterSignal(panel.panel_target, COMSIG_PARENT_QDELETING)
 	panels -= panel
@@ -592,15 +597,23 @@
 		.["no_disco_dance"] = 			!CHECK_BITFIELD(prefs.cit_toggles, NO_DISCO_DANCE) //By SmiLeY
 
 	var/list/custom_interactions_sent = list()
-	if(self.client?.prefs?.custom_verb_consent && length(self.client.prefs.custom_interactions))
-		var/list/customs = self.client.prefs.custom_interactions
-		for(var/i in 1 to length(customs))
-			var/datum/interaction/custom/custom = customs[i]
-			if(!custom?.name || !custom.message)
-				continue
-			if(target && !custom.pass_requirement_gate(self, target))
-				continue
-			custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][self.ckey]:[i]", self.real_name))
+	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
+		var/list/customs_mob = list()
+		if(LAZYLEN(self.client.prefs.custom_interactions))
+			customs_mob[self] += self.client.prefs.custom_interactions
+		if(target && self != target && LAZYLEN(target.client.prefs.custom_interactions))
+			customs_mob[target] += target.client.prefs.custom_interactions
+
+		for(var/mob/living/customs_owner as anything in customs_mob)
+			var/list/customs = customs_mob[customs_owner]
+			var/i = 0
+			for(var/datum/interaction/custom/custom as anything in customs)
+				i++
+				if(!custom || !custom.name || !custom.message)
+					continue
+				if(!custom.pass_requirement_gate(customs_owner, target || customs_owner))
+					continue
+				custom_interactions_sent += list(build_custom_interaction_entry(custom, "[CUSTOM_INTERACTION_PREFIX][customs_owner.ckey]:[i]", customs_owner.real_name))
 	.["custom_interactions_list"] = custom_interactions_sent
 
 	var/list/own_customs = list()
@@ -706,16 +719,25 @@
 			hidden_interactions[interaction_key] = !current
 			refresh_interaction_panels()
 			return TRUE
+		if("pixel_shift")
+			if(params["type"] == "set")
+				src.pixel_shift_x = clamp(round(text2num(params["dx"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
+				src.pixel_shift_y = clamp(round(text2num(params["dy"])), -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM)
+				src.pixel_shift_speed = clamp(round(text2num(params["speed"])), 1, 60)
+				if(params["play_animation"])
+					play_pixel_shift_animation(parent_mob)
+				return TRUE
+			if(params["type"] == "reset")
+				src.pixel_shift_x = 0
+				src.pixel_shift_y = 0
+				return TRUE
+			return FALSE
 		if("interact")
 			var/interaction_key = params["interaction"]
 			var/is_hidden = hidden_interactions && (interaction_key in hidden_interactions) \
 				? !!hidden_interactions[interaction_key] \
 				: FALSE
-			var/datum/interaction/o
-			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
-				o = SSinteractions.get_custom_interaction(parent_mob, interaction_key)
-			else
-				o = SSinteractions.interactions[interaction_key]
+			var/datum/interaction/o = SSinteractions.interactions[interaction_key] || SSinteractions.get_custom_interaction(parent_mob, target, interaction_key)
 			if(!o)
 				return FALSE
 
@@ -724,6 +746,7 @@
 				return TRUE
 
 			o.do_action(parent_mob, target, TRUE, is_hidden)
+			play_pixel_shift_animation(parent_mob)
 			return TRUE
 		if("interaction_pace")
 			var/speed = params["speed"]
@@ -733,11 +756,7 @@
 			return TRUE
 		if("toggle_auto_interaction")
 			var/interaction_key = params["interaction"]
-			var/datum/interaction/o
-			if(findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) == 1)
-				o = SSinteractions.get_custom_interaction(parent_mob, interaction_key)
-			else
-				o = SSinteractions.interactions[interaction_key]
+			var/datum/interaction/o = SSinteractions.interactions[interaction_key] || SSinteractions.get_custom_interaction(parent_mob, target, interaction_key)
 			if(!o || (currently_active_interaction == o) && (auto_interaction_target == target))
 				auto_interaction_target = null
 				currently_active_interaction = null
@@ -749,7 +768,7 @@
 			return TRUE
 		if("favorite")
 			var/interaction_key = params["interaction"]
-			if(!(interaction_key in SSinteractions.interactions) && findtext(interaction_key, CUSTOM_INTERACTION_PREFIX) != 1)
+			if(!(interaction_key in SSinteractions.interactions) && !findtext(interaction_key, CUSTOM_INTERACTION_PREFIX))
 				return FALSE
 			var/datum/preferences/prefs = parent_mob?.client?.prefs
 			if(!prefs)
@@ -978,6 +997,26 @@
 		if("open_customs_window")
 			return open_customs_window(parent_mob)
 
+//BLUEMOON ADD START
+/datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
+	if(!mob || pixel_shift_animating || (!pixel_shift_x && !pixel_shift_y))
+		return
+
+	pixel_shift_animating = TRUE
+
+	var/matrix/original = matrix(mob.transform)
+	var/matrix/target = matrix(original)
+	target.Translate(clamp(pixel_shift_x, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM), clamp(pixel_shift_y, -PIXEL_SHIFT_MAXIMUM, PIXEL_SHIFT_MAXIMUM))
+	var/distance = abs(pixel_shift_x) + abs(pixel_shift_y)
+	var/duration = max(round(distance * 10 / pixel_shift_speed), 2)
+	animate(mob, transform = target, time = duration, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	animate(mob, transform = original, time = duration, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+	addtimer(CALLBACK(src, PROC_REF(pixel_shift_animation_finished)), duration * 2)
+//BLUEMOON ADD END
+
+/datum/component/interaction_menu_granter/proc/pixel_shift_animation_finished()
+	pixel_shift_animating = FALSE
+
 /datum/component/interaction_menu_granter/proc/build_custom_interaction_entry(datum/interaction/custom/custom, key, owner_name)
 	var/list/interaction = list()
 	interaction["key"] = key
@@ -1085,7 +1124,6 @@
 /datum/component/interaction_menu_granter/proc/log_custom_interaction(mob/living/user, action, datum/interaction/custom/custom)
 	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
 	log_admin(log_text)
-	message_admins(log_text)
 
 /datum/component/interaction_menu_granter/proc/open_customs_window(mob/living/user)
 	if(!user?.client)

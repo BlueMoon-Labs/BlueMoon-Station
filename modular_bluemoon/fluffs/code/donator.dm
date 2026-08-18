@@ -2550,7 +2550,7 @@
 	ckeywhitelist = list("ingvarr3313", "shizalrp", "herobrine998")
 
 /datum/gear/donator/bm/custom_helmet
-	name = "КРУТОЙ ШЛЕМ"
+	name = "Custom helmet"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/custom_helmet
-	ckeywhitelist = list("hartty")
+	ckeywhitelist = list("hartty", "hateredsoul", "ordinarylife", "dalphy12")
