@@ -159,7 +159,10 @@
 		else
 			var/list/choice_list = list()
 			for(var/obj/item/I in items_list)
-				choice_list[I] = image(I)
+				var/image/choice_icon = image(I)
+				choice_icon.pixel_x = I.base_pixel_x
+				choice_icon.pixel_y = I.base_pixel_y
+				choice_list[I] = choice_icon
 			var/obj/item/choice = show_radial_menu(owner, owner, choice_list)
 			if(owner && owner == usr && owner.stat != DEAD && (src in owner.internal_organs) && !holder && (choice in contents))
 				// This monster sanity check is a nice example of how bad input is.

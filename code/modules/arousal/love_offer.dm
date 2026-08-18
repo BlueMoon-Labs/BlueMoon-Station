@@ -1,12 +1,23 @@
 #define OFFER_TEXT_MAX_LINES 12
 
 /obj/item/love_offer
-	name = "ERP Ticket"
-	desc = "What is ERP? You don't know.\nIt's a sex offer, yes, on paper."
+	name = "Sex Time Ticket"
+	desc = "It's a sex offer, yes, on paper."
 	icon = 'icons/obj/bureaucracy.dmi'
 	icon_state = "erp_ticket"
+	throwforce = 0
+	w_class = WEIGHT_CLASS_TINY
+	throw_range = 1
+	throw_speed = 1
+	pressure_resistance = 0
+	resistance_flags = FLAMMABLE
+	max_integrity = 50
 	custom_price = 5
 	custom_premium_price = 25
+	drop_sound = 'sound/items/handling/paper_drop.ogg'
+	pickup_sound = 'sound/items/handling/paper_pickup.ogg'
+	grind_results = list(/datum/reagent/cellulose = 3)
+
 	var/proposer_name = ""
 	var/recipient_name = ""
 	var/offer_text = "Ты заслуживаешь перерыва.\nПочему бы не провести его вместе\nи сделать незабываемым?"

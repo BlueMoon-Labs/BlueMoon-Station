@@ -39,10 +39,6 @@
 /obj/structure/lattice,
 /turf/template_noop,
 /area/template_noop)
-"aj" = (
-/obj/machinery/computer/cryopod,
-/turf/closed/wall/mineral/titanium,
-/area/ruin/powered)
 "ak" = (
 /obj/structure/fluff/empty_cryostasis_sleeper,
 /turf/open/floor/mineral/titanium,
@@ -1311,11 +1307,11 @@ aZ
 bb
 bb
 al
-aj
+ae
 ap
 an
 as
-aj
+ae
 al
 aZ
 bb
