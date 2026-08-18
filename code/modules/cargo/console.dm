@@ -192,6 +192,8 @@
 				return
 			if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.contraband && !contraband) || pack.DropPodOnly)
 				return
+			if(pack.exclusive_consoles && !is_type_in_list(src, pack.exclusive_consoles))
+				return
 
 			if(self_paid && !pack.can_private_buy)
 				say("This cannot be bought privately.")
