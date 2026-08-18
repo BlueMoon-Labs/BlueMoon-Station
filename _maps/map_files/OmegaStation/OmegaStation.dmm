@@ -31409,7 +31409,7 @@
 	},
 /area/engineering/atmos)
 "bhX" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "bhZ" = (
 /obj/machinery/light_switch{
@@ -37355,7 +37355,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "nmv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -37532,7 +37532,7 @@
 /turf/open/floor/plasteel/dark/corner,
 /area/maintenance/disposal/incinerator)
 "nXb" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "oaV" = (
 /obj/structure/grille,
@@ -41535,7 +41535,7 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/starboard/fore)
 "uCY" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "uDp" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible{

@@ -88,13 +88,13 @@
 	},
 /area/survivalpod)
 "al" = (
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
 "am" = (
 /obj/machinery/shower,
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
@@ -123,7 +123,7 @@
 	pixel_x = -4;
 	pixel_y = 0
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
@@ -167,7 +167,7 @@
 	pixel_y = -22;
 	pixel_x = 0
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
@@ -561,7 +561,7 @@
 /area/survivalpod)
 "el" = (
 /obj/machinery/light/floor,
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
@@ -977,7 +977,7 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)
@@ -1654,7 +1654,7 @@
 /turf/open/floor/pod/dark,
 /area/survivalpod)
 "MS" = (
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/survivalpod)

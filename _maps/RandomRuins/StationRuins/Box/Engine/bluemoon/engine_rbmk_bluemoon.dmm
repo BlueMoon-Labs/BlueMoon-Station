@@ -69,7 +69,7 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "bU" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "ce" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -301,7 +301,7 @@
 /turf/closed/wall/r_wall,
 /area/engineering/main/reactor_core)
 "hn" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "hH" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -366,7 +366,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "iQ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "iY" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible{
@@ -1029,7 +1029,7 @@
 /area/engineering/main/reactor_control)
 "zx" = (
 /obj/item/fuel_rod,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "zC" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
@@ -1179,7 +1179,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "CZ" = (
 /obj/effect/turf_decal/stripes/yellow/line{

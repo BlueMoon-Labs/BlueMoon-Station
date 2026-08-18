@@ -50,7 +50,7 @@
 /turf/open/floor/engine,
 /area/engineering/main)
 "bU" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "ce" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -217,7 +217,7 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "hn" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "hH" = (
 /obj/structure/cable{
@@ -270,7 +270,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "iQ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "iY" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible{
@@ -555,7 +555,7 @@
 /area/engineering/main)
 "pr" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "pF" = (
 /obj/machinery/atmospherics/pipe/manifold/orange/visible,
@@ -777,7 +777,7 @@
 /area/engineering/main)
 "zx" = (
 /obj/item/fuel_rod,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "zC" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
@@ -841,7 +841,7 @@
 "BM" = (
 /obj/item/fuel_rod,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "BU" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -879,7 +879,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main)
 "CZ" = (
 /obj/effect/turf_decal/stripes/yellow/line{

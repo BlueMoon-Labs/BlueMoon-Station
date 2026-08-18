@@ -36336,7 +36336,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "ehQ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "eii" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -43025,7 +43025,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "fFH" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
@@ -61509,7 +61509,7 @@
 /area/medical/virology)
 "jEC" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jEG" = (
 /obj/effect/turf_decal/tile/red/full,
@@ -94248,7 +94248,7 @@
 /turf/open/floor/plating,
 /area/maintenance/port)
 "quz" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "quN" = (
 /obj/structure/sign/poster/contraband/random,
@@ -101047,7 +101047,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "rUo" = (
 /obj/machinery/camera{
@@ -109814,7 +109814,7 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "tKJ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "tKL" = (
 /turf/closed/wall/r_wall,

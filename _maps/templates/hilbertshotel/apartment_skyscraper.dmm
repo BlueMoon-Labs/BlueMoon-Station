@@ -303,7 +303,7 @@
 	pixel_y = 16;
 	invisibility = 60
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)
@@ -468,7 +468,7 @@
 /obj/machinery/shower{
 	dir = 4
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)
@@ -981,7 +981,7 @@
 	pixel_x = 9;
 	pixel_y = -10
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)
@@ -1003,7 +1003,7 @@
 	pixel_y = 16;
 	invisibility = 60
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)
@@ -1039,7 +1039,7 @@
 /turf/open/floor/plasteel/dark/smooth/half,
 /area/hilbertshotel)
 "TR" = (
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)
@@ -1097,7 +1097,7 @@
 	pixel_y = 16;
 	invisibility = 60
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/hilbertshotel)

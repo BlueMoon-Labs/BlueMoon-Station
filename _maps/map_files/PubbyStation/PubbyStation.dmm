@@ -355,7 +355,7 @@
 	},
 /area/commons/fitness/pool)
 "aaO" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "aaP" = (
 /turf/open/floor/plasteel/yellowsiding{
@@ -552,14 +552,14 @@
 	},
 /area/commons/fitness/pool)
 "abn" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abo" = (
 /obj/structure/pool/ladder{
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abp" = (
 /obj/effect/turf_decal/tile/blue{
@@ -578,11 +578,11 @@
 	},
 /area/commons/fitness/pool)
 "abr" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abs" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abt" = (
 /obj/structure/pool/Rboard,

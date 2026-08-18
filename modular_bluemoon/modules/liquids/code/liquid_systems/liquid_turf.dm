@@ -267,6 +267,9 @@
 	if(istype(T, /turf/open/space)) //No space liquids - Maybe add an ice system later
 		return FALSE
 
+	if(istype(T, /turf/open/lava)) //BLUEMOON: lava boils liquids away, they don't pool on it
+		return FALSE
+
 	var/my_liquid_height = liquids ? liquids.height : 0
 	if(my_liquid_height < 1)
 		return FALSE
@@ -286,6 +289,13 @@
 	return FALSE
 
 /turf/proc/process_liquid_cell()
+	//BLUEMOON: liquids can't persist on space or lava - destroy any that end up there
+	if(isspaceturf(src) || istype(src, /turf/open/lava))
+		if(liquids)
+			qdel(liquids, TRUE)
+		SSliquids.remove_active_turf(src)
+		return
+
 	if(!liquids)
 		if(!lgroup)
 			for(var/turf/turf_to_process as anything in GetAtmosAdjacentTurfs())

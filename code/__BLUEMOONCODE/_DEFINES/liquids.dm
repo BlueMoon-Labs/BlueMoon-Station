@@ -89,6 +89,11 @@
 //Height at which we consider the tile "full" and dont drop liquids on it from the upper Z level
 #define LIQUID_HEIGHT_CONSIDER_FULL_TILE 50
 
+//Amount of water pre-filled pool tiles spawn with. Pools are sunken basins
+//(rim at height 0, pool floor at -30), so 250 units keeps the water at a
+//waist level without reaching the rim.
+#define POOL_START_LIQUID 250
+
 #define SSLIQUIDS_RUN_TYPE_TURFS 1
 #define SSLIQUIDS_RUN_TYPE_GROUPS 2
 #define SSLIQUIDS_RUN_TYPE_IMMUTABLES 3

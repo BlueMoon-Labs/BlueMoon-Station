@@ -61,6 +61,24 @@
 	base_icon_state = "cobble_corner"
 	icon_state = "cobble_corner"
 
+// BLUEMOON: pre-filled pool tile variants. Maps use these so pools spawn with
+// water already in them. The water amount is tuned to be waist-deep and not
+// reach the rim (see POOL_START_LIQUID in code/__BLUEMOONCODE/_DEFINES/liquids.dm).
+/turf/open/pool/water
+	start_liquid = POOL_START_LIQUID
+
+/turf/open/pool/pool_floor/water
+	start_liquid = POOL_START_LIQUID
+
+/turf/open/pool/cobble/water
+	start_liquid = POOL_START_LIQUID
+
+/turf/open/pool/cobble/side/water
+	start_liquid = POOL_START_LIQUID
+
+/turf/open/pool/cobble/corner/water
+	start_liquid = POOL_START_LIQUID
+
 /turf/open/floor/plasteel/elevated
 	name = "elevated floor"
 	floor_tile = /obj/item/stack/tile/plasteel/elevated

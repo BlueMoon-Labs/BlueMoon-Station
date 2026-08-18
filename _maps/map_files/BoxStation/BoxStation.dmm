@@ -22527,7 +22527,7 @@
 	},
 /area/tcommsat/computer)
 "bSu" = (
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/commons/fitness/recreation)
@@ -52862,7 +52862,7 @@
 	pixel_y = -22;
 	pixel_x = 0
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/commons/fitness/recreation)
@@ -58856,7 +58856,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/commons/fitness/recreation)
@@ -60184,7 +60184,7 @@
 	pixel_x = 4;
 	pixel_y = 0
 	},
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/commons/fitness/recreation)
@@ -86394,7 +86394,7 @@
 	},
 /area/security/processing)
 "yeV" = (
-/turf/open/pool{
+/turf/open/pool/water{
 	icon_state = "dark_small"
 	},
 /area/commons/fitness/recreation)

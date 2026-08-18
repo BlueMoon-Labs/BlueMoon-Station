@@ -59638,7 +59638,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cJH" = (
 /obj/structure/cable{
@@ -70267,7 +70267,7 @@
 /turf/open/floor/plasteel,
 /area/commons/locker)
 "hjd" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "hjl" = (
 /turf/open/floor/plating/beach/water,
@@ -82930,7 +82930,7 @@
 /turf/open/floor/wood,
 /area/commons/vacant_room/office)
 "pLT" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "pMk" = (
 /obj/structure/cable{
@@ -84697,7 +84697,7 @@
 /area/hallway/primary/central)
 "rbS" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "rbV" = (
 /obj/effect/turf_decal/tile/neutral{
@@ -91235,7 +91235,7 @@
 /obj/structure/pool/ladder{
 	pixel_x = -3
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "vKd" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers{
@@ -92096,7 +92096,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "wsr" = (
 /obj/structure/rack,

@@ -10250,7 +10250,7 @@
 	},
 /area/engineering/engine_smes)
 "aDQ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/recreation)
 "aDW" = (
 /obj/structure/loot_pile/maint,
@@ -10834,7 +10834,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/command/storage/eva)
 "aGk" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/recreation)
 "aGm" = (
 /obj/structure/railing{
@@ -50413,7 +50413,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/recreation)
 "gyT" = (
 /obj/structure/cable{
@@ -67094,7 +67094,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/recreation)
 "sGc" = (
 /obj/effect/turf_decal/stripes/white{

@@ -9553,7 +9553,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/slavers)
 "aZu" = (
 /obj/structure/table/wood,
@@ -9576,7 +9576,7 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership)
 "aZA" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/slavers)
 "aZB" = (
 /obj/structure/toilet{
@@ -10607,7 +10607,7 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "bPQ" = (
 /obj/structure/window/reinforced,
@@ -10706,7 +10706,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "bXY" = (
 /obj/machinery/stasis{
@@ -13590,7 +13590,7 @@
 	dir = 5
 	},
 /obj/structure/chair/pew/right,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "eNu" = (
 /obj/effect/turf_decal/tile/brown,
@@ -16760,7 +16760,7 @@
 	dir = 8
 	},
 /obj/machinery/light/directional/west,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "hIZ" = (
 /obj/effect/turf_decal/siding{
@@ -16862,7 +16862,7 @@
 	dir = 1
 	},
 /obj/structure/chair/pew,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "hRj" = (
 /obj/structure/table/wood,
@@ -17002,7 +17002,7 @@
 /obj/structure/chair/pew/left{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "ibS" = (
 /obj/machinery/light/small/directional/south,
@@ -19039,7 +19039,7 @@
 /obj/structure/chair/pew/right{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "jTr" = (
 /obj/structure/fans/tiny,
@@ -21511,7 +21511,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "mmH" = (
 /obj/machinery/door/poddoor{
@@ -26156,7 +26156,7 @@
 /area/centcom/control)
 "qUn" = (
 /obj/effect/turf_decal/trimline/brown/filled,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "qUu" = (
 /obj/machinery/vending/drugs{
@@ -27649,7 +27649,7 @@
 	dir = 4
 	},
 /obj/machinery/light/directional/west,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "skA" = (
 /obj/structure/sign/flag/ssc,
@@ -27955,7 +27955,7 @@
 	dir = 4
 	},
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "syo" = (
 /obj/structure/table/wood,
@@ -28088,7 +28088,7 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "sDh" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "sDP" = (
 /obj/machinery/door/poddoor/ert{
@@ -28121,7 +28121,7 @@
 /area/shuttle/inteq/collosus)
 "sFf" = (
 /obj/effect/turf_decal/trimline/brown/filled/line,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "sFG" = (
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
@@ -28432,7 +28432,7 @@
 /obj/structure/pool/ladder{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "sSO" = (
 /obj/machinery/door/poddoor{
@@ -29998,7 +29998,7 @@
 /area/syndicate_mothership)
 "utX" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "uvm" = (
 /obj/structure/table/wood,
@@ -30826,7 +30826,7 @@
 /turf/open/floor/carpet/red,
 /area/centcom/control)
 "viE" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "vjd" = (
 /obj/effect/decal/cleanable/blood/tracks,
@@ -31462,7 +31462,7 @@
 	dir = 9
 	},
 /obj/structure/chair/pew/left,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/centcom/holding)
 "vMk" = (
 /obj/structure/railing{

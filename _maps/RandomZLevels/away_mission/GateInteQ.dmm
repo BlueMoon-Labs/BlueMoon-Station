@@ -1510,7 +1510,7 @@
 "bTx" = (
 /obj/item/fuel_rod,
 /obj/effect/turf_decal/stripes/yellow/line,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "bTL" = (
 /obj/machinery/light/dim/directional/north,
@@ -1806,7 +1806,7 @@
 	dir = 2;
 	pixel_y = 17
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "ciR" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
@@ -2005,7 +2005,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "csv" = (
 /obj/machinery/door/airlock/external{
@@ -8057,7 +8057,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "iEp" = (
 /mob/living/simple_animal/hostile/alien/queen,
@@ -8335,7 +8335,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "iTZ" = (
 /obj/machinery/vending/wallmed/directional/north{
@@ -13425,7 +13425,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "nWt" = (
 /obj/structure/table/reinforced,
@@ -14352,7 +14352,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "oOE" = (
 /obj/effect/decal/cleanable/dirt,
@@ -15465,7 +15465,7 @@
 /area/awaymission/InteQ)
 "pXZ" = (
 /obj/item/fuel_rod,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "pYy" = (
 /obj/structure/table/wood,
@@ -16672,7 +16672,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/awaymission/InteQ/lvl2)
 "rbr" = (
 /obj/structure/table/wood,
