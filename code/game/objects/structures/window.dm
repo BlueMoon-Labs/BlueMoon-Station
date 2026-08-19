@@ -6,6 +6,8 @@
 		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
 	for(var/obj/machinery/door/window/interior_trim in linked)
 		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/structure/curtain_static/glass/gl_curtain)
+		new_status ? gl_curtain.electrochromatic_dim() : gl_curtain.electrochromatic_off()
 	for(var/obj/machinery/door/airlock/gl_airlock in linked)
 		if(gl_airlock.glass)
 			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()

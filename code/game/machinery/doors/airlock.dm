@@ -1071,7 +1071,7 @@
 	else if(istype(C, /obj/item/pai_cable))
 		var/obj/item/pai_cable/cable = C
 		cable.plugin(src, user)
-	else if(istype(C, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	else if(istype(C, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = C
 		if(!glass)
 			to_chat(user, span_warning("Electrochromatic kits only work on glass-paneled airlocks."))
