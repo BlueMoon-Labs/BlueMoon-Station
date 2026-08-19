@@ -8,6 +8,7 @@
 	opacity = TRUE
 	density = FALSE
 	layer = SIGN_LAYER
+	pass_flags = PASSTABLE | PASSGRILLE | PASSMACHINE | PASSSTRUCTURE
 	custom_materials = null
 
 /obj/structure/curtain_static/Initialize(mapload)
