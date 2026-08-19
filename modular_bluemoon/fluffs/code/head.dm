@@ -620,7 +620,7 @@
     mutantrace_variation = STYLE_MUZZLE
     active_sound = 'sound/machines/closet_open.ogg'
 
-/obj/item/clothing/head/helmet/custom_helmet/attack_self(mob/user)
+/obj/item/clothing/head/donator/bm/custom_helmet/attack_self(mob/user)
     if(can_toggle && !user.incapacitated())
         if(world.time > cooldown + toggle_cooldown)
             cooldown = world.time
