@@ -6,6 +6,8 @@
 	var/datum/reagent/raw_reagent
 
 	for(var/reagent_type in reagent_list)
+		if(!ispath(reagent_type, /datum/reagent))
+			continue
 		vol_temp = reagent_list[reagent_type]
 		vol_counter += vol_temp
 		raw_reagent = reagent_type // Not initialized

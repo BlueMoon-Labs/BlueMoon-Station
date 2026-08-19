@@ -358,6 +358,8 @@
 		var/mob/living/living_mover = mover
 		var/turf/current_turf = get_turf(mover)
 		if(current_turf && current_turf.turf_height - turf_height <= -TURF_HEIGHT_BLOCK_THRESHOLD)
+			if(locate(/obj/structure/pool/ladder) in current_turf)
+				return ..()
 			if(COOLDOWN_FINISHED(living_mover, last_height_alert))
 				COOLDOWN_START(living_mover, last_height_alert, 1 SECONDS)
 				living_mover.balloon_alert(living_mover, "too high, climb out!")

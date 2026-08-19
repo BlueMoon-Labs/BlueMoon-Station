@@ -630,6 +630,8 @@
 		if(iscarbon(AM))
 			var/mob/living/carbon/C = AM
 			C.apply_status_effect(/datum/status_effect/water_affected)
+			if(liquid_state >= LIQUID_STATE_WAIST)
+				soak_in_cum(C)
 	else if(isliving(AM))
 		var/mob/living/L = AM
 		if(!(L.movement_type & FLYING))
@@ -642,8 +644,6 @@
 					)), 35, 0)
 			if(prob(7))
 				L.slip(1 SECONDS, T, NO_SLIP_WHEN_WALKING, 2 SECONDS, TRUE)
-	if(iscarbon(AM))
-		soak_in_cum(AM)
 	if(fire_state)
 		AM.fire_act((T20C+50) + (50*fire_state), 125)
 
@@ -658,7 +658,8 @@
 			// No point in giving reagents to the deceased. It can cause some runtimes.
 			if(falling_carbon.stat >= DEAD)
 				return
-			soak_in_cum(falling_carbon)
+			if(liquid_state >= LIQUID_STATE_WAIST)
+				soak_in_cum(falling_carbon)
 
 			var/obj/item/clothing/mask/wear_mask = falling_carbon.get_item_by_slot(ITEM_SLOT_MASK)
 			if(wear_mask && wear_mask.flags_cover & MASKCOVERSMOUTH)

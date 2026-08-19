@@ -16,11 +16,13 @@
 	/// and get filled by whatever pours water into them.
 	var/start_liquid = 0
 	var/next_splash = 0
+	// BLUEMOON: what tile item this pool returns when dismantled with a crowbar
+	var/floor_tile = /obj/item/stack/tile/plasteel/pool
 
 /turf/open/pool/Initialize(mapload)
 	. = ..()
 	if(!liquids && start_liquid > 0)
-		add_liquid("water", start_liquid)
+		add_liquid(/datum/reagent/water, start_liquid)
 
 // BLUEMOON EDIT: shared drag-out check so the liquids module override of /turf/open/MouseDrop_T
 // doesn't eat the pool climb-out. The user must be able to use their hands to pull themselves out.
@@ -156,11 +158,40 @@
 
 /turf/open/pool/attackby(obj/item/W, mob/living/user)
 	if(istype(W, /obj/item/mop) && liquids)
-		W.reagents.add_reagent("water", 5)
+		W.reagents.add_reagent(/datum/reagent/water, 5)
 		to_chat(user, "<span class='notice'>Вы намочили [W] в [src].</span>")
 		playsound(src, 'sound/effects/slosh.ogg', 25, TRUE)
 	else
 		return ..()
+
+// BLUEMOON: pool disassembly with a crowbar. Pools are built by placing pool
+// floor tiles, so a crowbar in HELP intent pries them back up into a tile item.
+/turf/open/pool/crowbar_act(mob/living/user, obj/item/I)
+	if(user.a_intent != INTENT_HELP)
+		return FALSE
+	to_chat(user, "<span class='notice'>Вы начинаете выламывать [src]...</span>")
+	if(!I.use_tool(src, user, 3 SECONDS, volume = 80))
+		return FALSE
+	// BLUEMOON: the pool might have been replaced while we were working
+	if(!istype(src, /turf/open/pool))
+		return TRUE
+	if(floor_tile)
+		new floor_tile(src)
+	if(liquids)
+		// drain the water when the basin is removed
+		qdel(liquids, TRUE)
+	for(var/obj/effect/decal/cleanable/C in src)
+		if(C.wiped_by_floor_change)
+			qdel(C)
+	// BLUEMOON: prying up a player-built pool returns to whatever floor was
+	// underneath (matching floor tile prying). Map pools sit on the bare
+	// /turf/baseturf_bottom, so if scraping doesn't leave a normal floor,
+	// fall back to plain plating instead.
+	var/turf/new_turf = ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+	if(!isfloorturf(new_turf))
+		new_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+	to_chat(user, "<span class='notice'>Вы разобрали [src] и получили тайл пола.</span>")
+	return TRUE
 
 /turf/open/pool/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	. = ..()

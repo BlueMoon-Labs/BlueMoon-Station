@@ -317,7 +317,7 @@
 	if (!istype(T))
 		return
 	if(holder?.chem_temp > T0C + 100)
-		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/molarity];TEMP=[holder.chem_temp]")
+		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/(molarity*2)];TEMP=[holder.chem_temp]")
 	else
 		var/CT = cooling_temperature
 

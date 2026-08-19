@@ -48,6 +48,7 @@
 	icon = 'modular_bluemoon/modules/liquids/icons/turf/floor.dmi'
 	base_icon_state = "cobble"
 	icon_state = "cobble"
+	floor_tile = /obj/item/stack/tile/plasteel/pool/cobble
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
@@ -56,10 +57,12 @@
 /turf/open/pool/cobble/side
 	base_icon_state = "cobble_side"
 	icon_state = "cobble_side"
+	floor_tile = /obj/item/stack/tile/plasteel/pool/cobble/side
 
 /turf/open/pool/cobble/corner
 	base_icon_state = "cobble_corner"
 	icon_state = "cobble_corner"
+	floor_tile = /obj/item/stack/tile/plasteel/pool/cobble/corner
 
 // BLUEMOON: pre-filled pool tile variants. Maps use these so pools spawn with
 // water already in them. The water amount is tuned to be waist-deep and not

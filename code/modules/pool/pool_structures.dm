@@ -4,13 +4,11 @@
 	anchored = TRUE
 	resistance_flags = UNACIDABLE|INDESTRUCTIBLE
 
-// BLUEMOON: ladders and jump boards are now static decor. The pool itself is a
-// liquid basin with free entry/exit, so there is no machinery and no climbing logic.
 
 /obj/structure/pool/ladder
 	name = "Ladder"
 	icon_state = "ladder"
-	desc = "A decorative ladder at the edge of the pool."
+	desc = "A ladder at the edge of the pool. Lets you climb out of the water with ease."
 	layer = ABOVE_MOB_LAYER
 	dir = EAST
 
