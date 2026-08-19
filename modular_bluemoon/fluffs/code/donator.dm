@@ -2546,5 +2546,5 @@
 /datum/gear/donator/bm/custom_helmet
 	name = "Custom helmet"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/donator/bm/custom_helmet
+	path = /obj/item/clothing/head/helmet/custom_helmet
 	ckeywhitelist = list("hartty", "hateredsoul", "ordinarylife", "dalphy12")
