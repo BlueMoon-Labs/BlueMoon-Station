@@ -286,3 +286,16 @@
 	for(var/obj/item/picket_sign/lying in floor)
 		signs_after++
 	TEST_ASSERT_EQUAL(signs_after, signs_before, "a smashed sign must not drop an intact picket sign")
+
+	// Повешенный на стену плакат снимается тем же путём и тоже держит надпись.
+	var/obj/structure/picket_sign/wall/hung = allocate(/obj/structure/picket_sign/wall, floor)
+	hung.set_label("Honk if you love clowns")
+	allocated -= hung
+	var/obj/item/picket_sign/taken_down = hung.uproot()
+	qdel(hung)
+	TEST_ASSERT_NOTNULL(taken_down, "taking a wall sign down must give back a picket sign")
+	allocated += taken_down
+	TEST_ASSERT_EQUAL(taken_down.label, "Honk if you love clowns", "a sign taken off a wall must keep its label")
+
+	// Звук письма обязан разрешаться в файл: незарегистрированный ключ get_sfx() вернёт сам себя.
+	TEST_ASSERT(!istext(get_sfx(SFX_WRITING_PEN)), "SFX_WRITING_PEN must resolve to a sound file, not stay a bare key")

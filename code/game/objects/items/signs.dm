@@ -48,7 +48,7 @@
 	. = ..()
 	. += span_notice("Надпись меняется ручкой или мелком. Пустая надпись стирает плакат.")
 	if(plantable)
-		. += span_notice("Плакат можно вкопать в пол, ткнув им в тайл на \"помощи\".")
+		. += span_notice("На \"помощи\" плакат вкапывается в пол и вешается на стену.")
 
 /// Пишет на плакате [new_label]. Пустая строка возвращает плакат к чистому виду.
 /obj/item/picket_sign/proc/set_label(new_label)
@@ -65,8 +65,10 @@
 	set waitfor = FALSE
 
 	var/new_label = ask_picket_label(src, user, writing_implement, label)
-	if(!isnull(new_label))
-		set_label(new_label)
+	if(isnull(new_label))
+		return
+	set_label(new_label)
+	playsound(src, SFX_WRITING_PEN, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, SOUND_FALLOFF_EXPONENT + 3, ignore_walls = FALSE)
 
 /obj/item/picket_sign/attackby(obj/item/attacking_item, mob/user, params)
 	if(!istype(attacking_item, /obj/item/pen) && !istype(attacking_item, /obj/item/toy/crayon))
@@ -80,10 +82,14 @@
 	. = ..()
 	if(!plantable || !proximity_flag || user.a_intent != INTENT_HELP)
 		return
-	if(!isopenturf(target) || isspaceturf(target))
+	if(iswallturf(target))
+		hang_on_wall(target, user)
 		return
+	if(isopenturf(target) && !isspaceturf(target))
+		plant_in_floor(target, user)
 
-	var/turf/open/spot = target
+/// Вкапывает плакат в тайл пола [spot].
+/obj/item/picket_sign/proc/plant_in_floor(turf/open/spot, mob/user)
 	if(spot == get_turf(user))
 		balloon_alert(user, "не под собой")
 		return
@@ -99,6 +105,43 @@
 
 	var/obj/structure/picket_sign/planted = new(spot)
 	planted.set_label(label)
+	qdel(src)
+
+/**
+ * Вешает плакат на стену [wall].
+ *
+ * Как и остальные настенные знаки, объект стоит на тайле вешающего и сдвинут пикселями
+ * на стену - иначе он был бы виден с обеих её сторон.
+ */
+/obj/item/picket_sign/proc/hang_on_wall(turf/closed/target_wall, mob/user)
+	var/turf/user_turf = get_turf(user)
+	var/hang_dir = get_dir(user_turf, target_wall)
+	if(!(hang_dir in GLOB.cardinals)) //по диагонали плакат повис бы сразу на двух стенах
+		balloon_alert(user, "встаньте напротив стены")
+		return
+	for(var/obj/structure/picket_sign/wall/hanging in user_turf)
+		if(hanging.dir == hang_dir)
+			balloon_alert(user, "тут уже висит плакат")
+			return
+
+	user.visible_message(span_notice("[user] начинает вешать [src] на [target_wall]."), span_notice("Вы начинаете вешать [src] на [target_wall]."))
+	if(!do_after(user, PICKET_SIGN_PLANT_TIME, target_wall))
+		return
+	if(QDELETED(src) || !iswallturf(target_wall) || get_turf(user) != user_turf)
+		return
+
+	var/obj/structure/picket_sign/wall/hung = new(user_turf)
+	hung.set_label(label)
+	hung.setDir(hang_dir)
+	switch(hang_dir)
+		if(NORTH)
+			hung.pixel_y = 32
+		if(SOUTH)
+			hung.pixel_y = -32
+		if(EAST)
+			hung.pixel_x = 32
+		if(WEST)
+			hung.pixel_x = -32
 	qdel(src)
 
 /obj/item/picket_sign/ui_action_click(mob/user, actiontype)
@@ -150,7 +193,7 @@
 /obj/structure/picket_sign
 	name = "blank picket sign"
 	desc = "It's blank."
-	icon = 'icons/obj/picket_sign.dmi'
+	icon = 'icons/obj/picket_sign.dmi' //спрайты floor_sign/wall_sign из ParadiseSS13, CC-BY-SA 3.0
 	icon_state = "planted"
 	anchored = TRUE
 	density = FALSE
@@ -159,9 +202,15 @@
 
 	var/label = ""
 
+/// Плакат, повешенный на стену. Живёт на тайле перед стеной, сдвинутый на неё пикселями.
+/obj/structure/picket_sign/wall
+	icon_state = "wall"
+	plane = ABOVE_WALL_PLANE
+	layer = SIGN_LAYER
+
 /obj/structure/picket_sign/examine(mob/user)
 	. = ..()
-	. += span_notice("Надпись меняется ручкой или мелком. Плакат вынимается руками.")
+	. += span_notice("Надпись меняется ручкой или мелком. Плакат снимается руками.")
 
 /// Пишет на плакате [new_label]. Пустая строка возвращает плакат к чистому виду.
 /obj/structure/picket_sign/proc/set_label(new_label)
@@ -178,10 +227,12 @@
 	set waitfor = FALSE
 
 	var/new_label = ask_picket_label(src, user, writing_implement, label)
-	if(!isnull(new_label))
-		set_label(new_label)
+	if(isnull(new_label))
+		return
+	set_label(new_label)
+	playsound(src, SFX_WRITING_PEN, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, SOUND_FALLOFF_EXPONENT + 3, ignore_walls = FALSE)
 
-/// Превращает вкопанный плакат обратно в предмет, сохраняя надпись.
+/// Превращает плакат обратно в предмет, сохраняя надпись.
 /obj/structure/picket_sign/proc/uproot(mob/user)
 	var/obj/item/picket_sign/sign = new(get_turf(src))
 	sign.set_label(label)
@@ -199,7 +250,7 @@
 	if(act_intent != INTENT_HELP)
 		return
 
-	user.visible_message(span_notice("[user] начинает вынимать [src]."), span_notice("Вы начинаете вынимать [src]."))
+	user.visible_message(span_notice("[user] начинает снимать [src]."), span_notice("Вы начинаете снимать [src]."))
 	if(!do_after(user, PICKET_SIGN_PLANT_TIME, src))
 		return
 	uproot(user)
