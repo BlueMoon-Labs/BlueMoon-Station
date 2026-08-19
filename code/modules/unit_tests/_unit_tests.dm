@@ -313,6 +313,7 @@
 #include "slime_ai.dm"
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
+#include "sign_types.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
