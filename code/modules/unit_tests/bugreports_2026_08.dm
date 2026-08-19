@@ -203,3 +203,52 @@
 	original.remove_status_effect(/datum/status_effect/slime_clone)
 	GLOB.ssd_mob_list -= original
 	qdel(original_mind)
+
+// "Пикетные таблички не работают: ручку подносишь, текст вводишь - на плакате пусто"
+//
+// retext() переписали в (инструмент, автор), но оба вызова - attackby плаката и Trigger()
+// нано-действия - так и передавали одного автора. Инструмент получал моба, автор оставался
+// null, и user.canUseTopic() падал в рантайм раньше, чем надпись ложилась на плакат.
+/datum/unit_test/picket_sign_takes_a_label/Run()
+	var/obj/item/picket_sign/sign = allocate(/obj/item/picket_sign, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+
+	sign.set_label("Free the clown")
+	TEST_ASSERT_EQUAL(sign.label, "Free the clown", "a written sign must remember its label")
+	TEST_ASSERT_EQUAL(sign.name, "Free the clown sign", "a written sign must be named after its label")
+	TEST_ASSERT_EQUAL(sign.desc, "It reads: Free the clown", "a written sign must read out its label on examine")
+
+	sign.set_label("")
+	TEST_ASSERT_EQUAL(sign.label, "", "an erased sign must drop its label")
+	TEST_ASSERT_EQUAL(sign.name, initial(sign.name), "an erased sign must go back to its blank name")
+	TEST_ASSERT_EQUAL(sign.desc, initial(sign.desc), "an erased sign must go back to its blank description")
+
+	// Цепочку обязан останавливать сам плакат: иначе следом отработает afterattack
+	// инструмента - ручка откроет второе окно переименования, мелок нарисует граффити.
+	var/obj/item/pen/pen = allocate(/obj/item/pen, run_loc_floor_bottom_left)
+	TEST_ASSERT(sign.attackby(pen, user) & STOP_ATTACK_PROC_CHAIN, "writing on a sign with a pen must consume the attack chain")
+
+	var/obj/item/toy/crayon/crayon = allocate(/obj/item/toy/crayon, run_loc_floor_bottom_left)
+	TEST_ASSERT(sign.attackby(crayon, user) & STOP_ATTACK_PROC_CHAIN, "writing on a sign with a crayon must consume the attack chain")
+
+	var/obj/item/paper/paper = allocate(/obj/item/paper, run_loc_floor_bottom_left)
+	TEST_ASSERT(!(sign.attackby(paper, user) & STOP_ATTACK_PROC_CHAIN), "hitting a sign with something that cannot write must fall through to the normal attack chain")
+
+// "Нано-плакат борга по кнопке машет собой вместо того, чтобы дать ввести надпись"
+//
+// Действие висит на самом нано-плакате, а разводит вызовы ui_action_click: кнопка перепрошивки
+// уходит в retext(), любое другое действие - в обычный attack_self с махом и кулдауном.
+/datum/unit_test/nano_picket_sign_action_retexts/Run()
+	var/obj/item/picket_sign/cyborg/nano = allocate(/obj/item/picket_sign/cyborg, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+
+	var/datum/action/item_action/nano_picket_sign/retext_action = locate() in nano.actions
+	TEST_ASSERT_NOTNULL(retext_action, "test premise: a nano-sign must hand out its retext action")
+
+	nano.ui_action_click(user, retext_action)
+	TEST_ASSERT(COOLDOWN_FINISHED(nano, picket_sign_cooldown), "the retext button must not wave the sign")
+
+	var/datum/action/item_action/plain_action = new(nano)
+	nano.ui_action_click(user, plain_action)
+	TEST_ASSERT(!COOLDOWN_FINISHED(nano, picket_sign_cooldown), "any other action must still fall through to waving the sign")
+	qdel(plain_action)

@@ -1,3 +1,6 @@
+/// Сколько символов влезает на плакат.
+#define PICKET_SIGN_LABEL_MAX_LEN 30
+
 /obj/item/picket_sign
 	icon_state = "picket"
 	name = "blank picket sign"
@@ -17,28 +20,60 @@
 	resistance_flags = NONE
 	actions_types = list(/datum/action/item_action/nano_picket_sign)
 
-/obj/item/picket_sign/proc/retext(obj/item/W, mob/user)
-	if(istype(W, /obj/item/pen))
-		if(!user.can_write(W))
-			to_chat(user, "<span class='notice'>You scribble illegibly on [src]!</span>")
-			return
-	var/txt = stripped_input(user, "What would you like to write on the sign?", "Sign Label", null , 30)
-	if(txt && user.canUseTopic(src, BE_CLOSE))
-		label = txt
-		name = "[label] sign"
-		desc =	"It reads: [label]"
+/obj/item/picket_sign/examine(mob/user)
+	. = ..()
+	. += span_notice("Надпись меняется ручкой или мелком. Пустая надпись стирает плакат.")
 
-/obj/item/picket_sign/attackby(obj/item/W, mob/user, params)
-	if(istype(W, /obj/item/pen) || istype(W, /obj/item/toy/crayon))
-		retext(user)
+/// Пишет на плакате [new_label]. Пустая строка возвращает плакат к чистому виду.
+/obj/item/picket_sign/proc/set_label(new_label)
+	label = new_label || ""
+	if(label)
+		name = "[label] sign"
+		desc = "It reads: [label]"
 	else
+		name = initial(name)
+		desc = initial(desc)
+
+/**
+ * Спрашивает у [user] новую надпись и наносит её.
+ *
+ * [writing_implement] задан, когда пишут предметом - тогда работает проверка грамотности
+ * и самого инструмента. Нано-плакат силикон перепрограммирует без инструмента вообще.
+ */
+/obj/item/picket_sign/proc/retext(mob/user, obj/item/writing_implement)
+	set waitfor = FALSE
+
+	if(!user?.client) //диалог показывать некому
+		return
+	if(writing_implement && !user.can_write(writing_implement))
+		return
+
+	var/new_label = tgui_input_text(user, "Что написать на плакате?", "Надпись на плакате", label, PICKET_SIGN_LABEL_MAX_LEN, encode = TRUE)
+	if(isnull(new_label) || !user.canUseTopic(src, BE_CLOSE))
+		return
+
+	set_label(new_label)
+
+/obj/item/picket_sign/attackby(obj/item/attacking_item, mob/user, params)
+	if(!istype(attacking_item, /obj/item/pen) && !istype(attacking_item, /obj/item/toy/crayon))
 		return ..()
+	retext(user, attacking_item)
+	// Иначе следом отработает afterattack инструмента: ручка откроет своё окно
+	// переименования по UNIQUE_RENAME, мелок нарисует поверх плаката граффити.
+	return STOP_ATTACK_PROC_CHAIN
+
+/obj/item/picket_sign/ui_action_click(mob/user, actiontype)
+	if(istype(actiontype, /datum/action/item_action/nano_picket_sign))
+		retext(user)
+		return
+	return ..()
 
 /obj/item/picket_sign/attack_self(mob/user)
 	if(!isliving(user))
 		return ..()
 
 	if(!COOLDOWN_FINISHED(src, picket_sign_cooldown))
+		balloon_alert(user, "плакат ещё опущен")
 		return
 
 	COOLDOWN_START(src, picket_sign_cooldown, 5 SECONDS)
@@ -66,3 +101,5 @@
 		animate(pixel_z = (1 * direction), time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
 
 	user.changeNext_move(CLICK_CD_MELEE)
+
+#undef PICKET_SIGN_LABEL_MAX_LEN
