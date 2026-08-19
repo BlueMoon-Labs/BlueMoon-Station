@@ -90,6 +90,6 @@
 			if(BODY_ZONE_CHEST)
 				user.client?.plug13.send_emote(PLUG13_EMOTE_CHEST, min(NORMAL_LUST*2 * 5, 100), PLUG13_DURATION_NORMAL)
 
-		M.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		M.try_play_interaction_effect()
 	else if(user.a_intent == INTENT_HARM)
 		return ..()

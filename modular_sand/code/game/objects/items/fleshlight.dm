@@ -72,7 +72,7 @@
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		user.try_play_interaction_effect(M, FALSE, user.client?.prefs?.interaction_effect)
+		user.try_play_interaction_effect()
 
 
 	else if(user.a_intent == INTENT_HARM)

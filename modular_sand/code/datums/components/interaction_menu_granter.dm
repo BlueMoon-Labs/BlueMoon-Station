@@ -597,9 +597,7 @@
 		.["sex_jitter"] = 				!!CHECK_BITFIELD(prefs.cit_toggles, SEX_JITTER)	//By Gardelin0
 		.["no_disco_dance"] = 			!CHECK_BITFIELD(prefs.cit_toggles, NO_DISCO_DANCE) //By SmiLeY
 		.["show_heart_over_self"] = 		prefs.show_heart_over_self
-		.["show_heart_over_partner"] = 		prefs.show_heart_over_partner
 		.["interaction_effect"] = 			prefs.interaction_effect
-		.["partner_interaction_effect"] = 		prefs.partner_interaction_effect
 		.["block_partner_pixel_shift"] = 	prefs.block_partner_pixel_shift
 
 	var/list/custom_interactions_sent = list()
@@ -964,16 +962,10 @@
 				//
 				if("show_heart_over_self")
 					prefs.show_heart_over_self = !prefs.show_heart_over_self
-				if("show_heart_over_partner")
-					prefs.show_heart_over_partner = !prefs.show_heart_over_partner
 				if("interaction_effect")
 					var/effect = params["effect"]
 					if(effect in GLOB.interaction_effects_list)
 						prefs.interaction_effect = effect
-				if("partner_interaction_effect")
-					var/effect = params["effect"]
-					if(effect in GLOB.interaction_effects_list)
-						prefs.partner_interaction_effect = effect
 				if("block_partner_pixel_shift")
 					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
 				//

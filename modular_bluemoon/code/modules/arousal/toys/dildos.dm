@@ -279,7 +279,7 @@
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		M.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		M.try_play_interaction_effect()
 
 
 	else if(user.a_intent == INTENT_HARM)

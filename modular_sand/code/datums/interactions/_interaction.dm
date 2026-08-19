@@ -208,10 +208,9 @@
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
 	if(hearts_effect)
-		var/datum/preferences/user_prefs = user.client?.prefs
-		user.try_play_interaction_effect(target, is_hidden, user_prefs?.interaction_effect)
+		user.try_play_interaction_effect(is_hidden)
 		if(user != target)
-			target.try_play_interaction_effect(user, is_hidden, user_prefs?.partner_interaction_effect)
+			target.try_play_interaction_effect(is_hidden)
 
 /datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
 	var/turf/sound_turf = get_turf(sound_source)
@@ -258,23 +257,18 @@
 
 // BLUEMOON ADD START
 
-/mob/living/proc/try_play_interaction_effect(mob/living/partner, is_hidden = FALSE, effect = null)
+/mob/living/proc/try_play_interaction_effect(is_hidden = FALSE)
 	if(is_hidden)
 		return FALSE
 	var/datum/preferences/prefs = client?.prefs
 	if(prefs && !prefs.show_heart_over_self)
 		return FALSE
-	if(partner && partner != src)
-		var/datum/preferences/partner_prefs = partner.client?.prefs
-		if(partner_prefs && !partner_prefs.show_heart_over_partner)
-			return FALSE
-	play_interaction_effect(effect)
+	play_interaction_effect()
 	return TRUE
 
 
-/mob/living/proc/play_interaction_effect(effect = null)
-	if(!effect || !(effect in GLOB.interaction_effects_list))
-		effect = client?.prefs?.interaction_effect || INTERACTION_EFFECT_HEART
+/mob/living/proc/play_interaction_effect()
+	var/effect = client?.prefs?.interaction_effect || INTERACTION_EFFECT_HEART
 	if(!(effect in GLOB.interaction_effects_list))
 		effect = INTERACTION_EFFECT_HEART
 	switch(effect)

@@ -366,7 +366,7 @@
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		target.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		target.try_play_interaction_effect()
 
 /obj/item/gun/CheckAttackCooldown(mob/user, atom/target, shooting = FALSE)
 	return user.CheckActionCooldown(shooting? ranged_attack_speed : attack_speed, clickdelay_from_next_action, clickdelay_mod_bypass, clickdelay_ignores_next_action)

@@ -3,9 +3,7 @@
 	var/custom_verb_consent = TRUE
 
 	var/show_heart_over_self = TRUE
-	var/show_heart_over_partner = TRUE
 	var/interaction_effect = INTERACTION_EFFECT_HEART
-	var/partner_interaction_effect = INTERACTION_EFFECT_HEART
 	var/block_partner_pixel_shift = FALSE
 
 /datum/preferences/proc/get_custom_interaction_limit()
@@ -296,10 +294,9 @@
 		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null
 	)
 	if(is_lewd)
-		var/datum/preferences/user_prefs = user.client?.prefs
-		user.try_play_interaction_effect(target, is_hidden, user_prefs?.interaction_effect)
+		user.try_play_interaction_effect(is_hidden)
 		if(user != target)
-			target.try_play_interaction_effect(user, is_hidden, user_prefs?.partner_interaction_effect)
+			target.try_play_interaction_effect(is_hidden)
 	var/lust_amount = get_lust_amount()
 	if(!QDELETED(user))
 		if(self_orgasm)

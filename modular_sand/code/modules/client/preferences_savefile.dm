@@ -42,9 +42,7 @@
 	WRITE_FILE(.["custom_verb_consent"], custom_verb_consent)
 
 	WRITE_FILE(.["show_heart_over_self"], show_heart_over_self)
-	WRITE_FILE(.["show_heart_over_partner"], show_heart_over_partner)
 	WRITE_FILE(.["interaction_effect"], interaction_effect)
-	WRITE_FILE(.["partner_interaction_effect"], partner_interaction_effect)
 	WRITE_FILE(.["block_partner_pixel_shift"], block_partner_pixel_shift)
 
 	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
@@ -88,14 +86,10 @@
 
 	.["show_heart_over_self"] >> show_heart_over_self
 	show_heart_over_self = sanitize_integer(show_heart_over_self, 0, 1, initial(show_heart_over_self))
-	.["show_heart_over_partner"] >> show_heart_over_partner
-	show_heart_over_partner = sanitize_integer(show_heart_over_partner, 0, 1, initial(show_heart_over_partner))
+
 	.["interaction_effect"] >> interaction_effect
 	if(!(interaction_effect in GLOB.interaction_effects_list))
 		interaction_effect = initial(interaction_effect)
-	.["partner_interaction_effect"] >> partner_interaction_effect
-	if(!(partner_interaction_effect in GLOB.interaction_effects_list))
-		partner_interaction_effect = initial(partner_interaction_effect)
 	.["block_partner_pixel_shift"] >> block_partner_pixel_shift
 	block_partner_pixel_shift = sanitize_integer(block_partner_pixel_shift, 0, 1, initial(block_partner_pixel_shift))
 

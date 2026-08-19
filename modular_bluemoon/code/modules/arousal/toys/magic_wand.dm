@@ -100,7 +100,7 @@
 				M.Stun(3)
 				if(prob(50))
 					M.emote("moan")
-		M.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		M.try_play_interaction_effect()
 	else if(user.a_intent == INTENT_HARM)
 		return ..()
 
@@ -144,7 +144,7 @@
 				if(prob(50))
 					M.emote("moan")
 
-		M.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		M.try_play_interaction_effect()
 
 /obj/item/magicwand/equipped(mob/living/carbon/M)
 	. = ..()

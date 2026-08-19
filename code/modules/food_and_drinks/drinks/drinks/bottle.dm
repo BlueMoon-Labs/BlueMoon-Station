@@ -94,7 +94,7 @@
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		target.try_play_interaction_effect(user, FALSE, user.client?.prefs?.partner_interaction_effect)
+		target.try_play_interaction_effect()
 
 /obj/item/reagent_containers/food/drinks/bottle/attack(mob/living/target, mob/living/user)
 
