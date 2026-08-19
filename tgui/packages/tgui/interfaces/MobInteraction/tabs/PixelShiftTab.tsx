@@ -65,9 +65,9 @@ const clampShift = (value) => Math.max(-MAX_SHIFT, Math.min(MAX_SHIFT, value));
 
 type PixelShiftPrefs = {
   show_heart_over_self: boolean;
-  show_heart_over_partner: boolean;
+
   interaction_effect: string;
-  partner_interaction_effect: string;
+
   interaction_effects_list: Record<string, string>;
   block_partner_pixel_shift: boolean;
 };
@@ -80,16 +80,13 @@ export const Pixelshift = (props) => {
   const { act, data } = useBackend<PixelShiftPrefs>();
   const {
     show_heart_over_self,
-    show_heart_over_partner,
+
     interaction_effect,
-    partner_interaction_effect,
     interaction_effects_list = {},
     block_partner_pixel_shift,
   } = data;
   const effectIcon = EFFECT_ICONS[interaction_effect] || 'heart';
   const currentEffectLabel = interaction_effects_list[interaction_effect] || 'Сердечко';
-  const partnerEffectIcon = EFFECT_ICONS[partner_interaction_effect] || 'heart';
-  const currentPartnerEffectLabel = interaction_effects_list[partner_interaction_effect] || 'Сердечко';
   const [offsetX, setOffsetX] = useLocalState('pixelshift_offset_x', 0);
   const [offsetY, setOffsetY] = useLocalState('pixelshift_offset_y', 0);
   const [speed, setSpeed] = useLocalState('pixelshift_speed', 30);
@@ -280,25 +277,7 @@ export const Pixelshift = (props) => {
               </Stack.Item>
             </Stack>
           </Stack.Item>
-          <Stack.Item>
-            <Stack fill align="center">
-              <Stack.Item>
-                <Icon name={partnerEffectIcon} color="#ff69b4" />
-              </Stack.Item>
-              <Stack.Item grow>
-                Показывать эффект над партнёром
-              </Stack.Item>
-              <Stack.Item>
-                <Button
-                  icon={show_heart_over_partner ? 'toggle-on' : 'toggle-off'}
-                  color={show_heart_over_partner ? 'green' : 'default'}
-                  selected={show_heart_over_partner}
-                  tooltip="Показывать всплывающий эффект над партнёром при интеракциях"
-                  onClick={() => act('pref', { pref: 'show_heart_over_partner' })}
-                />
-              </Stack.Item>
-            </Stack>
-          </Stack.Item>
+
           <Stack.Item>
             <Stack fill align="center">
               <Stack.Item grow>
@@ -320,27 +299,7 @@ export const Pixelshift = (props) => {
               </Stack.Item>
             </Stack>
           </Stack.Item>
-          <Stack.Item>
-            <Stack fill align="center">
-              <Stack.Item grow>
-                Эффект интеракций у партнёра
-              </Stack.Item>
-              <Stack.Item>
-                <Dropdown
-                  width="180px"
-                  options={Object.keys(interaction_effects_list).map(key => interaction_effects_list[key])}
-                  selected={currentPartnerEffectLabel}
-                  displayText={currentPartnerEffectLabel}
-                  onSelected={(label) => {
-                    const key = Object.keys(interaction_effects_list).find(k => interaction_effects_list[k] === label);
-                    if (key) {
-                      act('pref', { pref: 'partner_interaction_effect', effect: key });
-                    }
-                  }}
-                />
-              </Stack.Item>
-            </Stack>
-          </Stack.Item>
+
           <Stack.Item>
             <Stack fill align="center">
               <Stack.Item grow>
