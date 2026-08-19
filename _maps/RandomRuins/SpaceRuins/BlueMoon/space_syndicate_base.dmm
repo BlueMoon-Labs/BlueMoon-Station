@@ -7787,6 +7787,7 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/item/melee/rapier,
 /obj/item/storage/belt/sabre/rapier,
+/obj/item/card/id/departmental_budget/ds,
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/admiral)
 "EJ" = (
@@ -8492,16 +8493,7 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge)
 "Ht" = (
 /obj/effect/turf_decal/trimline/dark_red/mid_joiner,
-/obj/machinery/computer/shuttle{
-	desc = "A shuttle terminal which allows a connection to the DS-2 forward base's supply shuttle.";
-	icon_keyboard = "syndie_key";
-	icon_screen = "syndishuttle";
-	light_color = "#FA8282";
-	name = "syndicate cargo shuttle terminal";
-	possible_destinations = "ds1_syndicate;ds2_syndicate;caravansyndicate1_listeningpost";
-	req_access_txt = "150";
-	shuttleId = "sbc_corvette"
-	},
+/obj/machinery/computer/cargo/express/ds,
 /obj/effect/turf_decal/trimline/dark_red/line{
 	dir = 1
 	},

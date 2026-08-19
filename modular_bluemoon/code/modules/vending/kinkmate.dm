@@ -93,6 +93,7 @@
 				/obj/item/sybian_kit = 5,
 				/obj/item/dildo_machine_kit = 5,
 				/obj/item/gloryhole_kit = 5,
+				/obj/item/wallframe/lewd_portal = 3,
 				/obj/item/storage/box/shibari_stand = 5,
 				/obj/item/storage/box/xstand_kit = 5,
 				/obj/item/storage/box/bdsmbed_kit = 5,

@@ -429,8 +429,10 @@
 		if(weapon_weight == WEAPON_HEAVY && user.get_inactive_held_item())
 			to_chat(user, "<span class='userdanger'>Вам нужно обе руки для стрельбы из [src]!</span>")
 			return
-
-	user.DelayNextAction()
+	if(HAS_TRAIT(user, TRAIT_DOUBLE_TAP))
+		user.SetNextAction(CLICK_CD_RAPID)
+	else
+		user.DelayNextAction()
 
 	//DUAL (or more!) WIELDING
 	var/bonus_spread = 0
@@ -444,7 +446,7 @@
 			if(G == src || G.weapon_weight >= WEAPON_MEDIUM)
 				continue
 			else if(G.can_trigger_gun(user))
-				bonus_spread += 24 * G.weapon_weight * G.dualwield_spread_mult
+				bonus_spread += G.dual_wield_spread * G.dualwield_spread_mult
 				loop_counter++
 				var/stam_cost = G.getstamcost(user)
 				addtimer(CALLBACK(G, TYPE_PROC_REF(/obj/item/gun, process_fire), target, user, TRUE, params, null, bonus_spread, stam_cost), loop_counter)
@@ -824,7 +826,7 @@
 		return FALSE
 	return ..()
 
-/obj/item/gun/proc/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
+/obj/item/gun/proc/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
 	if(!ishuman(user) || !ishuman(target))
 		return
 
@@ -840,7 +842,7 @@
 
 	busy_action = TRUE
 
-	if(!bypass_timer && (!do_mob(user, target, 120) || user.zone_selected != BODY_ZONE_PRECISE_MOUTH))
+	if(!bypass_timer && (!do_mob(user, target, time_to_kill) || user.zone_selected != BODY_ZONE_PRECISE_MOUTH))
 		if(user)
 			if(user == target)
 				user.visible_message(span_notice("[user] решил[user.ru_a()] не стрелять."))
@@ -857,6 +859,7 @@
 
 	if(chambered && chambered.BB)
 		chambered.BB.damage *= 10
+		. = TRUE
 
 	process_fire(target, user, TRUE, params, BODY_ZONE_HEAD, stam_cost = getstamcost(user))
 

@@ -42,9 +42,9 @@
 #define REAGENT_VALUE_AMAZING		15	//reserved ONLY for non-mass produceable, unsynthetizable reagents.
 #define REAGENT_VALUE_GLORIOUS		150	//reagents that shouldn't be possible to get or farm under normal conditions. e.g. Romerol, fungal TB, adminordrazine...
 
-#define TOUCH			1	// splashing
+#define TOUCH			1	// splashing, foam
 #define INGEST			2	// ingestion
-#define VAPOR			3	// foam, spray, blob attack
+#define VAPOR			3	// cryo, spray, blob attack
 #define PATCH			4	// patches
 #define INJECT			5	// injection
 
