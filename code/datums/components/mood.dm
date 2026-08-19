@@ -52,6 +52,11 @@
 	unmodify_hud()
 	return ..()
 
+/datum/component/mood/UnregisterFromParent()
+	. = ..()
+	if(!QDELETED(src))
+		qdel(src) // компонент нельзя трансферить другим сущностям + у каждого моба свой собственный.
+
 /datum/component/mood/proc/stop_processing()
 	STOP_PROCESSING(SSobj, src)
 

@@ -292,3 +292,12 @@
 	..()
 	for(var/i in 1 to 5)
 		new /obj/item/coin/silver(src)
+
+/obj/structure/closet/crate/tarkov
+	name = "Tarkov Crate"
+	icon_state = "exocrate"
+
+/obj/structure/closet/crate/syndie
+	name = "Syndicate Crate"
+	icon = 'icons/obj/crates_new.dmi'
+	icon_state = "syndicrate"
