@@ -252,3 +252,37 @@
 	nano.ui_action_click(user, plain_action)
 	TEST_ASSERT(!COOLDOWN_FINISHED(nano, picket_sign_cooldown), "any other action must still fall through to waving the sign")
 	qdel(plain_action)
+
+// Вкопанный плакат: пикет должен пережить того, кто его держал.
+//
+// Плакат уходит в /obj/structure/picket_sign с той же надписью, руками достаётся обратно
+// предметом, а разбитый не оставляет ничего - иначе пикет чинится ударом по нему.
+/datum/unit_test/planted_picket_sign_round_trip/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+
+	var/obj/structure/picket_sign/planted = allocate(/obj/structure/picket_sign, floor)
+	planted.set_label("Free the clown")
+	TEST_ASSERT_EQUAL(planted.name, "Free the clown sign", "a planted sign must be named after its label")
+
+	allocated -= planted
+	var/obj/item/picket_sign/pulled = planted.uproot()
+	qdel(planted)
+	TEST_ASSERT_NOTNULL(pulled, "pulling a planted sign out must give back a picket sign")
+	allocated += pulled
+	TEST_ASSERT_EQUAL(pulled.label, "Free the clown", "a sign pulled out of the floor must keep its label")
+	TEST_ASSERT_EQUAL(pulled.name, "Free the clown sign", "a sign pulled out of the floor must keep its name")
+
+	// Разбитый плакат уходит в ничто: deconstruct(disassembled = FALSE) - это путь через урон.
+	var/signs_before = 0
+	for(var/obj/item/picket_sign/lying in floor)
+		signs_before++
+
+	var/obj/structure/picket_sign/smashed = allocate(/obj/structure/picket_sign, floor)
+	allocated -= smashed
+	smashed.deconstruct(FALSE)
+	TEST_ASSERT(QDELETED(smashed), "a smashed sign must be gone")
+
+	var/signs_after = 0
+	for(var/obj/item/picket_sign/lying in floor)
+		signs_after++
+	TEST_ASSERT_EQUAL(signs_after, signs_before, "a smashed sign must not drop an intact picket sign")
