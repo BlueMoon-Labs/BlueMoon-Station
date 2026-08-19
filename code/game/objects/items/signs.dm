@@ -3,6 +3,19 @@
 /// Сколько занимает вкопать плакат в пол и выдернуть обратно.
 #define PICKET_SIGN_PLANT_TIME (2 SECONDS)
 
+/// Годится ли [tool] для письма. Штампы сюда не попадают - у них MODE_STAMPING.
+/proc/is_writing_implement(obj/item/tool)
+	var/list/details = tool?.get_writing_implement_details()
+	return details && details["interaction_mode"] == MODE_WRITING
+
+/// Стоит ли уже на тайле [spot] вкопанный плакат. Повешенные на стену не в счёт - они висят над полом.
+/proc/get_planted_picket_sign(turf/spot)
+	for(var/obj/structure/picket_sign/standing in spot)
+		if(istype(standing, /obj/structure/picket_sign/wall))
+			continue
+		return standing
+	return null
+
 /**
  * Спрашивает у [user] новую надпись для плаката [sign] и возвращает её.
  *
@@ -44,6 +57,13 @@
 	plantable = FALSE
 	actions_types = list(/datum/action/item_action/nano_picket_sign)
 
+/obj/item/picket_sign/Initialize(mapload)
+	. = ..()
+	// Надпись могли выставить варэдитом или на карте. Пустую не трогаем: она бы затёрла
+	// имя, выставленное там же напрямую.
+	if(label)
+		set_label(label)
+
 /obj/item/picket_sign/examine(mob/user)
 	. = ..()
 	. += span_notice("Надпись меняется ручкой или мелком. Пустая надпись стирает плакат.")
@@ -71,7 +91,7 @@
 	playsound(src, SFX_WRITING_PEN, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, SOUND_FALLOFF_EXPONENT + 3, ignore_walls = FALSE)
 
 /obj/item/picket_sign/attackby(obj/item/attacking_item, mob/user, params)
-	if(!istype(attacking_item, /obj/item/pen) && !istype(attacking_item, /obj/item/toy/crayon))
+	if(!is_writing_implement(attacking_item))
 		return ..()
 	retext(user, attacking_item)
 	// Иначе следом отработает afterattack инструмента: ручка откроет своё окно
@@ -93,14 +113,17 @@
 	if(spot == get_turf(user))
 		balloon_alert(user, "не под собой")
 		return
-	if(locate(/obj/structure/picket_sign) in spot)
+	if(get_planted_picket_sign(spot))
 		balloon_alert(user, "тут уже стоит плакат")
 		return
 
 	user.visible_message(span_notice("[user] начинает вкапывать [src]."), span_notice("Вы начинаете вкапывать [src]."))
 	if(!do_after(user, PICKET_SIGN_PLANT_TIME, spot))
 		return
-	if(QDELETED(src) || (locate(/obj/structure/picket_sign) in spot))
+	// do_after следит только за тем, что копающий не ушёл. Плакат за это время могли
+	// вырвать из рук или убрать в сумку - без проверки он телепортировался бы из чужого
+	// кармана в пол.
+	if(QDELETED(src) || !user.is_holding(src) || get_planted_picket_sign(spot))
 		return
 
 	var/obj/structure/picket_sign/planted = new(spot)
@@ -127,7 +150,7 @@
 	user.visible_message(span_notice("[user] начинает вешать [src] на [target_wall]."), span_notice("Вы начинаете вешать [src] на [target_wall]."))
 	if(!do_after(user, PICKET_SIGN_PLANT_TIME, target_wall))
 		return
-	if(QDELETED(src) || !iswallturf(target_wall) || get_turf(user) != user_turf)
+	if(QDELETED(src) || !user.is_holding(src) || !iswallturf(target_wall) || get_turf(user) != user_turf)
 		return
 
 	var/obj/structure/picket_sign/wall/hung = new(user_turf)
@@ -208,6 +231,13 @@
 	plane = ABOVE_WALL_PLANE
 	layer = SIGN_LAYER
 
+/obj/structure/picket_sign/Initialize(mapload)
+	. = ..()
+	// Надпись могли выставить варэдитом или на карте. Пустую не трогаем: она бы затёрла
+	// имя, выставленное там же напрямую.
+	if(label)
+		set_label(label)
+
 /obj/structure/picket_sign/examine(mob/user)
 	. = ..()
 	. += span_notice("Надпись меняется ручкой или мелком. Плакат снимается руками.")
@@ -240,7 +270,7 @@
 	return sign
 
 /obj/structure/picket_sign/attackby(obj/item/attacking_item, mob/user, params)
-	if(!istype(attacking_item, /obj/item/pen) && !istype(attacking_item, /obj/item/toy/crayon))
+	if(!is_writing_implement(attacking_item))
 		return ..()
 	retext(user, attacking_item)
 	return STOP_ATTACK_PROC_CHAIN

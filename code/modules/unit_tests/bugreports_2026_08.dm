@@ -297,5 +297,7 @@
 	allocated += taken_down
 	TEST_ASSERT_EQUAL(taken_down.label, "Honk if you love clowns", "a sign taken off a wall must keep its label")
 
-	// Звук письма обязан разрешаться в файл: незарегистрированный ключ get_sfx() вернёт сам себя.
+// Незарегистрированный звуковой ключ get_sfx() возвращает сам себя, и playsound()
+// на нём просто молчит - опечатка в ключе не ломает ничего, кроме тишины.
+/datum/unit_test/picket_sign_writing_sound_resolves/Run()
 	TEST_ASSERT(!istext(get_sfx(SFX_WRITING_PEN)), "SFX_WRITING_PEN must resolve to a sound file, not stay a bare key")

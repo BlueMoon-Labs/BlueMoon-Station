@@ -83,6 +83,7 @@
 	var/turf/user_turf = get_turf(user)
 	var/obj/structure/sign/placed_decal = new sign_path(user_turf) //We place the sign on the turf the user is standing, and pixel shift it to the target wall, as below.
 	//This is to mimic how signs and other wall objects are usually placed by mappers, and so they're only visible from one side of a wall.
+	placed_decal.set_custom_materials(custom_materials) //иначе снятый ключом деревянный знак возвращался на стену пластиковым
 	var/wall_dir = get_dir(user_turf, target_turf)
 	placed_decal.setDir(wall_dir) //направленным знакам (флаги, плакаты) иначе доставалось направление по умолчанию
 	if(wall_dir & NORTH)
@@ -150,6 +151,7 @@
 
 	// Пиксельный сдвиг и направление обязаны переехать: иначе знак спрыгнет со стены на середину турфа.
 	var/obj/structure/sign/new_sign = new sign_type(get_turf(src))
+	new_sign.set_custom_materials(custom_materials)
 	new_sign.pixel_x = pixel_x
 	new_sign.pixel_y = pixel_y
 	new_sign.setDir(dir)
