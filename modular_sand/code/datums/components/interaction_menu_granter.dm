@@ -339,7 +339,7 @@
 
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it
 		.["target_has_active_player"] = target.ckey ? (target.client ? 2 : TRUE) : FALSE
-		.["max_distance"] = get_dist(self, target)
+		.["max_distance"] = is_lewd_portal_relay_interaction(self, target) ? 0 : get_dist(self, target)
 		.["target_is_blacklisted"] = SSinteractions.is_blacklisted(target)
 		var/required_from_target = NONE
 		var/target_has_penis = target.has_penis(TRUE)
