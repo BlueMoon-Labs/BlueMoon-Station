@@ -23,7 +23,7 @@
 /obj/structure/curtain_static/examine(mob/user)
 	. = ..()
 	if(anchored)
-		. += span_notice("<b>Прикручено</b> к полу.")
+		. += span_notice("<b>[anchored ? "П" : "Не п"]ривинчено</b> к полу.")
 	. += span_notice("Может быть <b>разрезано</b> на части.")
 
 /obj/structure/curtain_static/screwdriver_act(mob/living/user, obj/item/W)
