@@ -158,9 +158,11 @@
 
 /obj/item/ammo_box/magazine/proc/empty_magazine()
 	var/turf_mag = get_turf(src)
-	for(var/obj/item/ammo in stored_ammo)
+	for(var/obj/item/ammo_casing/ammo as anything in stored_ammo)
 		ammo.forceMove(turf_mag)
 		stored_ammo -= ammo
+		if(istype(ammo))
+			ammo.bounce_away(isnull(ammo.BB))
 
 /obj/item/ammo_box/magazine/handle_atom_del(atom/A)
 	stored_ammo -= A

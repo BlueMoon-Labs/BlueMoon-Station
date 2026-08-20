@@ -1,6 +1,26 @@
 // You might be wondering why this isn't client level. If focus is null, we don't want you to move.
 // Only way to do that is to tie the behavior into the focus's keyLoop().
 
+/// TRUE if at least one currently held key maps to movement.
+/proc/keybindings_has_held_movement_key(list/keys_held, list/movement_keys)
+	if(!keys_held || !movement_keys)
+		return FALSE
+	for(var/key as anything in keys_held)
+		if(movement_keys[key])
+			return TRUE
+	return FALSE
+
+/// Movement keys whose repeat lease has expired. A single repeat renews the
+/// shared lease so holding two directions for a diagonal does not time one out:
+/// desktop keyboard repeat normally belongs to only the most recently pressed key.
+/proc/keybindings_expired_movement_keys(list/keys_held, list/movement_keys, last_repeat, now, timeout = MOVEMENT_KEY_REPEAT_TIMEOUT)
+	. = list()
+	if(isnull(last_repeat) || now < last_repeat + timeout || !keys_held || !movement_keys)
+		return
+	for(var/key as anything in keys_held)
+		if(movement_keys[key])
+			. += key
+
 /// Calculates the movement direction from a client's held keys and pending movement buffers.
 /proc/keybindings_calculate_movement_dir(list/keys_held, list/movement_keys, next_move_dir_add = NONE, next_move_dir_sub = NONE)
 	var/movement_dir = NONE

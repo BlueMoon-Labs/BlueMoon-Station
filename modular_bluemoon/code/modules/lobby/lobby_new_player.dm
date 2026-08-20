@@ -296,6 +296,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/action = href_list["bm_lobby_action"]
 
 	switch(action)
+		if("show_disclaimer")
+			client.show_disclaimer()
+			return
+
 		if("page_ready")
 			bm_lobby_ready = TRUE
 			bm_push_background()

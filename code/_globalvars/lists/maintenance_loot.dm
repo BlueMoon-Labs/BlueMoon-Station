@@ -76,6 +76,7 @@ GLOBAL_LIST_INIT(maintenance_loot, list(
 	/obj/item/hand_labeler = 1,
 	/obj/item/paper/crumpled = 1,
 	/obj/item/pen = 1,
+	/obj/item/picket_sign = 1,
 	/obj/item/reagent_containers/spray/pestspray = 1,
 	/obj/item/reagent_containers/rag = 3,
 	/obj/item/stock_parts/cell = 3,
@@ -123,7 +124,6 @@ GLOBAL_LIST_INIT(maintenance_loot, list(
 	/obj/item/reagent_containers/pill/labebium = 15,
 	/obj/item/organ/tongue/bone/chatter = 1,
 	//SPLURT EDIT END
-	/obj/item/toy/cards/deck/tarot/haunted = 1, // есть на оффах = легит
 	"" = 3
 	))
 

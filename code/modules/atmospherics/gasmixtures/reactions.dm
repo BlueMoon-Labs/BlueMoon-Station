@@ -30,15 +30,39 @@
 	/** Reaction factors for the atmos handbook — human-readable assoc list.
 	 * Keys: /datum/gas types or misc strings like "Temperature", "Energy". */
 	var/list/factor
+	/// Газ, о первом синтезе которого сообщает эта реакция; null - реакция ничего
+	/// не открывает. Ставится только там, где удачная реакция ВСЕГДА даёт этот
+	/// газ, иначе плазменный пожар открыл бы тритий, которого он не сделал.
+	var/synthesis_gas
+	/// TRUE, если газ получается не в каждом проходе и реакция сообщает о синтезе
+	/// сама, из нужной ветки react(). Диспетчер такие реакции не трогает.
+	var/synthesis_self_reported = FALSE
+	/// Взводится после первого сообщения. Дальше проверка в диспетчере react()
+	/// стоит одно чтение переменной, а не поиск по списку техвеба - реакции
+	/// перебираются на каждом активном турфе каждый проход SSair.
+	var/synthesis_reported = FALSE
 
 /datum/gas_reaction/New()
 	init_reqs()
 	init_factors()
+	if(!synthesis_gas)
+		synthesis_reported = TRUE
 
 /datum/gas_reaction/proc/init_reqs()
 
 /datum/gas_reaction/proc/init_factors()
 	factor = list()
+
+/// Сообщает о первом за раунд синтезе своего газа. Флаг взводится, только если
+/// наука готова принять сообщение: реакции идут и до инициализации SSresearch, и
+/// взвести флаг вслепую значило бы потерять открытие на весь раунд. Дальше флаг
+/// взводится в любом случае - очки за газ платятся один раз, кто бы из реакций
+/// ни успел первым.
+/datum/gas_reaction/proc/report_synthesis()
+	if(!SSresearch || !SSresearch.science_tech)
+		return
+	synthesis_reported = TRUE
+	register_gas_synthesis(synthesis_gas)
 
 /datum/gas_reaction/proc/react(datum/gas_mixture/air, atom/location)
 	return NO_REACTION
@@ -213,6 +237,10 @@
 	priority = -2
 	name = "Plasma Combustion"
 	id = "plasmafire"
+	/// Тритий получается только в пересыщенном кислородом пожаре, а REACTING
+	/// возвращает любой - поэтому о синтезе реакция сообщает сама, из своей ветки.
+	synthesis_gas = GAS_TRITIUM
+	synthesis_self_reported = TRUE
 
 /datum/gas_reaction/plasmafire/init_reqs()
 	min_requirements = list(
@@ -256,6 +284,8 @@
 			air.set_moles(GAS_O2, QUANTIZE(air.get_moles(GAS_O2) - (plasma_burn_rate * oxygen_burn_rate)))
 			if (super_saturation)
 				air.adjust_moles(GAS_TRITIUM, plasma_burn_rate)
+				if(!synthesis_reported)
+					report_synthesis()
 			else
 				air.adjust_moles(GAS_CO2, plasma_burn_rate)
 
@@ -523,6 +553,7 @@
 	priority = 3
 	name = "Nitryl formation"
 	id = "nitrylformation"
+	synthesis_gas = GAS_NITRYL
 
 /datum/gas_reaction/nitrylformation/init_reqs()
 	min_requirements = list(
@@ -568,6 +599,7 @@
 	priority = 4
 	name = "BZ Gas formation"
 	id = "bzformation"
+	synthesis_gas = GAS_BZ
 
 /datum/gas_reaction/bzformation/init_reqs()
 	min_requirements = list(
@@ -616,6 +648,7 @@
 	priority = 5
 	name = "Stimulum formation"
 	id = "stimformation"
+	synthesis_gas = GAS_STIMULUM
 
 /datum/gas_reaction/stimformation/init_reqs()
 	min_requirements = list(
@@ -665,6 +698,7 @@
 	priority = 6
 	name = "Hyper-Noblium condensation"
 	id = "nobformation"
+	synthesis_gas = GAS_HYPERNOB
 
 /datum/gas_reaction/nobliumformation/init_reqs()
 	min_requirements = list(
@@ -809,6 +843,10 @@
 	priority = -INFINITY
 	name = "Hagedorn decomposition"
 	id = "hagedorn"
+	/// react() здесь не возвращает REACTING (и не должен: смесь после распада
+	/// пустая), поэтому диспетчер об открытии не узнает - сообщаем сами.
+	synthesis_gas = GAS_QCD
+	synthesis_self_reported = TRUE
 
 /datum/gas_reaction/hagedorn/init_reqs()
 	min_requirements = list(
@@ -823,6 +861,8 @@
 		air.set_moles(g, 0)
 	var/amount = initial_energy / (air.return_temperature() * GLOB.gas_data.specific_heats[GAS_QCD])
 	air.set_moles(GAS_QCD, amount)
+	if(!synthesis_reported)
+		report_synthesis()
 	var/list/largest_values = SSresearch.science_tech.largest_values
 	if(!(GAS_QCD in largest_values))
 		largest_values[GAS_QCD] = 0
@@ -859,7 +899,13 @@
 		var/G = pick(gases)
 		air.adjust_moles(G, max(0.1, energy_remaining / (gases[G] * new_temp * 20)))
 		energy_remaining = initial_energy - air.thermal_energy()
-	air.set_temperature(initial_energy / air.heat_capacity())
+	// Чистый холодный QCD: энергии ноль, цикл досыпки не выполнился ни разу, и
+	// у опустевшей смеси нулевая теплоёмкость - делить не на что. Рантайм здесь
+	// обрывал react() ДО выставления температуры, QCD уже был списан, и реакция
+	// перезапускалась на том же турфе вечно (208 рантаймов за раунд 9911).
+	var/final_heat_capacity = air.heat_capacity()
+	if(final_heat_capacity > 0)
+		air.set_temperature(initial_energy / final_heat_capacity)
 	return REACTING
 
 // === Fusion/exotic gas reactions — синтез вручную, полная картина атмоса ===
@@ -921,6 +967,7 @@
 	priority = 33
 	name = "Freon Formation"
 	id = "freonformation"
+	synthesis_gas = GAS_FREON
 
 /datum/gas_reaction/freonformation/init_reqs()
 	min_requirements = list(
@@ -979,10 +1026,34 @@
 		air.set_temperature(max((temperature * old_heat_capacity - energy_used) / new_heat_capacity, TCMB))
 	return REACTING
 
+/** Во сколько раз флюксин раздвигает верхнюю границу температурного окна
+ * реакции и во столько же раз дешевле обходится её сырьё.
+ *
+ * Ноль молей - множитель ровно 1, то есть реакция без катализатора считается
+ * тем же кодом и тем же числом, что и раньше. Эффект насыщается на
+ * FLUXIN_FULL_EFFECT_MOLES: катализатор не должен вознаграждать за то, что его
+ * просто налили побольше.
+ */
+/proc/fluxin_catalysis(datum/gas_mixture/air)
+	var/fluxin_moles = air.get_moles(GAS_FLUXIN)
+	if(fluxin_moles <= 0)
+		return 1
+	return 1 + min(fluxin_moles / FLUXIN_FULL_EFFECT_MOLES, 1) * FLUXIN_MAX_BONUS
+
+/// Списывает катализатор пропорционально проделанной работе.
+/proc/fluxin_consume(datum/gas_mixture/air, reaction_units)
+	if(reaction_units <= 0)
+		return
+	var/available = air.get_moles(GAS_FLUXIN)
+	if(available <= 0)
+		return
+	air.adjust_moles(GAS_FLUXIN, -min(available, reaction_units * FLUXIN_CONSUMPTION_PER_UNIT))
+
 /datum/gas_reaction/healium_formation
 	priority = 34
 	name = "Healium Formation"
 	id = "healium_formation"
+	synthesis_gas = GAS_HEALIUM
 
 /datum/gas_reaction/healium_formation/init_reqs()
 	min_requirements = list(
@@ -993,17 +1064,21 @@
 
 /datum/gas_reaction/healium_formation/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	if(temperature > HEALIUM_FORMATION_MAX_TEMP)
+	var/catalysis = fluxin_catalysis(air)
+	if(temperature > HEALIUM_FORMATION_MAX_TEMP * catalysis)
 		return NO_REACTION
 	var/freon_moles = air.get_moles(GAS_FREON)
 	var/bz_moles = air.get_moles(GAS_BZ)
-	var/heat_efficiency = min(temperature * 0.3, freon_moles * INVERSE(2.75), bz_moles * INVERSE(0.25))
+	var/freon_per_unit = 2.75 / catalysis
+	var/bz_per_unit = 0.25 / catalysis
+	var/heat_efficiency = min(temperature * 0.3, freon_moles / freon_per_unit, bz_moles / bz_per_unit)
 	if(heat_efficiency <= 0)
 		return NO_REACTION
 	var/old_heat_capacity = air.heat_capacity()
-	air.adjust_moles(GAS_FREON, -heat_efficiency * 2.75)
-	air.adjust_moles(GAS_BZ, -heat_efficiency * 0.25)
+	air.adjust_moles(GAS_FREON, -heat_efficiency * freon_per_unit)
+	air.adjust_moles(GAS_BZ, -heat_efficiency * bz_per_unit)
 	air.adjust_moles(GAS_HEALIUM, heat_efficiency * 3)
+	fluxin_consume(air, heat_efficiency)
 	var/energy_released = heat_efficiency * HEALIUM_FORMATION_ENERGY
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
@@ -1014,6 +1089,7 @@
 	priority = 35
 	name = "Zauker Formation"
 	id = "zauker_formation"
+	synthesis_gas = GAS_ZAUKER
 
 /datum/gas_reaction/zauker_formation/init_reqs()
 	min_requirements = list(
@@ -1024,17 +1100,21 @@
 
 /datum/gas_reaction/zauker_formation/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	if(temperature > ZAUKER_FORMATION_MAX_TEMPERATURE)
+	var/catalysis = fluxin_catalysis(air)
+	if(temperature > ZAUKER_FORMATION_MAX_TEMPERATURE * catalysis)
 		return NO_REACTION
 	var/hypernob_moles = air.get_moles(GAS_HYPERNOB)
 	var/nitrium_moles = air.get_moles(GAS_NITRIUM)
-	var/heat_efficiency = min(temperature * ZAUKER_FORMATION_TEMPERATURE_SCALE, hypernob_moles * INVERSE(0.01), nitrium_moles * INVERSE(0.5))
+	var/hypernob_per_unit = 0.01 / catalysis
+	var/nitrium_per_unit = 0.5 / catalysis
+	var/heat_efficiency = min(temperature * ZAUKER_FORMATION_TEMPERATURE_SCALE, hypernob_moles / hypernob_per_unit, nitrium_moles / nitrium_per_unit)
 	if(heat_efficiency <= 0)
 		return NO_REACTION
 	var/old_heat_capacity = air.heat_capacity()
-	air.adjust_moles(GAS_HYPERNOB, -heat_efficiency * 0.01)
-	air.adjust_moles(GAS_NITRIUM, -heat_efficiency * 0.5)
+	air.adjust_moles(GAS_HYPERNOB, -heat_efficiency * hypernob_per_unit)
+	air.adjust_moles(GAS_NITRIUM, -heat_efficiency * nitrium_per_unit)
 	air.adjust_moles(GAS_ZAUKER, heat_efficiency * 0.5)
+	fluxin_consume(air, heat_efficiency)
 	var/energy_used = heat_efficiency * ZAUKER_FORMATION_ENERGY
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
@@ -1073,6 +1153,7 @@
 	priority = 36
 	name = "Nitrium Formation"
 	id = "nitrium_formation"
+	synthesis_gas = GAS_NITRIUM
 
 /datum/gas_reaction/nitrium_formation/init_reqs()
 	min_requirements = list(
@@ -1135,6 +1216,7 @@
 	priority = 37
 	name = "Pluoxium Formation"
 	id = "pluox_formation"
+	synthesis_gas = GAS_PLUOXIUM
 
 /datum/gas_reaction/pluox_formation/init_reqs()
 	min_requirements = list(
@@ -1146,21 +1228,26 @@
 
 /datum/gas_reaction/pluox_formation/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	if(temperature > PLUOXIUM_FORMATION_MAX_TEMP)
+	var/catalysis = fluxin_catalysis(air)
+	if(temperature > PLUOXIUM_FORMATION_MAX_TEMP * catalysis)
 		return NO_REACTION
 	var/co2_moles = air.get_moles(GAS_CO2)
 	var/o2_moles = air.get_moles(GAS_O2)
 	var/tritium_moles = air.get_moles(GAS_TRITIUM)
 	// Consumption ratio 100 O2 : 50 CO2 : 1 Tritium per 50 pluoxium (i.e. 2 O2 : 1 CO2 : 0.01 Trit per 1 pluox)
-	var/produced_amount = min(PLUOXIUM_FORMATION_MAX_RATE, o2_moles * 0.5, co2_moles, tritium_moles * INVERSE(0.01))
+	var/co2_per_unit = 1 / catalysis
+	var/o2_per_unit = 2 / catalysis
+	var/tritium_per_unit = 0.01 / catalysis
+	var/produced_amount = min(PLUOXIUM_FORMATION_MAX_RATE, o2_moles / o2_per_unit, co2_moles / co2_per_unit, tritium_moles / tritium_per_unit)
 	if(produced_amount <= 0)
 		return NO_REACTION
 	var/old_heat_capacity = air.heat_capacity()
-	air.adjust_moles(GAS_CO2, -produced_amount)
-	air.adjust_moles(GAS_O2, -produced_amount * 2)
-	air.adjust_moles(GAS_TRITIUM, -produced_amount * 0.01)
+	air.adjust_moles(GAS_CO2, -produced_amount * co2_per_unit)
+	air.adjust_moles(GAS_O2, -produced_amount * o2_per_unit)
+	air.adjust_moles(GAS_TRITIUM, -produced_amount * tritium_per_unit)
 	air.adjust_moles(GAS_PLUOXIUM, produced_amount)
 	air.adjust_moles(GAS_HYDROGEN, produced_amount * 0.01) // 1% H2 byproduct
+	fluxin_consume(air, produced_amount)
 	var/energy_released = produced_amount * PLUOXIUM_FORMATION_ENERGY
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
@@ -1171,6 +1258,7 @@
 	priority = 38
 	name = "Proto Nitrate Formation"
 	id = "proto_nitrate_formation"
+	synthesis_gas = GAS_PROTO_NITRATE
 
 /datum/gas_reaction/proto_nitrate_formation/init_reqs()
 	min_requirements = list(
@@ -1181,17 +1269,21 @@
 
 /datum/gas_reaction/proto_nitrate_formation/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	if(temperature > PN_FORMATION_MAX_TEMPERATURE)
+	var/catalysis = fluxin_catalysis(air)
+	if(temperature > PN_FORMATION_MAX_TEMPERATURE * catalysis)
 		return NO_REACTION
 	var/pluox_moles = air.get_moles(GAS_PLUOXIUM)
 	var/h2_moles = air.get_moles(GAS_HYDROGEN)
-	var/heat_efficiency = min(temperature * 0.005, pluox_moles * INVERSE(0.2), h2_moles * INVERSE(2))
+	var/pluox_per_unit = 0.2 / catalysis
+	var/hydrogen_per_unit = 2 / catalysis
+	var/heat_efficiency = min(temperature * 0.005, pluox_moles / pluox_per_unit, h2_moles / hydrogen_per_unit)
 	if(heat_efficiency <= 0)
 		return NO_REACTION
 	var/old_heat_capacity = air.heat_capacity()
-	air.adjust_moles(GAS_HYDROGEN, -heat_efficiency * 2)
-	air.adjust_moles(GAS_PLUOXIUM, -heat_efficiency * 0.2)
+	air.adjust_moles(GAS_HYDROGEN, -heat_efficiency * hydrogen_per_unit)
+	air.adjust_moles(GAS_PLUOXIUM, -heat_efficiency * pluox_per_unit)
 	air.adjust_moles(GAS_PROTO_NITRATE, heat_efficiency * 2.2)
+	fluxin_consume(air, heat_efficiency)
 	var/energy_released = heat_efficiency * PN_FORMATION_ENERGY
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
@@ -1260,6 +1352,8 @@
 	priority = 27
 	name = "Proto Nitrate BZ Response"
 	id = "proto_nitrate_bz_response"
+	/// Единственный источник хилия в игре: своей реакции формирования у него нет.
+	synthesis_gas = GAS_HELIUM
 
 /datum/gas_reaction/proto_nitrate_bz_response/init_reqs()
 	min_requirements = list(
@@ -1293,6 +1387,7 @@
 	priority = 40
 	name = "Antinoblium Replication"
 	id = "antinoblium_replication"
+	synthesis_gas = GAS_ANTINOBLIUM
 
 /datum/gas_reaction/antinoblium_replication/init_reqs()
 	min_requirements = list(
@@ -1321,3 +1416,122 @@
 		air.set_temperature(max(air.return_temperature() * old_heat_capacity / new_heat_capacity, TCMB))
 	//tg parity: активная репликация не должна размазываться брейкдауном группы
 	return REACTING | VOLATILE_REACTION
+
+// === Газы высокого давления ===
+//
+// Обе реакции требуют давления выше потолка газового насоса. Это единственные
+// реакции в игре с таким условием, и вся их суть в нём: контур приходится
+// додавливать объёмным насосом или греть, то есть собирать осознанно.
+
+/datum/gas_reaction/pyronite_formation
+	priority = 31
+	name = "Pyronite Formation"
+	id = "pyronite_formation"
+	synthesis_gas = GAS_PYRONITE
+
+/datum/gas_reaction/pyronite_formation/init_reqs()
+	min_requirements = list(
+		GAS_TRITIUM = 20,
+		GAS_PLASMA = 20,
+		GAS_PROTO_NITRATE = 5,
+		"TEMP" = PYRONITE_FORMATION_MIN_TEMP,
+		"MAX_TEMP" = PYRONITE_FORMATION_MAX_TEMP,
+		REACTION_REQ_MIN_PRESSURE = GAS_HIGH_PRESSURE_SYNTHESIS
+	)
+
+/datum/gas_reaction/pyronite_formation/react(datum/gas_mixture/air, datum/holder)
+	var/temperature = air.return_temperature()
+	var/tritium_moles = air.get_moles(GAS_TRITIUM)
+	var/plasma_moles = air.get_moles(GAS_PLASMA)
+	var/proto_moles = air.get_moles(GAS_PROTO_NITRATE)
+	// Давление сверх порога ускоряет синтез: плотнее набитый контур должен
+	// окупаться, а не просто снимать запрет.
+	var/pressure_scale = min(air.return_pressure() / GAS_HIGH_PRESSURE_SYNTHESIS, PYRONITE_PRESSURE_SCALE_CAP)
+	var/reaction_units = min(
+		temperature / PYRONITE_FORMATION_TEMP_DIVISOR * pressure_scale,
+		tritium_moles / PYRONITE_TRITIUM_PER_UNIT,
+		plasma_moles / PYRONITE_PLASMA_PER_UNIT,
+		proto_moles / PYRONITE_CATALYST_PER_UNIT)
+	if(reaction_units <= 0)
+		return NO_REACTION
+	var/old_heat_capacity = air.heat_capacity()
+	air.adjust_moles(GAS_TRITIUM, -reaction_units * PYRONITE_TRITIUM_PER_UNIT)
+	air.adjust_moles(GAS_PLASMA, -reaction_units * PYRONITE_PLASMA_PER_UNIT)
+	air.adjust_moles(GAS_PROTO_NITRATE, -reaction_units * PYRONITE_CATALYST_PER_UNIT)
+	air.adjust_moles(GAS_PYRONITE, reaction_units * PYRONITE_YIELD_PER_UNIT)
+	var/energy_used = reaction_units * PYRONITE_FORMATION_ENERGY
+	var/new_heat_capacity = air.heat_capacity()
+	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
+		air.set_temperature(max((temperature * old_heat_capacity - energy_used) / new_heat_capacity, TCMB))
+	return REACTING
+
+/datum/gas_reaction/pyronite_formation/test()
+	var/datum/gas_mixture/mixture = new
+	mixture.set_volume(100)
+	mixture.set_moles(GAS_TRITIUM, 200)
+	mixture.set_moles(GAS_PLASMA, 200)
+	mixture.set_moles(GAS_PROTO_NITRATE, 20)
+	mixture.set_temperature(2000)
+	if(mixture.return_pressure() < GAS_HIGH_PRESSURE_SYNTHESIS)
+		return list("success" = FALSE, "message" = "Test mixture never reached the synthesis pressure!")
+	if(mixture.react() != REACTING)
+		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
+	if(mixture.get_moles(GAS_PYRONITE) <= 0)
+		return list("success" = FALSE, "message" = "Pyronite isn't being generated correctly!")
+	return ..()
+
+/datum/gas_reaction/fluxin_formation
+	priority = 32
+	name = "Fluxin Formation"
+	id = "fluxin_formation"
+	synthesis_gas = GAS_FLUXIN
+
+/datum/gas_reaction/fluxin_formation/init_reqs()
+	min_requirements = list(
+		GAS_HELIUM = 20,
+		GAS_BZ = 10,
+		GAS_PLASMA = 10,
+		"TEMP" = FLUXIN_FORMATION_MIN_TEMP,
+		"MAX_TEMP" = FLUXIN_FORMATION_MAX_TEMP,
+		REACTION_REQ_MIN_PRESSURE = GAS_HIGH_PRESSURE_SYNTHESIS
+	)
+
+/datum/gas_reaction/fluxin_formation/react(datum/gas_mixture/air, datum/holder)
+	var/temperature = air.return_temperature()
+	var/helium_moles = air.get_moles(GAS_HELIUM)
+	var/bz_moles = air.get_moles(GAS_BZ)
+	var/plasma_moles = air.get_moles(GAS_PLASMA)
+	var/reaction_units = min(
+		temperature / FLUXIN_FORMATION_TEMP_DIVISOR,
+		helium_moles / FLUXIN_HELIUM_PER_UNIT,
+		bz_moles / FLUXIN_BZ_PER_UNIT,
+		plasma_moles / FLUXIN_PLASMA_PER_UNIT)
+	if(reaction_units <= 0)
+		return NO_REACTION
+	var/old_heat_capacity = air.heat_capacity()
+	air.adjust_moles(GAS_HELIUM, -reaction_units * FLUXIN_HELIUM_PER_UNIT)
+	air.adjust_moles(GAS_BZ, -reaction_units * FLUXIN_BZ_PER_UNIT)
+	air.adjust_moles(GAS_PLASMA, -reaction_units * FLUXIN_PLASMA_PER_UNIT)
+	air.adjust_moles(GAS_FLUXIN, reaction_units * FLUXIN_YIELD_PER_UNIT)
+	// Эндотермия здесь ещё и предохранитель: реакция стягивает смесь к нижней
+	// границе своего окна и сама себя гасит, вместо того чтобы разгоняться.
+	var/energy_used = reaction_units * FLUXIN_FORMATION_ENERGY
+	var/new_heat_capacity = air.heat_capacity()
+	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
+		air.set_temperature(max((temperature * old_heat_capacity - energy_used) / new_heat_capacity, TCMB))
+	return REACTING
+
+/datum/gas_reaction/fluxin_formation/test()
+	var/datum/gas_mixture/mixture = new
+	mixture.set_volume(100)
+	mixture.set_moles(GAS_HELIUM, 200)
+	mixture.set_moles(GAS_BZ, 100)
+	mixture.set_moles(GAS_PLASMA, 100)
+	mixture.set_temperature(500)
+	if(mixture.return_pressure() < GAS_HIGH_PRESSURE_SYNTHESIS)
+		return list("success" = FALSE, "message" = "Test mixture never reached the synthesis pressure!")
+	if(mixture.react() != REACTING)
+		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
+	if(mixture.get_moles(GAS_FLUXIN) <= 0)
+		return list("success" = FALSE, "message" = "Fluxin isn't being generated correctly!")
+	return ..()

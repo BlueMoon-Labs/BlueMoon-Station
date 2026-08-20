@@ -1,6 +1,9 @@
+// .22 LR — BR0 (самый слабый боевой)
 /obj/item/projectile/bullet/c22lr
 	name = ".22 Long Rifle bullet"
 	damage = 15
+	armour_penetration = BULLET_BR0   // BLUEMOON ADD
+
 
 /obj/item/ammo_casing/c22lr
 	name = ".22 Long rifle bullet casing"
@@ -9,10 +12,10 @@
 	projectile_type = /obj/item/projectile/bullet/c22lr
 
 /obj/item/projectile/bullet/c22lr/rubber
-	name = ".22 Long Rifle bullet"
+	armour_penetration = BULLET_BR0
 	damage = 1
 	stamina = 15
-	sharpness = NONE
+	sharpness = SHARP_NONE
 	embedding = null
 
 /obj/item/ammo_casing/c22lr/rubber
@@ -29,7 +32,8 @@
 	name = ".357 Rubber bullet"
 	damage = 5
 	stamina = 40
-	sharpness = NONE
+	armour_penetration = BULLET_BR0
+	sharpness = SHARP_NONE
 	embedding = null
 
 /datum/design/a357rubber

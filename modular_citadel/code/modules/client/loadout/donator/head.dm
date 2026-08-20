@@ -36,7 +36,3 @@
 /datum/gear/donator/head/fancy_crown
 	name = "magnificent crown"
 	path = /obj/item/clothing/head/crown/fancy
-
-/datum/gear/donator/head/jester_hat
-	name = "Jester Hat"
-	path = /obj/item/clothing/head/jester

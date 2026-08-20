@@ -196,13 +196,13 @@
 	return FALSE
 
 /turf/open/floor/crowbar_act(mob/living/user, obj/item/I)
-	return intact ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
+	return (intact && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
 
 /turf/open/floor/proc/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	if(T.turf_type == type)
 		return
 	var/obj/item/CB = user.is_holding_tool_quality(TOOL_CROWBAR)
-	if(!CB)
+	if(!CB || user.a_intent != INTENT_HELP)
 		return
 	var/turf/open/floor/plating/P = pry_tile(CB, user, TRUE)
 	if(!istype(P))

@@ -61,12 +61,24 @@ multiple modular subtrees with behaviors
 	// Movement related things here
 	///Reference to the movement datum we use. Is a type on initialize but becomes a ref afterwards.
 	var/datum/ai_movement/ai_movement = /datum/ai_movement/dumb
+	///Активный мув-луп этого контроллера на SSai_movement. Держим прямую ссылку,
+	///потому что путь до лупа через pawn.move_packet пропадает вместе с пауном
+	///(харддел нулит ссылку), а сам луп при этом остаётся жить в подсистеме.
+	var/datum/move_loop/active_move_loop
 	///Delay between movements. This is on the controller so we can keep the movement datum singleton
 	var/movement_delay = 0.1 SECONDS
 	///Кулдаун перепрокладки JPS-пути (настраивается профилем, спека: 1.5-2 c)
 	var/repath_delay = 1.5 SECONDS
 	///Позволено ли пауну ходить по опасным турфам (лава и т.п.; лавалендские профили ставят TRUE)
 	var/cross_dangerous_turfs = FALSE
+	///Действует ли на этот контроллер усталость погони. FALSE у сценарных
+	///преследователей и боссов, чья погоня и есть содержание боя.
+	var/pursuit_leashed = TRUE
+	///Наблюдения о типе угрозы: REF(стрелок) -> list(pass_flags снаряда, world.time).
+	///Ключ строковый намеренно - модель не держит ссылок на мобов (см. threat_model.dm)
+	var/list/threat_pass_flag_memory
+	///Характер особи (см. temperament.dm). Роллится лениво через get_temperament().
+	var/datum/ai_temperament/temperament
 
 	///AI paused time
 	var/paused_until = 0
@@ -83,6 +95,16 @@ multiple modular subtrees with behaviors
 	/// TRUE if we're able to run, FALSE if we aren't
 	/// Should not be set manually, override get_able_to_run() instead
 	var/able_to_run = FALSE
+#ifdef TESTING
+	///Троттл снимков "завис с целью" (AI_TRACE): не чаще раза в 5 секунд
+	var/stall_trace_after = 0
+	///Последний турф пауна и время его смены: второй триггер STALL-снимка
+	///("план есть, но ни шага, ни обмена уроном" - вечно проваливающийся план)
+	var/turf/stall_last_turf
+	var/stall_last_move_at = 0
+	///Троттл спам-строк трассы по категориям (AI_TRACE_THROTTLED)
+	var/list/trace_throttle_at
+#endif
 	/// are we even able to plan?
 	var/able_to_plan = TRUE
 	/// are we currently on failed planning timeout?
@@ -107,8 +129,7 @@ multiple modular subtrees with behaviors
 		SSai_controllers.currentrun -= src
 	our_cells = null
 	set_movement_target(type, null)
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 	return ..()
 
 ///Whether this pawn has stable voluntary movement in vacuum and can survive
@@ -169,11 +190,20 @@ multiple modular subtrees with behaviors
 	if(!isnull(current_movement_target))
 		RegisterSignal(current_movement_target, COMSIG_MOVABLE_MOVED, PROC_REF(on_movement_target_move))
 		RegisterSignal(current_movement_target, COMSIG_PARENT_PREQDELETED, PROC_REF(on_movement_target_delete))
+	else
+		//Без цели двигаться некуда. Отпускаем запись сразу: датумы /datum/ai_movement -
+		//бессмертные синглтоны из SSai_movement, и moving_controllers[src] держит уже
+		//удалённую цель до следующего прогона поведения или до смерти пешки. Для мобов,
+		//которые после потери цели уходят в AI_STATUS_IDLE, это "до конца раунда".
+		stop_ai_movement()
 	if(new_movement)
 		change_ai_movement_type(new_movement)
 
 ///Overrides the current ai_movement of this controller with a new one
 /datum/ai_controller/proc/change_ai_movement_type(datum/ai_movement/new_movement)
+	//Смена типа движения оставляла запись висеть в СТАРОМ синглтоне - тот больше никем
+	//не опрашивается, снять её потом уже некому.
+	stop_ai_movement()
 	ai_movement = SSai_movement.movement_types[new_movement]
 
 ///Completely replaces the planning_subtrees with a new set based on argument provided, list provided must contain specifically typepaths
@@ -406,7 +436,18 @@ multiple modular subtrees with behaviors
 /datum/ai_controller/proc/UnpossessPawn(destroy)
 	SHOULD_CALL_PARENT(TRUE)
 	if(isnull(pawn))
-		return //instantiated without an applicable pawn, fine
+		//Либо контроллер завели без пауна, либо пауна унёс харддел - в DM ссылка
+		//на удалённый объект молча становится null. Во втором случае выход без
+		//снятия с очередей оставлял осиротевший контроллер в unplanned-пуле
+		//навсегда: он фейлился каждый планировочный тик (idle_random_walk).
+		release_ai_target_reservation()
+		release_pack_focus()
+		set_ai_status(AI_STATUS_OFF)
+		remove_from_unplanned_controllers()
+		stop_ai_movement()
+		if(destroy)
+			qdel(src)
+		return
 	release_ai_target_reservation()
 	release_pack_focus()
 
@@ -415,8 +456,7 @@ multiple modular subtrees with behaviors
 	clear_able_to_run()
 	if(our_cells)
 		clear_tracked_cells()
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf && GLOB.ai_controllers_by_zlevel.len >= pawn_turf.z)
 		GLOB.ai_controllers_by_zlevel[pawn_turf.z] -= src
@@ -454,6 +494,11 @@ multiple modular subtrees with behaviors
 
 ///Runs any actions that are currently running
 /datum/ai_controller/process(delta_time)
+	//Харддел уносит пауна без единого сигнала - ссылка нулится молча, и контроллер
+	//продолжает гонять behavior'ы по null-пауну каждый тик до самого ребута.
+	if(QDELETED(pawn))
+		UnpossessPawn(FALSE)
+		return
 	for(var/datum/ai_behavior/current_behavior as anything in current_behaviors)
 
 		// Convert the current behaviour action cooldown to realtime seconds from deciseconds
@@ -514,6 +559,80 @@ multiple modular subtrees with behaviors
 			arguments += stored_arguments
 		forgotten_behavior.finish_action(arglist(arguments))
 
+#ifdef TESTING
+	//детектор "завис": цель есть, а план пуст ЛИБО план есть, но моб давно ни
+	//шагнул, ни обменялся уроном (вечно проваливающиеся поведения - за весь
+	//round-23.35.57 прежний детектор пустого плана не сработал НИ РАЗУ, хотя
+	//мобы стояли минутами). Снимок раз в 5 секунд, чтобы лог читался глазами.
+	var/turf/stall_turf = get_turf(pawn)
+	if(stall_turf != stall_last_turf)
+		stall_last_turf = stall_turf
+		stall_last_move_at = world.time
+	if(blackboard_key_exists(BB_AI_CURRENT_TARGET) && world.time >= stall_trace_after)
+		var/stall_plan_empty = !length(planned_behaviors) && !length(current_behaviors)
+		var/stall_no_progress = (world.time - stall_last_move_at > AI_STALL_NO_PROGRESS_TIME) \
+			&& (world.time - (blackboard[BB_AI_LAST_EXCHANGE_AT] || 0) > AI_STALL_NO_PROGRESS_TIME)
+		if(stall_plan_empty || stall_no_progress)
+			stall_trace_after = world.time + 5 SECONDS
+			ai_trace_stall_snapshot()
+#endif
+
+#ifdef TESTING
+///Трассировка решений ИИ (см. AI_TRACE): категория, паун с позицией, сообщение
+/datum/ai_controller/proc/ai_trace(category, message)
+	var/pawn_tag = "no-pawn"
+	if(pawn)
+		var/turf/pawn_turf = get_turf(pawn)
+		pawn_tag = "[pawn.type] ([pawn_turf ? "[pawn_turf.x],[pawn_turf.y],[pawn_turf.z]" : "null"])"
+	WRITE_LOG(GLOB.ai_trace_log, "[category] | [pawn_tag] [REF(src)] | [message]")
+
+///Троттлёная трасса (AI_TRACE_THROTTLED): повторяющаяся каждый план строка
+///пишется не чаще AI_TRACE_THROTTLE_TIME на контроллер - лог обязан читаться
+/datum/ai_controller/proc/ai_trace_throttled(category, message)
+	if(world.time < (trace_throttle_at?[category] || 0))
+		return
+	LAZYSET(trace_throttle_at, category, world.time + AI_TRACE_THROTTLE_TIME)
+	ai_trace(category, message)
+
+///Подсказка "что именно заблокировало маршрут" для трассы исчерпанного пути:
+///без неё "маршрут исчерпан" не отвечал на главный вопрос разбора - обо что
+/datum/ai_controller/proc/ai_trace_route_block_hint(atom/target)
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || QDELETED(target))
+		return ""
+	var/turf/blocked = ai_get_blocked_path_turf(living_pawn, target)
+	if(!blocked)
+		return ""
+	var/atom/culprit
+	for(var/atom/movable/candidate as anything in blocked)
+		if(candidate.density)
+			culprit = candidate
+			break
+	if(!culprit && blocked.density)
+		culprit = blocked
+	return " (преграда: [culprit || "ребро/направленная"] на ([blocked.x],[blocked.y],[blocked.z]))"
+
+///Снимок застрявшего контроллера: всё, что нужно для диагноза стойки одним взглядом
+/datum/ai_controller/proc/ai_trace_stall_snapshot()
+	var/atom/target = blackboard[BB_AI_CURRENT_TARGET]
+	var/list/bits = list()
+	bits += "state=[blackboard[BB_AI_STATE] || "null"]"
+	bits += "target=[target] dist=[QDELETED(target) ? "-" : get_dist(pawn, target)]"
+	bits += "status=[ai_status] able_to_run=[able_to_run] paused=[paused_until > world.time ? "да" : "нет"]"
+	bits += "move_target=[current_movement_target || "нет"]"
+	var/datum/move_loop/loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	bits += "move_loop=[loop ? "[loop.type]" : "нет"]"
+	bits += "band=[blackboard[BB_AI_MIN_DISTANCE] || 0]-[blackboard[BB_AI_MAX_DISTANCE] || 0]"
+	bits += "frustration=[blackboard[BB_AI_FRUSTRATION] || 0] pathing_attempts=[pathing_attempts]"
+	bits += "route_retry_in=[max(0, (blackboard[BB_AI_ROUTE_RETRY_AT] || 0) - world.time)]"
+	bits += "lane_deadlock_in=[max(0, (blackboard[BB_AI_LANE_DEADLOCK_UNTIL] || 0) - world.time)]"
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	if(istype(hostile_pawn) && hostile_pawn.ranged && !QDELETED(target))
+		bits += "lane=[hostile_pawn.CheckRangedFireLane(target) ? "ПЕРЕКРЫТА" : "чиста"]"
+		bits += "ranged_cooldown_in=[max(0, hostile_pawn.ranged_cooldown - world.time)]"
+	ai_trace("STALL", bits.Join(" | "))
+#endif
+
 ///This proc handles changing ai status, and starts/stops processing if required.
 /datum/ai_controller/proc/set_ai_status(new_ai_status, additional_flags = NONE)
 	if(ai_status == new_ai_status)
@@ -563,13 +682,73 @@ multiple modular subtrees with behaviors
 ///stepping the pawn toward the stale AI target every movement_delay - overriding the
 ///client's own keypresses so controls feel completely dead. Stopping is idempotent.
 /datum/ai_controller/proc/stop_ai_movement()
-	if(ai_movement?.moving_controllers[src])
+	//istype, а не просто проверка на null: до первого change_ai_movement_type() в ai_movement
+	//лежит ТИПОПУТЬ, а не инстанс, и moving_controllers у него - разделяемый список-дефолт типа.
+	if(!istype(ai_movement))
+		return
+	//живой луп без записи в moving_controllers - тоже повод: finish_action успевает
+	//снять запись до того, как остановка лупа сорвётся на харддельнутом пауне
+	if(ai_movement.moving_controllers[src] || active_move_loop)
 		ai_movement.stop_moving_towards(src)
+
+///Запомнить созданный мув-луп. Ссылка живёт до qdel лупа и позволяет остановить
+///движение, когда pawn.move_packet уже недоступен (паун харддельнут).
+/datum/ai_controller/proc/track_move_loop(datum/move_loop/loop)
+	if(active_move_loop == loop)
+		return
+	if(active_move_loop)
+		UnregisterSignal(active_move_loop, COMSIG_PARENT_QDELETING)
+	active_move_loop = loop
+	RegisterSignal(loop, COMSIG_PARENT_QDELETING, PROC_REF(on_move_loop_qdeleting))
+
+/datum/ai_controller/proc/on_move_loop_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == active_move_loop)
+		active_move_loop = null
 
 /datum/ai_controller/proc/PauseAi(time)
 	paused_until = world.time + time
 	update_able_to_run()
 	addtimer(CALLBACK(src, PROC_REF(update_able_to_run)), time)
+
+///Шаг, который поведение делает Move()-ом МИМО мув-лупа: сайдстеп-уворот и
+///боковое перестроение стрелка. Такой шаг обязан стоить ровно столько же,
+///сколько обычный, иначе моб получает бесплатные тайлы сверх movement_delay -
+///именно отсюда бралось "перепрыгивают через вас, появляются слева-справа".
+///Два следствия: спрайту выставляется glide (без него шаг щёлкает и читается
+///телепортом), а активный мув-луп сдвигается на ту же задержку, чтобы не
+///добавить второй шаг в том же окне. Возвращает результат Move().
+/datum/ai_controller/proc/ai_step_outside_loop(turf/destination)
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || !destination)
+		return FALSE
+	//диагональ платит x√2, как игрок и как штатный мув-луп (movement_step_delay
+	//в обоих): сайдстепы turn(dir, 45) и перестроения по alldirs - сплошь
+	//диагонали, и без надбавки уворот снова получал скрытые 1.33x скорости.
+	//Цена и glide считаются по НАМЕРЕНИЮ до шага (glide обязан стоять до Move,
+	//иначе спрайт щёлкает); редкий частичный диагональный Move переплачивает
+	//кардинальный шаг - ошибка в честную сторону, бесплатных тайлов нет.
+	var/step_dir = get_dir(living_pawn, destination)
+	var/step_delay = movement_step_delay(max(movement_delay, world.tick_lag), ISDIAGONALDIR(step_dir), world.tick_lag)
+	living_pawn.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(step_delay, 1))
+	if(!living_pawn.Move(destination, step_dir))
+		return FALSE
+	var/datum/move_loop/loop = SSmove_manager.processing_on(living_pawn, SSai_movement)
+	loop?.pause_for(step_delay)
+	return TRUE
+
+///Пристёгнутый паун не двигается: его Move() толкал бы незаанкоренный стул.
+///Вместо катания моб выбирается сам, но не чаще AI_UNBUCKLE_COOLDOWN -
+///user_unbuckle_mob спит в do_after, а зовём мы его из сигнал-хендлера мувера.
+/datum/ai_controller/proc/request_unbuckle()
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || !living_pawn.buckled)
+		return FALSE
+	if(world.time < (blackboard[BB_AI_UNBUCKLE_AT] || 0))
+		return FALSE
+	blackboard[BB_AI_UNBUCKLE_AT] = world.time + AI_UNBUCKLE_COOLDOWN
+	INVOKE_ASYNC(living_pawn, TYPE_PROC_REF(/mob/living, resist_buckle))
+	return TRUE
 
 /datum/ai_controller/proc/add_to_unplanned_controllers()
 	if(ai_status != AI_STATUS_ON || isnull(idle_behavior))
@@ -694,8 +873,7 @@ multiple modular subtrees with behaviors
 	release_pack_focus()
 	set_ai_status(AI_STATUS_OFF)
 	set_movement_target(type, null)
-	if(ai_movement.moving_controllers[src])
-		ai_movement.stop_moving_towards(src)
+	stop_ai_movement()
 
 /// Use this proc to define how your controller defines what access the pawn has for the sake of pathfinding, likely pointing to whatever ID slot is relevant
 /datum/ai_controller/proc/get_access()

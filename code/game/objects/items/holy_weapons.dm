@@ -737,6 +737,8 @@
 	item_flags = ABSTRACT
 	w_class = WEIGHT_CLASS_HUGE
 	sharpness = SHARP_EDGED
+	tool_behaviour = TOOL_CROWBAR
+	usesound = 'sound/items/crowbar.ogg'
 	wound_bonus = -20
 	bare_wound_bonus = 25
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
@@ -750,6 +752,7 @@
 	name = "unholy blessing"
 	icon_state = "tentacle"
 	item_state = "tentacle"
+	tool_behaviour = NONE
 
 /obj/item/nullrod/carp
 	name = "carp-sie plushie"

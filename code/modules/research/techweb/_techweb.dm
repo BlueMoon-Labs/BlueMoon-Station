@@ -23,6 +23,10 @@
 	var/list/last_bitcoins = list()								//Current per-second production, used for display only.
 	var/list/discovered_mutations = list()                           //Mutations discovered by genetics, this way they are shared and cant be destroyed by destroying a single console
 	var/list/tiers = list()										//Assoc list, id = number, 1 is available, 2 is all reqs are 1, so on
+	/// Газы, чей первый за раунд синтез уже засчитан. id газа = TRUE. Учёт живёт
+	/// на техвебе, а не в ещё одном глобальном списке: открытие принадлежит науке
+	/// и вместе с ней переносится на диск или в чужую сеть.
+	var/list/synthesized_gases = list()
 
 /datum/techweb/New()
 	hidden_nodes = SSresearch.techweb_nodes_hidden.Copy()
@@ -208,6 +212,51 @@
 	else
 		research_points[type] += amount
 	return TRUE
+
+/// Засчитывает первый за раунд синтез газа и разово начисляет за него очки.
+/// Платится за первый синтез, а не за объём: плата за объём превратила бы атмос
+/// в ферму очков и обесценила бы остальную науку, поэтому наградой сделана
+/// широта освоенного. Возвращает TRUE, только если открытие новое и оплачено.
+/datum/techweb/proc/discover_gas_synthesis(gas_id)
+	if(!gas_id || synthesized_gases[gas_id])
+		return FALSE
+	var/datum/gas/gas = GLOB.gas_data.datums[gas_id]
+	if(!gas)
+		return FALSE
+	// Отметка ставится и сырью тоже: иначе кислород будет искать себе награду
+	// на каждом пожаре до конца раунда.
+	synthesized_gases[gas_id] = TRUE
+	var/awarded_points = 0
+	switch(gas.tier)
+		if(GAS_TIER_BASIC)
+			awarded_points = GAS_DISCOVERY_RESEARCH_BASIC
+		if(GAS_TIER_ADVANCED)
+			awarded_points = GAS_DISCOVERY_RESEARCH_ADVANCED
+		if(GAS_TIER_EXOTIC)
+			awarded_points = GAS_DISCOVERY_RESEARCH_EXOTIC
+	if(!awarded_points)
+		return FALSE
+	// Очки идут сразу в баланс, а не в next_income: награда за открытие обязана
+	// быть видна тому, кто его сделал, а не через фазу дохода подсистемы.
+	add_point_type(TECHWEB_POINT_TYPE_GENERIC, awarded_points, FALSE)
+	log_game("Техвеб [id]: первый за раунд синтез газа [gas.name] ([gas_id]), уровень [gas.tier], начислено [awarded_points] очков.")
+	return TRUE
+
+/// Точка входа для атмоса: сообщить, что газ синтезирован. Проверка готовности
+/// науки держится в одном месте - реакции идут и до, и после её инициализации.
+/proc/register_gas_synthesis(gas_id)
+	if(!SSresearch || !SSresearch.science_tech)
+		return FALSE
+	return SSresearch.science_tech.discover_gas_synthesis(gas_id)
+
+/// То же для машин, отдающих сразу смесь (HFR). Смесь обязана содержать только
+/// свежий выхлоп, иначе открытием засчитается транзитный газ.
+/proc/register_gas_synthesis_from_mixture(datum/gas_mixture/mixture)
+	if(!mixture || !SSresearch || !SSresearch.science_tech)
+		return
+	var/datum/techweb/science_web = SSresearch.science_tech
+	for(var/gas_id in mixture.get_gases())
+		science_web.discover_gas_synthesis(gas_id)
 
 /datum/techweb/proc/modify_point_type(type, amount, income = TRUE)
 	if(!SSresearch.point_types[type])

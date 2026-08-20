@@ -13,15 +13,26 @@
 	var/open_pressure = ONE_ATMOSPHERE * 3
 	var/close_pressure = ONE_ATMOSPHERE
 
+// No per-layer map sprite for this one, so the offset is spelled out instead.
 /obj/machinery/atmospherics/components/binary/relief_valve/layer1
-	piping_layer = PIPING_LAYER_MIN
-	pixel_x = -PIPING_LAYER_P_X
-	pixel_y = -PIPING_LAYER_P_Y
+	piping_layer = 1
+	pixel_x = (1 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (1 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
 
-/obj/machinery/atmospherics/components/binary/relief_valve/layer3
-	piping_layer = PIPING_LAYER_MAX
-	pixel_x = PIPING_LAYER_P_X
-	pixel_y = PIPING_LAYER_P_Y
+/obj/machinery/atmospherics/components/binary/relief_valve/layer2
+	piping_layer = 2
+	pixel_x = (2 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (2 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
+
+/obj/machinery/atmospherics/components/binary/relief_valve/layer4
+	piping_layer = 4
+	pixel_x = (4 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (4 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
+
+/obj/machinery/atmospherics/components/binary/relief_valve/layer5
+	piping_layer = 5
+	pixel_x = (5 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (5 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
 
 /obj/machinery/atmospherics/components/binary/relief_valve/update_icon_nopipes()
 	if(dir==SOUTH)
@@ -73,7 +84,13 @@
 	var/list/data = list()
 	data["open_pressure"] = round(open_pressure)
 	data["close_pressure"] = round(close_pressure)
-	data["max_pressure"] = round(50*ONE_ATMOSPHERE)
+	data["max_pressure"] = round(VOLUME_PUMP_PRESSURE_CEILING)
+	// Клапан ловит уставки друг о друга, и панель должна показывать те же
+	// границы, что применяет ui_act: иначе введённое молча уезжает.
+	data["min_open_pressure"] = round(close_pressure)
+	data["max_close_pressure"] = round(open_pressure)
+	data["opened"] = opened
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/relief_valve/ui_act(action, params)
@@ -83,17 +100,17 @@
 		if("open_pressure")
 			var/pressure = params["pressure"]
 			if(pressure == "max")
-				pressure = 50*ONE_ATMOSPHERE
+				pressure = VOLUME_PUMP_PRESSURE_CEILING
 				. = TRUE
 			else if(pressure == "input") // The manual expirience.
-				pressure = input("New output pressure ([close_pressure]-[50*ONE_ATMOSPHERE] kPa):", name, open_pressure) as num|null
+				pressure = input("New output pressure ([close_pressure]-[VOLUME_PUMP_PRESSURE_CEILING] kPa):", name, open_pressure) as num|null
 				if(!isnull(pressure) && !..())
 					. = TRUE
 			else if(text2num(pressure) != null)
 				pressure = text2num(pressure)
 				. = TRUE
 			if(.)
-				open_pressure = clamp(pressure, close_pressure, 50*ONE_ATMOSPHERE)
+				open_pressure = clamp(pressure, close_pressure, VOLUME_PUMP_PRESSURE_CEILING)
 				investigate_log("open pressure was set to [open_pressure] kPa by [key_name(usr)]", INVESTIGATE_ATMOS)
 		if("close_pressure")
 			var/pressure = params["pressure"]

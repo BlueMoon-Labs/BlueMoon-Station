@@ -226,19 +226,17 @@
 	icon_state = "hardhat0_hahun_helmet"
 	item_state = "hardhat0_hahun_helmet"
 	hat_type = "hahun_helmet"
-	actions_types = list(/datum/action/item_action/toggle_helmet_light, /datum/action/item_action/toggle_welding_screen)
-	flags_inv = HIDEEYES | HIDEFACE | HIDEEARS | HIDEHAIR
+	actions_types = list(/datum/action/item_action/toggle_helmet_light, /datum/action/item_action/toggle_welding_screen/hahun_hood)
+	dynamic_hair_suffix = ""
+	flags_inv = HIDEEARS|HIDEHAIR|HIDEEYES|HIDEFACE
+	visor_flags_inv = HIDEEYES|HIDEFACE
+	visor_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x48/head.dmi'
+	visor_icon_state = "hahun_visor"
+	straps = FALSE
 
-/obj/item/clothing/head/hardhat/weldhat/hahun/worn_overlays(isinhands, icon_file, used_state, style_flags = NONE)
-	. = list()
-	SEND_SIGNAL(src, COMSIG_ITEM_WORN_OVERLAYS, isinhands, icon_file, used_state, style_flags, .)
-	if(!isinhands)
-		if(damaged_clothes)
-			. += mutable_appearance('icons/effects/item_damage.dmi', "damagedhelmet")
-		if(blood_DNA)
-			. += mutable_appearance('icons/effects/blood.dmi', "helmetblood", color = blood_DNA_to_color(), blend_mode = blood_DNA_to_blend())
-		if(!up)
-			. += mutable_appearance('modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x48/head.dmi', "hahun_visor")
+/datum/action/item_action/toggle_welding_screen/hahun_hood
+	icon_icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	button_icon_state = "hahun_visor"
 
 /////////////////////////////////////////////////////
 
@@ -584,3 +582,60 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "stupid_cap"
 	item_state = "stupid_cap"
+
+/obj/item/modkit/concord_riot_helmet_kit
+	name = "Concord light riot helmet Kit"
+	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/riot/concord_riot_helmet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Concord light riot helmet"
+	desc = "Котелок для защиты пустой и не очень балды от летящих в неё камней, бит, клинков и прочей гадости, с которой только можно столкнуться при подавлении беспорядков. Прочное забрало-визор обеспечивает защиту глупой головы владельца не только от внешних факторов, не только подавляет лучи глупенькости из миниатюрного мозга, но ещё и излучает ауру стиля, на зависть окружающим."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
+	icon_state = "lapkee-helmet"
+	flags_inv = HIDEEARS|HIDEFACE
+
+/obj/item/clothing/head/donator/bm/custom_helmet
+    name = "Custom helmet"
+    desc = "An old helmet, well-built by an enthusiast. It looks like the real thing, but feels like a model because of how light it is. The plates have been removed, as has the electronics."
+    icon = 'modular_bluemoon/icons/obj/clothing/head/helmet.dmi'
+    mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head/helmet.dmi'
+    icon_state = "custom_helmet"
+    item_state = "custom_helmet"
+    toggle_message = "You pull the NVG down on"
+    alt_toggle_message = "You push the NVG up on"
+    can_toggle = 1
+    flags_inv = HIDEEARS|HIDEHAIR
+    actions_types = list(/datum/action/item_action/toggle)
+    visor_flags_inv = HIDEFACE
+    toggle_cooldown = 0
+    flags_cover = HEADCOVERSEYES
+    visor_flags_cover = HEADCOVERSEYES
+    clothing_flags = null
+    dog_fashion = null
+    mutantrace_variation = STYLE_MUZZLE
+    active_sound = 'sound/machines/closet_open.ogg'
+
+/obj/item/clothing/head/donator/bm/custom_helmet/attack_self(mob/user)
+    if(can_toggle && !user.incapacitated())
+        if(world.time > cooldown + toggle_cooldown)
+            cooldown = world.time
+            up = !up
+            flags_1 ^= visor_flags
+            flags_inv ^= visor_flags_inv
+            flags_cover ^= visor_flags_cover
+            icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
+            to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
+
+            user.update_inv_head()
+            if(iscarbon(user))
+                var/mob/living/carbon/C = user
+                C.head_update(src, forced = 1)
+
+            if(active_sound)
+                if(up)
+                    playsound(src.loc, "[active_sound]", 100, 0, 4)

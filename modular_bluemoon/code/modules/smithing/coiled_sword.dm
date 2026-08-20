@@ -42,7 +42,7 @@
 /obj/item/smithing/coiled_sword/startfinish()
 	var/obj/item/melee/smith/coiled_sword/finalforreal = new /obj/item/melee/smith/coiled_sword(src)
 	finalforreal.quality = quality
-	finalforreal.force += quality/2
+	finalforreal.force += quality/1.5
 	finalforreal.flame_power = max(1, (finalforreal.flame_power + quality/2)) // 1 to 6+
 	finalitem = finalforreal
 	..()

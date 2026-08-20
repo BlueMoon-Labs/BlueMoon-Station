@@ -315,6 +315,11 @@
 	if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
 		check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
 
+	// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
+	// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
+	// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
+	// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
+	// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
 	for(var/i in wounds)
 		var/datum/wound/iter_wound = i
 		iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
@@ -523,7 +528,11 @@
 //Heals brute and burn damage for the organ. Returns 1 if the damage-icon states changed at all.
 //Damage cannot go below zero.
 //Cannot remove negative damage (i.e. apply damage)
-/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE)
+/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
+	// Bloodsucker antags have TRAIT_NONATURALHEAL but they use this proc to heal themselves despite the clear decription of this trait.
+	// Not wise. But I don't want to ruin their mechanics. So let them have this proc.
+	if((brute || burn) && HAS_TRAIT_NOT_FROM(owner, TRAIT_NONATURALHEAL, BLOODSUCKER_TRAIT) && !forced)
+		return
 
 	if(only_robotic && !is_robotic_limb()) //This makes organic limbs not heal when the proc is in Robotic mode.
 		return
@@ -785,11 +794,12 @@
 					else
 						marking_value = "plain"
 					var/list/color_values
-					if(length(marking) == 3)
+					if(length(marking) >= 3 && islist(marking[3]))
 						color_values = marking[3]
 					else
 						color_values = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
-					body_markings_list += list(list(body_markings_icon, marking_value, color_values))
+					var/emissive_value = (length(marking) >= 4 && marking[4]) ? TRUE : FALSE
+					body_markings_list += list(list(body_markings_icon, marking_value, color_values, emissive_value))
 
 			markings_color = list(colorlist)
 		else
@@ -892,17 +902,26 @@
 		if(!isnull(body_markings) && is_organic_limb(FALSE))
 			for(var/list/marking_list in body_markings_list)
 				// marking stores icon and value for the specific bodypart
+				var/image/mark
 				if(!use_digitigrade)
 					if(body_zone == BODY_ZONE_CHEST)
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
 					else
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 				else
-					. += image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+					mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				if(islist(marking_list[3]))
+					mark.color = marking_list[3]
+				. += mark
+				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+					var/image/mark_emissive = emissive_copy(mark)
+					mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+					. += mark_emissive
 
 	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
 	var/image/second_limb
 	var/list/aux = list()
+	var/list/marking_emissives = list()
 
 	. += limb
 
@@ -965,9 +984,15 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
-					if(color_src && length(marking_list) == 3)
+					if(islist(marking_list[3]))
 						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
 
 		// Citadel End
 
@@ -983,11 +1008,18 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
+		. += marking_emissives
 
 	else
 		limb.icon = icon
@@ -1027,9 +1059,15 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
 
@@ -1053,7 +1091,16 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
+					if(islist(marking_list[3]))
+						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
+		. += marking_emissives
 		return
 
 	if(color_src) //TODO - add color matrix support for base species limbs (or dont because color matrixes suck)

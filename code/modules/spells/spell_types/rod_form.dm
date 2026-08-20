@@ -32,6 +32,7 @@
 /obj/effect/immovablerod/wizard/Move()
 	if(get_dist(start_turf, get_turf(src)) >= max_distance)
 		qdel(src)
+		return //без выхода ..() двигал уже уничтоженный род
 	..()
 
 /obj/effect/immovablerod/wizard/Destroy()
@@ -39,6 +40,8 @@
 		wizard.status_flags &= ~GODMODE
 		wizard.mob_transforming = 0
 		wizard.forceMove(get_turf(src))
+		wizard = null //иначе род тянет за собой визарда, а тот - свой мозг
+	start_turf = null
 	return ..()
 
 /obj/effect/immovablerod/wizard/penetrate(mob/living/L)

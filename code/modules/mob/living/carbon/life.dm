@@ -614,7 +614,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 	//Jitteriness
 	if(jitteriness)
 		do_jitter_animation(jitteriness)
-		jitteriness = max(jitteriness - restingpwr, 0)
+		jitteriness = max(jitteriness - restingpwr * 2, 0)
 		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "jittery", /datum/mood_event/jittery)
 	else
 		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "jittery")

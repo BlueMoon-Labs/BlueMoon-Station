@@ -45,6 +45,32 @@
 		archiver.archive()
 	bench_line("archive", iterations, TICK_USAGE_TO_MS(t1))
 
+	// --- archive strategies A/B: fresh gases.Copy() vs reused list (Cut + refill) ---
+	// Прогоны чередуются (A,B,A,B): подряд идущий второй вариант выигрывал бы на
+	// прогретых кешах списков (см. историю с 19% -> 2.3% на atmos-бенчах).
+	var/datum/gas_mixture/arch_src = unit_test_air_mix()
+	arch_src.set_moles(GAS_CO2, 0.4) // третий ключ, чтобы не мерить вырожденный случай
+	var/list/reused_archive = list()
+	var/list/fresh_archive
+	var/archive_copy_ms = 0
+	var/archive_reuse_ms = 0
+	iterations = 20000
+	for(var/ab_round in 1 to 2)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			fresh_archive = arch_src.gases.Copy()
+		archive_copy_ms += TICK_USAGE_TO_MS(t1)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			reused_archive.Cut()
+			for(var/id, amount in arch_src.gases)
+				reused_archive[id] = amount
+		archive_reuse_ms += TICK_USAGE_TO_MS(t1)
+	bench_line("archive_copy", iterations * 2, archive_copy_ms)
+	bench_line("archive_reuse", iterations * 2, archive_reuse_ms)
+	TEST_ASSERT_EQUAL(length(fresh_archive), length(reused_archive), "оба варианта архива обязаны снять одинаковый набор газов")
+	qdel(arch_src)
+
 	// --- share() steady state (both sides identical, nothing moves) ---
 	var/datum/gas_mixture/settled_a = unit_test_air_mix()
 	var/datum/gas_mixture/settled_b = unit_test_air_mix()

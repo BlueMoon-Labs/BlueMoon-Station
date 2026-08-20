@@ -14,7 +14,6 @@
 #define TRAIT_BLUEMOON_WATER_VULNERABILITY	"robotic_water_vulnerability"
 #define TRAIT_BLUEMOON_EMP_VULNERABILITY	"robotic_emp_vulnerability"
 #define TRAIT_BLUEMOON_CROCIN_POISONOUS		"crocin_poisonous"
-#define TRAIT_LEWD_JOB						"lewd_job"
 #define TRAIT_LEWD_SUMMON					"Призываемый"
 #define TRAIT_LEWD_SUMMONED					"lewd_summoned"
 #define TRAIT_SPIKY							"spiky"

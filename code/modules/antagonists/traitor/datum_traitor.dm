@@ -61,8 +61,8 @@
 			var/datum/traitor_class/class = GLOB.traitor_classes[C]
 			if(class.min_players > length(GLOB.joined_player_list))
 				continue
-			var/weight = LOGISTIC_FUNCTION(1.5*class.weight,0,class.chaos,0)
-			weights[C] = weight * 1000
+			var/weight = class.get_selection_weight()
+			weights[C] = weight
 	var/choice = pickweight(weights)
 	if(!choice)
 		choice = TRAITOR_HUMAN // it's an "easter egg"
@@ -290,7 +290,7 @@
 	if(uplink_owned)
 		var/uplink_text = "(used [used_telecrystals] CR) [purchases]"
 		if((used_telecrystals == 0) && traitor_won)
-			var/static/icon/badass = icon('icons/badass.dmi', "badass")
+			var/static/icon/badass = icon('icons/BadAss.dmi', "badass")
 			uplink_text += "<BIG>[icon2html(badass, world)]</BIG>"
 		result += uplink_text
 

@@ -7,7 +7,7 @@
 	name = "Propaganda poster"
 	desc = "Пусть они знают, кто здесь Босс!"
 	item = /obj/item/storage/box/inteq_box/posters
-	cost = 5
+	cost = 2
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/clothes_box
@@ -26,11 +26,11 @@
 	cost = 3
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
-/datum/uplink_item/suits/hardsuit/elite // Traitor ELITE EXPENSIVE hardsuit, not for the nuke ops
+/datum/uplink_item/suits/hardsuit/elite // Traitor ELITE hardsuit, not for the nuke ops
 	name = "Elite InteQ Hardsuit"
 	desc = "Последний разработки ЧВК InteQ в сфере Хардсьюитов. БОЛЬШЕ БРОНИИИИИ!!!"
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq
-	cost = 16
+	cost = 12
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/inteq/ak12

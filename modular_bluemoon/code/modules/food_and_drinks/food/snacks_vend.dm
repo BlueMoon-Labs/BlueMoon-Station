@@ -19,7 +19,7 @@
 		/datum/reagent/consumable/nutriment = 1,
 		/datum/reagent/consumable/sugar = 3,
 		/datum/reagent/consumable/capsaicin = 2,
-		/datum/reagent/consumable/condensedcapsaicin = 5,
+		/datum/reagent/consumable/capsaicin/reaper = 5,
 		/datum/reagent/consumable/tearjuice = 4,
 	)
 	tastes = list("candy" = 1, "hot" = 2, "bitterness" = 1)

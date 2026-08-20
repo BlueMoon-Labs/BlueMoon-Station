@@ -4,7 +4,7 @@
 	desc = "A handheld tracking device that locks onto certain signals."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "pinpointer"
-	item_state = "pinpointer"
+	item_state = "electronic"
 	flags_1 = CONDUCT_1
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL
@@ -93,28 +93,47 @@
 			if(16 to INFINITY)
 				. += "pinon[alert ? "alert" : "far"]"
 
+/obj/item/pinpointer/proc/human_has_coords_sensors(mob/living/carbon/human/H)
+	if(!H || !istype(H.w_uniform, /obj/item/clothing/under))
+		return FALSE
+	var/obj/item/clothing/under/U = H.w_uniform
+	if(U.has_sensor <= NO_SENSORS || U.has_sensor == BROKEN_SENSORS)
+		return FALSE
+	return U.sensor_mode >= SENSOR_COORDS
+
+/// Датчики в режиме координат — точное наведение; иначе разброс imprecise_range тайлов.
+/obj/item/pinpointer/proc/update_person_tracking_precision(mob/living/carbon/human/H, imprecise_range)
+	if(human_has_coords_sensors(H))
+		minimum_range = 0
+	else
+		minimum_range = imprecise_range
+
 /obj/item/pinpointer/crew // A replacement for the old crew monitoring consoles
 	name = "crew pinpointer"
 	desc = "A handheld tracking device that points to crew suit sensors."
 	icon_state = "pinpointer_crew"
-	item_state = "pinpointer_crew"
+	item_state = "electronic"
 	custom_price = PRICE_ABOVE_EXPENSIVE
 	var/has_owner = FALSE
 	var/pinpointer_owner = null
 
 /obj/item/pinpointer/crew/proc/trackable(mob/living/carbon/human/H)
+	if(!istype(H))
+		return FALSE
 	var/turf/here = get_turf(src)
-	if(H && (H.z == 0 || H.z == here.z) && istype(H.w_uniform, /obj/item/clothing/under))
-		var/obj/item/clothing/under/U = H.w_uniform
-
-		// Suit sensors must be on maximum.
-		if(!U.has_sensor || U.sensor_mode < SENSOR_COORDS && !ignore_suit_sensor_level)
-			return FALSE
-
-		var/turf/there = get_turf(H)
-		return (H.z != 0 || (there && there.z == here.z))
-
-	return FALSE
+	var/turf/there = get_turf(H)
+	if(!here || !there)
+		return FALSE
+	if(H.z != 0 && H.z != here.z)
+		return FALSE
+	if(H.z == 0 && there.z != here.z)
+		return FALSE
+	if(ignore_suit_sensor_level)
+		return TRUE
+	var/obj/item/clothing/under/U = astype(H.w_uniform)
+	if(!U || !U.has_sensor || U.sensor_mode < SENSOR_COORDS)
+		return FALSE
+	return TRUE
 
 /obj/item/pinpointer/crew/attack_self(mob/living/user)
 	if(active)
@@ -180,7 +199,7 @@
 	name = "Centcom Pimpointer"
 	desc = "A handheld tracking device that locks onto certain signals. Ignores suit sensors, but is much less accurate."
 	icon_state = "pinpointer_centcom"
-	item_state = "pinpointer_black"
+	item_state = "electronic"
 	minimum_range = 12
 	ignore_suit_sensor_level = TRUE
 
@@ -188,7 +207,7 @@
 	name = "pair pinpointer"
 	desc = "A handheld tracking device that locks onto its other half of the matching pair."
 	icon_state = "pinpointer_syndicate" // BLUEMOON ADD
-	item_state = "pinpointer_black" // BLUEMOON ADD - чтобы проще отличать от пинпоинтера на диск
+	item_state = "electronic" // BLUEMOON ADD - чтобы проще отличать от пинпоинтера на диск
 	var/other_pair
 
 /obj/item/pinpointer/pair/Destroy()
@@ -221,7 +240,7 @@
 	name = "fugitive pinpointer"
 	desc = "A handheld tracking device that locates the bounty hunter shuttle for quick escapes."
 	icon_state = "pinpointer_hunter"
-	item_state = "pinpointer_black"
+	item_state = "electronic"
 	var/obj/shuttleport
 
 /obj/item/pinpointer/shuttle/Initialize(mapload)

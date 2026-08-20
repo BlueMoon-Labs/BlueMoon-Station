@@ -56,7 +56,7 @@
 		else
 			result.forceMove(loc_to_spawn)
 	else
-		to_chat(user, span_warning(" You can't modify [target] with this kit!"))
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
 
 // may be useful for gun/stunbaton/etc modkits
 /obj/item/modkit/proc/on_item_replace(obj/old_item, obj/modified_item)
@@ -613,6 +613,7 @@
 	name = "\improper G-36"
 	desc = "Heckler & Koch Gewehr 36, G36 - семейство стрелкового оружия, разработанное в начале 1990-х немецкой компанией Heckler & Koch, под внутрифирменным обозначением HK 50, для замены хорошо известной автоматической винтовки HK G3."
 	icon_state = "G36"
+	item_state = "G36"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
@@ -966,6 +967,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "Nebular-9"
+	can_flashlight = TRUE
 	gunlight_state = "nebular-light"
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
@@ -1090,7 +1092,8 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "nebular-t"
 	item_state = "Nebular-9"
-	can_flashlight = FALSE
+	can_flashlight = TRUE
+	gunlight_state = "nebular-light"
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
@@ -1227,7 +1230,7 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper B-Wal-Special"
-	desc = "A unique example of an improved pistol used by the regular Catcrin Army. The personal number AV-000492 is engraved in gold on the barrel. Judging by its appearance, it belongs to someone of high rank."
+	desc = "A unique example of an improved pistol used by the regular Catcrin Army. Judging by its appearance, it belongs to someone of high rank."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "bwal_spec"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
@@ -1243,7 +1246,7 @@
 /obj/item/gun/energy/laser/captain/rifle
 	DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 	name = "Antique Laser Rifle"
-	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The rifle is engraved with the serial number AV-000492 in gold. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
+	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "captain_rifle"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'

@@ -99,6 +99,8 @@
 	}\
 }
 
+/* МЫ НЕ ИСПОЛЬЗУЕМ ЭТИ ДЕФАЙНЫ
+При успешной или не успешной инициализации и т.д. вызывайте return ..()
 //! ### SS initialization hints
 /**
  * Negative values incidate a failure or warning of some kind, positive are good.
@@ -116,6 +118,7 @@
 
 /// Successful, but don't print anything. Useful if subsystem was disabled.
 #define SS_INIT_NO_NEED 3
+*/
 
 //! ### SS initialization load orders
 // Subsystem init_order, from highest priority to lowest priority
@@ -188,6 +191,7 @@
 
 #define FIRE_PRIORITY_VORE			5
 #define FIRE_PRIORITY_MAIL			7 // BLUEMOON ADD
+#define FIRE_PRIORITY_ASSETS		20
 #define FIRE_PRIORITY_ACTIVITY		10
 #define FIRE_PRIORITY_IDLE_NPC		10
 #define FIRE_PRIORITY_SERVER_MAINT	10
@@ -257,6 +261,15 @@
 #define SSAIR_FINALIZE_TURFS 11
 #define SSAIR_ATMOSMACHINERY_AIR 12
 #define SSAIR_DEFERRED_AIRS 13
+#define SSAIR_DECOMPRESSION 14
+#define SSAIR_ATOMS 15
+
+// Слоты пакета очереди расширения пайпнетов (SSair.expansion_queue): сеть,
+// граница BFS и посещённые трубы. Состояние живёт в пакете, чтобы обход
+// гигантской сети мог отдавать тик и продолжаться со следующего фаера.
+#define SSAIR_REBUILD_PIPELINE 1
+#define SSAIR_REBUILD_BORDER 2
+#define SSAIR_REBUILD_SEEN 3
 
 // Subsystem delta times or tickrates, in seconds. I.e, how many seconds in between each process() call for objects being processed by that subsystem.
 // Only use these defines if you want to access some other objects processing delta_time, otherwise use the delta_time that is sent as a parameter to process()

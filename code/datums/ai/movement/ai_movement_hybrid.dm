@@ -24,6 +24,7 @@
 	var/datum/move_loop/loop = SSmove_manager.move_towards_legacy(moving, current_movement_target, controller.movement_delay, subsystem = SSai_movement, extra_info = controller)
 	if(!loop)
 		return
+	controller.track_move_loop(loop)
 	RegisterSignal(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move_direct))
 	RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move_direct))
 
@@ -44,6 +45,7 @@
 		extra_info = controller)
 	if(!loop)
 		return
+	controller.track_move_loop(loop)
 	RegisterSignal(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move_jps))
 	RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move_jps))
 	RegisterSignal(loop, COMSIG_MOVELOOP_JPS_REPATH, PROC_REF(repath_incoming))
@@ -52,6 +54,12 @@
 /datum/ai_movement/hybrid/proc/shared_pre_move_checks(datum/move_loop/source)
 	var/atom/movable/pawn = source.moving
 	var/datum/ai_controller/controller = source.extra_info
+	//Осиротевший луп: харддел пауна нулит moving, qdel контроллера нулит extra_info.
+	//Рантайм здесь убивает process() лупа ДО его самоочистки по QDELETED(moving),
+	//и такой луп молотит одну и ту же ошибку каждый шаг до конца раунда.
+	if(QDELETED(pawn) || QDELETED(controller))
+		qdel(source)
+		return MOVELOOP_SKIP_STEP
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(istype(hostile_pawn))
 		//Some hostiles change their legacy movement delay at runtime for combat phases.
@@ -64,6 +72,15 @@
 		return MOVELOOP_SKIP_STEP
 
 	if(istype(hostile_pawn) && !hostile_pawn.can_ai_controller_move())
+		return MOVELOOP_SKIP_STEP
+
+	//Пристёгнутый моб при Move() толкает незаанкоренный стул вместо собственного
+	//шага (living_movement.dm). Легаси-пул это знал (simple_animal.dm гейтит
+	//брождение по !buckled), контроллеры при миграции гард потеряли - и мобы
+	//поехали кататься. Единая точка: через этот прок проходят оба лупа.
+	var/mob/living/living_pawn = pawn
+	if(isliving(living_pawn) && living_pawn.buckled)
+		controller.request_unbuckle()
 		return MOVELOOP_SKIP_STEP
 
 	var/can_move = TRUE
@@ -130,6 +147,9 @@
 /datum/ai_movement/hybrid/proc/post_move_direct(datum/move_loop/has_target/source, succeeded)
 	SIGNAL_HANDLER
 	var/datum/ai_controller/controller = source.extra_info
+	if(QDELETED(controller) || QDELETED(source.moving)) //Move() мог удалить пауна или контроллер
+		qdel(source)
+		return
 	if(succeeded)
 		AI_METRIC_INC(successful_moves)
 		controller.blackboard[BB_AI_DIRECT_FAILS] = 0
@@ -158,6 +178,9 @@
 /datum/ai_movement/hybrid/proc/post_move_jps(datum/move_loop/has_target/jps/source, succeeded)
 	SIGNAL_HANDLER
 	var/datum/ai_controller/controller = source.extra_info
+	if(QDELETED(controller) || QDELETED(source.moving)) //Move() мог удалить пауна или контроллер
+		qdel(source)
+		return
 	if(succeeded)
 		AI_METRIC_INC(successful_moves)
 		source.avoid = null
@@ -186,6 +209,8 @@
 /datum/ai_movement/hybrid/proc/repath_incoming(datum/move_loop/has_target/jps/source)
 	SIGNAL_HANDLER
 	var/datum/ai_controller/controller = source.extra_info
+	if(QDELETED(controller))
+		return
 	source.id = controller.get_access()
 	source.minimum_distance = controller.get_minimum_distance()
 	source.simulated_only = !controller.can_path_through_space()

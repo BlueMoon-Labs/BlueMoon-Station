@@ -560,7 +560,7 @@
 	force_antag_preference = TRUE
 	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
-	required_candidates = 3 //BLUEMOON CHANGES
+	required_candidates = 5 //BLUEMOON CHANGES - matches FAMILIES_ROUNDSTART_COUNT
 	weight = 48
 	cost = 10
 	intensity = 45
@@ -1009,10 +1009,10 @@ BLUEMOON REMOVAL END*/
 	minimum_required_age = 0
 	required_candidates = 1
 	exclusive_roles = list("AI")
-	weight = 3
-	cost = 20
+	weight = 5
+	cost = 15
 	intensity = 45
-	requirements = list(101,101,101,101,101,101,60,40,30,10)
+	requirements = list(101,101,101,101,101,60,40,30,20,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
 

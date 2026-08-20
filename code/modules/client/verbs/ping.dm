@@ -1,5 +1,23 @@
 #define PING_RTT_WINDOW_SIZE 15
 
+/// Renders a timestamp for the `.update_ping` / `.display_ping` command line.
+/// Both stamps leave as text and come back as numbers, so whatever this drops is lost
+/// for good and lands in the measured round trip as pure error. Plain interpolation
+/// keeps six significant digits, and REALTIMEOFDAY needs all six for its integer part
+/// alone from 02:47 GMT until midnight - that rounded every send stamp to a whole
+/// decisecond and put up to 50ms of noise into every sample. world.time hits the same
+/// wall three hours into a round. Twelve digits round-trip a 32-bit float exactly.
+#define PING_WIRE_PRECISION 12
+
+/proc/ping_wire_num(value)
+	return num2text(value, PING_WIRE_PRECISION)
+
+/// Server-side share of a round trip, in ms: the wall clock always covers at least as
+/// much ground as the game clock, and the gap is time the server spent stalled rather
+/// than time the sample spent in transit.
+/proc/ping_server_component(rtt_ms, tick_ms)
+	return max(rtt_ms - tick_ms, 0)
+
 /// Pushes a sample into a FIFO window while incrementally maintaining its sorted mirror.
 /// Returns the median of the window. Replaces a full copy+TimSort per sample.
 /proc/rtt_window_push(list/window, list/sorted, value, max_size)
@@ -57,13 +75,14 @@
 		// Backward compatibility with one-argument invocations.
 		rtt_ping_raw = tick_ping
 
-	// When rtt_raw is 0 the round-trip completed within a single REALTIMEOFDAY
-	// tick, meaning the timer resolution is too coarse to measure it.
-	// Fall back to the tick-based measurement which has finer granularity.
+	// When rtt_raw is 0 the round-trip completed inside one REALTIMEOFDAY step, meaning
+	// the timer resolution is too coarse to measure it: REALTIMEOFDAY is a 32-bit float
+	// and its own step grows to 6.25ms once it climbs past 14:33 GMT. Fall back to the
+	// tick-based measurement, which sits at a far smaller magnitude and stays finer.
 	var/best_ping = rtt_ping_raw ? rtt_ping_raw : tick_ping
 
 	var/rtt_ping = stabilize_rtt_ping(best_ping)
-	var/server_ping = max(tick_ping - best_ping, 0)
+	var/server_ping = ping_server_component(best_ping, tick_ping)
 
 	var/jitter = abs(best_ping - lastping_rtt_raw)
 	if(isnull(avgping_jitter))
@@ -76,6 +95,9 @@
 	lastping_rtt_raw = best_ping
 	lastping_server = server_ping
 	lastping = rtt_ping
+	// Отметка свежести: у подвисшего клиента значения остаются на месте навсегда, и сводка
+	// по миру (SStime_track) залипала на его максимуме до конца раунда.
+	lastping_at = world.time
 	ping_updated = TRUE
 
 	if(isnull(avgping_rtt))
@@ -113,6 +135,7 @@
 /client/verb/ping()
 	set name = "Ping"
 	set category = "OOC"
-	winset(src, null, "command=.display_ping+[current_ping_tickstamp()]+[REALTIMEOFDAY]")
+	winset(src, null, "command=.display_ping+[ping_wire_num(current_ping_tickstamp())]+[ping_wire_num(REALTIMEOFDAY)]")
 
 #undef PING_RTT_WINDOW_SIZE
+#undef PING_WIRE_PRECISION

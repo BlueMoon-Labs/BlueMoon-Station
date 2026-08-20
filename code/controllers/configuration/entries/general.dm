@@ -413,7 +413,21 @@
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
-/// Multiplier for atmos processing speed (share steps, equalization turf limit). 1 = default, 10 = 10x faster equalization/reactions.
+/// Sleeping edges: осевшие пары соседних турфов пропускают compare/share по
+/// ревизиям смесей. A/B: giant-hall нейтрален в пределах шума, осевшая комната
+/// -22% на турф-цикл - профиль затяжных разгермов (раунды 9906/9915). Выключить
+/// на живом мире можно строкой "ATMOS_SLEEPING_EDGES 0" - кэши сбрасываются сами.
+/datum/config_entry/flag/atmos_sleeping_edges
+	default = TRUE
+
+/// Turf-to-turf heat conduction through solids (superconduction). Registration
+/// starts only above MINIMUM_TEMPERATURE_START_SUPERCONDUCTION, so a station at
+/// room temperature pays one variable read per active turf.
+/datum/config_entry/flag/atmos_heat_enabled
+	default = TRUE
+
+/// Multiplier for how often SSair fires. 1 = default cadence, 2 = twice as often, so gas
+/// moves twice as fast for roughly twice the CPU. Applied through SSair.set_atmos_speed().
 /datum/config_entry/number/atmos_speed_multiplier
 	default = 1
 	min_val = 1
@@ -432,6 +446,8 @@
 
 /datum/config_entry/number/commendation_percent_poll
 	integer = FALSE
+	/// Fraction of joined players polled for end-of-round hearts when the shuttle leaves (0 disables).
+	default = 0.1
 
 /datum/config_entry/str_list/randomizing_station_name_message
 	default = list()

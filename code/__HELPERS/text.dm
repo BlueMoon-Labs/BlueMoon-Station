@@ -211,10 +211,44 @@
 	if(!length(message)) // Return null if canceled.
 		return null
 	if(length(message) > max_length)
-		to_chat(user, message)
-		to_chat(user, span_danger("^^^----- The preceding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
+		reflect_discarded_message(user, message, max_length)
 		return null
 	return finalize_stripped_input(message, max_length, no_trim)
+
+/// Echoes a rejected over-long message back so the sender can copy it out, then explains
+/// why it was dropped. The echo is always encoded: it is raw player text going straight
+/// into a chat window, so an unencoded copy would let the sender inject markup at himself.
+/proc/reflect_discarded_message(mob/user, message, max_length)
+	to_chat(user, html_encode(message))
+	to_chat(user, span_danger("^^^----- The preceding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
+
+/// Length guard for text whose sink sanitizes on its own - say() and whisper() call
+/// sanitize() internally, so encoding here as well would escape the message twice
+/// ("<" -> "&lt;" -> "&amp;lt;") and the player would read literal entities in chat.
+/// Control characters are still stripped, since those survive html_encode() and break
+/// the DM<->TGUI round-trip. Returns null when there is nothing left to send.
+/proc/raw_text_or_reflect(mob/user, message = "", max_length = MAX_MESSAGE_LEN)
+	if(!length(message)) // Return null if canceled.
+		return null
+	message = strip_control_chars(message)
+	if(!length(message))
+		return null
+	if(length(message) > max_length)
+		reflect_discarded_message(user, message, max_length)
+		return null
+	return message
+
+/// raw_text_or_reflect() fed by a native BYOND prompt, for callers that must not encode.
+/// multiline picks `as message` over `as text`, matching stripped_multiline_input().
+/proc/raw_input_or_reflect(mob/user, message = "", title = "", default = "", max_length = MAX_MESSAGE_LEN, multiline = FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/user_input
+	if(multiline)
+		user_input = input(user, message, title, default) as message|null
+	else
+		user_input = input(user, message, title, default) as text|null
+	end_native_prompt(prompt_mob)
+	return raw_text_or_reflect(user, user_input, max_length)
 
 #define NO_CHARS_DETECTED 0
 #define SPACES_DETECTED 1

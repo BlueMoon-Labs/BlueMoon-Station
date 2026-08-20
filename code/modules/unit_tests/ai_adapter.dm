@@ -114,18 +114,27 @@
 
 	qdel(controller)
 
-///Пол скорости AI-погони: обычный быстрый моб (move_to_delay 1 = "телепорт")
-///клампится к минимальной задержке; уже медленный моб и босс (opt-out) - как есть.
-///Ключевое: моб с ЛЕГАСИ-ДЕФОЛТОМ move_to_delay кэпом не задевается вовсе -
-///плейтест ответил "мобы всё ещё умные, но не быстрые", когда кэп резал и его.
+///Пол скорости AI-погони: и быстрый моб, и моб на легаси-дефолте клампятся к
+///живому полу, который считается от фактической скорости бегущего игрока;
+///уже медленный моб и босс (opt-out) - как есть.
+///
+///Раньше пол был константой, равной легаси-дефолту, и моб на дефолте им не
+///задевался. Это и было ошибкой: константу калибровали от репозиторного
+///RUN_DELAY 2.5, а прод всегда крутил 1.5 - "пол" по факту означал паритет с
+///бегущим игроком, и от фауны нельзя было уйти в принципе.
 /datum/unit_test/ai_pursuit_speed_capped/Run()
 	var/mob/living/simple_animal/hostile/sprinter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
 	sprinter.move_to_delay = 1
-	TEST_ASSERT_EQUAL(sprinter.ai_movement_delay(), AI_PURSUIT_MIN_MOVE_DELAY, "A fast hostile's AI pursuit speed must be capped to the minimum move delay")
+	TEST_ASSERT_EQUAL(sprinter.ai_movement_delay(), GLOB.ai_pursuit_min_move_delay, "A fast hostile's AI pursuit speed must be capped to the live minimum move delay")
 
 	var/mob/living/simple_animal/hostile/standard = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, WEST))
 	standard.move_to_delay = AI_PURSUIT_BASELINE_MOVE_TO_DELAY
-	TEST_ASSERT_EQUAL(standard.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY), "A mob at the legacy default move_to_delay must keep its historical chase speed")
+	var/saved_pursuit_min_move_delay = GLOB.ai_pursuit_min_move_delay
+	var/standard_pursuit_floor = max(saved_pursuit_min_move_delay, AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY))
+	GLOB.ai_pursuit_min_move_delay = standard_pursuit_floor
+	var/standard_delay = standard.ai_movement_delay()
+	GLOB.ai_pursuit_min_move_delay = saved_pursuit_min_move_delay
+	TEST_ASSERT_EQUAL(standard_delay, standard_pursuit_floor, "A mob at the legacy default move_to_delay is exactly the case the floor exists for")
 
 	var/mob/living/simple_animal/hostile/plodder = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
 	plodder.move_to_delay = 6
@@ -304,6 +313,49 @@
 	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], current_target, "Deleting an old volley target must preserve a newer controller target")
 	TEST_ASSERT_EQUAL(hunter.target, current_target, "Deleting an old volley target must preserve the newer mirrored target")
 	TEST_ASSERT_NULL(hunter.rapid_fire_target, "Deleting an old volley target must still cancel its volley")
+
+///Удаление цели обязано снимать запись из /datum/ai_movement.moving_controllers.
+///Датумы движения - бессмертные синглтоны из SSai_movement.movement_types, поэтому
+///забытая запись держала удалённого моба всё GC-окно: это и была основная причина
+///хардделов обезьян и слаймов на ксенобио-фермах (по одной внешней ссылке на моба).
+/datum/unit_test/ai_movement_target_delete_releases_controller/Run()
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/carbon/monkey/prey = new(get_step(run_loc_floor_bottom_left, EAST))
+	var/datum/ai_controller/controller = hunter.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "Sanity: the hostile must start migrated")
+
+	controller.set_movement_target(type, prey)
+	var/datum/ai_movement/mover = controller.ai_movement
+	TEST_ASSERT_NOTNULL(mover, "Sanity: a migrated controller must hold a movement datum instance")
+	mover.start_moving_towards(controller, prey, 1)
+	TEST_ASSERT_EQUAL(mover.moving_controllers[controller], prey, "Sanity: starting a move must record the target on the movement singleton")
+
+	qdel(prey)
+
+	TEST_ASSERT_NULL(mover.moving_controllers[controller], "Deleting the movement target must release the entry on the immortal movement singleton")
+	TEST_ASSERT_NULL(controller.current_movement_target, "Deleting the movement target must clear the controller's own reference")
+
+	qdel(controller) //чтобы контроллер не тикал в фоне до самого teardown
+
+///Смена типа движения не должна оставлять запись в покинутом синглтоне - опрашивать
+///её потом уже некому, снять тоже.
+/datum/unit_test/ai_movement_type_switch_releases_old_singleton/Run()
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/carbon/monkey/prey = allocate(/mob/living/carbon/monkey, get_step(run_loc_floor_bottom_left, EAST))
+	var/datum/ai_controller/controller = hunter.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "Sanity: the hostile must start migrated")
+
+	controller.set_movement_target(type, prey)
+	var/datum/ai_movement/original_mover = controller.ai_movement
+	original_mover.start_moving_towards(controller, prey, 1)
+	TEST_ASSERT_EQUAL(original_mover.moving_controllers[controller], prey, "Sanity: starting a move must record the target on the movement singleton")
+
+	controller.change_ai_movement_type(/datum/ai_movement/jps)
+
+	TEST_ASSERT_NULL(original_mover.moving_controllers[controller], "Switching movement type must release the entry on the abandoned singleton")
+	TEST_ASSERT(controller.ai_movement != original_mover, "Sanity: the switch must actually swap the movement datum")
+	controller.stop_ai_movement()
+	qdel(controller)
 
 ///Legacy toggle_ai calls pause and resume an attached controller.
 /datum/unit_test/ai_adapter_legacy_toggle_bridge/Run()

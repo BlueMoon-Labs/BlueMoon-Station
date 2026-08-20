@@ -6,6 +6,8 @@
 		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
 	for(var/obj/machinery/door/window/interior_trim in linked)
 		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/structure/curtain_static/glass/gl_curtain in linked)
+		new_status ? gl_curtain.electrochromatic_dim() : gl_curtain.electrochromatic_off()
 	for(var/obj/machinery/door/airlock/gl_airlock in linked)
 		if(gl_airlock.glass)
 			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()
@@ -60,6 +62,7 @@
 
 /obj/structure/window/examine(mob/user)
 	. = ..()
+	. += airbag_examine()
 	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 		. += "<span class='notice'>The window has electrochromatic circuitry on it.</span>"
 	if(reinf)
@@ -93,6 +96,7 @@
 
 /obj/structure/window/Initialize(mapload, direct)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(direct)
 		setDir(direct)
 
@@ -236,6 +240,9 @@
 
 	add_fingerprint(user)
 
+	if(airbag_attackby(I, user))
+		return TRUE
+
 	if(I.tool_behaviour == TOOL_WELDER && user.a_intent == INTENT_HELP)
 		if(obj_integrity < max_integrity)
 			if(!I.tool_start_check(user, amount=0))
@@ -250,7 +257,7 @@
 			to_chat(user, "<span class='warning'>[src] is already in good condition!</span>")
 		return
 
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, "<span class='warning'>[src] is already electrochromatic!</span>")
@@ -489,6 +496,7 @@
 /obj/structure/window/deconstruct(disassembled = TRUE)
 	if(QDELETED(src))
 		return
+	airbag_on_deconstruct(disassembled)
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -538,6 +546,7 @@
 	add_fingerprint(user)
 
 /obj/structure/window/Destroy()
+	airbag_drop()
 	density = FALSE
 	air_update_turf(TRUE)
 	update_nearby_icons()
@@ -567,6 +576,9 @@
 //merges adjacent full-tile windows into one
 /obj/structure/window/update_overlays()
 	. = ..()
+	var/mutable_appearance/airbag_light = airbag_overlay()
+	if(airbag_light)
+		. += airbag_light
 	if(QDELETED(src) || !fulltile)
 		return
 	var/ratio = obj_integrity / max_integrity
@@ -584,6 +596,14 @@
 	if(exposed_temperature > (T0C + heat_resistance))
 		take_damage(round(exposed_volume / 100), BURN, 0, 0)
 	..()
+
+// Flameless path: a room hot enough to break glass does it without a hotspot
+// ever touching the pane.
+/obj/structure/window/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + heat_resistance)
+
+/obj/structure/window/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(round(exposed_air.return_volume() / 100), BURN, 0, 0)
 
 /obj/structure/window/get_dumping_location(obj/item/storage/source,mob/user)
 	return null

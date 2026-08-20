@@ -38,6 +38,7 @@ const JS_FILES = [
 	'src/renderers.js',
 	'src/sparkline.js',
 	'src/renderers/status.js',
+	'src/renderers/readyplayers.js',
 	'src/renderers/mc.js',
 	'src/renderers/verbs.js',
 	'src/renderers/favorites.js',

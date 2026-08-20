@@ -158,7 +158,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/machinery/cryopod
 	name = "cryogenic freezer"
 	desc = "Suited for Cyborgs and Humanoids, the pod is a safe place for personnel affected by the Space Sleep Disorder to get some rest."
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "cryopod-open"
 	density = TRUE
 	anchored = TRUE
@@ -168,6 +168,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	max_integrity = 500
 	armor = list(MELEE = 10, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	flags_1 = NODECONSTRUCT_1
+	interaction_flags_machine = INTERACT_MACHINE_WIRES_IF_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OPEN_SILICON | INTERACT_MACHINE_SET_MACHINE | INTERACT_MACHINE_OFFLINE
 
 	var/tele = FALSE
 
@@ -180,8 +181,18 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	///Weakref to our controller
 	var/datum/weakref/control_computer_weakref
 
+/obj/machinery/cryopod/tele
+	name = "CentCom Teleporter"
+	desc = "Suited for everyone who wishes to leave the station and go back to CentCom.\n<span class='notice'>This is not for actually getting into CentCom, you will leave the round.</span>"
+	icon = 'modular_sand/icons/obj/machines/cent-tele.dmi'
+	tele = TRUE
+
+	on_store_message = "has been teleported to CentCom."
+	on_store_name = "Teleporter Oversight"
+
 /obj/machinery/cryopod/Initialize(mapload)
 	..()
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
 	return INITIALIZE_HINT_LATELOAD //Gotta populate the cryopod computer GLOB first
 
 /obj/machinery/cryopod/LateInitialize()
@@ -192,6 +203,14 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/machinery/cryopod/Destroy()
 	control_computer_weakref = null
 	return ..()
+
+/obj/machinery/cryopod/is_operational()
+	return !(machine_stat & (BROKEN|MAINT))
+
+/obj/machinery/cryopod/on_stat_update(old_value)
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
 
 /obj/machinery/cryopod/close_machine(atom/movable/target)
 	if(!control_computer_weakref)
@@ -545,6 +564,15 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	// destroy_later (borg MMIs must outlive their shell).
 	GLOB.ssd_mob_list -= mob_occupant
 	mob_occupant.moveToNullspace()
+	// Вещи из destroying лежат ВНУТРИ капсулы (их туда кладут выше), а open_machine()
+	// ниже вытряхивает её содержимое на пол. Удаление ступенчатое, поэтому личный КПК
+	// вместе с айди-картой успевает полежать на полу и уйти в чужой карман - а удаление
+	// айди как раз и есть единственная защита крио от кражи доступов. Выносим их из
+	// капсулы прямо сейчас; при pod == null они лежат на мобе и цикл ничего не делает.
+	if(pod)
+		for(var/obj/item/doomed_item as anything in destroying)
+			if(doomed_item.loc == pod)
+				doomed_item.moveToNullspace()
 	SSauto_cryo.queue_deletion_list(destroying)
 	SSauto_cryo.queue_deletion(mob_occupant)
 	SSauto_cryo.queue_deletion_list(destroy_later)

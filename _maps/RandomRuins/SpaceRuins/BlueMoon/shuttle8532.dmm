@@ -125,7 +125,7 @@
 /area/ruin/space/has_grav/shuttle8532engineering)
 "cK" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/red/auto,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/shuttle8532engineering)
 "cO" = (
@@ -449,7 +449,7 @@
 /turf/open/floor/plasteel/airless,
 /area/ruin/space/has_grav/shuttle8532researchbay)
 "jN" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/airless,
 /area/ruin/space/has_grav/shuttle8532crewquarters)
 "jQ" = (
@@ -1206,7 +1206,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/shuttle8532crewquarters)
 "Gs" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/airless,
 /area/ruin/space/has_grav/shuttle8532bridge)
 "Gz" = (
@@ -1256,7 +1256,7 @@
 /obj/machinery/door/poddoor{
 	id = "abandonedshipbridgeblast"
 	},
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/shuttle8532bridge)
 "HW" = (

@@ -6,6 +6,11 @@
 /// Порт локального dev-сервера tgui (см. tgui/scripts/vite-dev.cjs). Должен совпадать с серверным.
 #define TGUI_DEV_SERVER_PORT 3000
 
+/// Тип скин-контрола по id окна: "BROWSER", "WINDOW" и так далее. Задан скин-файлом
+/// и в пределах одного подключения не меняется, а winexists - это round-trip до
+/// клиента на каждое открытие окна tgui. Спрашиваем один раз за сессию.
+/client/var/list/tgui_window_control_types = list()
+
 /datum/tgui_window
 	var/id
 	var/client/client
@@ -144,7 +149,18 @@
 	if(pooled && istype(client))
 		winset(client, id, "is-visible=0")
 	// Detect whether the control is a browser
-	var/win_type = winexists(client, id)
+	if(!istype(client))
+		return
+	var/win_type = client.tgui_window_control_types[id]
+	if(!win_type)
+		win_type = tracked_winexists(client, id)
+		// winexists усыпил прок до ответа скина - клиент мог за это время отвалиться
+		if(!istype(client))
+			return
+		// Пустой ответ означает "контрола нет"; такое не кэшируем, чтобы окно,
+		// созданное позже, определилось правильно
+		if(length(win_type))
+			client.tgui_window_control_types[id] = win_type
 	is_browser = win_type == "BROWSER"
 	if(CONFIG_GET(flag/emergency_tgui_logging))
 		var/primary_target = get_primary_output_target()
@@ -299,6 +315,7 @@
 	if(!client)
 		return
 	var/message = TGUI_CREATE_MESSAGE(type, payload)
+	warn_on_oversized_payload(type, payload, length(message))
 	// Place into queue if window is still loading
 	if(!force && status != TGUI_WINDOW_READY)
 		if(!message_queue)
@@ -306,6 +323,31 @@
 		message_queue += list(message)
 		return
 	send_output_message(message)
+
+/**
+ * private
+ *
+ * Жалуется в лог на слишком тяжёлое сообщение - по разу на интерфейс за раунд.
+ *
+ * Собранное сообщение живёт в памяти сразу в трёх видах (json, url_encode, склейка),
+ * и на многомегабайтной нагрузке это запрос непрерывного куска у 32-битного процесса:
+ * DreamDaemon умирает без рантайма прямо на сборке (раунды 9941, 9948, меню крафта на
+ * 3.4 МБ и книга рецептов диспенсера на 0.9 МБ). Ловим следующего такого раньше, чем он
+ * положит раунд.
+ */
+/datum/tgui_window/proc/warn_on_oversized_payload(type, payload, message_length)
+	if(message_length < TGUI_PAYLOAD_WARNING_SIZE)
+		return
+	var/list/config = islist(payload) ? payload["config"] : null
+	var/interface_name = islist(config) ? config["interface"] : null
+	var/warning_key = "[interface_name || "?"]/[type]"
+	var/static/list/warned_payloads = list()
+	if(warned_payloads[warning_key])
+		return
+	warned_payloads[warning_key] = TRUE
+	log_tgui(client,
+		"нагрузка [warning_key] весит [num2text(message_length, 12)] Б - такие сообщения просят у процесса непрерывный кусок памяти и способны уронить мир на сборке",
+		window = src)
 
 /**
  * public
@@ -343,6 +385,12 @@
 	if(istype(asset, /datum/asset/spritesheet))
 		var/datum/asset/spritesheet/spritesheet = asset
 		send_message("asset/stylesheet", spritesheet.css_filename())
+	else if(istype(asset, /datum/asset/spritesheet_batched))
+		// Без этого css батчёвого листа в окно не уезжает вовсе: файл зарегистрирован
+		// в транспорте, но <link> в документ вставляет именно это сообщение, и все
+		// спрайты остаются пустыми прямоугольниками.
+		var/datum/asset/spritesheet_batched/batched_spritesheet = asset
+		send_message("asset/stylesheet", batched_spritesheet.css_filename())
 	send_raw_message(asset.get_serialized_url_mappings())
 
 /**
@@ -368,8 +416,7 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_window/proc/on_message(type, payload, href_list)
-	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
-		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
 	if(log_handshake)
 		log_tgui(client,
 			"[id]/on_message type=[type], status_before=[status], queue_len=[length(message_queue)]",

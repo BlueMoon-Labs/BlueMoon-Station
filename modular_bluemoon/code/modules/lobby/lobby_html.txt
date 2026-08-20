@@ -197,6 +197,23 @@ html, body {
 #bm-toggle-btn:hover { background: rgba(30,50,120,0.9); color: #fff; }
 #bm-toggle-btn.collapsed { right: 0; }
 
+/* ===== КНОПКА ДИСКЛЕЙМЕРА ===== */
+#bm-disclaimer-btn {
+  position: fixed; bottom: 1.5vmin; left: 1.5vmin;
+  width: clamp(28px,4vmin,44px); height: clamp(28px,4vmin,44px);
+  background: rgba(60,5,5,0.85);
+  border: 1px solid rgba(255,80,80,0.35); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 20;
+  color: #f66; font-size: clamp(14px,2.4vmin,24px);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+#bm-disclaimer-btn:hover {
+  background: rgba(120,10,10,0.95);
+  color: #fff; box-shadow: 0 0 10px rgba(255,60,60,0.6);
+}
+#bm-disclaimer-btn.collapsed { opacity: 0; pointer-events: none; }
+
 /* ===== ЛОГОТИП / ЗАГОЛОВОК ===== */
 #bm-logo {
   text-align: center;

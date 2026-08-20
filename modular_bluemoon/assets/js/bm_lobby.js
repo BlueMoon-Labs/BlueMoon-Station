@@ -34,11 +34,14 @@ function bmToggleSidebar() {
   _bm_sidebar_open = !_bm_sidebar_open;
   var sb = document.getElementById('bm-sidebar');
   var tb = document.getElementById('bm-toggle-btn');
+  var db = document.getElementById('bm-disclaimer-btn');
   if (_bm_sidebar_open) {
     sb.classList.remove('collapsed'); tb.classList.remove('collapsed');
+    if (db) db.classList.remove('collapsed');
     tb.innerHTML = '&#9654;'; tb.style.right = getComputedStyle(sb).width;
   } else {
     sb.classList.add('collapsed'); tb.classList.add('collapsed');
+    if (db) db.classList.add('collapsed');
     tb.innerHTML = '&#9664;'; tb.style.right = '0';
   }
 }
@@ -424,4 +427,11 @@ function bmAudioMute() {
   if (audio) audio.volume = _bm_audio_muted ? 0 : _bm_audio_vol / 100;
   if (sl)    sl.value = _bm_audio_muted ? 0 : _bm_audio_vol;
   if (btn)   btn.innerHTML = _bm_audio_muted ? '&#128263;' : (_bm_audio_vol > 50 ? '&#128266;' : '&#128265;');
+}
+
+// === ДИСКЛЕЙМЕР ===
+function bmShowDisclaimer() {
+  var src = window._BM_SRC || '';
+  if (!src) return;
+  location.href = '?src=' + src + ';bm_lobby_action=show_disclaimer';
 }
