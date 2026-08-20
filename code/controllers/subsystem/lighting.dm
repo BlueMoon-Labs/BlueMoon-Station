@@ -151,6 +151,13 @@ SUBSYSTEM_DEF(lighting)
 		msg += "|BG:[bg_queued_zlevels.len]q"
 	return ..()
 
+/datum/controller/subsystem/lighting/last_task()
+	// Фоновая сборка уровня стоит сотни мегабайт (объект света на турф), поэтому она
+	// в сводке идёт первой: именно на ней процесс упирается в потолок адресного пространства.
+	if(bg_current_zlevel)
+		return "фоновая сборка света z[bg_current_zlevel], фаза [bg_phase], в очереди уровней [length(bg_queued_zlevels)]"
+	return "очереди: источники [length(GLOB.lighting_update_lights)], углы [length(GLOB.lighting_update_corners)], объекты [length(GLOB.lighting_update_objects)], старлайт [length(GLOB.lighting_starlight_queue)]"
+
 /datum/controller/subsystem/lighting/Initialize(timeofday)
 	if(!initialized)
 		if (CONFIG_GET(flag/starlight))

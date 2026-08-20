@@ -102,6 +102,9 @@ SUBSYSTEM_DEF(timer)
 	msg = "B:[bucket_count] P:[length(second_queue)] H:[length(hashes)] C:[length(clienttime_timers)] S:[length(timer_id_dict)] RST:[bucket_reset_count]"
 	return ..()
 
+/datum/controller/subsystem/timer/last_task()
+	return "колесо: курсор [practical_offset] из [BUCKET_LEN], таймеров в бакетах [bucket_count], в second_queue [length(second_queue)], сбросов колеса [bucket_reset_count]"
+
 /**
  * Сбрасывает в лог мира состояние колеса таймеров.
  * full = FALSE пишет только шапку: полный проход по бакетам и second_queue стоит дорого,

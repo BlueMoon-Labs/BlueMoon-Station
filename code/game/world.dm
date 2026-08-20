@@ -67,6 +67,10 @@ GLOBAL_LIST(topic_status_cache)
 	initialize_global_loadout_items()
 	reload_custom_roundstart_items_list()//Cit change - loads donator items. Remind me to remove when I port over bay's loadout system
 
+	// Читается до Master.Initialize(): инициализация подсистем сама начинает переписывать
+	// чёрный ящик, и улика прошлого запуска пропала бы, не попав в лог.
+	mc_state_report_previous()
+
 	Master.Initialize(10, FALSE, TRUE)
 
 	#ifdef UNIT_TESTS
@@ -306,6 +310,7 @@ GLOBAL_LIST(topic_status_cache)
 		to_chat(world, "<span class='boldannounce'>Rebooting world...</span>")
 		Master.Shutdown()	//run SS shutdowns
 	SSpersistence.RecordGracefulEnding() // BLUEMOON ADD - система запоминает, успешно ли завершился прошлый раунд, или крашнулся
+	mc_state_mark_clean("world.Reboot(reason = [reason], fast_track = [fast_track])")
 
 	TgsReboot()
 
@@ -347,6 +352,7 @@ GLOBAL_LIST(topic_status_cache)
 	..()
 
 /world/Del()
+	mc_state_mark_clean("world.Del")
 	shutdown_logging() // makes sure the thread is closed before end, else we terminate
 	var/debug_server = world.GetConfig("env", "AUXTOOLS_DEBUG_DLL")
 	if (debug_server)

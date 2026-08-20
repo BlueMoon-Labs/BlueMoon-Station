@@ -152,6 +152,7 @@
 #include "mail_gc.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs
+#include "mc_state.dm"
 #include "medical_wounds.dm"
 #include "merge_type.dm"
 // #include "metabolizing.dm"

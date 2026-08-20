@@ -424,6 +424,20 @@ SUBSYSTEM_DEF(time_track)
 		request_instance_census()
 
 /**
+ * Обновляет медленную половину чёрного ящика МК - величины, которые незачем пересчитывать каждый тик.
+ *
+ * Зовётся оттуда же, откуда берётся проба памяти, то есть раз в десять секунд, поэтому несёт
+ * собственную отметку времени: по разнице с первой строкой сводки видно, насколько контекст
+ * отстал от момента обрыва.
+ */
+/datum/controller/subsystem/time_track/proc/refresh_mc_state_context(list/memory, gc_queue_depth)
+	if(!Master)
+		return
+	var/vsz = memory ? memory["vsz"] : null
+	var/ceiling = process_address_ceiling_mb || "?"
+	Master.state_snapshot_context = "контекст на [SQLtime()]: память [vsz || "?"]/[ceiling] МБ, рост [round(memory_growth_mb_per_minute, 0.1)] МБ/мин | клиентов [length(GLOB.clients)] | дилатация [round(time_dilation_avg_fast, 0.1)]% | очередь GC [gc_queue_depth]"
+
+/**
  * Один замер памяти: окно скорости, базовый уровень, лестница в лог, сообщение админам.
  *
  * Зовётся из fire() раз в десять секунд - чаще незачем, дороже не стоит.
@@ -703,6 +717,7 @@ SUBSYSTEM_DEF(time_track)
 		+ SSgarbage.GetQueueDepth(GC_QUEUE_HARDDELETE)
 	if(memory)
 		track_process_memory(memory, host_memory)
+	refresh_mc_state_context(memory, gc_queue_depth)
 	SSblackbox.record_feedback("associative", "time_dilation_current", 1, list("[SQLtime()]" = list("current" = "[time_dilation_current]", "avg_fast" = "[time_dilation_avg_fast]", "avg" = "[time_dilation_avg]", "avg_slow" = "[time_dilation_avg_slow]")))
 	log_perf(
 		list(

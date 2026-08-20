@@ -18,6 +18,9 @@ SUBSYSTEM_DEF(mobs)
 	msg = "P:[length(GLOB.mob_living_list)] Bkt:[skipped_last_pass]"
 	return ..()
 
+/datum/controller/subsystem/mobs/last_task()
+	return "мобов в проходе [length(currentrun)] из [length(GLOB.mob_living_list)], пропущено прошлым проходом [skipped_last_pass]"
+
 /datum/controller/subsystem/mobs/proc/MaxZChanged()
 	if (!islist(clients_by_zlevel))
 		clients_by_zlevel = new /list(world.maxz,0)

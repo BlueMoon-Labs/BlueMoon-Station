@@ -41,6 +41,11 @@ SUBSYSTEM_DEF(atoms)
 
 	return ..()
 
+/datum/controller/subsystem/atoms/last_task()
+	if(initialized == INITIALIZATION_INSSATOMS)
+		return "инициализация атомов карты, поздних загрузчиков [length(late_loaders)]"
+	return "поздних загрузчиков [length(late_loaders)], в очереди на удаление [length(queued_deletions)]"
+
 /datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms)
 	if(initialized == INITIALIZATION_INSSATOMS)
 		return
