@@ -52,6 +52,12 @@
  */
 /atom/movable/proc/mouse_buckle_handling(mob/living/M, mob/living/user)
 	if(can_buckle && istype(M) && istype(user))
+		// BLUEMOON ADD START - задержка на усаживание другого персонажа в любом интенте,
+		// кроме первого (HELP): в ПВП нельзя мгновенно посадить кого-то на стул/кровать/диван.
+		if(M != user && user.a_intent != INTENT_HELP)
+			if(!do_after(user, 1.5 SECONDS, src))
+				return FALSE
+		// BLUEMOON ADD END
 		return user_buckle_mob(M, user, check_loc = FALSE)
 
 /atom/movable/proc/has_buckled_mobs()
