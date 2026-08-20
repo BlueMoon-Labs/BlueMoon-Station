@@ -56,7 +56,9 @@
 
 	if(iscarbon(user))
 		var/mob/living/carbon/shooter = user
-		if(shooter.is_holding(parent) && G.fire_select == SELECT_FULLY_AUTOMATIC)
+		//автоогонь живёт на клиентских MouseDown/MouseUp: ИИ-обезьяне с автоматом
+		//вешать его некуда, а прежний код уходил в autofire_on с null-клиентом
+		if(shooter.client && shooter.is_holding(parent) && G.fire_select == SELECT_FULLY_AUTOMATIC)
 			autofire_on(shooter.client)
 		else
 			autofire_off()
@@ -66,6 +68,8 @@
 	SIGNAL_HANDLER
 	if(autofire_stat & (AUTOFIRE_STAT_ALERT|AUTOFIRE_STAT_FIRING))
 		return
+	if(!usercli?.mob)
+		return //без клиента компонент застревал в ALERT с null-стрелком
 	autofire_stat = AUTOFIRE_STAT_ALERT
 	clicker = usercli
 	shooter = clicker.mob

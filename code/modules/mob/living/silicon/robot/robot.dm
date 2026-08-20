@@ -943,6 +943,8 @@
 
 	if(see_override)
 		see_invisible = see_override
+	if(is_hilbert_hotel_zlevel(z))
+		sight = initial(sight)
 	sync_lighting_plane_alpha()
 
 /mob/living/silicon/robot/update_stat()
@@ -1215,7 +1217,7 @@
 			if(A.client?.prefs?.custom_holoform_icon)
 				A.holo_icon = A.client.prefs.get_filtered_holoform(HOLOFORM_FILTER_AI)
 			else
-				A.holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"))
+				A.holo_icon = getHologramIcon(icon('icons/mob/AI.dmi', "female"))
 
 	return TRUE
 

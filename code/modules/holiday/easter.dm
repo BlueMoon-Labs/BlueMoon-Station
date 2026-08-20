@@ -37,7 +37,7 @@
 /mob/living/simple_animal/chicken/rabbit
 	name = "\improper rabbit"
 	desc = "The hippiest hop around."
-	icon = 'icons/mob/easter.dmi'
+	icon = 'icons/mob/Easter.dmi'
 	icon_state = "rabbit_white"
 	icon_living = "rabbit_white"
 	icon_dead = "rabbit_white_dead"
@@ -67,7 +67,7 @@
 //Easter Baskets
 /obj/item/storage/bag/easterbasket
 	name = "Easter Basket"
-	icon = 'icons/mob/easter.dmi'
+	icon = 'icons/mob/Easter.dmi'
 	icon_state = "basket"
 
 /obj/item/storage/bag/easterbasket/Initialize(mapload)

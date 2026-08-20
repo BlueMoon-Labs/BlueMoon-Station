@@ -972,3 +972,56 @@
 
 	SSmove_manager.stop_looping(pawn, SSai_movement)
 	qdel(controller)
+
+///Харддел пауна нулит loop.moving, минуя все каналы остановки. Такой луп обязан
+///самоуничтожиться на первом же пре-чеке: рантайм в сигнал-хендлере срезает
+///process() лупа ДО его самоочистки по QDELETED(moving), и до этого фикса луп
+///молотил "Cannot read null.loc" каждый шаг до конца раунда.
+/datum/unit_test/ai_orphaned_move_loop_self_destructs/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 3, start.y, start.z))
+	var/datum/ai_controller/unit_test_mover/controller = new(pawn)
+	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
+
+	mover.start_moving_towards(controller, prey, 1)
+	var/datum/move_loop/loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	TEST_ASSERT_NOTNULL(loop, "Sanity: the chase must start a move loop")
+	TEST_ASSERT_EQUAL(controller.active_move_loop, loop, "The controller must track its move loop by reference")
+	hold_move_loop(loop)
+
+	//имитация харддела пауна: ссылка нулится молча, без сигналов и Destroy
+	loop.moving = null
+	SEND_SIGNAL(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK)
+	TEST_ASSERT(QDELETED(loop), "An orphaned move loop must qdel itself on its first pre-move check")
+	TEST_ASSERT_NULL(controller.active_move_loop, "The dead loop must clear the controller's tracking reference")
+
+	qdel(controller)
+
+///stop_moving_towards обязан гасить луп по прямой ссылке даже когда пауна уже
+///унёс харддел: путь до лупа через pawn.move_packet больше не существует, и
+///SSmove_manager.stop_looping(null) обязан быть no-op, а не рантаймом.
+/datum/unit_test/ai_stop_moving_kills_loop_without_pawn/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start.x + 3, start.y, start.z))
+	var/datum/ai_controller/unit_test_mover/controller = new(pawn)
+	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
+
+	TEST_ASSERT_EQUAL(SSmove_manager.stop_looping(null, SSai_movement), FALSE, "stop_looping(null) must be a silent no-op")
+
+	mover.start_moving_towards(controller, prey, 1)
+	var/datum/move_loop/loop = controller.active_move_loop
+	TEST_ASSERT_NOTNULL(loop, "Sanity: the chase must start a tracked move loop")
+	hold_move_loop(loop)
+
+	//имитация харддела: и контроллер, и луп теряют ссылки на пауна без сигналов
+	controller.pawn = null
+	loop.moving = null
+	mover.stop_moving_towards(controller)
+	TEST_ASSERT(QDELETED(loop), "stop_moving_towards must kill the loop through the direct reference")
+	TEST_ASSERT_NULL(controller.active_move_loop, "The dead loop must clear the controller's tracking reference")
+	TEST_ASSERT_NULL(mover.moving_controllers[controller], "The mover bookkeeping must clear")
+
+	pawn.ai_controller = null //паун "харддельнут" для контроллера, добираем вручную
+	qdel(controller)

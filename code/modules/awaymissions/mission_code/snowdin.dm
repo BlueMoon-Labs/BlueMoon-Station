@@ -173,6 +173,10 @@
 
 /turf/open/lava/plasma/attackby(obj/item/I, mob/user, params)
 	var/obj/item/reagent_containers/glass/C = I
+	//зачерпнуть плазму можно только тарой: любым другим предметом (RPED, инструмент)
+	//клик по лаве падал на reagents
+	if(!istype(C) || !C.reagents)
+		return ..()
 	if(C.reagents.total_volume >= C.volume)
 		to_chat(user, "<span class='danger'>[C] is full.</span>")
 		return

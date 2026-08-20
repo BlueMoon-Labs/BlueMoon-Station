@@ -22,6 +22,8 @@
 	var/turf/T = pick(get_area_turfs(impact_area))
 	if(!T)
 		return
+	if(is_centcom_level(T.z)) // Мы обойдёмся без меж-секторных телепортов из сектора ЦК (Гкафе, тандердомы), если аномалия вдруг появится
+		return
 
 	// Calculate new position (searches through beacons in world)
 	var/obj/item/beacon/chosen

@@ -611,6 +611,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/equipped(mob/user, slot, initial = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	var/signal_flags = SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
+	SEND_SIGNAL(user, COMSIG_MOB_EQUIPPED_ITEM, src, slot)
 	current_equipped_slot = slot
 	if(!(signal_flags & COMPONENT_NO_GRANT_ACTIONS))
 		for(var/X in actions)
@@ -827,8 +828,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/randomize_pixel_position(atom/movable/dropped_by)
 	if(item_flags & NO_PIXEL_RANDOM_DROP)
 		return
-	pixel_x = base_pixel_x + dropped_by?.pixel_x + rand(-6, 6)
-	pixel_y = base_pixel_y + dropped_by?.pixel_y + rand(-6, 6)
+	pixel_x = clamp((base_pixel_x + dropped_by?.pixel_x + rand(-6, 6)), -16, 16)
+	pixel_y = clamp((base_pixel_y + dropped_by?.pixel_y + rand(-6, 6)), -16, 16)
 
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)

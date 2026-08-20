@@ -234,8 +234,8 @@
 
 /obj/machinery/rnd/production/ui_assets(mob/user)
 	. = list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials),
 	)
 
 /obj/machinery/rnd/production/ui_data(mob/user)
@@ -263,6 +263,11 @@
 	.["hacked"] = (obj_flags & EMAGGED)
 	.["maxBuildButtonAmount"] = max_build_amount
 	.["categories"] = _ui_cached_designs
+	// Размер спрайта нужен интерфейсу, чтобы вписать крупную иконку в строку списка
+	// целиком. Карта общая на весь лист и короткая, так что фильтровать её по
+	// дизайнам конкретной машины смысла нет.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	.["design_sizes"] = design_sheet.oversized_icon_classes()
 
 /obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
