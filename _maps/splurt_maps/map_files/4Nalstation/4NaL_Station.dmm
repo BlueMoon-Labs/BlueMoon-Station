@@ -13764,7 +13764,7 @@
 "ekO" = (
 /mob/living/simple_animal/butterfly{
 	name = "Ukhill'itro, Defiler of Holes";
-	chat_color_name = "#CC0000";
+	chat_color = "#CC0000";
 	desc = "A colorful butterfly, this one exudes menace and lust.";
 	health = 500
 	},

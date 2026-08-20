@@ -7,6 +7,82 @@
 /// Always flush diagnostics early on visible tick dilation spikes.
 #define PING_PERF_SPIKE_TIDI_PCT 5
 
+/// Какую долю потолка адресного пространства процесс может занять молча.
+///
+/// Планка работает вместе с полом "базовый уровень раунда плюс ступень", и на тяжёлых
+/// картах побеждает именно пол: MetaStation в раунде 10020 устоялась на 3134 МБ при потолке
+/// 4088, то есть на 77% потолка сразу после старта. Любая доля ниже этой означала бы строку
+/// в логе на первой минуте каждого раунда - строку, которая не сообщает ничего.
+#define MEMORY_WARN_CEILING_FRACTION 0.6
+/// Порог, когда потолок замерить не удалось. DreamDaemon 32-битный всегда, так что потолок - от трёх до четырёх гигабайт.
+#define MEMORY_WARN_FALLBACK_MB 2048
+/// Следующее предупреждение - не раньше, чем ещё через столько мегабайт: иначе раз перешагнувший порог процесс пишет строку каждые десять секунд до конца раунда.
+#define MEMORY_WARN_STEP_MB 256
+
+/// За сколько расчётных минут до упора в потолок уходит ЕДИНСТВЕННОЕ за раунд сообщение админам.
+///
+/// Триггер по времени, а не по доле потолка, намеренно. Сделать с адресным пространством
+/// админ может ровно одно - увести раунд на рестарт раньше, чем процесс умрёт сам, - и для
+/// этого решения нужна не доля, а срок. Доля же на нашей карте набирается почти сразу:
+/// в раунде 10020 планка 0.8 была перейдена на восьмой минуте раунда, которому оставалось
+/// жить ещё около сорока. Предупреждение, приходящее каждый раунд сразу после старта,
+/// админы перестают читать за неделю.
+#define MEMORY_ADMIN_WARN_LEAD_MINUTES 20
+/// Сколько МБ до потолка считается последним рубежом: тут админам пишем независимо от расчёта.
+///
+/// Страховка на ступеньку, и потому величина абсолютная, а не доля потолка. Опасность здесь
+/// создаёт одно выделение целиком: созданный z-уровень со светом стоит 150-250 МБ и приходит
+/// за один-два сэмпла (раунд 10023, гейтвей: +140 МБ за сорок секунд). Триста мегабайт - это
+/// запас на одну такую ступеньку с небольшим хвостом.
+///
+/// Долей эту планку держать нельзя. На картах, где раунд стартует с 86% потолка (Delta,
+/// раунд 10023), любая доля порядка 0.9 срабатывает через четверть часа каждый раунд, и
+/// предупреждение, приходящее всегда, админы перестают читать. Разбор четырёх раундов
+/// 19.08.2026 по этой планке: 10021 (3155 МБ) молчит, 10022 (3724) молчит и доживает до
+/// штатного рестарта, 10020 (3858) и 10023 (3796) предупреждают - и оба были в опасности.
+#define MEMORY_ADMIN_WARN_HEADROOM_MB 300
+/// То же для случая, когда потолок замерить не удалось: планка ставится руками.
+#define MEMORY_ADMIN_WARN_FALLBACK_MB 2560
+
+/// По какому окну считается скорость роста памяти.
+///
+/// Полчаса, и это не осторожность, а единственная защита от ступенек: одиночное выделение
+/// в 140 МБ на пятиминутном окне читается как 28 МБ/мин и обещает смерть через десять минут
+/// (раунд 10023, гейтвей), на получасовом - как 4.7 МБ/мин. Короче брать нельзя, длиннее
+/// незачем: на настоящей быстрой утечке в десятки МБ/мин полчаса запаздывания стоят полутора
+/// гигабайт, а столько у раунда нет.
+///
+/// Робастную оценку вместо длинного окна пробовали и откатили, см. комментарий у
+/// memory_growth_rate_mb_per_minute(): рост идёт ступеньками весь раунд, и устойчивая
+/// к ступенькам статистика отвечает нулём.
+#define MEMORY_RATE_WINDOW (30 MINUTES)
+/// С какого разбега между краями окна скорость вообще отдаётся.
+///
+/// Окно набирается с нуля после взятия базового уровня, и ждать все полчаса до первой цифры
+/// нельзя: утечка в полсотни МБ/мин съест за это время полтора гигабайта. Десять минут -
+/// компромисс: ступенька в 140 МБ на них даёт 14 МБ/мин, чего при живом запасе в гигабайт
+/// на ложную тревогу не хватает.
+#define MEMORY_RATE_MIN_SPAN (10 MINUTES)
+
+/// Сколько раунд отстаивается после старта, прежде чем с него снимут базовый уровень.
+#define MEMORY_BASELINE_SETTLE_TIME (2 MINUTES)
+/// Запасной срок на случай, если раунд так и не начался: базовый уровень нужен и в лобби.
+#define MEMORY_BASELINE_FALLBACK_TIME (6 MINUTES)
+
+/// Перепись инстансов - не чаще, чем раз в столько: перебор world.contents стоит дорого.
+#define MEMORY_CENSUS_COOLDOWN (5 MINUTES)
+/// Сколько типов выписывать в перепись.
+#define MEMORY_CENSUS_TOP 15
+/// Сколько z-уровней выписывать в разрез переписи по уровням. Их всего восемнадцать, и хвост из пустых уровней в логе не нужен.
+#define MEMORY_CENSUS_TOP_Z 6
+/// Через сколько элементов перебора сверяться с бюджетом тика.
+///
+/// Не на каждом шаге: CHECK_TICK читает world.tick_usage, и на полутора миллионах
+/// элементов эта сверка стоит заметной доли всего перебора. Пятьсот с лишним дешёвых
+/// шагов между сверками тик не переполнят - тело цикла состоит из двух проверок типа
+/// и одного инкремента в assoc-списке.
+#define MEMORY_CENSUS_TICK_EVERY 512
+
 SUBSYSTEM_DEF(time_track)
 	name = "Time Tracking"
 	wait = 5
@@ -41,6 +117,29 @@ SUBSYSTEM_DEF(time_track)
 	/// просадку мельче десяти процентов. См. movement_glide_publish().
 	var/glide_size_multiplier_smoothed = 1
 
+	/// Потолок адресного пространства процесса в МБ. Замеряется один раз: /proc/self/maps дорогой.
+	var/process_address_ceiling_mb = PROCESS_ADDRESS_CEILING_UNKNOWN
+	/// Установившийся VmSize раунда в МБ. Ноль - базовый уровень ещё не снят, см. take_memory_baseline().
+	var/memory_baseline_mb = 0
+	/// Уровень снят до старта раунда и будет пересмотрен, когда раунд начнётся и отстоится.
+	var/memory_baseline_provisional = FALSE
+	/// VmSize в МБ, начиная с которого пишем в лог мира. Растёт ступенями, см. MEMORY_WARN_STEP_MB.
+	var/memory_warn_at_mb = 0
+	/// Единственное за раунд сообщение админам уже ушло.
+	var/memory_admin_warned = FALSE
+	/// world.time первого замера памяти: от него отсчитывается запасной срок взятия базового уровня.
+	var/memory_first_sample_at = 0
+	/// Окно замеров для оценки скорости роста: моменты и значения VmSize отдельными списками.
+	/// Два списка, а не список пар - так окно уходит в memory_growth_rate_mb_per_minute() как есть.
+	var/list/memory_sample_times = list()
+	var/list/memory_sample_vsz = list()
+	/// Скорость роста VmSize, МБ/мин по окну. Ноль - окно ещё короче MEMORY_RATE_MIN_SPAN.
+	var/memory_growth_mb_per_minute = 0
+	/// Прошлая перепись инстансов: тип -> количество. Нужна ради разницы, а не итога.
+	var/list/memory_census_previous
+	/// world.time последней переписи.
+	var/memory_census_at = 0
+
 	var/ping_samples = 0
 	var/ping_rtt_last_avg = 0
 	/// Медиана последних RTT по миру. Среднее тянет вверх любой одиночный клиент с плохим
@@ -63,6 +162,7 @@ SUBSYSTEM_DEF(time_track)
 	. = ..()
 	GLOB.perf_log = "[GLOB.log_directory]/perf-[GLOB.round_id ? GLOB.round_id : "NULL"]-[SSmapping.config?.map_name].csv"
 	GLOB.ping_perf_log = "[GLOB.log_directory]/ping-perf-[GLOB.round_id ? GLOB.round_id : "NULL"]-[SSmapping.config?.map_name].csv"
+	log_process_memory_environment()
 	// Про колонку num_timers: это НЕ население колеса таймеров, а только те таймеры,
 	// у кого выставлен TIMER_STOPPABLE - timer_id_dict заполняется исключительно для
 	// них (см. /datum/timedevent/New в timer.dm). Мудлеты, барки, flick_overlay и
@@ -146,6 +246,64 @@ SUBSYSTEM_DEF(time_track)
 			// Сколько активных турфов реально сдвинули газ. Главная колонка фазы:
 			// 307 из 2980 в раунде 9868.
 			"air_sharing_turfs",
+			// Память процесса. Крашей 17.08.2026 разбор не взял ровно потому, что этих
+			// четырёх колонок не было: процесс умирал молча, а сколько он ел - неизвестно.
+			// Пиковые величины ведёт ядро, поэтому они переживают промах сэмплера между
+			// строками CSV, а всплеск, который добивает процесс, живёт доли секунды.
+			"mem_vsz_mb",
+			"mem_rss_mb",
+			"mem_peak_vsz_mb",
+			"mem_peak_rss_mb",
+			// Свободная память ХОСТА. Отличает упор в потолок адресного пространства
+			// (мы у потолка, хосту хорошо) от OOM-killer'а (нам не тесно, хосту нечем
+			// дышать). По одним только mem_* эти два случая неразличимы.
+			"mem_host_avail_mb",
+			// Дальше - косвенные счётчики роста, без которых по mem_* видно только "растёт",
+			// но не видно, ЧТО растёт.
+			// instances - всё, что BYOND считает содержимым мира (турфы, объекты, мобы,
+			// зоны). Растёт вместе с mem_vsz - течёт объектами; стоит на месте, а память
+			// идёт вверх - течёт тем, что объектами не считается: аппирансы, строки,
+			// иконки, rsc-кэш. Величина уже считалась для админской стат-панели, но
+			// нигде не сохранялась, то есть после раунда её было негде взять.
+			"instances",
+			// Хардделы это утечка по определению: объект, который не собрался. Разница
+			// между строками CSV даёт скорость утечки, а не итог за раунд.
+			"harddels",
+			"softdels",
+			// Очередь GC целиком. Затор в ней - это отложенная память, ещё не посчитанная
+			// ни в хардделах, ни в софтделах.
+			"gc_queue",
+			// Z-уровни. Каждый - это maxx*maxy турфов, десятки мегабайт разом. Ступенька
+			// в памяти без роста instances почти всегда означает подгруженную карту, и
+			// двойные загрузки руин у нас уже случались.
+			"maxz",
+			// Сколько раз пересобиралось колесо таймеров, см. SStimer.bucket_reset_count.
+			"timer_bucket_resets",
+			// Колонки ниже дописаны позже и стоят в хвосте, а не рядом с роднёй из mem_*,
+			// намеренно: разбор ходит по CSV разных раундов одним и тем же awk по номеру
+			// колонки, и вставка в середину молча съехала бы на соседнюю величину во всём,
+			// что было записано раньше. Дописывать в хвост можно всегда, вставлять - нет.
+			//
+			// Куча процесса и резидентная память по происхождению. Отвечают на следующий
+			// вопрос после "память растёт": растёт ЧТО. VmData - куча, RssFile - отображённые
+			// файлы (rsc, иконки, бинарь). В раунде 10020 память шла вверх на 21.7 МБ/мин
+			// при почти неизменном числе объектов, и без этого разделения дальше разбора нет.
+			"mem_data_mb",
+			"mem_rss_anon_mb",
+			"mem_rss_file_mb",
+			// Потолок адресного пространства. Константа на весь раунд, но по одному только
+			// CSV иначе нельзя сказать, 3378 МБ - это 80% потолка или 45%.
+			"mem_ceiling_mb",
+			// Скорость роста по получасовому окну. Дублирует наклон соседней колонки, но
+			// именно эта величина решает, когда админам уходит предупреждение, - без неё
+			// решение подсистемы нельзя перепроверить постфактум.
+			"mem_growth_mb_min",
+			// Всего памяти у хоста. Свободное без общего не читается: 45 ГБ свободно - это
+			// просторно на машине с 62 ГБ и вообще-то тесно на машине с 512.
+			"mem_host_total_mb",
+			// Пересборки ВТОРОГО колеса бакетов, SSrunechat. Стоят столько же, сколько
+			// пересборка таймерного, и до этой колонки не были видны нигде.
+			"runechat_bucket_resets",
 		)
 	)
 	log_ping_perf(
@@ -175,6 +333,232 @@ SUBSYSTEM_DEF(time_track)
 			"glide_size_multiplier_current",
 		)
 	)
+
+/**
+ * Разовая запись об окружении процесса в dd.log: потолок адресного пространства, версия
+ * BYOND, память хоста и наша память на этот момент.
+ *
+ * Потолок здесь - главное. DreamDaemon 32-битный (64-битных сборок BYOND не выпускает),
+ * так что упереться в потолок раунд может всегда; вопрос в том, где он - около трёх
+ * гигабайт при классическом сплите ядра или почти четыре на 64-битном ядре. От этого
+ * зависит, тревожны ли два с половиной занятых гигабайта или это ещё запас.
+ *
+ * А вот величину памяти из этой строки НЕЛЬЗЯ читать как старт раунда, и порогов от неё
+ * тоже не считается. SStime_track инициализируется на INIT_ORDER_TIMETRACK (47): после
+ * SSmapping (50), но до SSatoms (30), света, сглаживания иконок и ассетов. Это середина
+ * инициализации: в раунде 10020 здесь напечаталось 1169 МБ при установившемся уровне
+ * раунда 3134 МБ, и всякий, кто сравнил бы рост с этой цифрой, насчитал бы утечку вдвое
+ * больше настоящей. Установившийся уровень снимает take_memory_baseline() отдельной строкой.
+ */
+/datum/controller/subsystem/time_track/proc/log_process_memory_environment()
+	var/list/memory = get_process_memory_mb()
+	if(!memory)
+		log_world("## MEMORY: замер памяти процесса недоступен (system_type=[world.system_type]), колонки mem_* в perf-логе останутся пустыми")
+		return
+
+	process_address_ceiling_mb = get_process_address_ceiling_mb()
+	var/list/host_memory = get_host_memory_mb()
+	log_world("## MEMORY: BYOND [world.byond_version].[world.byond_build], потолок адресного пространства \
+		[process_address_ceiling_mb ? "[process_address_ceiling_mb] МБ" : "замерить не удалось"], \
+		на середине инициализации VmSize [memory["vsz"]] МБ / VmRSS [memory["rss"]] МБ \
+		(это НЕ старт раунда, пороги ставятся по установившемуся уровню), \
+		хост [host_memory ? "[host_memory["available"]] из [host_memory["total"]] МБ свободно" : "не опрошен"], \
+		объектов [num2text(world.contents.len, 12)] на [world.maxz] z-уровнях")
+
+/**
+ * Пора ли снимать базовый уровень раунда.
+ *
+ * Ждём, пока мир отстоится: на роундстарте память прыгает на гигабайт за полторы минуты
+ * (в раунде 10020: 2144 МБ на первом замере, 3134 МБ через полторы), и уровень, снятый
+ * в этом окне, не значит ничего. Отсчёт идёт от старта раунда, а не от начала мира,
+ * потому что тянет память именно старт - спаун игроков, свет, ассеты.
+ *
+ * Запасной срок нужен раундам, которые не начались: лобби живёт часами, память в нём
+ * тоже растёт, и остаться в нём вовсе без порогов нельзя.
+ */
+/datum/controller/subsystem/time_track/proc/memory_baseline_due()
+	if(SSticker?.current_state >= GAME_STATE_PLAYING && SSticker.round_start_time)
+		if(world.time < SSticker.round_start_time + MEMORY_BASELINE_SETTLE_TIME)
+			return FALSE
+		// Уровень, снятый в лобби, здесь пересматривается. Лобби бывает длинным, и
+		// предварительный уровень тогда снимается с пустого мира; роундстарт после него
+		// выглядит утечкой на гигабайт, хотя это обычный спаун станции.
+		return memory_baseline_provisional || !memory_baseline_mb
+	return !memory_baseline_mb && world.time >= memory_first_sample_at + MEMORY_BASELINE_FALLBACK_TIME
+
+/**
+ * Установившийся уровень памяти раунда: от него считаются пороги и с ним сравнивают рост.
+ *
+ * Порог лестницы - максимум из доли потолка и "этот уровень плюс ступень". Второе слагаемое
+ * и есть смысл всей процедуры: на тяжёлой карте раунд стартует выше любой разумной доли
+ * потолка (MetaStation - 77% сразу), и порог, посчитанный только от потолка, срабатывал бы
+ * на первой минуте каждого раунда, не сообщая ничего. Порог от установившегося уровня
+ * срабатывает тогда, когда память ушла выше того, с чего раунд начался, - то есть на росте.
+ */
+/datum/controller/subsystem/time_track/proc/take_memory_baseline(vsz, list/host_memory)
+	memory_baseline_mb = vsz
+	memory_baseline_provisional = !(SSticker?.current_state >= GAME_STATE_PLAYING)
+	// Окно скорости роста начинается здесь заново. Останься в нём замеры роундстарта,
+	// первая же оценка получила бы сотни МБ/мин, прогноз дал бы пару минут до потолка,
+	// и админам ушла бы ложная тревога - ровно на том раунде, который ничем не болен.
+	memory_sample_times.Cut()
+	memory_sample_vsz.Cut()
+	memory_growth_mb_per_minute = 0
+	memory_warn_at_mb = max(vsz + MEMORY_WARN_STEP_MB, process_address_ceiling_mb \
+		? round(process_address_ceiling_mb * MEMORY_WARN_CEILING_FRACTION) \
+		: MEMORY_WARN_FALLBACK_MB)
+	log_world("## MEMORY: [memory_baseline_provisional ? "предварительный (раунд ещё не начался)" : "базовый"] уровень раунда VmSize [vsz] МБ\
+		[process_address_ceiling_mb ? " ([round(vsz / process_address_ceiling_mb * 100)]% потолка в [process_address_ceiling_mb] МБ)" : ""], \
+		объектов [num2text(world.contents.len, 12)] на [world.maxz] z-уровнях, \
+		хост [host_memory ? "[host_memory["available"]] из [host_memory["total"]] МБ свободно" : "не опрошен"]; \
+		лестница в лог с [memory_warn_at_mb] МБ, админам - за [MEMORY_ADMIN_WARN_LEAD_MINUTES] расчётных минут до потолка")
+	// Перепись прямо на базовом уровне, а не только на ступенях лестницы. Без неё первая
+	// ступень отдаёт абсолютный снимок, и вопрос "что накопилось за раунд" остаётся без
+	// ответа до второй ступени - то есть ещё +256 МБ спустя, которых у раунда может и не
+	// быть. С ней первая же ступень отдаёт разницу с картой на старте.
+	//
+	// Предварительный уровень переписи не заказывает: снимок пустого лобби не описывает
+	// ни карту, ни раунд, а вот отсчётной точкой для следующей переписи стал бы - и первая
+	// ступень отчиталась бы приростом на весь роундстарт.
+	if(!memory_baseline_provisional)
+		request_instance_census()
+
+/**
+ * Один замер памяти: окно скорости, базовый уровень, лестница в лог, сообщение админам.
+ *
+ * Зовётся из fire() раз в десять секунд - чаще незачем, дороже не стоит.
+ */
+/datum/controller/subsystem/time_track/proc/track_process_memory(list/memory, list/host_memory)
+	var/vsz = memory["vsz"]
+	if(!memory_first_sample_at)
+		memory_first_sample_at = world.time
+
+	memory_sample_times += world.time
+	memory_sample_vsz += vsz
+	// Окно задано временем, а не числом замеров. Замеры берёт fire() подсистемы, и на
+	// просевшем МК шаг между ними растягивается: тридцать замеров означали бы то полчаса,
+	// то полтора, а скорость роста - величина в минутах, и окно у неё обязано быть в минутах.
+	var/window_starts_at = world.time - MEMORY_RATE_WINDOW
+	var/stale = 0
+	for(var/index in 1 to length(memory_sample_times))
+		if(memory_sample_times[index] >= window_starts_at)
+			break
+		stale = index
+	if(stale)
+		memory_sample_times.Cut(1, stale + 1)
+		memory_sample_vsz.Cut(1, stale + 1)
+	memory_growth_mb_per_minute = memory_growth_rate_mb_per_minute(memory_sample_times, memory_sample_vsz, MEMORY_RATE_MIN_SPAN)
+
+	// Админский порог проверяется до базового уровня: если мир стартовал уже под потолком,
+	// ждать, пока раунд отстоится, незачем - его может не стать раньше.
+	check_memory_admin_warning(vsz, host_memory)
+
+	if(memory_baseline_due())
+		take_memory_baseline(vsz, host_memory)
+	if(!memory_baseline_mb)
+		return
+
+	if(memory_warn_at_mb && vsz >= memory_warn_at_mb)
+		log_memory_ladder_step(memory, host_memory)
+		memory_warn_at_mb = vsz + MEMORY_WARN_STEP_MB
+
+/**
+ * Ступень лестницы в dd.log плюс заказ переписи инстансов.
+ *
+ * Строка отвечает на три вопроса разом: сколько занято, куда это ушло (куча против
+ * отображённых файлов) и сколько времени осталось при нынешней скорости.
+ */
+/datum/controller/subsystem/time_track/proc/log_memory_ladder_step(list/memory, list/host_memory)
+	// Пик и RSS дописываются только когда ядро их назвало: с тех пор как снимок отдаёт
+	// пропуск вместо нуля, безусловная интерполяция дала бы "пик VmSize  МБ" с дыркой.
+	var/warning = "процесс занял [memory["vsz"]] МБ адресного пространства"
+	if(!isnull(memory["rss"]))
+		warning += " (RSS [memory["rss"]] МБ[isnull(memory["peak_vsz"]) ? "" : ", пик VmSize [memory["peak_vsz"]] МБ"])"
+	else if(!isnull(memory["peak_vsz"]))
+		warning += " (пик VmSize [memory["peak_vsz"]] МБ)"
+	if(!isnull(memory["data"]))
+		warning += ", куча VmData [memory["data"]] МБ"
+	if(!isnull(memory["rss_anon"]))
+		warning += ", RSS анонимной [memory["rss_anon"]] / файловой [memory["rss_file"]] МБ"
+	// Свободное у хоста дописывается сюда же: без него по строке нельзя сказать,
+	// упираемся мы в свой потолок или машине под нами уже нечем дышать.
+	if(host_memory)
+		warning += ", у хоста свободно [host_memory["available"]] из [host_memory["total"]] МБ"
+	warning += ", объектов [num2text(world.contents.len, 12)], хардделов [SSgarbage.totaldels]"
+	if(memory_baseline_mb)
+		warning += ", база раунда [memory_baseline_mb][memory_baseline_provisional ? " МБ (предварительная, раунд ещё не начался)" : " МБ"]"
+	if(memory_growth_mb_per_minute > 0)
+		warning += ", рост [memory_growth_mb_per_minute] МБ/мин"
+		var/minutes_left = memory_minutes_to_ceiling(memory["vsz"], process_address_ceiling_mb, memory_growth_mb_per_minute)
+		if(!isnull(minutes_left))
+			warning += ", до потолка [minutes_left] мин"
+	log_world("## MEMORY: [warning]")
+	// Строка в логе уходит и с предварительного уровня - длинное лобби тоже умеет съесть
+	// память, и молчать о нём нельзя. А вот перепись с него не заказывается: снимок пустого
+	// лобби стал бы отсчётной точкой memory_census_previous, и ПЕРВАЯ перепись начавшегося
+	// раунда отчиталась бы приростом на весь роундстарт - ровно тот отказ, от которого
+	// take_memory_baseline() уже сторожит свой собственный вызов переписи.
+	if(memory_baseline_provisional)
+		return
+	request_instance_census()
+
+/**
+ * Единственное за раунд сообщение админам - и его обязательный дубль в лог мира.
+ *
+ * Дубль не косметика: message_admins() пишет только в админский чат (см. /proc/message_admins
+ * в admin.dm), в файлы раунда не попадает ни строки, и разбор постфактум не может сказать,
+ * предупредили админов или нет. В архиве раунда 10020 порог был перейден - а следа нет.
+ *
+ * Аргументы:
+ * * vsz - VmSize этого замера в МБ, единственная величина, по которой решается тревога
+ * * host_memory - память хоста, только для текста сообщения; порогов по ней нет, см. ниже
+ */
+/datum/controller/subsystem/time_track/proc/check_memory_admin_warning(vsz, list/host_memory)
+	if(memory_admin_warned)
+		return
+
+	// Прогноз считается только по настоящему базовому уровню. По предварительному его
+	// считать нельзя: окно замеров тогда упирается одним краем в пустое лобби, другим -
+	// в только что заспауненную станцию, и наклон между ними означает роундстарт, а не
+	// утечку. Страховка по остатку до потолка ниже работает всегда - она смотрит на величину,
+	// а не на скорость, и обмануть её роундстартом невозможно.
+	var/minutes_left = (memory_baseline_mb && !memory_baseline_provisional) \
+		? memory_minutes_to_ceiling(vsz, process_address_ceiling_mb, memory_growth_mb_per_minute) \
+		: null
+	var/backstop_mb = process_address_ceiling_mb \
+		? process_address_ceiling_mb - MEMORY_ADMIN_WARN_HEADROOM_MB \
+		: MEMORY_ADMIN_WARN_FALLBACK_MB
+	var/reason
+	if(!isnull(minutes_left) && minutes_left <= MEMORY_ADMIN_WARN_LEAD_MINUTES)
+		reason = "при нынешнем росте [memory_growth_mb_per_minute] МБ/мин запаса осталось примерно на [minutes_left] мин"
+	else if(vsz >= backstop_mb)
+		reason = process_address_ceiling_mb \
+			? "до потолка осталось [round(process_address_ceiling_mb - vsz)] МБ, это [round(vsz / process_address_ceiling_mb * 100)]% потолка" \
+			: "потолок замерить не удалось, планка выставлена руками на [MEMORY_ADMIN_WARN_FALLBACK_MB] МБ"
+	else
+		return
+
+	memory_admin_warned = TRUE
+	// Память хоста дописывается в текст, но порогом не служит и отдельной тревоги не поднимает.
+	// Умереть молча можно двумя способами - упереться в своё адресное пространство и попасть
+	// под OOM-killer, - и различает их именно эта пара цифр. Но действие у админа на них одно
+	// и то же (увести раунд на рестарт), сообщение за раунд ровно одно, и отдельная планка по
+	// хосту съела бы его на соседе по машине, оставив настоящий потолок без предупреждения.
+	// Поэтому здесь строка, а не второй триггер: решение принимается по нашей памяти, а
+	// хостовые цифры отвечают на следующий вопрос - кто именно кончился.
+	var/host_note = host_memory \
+		? " У хоста свободно [host_memory["available"]] из [host_memory["total"]] МБ." \
+		: ""
+	var/announcement = "ПАМЯТЬ: процесс занял [vsz] МБ адресного пространства\
+		[process_address_ceiling_mb ? " из [process_address_ceiling_mb] доступных" : ""], [reason].[host_note] \
+		Раунд имеет смысл увести на рестарт заранее: при исчерпании адресного пространства \
+		сервер умирает молча и без сохранения. Повторных сообщений не будет, дальше смотреть в perf-лог."
+	// Сначала лог, потом чат. Порядок важен ровно по той же причине, по которой дубль
+	// вообще существует: message_admins() ходит по живым клиентам и способен упасть, а
+	// строка в логе - единственное, по чему разбор постфактум узнаёт, что порог был
+	// перейден. Терять её из-за проблемы с выводом в чат нельзя.
+	log_world("## MEMORY: админам отправлено предупреждение - [announcement]")
+	message_admins("<span class='boldannounce'>[announcement]</span>")
 
 /// Сэмпл старше этого считается протухшим и в сводку по миру не идёт.
 #define PING_SAMPLE_STALE_AFTER (90 SECONDS)
@@ -312,6 +696,13 @@ SUBSYSTEM_DEF(time_track)
 	last_tick_byond_time = current_byondtime
 	last_tick_tickcount = current_tickcount
 	update_ping_metrics()
+	var/list/memory = get_process_memory_mb()
+	var/list/host_memory = get_host_memory_mb()
+	var/gc_queue_depth = SSgarbage.GetQueueDepth(GC_QUEUE_SOFTCHECK) \
+		+ SSgarbage.GetQueueDepth(GC_QUEUE_WARNFAIL) \
+		+ SSgarbage.GetQueueDepth(GC_QUEUE_HARDDELETE)
+	if(memory)
+		track_process_memory(memory, host_memory)
 	SSblackbox.record_feedback("associative", "time_dilation_current", 1, list("[SQLtime()]" = list("current" = "[time_dilation_current]", "avg_fast" = "[time_dilation_avg_fast]", "avg" = "[time_dilation_avg]", "avg_slow" = "[time_dilation_avg_slow]")))
 	log_perf(
 		list(
@@ -359,7 +750,30 @@ SUBSYSTEM_DEF(time_track)
 			SSair.idle_machine_count(),
 			length(SSair.dirty_networks),
 			SSair.count_orphan_dirty_pipenets(),
-			SSair.sharing_turfs
+			SSair.sharing_turfs,
+			memory ? memory["vsz"] : "",
+			memory ? memory["rss"] : "",
+			memory ? memory["peak_vsz"] : "",
+			memory ? memory["peak_rss"] : "",
+			host_memory ? host_memory["available"] : "",
+			// Счётчики, переваливающие за миллион, идут через num2text: интерполяция берёт
+			// шесть значащих цифр, и в клетке оказывается "1.63212e+006" вместо 1632122.
+			// Итог от этого ещё читается, а вот разность соседних строк - та самая скорость
+			// роста, ради которой колонки и заведены, - становится шумом округления: шаг
+			// округления на шести миллионах софтделов это целые десятки штук.
+			num2text(world.contents.len, 12),
+			num2text(SSgarbage.totaldels, 12),
+			num2text(SSgarbage.totalgcs, 12),
+			gc_queue_depth,
+			world.maxz,
+			SStimer.bucket_reset_count,
+			memory ? memory["data"] : "",
+			memory ? memory["rss_anon"] : "",
+			memory ? memory["rss_file"] : "",
+			process_address_ceiling_mb ? process_address_ceiling_mb : "",
+			memory_growth_mb_per_minute,
+			host_memory ? host_memory["total"] : "",
+			SSrunechat.runechat_bucket_reset_count
 		)
 	)
 	var/should_log_ping_perf = ping_samples && (
@@ -403,3 +817,239 @@ SUBSYSTEM_DEF(time_track)
 #undef PING_PERF_SPIKE_RTT_MS
 #undef PING_PERF_SPIKE_JITTER_PCT
 #undef PING_PERF_SPIKE_TIDI_PCT
+
+/**
+ * Заказ переписи инстансов: что именно копится в мире.
+ *
+ * Зовётся со ступени лестницы, а не по расписанию, и это существенно. Перебор world.contents
+ * - это полтора миллиона элементов, и платить за него имеет смысл ровно тогда, когда память
+ * уже ушла выше базового уровня раунда, то есть вопрос "чем именно" наконец задан.
+ */
+/datum/controller/subsystem/time_track/proc/request_instance_census()
+	// От второй переписи поверх первой сторожит один только кулдаун, и этого достаточно:
+	// момент заказа записывается ДО запуска, а сам перебор занимает секунды против пяти
+	// минут кулдауна. Отдельный флаг "перепись идёт" был бы надёжнее ровно до первого
+	// рантайма внутри перебора: в DM нет finally, сбросить флаг на аварийном выходе нечем,
+	// и застрявший флаг выключил бы диагностику до конца раунда молча.
+	if(memory_census_at && world.time < memory_census_at + MEMORY_CENSUS_COOLDOWN)
+		return
+	memory_census_at = world.time
+	INVOKE_ASYNC(src, PROC_REF(run_instance_census))
+
+/**
+ * Сама перепись. Растянута по тикам через CHECK_TICK, поэтому итог - смазанный снимок,
+ * а не срез на одно мгновение: пока идёт перебор, мир живёт и что-то создаёт. Для вопроса
+ * "какого типа стало на десять тысяч больше" этой точности хватает с большим запасом.
+ *
+ * Турфы и зоны считаются отдельной кучей и в топ по количеству не идут. Их число задано
+ * картой (полтора миллиона турфов на восемнадцати z-уровнях), они заняли бы весь список и
+ * вытеснили то единственное, ради чего перепись по количеству и делается.
+ *
+ * Зато во второй топ - по весу - турфы входят обязательно, и там они как раз и оказываются
+ * ответом. Счёт штук на вопрос "куда ушли мегабайты" не отвечает вовсе: в раунде 10022 за
+ * рост в 1375 МБ отвечали 283 тысячи новых объектов, то есть по 4.8 КБ на объект, чего не
+ * бывает. Вес считается по числу переменных типа: BYOND держит у каждого инстанса блок под
+ * все объявленные переменные, поэтому штука с полутора сотнями переменных стоит на порядок
+ * дороже штуки с десятью. Это оценка ПЛОСКОЙ части инстанса - списки (overlays, contents),
+ * аппирансы и иконки живут отдельно и в неё не входят, так что сумма по весу заведомо меньше
+ * VmSize и сравнивать их лоб в лоб нельзя. Сравнивать надо доли между типами.
+ */
+/datum/controller/subsystem/time_track/proc/run_instance_census()
+	var/list/counts = list()
+	var/list/weights = list()
+	// Тип -> длина vars. Спрашивается ровно один раз на тип: length(thing.vars) на каждом из
+	// полутора миллионов элементов стоил бы дороже всей остальной переписи.
+	var/list/type_var_slots = list()
+	// Индекс - номер z, а не ключ: ассоциативный список с числовыми ключами в DM неотличим
+	// от обращения по индексу и падает на первом же несуществующем ключе.
+	var/list/movables_per_z = new /list(world.maxz)
+	var/turf_count = 0
+	var/area_count = 0
+	var/movable_count = 0
+	var/turf_slots = 0
+	var/area_slots = 0
+	var/movable_slots = 0
+
+	var/scanned = 0
+	// Длина списка ДО прохода. Перебор идёт по живому world.contents с CHECK_TICK внутри,
+	// и удаление сдвигает всё, что лежало за удалённым: элемент сразу за ним обход не
+	// увидит вовсе. Гард на null ловит только обнулившийся слот, сдвиг он не ловит.
+	// Итог переписи - разница с прошлой, поэтому пропуск не сглаживается, а превращается
+	// в цифру прироста. Само по себе это не лечится (снимка полутора миллионов элементов
+	// за один тик не сделать), но величину дрейфа надо назвать: прирост меньше неё - шум.
+	var/expected = length(world.contents)
+
+	for(var/atom/thing as anything in world.contents)
+		scanned++
+		if(!(scanned % MEMORY_CENSUS_TICK_EVERY))
+			CHECK_TICK
+		// as anything, а не istype в заголовке цикла: проверка типа на каждом из полутора
+		// миллионов элементов стоит дороже всего остального тела. Взамен нужен явный гард
+		// на null - список живой, и между тиками из него что-то исчезает.
+		if(isnull(thing))
+			continue
+		var/atom_type = thing.type
+		var/slots = type_var_slots[atom_type]
+		if(!slots)
+			slots = length(thing.vars)
+			type_var_slots[atom_type] = slots
+		weights[atom_type] += slots
+		if(isturf(thing))
+			turf_count++
+			turf_slots += slots
+			continue
+		if(isarea(thing))
+			area_count++
+			area_slots += slots
+			continue
+		movable_count++
+		movable_slots += slots
+		counts[atom_type] += 1
+		// z равен нулю у всего, что лежит внутри контейнера, а не на турфе. Такие в разрез
+		// по уровням не идут: приписать их некуда, а врать про уровень нельзя.
+		var/level = thing.z
+		if(level && level <= length(movables_per_z))
+			movables_per_z[level] += 1
+
+	var/list/report = memory_census_previous ? instance_census_growth(counts, memory_census_previous) : counts.Copy()
+	var/growth_report = !isnull(memory_census_previous)
+	memory_census_previous = counts
+
+	sortTim(report, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	for(var/type_path in report)
+		if(length(top) >= MEMORY_CENSUS_TOP)
+			break
+		top += "[type_path] x[num2text(report[type_path], 12)]"
+
+	// num2text здесь по той же причине, что и в соседней строке про вес: турфов в мире
+	// больше миллиона, и без него в лог попадает "1.17045e+006" вместо числа.
+	var/drift = expected - scanned
+	log_world("## MEMORY: перепись инстансов: [num2text(turf_count + area_count + movable_count, 12)] всего \
+		(турфов [num2text(turf_count, 12)], зон [area_count], прочего [num2text(movable_count, 12)])\
+		[drift ? ", мир сдвинулся на [num2text(drift, 12)] за время перебора - прирост меньше этого читать нельзя" : ""]; \
+		[growth_report ? "прирост с прошлой переписи" : "самые многочисленные типы"]: \
+		[length(top) ? top.Join(", ") : "пусто"]")
+
+	log_instance_weights(weights, counts, type_var_slots, turf_slots, area_slots, movable_slots)
+	log_movables_per_z(movables_per_z)
+
+/**
+ * Вторая строка переписи: чей вес, а не чьё количество.
+ *
+ * Слоты переводятся в миллионы намеренно. Их там сотни миллионов, а BYOND интерполирует
+ * большие числа в экспоненциальную запись с шестью значащими цифрами - в логе вместо суммы
+ * оказалось бы "2e+008".
+ */
+/datum/controller/subsystem/time_track/proc/log_instance_weights(list/weights, list/counts, list/type_var_slots, turf_slots, area_slots, movable_slots)
+	var/total_slots = turf_slots + area_slots + movable_slots
+	if(total_slots <= 0)
+		return
+
+	var/list/top = instance_weight_top(weights, counts, type_var_slots, total_slots)
+
+	log_world("## MEMORY: вес мира по переменным: [round(total_slots / 1000000, 0.1)] млн слотов \
+		(турфы [round(turf_slots / total_slots * 100, 0.1)]%, \
+		движимое [round(movable_slots / total_slots * 100, 0.1)]%, \
+		зоны [round(area_slots / total_slots * 100, 0.1)]%); \
+		самые тяжёлые типы: [length(top) ? top.Join(", ") : "пусто"]")
+
+/**
+ * Топ типов по весу, строками для лога.
+ *
+ * Отдельным проком по той же причине, что и instance_census_growth(): перебирать
+ * world.contents в тесте нечего, а вот сортировку с арифметикой долей проверить надо.
+ *
+ * Аргументы:
+ * * weights - тип -> суммарное число переменных всех его инстансов
+ * * counts - тип -> количество, только для движимого (турфов и зон там нет)
+ * * type_var_slots - тип -> длина vars одного инстанса
+ * * total_slots - сумма весов по всему миру, знаменатель для долей
+ */
+/datum/controller/subsystem/time_track/proc/instance_weight_top(list/weights, list/counts, list/type_var_slots, total_slots)
+	var/list/top = list()
+	if(total_slots <= 0)
+		return top
+
+	sortTim(weights, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	for(var/type_path in weights)
+		if(length(top) >= MEMORY_CENSUS_TOP)
+			break
+		var/slots_each = type_var_slots[type_path]
+		if(!slots_each)
+			continue
+		// counts держит только движимое, поэтому количество для турфов и зон берётся делением
+		// веса на длину vars: обе величины считались одним и тем же проходом. Точность тут
+		// не абсолютная - вес мира это сотни миллионов слотов, а число в DM хранит целыми
+		// лишь первые 2^24, - так что штука-другая на миллионе теряется. Для вопроса "чего
+		// в мире много" этого хватает; точный счёт движимого лежит рядом, в counts.
+		var/instances = counts[type_path] || round(weights[type_path] / slots_each)
+		top += "[type_path] x[num2text(instances, 12)] по [slots_each] перем. - [round(weights[type_path] / total_slots * 100, 0.1)]%"
+	return top
+
+/**
+ * Третья строка переписи: разрез движимого по z-уровням.
+ *
+ * Турфов на каждом уровне поровну (maxx на maxy), разрез по ним не сказал бы ничего. А вот
+ * содержимое уровней различается на порядок, и именно уровнями память прибывает ступенями:
+ * логи 10022 и 10023 показывают скачок на сотню-другую МБ ровно в момент инициализации света
+ * на очередном z. Строка отвечает, какой уровень имеет смысл выключать первым.
+ */
+/datum/controller/subsystem/time_track/proc/log_movables_per_z(list/movables_per_z)
+	var/list/by_level = list()
+	for(var/level in 1 to length(movables_per_z))
+		var/count = movables_per_z[level]
+		if(!count)
+			continue
+		var/datum/space_level/space_level = (SSmapping && length(SSmapping.z_list) >= level) ? SSmapping.z_list[level] : null
+		by_level["z[level] [space_level ? space_level.name : "без имени"]"] = count
+
+	if(!length(by_level))
+		return
+
+	sortTim(by_level, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	for(var/label in by_level)
+		if(length(top) >= MEMORY_CENSUS_TOP_Z)
+			break
+		top += "[label] [by_level[label]]"
+
+	log_world("## MEMORY: движимое по z-уровням (самые населённые): [top.Join(", ")]")
+
+/**
+ * Разница двух переписей: тип -> насколько его стало больше.
+ *
+ * Убыль отбрасывается намеренно. Вопрос к переписи всегда один - что копится; тип, которого
+ * стало меньше, на него не отвечает, а место в топе занимает.
+ *
+ * Отдельным проком, потому что это единственная часть переписи, которую можно проверить
+ * юнит-тестом: перебирать world.contents в тесте нечего.
+ */
+/datum/controller/subsystem/time_track/proc/instance_census_growth(list/current, list/previous)
+	var/list/growth = list()
+	for(var/type_path in current)
+		// previous[type_path] отсутствующего ключа даёт null, а null в арифметике DM - ноль,
+		// то есть новый тип честно считается выросшим на всё своё количество.
+		var/delta = current[type_path] - previous[type_path]
+		if(delta > 0)
+			growth[type_path] = delta
+	return growth
+
+#undef MEMORY_WARN_CEILING_FRACTION
+#undef MEMORY_WARN_FALLBACK_MB
+#undef MEMORY_WARN_STEP_MB
+// MEMORY_ADMIN_WARN_LEAD_MINUTES живёт дальше файла намеренно: его читает
+// code/modules/unit_tests/process_memory.dm, а .dm-файлы тестов включаются в .dme ПОЗЖЕ
+// подсистемы, и снятый дефайн там уже недоступен. Записанная в тест цифрой, эта планка
+// пережила бы любую перенастройку молча - тест продолжил бы проверять прежние двадцать минут.
+#undef MEMORY_ADMIN_WARN_HEADROOM_MB
+#undef MEMORY_ADMIN_WARN_FALLBACK_MB
+#undef MEMORY_RATE_WINDOW
+#undef MEMORY_RATE_MIN_SPAN
+#undef MEMORY_BASELINE_SETTLE_TIME
+#undef MEMORY_BASELINE_FALLBACK_TIME
+#undef MEMORY_CENSUS_COOLDOWN
+#undef MEMORY_CENSUS_TOP
+#undef MEMORY_CENSUS_TOP_Z
+#undef MEMORY_CENSUS_TICK_EVERY
+#undef PING_SAMPLE_STALE_AFTER

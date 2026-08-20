@@ -3,8 +3,41 @@
 	glide_size = 8
 	SET_APPEARANCE_FLAGS(TILE_BOUND | PIXEL_SCALE)
 	var/last_move = null
-	var/last_move_time = 0
 	var/anchored = FALSE
+	// Ниже - переменные, которые раньше стояли на /atom и потому лежали в каждом из полутора
+	// миллионов турфов, где не значат ничего. Ни цены в вендомате, ни ИИ-контроллера у турфа
+	// быть не может; компилятор проверяет это за нас - обращение к ним через /atom-типизированную
+	// переменную теперь просто не собирается.
+	///Price of an item in a vending machine, overriding the base vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
+	var/custom_price = 25
+	///Price of an item in a vending machine, overriding the premium vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
+	var/custom_premium_price = 100
+	///AI controller that controls this atom. type on init, then turned into an instance during runtime
+	var/datum/ai_controller/ai_controller
+	///all of this atom's HUD (med/sec, etc) images. Associative list of the form: list(hud category = hud image or images for that category).
+	///most of the time hud category is associated with a single image, sometimes its associated with a list of images.
+	///not every hud in this list is actually used.
+	var/list/image/hud_list = null
+	///HUD images that this atom can provide.
+	var/list/hud_possible
+	///Proximity monitor associated with this atom
+	var/datum/proximity_monitor/proximity_monitor
+	//List of datums orbiting this atom
+	var/datum/component/orbiter/orbiters
+	///Reference to atom being orbited
+	var/atom/movable/orbit_target
+	var/datum/wires/wires = null
+	/// Цвет рунчата, заданный вручную. Пусто у всего, кроме тех немногих, кому цвет назначают
+	/// явно (модульная лазерная винтовка красит реплики по режиму): у остальных цвет выводится
+	/// из имени и лежит в общем кэше GLOB.runechat_color_names.
+	var/chat_color
+	/// Lazylist of all images (hopefully attached to us) to update when we change z levels
+	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
+	var/list/image/update_on_z
+	/// Lazylist of all overlays attached to us to update when we change z levels
+	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
+	/// Oh and note, if order of addition is important this WILL break that. so mind yourself
+	var/list/image/update_overlays_on_z
 	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
 	/// Only border structures can actually refuse an exit, by overriding CheckExit()
 	/// or Uncross(). Anything that gains such an override, or a component listening
@@ -153,7 +186,15 @@
 	if(spatial_grid_key)
 		SSspatial_grid.force_remove_from_grid(src)
 
+	if(alternate_appearances)
+		var/list/aa_snapshot = alternate_appearances
+		alternate_appearances = null
+		for(var/K in aa_snapshot)
+			var/datum/atom_hud/alternate_appearance/AA = aa_snapshot[K]
+			AA.remove_from_hud(src)
+
 	QDEL_NULL(proximity_monitor)
+	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
 	thrust_sources = null

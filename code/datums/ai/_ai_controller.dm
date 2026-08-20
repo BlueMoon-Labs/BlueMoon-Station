@@ -13,8 +13,9 @@ multiple modular subtrees with behaviors
 */
 
 /datum/ai_controller
-	///The atom this controller is controlling
-	var/atom/pawn
+	///Движимый атом, которым управляет контроллер. Не /atom: пешкой бывает моб или предмет,
+	///но никогда турф - а ai_controller живёт на /atom/movable, чтобы не стоять в каждом турфе мира.
+	var/atom/movable/pawn
 	/**
 	 * This is a list of variables the AI uses and can be mutated by actions.
 	 *
@@ -235,7 +236,7 @@ multiple modular subtrees with behaviors
 	return clears_obstacles_cached
 
 ///Proc to move from one pawn to another, this will destroy the target's existing controller.
-/datum/ai_controller/proc/PossessPawn(atom/new_pawn)
+/datum/ai_controller/proc/PossessPawn(atom/movable/new_pawn)
 	SHOULD_CALL_PARENT(TRUE)
 	if(pawn) //Reset any old signals
 		UnpossessPawn(FALSE)

@@ -166,7 +166,17 @@
 	TEST_ASSERT(!(leaving_swarm in first_swarm.swarm_members), "Первый сосед удержал ссылку на распавшийся компонент")
 	TEST_ASSERT(!(leaving_swarm in second_swarm.swarm_members), "Второй сосед удержал ссылку на распавшийся компонент")
 
-/// Экраны объёмного хранилища переиспользуются через пул компонента storage.
+/// Опустошает общие пулы экранов хранилища.
+///
+/// Пулы глобальные и переживают любой тест: оставленный в них экран уехал бы в
+/// следующие тесты, а заодно попал бы в их сканы харддела как чужой держатель.
+/proc/purge_storage_ui_pools()
+	for(var/atom/movable/screen/storage/pooled as anything in GLOB.storage_item_holder_pool + GLOB.storage_volumetric_box_pool)
+		qdel(pooled)
+	GLOB.storage_item_holder_pool.Cut()
+	GLOB.storage_volumetric_box_pool.Cut()
+
+/// Экраны объёмного хранилища переиспользуются через ОБЩИЙ пул (GLOB.storage_volumetric_box_pool).
 /// _recycle_ui_objects сбрасывал предмет у коробки, но не у вложенного holder'а,
 /// поэтому уехавшая в пул коробка держала последний показанный предмет до конца
 /// раунда. Ровно этот класс и виден в раундах 9823/9824: осколки (14), прутья (6),
@@ -190,6 +200,11 @@
 	storage._recycle_ui_objects(list(box))
 	TEST_ASSERT_NULL(box.our_item, "Коробка уехала в пул с предметом")
 	TEST_ASSERT_NULL(box.holder.our_item, "holder уехал в пул с предметом")
+	// Пул общий и переживает компонент, поэтому ссылка на компонент из отложенной коробки -
+	// это hard delete компонента до конца раунда. У холдеров это проверяет соседний тест,
+	// у коробок не проверял никто.
+	TEST_ASSERT_NULL(box.master, "Коробка уехала в общий пул со ссылкой на компонент")
+	TEST_ASSERT(box in GLOB.storage_volumetric_box_pool, "Коробка не попала в общий пул")
 
 	// Второй контур защиты: даже если экран не переработали, удаление предмета
 	// обязано само отпустить ссылку. Тип берём отличный от прутьев - второй стек
@@ -205,6 +220,10 @@
 
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
+
+/datum/unit_test/storage_pool_releases_recycled_item/Destroy()
+	purge_storage_ui_pools()
+	return ..()
 
 /// ДИАГНОСТИКА + регрессия: легион-бруд - топ-1 по времени hard delete в раундах
 /// 9823/9824 (82 харддела, 17.7 секунды, 768 qdel'ов). У 73 из 91 warnfail ровно
@@ -260,3 +279,59 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(combat)
 	assert_soft_collected(infested)
+
+/// Пул экранов хранилища общий на весь мир и переживает любой отдельный компонент,
+/// поэтому уехавший в пул объект обязан отпустить master: ссылка на компонент из
+/// отложенного холдера - это hard delete компонента до конца раунда. Пока пул был свой
+/// у каждого компонента, ссылка была безобидной и её никто не снимал.
+/datum/unit_test/storage_pool_releases_component
+	parent_type = /datum/unit_test/harddel_9824_base
+
+/datum/unit_test/storage_pool_releases_component/Run()
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, run_loc_floor_bottom_left)
+	var/datum/component/storage/storage = bag.GetComponent(/datum/component/storage)
+	TEST_ASSERT_NOTNULL(storage, "У рюкзака нет компонента хранилища")
+
+	var/obj/item/stack/rods/stored = new(bag)
+	var/atom/movable/screen/storage/item_holder/holder = storage._acquire_item_holder(null, stored)
+	TEST_ASSERT_EQUAL(holder.master, storage, "Холдер не получил компонент при выдаче")
+
+	storage._recycle_ui_objects(list(holder))
+	TEST_ASSERT_NULL(holder.master, "Холдер уехал в общий пул со ссылкой на компонент")
+	TEST_ASSERT_NULL(holder.our_item, "Холдер уехал в общий пул с предметом")
+	TEST_ASSERT(holder in GLOB.storage_item_holder_pool, "Холдер не попал в общий пул")
+
+	// Числовая укладка поднимает холдер над остальным интерфейсом, и в общий пул он
+	// возвращается уже поднятым. Дефолты типа обязаны вернуться вместе с ним, иначе
+	// следующая - обычная - сумка нарисует свои предметы поверх всего HUD'а.
+	var/atom/movable/screen/storage/item_holder/dirty = storage._acquire_item_holder(null, null)
+	dirty.layer = ABOVE_HUD_LAYER
+	dirty.plane = ABOVE_HUD_PLANE
+	dirty.mouse_opacity = MOUSE_OPACITY_OPAQUE
+	storage._recycle_ui_objects(list(dirty))
+	TEST_ASSERT_EQUAL(dirty.layer, initial(dirty.layer), "Холдер уехал в общий пул с чужим слоем")
+	TEST_ASSERT_EQUAL(dirty.plane, initial(dirty.plane), "Холдер уехал в общий пул с чужой плоскостью")
+	TEST_ASSERT_EQUAL(dirty.mouse_opacity, initial(dirty.mouse_opacity), "Холдер уехал в общий пул с чужой прозрачностью для мыши")
+
+	// Пул не резиновый: за потолком объекты удаляются, а не копятся - именно этим общий
+	// пул и отличается от прежнего пер-компонентного, который рос до конца раунда.
+	var/list/spare = list()
+	for(var/index in 1 to STORAGE_UI_POOL_MAX + 8)
+		spare += storage._acquire_item_holder(null, null)
+	storage._recycle_ui_objects(spare)
+	TEST_ASSERT(length(GLOB.storage_item_holder_pool) <= STORAGE_UI_POOL_MAX, "Общий пул холдеров перерос потолок: [length(GLOB.storage_item_holder_pool)]")
+
+	// Тот же потолок у второго пула. Пулов два, а дефайн один, и проверка только одного
+	// из них оставляла бы половину защиты от накопления без единого свидетеля.
+	var/list/spare_boxes = list()
+	for(var/index in 1 to STORAGE_UI_POOL_MAX + 8)
+		spare_boxes += storage._acquire_volumetric_box(null, null)
+	storage._recycle_ui_objects(spare_boxes)
+	TEST_ASSERT(length(GLOB.storage_volumetric_box_pool) <= STORAGE_UI_POOL_MAX, "Общий пул коробок перерос потолок: [length(GLOB.storage_volumetric_box_pool)]")
+
+/// Уборка здесь, а не в хвосте Run(): TEST_ASSERT возвращает управление из Run() на
+/// первом же провале, и хвостовая уборка не выполнилась бы ровно в том случае, ради
+/// которого написана. RunUnitTest() зовёт qdel(test) и после провала тоже.
+/datum/unit_test/storage_pool_releases_component/Destroy()
+	purge_storage_ui_pools()
+	return ..()
