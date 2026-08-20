@@ -95,15 +95,4 @@
 	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_ALL
 
-/datum/sprite_accessory/snouts/mam_snouts/kathari/s
-	name = "Kathari s"
-	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
-	icon_state = "kathari_s"
-	matrixed_sections = MATRIX_ALL
-
-/datum/sprite_accessory/snouts/mam_snouts/kathari/alt/s
-	name = "Kathari alt s"
-	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
-	icon_state = "kathari_alt_s"
-	matrixed_sections = MATRIX_ALL
 
