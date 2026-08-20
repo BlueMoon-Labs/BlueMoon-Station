@@ -257,7 +257,7 @@
 			to_chat(user, "<span class='warning'>[src] is already in good condition!</span>")
 		return
 
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, "<span class='warning'>[src] is already electrochromatic!</span>")
