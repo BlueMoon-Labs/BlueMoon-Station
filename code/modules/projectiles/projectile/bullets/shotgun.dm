@@ -119,7 +119,7 @@
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
 	damage = 2
-	stamina = 25                      // BLUEMOON EDIT: было 15 → 25
+	stamina = 20                      // BLUEMOON EDIT: было 15 → 20. -RaizlenW
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null

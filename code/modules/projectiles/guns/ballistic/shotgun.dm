@@ -5,6 +5,7 @@
 	icon_state = "shotgun"
 	item_state = "shotgun-wielded"
 	fire_sound = "sound/weapons/gunshotshotgunshot.ogg"
+	equip_sound = "sound/weapons/Shotguns_reheated/shared/draw.ogg"
 	w_class = WEIGHT_CLASS_BULKY
 	recoil = 0.5
 	force = 10
@@ -17,6 +18,14 @@
 	var/recentpump = 0 // to prevent spammage
 	var/pumpsound = "sound/weapons/shotgunpump.ogg" //Звуки досыла патрона
 	var/loadshell_sound = 'sound/weapons/shotguninsert.ogg' //Звуки заряжания патрона внутрь
+
+	var/empty_reload = FALSE //Включается ли косметическая механика для пустой перезарядки.
+
+	var/empty_pumpsound_back = null //Звук, что проигрывается когда дробовик имеет патрон только в чембере
+	var/empty_pumpsound_forward = null //Звук, что проигрывается после зарядки патрона в чембер, при пустом магазине. (Пустой магазин, но патрон в чембере)
+	var/empty_loadshell_sound = null // Звук заряжания патрона, когда патрона нет в чембере
+
+	var/empty_reload_pending = FALSE //Технический параметр.
 
 	var/jammed = FALSE //Имеет ли осечку
 	var/jam_multiplier = 0  //множитель стресса
@@ -50,10 +59,19 @@
 	. = ..()
 	if(.)
 		return
+
+	var/was_completely_empty = !chambered && !magazine.ammo_count()
+
 	var/num_loaded = magazine.attackby(A, user, params, 1)
 	if(num_loaded)
 		to_chat(user, "<span class='notice'>Вы заряжаете [num_loaded] в [src]!</span>")
-		playsound(user, loadshell_sound, 60, 1)
+
+		if(empty_reload && was_completely_empty)
+			playsound(user, empty_loadshell_sound, 60, TRUE)
+			empty_reload_pending = TRUE
+		else
+			playsound(user, loadshell_sound, 60, TRUE)
+
 		shake_camera(user, 0.5, 0.5)
 		A.update_icon()
 		update_icon()
@@ -239,13 +257,19 @@
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE, play_sound = TRUE)
 
 	if(visible)
-		M.visible_message("<span class='warning'>[M] взводит [src]!</span>", "<span class='warning'>Вы взводите [src]!</span>")
-
+		M.visible_message(
+			"<span class='warning'>[M] взводит [src]!</span>", "<span class='warning'>Вы взводите [src]!</span>")
 	if(play_sound)
-		playsound(M, pumpsound, 60, TRUE)
+		var/pump_sound = pumpsound
+		if(empty_reload && empty_reload_pending)
+			pump_sound = empty_pumpsound_forward
+		else if(empty_reload && chambered && !magazine.ammo_count())
+			pump_sound = empty_pumpsound_back
+		playsound(M, pump_sound, 60, TRUE)
 		shake_camera(M, 1.2, 0.8)
 	pump_unload(M)
 	pump_reload(M)
+	empty_reload_pending = FALSE
 	update_icon()
 	jam_stress = max(0, jam_stress - 15)
 	update_stress_effects()
@@ -284,6 +308,7 @@
     . += "item_state: [item_state]"
     . += "sawn_icon_state: [sawn_icon_state]"
     . += "sawn_item_state: [sawn_item_state]"
+    . += "mob_overlay_icon: [mob_overlay_icon]"
 
     if(icon)
         . += "icon file: [icon]"
@@ -313,13 +338,18 @@
 	name = "Riot Shotgun"
 	desc = "Надежный дробовик с удлиненным магазином и тактическим прикладом, предназначенный для применения в целях нелетального подавления массовых беспорядков."
 	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/back.dmi'
 	icon_state = "Riot"
 	item_state = "riot-wielded"
 	pumpsound = "sound/weapons/Shotguns_reheated/Riot/Riotchamber.ogg"
 	fire_sound = "sound/weapons/Shotguns_reheated/Riot/Riotfire.ogg"
 	suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/shared/shotgunsuppressed.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/shared/Shellinsert1.ogg'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Riot/Riotempty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Riot/Riotempty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
 	fire_delay = 8
+	empty_reload = TRUE
 	uses_jam = TRUE
 	can_suppress = TRUE
 	can_bayonet = TRUE
@@ -372,9 +402,13 @@
 	pumpsound = "sound/weapons/Shotguns_reheated/Slamfire/Slamfirepump.ogg"
 	fire_sound = "sound/weapons/Shotguns_reheated/KS-23/Ks-23shot.ogg"
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/shared/Shellinsert2.ogg'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Slamfire/Slamfireempty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Slamfire/Slamfireempty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/breacher
 	fire_delay = 2
 	uses_jam = TRUE
+	empty_reload = TRUE
 	jam_multiplier = 3
 	ignore_twohand_requirement = TRUE
 	w_class = WEIGHT_CLASS_SMALL
@@ -524,6 +558,7 @@
     if(play_sound)
         playsound(M, pumpsound, 60, TRUE)
         shake_camera(M, 1.2, 1)
+
 
     pump_unload_dual(M)
     pump_reload_dual(M)
@@ -722,8 +757,12 @@
     fire_sound = "sound/weapons/Shotguns_reheated/Riot/Riotfire.ogg"
     loadshell_sound = 'sound/weapons/Shotguns_reheated/shared/Shellinsert1.ogg'
     suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/shared/shotgunsuppressed.ogg'
+    empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Slamfire/Slamfireempty_forward.ogg"
+    empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Slamfire/Slamfireempty_back.ogg"
+    empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
     mag_type = /obj/item/ammo_box/magazine/internal/shot
     uses_jam = TRUE
+    empty_reload = TRUE
     jam_multiplier = 1.3
     fire_delay = 4
     can_suppress = TRUE //Самое частое оружие в лутпуле. Пусть игрок узнает о том что можно у него есть возможность кастомизации таким образом.
@@ -1383,6 +1422,7 @@
     user.heal_overall_damage(20, 20)
     ADD_TRAIT(user, TRAIT_IGNOREDAMAGESLOWDOWN, "slamfire_frenzy")
     ADD_TRAIT(user, TRAIT_NOSOFTCRIT, "slamfire_frenzy")
+    ADD_TRAIT(user, TRAIT_NOHARDCRIT, "slamfire_frenzy")
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/reset_frenzy(mob/living/user)
 
@@ -1691,7 +1731,11 @@
 	fire_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semifire.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semichamber.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinsert2.ogg'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/com
+	empty_reload = TRUE
 	uses_jam = TRUE
 	can_bayonet = TRUE
 	can_suppress = FALSE //Высокий шанс что будут ошибки определения веса с механикой приклада.
@@ -1800,7 +1844,11 @@
 	pumpsound = 'sound/weapons/Shotguns_reheated/Devastator/devastatorchamber.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinsertlight.wav'
 	suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/Devastator/devastatorsuppressed.ogg'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Devastator/devastatorempty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Devastator/devastatorempty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
+	empty_reload = TRUE
 	can_suppress = TRUE
 	uses_jam = TRUE
 	jam_multiplier = 1

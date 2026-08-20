@@ -71,7 +71,11 @@
 	fire_sound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23shot.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23Pumpaction.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinstertplastic.wav'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Ks-23/Ks-23empty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Ks-23/Ks-23empty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
 	force = 15 //Дробовик тяжёлый, следовательно...
+	empty_reload = TRUE
 	fire_delay = 6
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/KS23
 

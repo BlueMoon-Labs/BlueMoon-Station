@@ -100,7 +100,7 @@
 	if(istype(A, /obj/item/suppressor))
 		var/obj/item/suppressor/S = A
 		if(!can_attach_suppressor(S, user))
-			if(sawn_off)
+			if(sawn_off && !makeshift_threading)
 				to_chat(user, span_warning("Вы не можете установить глушитель на [src], потому что резьба для [S] отсутсвует!"))
 				return
 			else if(suppressed)
@@ -292,6 +292,7 @@
 		slot_flags |= ITEM_SLOT_BELT		//but you can wear it on your belt (poorly concealed under a trenchcoat, ideally)
 		sawn_off = TRUE
 		on_sawoff(user) //Позволяем обрезу оружия X делать собственные изменения при обрезании ствола, например статистики. - RaizlenW
+		base_w_class = w_class
 		update_icon()
 		return TRUE
 
