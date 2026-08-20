@@ -2548,3 +2548,9 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/custom_helmet
 	ckeywhitelist = list("hartty", "hateredsoul", "ordinarylife", "dalphy12")
+
+/datum/gear/donator/bm/vp78tactic
+	name = "VP78 Tactic ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/vp78tactic
+	ckeywhitelist = list("rockymed", "hartty", "leony24")
