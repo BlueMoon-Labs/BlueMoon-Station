@@ -62,7 +62,8 @@
 		auto_interaction_target = null
 		currently_active_interaction = null
 		return PROCESS_KILL
-	play_pixel_shift_animation(granter)
+	if(!auto_interaction_target?.client?.prefs?.block_partner_pixel_shift)
+		play_pixel_shift_animation(granter)
 
 /datum/component/interaction_menu_granter/Initialize(...)
 	if(!ismob(parent))
@@ -595,6 +596,9 @@
 		.["cum_onto_pref"] = 			!!CHECK_BITFIELD(prefs.cit_toggles, CUM_ONTO)
 		.["sex_jitter"] = 				!!CHECK_BITFIELD(prefs.cit_toggles, SEX_JITTER)	//By Gardelin0
 		.["no_disco_dance"] = 			!CHECK_BITFIELD(prefs.cit_toggles, NO_DISCO_DANCE) //By SmiLeY
+		.["show_heart_over_self"] = 		prefs.show_heart_over_self
+		.["interaction_effect"] = 			prefs.interaction_effect
+		.["block_partner_pixel_shift"] = 	prefs.block_partner_pixel_shift
 
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
@@ -687,6 +691,7 @@
 		sent_interactions += list(interaction)
 	.["interactions"] = sent_interactions
 	.["interaction_speeds"] = GLOB.interaction_speeds
+	.["interaction_effects_list"] = GLOB.interaction_effects_list
 
 /proc/num_to_pref(num)
 	switch(num)
@@ -746,7 +751,8 @@
 				return TRUE
 
 			o.do_action(parent_mob, target, TRUE, is_hidden)
-			play_pixel_shift_animation(parent_mob)
+			if(!target?.client?.prefs?.block_partner_pixel_shift)
+				play_pixel_shift_animation(parent_mob)
 			return TRUE
 		if("interaction_pace")
 			var/speed = params["speed"]
@@ -953,6 +959,15 @@
 					TOGGLE_BITFIELD(prefs.cit_toggles, CUM_ONTO)
 				if("sex_jitter") //By Gardelin0
 					TOGGLE_BITFIELD(prefs.cit_toggles, SEX_JITTER)
+				//
+				if("show_heart_over_self")
+					prefs.show_heart_over_self = !prefs.show_heart_over_self
+				if("interaction_effect")
+					var/effect = params["effect"]
+					if(effect in GLOB.interaction_effects_list)
+						prefs.interaction_effect = effect
+				if("block_partner_pixel_shift")
+					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
 				//
 				else
 					return FALSE

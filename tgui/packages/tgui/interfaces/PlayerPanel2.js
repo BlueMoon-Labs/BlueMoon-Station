@@ -21,7 +21,7 @@ const PAGES = [
     },
   },
   {
-    title: 'Моб',
+    title: 'Настройки моба',
     component: () => PhysicalActions,
     color: "yellow",
     icon: "bolt",
@@ -30,13 +30,13 @@ const PAGES = [
     },
   },
   {
-    title: 'Превратить',
+    title: 'Трансформация',
     component: () => TransformActions,
     color: "orange",
     icon: "exchange-alt",
   },
   {
-    title: 'Наказать',
+    title: 'Наказания & Логи',
     component: () => PunishmentActions,
     color: "red",
     icon: "gavel",
@@ -239,7 +239,7 @@ const PhysicalActions = (props) => {
 
   return (
     <Section fill>
-      <Section title="Быстрые действия" buttons={
+      <Section title="Настройки цели" buttons={
         <Button
           icon={godmode ? 'check-square-o' : 'square-o'}
           color={godmode ? 'green' : 'transparent'}
@@ -251,7 +251,7 @@ const PhysicalActions = (props) => {
           <Button
             width="100%"
             icon="paw"
-            content="Species"
+            content="Вид"
             tooltip="Изменить биологический вид цели"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("species")}
@@ -259,25 +259,25 @@ const PhysicalActions = (props) => {
           <Button
             width="100%"
             icon="magic"
-            content="Spells"
+            content="Заклинания"
             tooltip="Добавить/убрать заклинания"
             onClick={() => act("spell")}
           />
           <Button.Confirm
             width="100%"
             icon="suitcase"
-            content="Loadout"
+            content="Лодаут"
             color="teal"
             disabled={!mob_type.includes("/mob/living/carbon/human") || !has_loadout}
-            tooltip={!has_loadout ? "Отсутствует loadout data игрока" : "Применить loadout игрока"}
+            tooltip={!has_loadout ? "Отсутствует loadout data игрока" : "Применить loadout настройки игрока"}
             onClick={() => act("apply_loadout")}
           />
           <Button
             width="100%"
             icon="user-cog"
-            content="Appearance"
+            content="Внешность"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
-            tooltip="Применить сохранённые игроком настройки персонажа"
+            tooltip="Обновить name, desc и icon игрока"
             onClick={() => act("update_appearance")}
           />
         </Flex>
@@ -797,7 +797,8 @@ const FeatureBans = (props) => {
                 is_category: true,
               })} />
             <Button
-              content="Добавить все баны"
+              content="Выдать все баны"
+              tooltip="Пробанить позиции в открытой категории"
               color="bad"
               icon="lock"
               minWidth="8rem"
@@ -877,8 +878,8 @@ const GeneralActions = (props) => {
             width="100%"
             icon="heart"
             color="green"
-            content="Rejuvenate"
-            tooltip="Полностью восстановить здоровье и увечья цели"
+            content="Восстановить"
+            tooltip="Полностью восстановить здоровье и увечья цели проком Rejuvenate"
             disabled={!mob_type.includes("/mob/living")}
             onClick={() => act("heal")}
           />
@@ -887,7 +888,7 @@ const GeneralActions = (props) => {
             height="100%"
             icon="band-aid"
             color="teal"
-            content="Light Heal"
+            content="Исцелить"
             tooltip="Вылечить все типы урона цели на 20 единиц"
             disabled={!mob_type.includes("/mob/living")}
             onClick={() => act("light_heal")}
@@ -900,13 +901,13 @@ const GeneralActions = (props) => {
           <Button.Confirm
             width="100%"
             icon="reply"
-            content="Bring"
+            content="На себя"
             tooltip="Переместить цель на себя"
             onClick={() => act("bring")}
           />
           <Button
             width="100%"
-            content="Orbit"
+            content="Кружить над целью"
             tooltip="Телепортироваться к цели как призрак"
             onClick={() => act("orbit")}
           />
@@ -914,7 +915,7 @@ const GeneralActions = (props) => {
             width="100%"
             height="100%"
             icon="share"
-            content="Jump To"
+            content="К цели"
             tooltip="Телепортироваться к цели физически"
             onClick={() => act("jump_to")}
           />
@@ -925,14 +926,14 @@ const GeneralActions = (props) => {
         <Flex>
           <Button
             width="100%"
-            content="Select Equipment"
+            content="Выбрать снаряжение"
             tooltip="Выбрать снаряжение в специальном меню"
             icon="user-tie"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("select_equipment")}
           />
           <Button.Confirm
-            content="Drop All Items"
+            content="Снять все предметы"
             tooltip="Снять с цели все слоты инвентаря"
             icon="trash-alt"
             width="100%"
@@ -960,7 +961,7 @@ const GeneralActions = (props) => {
           <Button.Confirm
             width="100%"
             icon="ghost"
-            content="Eject Ghost"
+            content="Извлечь из тела"
             tooltip="Вытащить игрока из тела цели и сделать призраком"
             confirmColor="bad"
             disabled={!client_ckey || !mob_type.includes("/mob/living")}
@@ -968,7 +969,7 @@ const GeneralActions = (props) => {
           />
           <Button.Confirm
             width="100%"
-            content="Take Control"
+            content="Взять контроль"
             tooltip="Взять контроль над телом цели"
             confirmColor="bad"
             disabled={mob_type.includes("/mob/dead/observer") || !admin_mob_type.includes("/mob/dead/observer")}
@@ -978,7 +979,7 @@ const GeneralActions = (props) => {
             width="100%"
             height="100%" // weird ass bug here, so height set to 100%
             icon="ghost"
-            content="Offer Control"
+            content="Предложить контроль"
             tooltip="Предложить игрокам-призракам контроль над телом цели"
             disabled={!mob_type.includes("/mob/living")}
             onClick={() => act("offer_control")}
@@ -986,7 +987,7 @@ const GeneralActions = (props) => {
         </Flex>
         <Flex>
           <Button.Confirm
-            content="Send To Cryo"
+            content="Отправить в криосон"
             tooltip="Убрать цель из раунда через криосон"
             icon="snowflake"
             width="100%"
@@ -997,7 +998,7 @@ const GeneralActions = (props) => {
           <Button.Confirm
             width="100%"
             height="100%"
-            content="Send To Lobby"
+            content="Отправить в лобби"
             color="orange"
             icon="undo"
             disabled={!mob_type.includes("/mob/dead/observer")}
@@ -1024,7 +1025,7 @@ const PunishmentActions = (props) => {
           py=".5rem"
           icon="clipboard-list"
           color="orange"
-          content="Notes"
+          content="Заметки"
           tooltip="Открыть заметки игрока"
           textAlign="center"
           disabled={!client_ckey}
@@ -1036,7 +1037,7 @@ const PunishmentActions = (props) => {
           py=".5rem"
           icon="clipboard-list"
           color="orange"
-          content="Logs"
+          content="Логи"
           tooltip="Открыть логи раунда игрока"
           textAlign="center"
           onClick={() => act("logs")}
@@ -1046,7 +1047,7 @@ const PunishmentActions = (props) => {
         <Flex>
           <Button
             width="100%"
-            content="Freeze"
+            content="Заморозить"
             tooltip="Заморозить цель в пространстве"
             color={is_frozen ? "orange" : ""}
             icon={is_frozen ? 'check-square-o' : 'square-o'}
@@ -1055,7 +1056,7 @@ const PunishmentActions = (props) => {
           />
           <Button
             width="100%"
-            content="Sleep"
+            content="Усыпить"
             tooltip="Ввести цель в вечный сон"
             color={is_slept ? "orange" : ""}
             icon={is_slept ? 'check-square-o' : 'square-o'}
@@ -1081,7 +1082,7 @@ const PunishmentActions = (props) => {
             width="100%"
             icon="ban"
             color="red"
-            content="Kick"
+            content="Кикнуть"
             tooltip="Кикнуть игрока с сервера"
             disabled={!has_live_client}
             onClick={() => act("kick")}
@@ -1090,7 +1091,7 @@ const PunishmentActions = (props) => {
             width="100%"
             icon="gavel"
             color="red"
-            content="Ban"
+            content="Забанить"
             tooltip="Выдать серверный бан игроку"
             disabled={!client_ckey}
             onClick={() => act("ban")}
@@ -1100,7 +1101,7 @@ const PunishmentActions = (props) => {
             height="100%"
             icon="gavel"
             color="red"
-            content="Sticky Ban"
+            content="Стики-бан"
             tooltip="Выдать бан по CID/железу (HWID)"
             disabled={!client_ckey}
             onClick={() => act("sticky_ban")}
@@ -1335,7 +1336,7 @@ const FunActions = (props) => {
           </Flex.Item>
         </Flex>
       </Section>
-      <Section title="Narrate"
+      <Section title="Создать лог повествования (Narrate)"
         buttons={
           <Button
             content="Global Narrate"
@@ -1492,7 +1493,7 @@ const OtherActions = (props) => {
       <Section title="Антагонизм">
         <Button
           width="100%"
-          content="Traitor Panel"
+          content="Панель антагониста (TP)"
           icon="user-secret"
           color="purple"
           p=".5rem"
