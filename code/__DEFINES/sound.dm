@@ -860,3 +860,4 @@ GLOBAL_LIST_EMPTY(sfx_datum_by_key)
 #define SFX_BANDAGE_END "bandage_end"
 #define SFX_REMOTE_MODE_SWITCH "remote_mode_switch"
 #define SFX_REMOTE_ACTION "remote_action"
+#define SFX_WRITING_PEN "writing_pen"
