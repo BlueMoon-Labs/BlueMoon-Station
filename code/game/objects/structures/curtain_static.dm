@@ -7,7 +7,7 @@
 	max_integrity = 50
 	opacity = TRUE
 	density = FALSE
-	layer = SIGN_LAYER
+	layer = BELOW_OPEN_DOOR_LAYER
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMACHINE | PASSSTRUCTURE
 	custom_materials = null
 
@@ -62,6 +62,14 @@
 				transfer_fingerprints_to(sheet)
 	return ..()
 
+/obj/structure/curtain_static/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	if(iscarbon(AM))
+		sound_effect()
+
+/obj/structure/curtain_static/proc/sound_effect()
+	playsound(src, 'sound/misc/wing_flap.ogg', 20, TRUE)
+
 /obj/structure/curtain_static/plastic
 	name = "Plastic Curtain"
 	icon_state = "curtain_plastic"
@@ -73,6 +81,9 @@
 	icon_state = "curtain_cloth"
 	max_integrity = 50
 	custom_materials = list(/datum/material/cloth = MINERAL_MATERIAL_AMOUNT)
+
+/obj/structure/curtain_static/cloth/sound_effect()
+	playsound(src, 'sound/misc/fabric_flap.ogg', 20, TRUE)
 
 /obj/structure/curtain_static/glass
 	name = "Soft-Glass Curtain"
