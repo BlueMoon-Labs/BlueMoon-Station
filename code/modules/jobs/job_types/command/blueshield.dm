@@ -144,7 +144,7 @@
 //BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
 ///Subtype of CQC. Only used for the Blueshield.
 /datum/martial_art/cqc/restricted/blueshield
-	name = "Close Quarters Combat, Blueshield Edition"
+	name = "CQC (Blueshield edition)"
 	valid_areas = list(/area/command, /area/command/bridge, /area/command/meeting_room, /area/command/meeting_room/council,
 								/area/command/heads_quarters/captain, /area/command/heads_quarters/ce, /area/command/heads_quarters/ce/private,
 								/area/command/heads_quarters/cmo, /area/command/heads_quarters/cmo/private, /area/command/heads_quarters/hop,
