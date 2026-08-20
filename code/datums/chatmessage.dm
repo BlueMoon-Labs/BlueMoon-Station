@@ -47,6 +47,10 @@
 	var/in_runechat_queue = FALSE
 	/// TRUE if SSrunechat currently stores this message in second_queue instead of buckets
 	var/in_runechat_second_queue = FALSE
+	/// Индекс бакета SSrunechat, в который сообщение положили при вставке. BUCKET_POS_NONE, если оно не в колесе.
+	/// Пересчитать по scheduled_destruction нельзя: head_offset прыгает вперёд на целое колесо,
+	/// а сообщение остаётся лежать в своём слоте. См. тот же var/bucket_pos у /datum/timedevent.
+	var/runechat_bucket_pos = BUCKET_POS_NONE
 	/// TRUE once we have inserted into owned_by.seen_messages
 	var/in_seen_messages = FALSE
 	/// TRUE once we have inserted the image into owned_by.images
@@ -129,20 +133,28 @@
 		text = copytext_char(text, 1, maxlen + 1) + "..." // BYOND index moment
 
 	//SKYRAT CHANGES BEGIND
-	// Calculate target color if not already present
-	if (!target.chat_color || target.chat_color_name != target.name)
-		var/mob/M = target
-		if(GLOB.runechat_color_names[target.name])
-			target.chat_color = GLOB.runechat_color_names[target.name]
-		else if (ismob(target) && M.client?.prefs?.enable_personal_chat_color && M.name == M.real_name && M.name == M.client.prefs.real_name)
-			var/per_color = M.client.prefs.personal_chat_color
-			GLOB.runechat_color_names[target.name] = per_color
-			target.chat_color = per_color
+	// Цвет по умолчанию выводится из имени и лежит в общем кэше: одинаковые имена дают
+	// одинаковый цвет, и держать его копию на каждом атоме мира незачем. Личный цвет,
+	// назначенный вручную (режимы модульной лазерной винтовки), перебивает кэш и живёт
+	// на самом атоме - но только на движимом, турфы своим цветом не говорят.
+	var/target_color
+	var/manual_color = FALSE
+	if(ismovable(target))
+		var/atom/movable/movable_target = target
+		target_color = movable_target.chat_color
+		// Именно непустота, а не !isnull: chat_color = "" - легальный вареедит, и цвет для
+		// такого атома всё равно берётся из общего кэша. Считать его ручным значило бы
+		// платить color_shift() на каждое курсивное сообщение и никогда не наполнять кэш.
+		manual_color = !!target_color
+	if(!target_color)
+		target_color = GLOB.runechat_color_names[target.name]
+	if(!target_color)
+		var/mob/speaker = target
+		if (ismob(target) && speaker.client?.prefs?.enable_personal_chat_color && speaker.name == speaker.real_name && speaker.name == speaker.client.prefs.real_name)
+			target_color = speaker.client.prefs.personal_chat_color
+			GLOB.runechat_color_names[target.name] = target_color
 		else
-			target.chat_color = colorize_string(target.name)
-
-		target.chat_color_darkened = color_shift(target.chat_color, 0.85, 0.85)
-		target.chat_color_name = target.name
+			target_color = colorize_string(target.name)
 	//SKYRAT CHANGES END
 
 	// Get rid of any URL schemes that might cause BYOND to automatically wrap something in an anchor tag
@@ -191,8 +203,20 @@
 
 	text = "[prefixes?.Join("&nbsp;")][text]"
 
-	// We dim italicized text to make it more distinguishable from regular text
-	var/tgt_color = extra_classes.Find("italics") ? target.chat_color_darkened : target.chat_color
+	// We dim italicized text to make it more distinguishable from regular text.
+	// Затемнение кэшируется тем же ключом - именем; вручную назначенный цвет в общий кэш
+	// не пишется, иначе он утёк бы на всех однофамильцев.
+	var/tgt_color = target_color
+	if(extra_classes.Find("italics"))
+		// Ключ кэша разный, а кэш один. Выведенный из имени цвет кэшируется по ИМЕНИ:
+		// одинаковые имена дают одинаковый цвет по построению. Назначенный вручную - по
+		// самому ЦВЕТУ: по имени он утёк бы на однофамильцев, а по цвету не утекает никуда
+		// и при этом перестаёт считать rgb2hsl на каждое курсивное сообщение.
+		var/darkened_key = manual_color ? target_color : target.name
+		tgt_color = GLOB.runechat_color_names_darkened[darkened_key]
+		if(!tgt_color)
+			tgt_color = color_shift(target_color, 0.85, 0.85)
+			GLOB.runechat_color_names_darkened[darkened_key] = tgt_color
 
 	// Approximate text height
 	var/complete_text = "<span class='center maptext [extra_classes.Join(" ")]' style='color: [tgt_color]'>[owner.say_emphasis(text)]</span>"

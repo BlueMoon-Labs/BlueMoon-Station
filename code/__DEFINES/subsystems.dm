@@ -62,6 +62,15 @@
 ///Empty ID define
 #define TIMER_ID_NULL -1
 
+/**
+ * Позиция "не в колесе бакетов".
+ *
+ * Общая для обоих колёс: /datum/timedevent.bucket_pos у SStimer и
+ * /datum/chatmessage.runechat_bucket_pos у SSrunechat. Индексы бакетов начинаются с
+ * единицы, поэтому любое значение меньше её означает "таймера/сообщения в колесе нет".
+ */
+#define BUCKET_POS_NONE -1
+
 //! ## Initialization subsystem
 
 ///New should not call Initialize
