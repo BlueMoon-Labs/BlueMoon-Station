@@ -4790,6 +4790,7 @@
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\mesa_benrey_boss.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\mesa_hostile_mobs.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\mobs\mesa_human_mobs.dm"
+#include "modular_bluemoon\code\modules\awaymissions\blackmesa\weapons\dynamic_gun_sounds.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\weapons\mesa_guns.dm"
 #include "modular_bluemoon\code\modules\awaymissions\blackmesa\weapons\mesa_melee.dm"
 #include "modular_bluemoon\code\modules\cards\cards.dm"

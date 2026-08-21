@@ -1,6 +1,13 @@
 // ============================================================================
 // TIER 1 - Basic Weapons (Lowest Power)
 // ============================================================================
+// ПРИМЕЧАНИЕ: Данный файл содержит mesa guns с поддержкой динамической системы звуков.
+// Система описана в: modular_bluemoon/code/modules/awaymissions/blackmesa/weapons/dynamic_gun_sounds.dm
+//
+// Для внедрения системы в другое оружие:
+// 1. Добавьте has_dynamic_sounds = TRUE в определение оружия
+// 2. Инициализируйте dynamic_sound_datum в Initialize() с путями к звукам
+// 3. Система автоматически обработает воспроизведение dry (циклический) и tail (финальный) звуков
 
 /obj/item/gun/ballistic/automatic/pistol/hl9mm
 	name = "9mm pistol"
@@ -149,17 +156,62 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "mp5"
 	item_state = "mp5"
-	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
 	mag_type = /obj/item/ammo_box/magazine/mp5
+	load_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magin.ogg'
 	can_suppress = FALSE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	spread = 9
 	burst_size = 3
 	burst_shot_delay = 2
-	fire_delay = 1 ///Это пиздец!
+	fire_delay = 0.5 ///Это пиздец!
 	can_bayonet = FALSE
 	automatic_burst_overlay = FALSE
+	has_dynamic_sounds = TRUE	// Включаем динамическую систему звуков
+	var/weapon_loop_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/dry1.ogg'
+	var/weapon_full_tail_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
+	var/dynamic_sound_volume = 50	// Громкость звуков
+	var/dynamic_sound_suppressed_volume = 10	// Громкость с глушителем
+	var/improved_muzzle_lighting = TRUE
+	var/muzzle_light_range = 4
+	var/muzzle_light_power = 5
+	var/muzzle_light_duration = 1
+	var/progressive_spread_enabled = TRUE
+	var/progressive_spread_step = 1.5
+	var/progressive_spread_max = 36
+	var/progressive_spread_reset_delay = 3
+	var/progressive_spread_current = 0
+	var/progressive_spread_last_shot = 0
+
+/obj/item/gun/ballistic/automatic/mp5/Initialize(mapload)
+	. = ..()
+	// Инициализируем динамическую систему звуков
+	if(!dynamic_sound_datum)
+		dynamic_sound_datum = new /datum/dynamic_gun_sound(
+			weapon_loop_sound,
+			weapon_full_tail_sound,
+			dynamic_sound_volume,
+			TRUE,
+			dynamic_sound_suppressed_volume
+		)
+
+/obj/item/gun/ballistic/automatic/mp5/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(improved_muzzle_lighting && user)
+		user.flash_lighting_fx(muzzle_light_range, muzzle_light_power, LIGHT_COLOR_ORANGE, muzzle_light_duration)
+
+/obj/item/gun/ballistic/automatic/mp5/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(!progressive_spread_enabled || on_cooldown() || !can_shoot())
+		return ..()
+	if(world.time > progressive_spread_last_shot + progressive_spread_reset_delay)
+		progressive_spread_current = 0
+	progressive_spread_current = min(progressive_spread_current + progressive_spread_step, progressive_spread_max)
+	progressive_spread_last_shot = world.time
+	var/base_spread = spread
+	spread += progressive_spread_current
+	. = ..()
+	spread = base_spread
 
 /obj/item/gun/ballistic/automatic/mp5/update_icon_state()
 	if(magazine)
@@ -543,7 +595,7 @@
 
 /obj/item/projectile/bullet/mm57
 	name = "5.7mm bullet"
-	damage = 10
+	damage = 25
 	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 4 → BR1 (5.7мм аналог FN57)
 	wound_bonus = -4
 	bare_wound_bonus = 2
