@@ -326,6 +326,7 @@
 #include "tick_spike_recorder.dm"
 #include "tile_pipe_placement.dm"
 #include "update_icon_short_circuit.dm"
+#include "vent_label_numbering.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH
