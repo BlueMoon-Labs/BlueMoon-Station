@@ -82,7 +82,7 @@
 	var/mob/living/L = user
 
 	if(istype(L) && IS_STAMCRIT(L))
-		to_chat(user, "<span class='danger'>You're too exhausted for that.</span>")
+		to_chat(user, span_danger("You're too exhausted for that."))
 		return
 
 	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart) || istype(A, /obj/structure/sink))
@@ -92,11 +92,11 @@
 		var/list/modifiers = params2list(click_parameters)
 		if(A.is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM))
 			if(A.reagents.total_volume >= A.reagents.maximum_volume)
-				to_chat(user, "<span class='warning'>[A] is full!</span>")
+				to_chat(user, span_warning("[A] is full!"))
 				return
 			reagents.remove_all(reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
 			reagents.trans_to(A, reagents.total_volume)
-			to_chat(user, "<span class='notice'>You squeeze [src] out into [A].</span>")
+			to_chat(user, span_notice("You squeeze [src] out into [A]."))
 			playsound(A, 'sound/effects/slosh.ogg', 25, 1)
 			return
 
@@ -113,11 +113,11 @@
 
 		if(try_clean)
 			if(reagents.total_volume >= 1)
-				user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
+				user.visible_message("[user] cleans \the [T] with [src].", span_notice("You clean \the [T] with [src]."))
 				clean(T, user)
 				need_animate = TRUE
 			else if(!need_animate)
-				to_chat(user, "<span class='warning'>Your mop is dry!</span>")
+				to_chat(user, span_warning("Your mop is dry!"))
 		if(need_animate)
 			user.DelayNextAction(CLICK_CD_MELEE)
 			user.do_attack_animation(T, used_item = src)
@@ -135,7 +135,7 @@
 		J.mymop=src
 		J.update_icon()
 	else
-		to_chat(user, "<span class='warning'>You are unable to fit your [name] into the [J.name].</span>")
+		to_chat(user, span_warning("You are unable to fit your [name] into the [J.name]."))
 		return
 
 // Remove liquids from a turf using a mop.
@@ -204,7 +204,7 @@
 		START_PROCESSING(SSobj, src)
 	else
 		STOP_PROCESSING(SSobj,src)
-	to_chat(user, "<span class='notice'>You set the condenser switch to the '[refill_enabled ? "ON" : "OFF"]' position.</span>")
+	to_chat(user, span_notice("You set the condenser switch to the '[refill_enabled ? "ON" : "OFF"]' position."))
 	playsound(user, 'sound/machines/click.ogg', 30, 1)
 
 /obj/item/mop/advanced/process()
