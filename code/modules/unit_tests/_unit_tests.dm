@@ -320,6 +320,7 @@
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
 #include "sign_types.dm"
+#include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
