@@ -25,7 +25,6 @@
 	GLOB.janitor_devices += src
 	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
 	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
-	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow mopping liquids from turfs
 
 /obj/item/mop/ComponentInitialize()
 	. = ..()
@@ -70,7 +69,6 @@
 	reagents.reaction(A, TOUCH, 10)	//Needed for proper floor wetting.
 	reagents.remove_any(1)			//reaction() doesn't use up the reagents
 
-
 /obj/item/mop/afterattack(atom/A, mob/user, proximity, click_parameters)
 	. = ..()
 	if(!proximity)
@@ -80,10 +78,6 @@
 
 	if(istype(L) && IS_STAMCRIT(L))
 		to_chat(user, "<span class='danger'>You're too exhausted for that.</span>")
-		return
-
-	if(reagents.total_volume < 1)
-		to_chat(user, "<span class='warning'>Your mop is dry!</span>")
 		return
 
 	var/turf/T = get_turf(A)
@@ -107,8 +101,13 @@
 	if(T)
 		if(!L.UseStaminaBuffer(stamusage, warn = TRUE))
 			return
-		user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
-		clean(T, user)
+		if(!T.liquids || !attack_liquids_turf(A, user, T.liquids))
+			// Если сушить пол не требуется, чистим
+			if(reagents.total_volume < 1)
+				to_chat(user, "<span class='warning'>Your mop is dry!</span>")
+				return
+			user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
+			clean(T, user)
 		user.DelayNextAction(CLICK_CD_MELEE)
 		user.do_attack_animation(T, used_item = src)
 		playsound(T, "slosh", 50, 1)
@@ -128,6 +127,24 @@
 		to_chat(user, "<span class='warning'>You are unable to fit your [name] into the [J.name].</span>")
 		return
 
+// Remove liquids from a turf using a mop.
+/obj/item/mop/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	if(liquids.fire_state)
+		return TRUE
+
+	var/free_space = reagents.maximum_volume - reagents.total_volume
+	if(free_space <= 0)
+		to_chat(user, span_warning("Your [src] can't absorb any more liquid!"))
+		return TRUE
+
+	var/datum/reagents/tempr = liquids.take_reagents_flat(free_space)
+	tempr.trans_to(reagents, tempr.total_volume)
+	to_chat(user, span_notice("You soak \the [src] with some liquids."))
+	qdel(tempr)
+	user.do_attack_animation(target_turf, used_item = src)
+	user.changeNext_move(CLICK_CD_MELEE)
+	return TRUE
+
 /obj/item/mop/cyborg
 	insertable = FALSE
 
@@ -146,6 +163,15 @@
 	var/refill_enabled = TRUE //Self-refill toggle for when a janitor decides to mop with something other than water.
 	var/refill_rate = 1 //Rate per process() tick mop refills itself
 	var/refill_reagent = /datum/reagent/water //Determins what reagent to use for refilling, just in case someone wanted to make a HOLY MOP OF PURGING
+
+// Advanced mop has a self-refilling condenser, so it has no room to soak up
+// liquids into its reagents. Instead it straight up removes the whole puddle.
+/obj/item/mop/advanced/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	. = FALSE // Возвращаем FALSE, чтобы швабра могла и чистить и мыть одновременно
+	if(liquids.fire_state)
+		return
+
+	liquids.liquid_simple_delete_flat(liquids.total_reagents)
 
 /obj/item/mop/advanced/supermatter
 	name = "Supermatter Mop"
@@ -171,7 +197,6 @@
 	playsound(user, 'sound/machines/click.ogg', 30, 1)
 
 /obj/item/mop/advanced/process()
-
 	if(reagents.total_volume < mopcap)
 		reagents.add_reagent(refill_reagent, refill_rate)
 
