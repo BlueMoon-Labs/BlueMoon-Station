@@ -208,10 +208,9 @@
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
 	if(hearts_effect)
-		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(user.loc)
-		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(target.loc)
+		user.try_play_interaction_effect(is_hidden)
+		if(user != target)
+			target.try_play_interaction_effect(is_hidden)
 
 /datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
 	var/turf/sound_turf = get_turf(sound_source)
@@ -255,3 +254,26 @@
 		playsound(get_turf(user), soundfile_to_play, 80, FALSE, -1)
 		return
 	. = ..()
+
+// BLUEMOON ADD START
+
+/mob/living/proc/try_play_interaction_effect(is_hidden = FALSE)
+	if(is_hidden)
+		return FALSE
+	var/datum/preferences/prefs = client?.prefs
+	if(prefs && !prefs.show_heart_over_self)
+		return FALSE
+	play_interaction_effect()
+	return TRUE
+
+
+/mob/living/proc/play_interaction_effect()
+	var/effect = client?.prefs?.interaction_effect || INTERACTION_EFFECT_HEART
+	if(!(effect in GLOB.interaction_effects_list))
+		effect = INTERACTION_EFFECT_HEART
+	switch(effect)
+		if(INTERACTION_EFFECT_HEART)
+			new /obj/effect/temp_visual/heart(loc)
+		else
+			new /obj/effect/temp_visual/heart(loc)
+// BLUEMOON ADD END
