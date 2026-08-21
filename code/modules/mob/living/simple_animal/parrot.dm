@@ -1086,8 +1086,7 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 	name = "Eclectus"
 	icon_state = "eclectusr-flap"
 	icon_living = "eclectusr-flap"
-	icon_dead = "eclectusr-dead"
-	icon_sit = "electusr_sit"
+	icon_sit = "eclectusr_sit"
 
 /mob/living/simple_animal/parrot/eclectus
 	name = "Eclectus"
@@ -1205,7 +1204,7 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 	name = "Grey Cockatiel"
 	icon_state = "blutiel-flap"
 	icon_living = "blutiel-flap"
-	icon_dead = "blutiel-dead"
+	icon_dead = "bluetiel-dead"
 	icon_sit = "blutiel_sit"
 
 /mob/living/simple_animal/parrot/too

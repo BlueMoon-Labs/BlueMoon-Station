@@ -149,7 +149,7 @@
 	icon = 'modular_bluemoon/icons/mob/mesa_mobs.dmi'
 	icon_state = "gonome"
 	icon_living = "gonome"
-	icon_dead = "gonome_dead"
+	icon_dead = "zombie_dead"
 	icon_gib = "syndicate_gib"
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
