@@ -32,8 +32,11 @@
 	var/datum/ai_controller/controller = goliath.ai_controller
 	TEST_ASSERT_NOTNULL(controller, "Sanity: голиаф должен подниматься с контроллером")
 
-	//run_loc_floor_bottom_left - центр резервации, радиус 1 укладывается в неё целиком
-	var/obj/effect/timestop/field = allocate(/obj/effect/timestop, run_loc_floor_bottom_left, 1, 10 SECONDS)
+	//run_loc_floor_bottom_left - центр резервации, радиус 1 укладывается в неё целиком.
+	//start = FALSE и ручной вызов: штатный путь строит поле через INVOKE_ASYNC, и
+	//рассчитывать на то, что оно доедет до следующей строки, нельзя - тест так флачил
+	var/obj/effect/timestop/field = allocate(/obj/effect/timestop, run_loc_floor_bottom_left, 1, 10 SECONDS, null, FALSE)
+	field.timestop()
 	TEST_ASSERT_NOTNULL(field.chronofield, "Sanity: таймстоп обязан построить хронополе")
 	TEST_ASSERT(HAS_TRAIT(goliath, TRAIT_AI_PAUSED), "Заморозка обязана ставить пауну паузу AI")
 
