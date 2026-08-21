@@ -97,6 +97,14 @@ SUBSYSTEM_DEF(runechat)
 	// has us stop mid-way through processing
 	var/datum/chatmessage/cm = resumed ? resume_from : null
 
+	// Пока подсистема стояла на паузе, курсор мог уехать из текущего слота: generate_image()
+	// переназначает срок соседям по тайлу через enter_subsystem(), а тот делистит сообщение
+	// и кладёт его в ДРУГОЙ бакет. Пойти по такому курсору - значит гасить чужой бакет, а
+	// потом выбросить остаток текущего вместе со слотом: сообщениям не вызовут end_of_life(),
+	// и они останутся в client.images навсегда. Слот записан в самом сообщении, сверить дёшево.
+	if (cm && cm.runechat_bucket_pos != practical_offset)
+		cm = null
+
 	// Iterate through each bucket starting from the practical offset
 	while (practical_offset <= BUCKET_LEN && head_offset + ((practical_offset - 1) * world.tick_lag) <= world.time)
 		var/datum/chatmessage/bucket_head = bucket_list[practical_offset]
@@ -286,6 +294,11 @@ SUBSYSTEM_DEF(runechat)
 
 	// When necessary, de-list the chatmessage from its previous position
 	if (new_sched_destruction && in_runechat_queue)
+		// Сообщение уезжает из своего слота - курсор возобновления на него смотреть больше
+		// не должен. Тот же гард, что в leave_subsystem(): это второй и последний путь,
+		// которым сообщение покидает бакет.
+		if (SSrunechat.resume_from == src)
+			SSrunechat.resume_from = null
 		if (in_runechat_second_queue)
 			second_queue -= src
 		else

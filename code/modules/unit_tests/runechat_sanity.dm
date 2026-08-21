@@ -168,3 +168,41 @@
 	// случае, в том числе после упавшей проверки: иначе первый же проход подсистемы будет
 	// догонять настоящее время сотней пустых бакетов.
 	SSrunechat.reset_buckets()
+
+/**
+ * Курсор возобновления не переживает переезд сообщения в другой бакет.
+ *
+ * fire() прерывается по бюджету тика посреди бакета и запоминает сообщение, с которого
+ * продолжит. До следующего прохода сообщение может из этого бакета уехать: generate_image()
+ * переназначает срок соседям по тайлу, а enter_subsystem() с новым сроком делистит сообщение
+ * и кладёт его в другой слот. Курсор, переживший переезд, уводит проход в ЧУЖОЙ бакет -
+ * тот гасится досрочно, а остаток текущего выбрасывается вместе со слотом: сообщениям не
+ * вызовут end_of_life(), и они остаются в client.images до конца сессии.
+ *
+ * leave_subsystem() этот курсор снимает с рождения, enter_subsystem() - второй и последний
+ * путь, которым сообщение покидает бакет.
+ */
+/datum/unit_test/runechat_resume_cursor_drops_moved_message
+
+/datum/unit_test/runechat_resume_cursor_drops_moved_message/Run()
+	var/datum/chatmessage/unit_test_stub/message = new
+	allocated += message
+	message.scheduled_destruction = world.time + 3 SECONDS
+	message.enter_subsystem()
+	TEST_ASSERT(message.in_runechat_queue, "Премиса: сообщение обязано попасть в подсистему")
+	var/first_pos = message.runechat_bucket_pos
+
+	var/datum/chatmessage/cached_resume = SSrunechat.resume_from
+	SSrunechat.resume_from = message
+	// Ровно этот вызов делает generate_image() соседям по тайлу.
+	message.enter_subsystem(world.time + 10 SECONDS)
+	var/resume_after = SSrunechat.resume_from
+	var/second_pos = message.runechat_bucket_pos
+
+	// Состояние боевой подсистемы возвращается ДО проверок: упавший TEST_ASSERT выходит из
+	// прока, и ссылка на заглушку осталась бы курсором живого колеса.
+	SSrunechat.resume_from = cached_resume
+	message.leave_subsystem()
+
+	TEST_ASSERT_NOTEQUAL(second_pos, first_pos, "Премиса: новый срок обязан переложить сообщение в другой бакет")
+	TEST_ASSERT_NULL(resume_after, "Курсор возобновления пережил переезд сообщения в другой бакет")
