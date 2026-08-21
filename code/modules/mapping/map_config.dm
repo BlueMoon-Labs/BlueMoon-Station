@@ -22,7 +22,12 @@
 	var/persistence_key
 
 	var/traits = null
-	var/space_ruin_levels = 7
+	/// Сколько z-уровней отводится под космические руины. Каждый уровень - это 255x255 турфов
+	/// (65 025 штук, порядка 68 МБ адресного пространства) вне зависимости от того, сколько
+	/// руин на нём в итоге встало. У 32-битного DreamDaemon потолок 4088 МБ, и раунд стартует
+	/// с 79% от него, поэтому счёт идёт на уровни. Карта может переопределить ключом
+	/// space_ruin_levels в своём JSON.
+	var/space_ruin_levels = 5
 	var/space_empty_levels = 1
 	// BLUEMOON EDIT START: Invalid Space Turfs
 	/// Boolean that tells us if this is a planetary station. (like IceBoxStation)
