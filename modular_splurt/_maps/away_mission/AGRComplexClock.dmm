@@ -8791,7 +8791,6 @@
 /turf/open/floor/plating,
 /area/awaymission/complex/logistics)
 "hCT" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/awaymission/complex/dorms)
 "hCU" = (
@@ -11526,7 +11525,6 @@
 /turf/open/floor/clockwork,
 /area/awaymission/complex/research)
 "jUq" = (
-/obj/machinery/pool/controller,
 /obj/structure/railing,
 /obj/effect/turf_decal/siding/brown,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -18968,9 +18966,6 @@
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
 "qDU" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/railing,
 /obj/effect/turf_decal/siding/brown,
 /obj/effect/decal/cleanable/dirt/dust,

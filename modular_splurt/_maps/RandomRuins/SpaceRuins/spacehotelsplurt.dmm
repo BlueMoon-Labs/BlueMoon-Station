@@ -1607,10 +1607,6 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 6
 	},
-/obj/machinery/pool/drain{
-	pixel_x = -17;
-	pixel_y = 17
-	},
 /turf/open/pool,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "hl" = (
@@ -4410,7 +4406,6 @@
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "tL" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "tN" = (
@@ -8991,9 +8986,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "Qm" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -9030,7 +9022,6 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "Qu" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -9723,9 +9714,6 @@
 /turf/open/floor/carpet/blue,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "Ue" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/statue/silver/md{
 	anchored = 1
 	},
@@ -10287,7 +10275,6 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "WR" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "WT" = (

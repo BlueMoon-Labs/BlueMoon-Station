@@ -93,6 +93,14 @@
 			. += "<span class='notice'>The window is <b>screwed</b> to the floor.</span>"
 		else
 			. += "<span class='notice'>The window is <i>unscrewed</i> from the floor, and could be deconstructed by <b>wrenching</b>.</span>"
+	// Теплопроводность остекления не видна ничем, и вычислять её приходилось
+	// градусником по соседней комнате - строкой осмотра игрок хотя бы знает,
+	// чем отгораживаться от печи.
+	if(anchored && density)
+		if(BlockThermalConductivity())
+			. += "<span class='notice'>Стекло <b>не проводит тепло</b>: за ним можно держать раскалённое помещение.</span>"
+		else
+			. += "<span class='warning'>Стекло <b>проводит тепло</b>: жар из соседнего помещения будет просачиваться сквозь него.</span>"
 
 /obj/structure/window/Initialize(mapload, direct)
 	. = ..()
@@ -675,6 +683,22 @@
 	glass_material_datum = /datum/material/alloy/plasmaglass
 	rad_insulation = RAD_NO_INSULATION
 
+// Плазменное стекло - единственное, что игрок может поставить между печью и
+// собой: обычное и армированное гоняют тепло коэффициентом окна (0.1), и
+// камера сгорания через них прогревает соседний отсек до пожарки. Раньше
+// теплоизоляцию давала только армированная плазма, теперь весь сплав - у него
+// и heat_resistance 25000. Гейт по density: разбитое окно снимает печать сразу
+// (Destroy() гасит density и просит пересчёт соседства), иначе она пережила бы
+// саму панель до следующего стороннего апдейта турфа.
+/obj/structure/window/plasma/BlockThermalConductivity()
+	// fulltile обязателен. BlockThermalConductivity() направления не принимает, а
+	// LINDA_system зовёт её внутри цикла по сторонам без всякой фильтрации - то
+	// есть печать выходит КРУГОВОЙ. Газ же у окна directional: CanAtmosPass()
+	// пропускает три стороны из четырёх. Одна панель в дверном проёме иначе
+	// перекрывала бы тепло со всех сторон, продолжая пропускать воздух с трёх, -
+	// на мастере ровно это делала армированная плазма своим безусловным TRUE.
+	return anchored && density && fulltile
+
 /obj/structure/window/plasma/spawner/east
 	dir = EAST
 
@@ -713,9 +737,6 @@
 
 /obj/structure/window/plasma/reinforced/unanchored
 	anchored = FALSE
-
-/obj/structure/window/plasma/reinforced/BlockThermalConductivity()
-	return TRUE
 
 /obj/structure/window/reinforced/tinted
 	name = "tinted window"
@@ -906,6 +927,11 @@
 	glass_amount = 2
 	ricochet_chance_mod = 0.9
 
+// Корпусное остекление шаттлов и синдикатских баз - цельный лист в обшивке, а
+// не перегородка: держать за собой вакуум и не держать тепло оно не может.
+/obj/structure/window/shuttle/BlockThermalConductivity()
+	return anchored && density
+
 /obj/structure/window/shuttle/narsie_act()
 	add_atom_colour("#3C3434", FIXED_COLOUR_PRIORITY)
 
@@ -937,6 +963,9 @@
 	cleanable_type = /obj/effect/decal/cleanable/glass/plastitanium
 	glass_material_datum = /datum/material/alloy/plastitaniumglass
 	glass_amount = 2
+
+/obj/structure/window/plastitanium/BlockThermalConductivity()
+	return anchored && density
 
 /obj/structure/window/plastitanium/unanchored
 	anchored = FALSE

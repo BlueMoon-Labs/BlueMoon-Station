@@ -54,6 +54,11 @@
 	var/planetary_atmos = FALSE //air will revert to initial_gas_mix over time
 
 	var/list/atmos_overlay_types //gas IDs of current active gas overlays
+	/// Ревизия смеси, по которой посчитан текущий atmos_overlay_types. Пока она
+	/// совпадает с air.mutation_rev, пересчёт заведомо даст тот же оверлей.
+	/// Обязан сбрасываться при ПОДМЕНЕ датума смеси (ChangeTurf, update_air_ref):
+	/// у свежей смеси mutation_rev начинается с нуля и может совпасть со старым.
+	var/tmp/atmos_visual_rev = -1
 	///Vents/scrubbers that want an instant wake-up when air on this turf changes.
 	///Maintained by /obj/machinery/atmospherics/register_turf_wake().
 	var/tmp/list/atmos_wake_machines
@@ -341,9 +346,27 @@
 		sharer.temperature = max(sharer.temperature, TCMB)
 
 
-/turf/open/proc/eg_reset_cooldowns()
-	if(excited_group)
-		excited_group.reset_cooldowns()
+/// Тик живого очага для группы. Зовётся только из /obj/effect/hotspot/process().
+///
+/// Раньше это был полный reset_cooldowns(), и он запирал сам себя: фаза
+/// хотспотов идёт ПОСЛЕ фазы групп, поэтому breakdown_cooldown успевал вырасти
+/// до единицы и тут же обнулялся. Потолок EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING
+/// был недостижим, а evict_settled_members() - единственный способ выгнать
+/// осевших членов из вечно горящей группы, не усредняя её газ - не выполнялся
+/// ни разу за раунд. Ровно тот предохранитель против роста turf_list, ради
+/// которого потолок и заведён.
+///
+/// Что осталось: волатильный бит (он и держит усредняющий брейкдаун закрытым -
+/// дублирует пометку из process_cell, но не зависит от того, дошла ли до турфа
+/// фаза турфов), сброс окна расформирования и снятие индивидуального отдыха с
+/// самого турфа. Не осталось: обнуление breakdown_cooldown.
+/turf/open/proc/eg_hotspot_tick()
+	var/datum/excited_group/group = excited_group
+	if(group)
+		// Начатый до поджога брейкдаун дописал бы усреднённый газ поверх огня.
+		group.cancel_breakdown()
+		group.turf_reactions |= VOLATILE_REACTION
+		group.dismantle_cooldown = 0
 	atmos_cooldown = 0
 /turf/open/proc/eg_garbage_collect()
 	if(excited_group)
@@ -362,15 +385,38 @@
 
 
 /turf/open/proc/update_visuals()
+	// Оверлей - чистая функция от состава смеси (моли против порогов видимости),
+	// температура в него не входит. Значит ревизия смеси - точный ключ: пока она
+	// не менялась, повторный расчёт обязан дать тот же ответ.
+	//
+	// Прежний быстрый выход ловил только идеально чистый O2/N2 без старого
+	// оверлея (28 вызовов из 249 в замере); любой турф, набравший CO2 от дыхания
+	// или воду от душа, платил полный обход газ-листа с четырьмя хеш-чтениями на
+	// газ - чтобы не выдать ничего. Гейт ниже покрывает и их.
+	var/datum/gas_mixture/our_air = air
+	if(our_air && atmos_visual_rev == our_air.mutation_rev)
+		ATMOS_TPROF_COUNT("vis_memo")
+		return
 
 	var/list/atmos_overlay_types = src.atmos_overlay_types // Cache for free performance
 	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
+
+	// Ключ мемо ставится на КАЖДОМ пути выхода, включая ранние: иначе гейт выше
+	// пропустит первый же повтор мимо кэша и толку от него не будет.
+	//
+	// Но именно НА выходе, а не здесь: между этой точкой и коммитом оверлея
+	// внизу лежит вся работа прока, и рантайм посреди неё (битый gas_overlays,
+	// vis_contents на разрушающемся турфе) оставил бы штамп уже проставленным.
+	// Гейт после этого глушил бы каждую следующую попытку - невидимое облако
+	// плазмы, которое само не чинится до конца раунда.
+	var/memo_rev = our_air?.mutation_rev
 
 	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
 		if (atmos_overlay_types)
 			for(var/overlay in atmos_overlay_types)
 				vis_contents -= overlay
 			src.atmos_overlay_types = null
+		atmos_visual_rev = memo_rev
 		return
 
 	// Runs for every active turf every cycle: read the gas list directly and only
@@ -381,6 +427,7 @@
 	// overwhelmingly common clean-room mixture once no old overlay needs removal.
 	if(!atmos_overlay_types && length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2])
 		ATMOS_TPROF_COUNT("vis_clean_air")
+		atmos_visual_rev = memo_rev
 		return
 	var/list/gas_overlays = GLOB.gas_data.overlays
 	var/list/gas_visibility = GLOB.gas_data.visibility
@@ -422,9 +469,11 @@
 
 	if(isnull(new_overlay) && !atmos_overlay_types)
 		ATMOS_TPROF_COUNT("vis_no_overlay")
+		atmos_visual_rev = memo_rev
 		return
 	if(!isnull(new_overlay) && length(atmos_overlay_types) == 1 && atmos_overlay_types[1] == new_overlay)
 		ATMOS_TPROF_COUNT("vis_unchanged")
+		atmos_visual_rev = memo_rev
 		return
 	new_overlay_types = isnull(new_overlay) ? list() : list(new_overlay)
 	ATMOS_TPROF_COUNT("vis_commits")
@@ -441,6 +490,8 @@
 
 	UNSETEMPTY(new_overlay_types)
 	src.atmos_overlay_types = new_overlay_types
+	// Штамп ставится последним: всё, что могло упасть, уже отработало.
+	atmos_visual_rev = memo_rev
 
 /turf/open/proc/set_visuals(list/new_overlay_types)
 	if (atmos_overlay_types)
@@ -454,6 +505,9 @@
 			vis_contents += new_overlay_types
 	UNSETEMPTY(new_overlay_types)
 	src.atmos_overlay_types = new_overlay_types
+	// Оверлей выставили в обход update_visuals(), значит его ключ мемо больше не
+	// описывает состояние турфа: сбрасываем, иначе гейт вернёт "уже посчитано".
+	atmos_visual_rev = -1
 
 /proc/typecache_of_gases_with_no_overlays()
 	. = list()
@@ -471,6 +525,7 @@
 // with their template).
 #define LAST_SHARE_CHECK \
 	var/last_share = our_air.last_share; \
+	ATMOS_TPROF_WAKE_RATIO(last_share, our_move_threshold) \
 	if(last_share > our_suspend_threshold){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
@@ -492,6 +547,7 @@
 // Same cooldown handling for the template share; there is no enemy tile here.
 #define PLANET_SHARE_CHECK \
 	var/planet_last_share = our_air.last_share; \
+	ATMOS_TPROF_WAKE_RATIO(planet_last_share, our_move_threshold) \
 	if(planet_last_share > our_suspend_threshold){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
@@ -913,11 +969,26 @@
 	return walk.did_work
 
 /turf/proc/consider_firelocks(turf/T2)
+/// Захлоп створок по перепаду давления - и ТОЛЬКО он.
+///
+/// Полновесную пожарную тревогу базового ареала (сирена, ModifyFiredoors каждые
+/// десять секунд, ручной сброс с панели) отсюда не поднимают. Этот прок зовут два
+/// пути, и оба стреляют по одиночному событию: пер-парный шаринг - на перепаде в
+/// WARNING_LOW_PRESSURE через один дверной проём, стравливание кромки зоны - на
+/// каждом проходе эквалайзера. Перепада в 50 кПа хватает выпуску баллона в
+/// проёме, циклу наружного шлюза и венту, надувающему соседнюю комнату; тревога
+/// же не снимается сама ничем, и станция получала сирену «без причины».
+///
+/// Тревога живёт на подтверждённом пути: `SSair.queue_decompression_area()` ставит
+/// зону в очередь, только если её перевзвели более поздним фаером
+/// (см. `queue_decompression_base`), и уже `handle_decompression_area()` зовёт
+/// `handle_decomp_alarm()`. Настоящая пробоина перевзводится каждый фаер, пока
+/// соседи кормят кромку, и тревогу получает; одиночный пшик - нет. Захлоп же
+/// обязан быть мгновенным и потому остаётся здесь: закрытая створка обратима, а
+/// пропущенный фронт разгерметизации дренирует станцию до конца смены.
 /turf/open/consider_firelocks(turf/T2)
 	if(blocks_air)
 		return
-	for(var/obj/machinery/airalarm/alarm in src)
-		alarm.handle_decomp_alarm()
 	for(var/obj/machinery/door/firedoor/FD in src)
 		FD.emergency_pressure_stop()
 	for(var/obj/machinery/door/firedoor/FD in T2)
@@ -929,14 +1000,25 @@
 	if(!blocks_air && sum > 20 && prob(clamp(sum / 10, 0, 30)))
 		remove_tile()
 
+/// Space never simulates: its mixture is the shared immutable vacuum, and
+/// neighbours vent into it through the space branch of their own process_cell.
+/// Overriding here instead of type-checking inside /turf/open/process_cell moves
+/// the decision to compile time - the check it replaces ran an istype() against
+/// every active turf on every pass, to be true for approximately none of them.
+/turf/open/space/process_cell(fire_count)
+	if(SSair)
+		SSair.remove_from_active(src)
+	return
+
 /turf/open/process_cell(fire_count)
+	// SSair - глобал, и каждое его упоминание это отдельное чтение. В этом проке
+	// их было шестнадцать, а сам прок выполняется на каждом активном турфе каждый
+	// проход. Читаем один раз, до первых гардов; семантика прежняя - проверки
+	// стали проверками локала, взятого в тот же момент.
+	var/datum/controller/subsystem/air/air_controller = SSair
 	if(blocks_air || !air)
-		if(SSair)
-			SSair.remove_from_active(src)
-		return
-	if(istype(src, /turf/open/space))
-		if(SSair)
-			SSair.remove_from_active(src)
+		if(air_controller)
+			air_controller.remove_from_active(src)
 		return
 
 	ATMOS_TPROF_VARS
@@ -965,7 +1047,7 @@
 	// Гейт спящих рёбер по тишине: кэш пар смотрим и пишем только когда сам
 	// турф уже несколько фаеров ничего не двигал. Активный фронт (cooldown
 	// обнуляется каждым значимым шером) не платит ни лукап, ни запись.
-	var/edge_sleep_enabled = SSair?.sleeping_edges_enabled && cached_atmos_cooldown > ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
+	var/edge_sleep_enabled = air_controller?.sleeping_edges_enabled && cached_atmos_cooldown > air_controller.edge_sleep_min_quiet_fires
 
 	var/planet_atmos = planetary_atmos
 
@@ -987,6 +1069,7 @@
 
 	ATMOS_TPROF_MARK
 	for(var/turf/open/enemy_tile as anything in adjacent_turfs)
+		ATMOS_TPROF_DEEP_COUNT("nb_pairs")
 		if(!istype(enemy_tile) || enemy_tile.blocks_air)
 			continue
 		// Пара обрабатывается один раз за цикл, и у ВТОРОЙ половины каждой пары
@@ -1021,7 +1104,10 @@
 		// regenerates next cycle - an endless gradient that keeps whole surface
 		// bands excited forever. Each side keeps its own sky; spilled gas still
 		// leaves through the 0.8-ratio template pull within a couple of cycles.
-		if(planet_atmos && enemy_tile.planetary_atmos && enemy_tile.initial_gas_mix != initial_gas_mix)
+		// Флаг соседа читается ОДИН раз на пару: ниже он нужен ещё дважды, а поле
+		// датума в DM это полноценное чтение, и цикл пар - 3.6 итерации на турф.
+		var/enemy_planet_atmos = enemy_tile.planetary_atmos
+		if(planet_atmos && enemy_planet_atmos && enemy_tile.initial_gas_mix != initial_gas_mix)
 			continue
 
 		// Спящий планетарный сосед - бесконечный резервуар своего неба, ровно как
@@ -1034,11 +1120,14 @@
 		// остывать и стравливаться к небу; планетарная спит, пока на неё не
 		// напишут по-настоящему (канистра, хотспот, assume_air будят её обычными
 		// путями, и до нового сна пара работает по-старому).
-		if(enemy_tile.planetary_atmos && !enemy_tile.excited)
-			var/datum/gas_mixture/sky_template = SSair.get_planetary_template(enemy_tile)
+		if(enemy_planet_atmos && !enemy_tile.excited && air_controller)
+			var/datum/gas_mixture/sky_template = air_controller.get_planetary_template(enemy_tile)
 			if(sky_template)
 				ATMOS_TPROF_COUNT("sky_pairs")
-				if(!our_air.compare(sky_template))
+				ATMOS_TPROF_DEEP_MARK
+				var/sky_differs = our_air.compare(sky_template)
+				ATMOS_TPROF_DEEP_ADD("nb_sky_compare")
+				if(!sky_differs)
 					continue
 				ATMOS_TPROF_COUNT("sky_shares")
 				var/sky_temperature_delta = abs(our_air.temperature_archived - sky_template.temperature_archived)
@@ -1075,8 +1164,10 @@
 		// Отложенный архив безопасен: он нужен только реальному share(), и
 		// первый же живой партнёр (или собственный process_cell соседа) снимет
 		// его сам. Промах инвалидации самолечится breakdown-усреднением группы.
-		var/datum/excited_group/enemy_group_early = enemy_tile.excited_group
-		if(edge_sleep_enabled && our_excited_group && our_excited_group == enemy_group_early)
+		// Группа соседа тоже читается один раз: между этой точкой и парным гейтом
+		// ниже её ничто не меняет - ленивый архив групп не трогает.
+		var/datum/excited_group/enemy_excited_group = enemy_tile.excited_group
+		if(edge_sleep_enabled && our_excited_group && our_excited_group == enemy_excited_group)
 			var/list/edge_state_early = settled_edge_revs?[enemy_tile]
 			if(edge_state_early && edge_state_early[1] == our_air.mutation_rev && edge_state_early[2] == enemy_air.mutation_rev)
 				ATMOS_TPROF_COUNT("edge_sleeps")
@@ -1091,11 +1182,12 @@
 		// is precisely what the archive exists to prevent. It also cost a fresh
 		// gas list copy per neighbour: 326k turf archives per 135k processed
 		// tiles in a live round, most of them redundant.
+		ATMOS_TPROF_DEEP_MARK
 		if(enemy_tile.archived_cycle < fire_count)
 			enemy_tile.archive(fire_count)
+		ATMOS_TPROF_DEEP_ADD("nb_archive")
 
 		var/should_share_air = FALSE
-		var/datum/excited_group/enemy_excited_group = enemy_tile.excited_group
 
 		if(our_excited_group && enemy_excited_group)
 			if(our_excited_group != enemy_excited_group)
@@ -1112,12 +1204,20 @@
 			// EXCITED_GROUP_BREAKDOWN_CYCLES, а пороги здесь ровно те, которые
 			// LINDA сама считает незначимыми.
 			//
+			ATMOS_TPROF_DEEP_MARK
 			should_share_air = !!our_air.compare(enemy_air)
+			ATMOS_TPROF_DEEP_ADD("nb_compare")
+			ATMOS_TPROF_DEEP_COUNT("nb_compares")
 			// Sleeping edges: пара сказала "разницы нет" - запоминаем ревизии
 			// обоих концов, и пока они не менялись, ранний гейт перед архивом
 			// соседа пропускает пару целиком. Устаревшую запись не чистим: по
 			// несовпавшим ревизиям она не сработает и перезапишется здесь же.
 			if(edge_sleep_enabled && !should_share_air)
+				// Запись в кэш - assoc по ключу-ДАТУМУ плюс два индексных
+				// присваивания. Считаем её отдельно от попаданий: вердикт "разницы
+				// нет" стал чаще, и надо знать, не съедают ли записи то, что
+				// сэкономлено на пропущенных шерах.
+				ATMOS_TPROF_COUNT("edge_writes")
 				var/list/settled = settled_edge_revs
 				if(!settled)
 					settled = list()
@@ -1128,11 +1228,14 @@
 					edge_state[2] = enemy_air.mutation_rev
 				else
 					settled[enemy_tile] = list(our_air.mutation_rev, enemy_air.mutation_rev)
+		// Негруппированная пара отдельным секундомером не меряется: ветка редкая
+		// (её частота видна счётчиком group_creates), а обернуть её значило бы
+		// переиндексировать всё тело else ради нескольких вызовов на цикл.
 		else if(our_air.compare(enemy_air))
 			ATMOS_TPROF_COUNT("group_creates")
-			if(!enemy_tile.excited && SSair)
+			if(!enemy_tile.excited && air_controller)
 				ATMOS_BENCH_WAKE(enemy_tile, "pair_new_group")
-				SSair.add_to_active(enemy_tile)
+				air_controller.add_to_active(enemy_tile)
 			var/datum/excited_group/EG = our_excited_group || enemy_excited_group || new
 			if(!our_excited_group)
 				EG.add_turf(src)
@@ -1144,7 +1247,16 @@
 		if(should_share_air)
 			ATMOS_TPROF_COUNT("shares")
 			var/enemy_share_coeff = 1 / (max(1, LAZYLEN(enemy_tile.atmos_adjacent_turfs)) + 1)
+			ATMOS_TPROF_DEEP_MARK
 			var/difference = our_air.share(enemy_air, our_share_coeff, enemy_share_coeff)
+			ATMOS_TPROF_DEEP_ADD("nb_share")
+			// Шер, не сдвинувший ни моля, - не аномалия, а структурное следствие
+			// того, что решение "делиться ли" принимает compare() по ЖИВЫМ
+			// значениям, а сам share() считает дельту по АРХИВНЫМ. Сосед, уже
+			// втолкнувший в нас газ этим же фаером, разводит живые значения, гейт
+			// говорит "делись", а по архивам двигать нечего. Микробенч даёт таким
+			// вызовам 5.45 us каждый. Считаем их, чтобы знать масштаб до правки.
+			ATMOS_TPROF_COUNT_IF(!our_air.last_share, "shares_noop")
 			if(difference)
 				if(difference > 0)
 					consider_pressure_difference(enemy_tile, difference)
@@ -1185,8 +1297,8 @@
 			// переоткрываются - станция дренируется через них до конца смены.
 			// Пока комната у пробоины держит выживаемое давление, тревога и
 			// захлоп обязаны перевзводиться (кулдаун зоны - 30 секунд).
-			if(pressure_before >= HAZARD_LOW_PRESSURE && SSair)
-				SSair.queue_decompression_area(src)
+			if(pressure_before >= HAZARD_LOW_PRESSURE && air_controller)
+				air_controller.queue_decompression_area(src)
 			our_air.vent_ratio(1)
 			our_air.set_temperature(TCMB)
 			// Группа нужна и опустевшей кромке: соседи докармливают её каждый
@@ -1212,8 +1324,8 @@
 	ATMOS_TPROF_ADD("space")
 
 	ATMOS_TPROF_MARK
-	if(planet_atmos)
-		var/datum/gas_mixture/template = SSair.get_planetary_template(src)
+	if(planet_atmos && air_controller)
+		var/datum/gas_mixture/template = air_controller.get_planetary_template(src)
 		if(our_air.compare(template))
 			ATMOS_TPROF_COUNT("planet_shares")
 			if(!our_excited_group)
@@ -1259,13 +1371,15 @@
 	ATMOS_TPROF_MARK
 	if(atmos_exposure_listeners)
 		ATMOS_TPROF_COUNT("expose_signals")
-		SEND_SIGNAL(src, COMSIG_TURF_EXPOSE, our_air, our_air.return_temperature())
+		// Поле напрямую: return_temperature() - прок, всё тело которого
+		// `return temperature`, и на горячем пути он платится вызовом.
+		SEND_SIGNAL(src, COMSIG_TURF_EXPOSE, our_air, our_air.temperature)
 	ATMOS_TPROF_ADD("expose")
 
 	// Hot enough air starts creeping through the surrounding solids. The proc
 	// re-checks heat_enabled itself; with the flag off this is one var read.
 	ATMOS_TPROF_MARK
-	if(SSair.heat_enabled && our_air.return_temperature() > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
 		ATMOS_TPROF_COUNT("superconduct_starts")
 		consider_superconductivity(starting = TRUE)
 	ATMOS_TPROF_ADD("superconduct")
@@ -1274,9 +1388,9 @@
 	if(!active_hotspot && !(reaction_result & (REACTING | STOP_REACTIONS)))
 		if(!our_excited_group)
 			ATMOS_TPROF_COUNT("deactivations")
-			if(SSair)
-				SSair.remove_from_active(src)
-		else if(cached_atmos_cooldown > EXCITED_GROUP_INDIVIDUAL_REST_CYCLES)
+			if(air_controller)
+				air_controller.remove_from_active(src)
+		else if(air_controller && cached_atmos_cooldown > air_controller.individual_rest_cycles)
 			ATMOS_TPROF_COUNT("solo_rests")
 			// Stalled for a full rest window inside a live group: rest this
 			// turf alone. remove_from_active here would garbage-collect the whole
@@ -1284,9 +1398,18 @@
 			// mates paying process_cell every fire. Resting early is safe: group
 			// averaging keeps covering this turf, and anything meaningful wakes
 			// it back through add_to_active or a boundary poke.
-			if(SSair)
-				SSair.sleep_active_turf(src)
+			if(air_controller)
+				air_controller.sleep_active_turf(src)
 
+	// Сколько обработанных турфов за этот цикл не сделали ничего значимого.
+	// cached_atmos_cooldown обнуляется ЛЮБЫМ значимым обменом - своим шером,
+	// шером соседа в нас, шаблоном неба, - поэтому ненулевое значение здесь и
+	// есть точный признак холостого прохода. Разбивка по длительности тишины
+	// показывает, сколько из них уже пересидели порог одиночного отдыха и
+	// продолжают обрабатываться только потому, что их будят соседи.
+	ATMOS_TPROF_COUNT_IF(cached_atmos_cooldown > 0, "turfs_quiet")
+	ATMOS_TPROF_COUNT_IF(cached_atmos_cooldown >= 3, "turfs_quiet3")
+	ATMOS_TPROF_COUNT_IF(cached_atmos_cooldown >= 6, "turfs_quiet6")
 	atmos_cooldown = cached_atmos_cooldown
 	ATMOS_TPROF_ADD("lifecycle")
 
@@ -1899,7 +2022,12 @@
 					if(SSair)
 						ATMOS_BENCH_WAKE(T, "breakdown_poke")
 						SSair.add_to_active(T, FALSE, wake_machines = FALSE)
-					T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+						// Ровно тот порог, по которому process_cell решает уложить
+						// члена группы обратно: бюджет одноразовый, и с константы
+						// он разъезжался бы с рычагом, как только тот покрутят.
+						T.atmos_cooldown = SSair.individual_rest_cycles
+					else
+						T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 				if(breakdown_cursor <= length(breakdown_to_poke))
 					return FALSE
 				finish_breakdown()

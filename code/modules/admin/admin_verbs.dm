@@ -34,6 +34,8 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/cmd_admin_rejuvenate, // SPLURT EDIT
 	/client/proc/game_panel,			/*game panel, allows to change game-mode etc*/
 	/client/proc/mail_panel,			/*BLUEMOON ADD - панель управления почтой*/
+	/client/proc/spawn_liquid,			/*LIQUIDS ADD - spawn a liquid on admin's location*/
+	/client/proc/remove_liquid,			/*LIQUIDS ADD - remove liquids in radius*/
 	/client/proc/show_admin_ticket_stats, /*BLUEMOON ADD - панель статистики тикетов*/
 	/client/proc/check_ai_laws,			/*shows AI and borg laws*/
 	// /client/proc/ghost_pool_protection,	/*opens a menu for toggling ghost roles*/

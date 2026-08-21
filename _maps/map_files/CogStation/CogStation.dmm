@@ -2099,10 +2099,6 @@
 	dir = 4;
 	name = "high pressure supply"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8;
-	name = "scrubbers"
-	},
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4{
 	name = "scrubbers"
 	},
@@ -5377,7 +5373,6 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/commons/toilet/restrooms)
 "apy" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/white,
 /area/commons/fitness/cogpool)
 "apz" = (
@@ -6219,10 +6214,7 @@
 /turf/open/floor/plasteel,
 /area/security/checkpoint/customs/auxiliary)
 "asi" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/cogpool)
 "asj" = (
 /obj/effect/turf_decal/tile/red{
@@ -6312,14 +6304,14 @@
 /turf/open/floor/wood,
 /area/maintenance/fore)
 "ast" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/cogpool)
 "asv" = (
 /obj/structure/pool/ladder{
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/cogpool)
 "asw" = (
 /obj/machinery/light_switch{
@@ -6597,8 +6589,7 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "atb" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/cogpool)
 "atc" = (
 /turf/closed/wall,
@@ -6991,7 +6982,7 @@
 /area/service/hydroponics)
 "auC" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/cogpool)
 "auG" = (
 /obj/effect/turf_decal/tile/neutral{
@@ -28606,9 +28597,6 @@
 "bEH" = (
 /obj/machinery/atmospherics/pipe/simple/supplymain/hidden{
 	name = "high pressure supply"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	name = "low pressure supply"
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 4;
@@ -63906,10 +63894,6 @@
 	dir = 4;
 	name = "high pressure supply"
 	},
-/obj/machinery/atmospherics/pipe/simple/supplymain/hidden{
-	dir = 4;
-	name = "high pressure supply"
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8;
 	name = "scrubbers"
@@ -73389,9 +73373,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	name = "low pressure supply"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	name = "low pressure supply"
-	},
 /turf/open/floor/plasteel,
 /area/security/prison)
 "lEb" = (
@@ -74277,10 +74258,6 @@
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 10;
-	name = "scrubbers"
 	},
 /turf/open/floor/plasteel,
 /area/security/checkpoint)
@@ -81377,9 +81354,6 @@
 	dir = 8;
 	alpha = 170;
 	color = "#CD2929"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	name = "low pressure supply"
 	},
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,

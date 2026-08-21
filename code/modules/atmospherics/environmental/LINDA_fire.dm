@@ -2,13 +2,24 @@
 #define IGNITE_TURF_LOW_POWER 8
 #define IGNITE_TURF_HIGH_POWER 22
 
+/// Сколько топлива и сколько окислителя должно набраться в смеси, чтобы плитка
+/// считалась способной гореть. Один порог на обе стороны реакции: горение
+/// требует и того, и другого, и разводить их значениями не за что.
+#define HOTSPOT_MINIMUM_FIRE_REAGENTS 0.5
+/// Через сколько проходов очаг пересчитывает цвет пламени. update_color() это
+/// три возведения в степень, cut_overlays() и две перестройки appearance подряд.
+#define HOTSPOT_RECOLOR_INTERVAL 7
+/// И насколько при этом должна была уйти температура. Цвет - гладкая функция от
+/// неё, два процента на глаз неразличимы даже на одиночном пламени.
+#define HOTSPOT_RECOLOR_TEMPERATURE_RATIO 0.02
+
 /// Lavaland/mining Z: auxmos get_fuel_amount() still counts N2 — block air-only fuel so N2+O2 cannot sustain hotspots (matches genericfire N2 skip in reactions.dm).
 /proc/turf_has_fire_fuel(datum/gas_mixture/air, temp, z_level)
 	if(!air)
 		return FALSE
-	if(air.get_moles(GAS_PLASMA) > 0.5 || air.get_moles(GAS_TRITIUM) > 0.5)
+	if(air.get_moles(GAS_PLASMA) > HOTSPOT_MINIMUM_FIRE_REAGENTS || air.get_moles(GAS_TRITIUM) > HOTSPOT_MINIMUM_FIRE_REAGENTS)
 		return TRUE
-	if(air.get_fuel_amount(temp) < 0.5)
+	if(air.get_fuel_amount(temp, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS)
 		return FALSE
 	if(!is_mining_level(z_level))
 		return TRUE
@@ -17,7 +28,7 @@
 			continue
 		if(!GLOB.gas_data.fire_temperatures[gas_id])
 			continue
-		if(air.get_moles(gas_id) > 0.5)
+		if(air.get_moles(gas_id) > HOTSPOT_MINIMUM_FIRE_REAGENTS)
 			return TRUE
 	return FALSE
 
@@ -44,6 +55,10 @@
 	return new /obj/effect/hotspot(src)
 
 /turf/open/hotspot_expose(exposed_temperature, exposed_volume, soh)
+	//LIQUIDS ADD - ignite liquids on this turf
+	if(liquids && !liquids.fire_state && liquids.check_fire(TRUE))
+		SSliquids.processing_fire[src] = TRUE
+
 	//If the air doesn't exist we just return false
 	var/list/air_gases = air?.get_gases()
 	if(!air_gases)
@@ -64,7 +79,7 @@
 	if(current_hotspot && !soh)
 		return
 
-	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
+	if (air.get_oxidation_power(exposed_temperature, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS || air.get_moles(GAS_HYPERNOB) > 5)
 		return
 	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature, z)
 	if(current_hotspot)
@@ -104,9 +119,23 @@
 	var/temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST
 	var/bypassing = FALSE
 	var/visual_update_tick = 0
+	///Температура, на которой цвет пламени пересчитывался в последний раз. Цвет -
+	///чистая функция температуры, а у осевшего очага она между проходами почти не
+	///ходит: сравнение дешевле, чем два перестроения appearance в update_color().
+	var/last_colored_temperature = 0
+	///Проход SSair, в котором очаг родился и отработал экспозицию из Initialize().
+	///Клеймо, а не булев флаг: пропускать экспозицию в process() можно ТОЛЬКО
+	///пока идёт тот же проход, иначе очаг, рождённый распространением ВНУТРИ фазы
+	///хотспотов, глушил бы себе и следующий проход - в снимок currentrun он не
+	///попал, а флаг всё равно сгорал на первом же вызове, и фронт огня терял
+	///полсекунды на каждом шаге. SSair.times_fired годится ключом прохода: МК
+	///инкрементит его только после непаузного возврата подсистемы, то есть раз на
+	///завершённый проход, а не на каждый слайс тика.
+	var/spawned_pass = -1
 
 /obj/effect/hotspot/Initialize(mapload, starting_volume, starting_temperature)
 	. = ..()
+	spawned_pass = SSair ? SSair.times_fired : -1
 	SSair.hotspots += src
 	if(!isnull(starting_volume))
 		volume = starting_volume
@@ -254,21 +283,44 @@
 
 #define INSUFFICIENT(path) (location.air.get_moles(path) < 0.5)
 /obj/effect/hotspot/process()
+	ATMOS_TPROF_VARS_OUTER
 	var/turf/open/location = loc
 	if(!istype(location))
 		qdel(src)
 		return
 
-	location.eg_reset_cooldowns()
+	location.eg_hotspot_tick()
 
+	ATMOS_TPROF_MARK
 	if((temperature < FIRE_MINIMUM_TEMPERATURE_TO_EXIST) || (volume <= 1))
+		ATMOS_TPROF_ADD("hs_gate")
+		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)
 		return
-	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power() < 0.5 || !turf_has_fire_fuel(location.air, temperature, location.z))
+	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power(null, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS || !turf_has_fire_fuel(location.air, temperature, location.z))
+		ATMOS_TPROF_ADD("hs_gate")
+		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)
 		return
+	ATMOS_TPROF_ADD("hs_gate")
 
-	perform_exposure()
+	// Очаг, рождённый фазой турфов ЭТОГО прохода, уже отработал экспозицию внутри
+	// Initialize(): копия списка для фазы хотспотов снимается позже, поэтому он в
+	// неё попал, и повторный вызов означал бы вторую экспозицию и второй
+	// fire_act() по тем же вещам в тот же тик. Рождённый распространением уже
+	// ВНУТРИ фазы в снимок не попал - его проход наступит только следующим, и
+	// глушить экспозицию там нечем: клеймо к тому времени протухнет само.
+	// Гейт стоит ТОЛЬКО на экспозиции: всё остальное (смерть по топливу, прожиг
+	// плитки, распространение) обязано идти с первого же прохода, иначе фронт огня
+	// замедляется на полсекунды за шаг.
+	if(spawned_pass == SSair.times_fired)
+		ATMOS_TPROF_COUNT("hs_spawn_skip")
+	else
+		ATMOS_TPROF_MARK
+		perform_exposure()
+		ATMOS_TPROF_ADD("hs_expose")
+		ATMOS_TPROF_COUNT_IF(bypassing, "hs_bypassing")
+		ATMOS_TPROF_COUNT_IF(!bypassing, "hs_reacting")
 
 	// Writing an appearance var re-derives and re-hashes the whole appearance
 	// even when the value is unchanged, and a settled fire holds the same frame
@@ -284,6 +336,7 @@
 		icon_state = new_icon_state
 
 	if(bypassing)
+		ATMOS_TPROF_MARK
 		location.burn_tile()
 
 		//Possible spread due to radiated heat
@@ -293,9 +346,15 @@
 				var/turf/open/T = t
 				if(!T.active_hotspot)
 					T.hotspot_expose(radiated_temperature, CELL_VOLUME/4)
+		ATMOS_TPROF_ADD("hs_spread")
 
-	if((visual_update_tick++ % 7) == 0)
+	// По интервалу - и только если температура с прошлой перекраски ушла заметно:
+	// у осевшего очага update_color() каждый раз выдаёт тот же цвет.
+	if((visual_update_tick++ % HOTSPOT_RECOLOR_INTERVAL) == 0 && abs(temperature - last_colored_temperature) > last_colored_temperature * HOTSPOT_RECOLOR_TEMPERATURE_RATIO)
+		ATMOS_TPROF_MARK
+		last_colored_temperature = temperature
 		update_color()
+		ATMOS_TPROF_ADD("hs_color")
 
 	if(temperature > location.max_fire_temperature_sustained)
 		location.max_fire_temperature_sustained = temperature
@@ -346,3 +405,6 @@
 #undef IGNITE_TURF_CHANCE
 #undef IGNITE_TURF_LOW_POWER
 #undef IGNITE_TURF_HIGH_POWER
+#undef HOTSPOT_MINIMUM_FIRE_REAGENTS
+#undef HOTSPOT_RECOLOR_INTERVAL
+#undef HOTSPOT_RECOLOR_TEMPERATURE_RATIO

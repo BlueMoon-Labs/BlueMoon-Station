@@ -30,6 +30,7 @@
 		var/list/data = list("donor"=null,"viruses"=list(F),"blood_DNA"="REPLICATED", "bloodcolor" = BLOOD_COLOR_SYNTHETIC, "blood_type"="SY","resistances"=null,"trace_chem"=null,"mind"=null,"ckey"=null,"gender"=null,"real_name"=null,"cloneable"=null,"factions"=null)
 		reagents.add_reagent(/datum/reagent/blood, disease_amount, data)
 	add_initial_reagents()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
 
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
@@ -125,8 +126,10 @@
 	var/mob/thrown_by = thrownby?.resolve()
 
 	if(ismob(target) && target.reagents)
+		var/splash_multiplier = 1
 		if(thrown)
-			reagents.total_volume *= rand(5,10) * 0.1 //Not all of it makes contact with the target
+			splash_multiplier = rand(5,10) * 0.1 //Not all of it makes contact with the target
+			reagents.total_volume *= splash_multiplier
 		var/mob/M = target
 		var/R = reagents.log_list()
 		target.visible_message("<span class='danger'>[M] has been splashed with something!</span>", \
@@ -144,6 +147,9 @@
 			reagents.reaction(M, TOUCH, affected_bodypart = affecting)
 		else
 			reagents.reaction(M, TOUCH)
+		//LIQUIDS ADD - spill the rest of the liquid on the floor
+		if(TT)
+			TT.add_liquid_from_reagents(reagents, reagent_multiplier = (1 - splash_multiplier))
 		reagents.clear_reagents()
 		playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 
@@ -154,6 +160,10 @@
 
 	else
 		if(isturf(target) && reagents.reagent_list.len && thrown_by)
+			//LIQUIDS ADD - liquid spills on non-mobs
+			var/turf/target_turf = target
+			if(target_turf.can_liquid_spill_on_hit())
+				target_turf.add_liquid_from_reagents(reagents, thrown_from = src, thrown_to = target)
 			log_combat(thrown_by, target, "splashed (thrown) [english_list(reagents.reagent_list)]", "in [AREACOORD(target)]")
 			log_game("[key_name(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [AREACOORD(target)].")
 			message_admins("[ADMIN_LOOKUPFLW(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [ADMIN_VERBOSEJMP(target)].")
