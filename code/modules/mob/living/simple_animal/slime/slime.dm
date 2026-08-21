@@ -152,7 +152,20 @@
 /mob/living/simple_animal/slime/regenerate_icons()
 	cut_overlays()
 	var/icon_text = "[colour] [is_adult ? "adult" : "baby"] slime"
-	icon_dead = "[icon_text] dead"
+	//Цвет и возраст меняются на лету, а icon_living оставался дефолтным "grey baby
+	//slime" - воскрешённый фиолетовый взрослый слайм рисовался серым детёнышем
+	icon_living = icon_text
+	//Спрайты трупа в slimes.dmi есть только у детёнышей: взрослому подставляем его
+	//же живой спрайт, иначе icon_state = "" и труп не рисуется вообще. Проверку по
+	//иконке кэшируем - regenerate_icons() дёргается на каждой смене настроения.
+	var/static/list/known_dead_states = list()
+	var/dead_state = "[icon_text] dead"
+	var/cache_key = "[icon][dead_state]"
+	var/has_dead_sprite = known_dead_states[cache_key]
+	if(isnull(has_dead_sprite))
+		has_dead_sprite = (dead_state in icon_states(icon))
+		known_dead_states[cache_key] = has_dead_sprite
+	icon_dead = has_dead_sprite ? dead_state : icon_text
 	if(stat != DEAD)
 		icon_state = icon_text
 		if(mood && !stat)
