@@ -295,8 +295,8 @@ GLOBAL_LIST_EMPTY(storage_volumetric_box_pool)
 	// in tiles
 	var/maxallowedscreensize = cview[1]-8
 	// we got screen size, register signal
-	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_logout), override = TRUE)
-	RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(on_logout), override = TRUE)
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_client_logout), override = TRUE)
+	RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_qdel), override = TRUE)
 	if(M.active_storage != src)
 		if(M.active_storage)
 			M.active_storage.ui_hide(M)
@@ -331,12 +331,25 @@ GLOBAL_LIST_EMPTY(storage_volumetric_box_pool)
 /**
   * Proc triggered by signal to ensure logging out clients don't linger.
   */
-/datum/component/storage/proc/on_logout(datum/source, client/C)
+/datum/component/storage/proc/on_client_logout(datum/source, client/leaving_client)
+	SIGNAL_HANDLER
 	// Клиент передаётся дальше не для красоты: /mob/Logout() зовётся уже ПОСЛЕ того, как
 	// mob.client опустел, и без этого аргумента экраны хранилища остались бы в screen
 	// уходящего клиента. Раньше это было мелочью - объект возвращался в пул своей же сумки;
 	// с общим пулом он уезжает чужому игроку, продолжая рисоваться у прежнего.
-	ui_hide(source, C)
+	ui_hide(source, leaving_client)
+
+/**
+  * Тот же уход экранов, но по удалению владельца.
+  *
+  * Отдельный прок, а не общий с логаутом: вторым аргументом COMSIG_PARENT_QDELETING несёт
+  * булев force, а COMSIG_MOB_CLIENT_LOGOUT - клиента. Один обработчик на оба сигнала клал бы
+  * в client-аргумент число, и на qdel(mob, force = TRUE) без клиента ui_hide() падала бы
+  * посреди уборки, оставляя компонент с жёсткой ссылкой на удалённого моба.
+  */
+/datum/component/storage/proc/on_owner_qdel(datum/source, force)
+	SIGNAL_HANDLER
+	ui_hide(source)
 
 /**
   * Hides our UI from a mob
