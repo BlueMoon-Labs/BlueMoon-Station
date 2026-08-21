@@ -31,13 +31,13 @@
 	gunlight_state = "mini-light"
 	can_flashlight = 0 // Can't attach or detach the flashlight, and override it's icon update
 
-/obj/item/gun/ballistic/automatic/laser/vanguardmapload
+/obj/item/gun/ballistic/automatic/laser/vanguard/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
 	return ..()
 
 
-/obj/item/gun/ballistic/automatic/laser/vanguard
-	icon_state = "flashgun[magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""][chambered ? "" : "-e"]
+/obj/item/gun/ballistic/automatic/laser/vanguard/update_icon_state()
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
 
 /obj/item/ammo_box/magazine/recharge/vanguard
 	name = "Detachable laser battery"
@@ -91,7 +91,14 @@
 	icon_state = "sauer_ext"
 	max_ammo = 24
 
-/obj/item/ammo_box/magazine/sig()
+/obj/item/ammo_box/magazine/sig/update_icon()
+	. = ..()
+	if(ammo_count())
+		icon_state = "[initial(icon_state)]-ammo"
+	else
+		icon_state = "[initial(icon_state)]"
+
+/obj/item/ammo_box/magazine/sig/sig_ext/update_icon()
 	. = ..()
 	if(ammo_count())
 		icon_state = "[initial(icon_state)]-ammo"
@@ -113,31 +120,6 @@
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
-	transparent = TRUE
-	max_integrity = 200
-	shield_break_sound = 'sound/effects/glass/glassbr3.ogg'
-	shield_break_leftover = /obj/item/pointman_broken
-	var/repairable_by = /obj/item/stack/sheet/plasteel //what to repair the shield with
-
-/obj/item/shield/riot/pointman/attackby(obj/item/W, mob/user, params)
-	if(istype(W, repairable_by))
-		var/obj/item/stack/sheet/plasteel_repair = W
-		plasteel_repair.use(1)
-		repair(user, params)
-	return ..()
-
-/obj/item/shield/riot/pointman/proc/repair(mob/user, params)
-	atom_integrity = max_integrity
-	if(user)
-		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-		to_chat(user, span_notice("You fix the damage on [src]."))
-
-/obj/item/pointman_broken
-	name = "broken pointman shield"
-	desc = "Might be able to be repaired with plasteel and a welder."
-	icon_state = "riot_broken"
-	icon = 'modular_skyrat/modules/exp_corps/icons/riot.dmi'
-	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"
@@ -145,10 +127,8 @@
 		A powerful electromagnet in the grip ensures this weapon always finds its way back to the thrower's hand when activated."
 	icon = 'modular_skyrat/modules/exp_corps/icons/tomahawk.dmi'
 	icon_state = "tomahawk"
-	inhand_icon_state = "tomahawk"
 	lefthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_l.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_r.dmi'
-	worn_icon = 'modular_bluemoon/icons/mob/vanguard/tomahawk_worn.dmi'
 	force = 15 // Melee damage
 	throwforce = 25 // Thrown damage
 	throw_speed = 4
@@ -193,7 +173,7 @@
 	copper_top.use(min(chrgdeductamt, copper_top.charge), explode)
 	if(QDELETED(src))
 		return FALSE
-	if(turned_on && (!copper_top || !copper_top.charge || (chargecheck && copper_top.charge < (hitcost * TOMAHAWK_CHARGE_LENIENCY))))
+	if(turned_on && (!copper_top || !copper_top.charge || copper_top.charge < (hitcost * MAGNETIC_TOMAHAWK_CHARGE_LENIENCY)
 		switch_status(FALSE)
 
 /obj/item/melee/tomahawk/proc/switch_status(new_status = FALSE, silent = FALSE)
@@ -208,7 +188,7 @@
 	update_icon()
 
 /obj/item/melee/tomahawk/process()
-	deductcharge(round(hitcost * TOMAHAWK_DEPLETION_RATE), FALSE, FALSE)
+	deductcharge(round(hitcost * MAGNETIC_TOMAHAWK_DEPLETION_RATE), FALSE, FALSE)
 
 /obj/item/melee/tomahawk/update_icon_state()
 	if(turned_on)
@@ -235,7 +215,7 @@
 		if(cell)
 			to_chat(user, "<span class='notice'>[src] already has a cell.</span>")
 		else
-			if(C.maxcharge < (hitcost * TOMAHAWK_CHARGE_LENIENCY))
+			if(C.maxcharge < (hitcost * MAGNETIC_TOMAHAWK_CHARGE_LENIENCY))
 				to_chat(user, "<span class='notice'>[src] requires a higher capacity cell.</span>")
 				return
 			if(!user.transferItemToLoc(W, src))
@@ -255,7 +235,7 @@
 
 /obj/item/melee/tomahawk/attack_self(mob/user)
 	var/obj/item/stock_parts/cell/copper_top = get_cell()
-	if(!copper_top || copper_top.charge < (hitcost * TOMAHAWK_CHARGE_LENIENCY))
+	if(!copper_top || copper_top.charge < (hitcost * MAGNETIC_TOMAHAWK_CHARGE_LENIENCY))
 		switch_status(FALSE, TRUE)
 		if(!copper_top)
 			to_chat(user, "<span class='warning'>[src] does not have a power source!</span>")

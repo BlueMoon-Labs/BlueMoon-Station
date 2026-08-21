@@ -215,28 +215,23 @@
 		return
 	var/drop_location = drop_location()
 	switch(selection)
-		if("Survival Capsule and Explorer's Webbing")
+		if("Demolition Expert")
 			new /obj/item/storage/belt/mining/vendor(drop_location)
-		if("Resonator Kit")
+		if("Field Surgeon")
 			new /obj/item/extinguisher/mini(drop_location)
 			new /obj/item/resonator(drop_location)
-		if("Minebot Kit")
+		if("Combatant")
 			new /mob/living/simple_animal/hostile/mining_drone(drop_location)
 			new /obj/item/weldingtool/hugetank(drop_location)
 			new /obj/item/clothing/head/welding(drop_location)
 			new /obj/item/borg/upgrade/modkit/minebot_passthrough(drop_location)
-		if("Extraction and Rescue Kit")
-			new /obj/item/extraction_pack(drop_location)
-			new /obj/item/fulton_core(drop_location)
-			new /obj/item/stack/marker_beacon/thirty(drop_location)
-		if("Crusher Kit")
-			new /obj/item/extinguisher/mini(drop_location)
-			new /obj/item/kinetic_crusher(drop_location)
-		if("Mining Conscription Kit")
-			new /obj/item/storage/backpack/duffelbag/mining/conscript(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
 	qdel(voucher)
+
+/obj/machinery/bountyvend/proc/RedeemSVoucher(/obj/item/vanguard_voucher_suit, mob/redeemer)
+	var/items = list(	"Exo-suit" = image(icon = 'icons/obj/clothing/suits.dmi', icon_state = "exo"),
+						"HEVA suit" = image(icon = 'icons/obj/clothing/suits.dmi', icon_state = "heva"))
 
 // ============================================
 // Ваучеры снаряжения

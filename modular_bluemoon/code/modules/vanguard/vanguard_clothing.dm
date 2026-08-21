@@ -33,7 +33,7 @@
 	armor = list(MELEE = 35, BULLET = 25, LASER = 25, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
 	brightness_on = 12
 	hardsuit_type = "exploration"
-	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi''
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
 
 /obj/item/clothing/suit/space/hardsuit/exploration
