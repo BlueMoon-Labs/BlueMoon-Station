@@ -639,3 +639,18 @@
             if(active_sound)
                 if(up)
                     playsound(src.loc, "[active_sound]", 100, 0, 4)
+
+/obj/item/clothing/head/donator/bm/commando_beret
+    name = "Commando beret"
+    desc = "Just a simple beret, but with fancy PNV))0."
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+    icon_state = "commando_beret"
+    item_state = "commando_beret"
+    flags_inv = HIDEHAIR
+        unique_reskin = list(
+        "Black" = list("icon_state" = "commando_beret", "item_state" = "commando_beret"),
+        "Khaki" = list("icon_state" = "commando_beret_khaki", "item_state" = "commando_beret_khaki"),
+        "Olive" = list("icon_state" = "commando_beret_", "item_state" = "secmaid_red")
+    )
