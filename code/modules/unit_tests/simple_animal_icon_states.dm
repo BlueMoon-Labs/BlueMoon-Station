@@ -46,6 +46,11 @@
 		//полу оставляет loot (обычно /obj/effect/mob_spawn/human/corpse/...)
 		if(!victim.del_on_death && victim.icon_dead && !(victim.icon_dead in available))
 			bad += "icon_dead='[victim.icon_dead]'"
+		//сидящий спрайт живёт только у попугаев и рисуется тем же присваиванием
+		//icon_state, так что опечатка в нём даёт ровно того же невидимого моба
+		var/mob/living/simple_animal/parrot/bird = victim
+		if(istype(bird) && bird.icon_sit && !(bird.icon_sit in available))
+			bad += "icon_sit='[bird.icon_sit]'"
 		if(length(bad))
 			broken += "[animal_type] ([victim.icon]): [bad.Join(", ")]"
 		qdel(victim)
