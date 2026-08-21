@@ -7,6 +7,7 @@ import {
   ContentPreferencesTab,
   GenitalTab,
   InteractionsTab,
+  Pixelshift,
 } from './tabs';
 
 type MainTypes = {
@@ -59,6 +60,9 @@ export const MainContent = (props) => {
               Character Prefs
             </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 3} onClick={() => setTabIndex(3)}>
+              Sex Animations
+            </Tabs.Tab>
+            <Tabs.Tab selected={tabIndex === 4} onClick={() => setTabIndex(4)}>
               Preferences
             </Tabs.Tab>
           </Tabs>
@@ -92,6 +96,8 @@ export const MainContent = (props) => {
                 case 2:
                   return <CharacterPrefsTab />;
                 case 3:
+                  return <Pixelshift />;
+                case 4:
                   return <ContentPreferencesTab />;
               }
             })()}

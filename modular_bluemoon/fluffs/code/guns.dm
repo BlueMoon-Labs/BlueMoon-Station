@@ -1230,7 +1230,7 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal_special
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper B-Wal-Special"
-	desc = "A unique example of an improved pistol used by the regular Catcrin Army. The personal number AV-000492 is engraved in gold on the barrel. Judging by its appearance, it belongs to someone of high rank."
+	desc = "A unique example of an improved pistol used by the regular Catcrin Army. Judging by its appearance, it belongs to someone of high rank."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "bwal_spec"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
@@ -1246,7 +1246,7 @@
 /obj/item/gun/energy/laser/captain/rifle
 	DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 	name = "Antique Laser Rifle"
-	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The rifle is engraved with the serial number AV-000492 in gold. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
+	desc = "A unique, custom-made Captain's Laser. It's made of titanium and gold alloy with a nickel finish. The grip is made of hard carbon fiber, treated with a layer of Kevlar. The top layer of the grip is covered in Trixan ebony, which makes it feel even more premium. It feels incredibly expensive."
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "captain_rifle"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'

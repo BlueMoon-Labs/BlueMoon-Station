@@ -528,7 +528,11 @@
 //Heals brute and burn damage for the organ. Returns 1 if the damage-icon states changed at all.
 //Damage cannot go below zero.
 //Cannot remove negative damage (i.e. apply damage)
-/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE)
+/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
+	// Bloodsucker antags have TRAIT_NONATURALHEAL but they use this proc to heal themselves despite the clear decription of this trait.
+	// Not wise. But I don't want to ruin their mechanics. So let them have this proc.
+	if((brute || burn) && HAS_TRAIT_NOT_FROM(owner, TRAIT_NONATURALHEAL, BLOODSUCKER_TRAIT) && !forced)
+		return
 
 	if(only_robotic && !is_robotic_limb()) //This makes organic limbs not heal when the proc is in Robotic mode.
 		return

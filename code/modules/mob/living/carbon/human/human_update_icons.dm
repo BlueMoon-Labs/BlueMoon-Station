@@ -743,7 +743,7 @@ There are several things that need to be remembered:
 			inv.update_icon()
 
 		if(wear_suit)
-			var/obj/item/clothing/suit/S = wear_suit
+			var/obj/item/S = wear_suit
 			wear_suit.screen_loc = ui_oclothing
 			if(client && hud_used && hud_used.hud_shown)
 				if(hud_used.inventory_shown)
@@ -753,8 +753,11 @@ There are several things that need to be remembered:
 			var/worn_icon = wear_suit.mob_overlay_icon || 'icons/mob/clothing/suit.dmi'
 			if(dna.species.icon_suit)
 				worn_icon = dna.species.icon_suit
-			if(initial(S.flags_inv) & HIDETAUR)
-				S.flags_inv |= HIDETAUR
+			if(istype(S, /obj/item/clothing/suit))
+				var/obj/item/clothing/suit/suit = S
+				if(suit.taur_flags_inv_changed)
+					suit.flags_inv |= suit.taur_flags_inv_changed
+					suit.taur_flags_inv_changed = NONE
 			var/worn_state = wear_suit.icon_state
 			var/center = FALSE
 			var/dimension_x = 32
@@ -766,39 +769,46 @@ There are several things that need to be remembered:
 
 			if(S.mutantrace_variation)
 
-				if(T?.taur_mode && isemptylist(S.taur_types_icon_whitelist))
-					var/init_worn_icon = worn_icon
-					variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
-					switch(variation_flag)
-						if(STYLE_HOOF_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_hooved.dmi'
-						if(STYLE_SNEK_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_naga.dmi'
-						if(STYLE_PAW_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_canine.dmi'
-					if(worn_icon != init_worn_icon) //worn icon sprite was changed, taur offsets will have to be applied.
-						if(S.taur_mob_worn_overlay) //not going to make several new variables for all taur types. Nope.
-							var/static/list/icon_to_state = list('icons/mob/clothing/taur_hooved.dmi' = "_hooved", 'icons/mob/clothing/taur_naga.dmi' = "_naga", 'icons/mob/clothing/taur_canine.dmi' = "_paws")
-							worn_state += icon_to_state[worn_icon]
-							worn_icon = S.taur_mob_worn_overlay
-						center = T.center
-						dimension_x = T.dimension_x
-						dimension_y = T.dimension_y
+				var/taur_builded = FALSE
 
-				else if((DIGITIGRADE in dna.species.species_traits) && S.mutantrace_variation & STYLE_DIGITIGRADE && !(S.mutantrace_variation & STYLE_NO_ANTHRO_ICON)) //not a taur, but digitigrade legs.
-					worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
-					variation_flag |= STYLE_DIGITIGRADE
+				if(istype(S, /obj/item/clothing/suit))
+					var/obj/item/clothing/suit/suit = S
+					if(!isemptylist(suit.taur_types_icon_whitelist))
+						for(var/special_taur_icon in suit.taur_types_icon_whitelist)
+							if(dna.features["taur"] in suit.taur_types_icon_whitelist[special_taur_icon])
+								worn_icon = 'modular_bluemoon/icons/mob/clothing/taur_custom_clothing.dmi'
+								worn_state += special_taur_icon
+								center = !isnull(T) ? T.center : TRUE
+								dimension_x = T?.dimension_x || 64
+								dimension_y = T?.dimension_y || 32
+								suit.flags_inv &= ~HIDETAUR
+								suit.taur_flags_inv_changed |= HIDETAUR
+								taur_builded = TRUE
+								break
 
-			if(!isemptylist(S.taur_types_icon_whitelist))
-				for(var/special_taur_icon in S.taur_types_icon_whitelist)
-					if(dna.features["taur"] in S.taur_types_icon_whitelist[special_taur_icon])
-						worn_icon = 'modular_bluemoon/icons/mob/clothing/taur_custom_clothing.dmi'
-						worn_state += special_taur_icon
-						center = !isnull(T) ? T.center : TRUE
-						dimension_x = T?.dimension_x || 64
-						dimension_y = T?.dimension_y || 32
-						S.flags_inv &= ~HIDETAUR
-						break
+				if(!taur_builded)
+					if(T?.taur_mode)
+						var/init_worn_icon = worn_icon
+						variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
+						switch(variation_flag)
+							if(STYLE_HOOF_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_hooved.dmi'
+							if(STYLE_SNEK_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_naga.dmi'
+							if(STYLE_PAW_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_canine.dmi'
+						if(worn_icon != init_worn_icon) //worn icon sprite was changed, taur offsets will have to be applied.
+							if(S.taur_mob_worn_overlay) //not going to make several new variables for all taur types. Nope.
+								var/static/list/icon_to_state = list('icons/mob/clothing/taur_hooved.dmi' = "_hooved", 'icons/mob/clothing/taur_naga.dmi' = "_naga", 'icons/mob/clothing/taur_canine.dmi' = "_paws")
+								worn_state += icon_to_state[worn_icon]
+								worn_icon = S.taur_mob_worn_overlay
+							center = T.center
+							dimension_x = T.dimension_x
+							dimension_y = T.dimension_y
+
+					else if((DIGITIGRADE in dna.species.species_traits) && S.mutantrace_variation & STYLE_DIGITIGRADE && !(S.mutantrace_variation & STYLE_NO_ANTHRO_ICON)) //not a taur, but digitigrade legs.
+						worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
+						variation_flag |= STYLE_DIGITIGRADE
 
 			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE)
 			var/mutable_appearance/suit_overlay = overlays_standing[SUIT_LAYER]

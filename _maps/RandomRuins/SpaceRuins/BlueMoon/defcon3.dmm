@@ -5033,6 +5033,7 @@
 /obj/item/coin,
 /obj/item/coin,
 /obj/machinery/light/directional/north,
+/obj/item/card/id/departmental_budget/tar,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "CX" = (
@@ -7146,11 +7147,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "PS" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/computer{
-	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
-	dir = 8;
-	name = "Financing Console"
-	},
+/obj/machinery/computer/cargo/express/tar,
 /obj/effect/turf_decal/tile/brown/anticorner{
 	dir = 4
 	},

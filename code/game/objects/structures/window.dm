@@ -6,6 +6,8 @@
 		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
 	for(var/obj/machinery/door/window/interior_trim in linked)
 		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/structure/curtain_static/glass/gl_curtain in linked)
+		new_status ? gl_curtain.electrochromatic_dim() : gl_curtain.electrochromatic_off()
 	for(var/obj/machinery/door/airlock/gl_airlock in linked)
 		if(gl_airlock.glass)
 			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()
@@ -255,7 +257,7 @@
 			to_chat(user, "<span class='warning'>[src] is already in good condition!</span>")
 		return
 
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, "<span class='warning'>[src] is already electrochromatic!</span>")
