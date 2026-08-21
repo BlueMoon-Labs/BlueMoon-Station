@@ -351,23 +351,9 @@
 	return
 
 // =============================================================================
-// IHATEGORDON CUSTOM PARALLAX
-// Кастомный параллакс для гейта ihategordon
+// IHATEGORDON CUSTOM PARALLAX LAYERS
+// Кастомные слои параллакса для гейта ihategordon
 // =============================================================================
-
-/datum/parallax/ihategordon
-	var/static/random_gas_color = pick(COLOR_TEAL, COLOR_GREEN, COLOR_YELLOW, COLOR_CYAN, COLOR_ORANGE, COLOR_PURPLE)
-
-/datum/parallax/ihategordon/CreateObjects()
-	. = ..()
-	. += new /atom/movable/screen/parallax_layer/ihategordon/layer_1
-	. += new /atom/movable/screen/parallax_layer/ihategordon/layer_2
-	. += new /atom/movable/screen/parallax_layer/ihategordon/layer_3
-	. += new /atom/movable/screen/parallax_layer/ihategordon/random/space_gas
-
-	var/atom/movable/screen/parallax_layer/ihategordon/random/space_gas/SG = locate(/atom/movable/screen/parallax_layer/ihategordon/random/space_gas) in objects
-	if(SG)
-		SG.add_atom_colour(random_gas_color, ADMIN_COLOUR_PRIORITY)
 
 // Базовый класс для ihategordon параллакса
 /atom/movable/screen/parallax_layer/ihategordon
@@ -379,20 +365,21 @@
 	speed = 0.6
 	layer = 1
 	parallax_intensity = PARALLAX_LOW
+	layer_mode = PARALLAX_MODE_TILED
 
 /atom/movable/screen/parallax_layer/ihategordon/layer_2
 	icon_state = "layer2"
 	speed = 1
 	layer = 2
 	parallax_intensity = PARALLAX_MED
+	layer_mode = PARALLAX_MODE_TILED
 
 /atom/movable/screen/parallax_layer/ihategordon/layer_3
 	icon_state = "layer3"
 	speed = 1.4
 	layer = 3
 	parallax_intensity = PARALLAX_HIGH
-	dynamic_self_tile = FALSE
-	absolute = TRUE
+	layer_mode = PARALLAX_MODE_STATIC
 	center_x = 3872 // 121 * 32
 	center_y = 6848 // 214 * 32
 
@@ -402,18 +389,49 @@
 	speed = 2
 	layer = 3
 	parallax_intensity = PARALLAX_INSANE
+	layer_mode = PARALLAX_MODE_TILED
+	palette_tinted = TRUE
 
 // =============================================================================
-// PARALLAX SUBSYSTEM OVERRIDE
-// Переопределяем подсистему параллакса для ihategordon z-уровня
+// IHATEGORDON PARALLAX PROFILE
+// Профиль параллакса для гейта ihategordon
 // =============================================================================
 
-// Переопределяем get_parallax_type для ihategordon
-/datum/controller/subsystem/parallax/get_parallax_type(z)
-	if(!z)
-		return /datum/parallax/space
+/datum/parallax_profile/ihategordon
+	id = "ihategordon"
+	name = "Ihategordon Void"
+	environment_flags = PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_SHUTTLE
+	base_layers = list(
+		/atom/movable/screen/parallax_layer/ihategordon/layer_1,
+		/atom/movable/screen/parallax_layer/ihategordon/layer_2,
+		/atom/movable/screen/parallax_layer/ihategordon/layer_3,
+	)
+	variant_sets = list(
+		list(70, /atom/movable/screen/parallax_layer/ihategordon/random/space_gas),
+		list(30),
+	)
+	palette = list(COLOR_TEAL, COLOR_GREEN, COLOR_YELLOW, COLOR_CYAN, COLOR_ORANGE, COLOR_PURPLE)
+	min_quality = PARALLAX_LOW
+	weight = 0 // Только для ручного применения
+	source = "BlueMoon Station - Mesa Mission"
+
+// =============================================================================
+// IHATEGORDON PARALLAX SUBSYSTEM HOOK
+// Перехватываем выбор параллакса для z-уровней с ihategordon тайлами
+// =============================================================================
+
+/datum/controller/subsystem/parallax/proc/check_ihategordon_z(z)
 	// Проверяем есть ли на этом z-уровне тайлы ihategordon space
 	for(var/turf/open/space/ihategordon/T in world)
 		if(T.z == z)
-			return /datum/parallax/ihategordon
-	return /datum/parallax/space
+			return TRUE
+	return FALSE
+
+// Переопределяем get_parallax_type для ihategordon z-уровней
+/datum/controller/subsystem/parallax/pick_profile_for_z(z)
+	. = ..()
+	// Если на этом z-уровне есть ihategordon space, используем его профиль
+	if(check_ihategordon_z(z))
+		var/datum/parallax_profile/ihategordon/ihategordon_profile = resolve_profile("ihategordon")
+		if(ihategordon_profile)
+			return ihategordon_profile

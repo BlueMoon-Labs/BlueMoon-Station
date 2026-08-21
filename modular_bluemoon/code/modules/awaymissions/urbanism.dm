@@ -1121,3 +1121,10 @@
 	desc = "Average road sign... Anyway! You have no car"
 	icon = 'modular_bluemoon/icons/obj/urbanism/roadsign.dmi'
 	icon_state = "roadsign1"
+
+
+/obj/structure/urbanismmachines/xenplant
+	name = "strange plant"
+	desc = "A mysterious plant growing in the urban landscape."
+	icon = 'modular_bluemoon/icons/obj/urbanism/xensheet.dmi'
+	icon_state = "xentree"

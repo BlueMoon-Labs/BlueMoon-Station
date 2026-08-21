@@ -84,6 +84,7 @@
 	name = "Facility rocks"
 	icon_state = "awaycontent20"
 	outdoors = TRUE
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/dining_room
 	name = "main dining room"
@@ -131,6 +132,7 @@
 	outdoors = TRUE
 	shipambience ='modular_bluemoon/sound/ambience/mesa/outside.ogg'
 	ambientsounds = list( 'modular_bluemoon/sound/ambience/mesa/battle1.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle2.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle3.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle4.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle5.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle6.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle7.ogg' )
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp
 	name = "Facility hecu main camp"
