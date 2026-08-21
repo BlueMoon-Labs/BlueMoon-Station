@@ -135,7 +135,6 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/hilbertshotel)
 "mc" = (
-/obj/machinery/pool/controller,
 /obj/structure/railing{
 	dir = 8
 	},
@@ -161,9 +160,6 @@
 "oz" = (
 /obj/structure/railing{
 	dir = 8
-	},
-/obj/machinery/pool/filter{
-	pixel_y = -17
 	},
 /obj/structure/railing,
 /turf/open/floor/plasteel/white,
@@ -408,15 +404,14 @@
 /turf/open/floor/plasteel/white/textured,
 /area/hilbertshotel)
 "Gf" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Gm" = (
 /obj/structure/pool/ladder{
 	dir = 8;
 	pixel_x = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Gs" = (
 /obj/structure/sign/flag/nanotrasen{
@@ -462,7 +457,7 @@
 /area/hilbertshotel)
 "Kt" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Kz" = (
 /obj/structure/rack,
@@ -557,7 +552,7 @@
 /turf/open/floor/carpet/royalblue,
 /area/hilbertshotel)
 "OY" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Ph" = (
 /obj/structure/table,
@@ -592,7 +587,7 @@
 	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "RY" = (
 /obj/structure/railing{
@@ -609,7 +604,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Tn" = (
 /obj/structure/table/bronze,

@@ -37,6 +37,12 @@
 	/// TRUE, если газ получается не в каждом проходе и реакция сообщает о синтезе
 	/// сама, из нужной ветки react(). Диспетчер такие реакции не трогает.
 	var/synthesis_self_reported = FALSE
+	/// Газ, чей бакет реакций эта реакция обязана втащить в кандидаты вместе с
+	/// собой: она его производит, а потребитель того же газа идёт ПОЗЖЕ неё в
+	/// том же вызове react(). Сбор кандидатов идёт по газам смеси, поэтому
+	/// потребителя, чьё топливо ещё не родилось, иначе не нашёл бы никто.
+	/// Проставляется SSair.auxtools_update_reactions(), руками не трогать.
+	var/synthesis_followup_gas
 	/// Взводится после первого сообщения. Дальше проверка в диспетчере react()
 	/// стоит одно чтение переменной, а не поиск по списку техвеба - реакции
 	/// перебираются на каждом активном турфе каждый проход SSair.
@@ -102,6 +108,17 @@
 		return NO_REACTION
 	if (air.return_temperature() <= WATER_VAPOR_FREEZE)
 		if(location && location.freon_gas_act())
+			// Пар обязан РАСХОДОВАТЬСЯ и на морозной ветке, ровно как на тёплой
+			// строкой ниже. Без этого ветка возвращала REACTING вечно: пар не
+			// убывал, порог MOLES_GAS_VISIBLE не переставал выполняться, а конец
+			// process_cell() при REACTING не снимает турф с актива и не даёт ему
+			// уснуть в одиночку. Турф на любом мороженом покрытии (FROZEN_ATMOS
+			// 180K, TCOMMS_ATMOS 80K - обе ниже порога 200K), куда попал пар от
+			// огнетушителя, лопнувшей трубы или погоды, оставался активным до
+			// конца раунда и платил полную стоимость турф-фазы каждый цикл.
+			// Заодно freon_gas_act() перестаёт два раза сканировать contents и
+			// звать MakeSlippery() на том же турфе бесконечно.
+			air.adjust_moles(GAS_H2O, -MOLES_GAS_VISIBLE)
 			return REACTING
 	else if(location && location.water_vapor_gas_act())
 		air.adjust_moles(GAS_H2O,-MOLES_GAS_VISIBLE)
@@ -270,18 +287,23 @@
 	else
 		temperature_scale = (temperature-PLASMA_MINIMUM_BURN_TEMPERATURE)/(PLASMA_UPPER_TEMPERATURE-PLASMA_MINIMUM_BURN_TEMPERATURE)
 	if(temperature_scale > 0)
+		// Оба числа читаются один раз: до set_moles ниже смесь не меняется, а
+		// раньше эта ветка делала до десяти вызовов прока за одну горящую плитку,
+		// и так на каждом активном очаге каждый проход.
+		var/plasma_moles = air.get_moles(GAS_PLASMA)
+		var/oxygen_moles = air.get_moles(GAS_O2)
 		oxygen_burn_rate = OXYGEN_BURN_RATE_BASE - temperature_scale
-		if(air.get_moles(GAS_O2) / air.get_moles(GAS_PLASMA) > SUPER_SATURATION_THRESHOLD) //supersaturation. Form Tritium.
+		if(oxygen_moles / plasma_moles > SUPER_SATURATION_THRESHOLD) //supersaturation. Form Tritium.
 			super_saturation = TRUE
-		if(air.get_moles(GAS_O2) > air.get_moles(GAS_PLASMA)*PLASMA_OXYGEN_FULLBURN)
-			plasma_burn_rate = (air.get_moles(GAS_PLASMA)*temperature_scale)/PLASMA_BURN_RATE_DELTA
+		if(oxygen_moles > plasma_moles*PLASMA_OXYGEN_FULLBURN)
+			plasma_burn_rate = (plasma_moles*temperature_scale)/PLASMA_BURN_RATE_DELTA
 		else
-			plasma_burn_rate = (temperature_scale*(air.get_moles(GAS_O2)/PLASMA_OXYGEN_FULLBURN))/PLASMA_BURN_RATE_DELTA
+			plasma_burn_rate = (temperature_scale*(oxygen_moles/PLASMA_OXYGEN_FULLBURN))/PLASMA_BURN_RATE_DELTA
 
 		if(plasma_burn_rate > MINIMUM_HEAT_CAPACITY)
-			plasma_burn_rate = min(plasma_burn_rate,air.get_moles(GAS_PLASMA),air.get_moles(GAS_O2)/oxygen_burn_rate) //Ensures matter is conserved properly
-			air.set_moles(GAS_PLASMA, QUANTIZE(air.get_moles(GAS_PLASMA) - plasma_burn_rate))
-			air.set_moles(GAS_O2, QUANTIZE(air.get_moles(GAS_O2) - (plasma_burn_rate * oxygen_burn_rate)))
+			plasma_burn_rate = min(plasma_burn_rate,plasma_moles,oxygen_moles/oxygen_burn_rate) //Ensures matter is conserved properly
+			air.set_moles(GAS_PLASMA, QUANTIZE(plasma_moles - plasma_burn_rate))
+			air.set_moles(GAS_O2, QUANTIZE(oxygen_moles - (plasma_burn_rate * oxygen_burn_rate)))
 			if (super_saturation)
 				air.adjust_moles(GAS_TRITIUM, plasma_burn_rate)
 				if(!synthesis_reported)
@@ -357,26 +379,34 @@
 
 /datum/gas_reaction/genericfire/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
-	var/turf/loc_turf = get_turf(holder)
 	// Mining/lavaland Z: N2 is not fuel here — removes only the generic N2+O2 (air) burn; methane etc. unchanged.
-	var/lavaland_block_n2 = loc_turf && is_mining_level(loc_turf.z)
+	// Считается лениво: нужен он только на ветке азота, а get_turf() +
+	// is_mining_level() платила каждая горящая плитка станции, где азот в
+	// топливо и так не идёт. -1 = ещё не спрашивали.
+	var/lavaland_block_n2 = -1
 	// tg-like pacing baseline: plasma combustion in tg is bounded by ~1/PLASMA_BURN_RATE_DELTA per processing step.
 	var/const/MAX_GENERIC_FIRE_FRACTION_PER_TICK = (1 / PLASMA_BURN_RATE_DELTA)
 	var/list/oxidation_temps = GLOB.gas_data.oxidation_temperatures
 	var/list/oxidation_rates = GLOB.gas_data.oxidation_rates
 	var/oxidation_power = 0
-	var/list/burn_results = list()
-	var/list/fuels = list()
-	var/list/oxidizers = list()
+	// Три ассоциативных списка на вызов - это три аллокации на каждой горящей
+	// плитке каждый проход. Прок не реентерабелен (ни adjust_moles, ни
+	// set_temperature, ни heat_capacity не могут вернуться сюда), поэтому одного
+	// комплекта скретчей хватает на всю станцию; Cut() на входе обязателен.
+	var/static/list/burn_results = list()
+	var/static/list/fuels = list()
+	var/static/list/oxidizers = list()
+	burn_results.Cut()
+	fuels.Cut()
+	oxidizers.Cut()
 	var/list/fuel_rates = GLOB.gas_data.fire_burn_rates
 	var/list/fuel_temps = GLOB.gas_data.fire_temperatures
 	var/total_fuel = 0
 	var/energy_released = 0
-	for(var/G in air.get_gases())
+	for(var/G, available_moles in air.gases)
 		var/oxidation_temp = oxidation_temps[G]
 		if(oxidation_temp && temperature >= oxidation_temp)
 			var/temperature_scale = max(0, 1 - (oxidation_temp / max(temperature, TCMB)))
-			var/available_moles = air.get_moles(G)
 			var/amt = available_moles * temperature_scale
 			amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 			oxidizers[G] = amt
@@ -386,9 +416,12 @@
 			if(fuel_temp && temperature >= fuel_temp)
 				if(G == GAS_PLASMA || G == GAS_TRITIUM) // handled by plasmafire / tritfire
 					continue
-				if(lavaland_block_n2 && G == GAS_N2)
-					continue
-				var/available_moles = air.get_moles(G)
+				if(G == GAS_N2)
+					if(lavaland_block_n2 == -1)
+						var/turf/loc_turf = get_turf(holder)
+						lavaland_block_n2 = (loc_turf && is_mining_level(loc_turf.z)) ? TRUE : FALSE
+					if(lavaland_block_n2)
+						continue
 				var/amt = (available_moles / fuel_rates[G]) * max(0, 1 - (fuel_temp / max(temperature, TCMB)))
 				amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 				fuels[G] = amt // we have to calculate the actual amount we're using after we get all oxidation together
@@ -405,20 +438,52 @@
 	fuels += oxidizers
 	var/list/fire_products = GLOB.gas_data.fire_products
 	var/list/fire_enthalpies = GLOB.gas_data.enthalpies
-	for(var/fuel in fuels + oxidizers)
-		var/amt = fuels[fuel]
-		if(!burn_results[fuel])
-			burn_results[fuel] = 0
-		burn_results[fuel] -= amt
-		energy_released += amt * fire_enthalpies[fuel]
-		for(var/product in fire_products[fuel])
+	// Один проход по уже объединённому списку. Раньше горящее перечислялось как
+	// `fuels + oxidizers`, хотя строкой выше окислители в fuels уже влиты:
+	// каждый окислитель списывался со смеси и выделял энтальпию ДВАЖДЫ.
+	for(var/burning in fuels)
+		var/amt = fuels[burning]
+		if(!burn_results[burning])
+			burn_results[burning] = 0
+		burn_results[burning] -= amt
+		energy_released += amt * fire_enthalpies[burning]
+		var/list/products = fire_products[burning]
+		for(var/product in products)
 			if(!burn_results[product])
 				burn_results[product] = 0
-			burn_results[product] += amt
-	var/final_energy = air.thermal_energy() + energy_released
+			// Число в gas_data - стехиометрия (моль азота даёт ДВЕ моли
+			// нитрика), и она молча терялась: продукт всегда добавлялся один к
+			// одному. Горящий воздух из-за этого каждый цикл терял теплоёмкость
+			// при неизменной тепловой энергии, то есть грелся сам по себе, без
+			// единого джоуля извне: замер на стандартном воздухе при 2500 K
+			// давал +0.24% за проход, а это порог Хагедорна за час раунда.
+			burn_results[product] += amt * (products[product] || 1)
 	for(var/result in burn_results)
 		air.adjust_moles(result, burn_results[result])
-	air.set_temperature(final_energy / air.heat_capacity())
+	// Смесь может выгореть в ноль (окислитель списывается без продуктов) - делить
+	// тогда не на что. Это была единственная реакция файла без гейта по
+	// теплоёмкости, и она роняла react() рантаймом посреди работы: 204 падения
+	// за раунд 9965, все на голодеке.
+	var/new_heat_capacity = air.heat_capacity()
+	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
+		// Уничтоженная масса уносит СВОЁ тепло с собой, а выделенная энергия
+		// раскладывается по тому, что осталось. Соседние реакции файла (plasmafire,
+		// tritfire) считают по (T*C_old + Q)/C_new, то есть оставляют тепловую
+		// энергию исчезнувших молей в остатке - для них это верно, у них масса
+		// сохраняется. У обобщённого горения нет: окислитель списывается БЕЗ
+		// продуктов (у /datum/gas/oxygen нет ни fire_products, ни enthalpy), и та
+		// формула превращает каждое падение теплоёмкости в нагрев из ниоткуда. При
+		// сломанной стехиометрии (одна моль нитрика вместо двух) это и разогнало
+		// воздух раунда 9965 до 2e12 K, за порог конденсации Хагедорна, высыпав на
+		// станцию кварковую материю и антинобелий.
+		//
+		// Стехиометрия починена строкой выше, и на станционном воздухе перепад
+		// теплоёмкости теперь и так нулевой (моль N2 даёт две моли NO по 20 против
+		// 20, минус кислород) - но полагаться на это нельзя: любая пара "топливо без
+		// продуктов" воспроизводит разгон, только медленнее. Форма ниже закрывает
+		// его по построению - при нулевой энтальпии температура не меняется вообще,
+		// а горение с реальной энтальпией греет на всю выделенную энергию.
+		air.set_temperature(max(TCMB, temperature + energy_released / new_heat_capacity))
 	var/list/cached_results = air.reaction_results
 	cached_results["fire"] = min(total_fuel, oxidation_power) * 2
 	return cached_results["fire"] ? REACTING : NO_REACTION

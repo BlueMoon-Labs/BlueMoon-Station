@@ -46,6 +46,19 @@
 
 	if(istype(I, /obj/item/mop))
 		var/obj/item/mop/m=I
+		var/list/modifiers = params2list(params)
+		if(modifiers["ctrl"] || user.a_intent == INTENT_HARM) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the cart tank
+			if(m.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			if(reagents.total_volume >= reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[src] is full!</span>")
+				return
+			m.reagents.remove_all(m.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			m.reagents.trans_to(src, m.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [m] out into [src].</span>")
+			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
+			return
 		if(m.reagents.total_volume < m.reagents.maximum_volume)
 			if (wet_mop(m, user))
 				return

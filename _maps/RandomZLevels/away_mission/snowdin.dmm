@@ -10181,7 +10181,7 @@
 /area/awaymission/snowdin/cave)
 "xl" = (
 /turf/open/floor/plasteel/elevatorshaft{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/awaymission/snowdin/cave)
 "xp" = (
@@ -10365,7 +10365,7 @@
 	width = 6
 	},
 /turf/open/floor/plasteel/elevatorshaft{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/awaymission/snowdin/cave)
 "xL" = (
@@ -13128,7 +13128,7 @@
 /obj/item/tank/internals/emergency_oxygen/engi,
 /obj/structure/rack,
 /turf/open/floor/mineral/plastitanium{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1;
 	initial_temperature = 180
 	},
@@ -13142,7 +13142,7 @@
 /obj/item/tank/internals/emergency_oxygen/engi,
 /obj/structure/rack,
 /turf/open/floor/mineral/plastitanium{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	planetary_atmos = 1;
 	initial_temperature = 180
 	},

@@ -2554,3 +2554,57 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/commando_beret
 	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak")
+  
+/datum/gear/donator/bm/vp78tactic
+	name = "VP78 Tactic ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/vp78tactic
+	ckeywhitelist = list("rockymed", "hartty", "leony24")
+
+/datum/gear/donator/bm/largrizzly
+	name = "Lar Grizzly Mark V ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/largrizzly_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/winchester1887
+	name = "Winchester Model 1887 ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/winchester1887_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/winchester1897
+	name = "Winchester Model 1897 ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/winchester1897_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/m1903
+	name = "M1903 ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/m1903_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/scorpion_evo
+	name = "CZ Scorpion EVO ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/scorpion_evo_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/stuncutlass
+	name = "Stun Cutlass ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/stuncutlass_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/trenchknife
+	name = "Trench Knife ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/trenchknife_kit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/bowie
+	name = "Bowie Knife ModKit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/bowie_kit
+	ckeywhitelist = list("kumikoshouko")

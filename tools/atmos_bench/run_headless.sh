@@ -4,15 +4,21 @@
 # cycles and collects data/atmos_headless_bench_*.jsonl. The server shuts itself
 # down when done (see atmos_benchmark.dm, ATMOS_HEADLESS_BENCH section).
 #
-# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges]
+# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor]
 #   tag        label for the result file (e.g. baseline, fix1)
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
 #   cycles     SSair cycles to run, default 240 (compile-time default)
-#   scenario   synthetic arena: multi-breach, plasma-fire, giant-hall,
-#              giant-hall-eq, room-grid, pipenet-stress, heat-wall, space-wind,
-#              reaction-zoo, he-loop, atom-churn, changeturf-storm;
+#   scenario   synthetic arena: multi-breach, plasma-fire, fire-storm, giant-hall,
+#              giant-hall-eq, room-grid, sustained-leak, pipenet-stress,
+#              heat-wall, space-wind, reaction-zoo, he-loop, atom-churn,
+#              changeturf-storm;
 #              station-breach runs on the loaded map instead of a reservation
+#              fire-storm holds ~2400 simultaneous hotspots for the whole run -
+#              use it for the fire regime; plasma-fire measures the spread front
+#              sustained-leak holds a standing gradient for the whole run
+#              instead of decaying - use it for anything aimed at the regime
+#              production actually fails in, and give it 600+ cycles
 #   breaches   number of simultaneous breaches, 1-4 (multi-breach only)
 #   firelocks  1 closes firelocks, 0 welds the same doors open (multi-breach only)
 #   seed       deterministic world seed, default 29051994 in headless builds
@@ -20,13 +26,24 @@
 #              interval for pipenet-stress; default 20
 #   sleeping-edges pass "1" to force SSair.sleeping_edges_enabled for the run
 #              (A/B against the config default without touching config files)
+#   deep-profile pass "1" to arm the per-pair stopwatches inside the neighbour
+#              loop. Attribution only - they inflate the phase they measure by
+#              roughly a factor of two, so never put a deep run in an A/B.
+#   edge-quiet  consecutive quiet fires a turf must sit out before its pairs
+#              start writing into the settled-edge cache (SSair default 2)
+#   rest-cycles quiet fires a grouped turf sits out before resting individually
+#              (SSair default 6). The one lever that moves the NUMBER of active
+#              turfs rather than the cost of one.
+#   reaction-floor pass "0" to drop the react() candidate floor index, i.e. run
+#              the pre-gate behaviour on the SAME build. Use it for an A/B of the
+#              gate without comparing two dmb files against each other.
 #
 # Result: tools/atmos_bench/results/<timestamp>_<tag>.jsonl
 # Analyze: python tools/atmos_bench/analyze.py <file> [file2 ...]
 set -u
 cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
 
-TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle]}"
+TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges] [deep-profile] [edge-quiet] [rest-cycles] [reaction-floor] - see header for what each does}"
 MAP="${2:-icemoonstation}"
 SKIP_BUILD="${3:-}"
 CYCLES="${4:-}"
@@ -36,6 +53,10 @@ FIRELOCKS="${7:-}"
 SEED="${8:-}"
 EVENT_CYCLE="${9:-}"
 SLEEPING_EDGES="${10:-}"
+DEEP_PROFILE="${11:-}"
+EDGE_QUIET="${12:-}"
+REST_CYCLES="${13:-}"
+REACTION_FLOOR="${14:-}"
 DD_EXE="${BYOND_DD:-/d/Program Files (x86)/BYOND/bin/dd.exe}"
 TIMEOUT_SECONDS=2700
 NEXT_MAP_BACKUP=""
@@ -134,6 +155,18 @@ if [ -n "$EVENT_CYCLE" ]; then
 fi
 if [ -n "$SLEEPING_EDGES" ]; then
     append_param "atmos-bench-sleeping-edges=$SLEEPING_EDGES"
+fi
+if [ -n "$DEEP_PROFILE" ]; then
+    append_param "atmos-bench-deep-profile=$DEEP_PROFILE"
+fi
+if [ -n "$EDGE_QUIET" ]; then
+    append_param "atmos-bench-edge-quiet=$EDGE_QUIET"
+fi
+if [ -n "$REST_CYCLES" ]; then
+    append_param "atmos-bench-rest-cycles=$REST_CYCLES"
+fi
+if [ -n "$REACTION_FLOOR" ]; then
+    append_param "atmos-bench-reaction-floor=$REACTION_FLOOR"
 fi
 if [ -n "$PARAM_STRING" ]; then
     DD_PARAMS=(-params "$PARAM_STRING")

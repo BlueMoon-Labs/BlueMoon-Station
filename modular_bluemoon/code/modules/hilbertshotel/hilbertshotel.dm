@@ -321,7 +321,7 @@
 			var/turf/T = locate(reservation.bottom_left_coords[1] + i, reservation.bottom_left_coords[2] + j, reservation.bottom_left_coords[3])
 			var/list/turfContents = list()
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top) || istype(A, /obj/machinery/atmospherics/components)) // Skip pool water and effects, and atmos components
+				if(istype(A, /obj/machinery/atmospherics/components)) // Skip atmos components
 					continue
 				if(istype(A, /atom/movable/lighting_object)) // Оверлей света принадлежит турфу: из стока он вернётся на тайл вторым слоем и зарендерит протухшую тьму
 					continue
@@ -400,8 +400,6 @@
 		for(var/j in 0 to mapTemplate.height - 1)
 			var/turf/T = locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3])
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top)) // Skip pool water overlays
-					continue
 				QDEL_LIST(A.contents)
 				qdel(A)
 

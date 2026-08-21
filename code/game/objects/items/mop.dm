@@ -25,6 +25,7 @@
 	GLOB.janitor_devices += src
 	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
 	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow mopping liquids from turfs
 
 /obj/item/mop/ComponentInitialize()
 	. = ..()
@@ -70,7 +71,7 @@
 	reagents.remove_any(1)			//reaction() doesn't use up the reagents
 
 
-/obj/item/mop/afterattack(atom/A, mob/user, proximity)
+/obj/item/mop/afterattack(atom/A, mob/user, proximity, click_parameters)
 	. = ..()
 	if(!proximity)
 		return
@@ -88,6 +89,19 @@
 	var/turf/T = get_turf(A)
 
 	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart))
+		return
+
+	if(istype(A, /obj/item/reagent_containers)) // BLUEMOON ADD: wring the mop out into any container with Ctrl+click or harm intent
+		var/obj/item/reagent_containers/container = A
+		var/list/modifiers = params2list(click_parameters)
+		if(modifiers["ctrl"] || user.a_intent == INTENT_HARM)
+			if(container.reagents.total_volume >= container.reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[container] is full!</span>")
+				return
+			reagents.remove_all(reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			reagents.trans_to(container, reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [src] out into [container].</span>")
+			playsound(A, 'sound/effects/slosh.ogg', 25, 1)
 		return
 
 	if(T)

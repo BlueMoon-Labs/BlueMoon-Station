@@ -109,6 +109,9 @@
 /turf/open/space/AfterChange()
 	..()
 	atmos_overlay_types = null
+	// Оверлей снят в обход update_visuals(), значит и его ключ мемо больше не
+	// описывает состояние турфа - иначе гейт вернёт "уже посчитано" на пустоте.
+	atmos_visual_rev = -1
 
 /turf/open/space/Assimilate_Air()
 	return

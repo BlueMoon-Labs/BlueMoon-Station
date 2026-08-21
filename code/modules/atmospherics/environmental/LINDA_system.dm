@@ -185,6 +185,7 @@
 	else
 		ATMOS_BENCH_WAKE(src, "air_update_turf")
 		SSair.add_to_active(src)
+	liquid_update_turf() //LIQUIDS ADD - update liquids processing when the air around us changes
 
 /atom/movable/proc/move_update_air(turf/T)
 	if(isturf(T))

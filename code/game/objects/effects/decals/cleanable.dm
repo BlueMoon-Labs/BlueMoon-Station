@@ -89,6 +89,22 @@
 	else
 		return ..()
 
+// BLUEMOON ADD START: puddle-created decals are capped at LIQUID_DECAL_CAP units,
+// so scooping them can't duplicate a liquid puddle into an exploit.
+/obj/effect/decal/cleanable/proc/cap_liquid_reagents()
+	if(!reagents || !reagents.total_volume)
+		return
+	var/excess = reagents.total_volume - LIQUID_DECAL_CAP
+	if(excess <= 0)
+		return
+	for(var/datum/reagent/R in reagents.reagent_list)
+		var/remove_amount = min(R.volume, excess)
+		reagents.remove_reagent(R.type, remove_amount)
+		excess -= remove_amount
+		if(excess <= 0)
+			break
+// BLUEMOON ADD END
+
 /obj/effect/decal/cleanable/ex_act(severity, target, origin)
 	if(reagents)
 		for(var/datum/reagent/R in reagents.reagent_list)

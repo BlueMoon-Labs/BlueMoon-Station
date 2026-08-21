@@ -48,7 +48,7 @@
 /area/ruin/lavaland/powered/snow_biodome)
 "ak" = (
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "al" = (
@@ -67,13 +67,13 @@
 /area/ruin/lavaland/powered/snow_biodome)
 "ao" = (
 /turf/open/floor/plating/ice{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "ap" = (
 /obj/structure/flora/rock/icy,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aq" = (
@@ -113,13 +113,13 @@
 /obj/item/trash/semki,
 /obj/item/trash/candy,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "az" = (
 /obj/structure/flora/tree/pine,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aA" = (
@@ -131,13 +131,13 @@
 "aB" = (
 /obj/structure/flora/rock/pile/icy,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aC" = (
 /obj/structure/flora/tree/dead,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aD" = (
@@ -166,13 +166,13 @@
 "aI" = (
 /obj/structure/flora/bush,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aJ" = (
 /obj/vehicle/ridden/atv,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aL" = (
@@ -198,7 +198,7 @@
 "aQ" = (
 /obj/structure/flora/grass/both,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "aR" = (
@@ -210,12 +210,12 @@
 	pixel_x = 6
 	},
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bl" = (
 /turf/open/floor/wood{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180";
 	name = "bridge"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
@@ -224,7 +224,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating/ice{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bw" = (
@@ -245,7 +245,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bz" = (
@@ -257,7 +257,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bD" = (
@@ -265,19 +265,19 @@
 	dir = 1
 	},
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bM" = (
 /obj/machinery/light,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "bN" = (
 /obj/machinery/light,
 /turf/open/floor/plating/ice{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "dS" = (
@@ -304,7 +304,7 @@
 "gy" = (
 /obj/item/toy/snowball,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "gz" = (
@@ -332,7 +332,7 @@
 /obj/structure/flora/bush,
 /obj/item/toy/snowball,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "tb" = (
@@ -447,7 +447,7 @@
 /obj/structure/flora/grass/both,
 /obj/item/toy/snowball,
 /turf/open/floor/plating/asteroid/snow{
-	initial_gas_mix = "o2=22;n2=82;TEMP=180"
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=180"
 	},
 /area/ruin/lavaland/powered/snow_biodome)
 "Ub" = (

@@ -830,23 +830,49 @@ GLOBAL_LIST_INIT(pipe_paint_colors, list(
 //
 // Timing is armed for one cycle at a time (see atmos_tprof_arm), so the
 // instrumentation cannot distort the cost curve it is supposed to measure.
-// Slots must not nest; the inner variants exist for the one place that needs
-// a second concurrent stopwatch (the space branch inside the neighbour loop).
+// Slots must not nest on the outer stopwatch; the inner/deep variants exist
+// for the stopwatches inside the neighbour loop (nb_*), which run several
+// times per turf while "neighbors" is still open.
 // ---------------------------------------------------------------------------
 #ifdef ATMOS_HEADLESS_BENCH
 GLOBAL_VAR_INIT(atmos_tprof_active, FALSE)
+/// Second arming level, for the stopwatches INSIDE the neighbour loop.
+///
+/// Those fire several times per turf rather than once, and the measurement
+/// overhead is no longer negligible against what it measures: an instrumented
+/// run of the same build came out at 86ms against 46ms for the plain one. That
+/// is fine for asking "which part of the pair loop is expensive" and useless for
+/// asking "did this patch help", so the two questions get two switches. Deep
+/// runs are for attribution only - never put one on either side of an A/B.
+GLOBAL_VAR_INIT(atmos_tprof_deep, FALSE)
 GLOBAL_LIST_EMPTY(atmos_tprof_ms)
 GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 
 #define ATMOS_TPROF_VARS var/__tprof_mark = 0; var/__tprof_inner = 0
+/// Для проков, которым нужен только внешний секундомер: полный ATMOS_TPROF_VARS
+/// оставил бы в них неиспользованный __tprof_inner и предупреждение сборки.
+#define ATMOS_TPROF_VARS_OUTER var/__tprof_mark = 0
 #define ATMOS_TPROF_MARK if(GLOB.atmos_tprof_active) { __tprof_mark = TICK_USAGE_REAL }
 #define ATMOS_TPROF_ADD(slot) if(GLOB.atmos_tprof_active) { GLOB.atmos_tprof_ms[slot] += TICK_DELTA_TO_MS(TICK_USAGE_REAL - __tprof_mark) }
 #define ATMOS_TPROF_MARK_INNER if(GLOB.atmos_tprof_active) { __tprof_inner = TICK_USAGE_REAL }
 #define ATMOS_TPROF_ADD_INNER(slot) if(GLOB.atmos_tprof_active) { GLOB.atmos_tprof_ms[slot] += TICK_DELTA_TO_MS(TICK_USAGE_REAL - __tprof_inner) }
+#define ATMOS_TPROF_DEEP_MARK if(GLOB.atmos_tprof_deep) { __tprof_inner = TICK_USAGE_REAL }
+#define ATMOS_TPROF_DEEP_ADD(slot) if(GLOB.atmos_tprof_deep) { GLOB.atmos_tprof_ms[slot] += TICK_DELTA_TO_MS(TICK_USAGE_REAL - __tprof_inner) }
+#define ATMOS_TPROF_DEEP_COUNT(slot) if(GLOB.atmos_tprof_deep) { GLOB.atmos_tprof_counts[slot] += 1 }
 #define ATMOS_TPROF_COUNT(slot) if(GLOB.atmos_tprof_active) { GLOB.atmos_tprof_counts[slot] += 1 }
 /// For sites whose only statement would be a count: an empty macro must not
 /// leave a bodyless `if` behind in production builds.
 #define ATMOS_TPROF_COUNT_IF(condition, slot) if(GLOB.atmos_tprof_active && (condition)) { GLOB.atmos_tprof_counts[slot] += 1 }
+/// Слоты, чьё время уже входит в "neighbors". В parts_ms их складывать нельзя -
+/// иначе те же микросекунды учитываются дважды, и атрибуция, ради которой deep
+/// и заведён, ломается именно на deep-прогоне. Держать синхронно с NESTED_SLOTS
+/// в tools/atmos_bench/analyze.py.
+///
+/// "space" сюда НЕ входит: его секундомер взводится уже после ATMOS_TPROF_ADD
+/// ("neighbors"), на том же внешнем __tprof_mark, то есть это самостоятельный
+/// отрезок, а не вложенный. В списке он занижал parts_ms на всю стоимость
+/// космической ветки - ровно там, где разгермы её и раздувают.
+#define ATMOS_TPROF_NESTED_SLOTS list("nb_compare", "nb_share", "nb_archive", "nb_sky_compare")
 /// Wake-source tally: every mid-round add_to_active call site names itself, the
 /// harvest lands in the per-cycle `hb` record ("wake") and resets. Unlike the
 /// armed tprof counters this runs every cycle - mass-wake events are single
@@ -859,15 +885,45 @@ GLOBAL_LIST_EMPTY(atmos_tprof_counts)
 		return
 	SSair.headless_wake_tally[reason] += 1
 #define ATMOS_BENCH_WAKE(target, reason) if(SSair) { atmos_bench_tally_wake(target, reason) }
+/// Гистограмма парных шеров по КРАТНОСТИ порога пробуждения, а не по абсолютным
+/// молям. Вопрос, ради которого она заведена, звучит как "во сколько раз надо
+/// поднять порог, чтобы подавить половину пробуждений", и отвечает на него именно
+/// отношение: сам порог плавает вместе с наполнением тайла (max от константы и
+/// доли содержимого), поэтому абсолютная гистограмма ответа не даёт. Полоса
+/// "wake_x0" - шеры, порог НЕ прошедшие: их доля говорит, сколько пар уже сегодня
+/// двигают меньше значимого, то есть чего стоит ждать от подъёма порога вообще.
+/proc/atmos_tprof_tally_wake_ratio(share, threshold)
+	if(threshold <= 0)
+		GLOB.atmos_tprof_counts["wake_nothreshold"] += 1
+		return
+	var/ratio = share / threshold
+	if(ratio <= 1)
+		GLOB.atmos_tprof_counts["wake_x0"] += 1
+	else if(ratio < 2)
+		GLOB.atmos_tprof_counts["wake_x1"] += 1
+	else if(ratio < 3)
+		GLOB.atmos_tprof_counts["wake_x2"] += 1
+	else if(ratio < 5)
+		GLOB.atmos_tprof_counts["wake_x3"] += 1
+	else if(ratio < 10)
+		GLOB.atmos_tprof_counts["wake_x5"] += 1
+	else
+		GLOB.atmos_tprof_counts["wake_x10"] += 1
+#define ATMOS_TPROF_WAKE_RATIO(share, threshold) if(GLOB.atmos_tprof_active) { atmos_tprof_tally_wake_ratio(share, threshold) }
 #else
 #define ATMOS_TPROF_VARS
+#define ATMOS_TPROF_VARS_OUTER
 #define ATMOS_TPROF_MARK
 #define ATMOS_TPROF_ADD(slot)
 #define ATMOS_TPROF_MARK_INNER
 #define ATMOS_TPROF_ADD_INNER(slot)
+#define ATMOS_TPROF_DEEP_MARK
+#define ATMOS_TPROF_DEEP_ADD(slot)
+#define ATMOS_TPROF_DEEP_COUNT(slot)
 #define ATMOS_TPROF_COUNT(slot)
 #define ATMOS_TPROF_COUNT_IF(condition, slot)
 #define ATMOS_BENCH_WAKE(target, reason)
+#define ATMOS_TPROF_WAKE_RATIO(share, threshold)
 #endif
 
 /// Давление выхода, выше которого объёмный насос перестаёт качать. Выше ворот

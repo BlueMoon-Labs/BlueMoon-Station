@@ -2,7 +2,7 @@
 "a" = (
 /obj/structure/statue/snow/snowman,
 /turf/open/floor/plating/snowed/smoothed{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/template_noop)
@@ -13,19 +13,19 @@
 	pixel_y = 12
 	},
 /turf/open/floor/plating/snowed/smoothed{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/template_noop)
 "q" = (
 /turf/open/floor/plating/asteroid/snow/temperatre{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/template_noop)
 "V" = (
 /turf/open/floor/plating/snowed/smoothed{
-	initial_gas_mix = "o2=22;n2=82;TEMP=293.15";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
 	planetary_atmos = 0
 	},
 /area/template_noop)
