@@ -181,7 +181,7 @@
 				continue
 			if(isturf(O.loc))
 				var/turf/T = O.loc
-				if(T.intact && O.level == 1) //hidden under the floor
+				if((T.turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
 					continue
 			reagents.reaction(O, TOUCH, fraction)
 	var/hit = 0

@@ -110,7 +110,7 @@
 	if(!shoes || !(shoes.body_parts_covered & FEET))
 		return	// barefoot advantage
 	var/turf/open/T = loc
-	if(!istype(T) || !T.dirt_buildup_allowed)
+	if(!istype(T) || !(T.turf_flags & TURF_DIRT_BUILDUP_ALLOWED))
 		return
 	var/area/A = T.loc
 	if(!A.dirt_buildup_allowed)

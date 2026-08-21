@@ -206,6 +206,7 @@
 #include "tgui_create_message.dm"
 #include "tgui_dev_asset_url.dm"
 #include "timer_sanity.dm"
+#include "turf_flags.dm"
 #include "unit_test.dm"
 #include "vending_stock_keys.dm"
 #include "verb_manager.dm"

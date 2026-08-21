@@ -178,7 +178,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	desc = "An extremely densely-packed rock, sheeted over with centuries worth of ice and snow."
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "snowrock"
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null
 
 /turf/closed/indestructible/rock/snow/ice

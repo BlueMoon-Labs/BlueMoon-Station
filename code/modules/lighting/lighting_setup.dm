@@ -50,7 +50,7 @@
 			continue
 
 		for(var/turf/T in A)
-			if(!IS_DYNAMIC_LIGHTING(T))
+			if(!TURF_IS_DYNAMIC_LIGHTING(T))
 				continue
 			// Skip reserved z-levels — will be initialized on demand
 			if(skip_z["[T.z]"])
@@ -131,13 +131,13 @@
 		var/area/A = T.loc
 		if(!IS_DYNAMIC_LIGHTING(A))
 			continue
-		if(!IS_DYNAMIC_LIGHTING(T))
+		if(!TURF_IS_DYNAMIC_LIGHTING(T))
 			continue
 		if(T.lighting_object)
 			continue
 		new /atom/movable/lighting_object(T)
 		// Activate corners created during init with active=FALSE (no objects existed then)
-		if(T.lighting_corners_initialised)
+		if(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED)
 			if(T.lc_topright) T.lc_topright.active = TRUE
 			if(T.lc_bottomright) T.lc_bottomright.active = TRUE
 			if(T.lc_bottomleft) T.lc_bottomleft.active = TRUE

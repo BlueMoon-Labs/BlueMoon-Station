@@ -22,6 +22,13 @@
 	var/list/hud_possible
 	///Proximity monitor associated with this atom
 	var/datum/proximity_monitor/proximity_monitor
+	/// Датумы связных кластеров, в которые входит этот атом. Стоят на движимом, а не на /atom:
+	/// членами кластера бывают только движимые (Refresh() перебирает contents турфа как
+	/// /atom/movable и слушает COMSIG_MOVABLE_MOVED), а слот на каждом турфе мира стоит мегабайты.
+	var/list/datum/merger/mergers
+	/// Доля материалов, которую атом отдаёт при переплавке. Стоит на движимом: у турфа
+	/// пользовательских материалов не бывает.
+	var/material_modifier = 1
 	//List of datums orbiting this atom
 	var/datum/component/orbiter/orbiters
 	///Reference to atom being orbited
@@ -326,6 +333,15 @@
 		return FALSE
 
 	switch(var_name)
+		// Конус света стоит на движимом, а не на /atom, поэтому и правится он здесь.
+		if(NAMEOF(src, light_cone_angle))
+			set_light(l_cone_angle = var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
+		if(NAMEOF(src, light_cone_dir))
+			set_light(l_cone_dir = var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
 		if(NAMEOF(src, x))
 			var/turf/T = locate(var_value, y, z)
 			if(T)

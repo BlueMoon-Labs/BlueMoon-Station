@@ -251,9 +251,9 @@ SUBSYSTEM_DEF(lighting)
 		for(m in 1 to GLOB.lighting_deferred_shadow_turfs.len)
 			var/turf/shadow_turf = GLOB.lighting_deferred_shadow_turfs[m]
 			if(!QDELETED(shadow_turf))
-				var/old_opaque = shadow_turf.has_opaque_atom
+				var/old_opaque = shadow_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM
 				shadow_turf.recalc_atom_opacity()
-				if(shadow_turf.has_opaque_atom != old_opaque)
+				if((shadow_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM) != old_opaque)
 					shadow_turf.reconsider_lights()
 				if(shadow_turf.lighting_object)
 					GLOB.lighting_update_blends |= shadow_turf.lighting_object
@@ -615,10 +615,10 @@ SUBSYSTEM_DEF(lighting)
 		while(bg_turf_index <= bg_turfs.len)
 			var/turf/T = bg_turfs[bg_turf_index++]
 			var/area/A = T.loc
-			if(!IS_DYNAMIC_LIGHTING(A) || !IS_DYNAMIC_LIGHTING(T) || T.lighting_object)
+			if(!IS_DYNAMIC_LIGHTING(A) || !TURF_IS_DYNAMIC_LIGHTING(T) || T.lighting_object)
 				continue
 			new /atom/movable/lighting_object(T)
-			if(T.lighting_corners_initialised)
+			if(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED)
 				if(T.lc_topright) T.lc_topright.active = TRUE
 				if(T.lc_bottomright) T.lc_bottomright.active = TRUE
 				if(T.lc_bottomleft) T.lc_bottomleft.active = TRUE

@@ -68,13 +68,13 @@
 	update_active()
 	// Initialize contact shadow state from adjacent turfs (float weights for semi-transparent shadows)
 	if(northeast)
-		opaque_neighbors += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+		opaque_neighbors += (northeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northeast.shadow_weight_sum
 	if(northwest)
-		opaque_neighbors += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+		opaque_neighbors += (northwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northwest.shadow_weight_sum
 	if(southeast)
-		opaque_neighbors += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+		opaque_neighbors += (southeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southeast.shadow_weight_sum
 	if(southwest)
-		opaque_neighbors += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+		opaque_neighbors += (southwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southwest.shadow_weight_sum
 	if(opaque_neighbors > 0.005)
 		shadow_sqrt_cache = sqrt(min(opaque_neighbors, CONTACT_SHADOW_MAX_NEIGHBORS))
 
@@ -103,13 +103,13 @@
 /datum/lighting_corner/proc/recalc_opaque_neighbors()
 	var/weight = 0
 	if(northeast)
-		weight += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+		weight += (northeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northeast.shadow_weight_sum
 	if(northwest)
-		weight += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+		weight += (northwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northwest.shadow_weight_sum
 	if(southeast)
-		weight += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+		weight += (southeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southeast.shadow_weight_sum
 	if(southwest)
-		weight += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+		weight += (southwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southwest.shadow_weight_sum
 	if(abs(weight - opaque_neighbors) > 0.005)
 		opaque_neighbors = weight
 		shadow_sqrt_cache = weight > 0.005 ? sqrt(min(weight, CONTACT_SHADOW_MAX_NEIGHBORS)) : 0

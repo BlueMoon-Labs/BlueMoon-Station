@@ -39,7 +39,7 @@
 			continue
 		// Под плиткой кабель никто не грыз - нужны только открытые
 		var/turf/open/floor/floor = wire_turf
-		if(istype(floor) && floor.intact)
+		if(istype(floor) && (floor.turf_flags & TURF_INTACT))
 			continue
 		candidates += wire
 		CHECK_TICK

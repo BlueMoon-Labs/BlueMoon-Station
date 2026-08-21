@@ -244,7 +244,10 @@ GLOBAL_VAR_INIT(current_starlight_power, STARLIGHT_POWER_NIGHT) // Current solar
 #define DYNAMIC_LIGHTING_ENABLED 1 //dynamic lighting enabled
 #define DYNAMIC_LIGHTING_FORCED 2 //dynamic lighting enabled even if the area doesn't require power
 #define DYNAMIC_LIGHTING_IFSTARLIGHT 3 //dynamic lighting enabled only if starlight is.
+/// Динамический свет ЗОНЫ. У турфа своя проверка - TURF_IS_DYNAMIC_LIGHTING().
 #define IS_DYNAMIC_LIGHTING(A) A.dynamic_lighting
+/// Динамический свет ТУРФА: переехал в битовую укладку turf_flags ради адресного пространства.
+#define TURF_IS_DYNAMIC_LIGHTING(T) (T.turf_flags & TURF_DYNAMIC_LIGHTING)
 
 
 //code assumes higher numbers override lower numbers.

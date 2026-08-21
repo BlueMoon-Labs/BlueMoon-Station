@@ -88,7 +88,7 @@
 	var/x = test_turf.x
 	var/y = test_turf.y
 	var/z = test_turf.z
-	test_turf.changing_turf = TRUE
+	test_turf.turf_flags |= TURF_CHANGING
 	qdel(test_turf, force = TRUE)
 
 	var/turf/replacement_turf = locate(x, y, z)
@@ -230,7 +230,7 @@
 	var/area/turf_area = get_area(T)
 	if(expected_area && turf_area != expected_area)
 		return FALSE
-	if(!IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
+	if(!TURF_IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
 		return FALSE
 	// Exclude space/ruins areas and overlay-on-non-floor coords: random-ruin or
 	// prefab overlays placed on top of space / closed-mineral coords do not
@@ -500,28 +500,28 @@
 	var/obj/effect/light_emitter/opaque_obj = allocate(/obj/effect/light_emitter, test_turf)
 	opaque_obj.opacity = TRUE
 	test_turf.recalc_atom_opacity()
-	TEST_ASSERT(test_turf.has_opaque_atom, "Turf should have opaque atom after adding opaque object")
+	TEST_ASSERT(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM, "Turf should have opaque atom after adding opaque object")
 
 	// Delete it — Exited handler updates opacity
 	qdel(opaque_obj)
 	allocated -= opaque_obj
-	TEST_ASSERT(!test_turf.has_opaque_atom, "Turf should not have opaque atom after removing opaque object")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "Turf should not have opaque atom after removing opaque object")
 
 	// Simulate repair ChangeTurf — preserves has_opaque_atom
 	test_turf.ChangeTurf(test_turf.type, null, CHANGETURF_FORCEOP)
 	test_turf = run_loc_floor_bottom_left
-	TEST_ASSERT(!test_turf.has_opaque_atom, "has_opaque_atom should be FALSE after ChangeTurf (no opaque contents)")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "has_opaque_atom should be FALSE after ChangeTurf (no opaque contents)")
 
 	// Simulate newly loaded opaque object (e.g., door from map)
 	var/obj/effect/light_emitter/new_opaque = allocate(/obj/effect/light_emitter, test_turf)
 	new_opaque.opacity = TRUE
 
 	// Without recalc, has_opaque_atom is stale
-	TEST_ASSERT(!test_turf.has_opaque_atom, "has_opaque_atom should still be FALSE before recalc (stale state)")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "has_opaque_atom should still be FALSE before recalc (stale state)")
 
 	// Apply the fix
 	test_turf.recalc_atom_opacity()
-	TEST_ASSERT(test_turf.has_opaque_atom, "has_opaque_atom should be TRUE after recalc_atom_opacity with opaque contents")
+	TEST_ASSERT(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM, "has_opaque_atom should be TRUE after recalc_atom_opacity with opaque contents")
 
 /// Verifies area blend is recalculated after repair by queuing to GLOB.lighting_update_blends.
 /datum/unit_test/repair_cycle_refreshes_area_blend/Run()

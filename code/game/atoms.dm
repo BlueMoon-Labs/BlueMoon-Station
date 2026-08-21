@@ -89,9 +89,6 @@
 	var/list/managed_vis_overlays
 	///overlays managed by [update_overlays][/atom/proc/update_overlays] to prevent removing overlays that weren't added by the same proc
 	var/list/managed_overlays
-	///Connected-cluster datums currently tracking this atom.
-	var/list/datum/merger/mergers
-
 	///Last fingerprints to touch this atom
 	var/fingerprintslast
 
@@ -107,7 +104,6 @@
 	///Bitfield for how the atom handles materials.
 	var/material_flags = NONE
 	///Modifier that raises/lowers the effect of the amount of a material, prevents small and easy to get items from being death machines.
-	var/material_modifier = 1
 
 	// Кэш иконки кровавого пятна отсюда убран: читают его только три прока, и все три -
 	// в контексте /obj/item (clean_blood, add_blood_overlay и его оверрайд у нулл-рода).
@@ -151,15 +147,6 @@
  *
  * We also generate a tag here if the DF_USE_TAG flag is set on the atom
  */
-/// Gets the merger datum representing this atom's connected cluster.
-/atom/proc/GetMergeGroup(id, list/allowed_types)
-	RETURN_TYPE(/datum/merger)
-	var/datum/merger/candidate = mergers?[id]
-	if(!candidate)
-		new /datum/merger(id, allowed_types, src)
-		candidate = mergers?[id]
-	return candidate
-
 /atom/New(loc, ...)
 	//atom creation method that preloads variables at creation
 	if(GLOB.use_preloader && (src.type == GLOB._preloader.target_path))//in case the instanciated atom is creating other atoms in New()
@@ -228,7 +215,7 @@
 
 	if (opacity && isturf(loc))
 		var/turf/T = loc
-		T.has_opaque_atom = TRUE // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
+		T.lighting_flags |= TURF_HAS_OPAQUE_ATOM // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
 
 	if (canSmoothWith)
 		canSmoothWith = typelist("canSmoothWith", canSmoothWith)
@@ -1518,9 +1505,13 @@
 		return
 
 	if(material_flags)
+		// Множитель материала стоит на движимом (стопки, статуи): у турфа он всегда единица,
+		// а слот на каждом турфе мира стоит мегабайты.
+		var/atom/movable/movable_source = ismovable(src) ? src : null
+		var/modifier = movable_source ? movable_source.material_modifier : 1
 		for(var/x in materials)
 			var/datum/material/custom_material = SSmaterials.GetMaterialRef(x)
-			custom_material.on_applied(src, materials[x] * multiplier * material_modifier, material_flags)
+			custom_material.on_applied(src, materials[x] * multiplier * modifier, material_flags)
 
 	custom_materials = SSmaterials.FindOrCreateMaterialCombo(materials, multiplier)
 

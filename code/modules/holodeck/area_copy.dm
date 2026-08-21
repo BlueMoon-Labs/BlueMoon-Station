@@ -26,15 +26,16 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 //lc_* - углы шаблона с его координатами. Источник света рядом с копией брал их из
 //соседнего турфа и лез в таблицу затухания по смещению в десятки тайлов
 //("list index out of bounds" в LUM_FALLOFF, 166 рантаймов за один ресет тандердома).
-//lighting_object/lighting_corners_initialised - настоящий оверлей приёмника терялся
-//без qdel и уходил в харддел, а флаг инициализации врал про наличие четырёх углов.
+//lighting_object и lighting_flags (углы разложены + есть непрозрачный атом) - настоящий
+//оверлей приёмника терялся без qdel и уходил в харддел, а флаг инициализации врал про
+//наличие четырёх углов.
 //light/light_sources - источники, принадлежащие атомам шаблона.
-//has_opaque_atom/shadow_weight_sum/cached_lumcount/dynamic_lumcount/luminosity -
-//производные величины, их пересчитывает сам ChangeTurf.
+//shadow_weight_sum/cached_lumcount/dynamic_lumcount/luminosity - производные величины,
+//их пересчитывает сам ChangeTurf.
 GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
-	"light", "light_sources", "lighting_object", "lighting_corners_initialised",
+	"light", "light_sources", "lighting_object", "lighting_flags",
 	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
-	"has_opaque_atom", "shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
+	"shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
 	"luminosity"
 	))
 

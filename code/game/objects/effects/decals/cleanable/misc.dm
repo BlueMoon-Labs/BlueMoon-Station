@@ -98,7 +98,7 @@
 /obj/effect/decal/cleanable/dirt/Initialize(mapload)
 	. = ..()
 	var/turf/T = get_turf(src)
-	if(T.tiled_dirt)
+	if(T.turf_flags & TURF_TILED_DIRT)
 		smooth = SMOOTH_MORE
 		icon = 'icons/effects/dirt.dmi'
 		icon_state = ""

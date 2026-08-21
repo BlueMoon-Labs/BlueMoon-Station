@@ -9,7 +9,7 @@
 	name = "alien floor"
 	icon_state = "alienpod1"
 	base_icon_state = "alienpod1"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/abductor/Initialize(mapload)
 	. = ..()
@@ -20,7 +20,7 @@
 	name = "alien plating"
 	icon_state = "alienplating"
 	base_icon_state = "alienplating"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/abductor2/break_tile()
 	return //unbreakable
@@ -56,7 +56,7 @@
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/ashplanet/Initialize(mapload)
 	if(smooth)
@@ -207,7 +207,7 @@
 	baseturfs = /turf/open/floor/plating/ice
 	slowdown = 1
 	attachment_holes = FALSE
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_INTACT) | TURF_BULLET_SIZZLE
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW

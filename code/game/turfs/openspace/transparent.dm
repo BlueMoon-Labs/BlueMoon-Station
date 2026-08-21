@@ -1,6 +1,6 @@
 /turf/open/transparent
 	baseturfs = /turf/open/transparent/openspace
-	intact = FALSE //this means wires go on top
+	turf_flags = TURF_FLAGS_DEFAULT & ~TURF_INTACT
 
 /turf/open/transparent/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	. = ..()

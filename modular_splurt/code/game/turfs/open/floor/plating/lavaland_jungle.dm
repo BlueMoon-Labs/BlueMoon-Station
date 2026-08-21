@@ -10,7 +10,7 @@
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
 	// Раньше список ехал через smoothing_groups, а Initialize() перекладывал его в
 	// canSmoothWith. Переменная smoothing_groups при этом стояла на каждом атоме мира ради

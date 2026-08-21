@@ -256,7 +256,7 @@
 
 /obj/machinery/computer/holodeck/proc/floorcheck()
 	for(var/turf/T in linked)
-		if(!T.intact || isspaceturf(T))
+		if(!(T.turf_flags & TURF_INTACT) || isspaceturf(T))
 			return FALSE
 	return TRUE
 

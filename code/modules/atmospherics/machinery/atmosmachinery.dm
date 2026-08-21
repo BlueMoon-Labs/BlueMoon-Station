@@ -419,7 +419,7 @@
 		return ..()
 
 	var/turf/T = get_turf(src)
-	if (level==1 && isturf(T) && T.intact)
+	if (level==1 && isturf(T) && (T.turf_flags & TURF_INTACT))
 		to_chat(user, "<span class='warning'>You must remove the plating first!</span>")
 		return TRUE
 
@@ -509,7 +509,7 @@
 	setPipingLayer(set_layer)
 	var/turf/T = get_turf(src)
 	if(set_level) level = set_level
-	else level = T.intact ? 2 : 1
+	else level = (T.turf_flags & TURF_INTACT) ? 2 : 1
 	atmosinit()
 	var/list/nodes = pipeline_expansion()
 	for(var/obj/machinery/atmospherics/A in nodes)

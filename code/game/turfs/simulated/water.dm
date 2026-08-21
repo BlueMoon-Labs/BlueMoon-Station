@@ -8,7 +8,7 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	planetary_atmos = TRUE
 	slowdown = 1
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null //needs a splashing sound one day.
 
 	footstep = FOOTSTEP_WATER
