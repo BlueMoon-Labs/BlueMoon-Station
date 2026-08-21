@@ -265,7 +265,10 @@
 /datum/sprite_accessory/snouts/mam_snouts/protogen_with_bolt
 	name = "Protogen - With Bolt"
 	icon_state = "protogen_withbolt"
-	matrixed_sections = MATRIX_ALL
+	extra = TRUE
+	extra_color_src = MUTCOLORS2
+	extra2 = TRUE
+	extra2_color_src = MUTCOLORS3
 
 /datum/sprite_accessory/snouts/mam_snouts/sergal
 	name = "Sergal"
