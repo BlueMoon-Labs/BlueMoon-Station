@@ -311,10 +311,10 @@
 	update_stamina()
 
 // heal MANY bodyparts, in random order
-/mob/living/proc/heal_overall_damage(brute = 0, burn = 0, stamina = 0, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE)
-	adjustBruteLoss(-brute, FALSE) //zero as argument for no instant health update
-	adjustFireLoss(-burn, FALSE)
-	adjustStaminaLoss(-stamina, FALSE)
+/mob/living/proc/heal_overall_damage(brute = 0, burn = 0, stamina = 0, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
+	adjustBruteLoss(-brute, FALSE, forced) //zero as argument for no instant health update
+	adjustFireLoss(-burn, FALSE, forced)
+	adjustStaminaLoss(-stamina, FALSE, forced)
 	if(updating_health)
 		updatehealth()
 	update_stamina()

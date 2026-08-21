@@ -123,10 +123,10 @@
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
 			return FALSE
-	if(get_dist(user, target) > max_distance)
+	if(get_dist(user, target) > max_distance && !is_lewd_portal_relay_interaction(user, target))
 		to_chat(user, span_warning("Слишком далеко."))
 		return FALSE
-	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user)) // BLUEMOON EDIT can interact if in belly
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target))) // BLUEMOON EDIT can interact if in belly / portal relay
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
 	if(!evaluate_user(user, silent = FALSE, apply_cooldown = apply_cooldown))

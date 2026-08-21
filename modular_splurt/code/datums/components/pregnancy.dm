@@ -235,6 +235,8 @@
 	if(stage < max_stage)
 		return
 
+	var/obj/item/egg = parent
+	egg.balloon_alert(user, "Вы пытаетесь вылупить яйцо!")
 	INVOKE_ASYNC(src, PROC_REF(hatch), source, I, user, params)
 
 /datum/component/pregnancy/proc/hatch(datum/source, obj/item/I, mob/user, params)
@@ -255,7 +257,6 @@
 	playsound(parent, 'sound/effects/splat.ogg', 70, TRUE)
 	var/mob/living/babby = new baby_type(get_turf(parent))
 
-	/// Clone the attacker's identity using aikofication-style DNA transfer
 	if(ishuman(user) && ishuman(babby))
 		var/mob/living/carbon/human/human_attacker = user
 		var/datum/dna/attacker_dna = new /datum/dna
