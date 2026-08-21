@@ -152,8 +152,6 @@
 	tempr.trans_to(reagents, tempr.total_volume)
 	to_chat(user, span_notice("You soak \the [src] with some liquids."))
 	qdel(tempr)
-	user.do_attack_animation(target_turf, used_item = src)
-	user.changeNext_move(CLICK_CD_MELEE)
 	return MOP_AFTER_LIQUID_STOP_ANIMATE
 
 /obj/item/mop/cyborg

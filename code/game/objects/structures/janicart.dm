@@ -112,7 +112,7 @@
 	else if(I.tool_behaviour == TOOL_CROWBAR)
 		user.visible_message("[user] begins to empty the contents of [src].", span_notice("You begin to empty the contents of [src]..."))
 		if(I.use_tool(src, user, 30))
-			to_chat(usr, span_notice("You empty the contents of [src]'s bucket onto the floor."))
+			to_chat(user, span_notice("You empty the contents of [src]'s bucket onto the floor."))
 			reagents.reaction(src.loc)
 			src.reagents.clear_reagents()
 	else
