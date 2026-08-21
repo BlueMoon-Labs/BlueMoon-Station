@@ -23,6 +23,7 @@
 // Beanbag — BR0
 /obj/item/projectile/bullet/shotgun_beanbag
 	name = "beanbag slug"
+	icon_state = "pellet"
 	damage = 5
 	stamina = 80                      // BLUEMOON EDIT: было 70 → 80
 	armour_penetration = BULLET_BR0
@@ -38,6 +39,7 @@
 
 /obj/item/projectile/bullet/incendiary/shotgun/dragonsbreath
 	name = "dragonsbreath pellet"
+	icon_state = "pellet"
 	damage = 5
 
 /obj/item/projectile/bullet/shotgun_stunslug
@@ -109,6 +111,7 @@
 // Стандартная дробь 12g — BR1
 /obj/item/projectile/bullet/pellet/shotgun_buckshot
 	name = "buckshot pellet"
+	icon_state = "pellet"
 	damage = 12.5                     // BLUEMOON EDIT: было 7.5 → 12.5 (конкретно Bluemoon переопределение)
 	armour_penetration = BULLET_BR1   // BLUEMOON ADD
 	wound_bonus = 5
@@ -118,6 +121,7 @@
 // Резиновая дробь 12g — BR0
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
+	icon_state = "pellet"
 	damage = 2
 	stamina = 25                      // BLUEMOON EDIT: было 15 → 25
 	armour_penetration = BULLET_BR0
@@ -139,6 +143,7 @@
 
 // Самодельная дробь — BR0 (ненадёжная, слабая)
 /obj/item/projectile/bullet/pellet/shotgun_improvised
+	icon_state = "pellet"
 	armour_penetration = BULLET_BR0
 	tile_dropoff = 0.35
 	damage = 6
@@ -166,6 +171,7 @@
 
 /obj/item/projectile/bullet/pellet/shotgun_incapacitate
 	name = "incapacitating pellet"
+	icon_state = "pellet"
 	damage = 1
 	stamina = 6
 	armour_penetration = BULLET_BR0
