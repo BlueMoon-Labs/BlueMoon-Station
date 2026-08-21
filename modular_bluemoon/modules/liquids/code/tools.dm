@@ -39,7 +39,7 @@
 	if(!check_rights(R_ADMIN))
 		return
 	var/turf/epicenter = get_turf(usr)
-	if(!epicenter)
+	if(!istype(epicenter))
 		return
 
 	var/range = tgui_input_number(usr, "Enter range:", "Range selection", 2)
