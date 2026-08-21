@@ -72,6 +72,41 @@
 	fdel(MC_STATE_TEST_FILE)
 
 /**
+ * Обрыв не по своей воле обязан пережить ребут.
+ *
+ * BYOND, у которого кончилась память, поднимает "Out of resources!" и уходит в /world/Reboot -
+ * то есть ровно на ту строку, которая помечает чёрный ящик штатным завершением. Улика в
+ * единственном случае, ради которого прибор и написан, стиралась бы своими же руками.
+ *
+ * Проверяется вся связка: причина дописывается к уже лежащему на диске снимку, дальнейшая
+ * запись сводки замораживается (петля МК на этом пути ещё жива), а метка штатного завершения
+ * после взведённой причины не ставится вовсе.
+ */
+/datum/unit_test/mc_state_death_cause_survives_reboot/Run()
+	fdel(MC_STATE_TEST_FILE)
+	var/cached_cause = GLOB.mc_state_death_cause
+	var/cached_frozen = Master.state_snapshot_frozen
+
+	Master.write_state_snapshot(MC_STATE_TEST_FILE)
+	var/noted = mc_state_note_death("юнит-тест: кончилась память", MC_STATE_TEST_FILE)
+	var/marked_clean = mc_state_mark_clean("юнит-тест", MC_STATE_TEST_FILE)
+	var/wrote_while_frozen = Master.write_state_snapshot(MC_STATE_TEST_FILE)
+	var/recovered = mc_state_previous_snapshot(MC_STATE_TEST_FILE)
+
+	// Глобалка и заморозка снимаются ДО проверок: упавший TEST_ASSERT возвращается из прока,
+	// и оставленная причина запретила бы метку штатного завершения всему остатку прогона.
+	GLOB.mc_state_death_cause = cached_cause
+	Master.state_snapshot_frozen = cached_frozen
+	fdel(MC_STATE_TEST_FILE)
+
+	TEST_ASSERT(noted, "Причина обрыва не дописалась в чёрный ящик")
+	TEST_ASSERT(!marked_clean, "Метка штатного завершения перебила записанную причину обрыва")
+	TEST_ASSERT(!wrote_while_frozen, "Замороженный чёрный ящик продолжает переписываться")
+	TEST_ASSERT_NOTNULL(recovered, "Чёрный ящик после аварийного обрыва прочитался как штатное завершение")
+	TEST_ASSERT(findtext(recovered, "итерация"), "Дописанная причина затёрла сам снимок: [recovered]")
+	TEST_ASSERT(findtext(recovered, "кончилась память"), "В чёрном ящике нет причины обрыва: [recovered]")
+
+/**
  * Цена снимка и подстройка частоты под неё.
  *
  * Замер, ради которого тест и написан: rustg_file_write открывает и закрывает файл на каждый

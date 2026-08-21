@@ -32,9 +32,13 @@
 	var/state_snapshot_cost = 0
 	/// Интервал, о котором последний раз написали в лог. Чтобы не писать на каждый шаг подстройки.
 	var/state_snapshot_logged_interval = 0
+	/// Запись сводки прекращена: файл на диске - улика, и перезаписывать его больше нельзя.
+	var/state_snapshot_frozen = FALSE
 
 /// Сводка прошлого запуска, если тот оборвался не по своей воле. Читается один раз на старте.
 GLOBAL_VAR(mc_state_previous_summary)
+/// Причина, по которой мир уходит на ребут не по своей воле. Взводится один раз, снимать нечем.
+GLOBAL_VAR(mc_state_death_cause)
 
 /**
  * Собирает сводку целиком. Ввода-вывода не делает - это отдельно проверяется тестом,
@@ -84,7 +88,7 @@ GLOBAL_VAR(mc_state_previous_summary)
  * мастер-контроллер в Recover(), то есть диагностика убивала бы ровно то, что диагностирует.
  */
 /datum/controller/master/proc/write_state_snapshot(path = MC_STATE_SNAPSHOT_FILE)
-	if(state_snapshot_failures >= MC_STATE_FAILURE_LIMIT)
+	if(state_snapshot_frozen || state_snapshot_failures >= MC_STATE_FAILURE_LIMIT)
 		return FALSE
 	var/write_started_at = TICK_USAGE
 	try
@@ -133,8 +137,34 @@ GLOBAL_VAR(mc_state_previous_summary)
 	var/task = stuck.last_task()
 	return "Последней запускалась [stuck.name] [stuck.state_letter()][task ? ", задача: [task]" : ""]."
 
+/**
+ * Дописывает в чёрный ящик причину аварийного обрыва и запрещает трогать файл дальше.
+ *
+ * Дописывает, а не переписывает: сводку в этот момент собирать не на что - память кончилась
+ * именно поэтому, - зато на диске уже лежит снимок последнего прохода петли МК. Одна короткая
+ * строка поверх него стоит дешевле любой пересборки, а чтение сводки её не путает: метку
+ * штатного завершения mc_state_previous_snapshot() ищет строго в начале файла.
+ *
+ * Взведённая причина закрывает mc_state_mark_clean(): дальше по пути обрыва лежит обычный
+ * /world/Reboot, и без гарда он затёр бы улику меткой штатного завершения.
+ */
+/proc/mc_state_note_death(cause, path = MC_STATE_SNAPSHOT_FILE)
+	if(GLOB)
+		GLOB.mc_state_death_cause = cause
+	if(Master)
+		Master.state_snapshot_frozen = TRUE
+	try
+		rustg_file_append("\nПРИЧИНА ОБРЫВА: [cause]", path)
+	catch(var/exception/write_error)
+		log_world("MC: не удалось дописать причину обрыва в чёрный ящик: [write_error]")
+		return FALSE
+	return TRUE
+
 /// Затирает сводку меткой штатного завершения, чтобы следующий старт не принял её за улику.
 /proc/mc_state_mark_clean(reason, path = MC_STATE_SNAPSHOT_FILE)
+	// Обрыв не по своей воле уже записан в файл, и метка штатного завершения его затрёт.
+	if(GLOB?.mc_state_death_cause)
+		return FALSE
 	try
 		rustg_file_write("[MC_STATE_CLEAN_MARK] | [SQLtime()] | [reason || "причина не указана"]", path)
 	catch(var/exception/write_error)
