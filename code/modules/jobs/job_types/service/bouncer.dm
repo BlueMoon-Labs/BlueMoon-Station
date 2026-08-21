@@ -83,7 +83,7 @@
 
 //BLUEMOON ADD
 /datum/martial_art/krav_maga/restricted/bouncer
-	name = "Krav Maga (bouncer edition)"
+	name = "Krav Maga (Bouncer edition)"
 	valid_areas = list(/area/service/bar/atrium, /area/service/bar)
 	resist_grab_chance = 40
 

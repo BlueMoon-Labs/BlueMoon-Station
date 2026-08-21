@@ -333,7 +333,7 @@
 		return
 
 	add_fingerprint(user)
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, span_warning("[src] is already electrochromatic!"))

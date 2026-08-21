@@ -123,10 +123,10 @@
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
 			return FALSE
-	if(get_dist(user, target) > max_distance)
+	if(get_dist(user, target) > max_distance && !is_lewd_portal_relay_interaction(user, target))
 		to_chat(user, span_warning("Слишком далеко."))
 		return FALSE
-	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user)) // BLUEMOON EDIT can interact if in belly
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target))) // BLUEMOON EDIT can interact if in belly / portal relay
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
 	if(!evaluate_user(user, silent = FALSE, apply_cooldown = apply_cooldown))
@@ -208,10 +208,9 @@
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
 	if(hearts_effect)
-		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(user.loc)
-		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
-			new /obj/effect/temp_visual/heart(target.loc)
+		user.try_play_interaction_effect(is_hidden)
+		if(user != target)
+			target.try_play_interaction_effect(is_hidden)
 
 /datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
 	var/turf/sound_turf = get_turf(sound_source)
@@ -255,3 +254,26 @@
 		playsound(get_turf(user), soundfile_to_play, 80, FALSE, -1)
 		return
 	. = ..()
+
+// BLUEMOON ADD START
+
+/mob/living/proc/try_play_interaction_effect(is_hidden = FALSE)
+	if(is_hidden)
+		return FALSE
+	var/datum/preferences/prefs = client?.prefs
+	if(prefs && !prefs.show_heart_over_self)
+		return FALSE
+	play_interaction_effect()
+	return TRUE
+
+
+/mob/living/proc/play_interaction_effect()
+	var/effect = client?.prefs?.interaction_effect || INTERACTION_EFFECT_HEART
+	if(!(effect in GLOB.interaction_effects_list))
+		effect = INTERACTION_EFFECT_HEART
+	switch(effect)
+		if(INTERACTION_EFFECT_HEART)
+			new /obj/effect/temp_visual/heart(loc)
+		else
+			new /obj/effect/temp_visual/heart(loc)
+// BLUEMOON ADD END

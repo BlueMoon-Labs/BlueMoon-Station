@@ -874,17 +874,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	can_adjust = TRUE
 
-/obj/item/clothing/under/donator/bm/oldtunic
-	name = "Old Tunic"
-	desc = "Apparently, this is a fairly old tunic, made of quality materials but worn over time. It's unclear why it hasn't been thrown out yet."
-	icon_state = "oldtunic"
-	item_state = "oldtunic"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	fitted = NO_FEMALE_UNIFORM
-	body_parts_covered = CHEST|ARMS|GROIN
-
 /obj/item/clothing/under/donator/bm/h_pmc_jeans
 	name = "PMC jeans"
 	desc = "Некогда обычные джинсы адаптированные под нужды оперативника неизвестных наемнических структур."
@@ -951,3 +940,17 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/longshirt
+	name = "Long Shirt"
+	desc = "Just a long shirt, no more"
+	icon_state = "longshirt"
+	item_state = "longshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	fitted = NO_FEMALE_UNIFORM
+	body_parts_covered = NONE
+	can_adjust = TRUE
+	alternate_worn_layer = GLOVES_LAYER

@@ -80,7 +80,7 @@
 
 /obj/item/clothing/neck/cloak/wintercape
 	name = "Winter Cape"
-	desc = "The cape is made of fairly thick fabric and trimmed with gold. The cape itself is designed in a wintery style, with icy accents and prominent gold shoulder straps, clearly identifying it as belonging to a Lieutenant Commander."
+	desc = "The cape is made of fairly thick fabric and trimmed with gold. The cape itself is designed in a wintery style, with icy accents and prominent gold shoulder straps."
 	icon_state = "wintercape"
 	item_state = "wintercape"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/neck.dmi'

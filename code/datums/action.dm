@@ -618,18 +618,10 @@
 /datum/action/item_action/change
 	name = "Change"
 
+// Само действие обрабатывает /obj/item/picket_sign/ui_action_click - собственный Trigger()
+// здесь только уводил бы нас мимо IsAvailable() и держал вторую ссылку на плакат.
 /datum/action/item_action/nano_picket_sign
 	name = "Retext Nano Picket Sign"
-	var/obj/item/picket_sign/S
-
-/datum/action/item_action/nano_picket_sign/New(Target)
-	..()
-	if(istype(Target, /obj/item/picket_sign))
-		S = Target
-
-/datum/action/item_action/nano_picket_sign/Trigger()
-	if(istype(S))
-		S.retext(owner)
 
 /datum/action/item_action/adjust // Требует чтобы в .dmi было в конце нужной вам модельки окончание _up (Пример sechailer_up)
 
