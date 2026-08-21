@@ -55,6 +55,33 @@
 
 /turf/open/MouseDrop_T(atom/dropping, mob/user)
 	. = ..()
+	if(check_pool_drag_out(dropping, user))
+		return
+	if(isliving(dropping) && isliving(user))
+		var/mob/living/dropped_mob = dropping
+		if(!dropped_mob.has_gravity())
+			return
+		var/turf/mob_turf = get_turf(dropped_mob)
+		if(!mob_turf)
+			return
+		if(mob_turf.turf_height - turf_height <= -TURF_HEIGHT_BLOCK_THRESHOLD)
+			//Climb up
+			if(user == dropped_mob)
+				user.balloon_alert_to_viewers("climbing...")
+			else
+				dropped_mob.balloon_alert_to_viewers("being pulled up...")
+			if(do_after(user, 2 SECONDS, dropped_mob))
+				dropped_mob.forceMove(src)
+			return
+		if(turf_height - mob_turf.turf_height <= -TURF_HEIGHT_BLOCK_THRESHOLD)
+			//Climb down
+			if(user == dropped_mob)
+				user.balloon_alert_to_viewers("climbing down...")
+			else
+				dropped_mob.balloon_alert_to_viewers("being lowered...")
+			if(do_after(user, 2 SECONDS, dropped_mob))
+				dropped_mob.forceMove(src)
+			return
 	if(dropping == user && isliving(user))
 		var/mob/living/L = user
 		if(L.resting && do_after(L, max(10, L.getStaminaLoss()*0.5), src, IGNORE_HELD_ITEM))

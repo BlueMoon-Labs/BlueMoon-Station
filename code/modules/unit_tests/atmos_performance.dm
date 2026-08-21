@@ -37,13 +37,84 @@
 /datum/unit_test/atmos_hot_proc_benchmark/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 
-	// --- archive() ---
-	var/datum/gas_mixture/archiver = unit_test_air_mix()
+	// --- gas list reductions: native BYOND 516 vs the DM loop they replaced ---
+	// Measured here rather than in the world benchmark on purpose. A full
+	// headless A/B on the sustained-leak arena could not separate this change
+	// from its own noise floor (3 interleaved pairs, every slot inside +-10%),
+	// which is the correct answer to "does it move the phase" and no answer at
+	// all to "is the reduction faster". This is the unit the change actually
+	// touches, so this is where it gets a verdict.
+	//
+	// The memoised procs are deliberately bypassed: total_moles() caches on
+	// mutation_rev and would time the guard, not the reduction (the same trap the
+	// archive line below fell into). Rounds alternate A,B,A,B so a warmed list
+	// cache cannot hand the second contestant a free win.
+	var/datum/gas_mixture/reduction_src = unit_test_air_mix()
+	reduction_src.set_moles(GAS_CO2, 0.37)
+	var/list/reduction_gases = reduction_src.gases
+	var/list/reduction_heats = GLOB.gas_data.specific_heats
 	var/iterations = 20000
-	var/t1 = TICK_USAGE_REAL
+	var/sum_native_ms = 0
+	var/sum_loop_ms = 0
+	var/dot_native_ms = 0
+	var/dot_loop_ms = 0
+	var/reduction_sink = 0
+	var/t1
+	for(var/ab_round in 1 to 2)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			reduction_sink += values_sum(reduction_gases)
+		sum_native_ms += TICK_USAGE_TO_MS(t1)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			var/sum = 0
+			for(var/id, gas_moles in reduction_gases)
+				sum += gas_moles
+			reduction_sink += sum
+		sum_loop_ms += TICK_USAGE_TO_MS(t1)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			reduction_sink += values_dot(reduction_gases, reduction_heats)
+		dot_native_ms += TICK_USAGE_TO_MS(t1)
+		t1 = TICK_USAGE_REAL
+		for(var/i in 1 to iterations)
+			var/capacity = 0
+			for(var/id, gas_moles in reduction_gases)
+				capacity += (gas_moles || 0) * (reduction_heats[id] || 0)
+			reduction_sink += capacity
+		dot_loop_ms += TICK_USAGE_TO_MS(t1)
+	bench_line("sum_native", iterations * 2, sum_native_ms)
+	bench_line("sum_loop", iterations * 2, sum_loop_ms)
+	bench_line("dot_native", iterations * 2, dot_native_ms)
+	bench_line("dot_loop", iterations * 2, dot_loop_ms)
+	TEST_ASSERT(reduction_sink > 0, "the reduction benchmark must not be optimised away into nothing")
+	qdel(reduction_src)
+
+	// --- archive(): the two cases have to be timed apart ---
+	// archive() skips its gases.Copy() when the mixture has not been touched
+	// since the last snapshot (archive_mutation_rev == mutation_rev). Looping it
+	// on an untouched mixture therefore measures the guard, not the archive: the
+	// first iteration copies and the other 19999 return immediately. Reported as
+	// one number that read as a twentyfold speedup against older runs, which is
+	// exactly backwards - the guard is free, the archive it skips is not.
+	var/datum/gas_mixture/archiver = unit_test_air_mix()
+	iterations = 20000
+	t1 = TICK_USAGE_REAL
 	for(var/i in 1 to iterations)
 		archiver.archive()
-	bench_line("archive", iterations, TICK_USAGE_TO_MS(t1))
+	bench_line("archive_memo_hit", iterations, TICK_USAGE_TO_MS(t1))
+
+	// Dirty the mixture between snapshots so every iteration takes the copy.
+	// set_temperature bumps mutation_rev without changing the gas list, which is
+	// the cheapest way to invalidate; the write itself is one field assignment
+	// and is charged to both this line and the hit line above equally.
+	var/temperature_toggle = T20C
+	t1 = TICK_USAGE_REAL
+	for(var/i in 1 to iterations)
+		temperature_toggle = (temperature_toggle == T20C) ? (T20C + 1) : T20C
+		archiver.set_temperature(temperature_toggle)
+		archiver.archive()
+	bench_line("archive_memo_miss", iterations, TICK_USAGE_TO_MS(t1))
 
 	// --- archive strategies A/B: fresh gases.Copy() vs reused list (Cut + refill) ---
 	// Прогоны чередуются (A,B,A,B): подряд идущий второй вариант выигрывал бы на
@@ -81,6 +152,28 @@
 	for(var/i in 1 to iterations)
 		settled_a.share(settled_b, 0.2, 0.2)
 	bench_line("share_settled", iterations, TICK_USAGE_TO_MS(t1))
+
+	// --- share() steady state с трейс-ключом: быстрый путь потерян ---
+	// Быстрый путь share() требует ровно двух ключей во ВСЕХ четырёх списках -
+	// своих газах, чужих газах и обоих архивах, - поэтому один подпороговый хвост
+	// (ровно тот, что оставляет за собой реакция пара) выбивает пару на общий путь
+	// до конца раунда. Разница между этой строкой и share_settled и есть цена
+	// потери, на которую опирается вся тема с чисткой трейс-газов; до сих пор её
+	// никто не измерял, и утверждение "лишний ключ дорого стоит в share()" было
+	// гипотезой без числа. Обе стороны держат ОДИНАКОВЫЙ хвост: дельта по нему
+	// нулевая, вещество не движется, то есть меряется ровно потеря быстрого пути.
+	var/datum/gas_mixture/traced_a = unit_test_air_mix()
+	var/datum/gas_mixture/traced_b = unit_test_air_mix()
+	traced_a.set_moles(GAS_H2O, 0.05)
+	traced_b.set_moles(GAS_H2O, 0.05)
+	traced_a.archive()
+	traced_b.archive()
+	t1 = TICK_USAGE_REAL
+	for(var/i in 1 to iterations)
+		traced_a.share(traced_b, 0.2, 0.2)
+	bench_line("share_settled_traces", iterations, TICK_USAGE_TO_MS(t1))
+	qdel(traced_a)
+	qdel(traced_b)
 
 	// --- share() active (pressure delta, gas actually moves) ---
 	// Pairs are pre-seeded so the timer covers share() only.
@@ -152,6 +245,54 @@
 	for(var/i in 1 to iterations)
 		traces.react(null)
 	bench_line("react_traces", iterations, TICK_USAGE_TO_MS(t1))
+
+	// --- гейт по порогу требований: A/B внутри ОДНОГО прогона ---
+	// Гейт снимается обнулением индекса полов, поэтому обе стороны меряются на
+	// одной сборке, одной смеси и одном прогретом кэше: build-to-build разброс,
+	// который на этом стенде и есть главный источник шума, из измерения уходит
+	// целиком. Смесь та же, что у react_traces выше: CO2 бакетом не владеет, а
+	// H2O и N2O лежат ниже порогов своих реакций - то есть кандидатов ноль в
+	// обоих случаях, и разница это ровно цена их сборки и разбора.
+	// Индекс мог остаться снятым от упавшего соседа по файлу: пересобираем его
+	// перед замером, иначе обе стороны A/B померяют одно и то же.
+	SSair.auxtools_update_reactions()
+	var/list/saved_floor = SSair.reactions_key_gas_floor
+	TEST_ASSERT_NOTNULL(saved_floor, "индекс полов не построен - A/B гейта померял бы обе стороны без гейта")
+	var/datum/gas_mixture/gate_mix = unit_test_air_mix()
+	gate_mix.set_moles(GAS_CO2, 4)
+	gate_mix.set_moles(GAS_H2O, 0.05)
+	gate_mix.set_moles(GAS_NITROUS, 0.1)
+	// Прогревочный прогон отбрасывается: первый проход систематически медленнее
+	// остальных, и без этого его перекос садится на ту сторону, которая шла первой.
+	for(var/i in 1 to iterations)
+		gate_mix.react(null)
+	var/gate_on_ms = 0
+	var/gate_off_ms = 0
+	// Снятый на время замера индекс возвращается и по исключению: рантайм внутри
+	// react() рвёт стек до самого RunUnitTest, и оставленный null уехал бы в
+	// соседние тесты как молчаливое отключение гейта.
+	try
+		for(var/gate_round in 1 to 4)
+			// ABBA: порядок внутри пары переворачивается, иначе одна сторона всегда
+			// стоит второй и получает чужой прогрев как подарок.
+			var/gated_first = (gate_round == 1 || gate_round == 4)
+			for(var/leg in 1 to 2)
+				var/measure_gated = ((leg == 1) == gated_first)
+				SSair.reactions_key_gas_floor = measure_gated ? saved_floor : null
+				t1 = TICK_USAGE_REAL
+				for(var/i in 1 to iterations)
+					gate_mix.react(null)
+				if(measure_gated)
+					gate_on_ms += TICK_USAGE_TO_MS(t1)
+				else
+					gate_off_ms += TICK_USAGE_TO_MS(t1)
+	catch(var/exception/gate_error)
+		SSair.reactions_key_gas_floor = saved_floor
+		throw gate_error
+	SSair.reactions_key_gas_floor = saved_floor
+	qdel(gate_mix)
+	bench_line("react_gate_on", iterations * 4, gate_on_ms)
+	bench_line("react_gate_off", iterations * 4, gate_off_ms)
 
 	// --- transfer_to() ping-pong ---
 	var/datum/gas_mixture/from = unit_test_air_mix()

@@ -72,7 +72,17 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 	var/oxidation_rate = 1 // how many moles of this can oxidize how many moles of material
 	var/fire_temperature = null // temperature above which gas may catch fire; null for none
 	var/list/fire_products = null // what results when this gas is burned (oxidizer or fuel); null for none
-	var/enthalpy = 0 // Standard enthalpy of formation in joules, used for fires
+	/// Энергия горения в джоулях на моль СГОРЕВШЕГО газа - именно так это поле
+	/// читает genericfire (energy_released += amt * enthalpy, продукты в баланс не
+	/// входят). Значение обязано быть положительным у всего, что задаёт
+	/// fire_temperature или oxidation_temperature: минус означает пожар, который
+	/// охлаждает воздух. Исключение одно и намеренное - плюоксий, ему минус выдан
+	/// как штраф окислителя.
+	/// У чистых продуктов (CO2, вода, бром) поле не читается никем и хранит
+	/// историческую энтальпию ОБРАЗОВАНИЯ; по ней же считаются теплоты сгорания
+	/// топлив в gas_types.dm. Оксид азота и нитрил - единственные, чью энтальпию
+	/// образования читает ещё и разложение закиси (reactions.dm), их менять нельзя.
+	var/enthalpy = 0
 	var/fire_burn_rate = 1 // how many moles are burned per product released
 	var/fire_radiation_released = 0 // How much radiation is released when this gas burns
 	var/powermix = 0 // how much this gas contributes to the supermatter's powermix ratio

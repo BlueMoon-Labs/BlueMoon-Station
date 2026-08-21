@@ -100,6 +100,13 @@
 	else
 		if(spill && R.total_volume > 0)
 			var/turf/location = get_turf(target)
+			// BLUEMOON ADD START: Messy characters always leave a real, spreading liquid
+			// puddle under themselves when they climax (instead of only a static wet decal).
+			if(HAS_TRAIT(src, TRAIT_MESSY) && location)
+				location.add_liquid_from_reagents(R, no_react = TRUE)
+				R.clear_reagents()
+				return
+			// BLUEMOON ADD END
 			var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
 			var/obj/effect/decal/cleanable/semen/femcum/F = locate(/obj/effect/decal/cleanable/semen/femcum) in location
 			if(istype(sender, /obj/item/organ/genital/penis))

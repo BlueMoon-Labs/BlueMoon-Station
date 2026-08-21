@@ -31409,10 +31409,7 @@
 	},
 /area/engineering/atmos)
 "bhX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "bhZ" = (
 /obj/machinery/light_switch{
@@ -33953,7 +33950,6 @@
 	name = "Station Intercom";
 	pixel_x = 28
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/item/radio/intercom{
 	name = "Station Intercom";
 	pixel_x = 28
@@ -34129,7 +34125,6 @@
 	},
 /area/science/xenobiology)
 "cGA" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "cLO" = (
@@ -36001,7 +35996,6 @@
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "iUa" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 8
 	},
@@ -37359,7 +37353,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "nmv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -37536,8 +37530,7 @@
 /turf/open/floor/plasteel/dark/corner,
 /area/maintenance/disposal/incinerator)
 "nXb" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "oaV" = (
 /obj/structure/grille,
@@ -41540,7 +41533,7 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/starboard/fore)
 "uCY" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "uDp" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible{

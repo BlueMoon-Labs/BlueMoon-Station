@@ -161,6 +161,22 @@ SUBSYSTEM_DEF(air)
 	// переключать на живом мире - кэши инвалидируются ревизиями сами. FALSE
 	// здесь - только до чтения конфига в Initialize.
 	var/sleeping_edges_enabled = FALSE
+	/// Сколько тихих фаеров подряд турф обязан отстоять, прежде чем его пары
+	/// начнут писаться в кэш осевших рёбер.
+	///
+	/// Порог существует потому, что кэш платит лукап и запись на КАЖДОЙ подходящей
+	/// паре, а окупается только повторным чтением. Замер на sustained-leak при
+	/// пороге 2: 0.0638 записи против 0.0195 попадания на турф - три с лишним
+	/// записи на одно сэкономленное сравнение. В бурлящей зоне счётчик тишины
+	/// сбрасывается каждым значимым шером, так что осесть пара не успевает, а
+	/// платит за попытку каждый проход.
+	var/edge_sleep_min_quiet_fires = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
+	/// Сколько тихих фаеров подряд член живой группы отстаивает, прежде чем уйти
+	/// на одиночный отдых (sleep_active_turf). Вар, а не константа, потому что
+	/// это единственный рычаг, напрямую двигающий ЧИСЛО активных турфов, - а
+	/// стоимость фазы есть произведение их числа на цену одного, и правая
+	/// половина произведения к микрооптимизации оказалась невосприимчива.
+	var/individual_rest_cycles = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
 	// go through set_heat_enabled() so the pass list cannot outlive the flag.
@@ -1176,6 +1192,18 @@ SUBSYSTEM_DEF(air)
 			continue
 		for(var/turf/open/neighbor as anything in planetary_turf.atmos_adjacent_turfs)
 			if(neighbor.initial_gas_mix == planetary_turf.initial_gas_mix)
+				continue
+			// Небо к небу и небо к космосу process_cell пропускает БЕЗУСЛОВНО
+			// (LINDA_turf_tile: пара двух шаблонов вечно регенерировала бы градиент,
+			// а вакуум планетарка просто игнорирует). Будить турф ради такой пары
+			// значит гонять его через фазу турфов ровно один раз, чтобы он там
+			// ничего не сделал и уснул: в раунде 10003 это 460 из 1366 записей
+			// стартового снимка, то есть треть списка, который лог называет
+			// "чинится на карте". Чинится он тут.
+			if(neighbor.planetary_atmos)
+				continue
+			var/datum/gas_mixture/neighbor_air = neighbor.air
+			if(!neighbor_air || neighbor_air.gc_share)
 				continue
 			// Смена ссылки газ не двигала: цикл на сверку нужен, окно отдыха - нет.
 			add_to_active(planetary_turf, FALSE, reset_stall = FALSE)

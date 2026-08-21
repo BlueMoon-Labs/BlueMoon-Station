@@ -89,6 +89,7 @@
 		B.blood_DNA["blendmode"] = data["bloodblend"]
 	if(B.reagents)
 		B.reagents.add_reagent(type, reac_volume)
+		B.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 	B.update_icon()
 
 /datum/reagent/blood/on_new(list/data)
@@ -290,7 +291,7 @@
 /datum/reagent/water
 	name = "Water"
 	description = "An ubiquitous chemical substance that is composed of hydrogen and oxygen."
-	color = "#AAAAAA77" // rgb: 170, 170, 170, 77 (alpha)
+	color = "#87D3F877" // rgb: 135, 211, 248, 77 (alpha)
 	taste_description = "water"
 	chemical_flags = REAGENT_ALL_PROCESS
 	overdose_threshold = 150 //Imagine drinking a gallon of water
@@ -316,7 +317,7 @@
 	if (!istype(T))
 		return
 	if(holder?.chem_temp > T0C + 100)
-		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/molarity];TEMP=[holder.chem_temp]")
+		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/(molarity*2)];TEMP=[holder.chem_temp]")
 	else
 		var/CT = cooling_temperature
 
@@ -1213,6 +1214,7 @@
 			if(!GG)
 				GG = new/obj/effect/decal/cleanable/greenglow(T)
 			GG.reagents.add_reagent(/datum/reagent/radium, reac_volume)
+			GG.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 
 /datum/reagent/space_cleaner/sterilizine
 	name = "Sterilizine"
@@ -1308,6 +1310,7 @@
 			if(!GG)
 				GG = new/obj/effect/decal/cleanable/greenglow(T)
 			GG.reagents.add_reagent(/datum/reagent/uranium, reac_volume)
+			GG.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 
 //Mutagenic chem side-effects.
 /datum/reagent/uranium/on_hydroponics_apply(obj/item/seeds/myseed, datum/reagents/chems, obj/machinery/hydroponics/mytray, mob/user)
@@ -2898,19 +2901,22 @@
 	if(istype(src, /datum/reagent/consumable/semen/femcum)) //let it be here
 		var/obj/effect/decal/cleanable/semen/femcum/F = (locate(/obj/effect/decal/cleanable/semen/femcum) in location) || new(location)
 		if(F.reagents?.add_reagent(type, volume, data))
+			F.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			F.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
 	if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
 		if(S.reagents?.add_reagent(type, volume, data))
+			S.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			S.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
 	if(drip.reagents?.add_reagent(type, volume, data))
+		drip.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 		drip.update_icon()
-		if(drip.reagents.total_volume >= 10)
+		if(drip.reagents.total_volume >= LIQUID_DECAL_CAP)
 			S = new(location)
 			drip.reagents.trans_to(S, drip.reagents.total_volume)
 			S.update_icon()
@@ -2988,6 +2994,17 @@
 	if(QDELETED(src) || !reagents)
 		return
 	add_atom_colour(mix_color_from_reagents(reagents.reagent_list), FIXED_COLOUR_PRIORITY)
+
+// BLUEMOON ADD START: Cum decals are decorative stains, not a scoopable reagent farm.
+// Blocking the scoop prevents the infinite "scoop the decal -> pour -> new puddle + new
+// decal" loop that multiplied semen into a flood.
+/obj/effect/decal/cleanable/semen/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food/drinks))
+		. = 1 // Prevent the container from splashing onto / scooping the decal
+		to_chat(user, span_notice("Слишком тягуче, чтобы собрать в ёмкость."))
+		return
+	return ..()
+// BLUEMOON ADD END
 
 /datum/reagent/consumable/semen/femcum
 	name = "Female Ejaculate"

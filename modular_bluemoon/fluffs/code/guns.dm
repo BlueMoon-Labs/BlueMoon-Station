@@ -1721,3 +1721,139 @@
 		. += "[base_state]-mag"
 	if(suppressed)
 		. += mutable_appearance(icon, "[base_state]-suppressor", pixel_x = 11)
+
+/obj/item/modkit/vp78tactic
+	name = "VP78 Tactic ModKit"
+	desc = "A modkit for making an tactic version of Enforcer pistol."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "VP78 Tactic (.45)"
+	desc = "A massive, modifide, formidable semi-automatic handgun chambered in .45 inch squash-head rounds. Typicly used by PMC forces. This weapon is also undergoing limited field testing as part of the SolFed next generation pistol program. The slide is engraved with some logo reminding you who's really in charge."
+	icon = 'modular_bluemoon/fluffs/icons/obj/vptactic.dmi'
+	icon_state = "vptactic"
+	flight_x_offset = 19
+	unique_reskin = null
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_reload.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_reload.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
+
+/obj/item/modkit/largrizzly_kit
+	name = "Lar Grizzly Kit"
+	desc = "A modkit for making an Enforcer into a Lar Grizzly Mark V."
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/largrizzly
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/largrizzly
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Lar Grizzly Mark V"
+	desc = "Этот коллекционный тяжелый самозарядный пистолет восхищает безупречным контрастом глубокого чернения титанового затвора и благородных латунных вставок на рамке и рукояти. Латунь здесь служит идеальным противовесом, смещающим баланс оружия вниз для эффективного гашения отдачи. Родной патронник под дефицитные магнум-калибры профессионально пересобран ювелирно подогнанным конверсионным китом (кастомный вкладной ствол и усиленная возвратная пружина) под классический патрон .45 ACP, что обеспечивает идеальную контролируемость темповой стрельбы при сохранении огромного останавливающего действия пули."
+	icon = 'modular_bluemoon/fluffs/icons/obj/gun.dmi'
+	icon_state = "largrizzly"
+	flight_x_offset = 19
+	unique_reskin = null
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/largrizzly_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/largrizzly_reload.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/largrizzly_empty_reload.ogg'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/largrizzly/update_icon_state()
+	icon_state = "[initial(icon_state)][chambered ? "" : "e"]"
+
+/obj/item/modkit/winchester1887_kit
+	name = "Winchester 1887 Kit"
+	desc = "A modkit for making a Riot Shotgun into a Winchester Model 1887."
+	product = /obj/item/gun/ballistic/shotgun/riot/winchester1887
+	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
+
+/obj/item/gun/ballistic/shotgun/riot/winchester1887
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Winchester Model 1887"
+	desc = "Этот исторический предшественник помповых дробовиков демонстрирует поразительный симбиоз эпох. Старинный механизм со скобой Генри усилен скрытыми стальными вставками в узлах запирания, что позволяет механике безболезненно выдерживать колоссальное давление современных порохов."
+	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
+	icon_state = "riotshotgun"
+	unique_reskin = null
+	sawn_item_state = "1887 short"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1887_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1887_load.ogg'
+
+/obj/item/gun/ballistic/shotgun/riot/winchester1887/update_icon_state()
+	icon_state = "[initial(icon_state)][sawn_off ? " short" : ""]"
+
+/obj/item/modkit/winchester1897_kit
+	name = "Winchester 1897 Kit"
+	desc = "A modkit for making a Combat Shotgun into a Winchester Model 1897."
+	product = /obj/item/gun/ballistic/shotgun/automatic/combat/winchester1897
+	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/winchester1897
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Winchester Model 1897"
+	desc = "Легендарный помповый дробовик 12-го калибра, чей аутентичный ореховый приклад и перфорированный стальной кожух термоизоляции дошли до нас без единого изъяна. Настоящий восторг вызывает его ударно-спусковой механизм с функцией «Slam Fire»: из-за конструктивного отсутствия разобщителя стрелку достаточно просто зажать спусковой крючок и непрерывно работать цевьем - выстрел происходит автоматически в момент запирания затвора. Это превращает ружье в сокрушительное штурмовое оружие, выдающее плотный шквал картечи со скоростью автомата."
+	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
+	icon_state = "cshotgun"
+	unique_reskin = null
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_load.ogg'
+
+/obj/item/modkit/m1903_kit
+	name = "M1903 Kit"
+	desc = "A modkit for making a Bolt-Action Rifle into an M1903."
+	product = /obj/item/gun/ballistic/shotgun/boltaction/m1903
+	fromitem = list(/obj/item/gun/ballistic/shotgun/boltaction)
+
+/obj/item/gun/ballistic/shotgun/boltaction/m1903
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "M1903 Springfield"
+	desc = "Великолепный образец дальнобойной инженерной мысли начала XX века - продольно-скользящий поворотный затвор Маузера и деревянное ложе этой винтовки находятся в музейном, полностью рабочем состоянии. Ствол и патронник винтовки профессионально переточены и адаптированы под патрон .308, что делает боепитание доступным в современных реалиях. Прицел похоже сломан."
+	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
+	icon_state = "308"
+	can_bayonet = FALSE
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
+
+/obj/item/modkit/scorpion_evo_kit
+	name = "Scorpion EVO Kit"
+	desc = "A modkit for making a WT-550 into a CZ Scorpion EVO."
+	product = /obj/item/gun/ballistic/automatic/wt550/scorpion_evo
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550, /obj/item/gun/ballistic/automatic/wt550/standart)
+
+/obj/item/gun/ballistic/automatic/wt550/scorpion_evo
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "CZ Scorpion EVO"
+	desc = "Компактный пистолет-пулемет, выполненный из архаичного конструкционного стеклопластика начала XXI века. Минимальное содержание металлов в конструкции, что делает систему практически невидимой для современных магнитных и частотных сканеров безопасности. Имеет серьезный дефект автоматики, из-за которого темп стрельбы критически упал."
+	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
+	icon_state = "scorpionevo"
+	item_state = "scorpion evo"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/guns_lefthand.dmi'
+	can_bayonet = FALSE
+	burst_size = 1
+	fire_delay = 5
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/scorpion_evo_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/scorpion_evo_load.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/scorpion_evo_empty.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/scorpion_evo_mag_remove.ogg'
+
+/obj/item/gun/ballistic/automatic/wt550/scorpion_evo/update_icon_state()
+	icon_state = "[initial(icon_state)][magazine ? "" : " empty"]"
+
+/obj/item/modkit/stuncutlass_kit
+	name = "Stun Cutlass Kit"
+	desc = "A modkit for making a stunbaton into a Stun Cutlass."
+	product = /obj/item/melee/baton/stuncutlass
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
+
+/obj/item/melee/baton/stuncutlass
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Stun Cutlass"
+	desc = "Старая абордажная сабля с сильно затупленным клинком, полностью утратившим режущие свойства и способный наносить лишь дробящие удары за счет своей массы. Имеет грубую модификацию в электрошоковую дубинку. Вдоль обуха и плоскости лезвия кустарно проложены токопроводящие шины, а в массивную чашку гарды врезан высоковольтный преобразователь с компактным слотом для батарейки."
+	icon = 'modular_bluemoon/fluffs/icons/obj/swords.dmi'
+	icon_state = "comsword"
+	item_state = "baton"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/security_lefthand.dmi'
+
+/obj/item/melee/baton/stuncutlass/update_icon_state()
+	icon_state = initial(icon_state)

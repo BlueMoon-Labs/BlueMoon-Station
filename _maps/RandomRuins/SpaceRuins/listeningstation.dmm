@@ -538,7 +538,7 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "eV" = (
 /obj/effect/turf_decal/siding/dark{
@@ -682,7 +682,7 @@
 	dir = 2;
 	pixel_y = 17
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "gP" = (
 /obj/effect/turf_decal/siding/red/corner{
@@ -920,7 +920,7 @@
 	dir = 4;
 	light_color = "#d8b1b1"
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "jO" = (
 /obj/effect/turf_decal/siding/red{
@@ -4288,7 +4288,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "VV" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Wj" = (
 /obj/structure/sink{
@@ -4405,9 +4405,6 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "WW" = (
 /obj/effect/turf_decal/siding/white,
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/railing,
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
@@ -4488,11 +4485,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Yd" = (
-/obj/machinery/pool/drain{
-	pixel_x = -17;
-	pixel_y = 17
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Ye" = (
 /obj/effect/turf_decal/siding/red{
@@ -4572,7 +4565,6 @@
 	dir = 6
 	},
 /obj/structure/railing,
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Zv" = (

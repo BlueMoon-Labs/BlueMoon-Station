@@ -31,6 +31,38 @@ What are the archived variables for?
 	/// не считается: compare() его не смотрит. Переполнение float (16.7M) на
 	/// турф-миксах недостижимо за раунд.
 	var/tmp/mutation_rev = 0
+	// Мемо обходов газ-листа. Ключ - mutation_rev: его бампает каждый мутатор
+	// смеси, поэтому обычный путь правки газов кэш инвалидирует.
+	//
+	// Но "невозможно по построению" это НЕ значит, и полагаться на такую формулу
+	// нельзя. Известные обходы API: VV пишет прямо в vars[] (закрыто оверрайдом
+	// vv_edit_var ниже) и share() снимает квантово-нулевые ключи после гейта
+	// бампа - последнее сегодня безобидно, потому что удаляется меньше
+	// MOLAR_ACCURACY моля, но это свойство порога, а не конструкции. Любой новый
+	// путь записи в gases обязан либо идти через мутатор, либо бампать ревизию сам.
+	//
+	// Чисто температурные бампы дают лишние пересчёты, но ни теплоёмкость, ни
+	// сумма молей от температуры не зависят - это потеря части выигрыша, а не
+	// корректности.
+	//
+	// Зачем: осевший турф за цикл обходит собственный газ-лист около десяти раз
+	// (архив, сумма молей на пороги, compare по каждой паре, реакции, визуал), и
+	// три из них - проки, всё тело которых и есть обход. Остальные инлайнят свой
+	// обход и мимо этого мемо проходят; их закрывают нативные редукции в
+	// native_atmos_bindings.dm.
+	var/tmp/total_moles_cache = 0
+	var/tmp/total_moles_rev = -1
+	var/tmp/heat_capacity_cache = 0
+	var/tmp/heat_capacity_rev = -1
+	/// Поколение архива: растёт только когда gas_archive реально переснят.
+	/// archived_heat_capacity() зависит от архива, а не от живой смеси, и
+	/// temperature_share() зовёт её по обоим концам на каждом шере.
+	var/tmp/archive_gen = 0
+	var/tmp/archived_heat_capacity_cache = 0
+	var/tmp/archived_heat_capacity_gen = -1
+	/// mutation_rev на момент последнего снимка архива: равенство означает, что
+	/// Copy() дал бы тот же список, и аллокацию можно не делать.
+	var/tmp/archive_mutation_rev = -1
 
 /datum/gas_mixture/New(volume)
 	if (!isnull(volume))
@@ -46,7 +78,21 @@ What are the archived variables for?
 		return FALSE // please no. segfaults bad.
 	if(var_name == NAMEOF(src, gas_list_view_only))
 		return FALSE
-	return ..()
+	. = ..()
+	// VV writes straight into vars[], so an admin editing gases (or the list
+	// object wholesale, which is how the list editor applies changes) bypasses
+	// every mutator and therefore every revision bump. The memo caches below key
+	// off mutation_rev, so without this the mixture keeps serving the sum, heat
+	// capacity and overlay it had BEFORE the edit - for the rest of the round,
+	// while the VV panel cheerfully displays the new list. Invalidate everything
+	// unconditionally: a VV edit happens once and is never hot, and enumerating
+	// which vars matter is exactly the kind of list that rots.
+	if(.)
+		mutation_rev++
+		total_moles_rev = -1
+		heat_capacity_rev = -1
+		archived_heat_capacity_gen = -1
+		archive_mutation_rev = -1
 
 /datum/gas_mixture/vv_get_var(var_name)
 	. = ..()
@@ -384,8 +430,6 @@ What are the archived variables for?
 
 	var/moved_moles = 0
 	var/abs_moved_moles = 0
-	var/our_moles = 0
-	var/their_moles = 0
 	var/list/zero_ours
 	var/list/zero_theirs
 
@@ -414,13 +458,10 @@ What are the archived variables for?
 			sharer_gases[id] = theirs
 			moved_moles += delta
 			abs_moved_moles += abs(delta)
-		our_moles += ours
 		if(QUANTIZE(ours) <= 0)
 			LAZYADD(zero_ours, id)
-		if(!isnull(theirs))
-			their_moles += theirs
-			if(QUANTIZE(theirs) <= 0)
-				LAZYADD(zero_theirs, id)
+		if(!isnull(theirs) && QUANTIZE(theirs) <= 0)
+			LAZYADD(zero_theirs, id)
 
 	for(var/id, theirs in sharer_gases)
 		// Key-presence test, not a value test: a gas present at exactly zero must
@@ -448,10 +489,8 @@ What are the archived variables for?
 			sharer_gases[id] = theirs
 			moved_moles += delta
 			abs_moved_moles += abs(delta)
-			our_moles += ours
 			if(QUANTIZE(ours) <= 0)
 				LAZYADD(zero_ours, id)
-		their_moles += theirs
 		if(QUANTIZE(theirs) <= 0)
 			LAZYADD(zero_theirs, id)
 
@@ -475,14 +514,33 @@ What are the archived variables for?
 				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
 					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
 
+	// Суммы молей обеих сторон нужны ровно для возвращаемого перепада давления, и
+	// только когда он кому-то нужен. Раньше они копились прямо в цикле по газам -
+	// два сложения и лишняя ветка на КАЖДЫЙ ключ, включая те, по которым ничего не
+	// двигалось, - хотя чаще всего результат тут же выбрасывался. Нативная свёртка
+	// снимает ту же сумму за 0.09 us против 0.64 у DM-цикла, поэтому дешевле
+	// спросить её один раз в конце, чем накапливать по дороге.
+	//
+	// Считается ДО чистки нулевых ключей: удаляются значения с QUANTIZE(x) <= 0,
+	// и снять сумму после Remove значило бы вернуть чуть другое число.
+	. = 0
+	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
+		var/our_moles = values_sum(cached_gases)
+		var/their_moles = values_sum(sharer_gases)
+		. = (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
+
+	// Ревизию бампает сама чистка, а не гейт по abs_moved_moles выше: проход, на
+	// котором ни одного моля не сдвинулось, всё равно может выкинуть ключ, и тогда
+	// мемо total_moles/heat_capacity/archive продолжало бы отдавать сумму с уже
+	// удалённым газом до следующей настоящей мутации. Инвариант простой: список
+	// изменился - ревизия изменилась.
 	if(zero_ours)
 		cached_gases.Remove(zero_ours)
+		mutation_rev++
 	if(zero_theirs)
 		sharer_gases.Remove(zero_theirs)
-
-	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
-		return (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
-	return 0
+		sharer.mutation_rev++
+	return .
 
 /// One-sided share() against an immutable template mixture (planetary atmosphere):
 /// src moves toward the template exactly as share(fresh_template_copy, coeff, coeff)

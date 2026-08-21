@@ -4030,7 +4030,7 @@
 /turf/open/floor/plasteel/white,
 /area/mine/xenoarch_area_c)
 "dbw" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "dbH" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -6555,9 +6555,6 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "fcZ" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/machinery/light{
 	dir = 1
 	},
@@ -26173,7 +26170,6 @@
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "ttB" = (
-/obj/machinery/pool/controller,
 /turf/open/indestructible/hoteltile,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "tus" = (
@@ -27165,7 +27161,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "udn" = (
 /obj/structure/pool/ladder,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "udq" = (
 /obj/effect/turf_decal/bot/yellow,
@@ -30102,11 +30098,7 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_c)
 "wAv" = (
-/obj/machinery/pool/drain{
-	pixel_x = -17;
-	pixel_y = 17
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "wAM" = (
 /obj/structure/flora/junglebush/large{

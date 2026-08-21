@@ -101,7 +101,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 			else
 				temp = T20C
 		if(temp > boiling_point)
-			T.atmos_spawn_air("[get_gas()]=[volume/molarity];TEMP=[temp]")
+			T.atmos_spawn_air("[get_gas()]=[volume/(molarity*2)];TEMP=[temp]")
 
 /datum/reagent/proc/on_mob_life(mob/living/carbon/M)
 	current_cycle++

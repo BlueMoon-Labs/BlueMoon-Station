@@ -6,7 +6,10 @@
 #
 # Usage: tools/atmos_bench/run_stress_suite.sh [map] [cycles] [skip-build]
 #   map        json name from _maps/, default runtimestation (fast boot)
-#   cycles     SSair cycles per scenario, default 180
+#   cycles     SSair cycles per scenario, default 240. sustained-leak wants 600+
+#              to reach its plateau (see run_headless.sh); at the default its
+#              number is a settling transient, not a steady state - raise the
+#              argument if that scenario is what you came for.
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
 set -u
 cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
@@ -14,8 +17,8 @@ cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; 
 MAP="${1:-runtimestation}"
 CYCLES="${2:-240}"
 SKIP_BUILD="${3:-}"
-SCENARIOS=(plasma-fire giant-hall giant-hall-eq room-grid pipenet-stress heat-wall multi-breach
-           space-wind reaction-zoo he-loop atom-churn changeturf-storm station-breach)
+SCENARIOS=(plasma-fire giant-hall giant-hall-eq room-grid sustained-leak pipenet-stress heat-wall
+           multi-breach space-wind reaction-zoo he-loop atom-churn changeturf-storm station-breach)
 
 # Burst scenarios fire their one-shot event after the map's own settling noise
 # has decayed; the recurring ones keep a short interval so their load never
