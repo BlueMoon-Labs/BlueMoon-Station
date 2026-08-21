@@ -19,7 +19,7 @@
 	var/keyname = C.key
 	var/heart_suffix = ""
 	if(client_has_active_heart(C))
-		var/datum/asset/spritesheet/chat/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 		var/heart_tag = sheet?.icon_tag("emoji-heart")
 		if(heart_tag)
 			heart_suffix = " [heart_tag]"

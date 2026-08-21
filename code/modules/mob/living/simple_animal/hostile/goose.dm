@@ -329,9 +329,10 @@
 		if(!silent)
 			owner?.balloon_alert(owner, "stomach empty!")
 		return FALSE
-	if(owner.has_status_effect(/datum/status_effect/goose_vomit))
+	var/mob/living/living_owner = owner
+	if(living_owner?.has_status_effect(/datum/status_effect/goose_vomit))
 		if(!silent)
-			owner.balloon_alert(owner, "already vomiting!")
+			living_owner.balloon_alert(living_owner, "already vomiting!")
 		return FALSE
 	return TRUE
 

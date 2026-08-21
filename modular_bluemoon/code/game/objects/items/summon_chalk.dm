@@ -15,7 +15,7 @@
 		return
 
 	visible_message("<span class='notice'>[user] starts scribe some kind of runes!</span>")
-	if(do_after(user, 5 SECONDS, target))
+	if(do_after(user, 1.5 SECONDS, target))
 		new /obj/effect/summon_rune(target)
 		qdel(src)
 
@@ -25,6 +25,7 @@
 	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "rune_pink"
 	light_color = LIGHT_COLOR_PINK
+	anchored = TRUE
 	var/cooldown = 0
 
 /obj/effect/summon_rune/Initialize(mapload)

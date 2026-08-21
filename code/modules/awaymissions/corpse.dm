@@ -127,7 +127,11 @@
 			mob_gender = pick(MALE, FEMALE)
 		M.gender = mob_gender
 	if(faction)
-		M.faction = list(faction)
+		//Варэдит на карте может задать и строку, и готовый список. Голое list(faction) во втором
+		//случае давало список внутри списка: такая фракция не совпадала ни с одной чужой, и моб
+		//становился врагом вообще всем, включая своих.
+		var/list/spawn_faction = islist(faction) ? faction : list(faction)
+		M.faction = spawn_faction.Copy()
 	if(disease)
 		M.ForceContractDisease(new disease)
 	if(death)

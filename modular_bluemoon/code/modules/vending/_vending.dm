@@ -246,6 +246,7 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	set_wires(new /datum/wires/vending(src))
 
 	if(build_inv) //non-constructable vending machine
+		build_products_from_categories()
 		build_inventories()
 
 	slogan_list = splittext(product_slogans, ";")
@@ -944,7 +945,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/vending),
+		get_asset_datum(/datum/asset/spritesheet_batched/vending),
 	)
 
 /obj/machinery/vending/ui_interact(mob/user, datum/tgui/ui)

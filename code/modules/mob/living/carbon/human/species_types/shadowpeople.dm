@@ -37,21 +37,22 @@
 	id = SPECIES_NIGHTMARE
 	limbs_id = SPECIES_SHADOW
 	burnmod = 1.5
-	brutemod = 0.75
+	brutemod = 0.5
 	blacklisted = TRUE
+	nojumpsuit = TRUE
 	no_equip = list(ITEM_SLOT_MASK, ITEM_SLOT_OCLOTHING, ITEM_SLOT_GLOVES, ITEM_SLOT_FEET, ITEM_SLOT_ICLOTHING, ITEM_SLOT_SUITSTORE)
 	species_traits = list(NOBLOOD,NO_UNDERWEAR,NO_DNA_COPY,NOTRANSSTING,NOEYES,HAIR)
-	inherent_traits = list(TRAIT_RESISTCOLD,TRAIT_NOBREATH,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_CHUNKYFINGERS,TRAIT_RADIMMUNE,TRAIT_VIRUSIMMUNE,TRAIT_PIERCEIMMUNE,TRAIT_NODISMEMBER,TRAIT_NOHUNGER,TRAIT_NOTHIRST)
+	inherent_traits = list(TRAIT_RESISTCOLD,TRAIT_NOBREATH,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_CHUNKYFINGERS,TRAIT_RADIMMUNE,TRAIT_VIRUSIMMUNE,TRAIT_PIERCEIMMUNE,TRAIT_NODISMEMBER,TRAIT_NOHUNGER,TRAIT_NOTHIRST,CAN_BE_OPERATED_WITHOUT_PAIN,TRAIT_NODISMEMBER)
 	mutanteyes = /obj/item/organ/eyes/night_vision/nightmare
 	mutant_organs = list(/obj/item/organ/heart/nightmare)
 	mutant_brain = /obj/item/organ/brain/nightmare
 
-	var/info_text = "You are a <span class='danger'>Nightmare</span>. The ability <span class='warning'>shadow walk</span> allows unlimited, unrestricted movement in the dark while activated. \
+	var/info_text = "You are a <span class='danger'><b>Nightmare</b></span>. The ability <span class='warning'>shadow walk</span> allows unlimited, unrestricted movement in the dark while activated. \
 					Your <span class='warning'>light eater</span> will destroy any light producing objects you attack, as well as destroy any lights a living creature may be holding. You will automatically dodge gunfire and melee attacks when on a dark tile. If killed, you will eventually revive if left in darkness."
 
 /datum/species/shadow/nightmare/on_species_gain(mob/living/carbon/C, datum/species/old_species)
 	. = ..()
-	to_chat(C, "[info_text]")
+	to_chat(C, examine_block(info_text))
 
 	C.fully_replace_character_name("[pick(GLOB.nightmare_names)]")
 // BLUEMOON ADD START - Задаем найтмеру темно-пепельные волосы
@@ -61,6 +62,16 @@
 	H.update_hair()
 	H.grad_style = NONE
 // BLUEMOON ADD END
+	for(var/spell_type in subtypesof(/datum/action/cooldown/nightmare))
+		var/datum/action/cooldown/spell = new spell_type(C)
+		spell.Grant(C)
+
+/datum/species/shadow/nightmare/on_species_loss(mob/living/carbon/C)
+	. = ..()
+	var/list/temp = LAZYCOPY(C.actions)
+	for(var/datum/action/cooldown/nightmare/spell in temp)
+		qdel(spell)
+
 /datum/species/shadow/nightmare/bullet_act(obj/item/projectile/P, mob/living/carbon/human/H)
 	var/turf/T = H.loc
 	if(istype(T))
@@ -124,13 +135,6 @@
 	user.temporarilyRemoveItemFromInventory(src, TRUE)
 	Insert(user)
 
-/obj/item/organ/heart/nightmare/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
-	..()
-//BLUEMOON REMOVE START - Заставляем Кошмара спавнится без клинка
-	// if(special != HEART_SPECIAL_SHADOWIFY)
-	// 	blade = new/obj/item/light_eater
-	// 	M.put_in_hands(blade)
-//BLUEMOON REMOVE END
 /obj/item/organ/heart/nightmare/Remove(special = FALSE)
 	respawn_progress = 0
 	if(!QDELETED(owner) && blade && special != HEART_SPECIAL_SHADOWIFY)
@@ -162,16 +166,16 @@
 		owner.visible_message("<span class='warning'>[owner] staggers to [owner.ru_ego()] feet!</span>")
 		playsound(owner, 'sound/hallucinations/far_noise.ogg', 50, 1)
 		respawn_progress = 0
-// BLUEMOON ADD START - Добавляем кнопку интерфейса, чтобы убирать/доставать клинок
+
 /obj/item/organ/heart/nightmare/ui_action_click(mob/living/carbon/M, action)
-	..()
-	blade = new/obj/item/light_eater
-	if (locate(/obj/item/light_eater) in M.held_items)
-		for(var/obj/item/light_eater/I in M.held_items)
-			qdel(I)
+	if(QDELETED(blade))
+		blade = new(src)
+	if(blade.loc == src)
+		M.put_in_hands(blade, forced = TRUE)
 	else
-		M.put_in_hands(blade)
-// BLUEMOON ADD END
+		blade.forceMove(src)
+	playsound(M, 'sound/effects/blobattack.ogg', 30, 1)
+
 //Weapon
 
 /obj/item/light_eater
@@ -180,12 +184,19 @@
 	item_state = "arm_blade"
 	force = 30
 	armour_penetration = 25
+	stuttering = 5
 	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
-	item_flags = ABSTRACT | DROPDEL
+	item_flags = ABSTRACT
+	resistance_flags = FIRE_PROOF | ON_FIRE | UNACIDABLE | ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	usesound = 'sound/items/crowbar.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
 
 /obj/item/light_eater/Initialize(mapload)
 	. = ..()
@@ -219,47 +230,113 @@
 					disintegrate(O)
 		if(L.pulling && L.pulling.light_range && isitem(L.pulling))
 			disintegrate(L.pulling)
-	else if(isitem(AM))
-		var/obj/item/I = AM
-		if(I.light_range && I.light_power)
-			disintegrate(I)
-	else if (isstructure(AM))
-		var/obj/structure/S = AM
-		if(istype(S, /obj/structure/glowshroom) || istype(S, /obj/structure/marker_beacon))
-			qdel(S)
-			visible_message("<span class='danger'>[S] is disintegrated by [src]!</span>")
-	else if(AM.light_range && AM.light_power  && !(istype(AM, /obj/machinery/power/apc) || istype(AM, /obj/machinery/airalarm)))
-		var/obj/target_object = AM
-		target_object.take_damage(force * 5, BRUTE, MELEE, 0)
+	else if(istype(AM, /obj/structure/glowshroom) || istype(AM, /obj/structure/marker_beacon))
+		qdel(AM)
+		visible_message(span_danger("[AM] is disintegrated by [src]!</span>"))
+	else if(isitem(AM) && AM.light_range && AM.light_power)
+		disintegrate(AM)
+		return
 
+/obj/item/light_eater/get_damage_to_obj(obj/O, mob/living/user)
+	. = ..()
+	var/damage_multiplier = 3.5
+	if(istype(O, /obj/machinery/power/apc) || istype(O, /obj/machinery/airalarm))
+		damage_multiplier = 2.5
+	else if(O.light_range && O.light_power)
+		damage_multiplier = 5
+
+	. *= damage_multiplier
+
+#define NIGHTMARE_LIGHT_OFF_PROC(atom_to_off) \
+	var/atom/movable/true_atom_to_off = astype(atom_to_off); \
+	if(true_atom_to_off){ \
+		if(istype(true_atom_to_off, /obj/machinery/light)) { \
+			var/obj/machinery/light/light = true_atom_to_off; \
+			. = light.break_light_tube(); \
+		} \
+		else if(istype(true_atom_to_off, /obj/item/modular_computer/pda)) { \
+			var/obj/item/modular_computer/pda/PDA = true_atom_to_off; \
+			PDA.set_light_on(FALSE); \
+			PDA.fon = FALSE; \
+			PDA.update_icon(); \
+			. = TRUE; \
+		} \
+		else if(istype(true_atom_to_off, /obj/item/gun)) { \
+			var/obj/item/gun/weapon = true_atom_to_off; \
+			if(weapon.gun_light) { \
+				var/obj/item/flashlight/seclite/light = weapon.gun_light; \
+				light.forceMove(get_turf(weapon)); \
+				light.burn(); \
+				weapon.gun_light = null; \
+				weapon.update_gunlight(); \
+				QDEL_NULL(weapon.alight); \
+				weapon.visible_message(span_danger("[light] on [true_atom_to_off] flickers out and disintegrates!")); \
+				. = TRUE; \
+			}; \
+		} \
+		else if(true_atom_to_off.light_range && true_atom_to_off.light_power) { \
+			if(IS_OVERLAY_LIGHT_SYSTEM(true_atom_to_off.light_system)) \
+				true_atom_to_off.set_light_on(FALSE); \
+			else \
+				true_atom_to_off.set_light(0); \
+			. = TRUE; \
+		}; \
+	}; \
 
 /obj/item/light_eater/proc/disintegrate(obj/item/O)
-	if(istype(O, /obj/item/modular_computer/pda))
-		var/obj/item/modular_computer/pda/PDA = O
-		PDA.set_light_on(FALSE) // оверлейный свет ПДА: гасим через сеттер, а не легаси set_light()
-		PDA.fon = FALSE
-		PDA.update_icon()
-		visible_message("<span class='danger'>The light in [PDA] shorts out!</span>")
-	else if(istype(O, /obj/item/gun))
-		var/obj/item/gun/weapon = O
-		if(weapon.gun_light)
-			var/obj/item/flashlight/seclite/light = weapon.gun_light
-			light.forceMove(get_turf(weapon))
-			light.burn()
-			weapon.gun_light = null
-			weapon.update_gunlight()
-			QDEL_NULL(weapon.alight)
-			visible_message("<span class='danger'>[light] on [O] flickers out and disintegrates!</span>")
-	else
-		visible_message("<span class='danger'>[O] flickers out!</span>") // BLUEMOON CHANGE - [O] is disintegrated by [src]!
-		// Оверлейные предметы гасим тумблером (их код мигрирован на set_light_on и умеет включать
-		// обратно), а COMPLEX - обнулением дальности: их потребители (свечи и т.п.) перезажигаются
-		// голым set_light(range) без l_on, и выключенный тумблер окирпичил бы предмет навсегда.
-		if(IS_OVERLAY_LIGHT_SYSTEM(O.light_system))
-			O.set_light_on(FALSE)
-		else
-			O.set_light(0)
+	NIGHTMARE_LIGHT_OFF_PROC(O)
 	playsound(src, 'sound/items/welder.ogg', 50, 1)
+
+/datum/action/cooldown/nightmare
+	name = "Some nightmare action (You shouldn't see this)"
+	icon_icon = 'icons/mob/actions/actions.dmi'
+
+/datum/action/cooldown/nightmare/darkness
+	name = "Great Darkness"
+	desc = "Восславь Тьму и уничтожь извечного врага её."
+	button_icon_state = "vampire_extinguish"
+	cooldown_time = 60 SECONDS
+	var/const/aoe_radius = 7
+
+/datum/action/cooldown/nightmare/darkness/Activate(atom/target)
+	var/list/pre_targets = range(aoe_radius, owner)
+	var/list/targets = list()
+	for(var/atom/movable/atom_target in pre_targets)
+		CHECK_TICK
+		for(var/atom/movable/AM as anything in atom_target.GetAllContents())
+			if(!istype(AM, /obj/machinery/light) && !istype(AM, /obj/item/gun) && (!AM.light_range || !AM.light_power))
+				continue
+			targets += AM
+	if(!targets.len)
+		return
+	var/success = FALSE
+	for(var/atom/movable/AM as anything in targets)
+		NIGHTMARE_LIGHT_OFF_PROC(AM)
+		if(.)
+			success++
+	if(!success)
+		return
+	StartCooldown()
+	if(prob(80))
+		playsound(get_turf(owner), 'sound/effects/screech.ogg', 100, TRUE)
+	else
+		var/static/list/temp_sounds = list(
+			'sound/hallucinations/im_here1.ogg',
+			'sound/hallucinations/im_here2.ogg',
+			'sound/hallucinations/behind_you1.ogg',
+			'sound/hallucinations/behind_you2.ogg',
+			'sound/hallucinations/i_see_you1.ogg',
+			'sound/hallucinations/i_see_you2.ogg',
+			'sound/hallucinations/look_up1.ogg',
+			'sound/hallucinations/look_up2.ogg',
+			'sound/hallucinations/over_here1.ogg',
+			'sound/hallucinations/over_here2.ogg',
+			'sound/hallucinations/over_here3.ogg',
+			'sound/hallucinations/turn_around1.ogg',
+			'sound/hallucinations/turn_around2.ogg',
+		)
+		playsound(get_turf(owner), pick(temp_sounds), 100, FALSE)
 
 #undef HEART_SPECIAL_SHADOWIFY
 #undef HEART_RESPAWN_THRESHHOLD
+#undef NIGHTMARE_LIGHT_OFF_PROC

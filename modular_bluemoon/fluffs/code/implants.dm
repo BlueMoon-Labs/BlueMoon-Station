@@ -10,7 +10,7 @@
 
 /obj/item/shield/riot/implant/lapkee
 	name = "Holographic shield"
-	desc = "Меньше вопросов! Работает и работает, не забивайте голову \"КАК\"."
+	desc = "Меньше вопросов! Работает и работает, не забивайте голову вопросом \"КАК\"."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
 	icon_state = "lapkee_riot_shield"
 	item_state = "lapkee_riot_shield"

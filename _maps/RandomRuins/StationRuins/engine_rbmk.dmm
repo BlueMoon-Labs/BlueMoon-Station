@@ -966,9 +966,6 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "adj" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
@@ -990,7 +987,6 @@
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
 "ads" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -1061,7 +1057,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "adZ" = (
 /obj/item/fuel_rod,
@@ -1072,14 +1068,14 @@
 	dir = 2;
 	pixel_y = 17
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aea" = (
 /obj/item/fuel_rod,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aeb" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -1108,19 +1104,18 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aeg" = (
-/obj/machinery/pool/drain,
 /obj/item/fuel_rod,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aeh" = (
 /obj/item/fuel_rod,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aei" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -1182,19 +1177,19 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aey" = (
 /obj/item/fuel_rod,
 /obj/effect/turf_decal/stripes/yellow/line,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aez" = (
 /obj/item/fuel_rod,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/engineering/main/reactor_core)
 "aeA" = (
 /obj/effect/turf_decal/stripes/yellow/line{

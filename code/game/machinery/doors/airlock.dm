@@ -1071,7 +1071,7 @@
 	else if(istype(C, /obj/item/pai_cable))
 		var/obj/item/pai_cable/cable = C
 		cable.plugin(src, user)
-	else if(istype(C, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	else if(istype(C, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = C
 		if(!glass)
 			to_chat(user, span_warning("Electrochromatic kits only work on glass-paneled airlocks."))
@@ -1238,9 +1238,8 @@
 			to_chat(user, "<span class='warning'>It's welded, it won't budge!</span>")
 			return
 
-		var/time_to_open = 5
 		if(hasPower() && !prying_so_hard)
-			time_to_open = 50
+			var/time_to_open = 5 SECONDS
 			playsound(src, 'sound/machines/airlock_alien_prying.ogg',100,1) //is it aliens or just the CE being a dick?
 			prying_so_hard = TRUE
 			if(do_after(user, time_to_open,target = src))

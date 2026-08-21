@@ -28,8 +28,6 @@
 	},
 /turf/open/floor/festive/trainplatform,
 /area/ruin/space/has_grav/AtmosAsteroid)
-"gG" = (
-/turf/closed/wall/r_wall)
 "gU" = (
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 8
@@ -176,7 +174,8 @@
 /turf/open/floor/engine/n2,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "uS" = (
-)
+/turf/open/space/basic,
+/area/space)
 "vo" = (
 /obj/machinery/atmospherics/components/trinary/mixer/flipped{
 	dir = 4
@@ -372,7 +371,8 @@
 /turf/open/floor/engine/o2,
 /area/ruin/space/has_grav/AtmosAsteroid)
 "QP" = (
-/turf/closed/mineral)
+/turf/closed/mineral,
+/area/space)
 "Ra" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector{
 	dir = 1
@@ -870,9 +870,9 @@ QP
 QP
 zH
 zH
-gG
-gG
-gG
+Ny
+Ny
+Ny
 Ny
 LJ
 Oc

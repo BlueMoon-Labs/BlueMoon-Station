@@ -187,7 +187,7 @@
 		var/turf/rand_location = locate(rand(50, 150), rand(50, 150), lavaland_z_lvl)
 		laser = new (rand_location)
 		log_admin("BFL emitter has been activated without proper BFL receiver connection or it has been emagged at [AREACOORD(src)]")
-		var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/icons/obj/machines/BFL_Mission/Laser_small_icon.dmi', "Laser_Red")
+		var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/icons/obj/machines/BFL_mission/Laser_small_icon.dmi', "Laser_Red")
 		notify_ghosts("BFL выжигает лаваленд!", source = laser, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "BFL")
 		for(var/M in GLOB.alive_mob_list)
 			var/turf/mob_turf = get_turf(M)
@@ -424,7 +424,7 @@
 
 /atom/movable/bfl_receiver_light
 	name = ""
-	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/Hole.dmi'
+	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Hole.dmi'
 	icon_state = "Receiver_Light_0"
 	layer = LOW_ITEM_LAYER
 	appearance_flags = TILE_BOUND|PIXEL_SCALE|LONG_GLIDE
@@ -449,7 +449,7 @@
 /obj/machinery/bfl_lens
 	name = "High-precision lens"
 	desc = "Чрезвычайно хрупкая, обращайтесь осторожно."
-	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/Hole.dmi'
+	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Hole.dmi'
 	icon_state = "Lens_Pull"
 	max_integrity = 10
 	layer = ABOVE_MOB_LAYER
@@ -490,7 +490,7 @@
 /obj/machinery/bfl_lens/update_overlays()
 	. = ..()
 	if(state)
-		. += image('modular_bluemoon/icons/obj/machines/BFL_Mission/Laser.dmi', icon_state = "Laser_Blue", pixel_y = 64, layer = GASFIRE_LAYER)
+		. += image('modular_bluemoon/icons/obj/machines/BFL_mission/Laser.dmi', icon_state = "Laser_Blue", pixel_y = 64, layer = GASFIRE_LAYER)
 
 
 /obj/machinery/bfl_lens/proc/activate_lens()
@@ -551,7 +551,7 @@
 /obj/bfl_crack
 	name = "rich plasma deposit"
 	anchored = TRUE
-	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/Hole.dmi'
+	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Hole.dmi'
 	icon_state = "Crack"
 	pixel_x = -32
 	pixel_y = -32
@@ -578,7 +578,7 @@
 /obj/singularity/bfl_red
 	name = "BFL"
 	desc = "Гигантский лазер, предназначенный для добычи руды, теперь добывает всё, что встретится на его пути по всему сектору."
-	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/Laser.dmi'
+	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Laser.dmi'
 	icon_state = "Laser_Red"
 	pixel_x = -32
 	pixel_y = 0
@@ -690,7 +690,7 @@
 /obj/effect/bfl_laser
 	name = "big laser beam"
 	desc = "Огромный сияющий луч, бьющий сверху вниз. Лучше не касаться."
-	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/laser_tile.dmi'
+	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/laser_tile.dmi'
 	icon_state = "laser"
 
 /obj/effect/bfl_laser/Initialize(mapload)

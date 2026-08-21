@@ -551,8 +551,10 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	// вторую копию каждой атмос-машины на те же тайлы, у устройств один слот nodes
 	// на копию - вторая передавала в setPipenet отсутствующий в nodes объект.
 	GLOB.stationroom_landmarks -= src
+	// Успех считает on_map_loaded() внутри load(): ++ здесь давал двойной счёт на
+	// каждую удачную загрузку и ложную единицу на провалившуюся, хотя loaded
+	// читается как "шаблон реально размещён".
 	template.load(T, centered = FALSE)
-	template.loaded++
 	qdel(src)
 	return TRUE
 

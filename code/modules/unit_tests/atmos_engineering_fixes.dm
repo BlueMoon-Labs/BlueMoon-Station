@@ -697,6 +697,15 @@
 /// прямо из парного шаринга, не дожидаясь зонной декомп-тревоги. Раунд 9906:
 /// фронт быстрой разгерметизации проходил открытые двери раньше, чем зона
 /// успевала алертнуться, и станция дренировалась целиком.
+/// Зонд декомп-тревоги: считает обращения, но саму тревогу не поднимает - зона
+/// резервации общая на все тесты, а `firealert()` заводит ей processing с
+/// захлопом каждые десять секунд.
+/obj/machinery/airalarm/unit_test_decomp_probe
+	var/decomp_calls = 0
+
+/obj/machinery/airalarm/unit_test_decomp_probe/handle_decomp_alarm()
+	decomp_calls++
+
 /datum/unit_test/firelock_pair_pressure_slam
 	priority = TEST_LONGER
 
@@ -715,6 +724,9 @@
 	TEST_ASSERT(istype(tile_a) && istype(tile_b), "arena pair is not open turfs")
 	var/obj/machinery/door/firedoor/lock = allocate(/obj/machinery/door/firedoor, tile_b)
 	TEST_ASSERT(!lock.density, "a freshly spawned firelock must start open")
+	// Сигнализация на том же тайле, что и перепад: ровно та расстановка, на
+	// которой захлоп заодно поднимал зонную тревогу.
+	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm_probe = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, tile_a)
 	tile_a.ImmediateCalculateAdjacentTurfs()
 	tile_b.ImmediateCalculateAdjacentTurfs()
 	TEST_ASSERT(tile_a.atmos_adjacent_turfs[tile_b] & ATMOS_ADJACENT_FIRELOCK, "adjacency must carry the firelock bit for the pair")
@@ -740,6 +752,11 @@
 			break
 		sleep(1)
 	TEST_ASSERT(closed, "a hazardous cross-door pressure delta must slam the firelock shut")
+	// Створка - да, сирена - нет. Полновесная тревога базового ареала ставится
+	// только подтверждённым декомп-событием (decompression_alarm_needs_confirmation),
+	// а перепад в 50 кПа через проём выдаёт любой выпуск баллона или цикл шлюза.
+	TEST_ASSERT_EQUAL(alarm_probe.decomp_calls, 0,
+		"пер-парный захлоп поднял зонную пожарную тревогу мимо подтверждающего гейта ([alarm_probe.decomp_calls] обращений)")
 
 	// Cleanup: воздух и актив; дверь снимет allocate.
 	tile_a.air.copy_from_turf(tile_a)

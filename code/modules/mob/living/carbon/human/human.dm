@@ -107,6 +107,26 @@
 			. += ""
 			. += "Chemical Storage: [changeling.chem_charges]/[changeling.chem_storage]"
 			. += "Absorbed DNA: [changeling.absorbedcount]"
+	if(istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
+		var/obj/item/clothing/suit/space/hardsuit/nano/nanosuit = wear_suit
+		var/datum/gas_mixture/environment = loc?.return_air()
+		. += ""
+		. += "Протоколы Crynet: [nanosuit.shutdown ? "отключены" : "активны"]"
+		. += "Заряд энергии: [(nanosuit.cellon && nanosuit.cell) ? "[round(nanosuit.cell.percent())]%" : "нет данных"]"
+		. += "Режим: [nanosuit.mode]"
+		. += "Общее состояние: [nanosuit.healthon ? "[health]% здоровья" : "нет данных"]"
+		. += "Питание: [nanosuit.healthon ? nutrition : "нет данных"]"
+		. += "Кислородное голодание: [nanosuit.healthon ? getOxyLoss() : "нет данных"]"
+		. += "Уровень токсинов: [nanosuit.healthon ? getToxLoss() : "нет данных"]"
+		. += "Ожоги: [nanosuit.healthon ? getFireLoss() : "нет данных"]"
+		. += "Механические травмы: [nanosuit.healthon ? getBruteLoss() : "нет данных"]"
+		. += "Уровень радиации: [nanosuit.radon ? "[radiation] рад" : "нет данных"]"
+		. += "Температура тела: [nanosuit.healthon ? "[bodytemperature - T0C] °C ([bodytemperature * 1.8 - 459.67] °F)" : "нет данных"]"
+		. += "Давление среды: [(nanosuit.atmoson && environment) ? "[environment.return_pressure()] кПа" : "нет данных"]"
+		. += "Температура среды: [(nanosuit.atmoson && environment) ? "[round(environment.return_temperature() - T0C, 0.01)] °C ([round(environment.return_temperature(), 0.01)] K)" : "нет данных"]"
+	else if(istype(wear_suit, /obj/item/clothing/suit/space/space_ninja))
+		var/obj/item/clothing/suit/space/space_ninja/ninja_suit = wear_suit
+		. += ninja_suit.get_status_readout(src)
 
 
 // called when something steps onto a human

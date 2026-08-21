@@ -174,6 +174,9 @@
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	item_flags = NEEDS_PERMIT | ABSTRACT | DROPDEL
 	w_class = WEIGHT_CLASS_HUGE
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 	force = 35
 	throwforce = 0 //Just to be on the safe side
 	throw_range = 0
@@ -208,26 +211,6 @@
 	else if(istype(target, /obj/machinery/computer))
 		var/obj/machinery/computer/C = target
 		C.attack_alien(user) //muh copypasta
-
-	else if(istype(target, /obj/machinery/door/airlock))
-		var/obj/machinery/door/airlock/A = target
-
-		if(!A.requiresID() || A.allowed(user)) //This is to prevent stupid shit like hitting a door with an arm blade, the door opening because you have acces and still getting a "the airlocks motors resist our efforts to force it" message.
-			return
-		if(A.locked)
-			to_chat(user, "<span class='warning'>The airlock's bolts prevent it from being forced!</span>")
-			return
-
-		if(A.hasPower())
-			user.visible_message("<span class='warning'>[user] jams [src] into the airlock and starts prying it open!</span>", "<span class='warning'>We start forcing [src] open.</span>", \
-			"<span class='italics'>You hear a metal screeching sound.</span>")
-			playsound(A, 'sound/machines/airlock_alien_prying.ogg', 100, 1)
-			if(!do_after(user, 100, target = A))
-				return
-		//user.say("Heeeeeeeeeerrre's Johnny!")
-		user.visible_message("<span class='warning'>[user] forces the airlock to open with [user.ru_ego()] [src]!</span>", "<span class='warning'>We force [src] to open.</span>", \
-		"<span class='italics'>You hear a metal screeching sound.</span>")
-		A.open(2)
 
 /obj/item/melee/arm_blade/dropped(mob/user)
 	..()

@@ -93,6 +93,16 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// турфа она нулевая, и запись стала бы неудаляемой.
 		if(SSair)
 			SSair.evict_active_turf(src)
+			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
+			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
+			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись
+			// в turf_list группы молча стала бы ссылкой на новый турф с нулевым
+			// обратным указателем, а merge_groups() доверяет спискам групп как
+			// непересекающимся и склеивает их без проверки вхождения. Хороним
+			// группу явно - живые соседи пересоберут её следующим циклом.
+			var/turf/open/open_self = src
+			if(istype(open_self) && open_self.excited_group)
+				open_self.excited_group.garbage_collect()
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
@@ -114,9 +124,11 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_bp = blueprint_data
 	blueprint_data = null
 
-	// Exposure listeners survive turf replacement: qdel below cleanly severs
+// Exposure listeners survive turf replacement: qdel below cleanly severs
 	// every signal registration, so each listener re-registers on the new datum.
 	var/list/old_exposure_listeners = atmos_exposure_listeners
+	//LIQUIDS ADD - cache liquids so we can move them to the new turf
+	var/obj/effect/abstract/liquid_turf/old_liquids = liquids
 
 	var/list/old_baseturfs = baseturfs
 
@@ -130,7 +142,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
-
 	for(var/i in transferring_comps)
 		W.TakeComponent(i)
 
@@ -161,6 +172,30 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		W.AfterChange(flags)
 
 	W.blueprint_data = old_bp
+
+	//LIQUIDS ADD - move liquids to the new turf
+	if(old_liquids)
+		if(W.liquids)
+			var/liquid_cache = W.liquids //Need to cache and re-set some vars due to the cleaning on Destroy(), and turf references
+			if(old_liquids.immutable)
+				old_liquids.remove_turf(src)
+			else
+				qdel(old_liquids, TRUE)
+			W.liquids = liquid_cache
+			W.liquids.my_turf = W
+		else
+			if(flags & CHANGETURF_INHERIT_AIR)
+				W.liquids = old_liquids
+				old_liquids.my_turf = W
+				if(old_liquids.immutable)
+					W.convert_immutable_liquids()
+				else
+					W.reasses_liquids()
+			else
+				if(old_liquids.immutable)
+					old_liquids.remove_turf(src)
+				else
+					qdel(old_liquids, TRUE)
 
 	// dynamic_lumcount переносится безусловно (не только при SSlighting.initialized):
 	// оверлейный свет живёт поверх корнер-системы и может гореть до её инициализации.

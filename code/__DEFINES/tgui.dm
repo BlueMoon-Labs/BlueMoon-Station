@@ -58,6 +58,13 @@
 	"%7b%22type%22%3a%22[type]%22%2c%22payload%22%3a[url_encode(json_encode(payload))]%7d" \
 )
 
+/// С какого размера собранное сообщение tgui считается опасно тяжёлым.
+/// Обычная нагрузка интерфейса - единицы килобайт. Порог стоит выше самого толстого
+/// из нынешних интерфейсов (меню крафта, 0.6 МБ после url_encode), чтобы срабатывал
+/// не на текущем положении дел, а на возврате в него: мегабайтная нагрузка - это уже
+/// запрос непрерывного куска памяти, на котором 32-битный процесс умирает.
+#define TGUI_PAYLOAD_WARNING_SIZE (1024 * 1024)
+
 // TGUI defines
 #define UI_MODAL_INPUT_MAX_LENGTH 1024
 #define UI_MODAL_INPUT_MAX_LENGTH_NAME 64 // Names for generally anything don't go past 32, let alone 64.

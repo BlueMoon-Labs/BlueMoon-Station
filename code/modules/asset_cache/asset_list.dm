@@ -1,7 +1,14 @@
 GLOBAL_LIST_EMPTY(asset_datums)
 
-/proc/get_asset_datum(type)
+/// Достаёт (или создаёт) датум ассета, НЕ дожидаясь его готовности.
+/// Нужен там, где ассет только регистрируется - например при инициализации SSassets.
+/proc/load_asset_datum(type)
 	return GLOB.asset_datums[type] || new type()
+
+/// Достаёт датум ассета и гарантирует, что он собран и зарегистрирован.
+/proc/get_asset_datum(type)
+	var/datum/asset/loaded_asset = GLOB.asset_datums[type] || new type()
+	return loaded_asset.ensure_ready()
 
 /datum/asset
 	var/_abstract = /datum/asset
@@ -10,6 +17,14 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /datum/asset/New()
 	GLOB.asset_datums[type] = src
 	register()
+
+/// Заглушка для ассетов с отложенной сборкой: досбирает себя, если запросили раньше очереди.
+/datum/asset/proc/ensure_ready()
+	return src
+
+/// Заглушка для ассетов, сборку которых ведёт SSasset_loading.
+/datum/asset/proc/queued_generation()
+	CRASH("[type] попал в очередь SSasset_loading, не реализовав queued_generation()")
 
 /datum/asset/proc/get_url_mappings()
 	return list()
@@ -71,21 +86,8 @@ GLOBAL_LIST_EMPTY(asset_datums)
 		var/datum/asset/A = get_asset_datum(type)
 		. += A.get_url_mappings()
 
-/**
- * Каталог кросс-раундового кэша спрайтшитов.
- *
- * Мир с UNIT_TESTS собирает не тот же набор спрайтов, что боевой (см.
- * assets/vending.dm - под тестами предметы с отсутствующим icon_state
- * пропускаются), поэтому листы у них разные побайтово. Пиши оба в один каталог -
- * и прогон dm-test поверх живого сервера перезапишет png/css прямо под ним:
- * раунд начнёт отдавать новое содержимое под старыми, уже посчитанными именами,
- * а css уедет ссылаться на png, которого под этим именем никто не отправлял.
- */
-#ifdef UNIT_TESTS
-#define SPRITESHEET_CACHE_DIR "data/spritesheets_unit_tests/"
-#else
-#define SPRITESHEET_CACHE_DIR "data/spritesheets/"
-#endif
+// SPRITESHEET_CACHE_DIR живёт в code/__DEFINES/assets.dm - его же использует
+// батчёвый путь (spritesheet/batched).
 
 // Spritesheet asset
 #define SPR_SIZE 1
