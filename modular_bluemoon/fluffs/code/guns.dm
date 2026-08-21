@@ -1761,7 +1761,18 @@
 	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/largrizzly_empty_reload.ogg'
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/largrizzly/update_icon_state()
-	icon_state = "[initial(icon_state)][chambered ? "" : "e"]"
+	var/suffix = ""
+	var/is_empty = FALSE
+	if(magazine)
+		if(istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum))
+			suffix = " drum"
+		else if(istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended))
+			suffix = " extended"
+		if(magazine.ammo_count() <= 0 && !chambered)
+			is_empty = TRUE
+	else
+		is_empty = TRUE
+	icon_state = "largrizzly[suffix][is_empty ? (suffix ? " empty" : "e") : ""]"
 
 /obj/item/modkit/winchester1887_kit
 	name = "Winchester 1887 Kit"
@@ -1775,6 +1786,10 @@
 	desc = "Этот исторический предшественник помповых дробовиков демонстрирует поразительный симбиоз эпох. Старинный механизм со скобой Генри усилен скрытыми стальными вставками в узлах запирания, что позволяет механике безболезненно выдерживать колоссальное давление современных порохов."
 	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
 	icon_state = "riotshotgun"
+	item_state = "1887"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
+	inhand_x_dimension = 64
 	unique_reskin = null
 	sawn_item_state = "1887 short"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1887_shot.ogg'
@@ -1795,22 +1810,41 @@
 	desc = "Легендарный помповый дробовик 12-го калибра, чей аутентичный ореховый приклад и перфорированный стальной кожух термоизоляции дошли до нас без единого изъяна. Настоящий восторг вызывает его ударно-спусковой механизм с функцией «Slam Fire»: из-за конструктивного отсутствия разобщителя стрелку достаточно просто зажать спусковой крючок и непрерывно работать цевьем - выстрел происходит автоматически в момент запирания затвора. Это превращает ружье в сокрушительное штурмовое оружие, выдающее плотный шквал картечи со скоростью автомата."
 	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
 	icon_state = "cshotgun"
+	item_state = "1897"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
+	inhand_x_dimension = 64
 	unique_reskin = null
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	load_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_load.ogg'
 
 /obj/item/modkit/m1903_kit
 	name = "M1903 Kit"
-	desc = "A modkit for making a Bolt-Action Rifle into an M1903."
-	product = /obj/item/gun/ballistic/shotgun/boltaction/m1903
-	fromitem = list(/obj/item/gun/ballistic/shotgun/boltaction)
+	desc = "A modkit for making a hunting rifle into an M1903."
+	product = /obj/item/gun/ballistic/shotgun/huntingrifle/m1903
+	fromitem = list(/obj/item/gun/ballistic/shotgun/boltaction, /obj/item/gun/ballistic/shotgun/huntingrifle)
 
-/obj/item/gun/ballistic/shotgun/boltaction/m1903
+/obj/item/modkit/m1903_kit/on_item_replace(obj/item/gun/ballistic/old_item, obj/item/gun/ballistic/modified_item)
+	if(!istype(old_item) || !istype(modified_item))
+		return
+	if(!istype(modified_item.magazine, initial(modified_item.mag_type)))
+		qdel(modified_item.magazine)
+		modified_item.magazine = new modified_item.mag_type(modified_item)
+	if(modified_item.chambered && !istype(modified_item.chambered, modified_item.magazine.ammo_type))
+		qdel(modified_item.chambered)
+		modified_item.chambered = null
+	modified_item.update_appearance()
+
+/obj/item/gun/ballistic/shotgun/huntingrifle/m1903
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "M1903 Springfield"
 	desc = "Великолепный образец дальнобойной инженерной мысли начала XX века - продольно-скользящий поворотный затвор Маузера и деревянное ложе этой винтовки находятся в музейном, полностью рабочем состоянии. Ствол и патронник винтовки профессионально переточены и адаптированы под патрон .308, что делает боепитание доступным в современных реалиях. Прицел похоже сломан."
 	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
 	icon_state = "308"
+	item_state = "1903"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
+	inhand_x_dimension = 64
 	can_bayonet = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_shot.ogg'
 	load_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
@@ -1829,6 +1863,7 @@
 	icon_state = "scorpionevo"
 	item_state = "scorpion evo"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/guns_righthand.dmi'
 	can_bayonet = FALSE
 	burst_size = 1
 	fire_delay = 5
@@ -1854,6 +1889,27 @@
 	icon_state = "comsword"
 	item_state = "baton"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/security_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/security_righthand.dmi'
 
-/obj/item/melee/baton/stuncutlass/update_icon_state()
-	icon_state = initial(icon_state)
+////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/storage/box/kumikoshouko_case
+	name = "Kumiko weapon case"
+	desc = "A military-grade weapon case issued to a single collector. The engraving on the lid reads: 'One box to rule them all'. Contains a complete set of personal weapon modification kits."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/kumikoshouko_case/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_combined_w_class = 21
+
+/obj/item/storage/box/kumikoshouko_case/PopulateContents()
+	new /obj/item/modkit/vp78tactic(src)
+	new /obj/item/modkit/largrizzly_kit(src)
+	new /obj/item/modkit/winchester1887_kit(src)
+	new /obj/item/modkit/winchester1897_kit(src)
+	new /obj/item/modkit/m1903_kit(src)
+	new /obj/item/modkit/scorpion_evo_kit(src)
+	new /obj/item/modkit/stuncutlass_kit(src)
+	new /obj/item/modkit/trenchknife_kit(src)
+	new /obj/item/modkit/bowie_kit(src)

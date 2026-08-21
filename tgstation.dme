@@ -6412,7 +6412,6 @@
 #include "modular_bluemoon\modules\liquids\code\emotes\turf_emote.dm"
 #include "modular_bluemoon\modules\liquids\code\quirks\water_aspect.dm"
 #include "modular_bluemoon\modules\liquids\code\height_floors.dm"
-#include "modular_bluemoon\modules\liquids\code\mop.dm"
 #include "modular_bluemoon\modules\liquids\code\tools.dm"
 #include "modular_bluemoon\modules\liquids\code\reagents\reagent_containers.dm"
 #include "modular_bluemoon\modules\liquids\code\reagents\chemistry\colors.dm"
