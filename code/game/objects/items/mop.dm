@@ -1,3 +1,8 @@
+#define MOP_AFTER_LIQUID_CONTINUE 1
+#define MOP_AFTER_LIQUID_CONTINUE_ANIMATE 2
+#define MOP_AFTER_LIQUID_STOP 3
+#define MOP_AFTER_LIQUID_STOP_ANIMATE 4
+
 /obj/item/mop
 	desc = "The world of janitalia wouldn't be complete without a mop."
 	name = "mop"
@@ -80,37 +85,43 @@
 		to_chat(user, "<span class='danger'>You're too exhausted for that.</span>")
 		return
 
-	var/turf/T = get_turf(A)
-
-	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart))
+	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart) || istype(A, /obj/structure/sink))
 		return
 
 	if(istype(A, /obj/item/reagent_containers)) // BLUEMOON ADD: wring the mop out into any container with Ctrl+click or harm intent
-		var/obj/item/reagent_containers/container = A
 		var/list/modifiers = params2list(click_parameters)
-		if(modifiers["ctrl"] || user.a_intent == INTENT_HARM)
-			if(container.reagents.total_volume >= container.reagents.maximum_volume)
-				to_chat(user, "<span class='warning'>[container] is full!</span>")
+		if(A.is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM))
+			if(A.reagents.total_volume >= A.reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[A] is full!</span>")
 				return
 			reagents.remove_all(reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
-			reagents.trans_to(container, reagents.total_volume)
-			to_chat(user, "<span class='notice'>You squeeze [src] out into [container].</span>")
+			reagents.trans_to(A, reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [src] out into [A].</span>")
 			playsound(A, 'sound/effects/slosh.ogg', 25, 1)
-		return
+			return
 
+	var/turf/T = get_turf(A)
 	if(T)
 		if(!L.UseStaminaBuffer(stamusage, warn = TRUE))
 			return
-		if(!T.liquids || !attack_liquids_turf(A, user, T.liquids))
-			// Если сушить пол не требуется, чистим
-			if(reagents.total_volume < 1)
+		var/try_clean = TRUE
+		var/need_animate = FALSE
+		if(T.liquids)
+			var/liquid_result = attack_liquids_turf(A, user, T.liquids)
+			try_clean = liquid_result == MOP_AFTER_LIQUID_CONTINUE || liquid_result == MOP_AFTER_LIQUID_CONTINUE_ANIMATE
+			need_animate = liquid_result == MOP_AFTER_LIQUID_CONTINUE_ANIMATE || liquid_result == MOP_AFTER_LIQUID_STOP_ANIMATE
+
+		if(try_clean)
+			if(reagents.total_volume >= 1)
+				user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
+				clean(T, user)
+				need_animate = TRUE
+			else if(!need_animate)
 				to_chat(user, "<span class='warning'>Your mop is dry!</span>")
-				return
-			user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
-			clean(T, user)
-		user.DelayNextAction(CLICK_CD_MELEE)
-		user.do_attack_animation(T, used_item = src)
-		playsound(T, "slosh", 50, 1)
+		if(need_animate)
+			user.DelayNextAction(CLICK_CD_MELEE)
+			user.do_attack_animation(T, used_item = src)
+			playsound(T, "slosh", 50, 1)
 
 /obj/effect/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/mop) || istype(I, /obj/item/soap))
@@ -130,12 +141,12 @@
 // Remove liquids from a turf using a mop.
 /obj/item/mop/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
 	if(liquids.fire_state)
-		return TRUE
+		return MOP_AFTER_LIQUID_STOP
 
 	var/free_space = reagents.maximum_volume - reagents.total_volume
 	if(free_space <= 0)
 		to_chat(user, span_warning("Your [src] can't absorb any more liquid!"))
-		return TRUE
+		return MOP_AFTER_LIQUID_CONTINUE
 
 	var/datum/reagents/tempr = liquids.take_reagents_flat(free_space)
 	tempr.trans_to(reagents, tempr.total_volume)
@@ -143,7 +154,7 @@
 	qdel(tempr)
 	user.do_attack_animation(target_turf, used_item = src)
 	user.changeNext_move(CLICK_CD_MELEE)
-	return TRUE
+	return MOP_AFTER_LIQUID_STOP_ANIMATE
 
 /obj/item/mop/cyborg
 	insertable = FALSE
@@ -167,9 +178,9 @@
 // Advanced mop has a self-refilling condenser, so it has no room to soak up
 // liquids into its reagents. Instead it straight up removes the whole puddle.
 /obj/item/mop/advanced/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
-	. = FALSE // Возвращаем FALSE, чтобы швабра могла и чистить и мыть одновременно
+	. = MOP_AFTER_LIQUID_CONTINUE_ANIMATE
 	if(liquids.fire_state)
-		return
+		return MOP_AFTER_LIQUID_STOP
 
 	liquids.liquid_simple_delete_flat(liquids.total_reagents)
 
@@ -212,3 +223,8 @@
 
 /obj/item/mop/advanced/cyborg
 	insertable = FALSE
+
+#undef MOP_AFTER_LIQUID_CONTINUE
+#undef MOP_AFTER_LIQUID_CONTINUE_ANIMATE
+#undef MOP_AFTER_LIQUID_STOP
+#undef MOP_AFTER_LIQUID_STOP_ANIMATE

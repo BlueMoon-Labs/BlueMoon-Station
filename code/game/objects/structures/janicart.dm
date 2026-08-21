@@ -19,10 +19,20 @@
 	. = ..()
 	create_reagents(100, OPENCONTAINER)
 	GLOB.janitor_devices += src
+	register_context()
 
 /obj/structure/janitorialcart/Destroy()
 	GLOB.janitor_devices -= src
 	return ..()
+
+/obj/structure/janitorialcart/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить|Положить швабру")
+		if(is_refillable())
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Отжать швабру")
+			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Отжать швабру")
 
 /obj/structure/janitorialcart/proc/wet_mop(obj/item/mop, mob/user)
 	if(reagents.total_volume < 1)
@@ -45,25 +55,24 @@
 	var/fail_msg = "<span class='warning'>There is already one of those in [src]!</span>"
 
 	if(istype(I, /obj/item/mop))
-		var/obj/item/mop/m=I
 		var/list/modifiers = params2list(params)
-		if(modifiers["ctrl"] || user.a_intent == INTENT_HARM) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the cart tank
-			if(m.reagents.total_volume <= 0)
-				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+		if(is_refillable() && modifiers["ctrl"] || user.a_intent == INTENT_HARM) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the I out into the cart tank
+			if(I.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The I is dry!</span>")
 				return
 			if(reagents.total_volume >= reagents.maximum_volume)
 				to_chat(user, "<span class='warning'>[src] is full!</span>")
 				return
-			m.reagents.remove_all(m.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
-			m.reagents.trans_to(src, m.reagents.total_volume)
-			to_chat(user, "<span class='notice'>You squeeze [m] out into [src].</span>")
+			I.reagents.remove_all(I.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			I.reagents.trans_to(src, I.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [I] out into [src].</span>")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
-			return
-		if(m.reagents.total_volume < m.reagents.maximum_volume)
-			if (wet_mop(m, user))
+		else if(I.reagents.total_volume < I.reagents.maximum_volume)
+			if (wet_mop(I, user))
 				return
-		if(!mymop)
-			m.janicart_insert(user, src)
+		else if(!mymop)
+			var/obj/item/mop/mop=I
+			mop.janicart_insert(user, src)
 		else
 			to_chat(user, fail_msg)
 	else if(istype(I, /obj/item/broom))
@@ -129,7 +138,7 @@
 	if(!length(items))
 		return
 	items = sort_list(items)
-	var/pick = show_radial_menu(user, src, items, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 38, require_near = TRUE)
+	var/pick = items.len == 1 ? items[1] : show_radial_menu(user, src, items, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 38, require_near = TRUE)
 	if(!pick)
 		return
 	switch(pick)
