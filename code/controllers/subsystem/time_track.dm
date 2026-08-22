@@ -82,6 +82,16 @@
 /// шагов между сверками тик не переполнят - тело цикла состоит из двух проверок типа
 /// и одного инкремента в assoc-списке.
 #define MEMORY_CENSUS_TICK_EVERY 512
+/// Сколько инстансов каждого типа разбирается по переменным ради длины списков.
+///
+/// Выборка, а не сплошной проход: обойти vars у полутора миллионов атомов - это триста
+/// миллионов обращений к ассоциативному списку, дороже всей остальной переписи на два
+/// порядка. Расслоение по типам делает выборку осмысленной: внутри одного типа списки
+/// устроены одинаково, и трёх штук хватает, чтобы узнать средний размер. Смещение у
+/// выборки есть - в неё попадают ПЕРВЫЕ встреченные инстансы типа, то есть выложенные
+/// картой, а не нажитые раундом; для типов, где эти две группы различаются, оценка врёт
+/// в меньшую сторону.
+#define MEMORY_CENSUS_LIST_SAMPLES 3
 
 SUBSYSTEM_DEF(time_track)
 	name = "Time Tracking"
@@ -860,14 +870,24 @@ SUBSYSTEM_DEF(time_track)
  * картой (полтора миллиона турфов на восемнадцати z-уровнях), они заняли бы весь список и
  * вытеснили то единственное, ради чего перепись по количеству и делается.
  *
- * Зато во второй топ - по весу - турфы входят обязательно, и там они как раз и оказываются
- * ответом. Счёт штук на вопрос "куда ушли мегабайты" не отвечает вовсе: в раунде 10022 за
- * рост в 1375 МБ отвечали 283 тысячи новых объектов, то есть по 4.8 КБ на объект, чего не
- * бывает. Вес считается по числу переменных типа: BYOND держит у каждого инстанса блок под
- * все объявленные переменные, поэтому штука с полутора сотнями переменных стоит на порядок
- * дороже штуки с десятью. Это оценка ПЛОСКОЙ части инстанса - списки (overlays, contents),
- * аппирансы и иконки живут отдельно и в неё не входят, так что сумма по весу заведомо меньше
- * VmSize и сравнивать их лоб в лоб нельзя. Сравнивать надо доли между типами.
+ * Зато во второй топ - по ШИРИНЕ ТИПА - турфы входят обязательно. Счёт штук на вопрос
+ * "куда ушли мегабайты" не отвечает вовсе: в раунде 10022 за рост в 1375 МБ отвечали
+ * 283 тысячи новых объектов, то есть по 4.8 КБ на объект, чего не бывает.
+ *
+ * ВАЖНО про эту вторую строку: ширина типа - это НЕ цена инстанса. Замером на стенде
+ * (D:/tmp/memprobe, полмиллиона датумов, три чередующихся прогона) показано, что BYOND
+ * заводит хранилище переменной ЛЕНИВО, по факту присваивания: голый датум стоит 46 Б,
+ * датум с тридцатью объявленными и ни разу не тронутыми переменными - те же 46 Б,
+ * со ста объявленными - тоже 46 Б. Ненулевые значения по умолчанию тоже бесплатны:
+ * они лежат у типа, а не у инстанса. А вот запись платная и необратимая - 15 Б за
+ * переменную плюс около 100 Б за само хранилище на первой же записи, причём платит даже
+ * запись значения, равного дефолту, и запись null поверх null. Отсюда и разнобой: турф
+ * с 190 объявленными переменными в нетронутом космосе стоит около двух сотен байт, а
+ * тот же турф после ChangeTurf и десятка присваиваний - под килобайт.
+ *
+ * Поэтому строка про ширину типа читается как "у кого таблица шире", а не как раскладка
+ * памяти. Раскладку памяти дают три другие строки: количество, длина списков и перепись
+ * не-атомных датумов.
  */
 /datum/controller/subsystem/time_track/proc/run_instance_census()
 	var/list/counts = list()
@@ -875,6 +895,14 @@ SUBSYSTEM_DEF(time_track)
 	// Тип -> длина vars. Спрашивается ровно один раз на тип: length(thing.vars) на каждом из
 	// полутора миллионов элементов стоил бы дороже всей остальной переписи.
 	var/list/type_var_slots = list()
+	// Тип -> сколько его инстансов уже разобрано по переменным, и сколько элементов нашлось
+	// в их списках. Турфы и зоны сюда идут наравне с движимым: списки есть и у них
+	// (contents, overlays, corners), а вопрос "где лежат мегабайты" к ним же и адресован.
+	var/list/type_list_samples = list()
+	var/list/type_list_slots = list()
+	// Количество ПО ВСЕМ типам, включая турфы и зоны. counts держит только движимое, а для
+	// пересчёта выборочной длины списков на весь мир нужен множитель для каждого типа.
+	var/list/all_counts = list()
 	// Индекс - номер z, а не ключ: ассоциативный список с числовыми ключами в DM неотличим
 	// от обращения по индексу и падает на первом же несуществующем ключе.
 	var/list/movables_per_z = new /list(world.maxz)
@@ -893,6 +921,10 @@ SUBSYSTEM_DEF(time_track)
 	// в цифру прироста. Само по себе это не лечится (снимка полутора миллионов элементов
 	// за один тик не сделать), но величину дрейфа надо назвать: прирост меньше неё - шум.
 	var/expected = length(world.contents)
+	// Стенное время, а не world.time: перебор растянут по тикам, и интересна как раз та
+	// длительность, которую видит наблюдатель. Она же - единственный способ заметить, что
+	// перепись подорожала: строка в логе называет её каждый раз.
+	var/started_at = REALTIMEOFDAY
 
 	for(var/atom/thing as anything in world.contents)
 		scanned++
@@ -909,6 +941,11 @@ SUBSYSTEM_DEF(time_track)
 			slots = length(thing.vars)
 			type_var_slots[atom_type] = slots
 		weights[atom_type] += slots
+		all_counts[atom_type] += 1
+		var/sampled = type_list_samples[atom_type]
+		if(sampled < MEMORY_CENSUS_LIST_SAMPLES)
+			type_list_samples[atom_type] = sampled + 1
+			type_list_slots[atom_type] += instance_list_slots(thing)
 		if(isturf(thing))
 			turf_count++
 			turf_slots += slots
@@ -940,14 +977,97 @@ SUBSYSTEM_DEF(time_track)
 	// num2text здесь по той же причине, что и в соседней строке про вес: турфов в мире
 	// больше миллиона, и без него в лог попадает "1.17045e+006" вместо числа.
 	var/drift = expected - scanned
-	log_world("## MEMORY: перепись инстансов: [num2text(turf_count + area_count + movable_count, 12)] всего \
+	log_world("## MEMORY: перепись инстансов за [round((REALTIMEOFDAY - started_at) / 10, 0.1)] с: \
+		[num2text(turf_count + area_count + movable_count, 12)] всего \
 		(турфов [num2text(turf_count, 12)], зон [area_count], прочего [num2text(movable_count, 12)])\
 		[drift ? ", мир сдвинулся на [num2text(drift, 12)] за время перебора - прирост меньше этого читать нельзя" : ""]; \
 		[growth_report ? "прирост с прошлой переписи" : "самые многочисленные типы"]: \
 		[length(top) ? top.Join(", ") : "пусто"]")
 
 	log_instance_weights(weights, counts, type_var_slots, turf_slots, area_slots, movable_slots)
+	log_list_slots(all_counts, type_list_samples, type_list_slots)
 	log_movables_per_z(movables_per_z)
+	#ifdef DATUM_CENSUS
+	for(var/line in datum_census_lines(MEMORY_CENSUS_TOP))
+		log_world(line)
+	#endif
+
+/**
+ * Сколько элементов лежит в списочных переменных одного инстанса.
+ *
+ * Третье слепое пятно переписи после не-атомных датумов и внутренних таблиц BYOND: растущий
+ * ассоциативный список на живом атоме даёт мегабайты при НУЛЕВОМ приросте инстансов, а
+ * length(vars) считает ШИРИНУ таблицы типа, то есть про длину списков не знает ничего.
+ *
+ * Цена элемента списка измерена стендом (D:/tmp/memprobe, три чередующихся прогона на
+ * полумиллионе штук): простой список - 38 Б на сам список плюс 8-12 Б на элемент,
+ * ассоциативный - те же 38 Б плюс около 57 Б на ключ. То есть двадцать тысяч элементов
+ * в assoc - это мегабайт, и в переписи инстансов он не виден никак.
+ *
+ * "vars" пропускается намеренно: это ссылка на сам список переменных, и её длина - это
+ * ширина типа, уже посчитанная в weights. Всё остальное считается как есть, включая
+ * contents и overlays: слот списка стоит памяти независимо от того, что в нём лежит.
+ *
+ * ЧЕГО ЭТОТ СЧЁТ НЕ УМЕЕТ. Отличить список, лежащий у инстанса, от списка, лежащего у типа
+ * в одном экземпляре на всех, изнутри DM нечем: `var/static/list/` виден в vars как обычная
+ * переменная. Такой список приписывается КАЖДОМУ инстансу и раздувает строку на порядок -
+ * /atom/movable/lighting_object в локальном прогоне отдал по 48 элементов на штуку, из
+ * которых сорок это два двадцатиэлементных набора: общий на весь тип статический буфер
+ * цветовой матрицы и матрица color, живущая в аппирансе, а не в куче инстанса. Строка
+ * отвечает на вопрос "у кого искать длинные списки", а не "сколько это байт".
+ */
+/datum/controller/subsystem/time_track/proc/instance_list_slots(datum/thing)
+	var/slots = 0
+	var/list/instance_vars = thing.vars
+	for(var/var_name in instance_vars)
+		if(var_name == "vars")
+			continue
+		var/value = instance_vars[var_name]
+		if(islist(value))
+			slots += length(value)
+	return slots
+
+/**
+ * Четвёртая строка переписи: чей вес лежит в списках, а не в переменных.
+ *
+ * Аргументы:
+ * * all_counts - тип -> количество инстансов, включая турфы и зоны
+ * * type_list_samples - тип -> сколько его инстансов разобрано по переменным
+ * * type_list_slots - тип -> сколько элементов нашлось в списках этих инстансов
+ */
+/datum/controller/subsystem/time_track/proc/log_list_slots(list/all_counts, list/type_list_samples, list/type_list_slots)
+	var/list/top = list_slot_top(all_counts, type_list_samples, type_list_slots)
+	if(!length(top))
+		return
+	log_world("## MEMORY: элементы списков (выборка по [MEMORY_CENSUS_LIST_SAMPLES] инстанса на тип, пересчёт на мир): \
+		[top.Join(", ")]")
+
+/**
+ * Топ типов по суммарной длине списочных переменных, строками для лога.
+ *
+ * Отдельным проком по той же причине, что и instance_weight_top(): перебирать world.contents
+ * в тесте нечего, а пересчёт выборки на мир проверить надо - ошибка в множителе даёт
+ * правдоподобную и полностью выдуманную цифру.
+ */
+/datum/controller/subsystem/time_track/proc/list_slot_top(list/all_counts, list/type_list_samples, list/type_list_slots)
+	var/list/estimated = list()
+	for(var/type_path in type_list_samples)
+		var/sampled = type_list_samples[type_path]
+		if(sampled <= 0)
+			continue
+		var/found = type_list_slots[type_path]
+		if(!found)
+			continue
+		estimated[type_path] = round(found / sampled * all_counts[type_path])
+
+	sortTim(estimated, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	for(var/type_path in estimated)
+		if(length(top) >= MEMORY_CENSUS_TOP)
+			break
+		var/per_instance = round(type_list_slots[type_path] / type_list_samples[type_path], 0.1)
+		top += "[type_path] [num2text(estimated[type_path], 12)] (по [per_instance] на штуку)"
+	return top
 
 /**
  * Вторая строка переписи: чей вес, а не чьё количество.
@@ -963,11 +1083,12 @@ SUBSYSTEM_DEF(time_track)
 
 	var/list/top = instance_weight_top(weights, counts, type_var_slots, total_slots)
 
-	log_world("## MEMORY: вес мира по переменным: [round(total_slots / 1000000, 0.1)] млн слотов \
+	log_world("## MEMORY: ширина типов (объявленные переменные, НЕ цена в байтах): \
+		[round(total_slots / 1000000, 0.1)] млн слотов \
 		(турфы [round(turf_slots / total_slots * 100, 0.1)]%, \
 		движимое [round(movable_slots / total_slots * 100, 0.1)]%, \
 		зоны [round(area_slots / total_slots * 100, 0.1)]%); \
-		самые тяжёлые типы: [length(top) ? top.Join(", ") : "пусто"]")
+		самые широкие типы: [length(top) ? top.Join(", ") : "пусто"]")
 
 /**
  * Топ типов по весу, строками для лога.
@@ -1067,4 +1188,5 @@ SUBSYSTEM_DEF(time_track)
 #undef MEMORY_CENSUS_TOP
 #undef MEMORY_CENSUS_TOP_Z
 #undef MEMORY_CENSUS_TICK_EVERY
+#undef MEMORY_CENSUS_LIST_SAMPLES
 #undef PING_SAMPLE_STALE_AFTER

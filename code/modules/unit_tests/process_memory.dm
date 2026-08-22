@@ -508,3 +508,108 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	tracker.memory_growth_mb_per_minute = 30
 	tracker.check_memory_admin_warning(3600)
 	TEST_ASSERT(tracker.memory_admin_warned, "Прогноз не поднял тревогу на настоящей быстрой утечке")
+
+/**
+ * Пересчёт выборочной длины списков на весь мир.
+ *
+ * Списочные слоты - третье слепое пятно переписи после не-атомных датумов и внутренних
+ * таблиц BYOND: растущий ассоциативный список на живом атоме даёт мегабайты при НУЛЕВОМ
+ * приросте инстансов. Обойти vars у полутора миллионов атомов нельзя по цене, поэтому
+ * длина берётся с выборки и умножается на количество - и вот этот множитель проверяется
+ * здесь. Ошибка в нём даёт правдоподобную и полностью выдуманную цифру, а сверить её в
+ * логе не с чем.
+ */
+/datum/unit_test/list_slot_top
+
+/datum/unit_test/list_slot_top/Run()
+	// Турфов вдесятеро больше, чем шкафов, но списки у шкафа длиннее в двадцать раз -
+	// и по слотам шкафы обязаны обойти турфы.
+	var/list/all_counts = list(
+		/turf/open/floor/plating = 100000,
+		/obj/structure/closet = 10000,
+		/obj/effect/decal/cleanable/dirt = 5000,
+	)
+	var/list/type_list_samples = list(
+		/turf/open/floor/plating = 3,
+		/obj/structure/closet = 3,
+		/obj/effect/decal/cleanable/dirt = 3,
+	)
+	// По три инстанса на тип: в сумме по выборке, а не в среднем.
+	var/list/type_list_slots = list(
+		/turf/open/floor/plating = 3 * 2,
+		/obj/structure/closet = 3 * 40,
+		/obj/effect/decal/cleanable/dirt = 0,
+	)
+
+	var/list/top = SStime_track.list_slot_top(all_counts, type_list_samples, type_list_slots)
+
+	TEST_ASSERT_EQUAL(length(top), 2, "Тип без единого списочного элемента обязан выпасть из топа, а не занимать место")
+	TEST_ASSERT(findtext(top[1], "/obj/structure/closet"), "Топ по списочным слотам отсортирован не по слотам: первым идёт [top[1]]")
+	// 10000 штук по 40 элементов - четыреста тысяч.
+	TEST_ASSERT(findtext(top[1], "400000"), "Пересчёт выборки на мир посчитан неверно: [top[1]]")
+	TEST_ASSERT(findtext(top[2], "200000"), "Пересчёт выборки на мир посчитан неверно для турфов: [top[2]]")
+	// BYOND интерполирует числа от миллиона шестью значащими цифрами, и без num2text в лог
+	// поедет "2e+006" вместо количества слотов.
+	TEST_ASSERT(!findtext(top[1], "e+"), "В строке списочных слотов осталась экспоненциальная запись: [top[1]]")
+
+	// Тип, попавший в счёт количества, но не в выборку, делить не на что: нулевой знаменатель
+	// не должен ни ронять перепись, ни выдумывать бесконечность.
+	var/list/empty_top = SStime_track.list_slot_top(list(/turf/open/floor/plating = 100), list(/turf/open/floor/plating = 0), list(/turf/open/floor/plating = 10))
+	TEST_ASSERT_EQUAL(length(empty_top), 0, "Нулевая выборка обязана дать пустой топ, а не деление на ноль")
+
+#ifdef DATUM_CENSUS
+/**
+ * Отчёт переписи не-атомных датумов.
+ *
+ * Перепись инстансов перебирает world.contents, а туда BYOND кладёт только турфы, зоны,
+ * объекты и мобов: компоненты, газовые смеси, углы освещения, таймеры и коллбеки не видит
+ * ни один прибор. Здесь проверяется арифметика разницы "создано минус qdel" - именно она
+ * отвечает на вопрос "что из этого не удаляется", и ошибка в ней читается как утечка.
+ */
+/datum/unit_test/datum_census_report
+
+/datum/unit_test/datum_census_report/Run()
+	var/list/created = list(
+		/datum/callback = 500000,
+		/datum/reagents = 900,
+		/datum/component/simple_rotation = 4000,
+	)
+	var/list/destroyed = list(
+		/datum/reagents = 900,
+		/datum/component/simple_rotation = 3990,
+		// Атом в счёте удалений законен: /datum/Destroy() общий для всех, а отсев делает
+		// перебор по ключам created, куда атом не доходит (/atom/New() родителя не зовёт).
+		/obj/item/crowbar = 12000,
+	)
+
+	// Первая перепись: снимка ещё нет, отчёт абсолютный.
+	var/list/first = datum_census_report_lines(created, destroyed, null, null, 2)
+
+	TEST_ASSERT_EQUAL(length(first), 2, "Отчёт переписи датумов обязан быть ровно из двух строк")
+	TEST_ASSERT(findtext(first[1], "/datum/callback x500000"), "Топ по созданию отсортирован неверно: [first[1]]")
+	TEST_ASSERT(!findtext(first[1], "/obj/item/crowbar"), "Атом просочился в отчёт переписи датумов: [first[1]]")
+	// 500000 мимо qdel, 900-900=0, 4000-3990=10. Итого 500010.
+	TEST_ASSERT(findtext(first[1], "не удалено через qdel 500010"), "Остаток мимо qdel посчитан неверно: [first[1]]")
+	TEST_ASSERT(findtext(first[2], "/datum/callback x500000"), "Топ мимо qdel отсортирован неверно: [first[2]]")
+
+	// Вторая перепись поверх снимка: в топ обязан попасть тот, кто вырос, а не тот, кого
+	// за раунд просто много. Ради этого разница и считается.
+	var/list/snapshot_created = created.Copy()
+	var/list/snapshot_residue = datum_census_residue(created, destroyed)
+	created[/datum/component/simple_rotation] = 9000
+	created[/datum/callback] = 500100
+	destroyed[/datum/component/simple_rotation] = 4990
+
+	var/list/second = datum_census_report_lines(created, destroyed, snapshot_created, snapshot_residue, 2)
+
+	TEST_ASSERT(findtext(second[1], "/datum/component/simple_rotation x5000"), "Разница по созданию посчитана неверно: [second[1]]")
+	TEST_ASSERT(findtext(second[1], "/datum/callback x100"), "Разница по созданию потеряла второй тип: [second[1]]")
+	// Компонентов создано на 5000 больше, удалено на 1000 больше - мимо qdel ушло 4000.
+	TEST_ASSERT(findtext(second[2], "/datum/component/simple_rotation x4000"), "Разница по остатку посчитана неверно: [second[2]]")
+
+	// Ничего не изменилось - в топах обязана быть пустота, а не прошлые цифры.
+	var/list/third = datum_census_report_lines(created, destroyed, created.Copy(), datum_census_residue(created, destroyed), 2)
+	TEST_ASSERT(findtext(third[1], "пусто"), "Перепись без единого нового датума показала прирост: [third[1]]")
+
+	TEST_ASSERT_EQUAL(length(datum_census_report_lines(list(), list(), null, null, 5)), 1, "Пустой счётчик обязан дать одну строку, а не рантайм")
+#endif
