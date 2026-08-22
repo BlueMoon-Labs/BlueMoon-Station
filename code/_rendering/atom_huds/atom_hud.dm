@@ -49,9 +49,12 @@ GLOBAL_LIST_INIT(huds, alist(
 	GLOB.all_huds += src
 
 /datum/atom_hud/Destroy()
-	for(var/v in hudusers)
+	// По копиям: remove_hud_from()/remove_from_hud() вырезают элемент из того же списка, по
+	// которому идёт for-in, и обход перескакивает через соседа - половина подписчиков ушла бы
+	// в мир с чужими картинками в client.images.
+	for(var/v in hudusers.Copy())
 		remove_hud_from(v)
-	for(var/v in hudatoms)
+	for(var/v in hudatoms.Copy())
 		remove_from_hud(v)
 	GLOB.all_huds -= src
 	return ..()

@@ -37,6 +37,14 @@
 /// Не снимается в конце файла: его сверяет юнит-тест разбора.
 #define PROC_LIMIT_UNLIMITED -1
 
+/// Сколько неудачных чтений /proc ПОДРЯД гасят замер до конца раунда.
+///
+/// Одиночный промах и "ядро таких полей не ведёт" по одному разу неразличимы, а цена ошибки
+/// несимметрична: погасив замер на транзиентном отказе, мы теряем колонки памяти ровно в том
+/// раунде, ради которого их и заводили. Замер снимается раз в десять секунд, так что три
+/// промаха подряд - это полминуты молчания, а не рябь.
+#define PROC_PROBE_FAILURE_LIMIT 3
+
 /**
  * Достаёт значение поля /proc/self/status в килобайтах.
  *
@@ -87,6 +95,7 @@
  */
 /proc/get_process_memory_mb()
 	var/static/probe_available = null
+	var/static/probe_failures = 0
 	if(probe_available == FALSE)
 		return null
 	if(isnull(probe_available))
@@ -95,14 +104,14 @@
 			return null
 
 	var/status_text = rustg_file_read("/proc/self/status")
-	if(!status_text)
-		probe_available = FALSE
-		return null
-
-	var/vsz_kb = proc_status_value_kb(status_text, "VmSize")
+	var/vsz_kb = status_text ? proc_status_value_kb(status_text, "VmSize") : null
 	if(isnull(vsz_kb))
-		probe_available = FALSE
+		// Гасим не с первого промаха: см. PROC_PROBE_FAILURE_LIMIT.
+		if(++probe_failures >= PROC_PROBE_FAILURE_LIMIT)
+			probe_available = FALSE
+			log_world("MEMORY: /proc/self/status не прочитан [PROC_PROBE_FAILURE_LIMIT] раза подряд, замер памяти процесса выключен до конца раунда")
 		return null
+	probe_failures = 0
 
 	// VmData есть у любого ядра, RssAnon/RssFile ведутся с 4.5. Отсутствующее поле уходит
 	// в null, а не в ноль: пустая клетка CSV честно говорит "ядро не сказало", а ноль
@@ -175,6 +184,7 @@
  */
 /proc/get_host_memory_mb()
 	var/static/probe_available = null
+	var/static/probe_failures = 0
 	if(probe_available == FALSE)
 		return null
 	if(isnull(probe_available))
@@ -183,14 +193,14 @@
 			return null
 
 	var/meminfo_text = rustg_file_read("/proc/meminfo")
-	if(!meminfo_text)
-		probe_available = FALSE
-		return null
-
-	var/total_kb = proc_status_value_kb(meminfo_text, "MemTotal")
+	var/total_kb = meminfo_text ? proc_status_value_kb(meminfo_text, "MemTotal") : null
 	if(isnull(total_kb))
-		probe_available = FALSE
+		// Гасим не с первого промаха: см. PROC_PROBE_FAILURE_LIMIT.
+		if(++probe_failures >= PROC_PROBE_FAILURE_LIMIT)
+			probe_available = FALSE
+			log_world("MEMORY: /proc/meminfo не прочитан [PROC_PROBE_FAILURE_LIMIT] раза подряд, замер памяти хоста выключен до конца раунда")
 		return null
+	probe_failures = 0
 
 	// MemAvailable ведут ядра от 3.14. На более старых берём MemFree - он занижает
 	// доступное (не считает отдаваемый кэш), но это лучше пустой колонки.
@@ -341,3 +351,4 @@
 #undef PROC_BYTES_PER_MB
 #undef ASCII_DIGIT_ZERO
 #undef ASCII_DIGIT_NINE
+#undef PROC_PROBE_FAILURE_LIMIT

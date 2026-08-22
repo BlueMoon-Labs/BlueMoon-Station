@@ -510,7 +510,7 @@ SUBSYSTEM_DEF(time_track)
 	// упираемся мы в свой потолок или машине под нами уже нечем дышать.
 	if(host_memory)
 		warning += ", у хоста свободно [host_memory["available"]] из [host_memory["total"]] МБ"
-	warning += ", объектов [num2text(world.contents.len, 12)], хардделов [SSgarbage.totaldels]"
+	warning += ", объектов [num2text(world.contents.len, 12)], хардделов [num2text(SSgarbage.totaldels, 12)]"
 	if(memory_baseline_mb)
 		warning += ", база раунда [memory_baseline_mb][memory_baseline_provisional ? " МБ (предварительная, раунд ещё не начался)" : " МБ"]"
 	if(memory_growth_mb_per_minute > 0)

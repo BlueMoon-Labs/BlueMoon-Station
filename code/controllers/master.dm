@@ -507,7 +507,9 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		// Чёрный ящик пишется ДО прогона очереди, а не после: если мир умрёт внутри RunQueue,
 		// на диске останется список подсистем, в который он в этот момент входил. Частоту
 		// подбирает сам чёрный ящик под цену записи, см. adjust_state_snapshot_interval().
-		if(!(iteration % state_snapshot_interval))
+		// max(1, ...) не про адаптацию, а про варедит: интервал 0 - это деление на ноль в
+		// главной петле МК, то есть рантайм каждый тик и мёртвый мастер.
+		if(!(iteration % max(1, state_snapshot_interval)))
 			write_state_snapshot()
 
 		if (queue_head)

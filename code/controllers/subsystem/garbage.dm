@@ -295,6 +295,11 @@ SUBSYSTEM_DEF(garbage)
 	var/list/profiler_fail_snap = fail_counts.Copy()
 	#endif
 
+	// Рантайм внутри del() уносит стек мимо строки, которая гасит hard_deleting_type, и
+	// last_task() до конца раунда рапортовал бы о жёстком удалении, которого давно нет.
+	// Снимаем метку здесь: к следующему проходу подсистема заведомо не внутри del().
+	hard_deleting_type = null
+
 	// Reset per-tick counters at the start of softcheck processing.
 	delslasttick = 0
 	gcedlasttick = 0
