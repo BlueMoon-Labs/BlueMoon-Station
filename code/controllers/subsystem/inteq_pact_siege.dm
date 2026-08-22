@@ -62,7 +62,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/chaos = bm_get_round_chaos()
 	if(chaos < required)
 		return "Недостаточный уровень хаоса для активации протокола ([chaos]/[required])."
-	if(world.time - SSticker.round_start_time > 5400000)
+	if(world.time - SSticker.round_start_time > 90 MINUTES)
 		return "Протокол осады можно активировать только в течение первых 90 минут."
 	return null
 
