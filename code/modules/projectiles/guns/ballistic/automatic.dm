@@ -400,7 +400,7 @@
 	fire_sound = 'sound/weapons/rifleshot.ogg'
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/m10mm/rifle
-	fire_delay = 10
+	fire_delay = 3
 	burst_size = 1
 	can_unsuppress = TRUE
 	can_suppress = TRUE

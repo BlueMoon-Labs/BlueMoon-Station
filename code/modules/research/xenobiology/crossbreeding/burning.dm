@@ -410,6 +410,37 @@ Burning extracts:
 	if(prob(20))
 		user.emote("scream")
 
+//Клинок ченджлинга отращивают заново, а этот - собственная кость руки. DROPDEL базового
+//армблейда стирал его вместе с оторванной конечностью, и владелец оставался ни с чем.
+//Отделили от тела - клинок падает на пол обычным предметом.
+/obj/item/melee/arm_blade/slime/dropped(mob/user)
+	var/turf/blade_turf = get_turf(src)
+	. = ..() //DROPDEL уводит src в qdel, поэтому турф снимаем заранее
+	//Владельца чистят вместе с содержимым - на такой уборке новых предметов не плодим.
+	if(blade_turf && !QDELETED(user))
+		new /obj/item/melee/severed_boneblade(blade_turf)
+
+/obj/item/melee/severed_boneblade
+	name = "severed boneblade"
+	desc = "Заострённая кость чьей-то руки. Слизь давно высохла, но резать эта штука не разучилась."
+	icon = 'icons/obj/items_and_weapons.dmi'
+	icon_state = "arm_blade"
+	item_state = "arm_blade"
+	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+	force = 15
+	throwforce = 10
+	armour_penetration = 15
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	sharpness = SHARP_EDGED
+	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+
+/obj/item/melee/severed_boneblade/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 6 SECONDS, 80) //кость - инструмент грубый
+
 /obj/item/kitchen/knife/rainbowknife
 	name = "Rainbow Knife"
 	desc = "A strange, transparent knife which constantly shifts color. It hums slightly when moved."

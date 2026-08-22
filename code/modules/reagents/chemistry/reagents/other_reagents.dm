@@ -89,6 +89,7 @@
 		B.blood_DNA["blendmode"] = data["bloodblend"]
 	if(B.reagents)
 		B.reagents.add_reagent(type, reac_volume)
+		B.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 	B.update_icon()
 
 /datum/reagent/blood/on_new(list/data)
@@ -290,7 +291,7 @@
 /datum/reagent/water
 	name = "Water"
 	description = "An ubiquitous chemical substance that is composed of hydrogen and oxygen."
-	color = "#AAAAAA77" // rgb: 170, 170, 170, 77 (alpha)
+	color = "#87D3F883" // rgb: 135, 211, 248, 131 (alpha)
 	taste_description = "water"
 	chemical_flags = REAGENT_ALL_PROCESS
 	overdose_threshold = 150 //Imagine drinking a gallon of water
@@ -316,7 +317,7 @@
 	if (!istype(T))
 		return
 	if(holder?.chem_temp > T0C + 100)
-		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/molarity];TEMP=[holder.chem_temp]")
+		T.atmos_spawn_air("[GAS_H2O]=[reac_volume/(molarity*2)];TEMP=[holder.chem_temp]")
 	else
 		var/CT = cooling_temperature
 
@@ -1213,6 +1214,7 @@
 			if(!GG)
 				GG = new/obj/effect/decal/cleanable/greenglow(T)
 			GG.reagents.add_reagent(/datum/reagent/radium, reac_volume)
+			GG.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 
 /datum/reagent/space_cleaner/sterilizine
 	name = "Sterilizine"
@@ -1308,6 +1310,7 @@
 			if(!GG)
 				GG = new/obj/effect/decal/cleanable/greenglow(T)
 			GG.reagents.add_reagent(/datum/reagent/uranium, reac_volume)
+			GG.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 
 //Mutagenic chem side-effects.
 /datum/reagent/uranium/on_hydroponics_apply(obj/item/seeds/myseed, datum/reagents/chems, obj/machinery/hydroponics/mytray, mob/user)
@@ -2867,6 +2870,10 @@
 /datum/reagent/consumable/semen
 	name = "Semen"
 	description = "Sperm from some animal. Useless for anything but insemination, really."
+	glass_icon = 'modular_splurt/icons/obj/drinks.dmi'
+	glass_icon_state = "cumchalice"
+	glass_name = "chalice of cum" // Because femcum also change the glass, so it can be not a normal semen
+	glass_desc = "Consuming this will not give you a birth of fine, healthy litter of puppies."
 	taste_description = "something salty"
 	taste_mult = 2 //Not very overpowering flavor
 	data = list("donor"=null,"viruses"=null,"donor_DNA"=null,"blood_type"=null,"resistances"=null,"trace_chem"=null,"mind"=null,"ckey"=null,"gender"=null,"real_name"=null)
@@ -2877,6 +2884,14 @@
 	// boiling_point = T0C + 100
 	nutriment_factor = 0.5 * REAGENTS_METABOLISM
 	var/decal_path = /obj/effect/decal/cleanable/semen
+	var/list/desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~"),
+		TRAIT_DUMB_CUM = list(
+			span_love("Как же вкусно!~"),
+			span_love("Восхитительно!~"),
+			span_love("Невозможно удержаться!~"),
+		)
+	)
 
 /datum/reagent/consumable/semen/reaction_turf(turf/location, reac_volume)
 	..()
@@ -2886,24 +2901,61 @@
 	if(istype(src, /datum/reagent/consumable/semen/femcum)) //let it be here
 		var/obj/effect/decal/cleanable/semen/femcum/F = (locate(/obj/effect/decal/cleanable/semen/femcum) in location) || new(location)
 		if(F.reagents?.add_reagent(type, volume, data))
+			F.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			F.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
 	if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
 		if(S.reagents?.add_reagent(type, volume, data))
+			S.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			S.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
 	if(drip.reagents?.add_reagent(type, volume, data))
+		drip.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 		drip.update_icon()
-		if(drip.reagents.total_volume >= 10)
+		if(drip.reagents.total_volume >= LIQUID_DECAL_CAP)
 			S = new(location)
 			drip.reagents.trans_to(S, drip.reagents.total_volume)
 			S.update_icon()
 			qdel(drip)
 		return
+
+/datum/reagent/consumable/semen/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart) //splashing or ingesting
+	. = ..()
+	if(!.)
+		return
+	if(LAZYLEN(desc_on_traits))
+		for(var/trait in desc_on_traits)
+			var/phrase = desc_on_traits[trait] // Может быть листом
+			if(!LAZYLEN(phrase) || !HAS_TRAIT(M, trait))
+				continue
+			if(trait == TRAIT_DUMB_CUM && !prob(15))
+				continue
+			
+			// Если лист = рандом
+			if(islist(phrase))
+				phrase = pick(phrase)
+			to_chat(M, phrase)
+			if(trait == TRAIT_DUMB_CUM)
+				M.emote("moan")
+
+/datum/reagent/consumable/semen/on_merge(data, amount, mob/living/carbon/M, purity) //when we add more through ERP panel
+	. = ..()
+	if(!iscarbon(M))
+		return
+	if(HAS_TRAIT(M,TRAIT_DUMB_CUM) && !istype(src, /datum/reagent/consumable/semen/femcum))
+		var/datum/quirk/dumb4cum/quirk_target = locate() in M.roundstart_quirks
+		quirk_target.uncrave()
+
+/datum/reagent/consumable/semen/on_mob_life(mob/living/carbon/M)
+	. = ..()
+	if(iscatperson(M) && HAS_TRAIT(M,TRAIT_DUMB_CUM)  && !istype(src, /datum/reagent/consumable/semen/femcum)) //special "milk" tastes nice for special felinids
+		if(prob(3))
+			to_chat(M, span_notice(pick("Mmmm~ boy's milk feels so good inside me~", "Ahh~ boy's milk~")))
+			M.emote("purr")
 
 /obj/effect/decal/cleanable/semen
 	name = "semen"
@@ -2943,12 +2995,29 @@
 		return
 	add_atom_colour(mix_color_from_reagents(reagents.reagent_list), FIXED_COLOUR_PRIORITY)
 
+// BLUEMOON ADD START: Cum decals are decorative stains, not a scoopable reagent farm.
+// Blocking the scoop prevents the infinite "scoop the decal -> pour -> new puddle + new
+// decal" loop that multiplied semen into a flood.
+/obj/effect/decal/cleanable/semen/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food/drinks))
+		. = 1 // Prevent the container from splashing onto / scooping the decal
+		to_chat(user, span_notice("Слишком тягуче, чтобы собрать в ёмкость."))
+		return
+	return ..()
+// BLUEMOON ADD END
+
 /datum/reagent/consumable/semen/femcum
 	name = "Female Ejaculate"
 	description = "Vaginal lubricant found in most mammals and other animals of similar nature. Where you found this is your own business."
+	glass_icon_state = "cumchalice_fem"
+	glass_name = "chalice of femcum"
+	glass_desc = "Cloudy, viscous."
 	taste_description = "something with a tang" // wew coders who haven't eaten out a girl.
 	color = "#FFFFFF"
 	decal_path = /obj/effect/decal/cleanable/semen/femcum
+	desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежего сквирта~")
+	)
 
 /obj/effect/decal/cleanable/semen/femcum
 	name = "female ejaculate"
@@ -2962,9 +3031,19 @@
 /datum/reagent/consumable/semen/siliconcum
 	name = "SynthCum"
 	description = "Synthetic lubricant designed for cyborgs."
+	glass_icon_state = "cumchalice_synth"
+	glass_name = "chalice of synthcum"
 	taste_description = "something with a silicone"
 	color = "#5cb2cc"
 	decal_path = /obj/effect/decal/cleanable/semen/siliconcum
+	desc_on_traits = list(
+		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~ Но отдает синтетикой..."),
+		TRAIT_DUMB_CUM = list(
+			span_love("Как же вкусно!~ Но отдает синтетикой..."),
+			span_love("Восхитительно!~ Но отдает синтетикой..."),
+			span_love("Невозможно удержаться!~ Но отдает синтетикой..."),
+		)
+	)
 
 /obj/effect/decal/cleanable/semen/siliconcum
 	name = "synthetic cum"

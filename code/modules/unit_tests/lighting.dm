@@ -137,6 +137,31 @@
 	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power, "Stopping damage flicker should restore the live emitted power.")
 	TEST_ASSERT_EQUAL(test_light.bulb_power, initial(test_light.bulb_power), "Damage flicker should not rewrite the raw bulb power.")
 
+/datum/unit_test/light_z_viewers_include_living_and_dead/Run()
+	var/obj/machinery/light/test_light = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
+	var/test_z = test_light.z
+	TEST_ASSERT(test_z <= length(SSmobs.clients_by_zlevel), "test premise: clients_by_zlevel must have a slot for the reservation z")
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "test premise: dead_players_by_zlevel must have a slot for the reservation z")
+
+	var/list/saved_living_viewers = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_dead_viewers = SSmobs.dead_players_by_zlevel[test_z]
+	SSmobs.clients_by_zlevel[test_z] = list()
+	SSmobs.dead_players_by_zlevel[test_z] = list()
+	var/empty_z_has_viewers = test_light.has_z_viewers()
+
+	SSmobs.clients_by_zlevel[test_z] = list(src)
+	var/living_z_has_viewers = test_light.has_z_viewers()
+	SSmobs.clients_by_zlevel[test_z] = list()
+	SSmobs.dead_players_by_zlevel[test_z] = list(src)
+	var/dead_z_has_viewers = test_light.has_z_viewers()
+
+	SSmobs.clients_by_zlevel[test_z] = saved_living_viewers
+	SSmobs.dead_players_by_zlevel[test_z] = saved_dead_viewers
+
+	TEST_ASSERT(!empty_z_has_viewers, "A z-level without living players or ghosts must allow flicker parking.")
+	TEST_ASSERT(living_z_has_viewers, "A living player on the light's z-level must keep flicker active.")
+	TEST_ASSERT(dead_z_has_viewers, "A ghost on the light's z-level must keep flicker active.")
+
 /datum/unit_test/light_emergency_reset_stops_processing
 	var/area/test_area
 	var/original_power_light

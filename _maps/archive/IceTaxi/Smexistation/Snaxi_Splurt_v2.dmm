@@ -9170,9 +9170,6 @@
 /turf/open/floor/plasteel/white,
 /area/commons/dorms)
 "cYA" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
@@ -13758,7 +13755,6 @@
 /turf/open/floor/engine,
 /area/engineering/atmospherics_engine)
 "exJ" = (
-/obj/machinery/pool/controller,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
@@ -21506,9 +21502,6 @@
 /turf/open/floor/plating,
 /area/maintenance/aft)
 "hlR" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/commons/fitness/pool)
 "hlW" = (
@@ -23570,7 +23563,6 @@
 /turf/open/floor/wood,
 /area/command/blueshieldoffice)
 "hWT" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "hXi" = (
@@ -66455,7 +66447,6 @@
 /turf/open/floor/engine/vacuum,
 /area/maintenance/disposal/incinerator)
 "wvl" = (
-/obj/machinery/pool/drain,
 /obj/item/fuel_rod/material,
 /turf/open/pool,
 /area/engineering/main/reactor_core)
@@ -67417,7 +67408,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "wNw" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},

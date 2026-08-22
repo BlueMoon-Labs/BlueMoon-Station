@@ -7,6 +7,8 @@
 //
 // Scenarios:
 //   plasma-fire    hotspots, volatile excited groups, firelock alarm cascade
+//   fire-storm     2400-плиточный зал, горящий целиком и подпитываемый каждый
+//                  цикл: установившийся станционный пожар, а не его фронт
 //   giant-hall     one 12k-turf excited group, share wave, resumable breakdown
 //   room-grid      120-room checkerboard: group creation/merge/dismantle churn
 //   pipenet-stress closed vent/scrubber/pump loop: machinery + pipenet cost
@@ -25,6 +27,19 @@
 #define ATMOS_BENCH_FIRE_CORRIDOR_WIDTH 3
 #define ATMOS_BENCH_FIRE_PLASMA_COLUMNS 25
 #define ATMOS_BENCH_FIRE_PLASMA_MOLES 80
+/// fire-storm: зал на 2400 плиток, чтобы очагов было столько же, сколько их было
+/// на проде (раунд 10003: 2200 хотспотов, фаза 192 мс). Коридор plasma-fire даёт
+/// максимум три сотни и меряет фронт распространения, а не установившийся пожар.
+#define ATMOS_BENCH_FIRESTORM_WIDTH 60
+#define ATMOS_BENCH_FIRESTORM_HEIGHT 40
+/// Топливо и окислитель, до которых арена доливается каждый цикл после поджога.
+/// Без долива зал выгорает за десяток циклов, и прогон меряет затухание.
+#define ATMOS_BENCH_FIRESTORM_PLASMA_MOLES 40
+#define ATMOS_BENCH_FIRESTORM_O2_MOLES 200
+/// Потолок температуры на доливе. Вечное горение без него уводит зал за пределы
+/// прод-режима (1400-3500 K) в экзотические ветки реакций, то есть в другую
+/// задачу. Долив держит арену ровно в той полосе, где стоял пожар 10003.
+#define ATMOS_BENCH_FIRESTORM_TEMPERATURE 2500
 #define ATMOS_BENCH_HALL_WIDTH 120
 #define ATMOS_BENCH_HALL_HEIGHT 100
 #define ATMOS_BENCH_HALL_PRESSURE_RATIO_HIGH 4
@@ -67,8 +82,53 @@
 /// boot time stays bearable on a full map.
 #define ATMOS_BENCH_STATION_ITEM_STRIDE 8
 #define ATMOS_BENCH_STATION_ITEM_CAP 1500
+/// icemoon-blast: эпицентр взрыва раунда 9929 - Medbay Aft, нижний уровень
+/// станции IceMoon (z6 при штатном порядке загрузки icemoonstation.json).
+#define ATMOS_BENCH_BLAST_X 70
+#define ATMOS_BENCH_BLAST_Y 155
+#define ATMOS_BENCH_BLAST_Z 6
+/// Первая фаза той же реконструкции: большой взрыв 09:42 в Command Hallway z7
+/// (size 1/4/16/0) - пробоина станции на поверхность, 15 минут насоса до
+/// медбейного хлопка. Именно он держит живой гигантскую excited-группу.
+#define ATMOS_BENCH_BLAST_FIRST_X 138
+#define ATMOS_BENCH_BLAST_FIRST_Y 54
+#define ATMOS_BENCH_BLAST_FIRST_Z 7
+/// Задержка второй фазы (циклов SSair после первой): на проде прошло ~1800
+/// фаеров; для бенча хватает окна, в котором группа успевает вырасти. При
+/// дефолтных event-cycle 20 и ATMOS_HEADLESS_BENCH_CYCLES 240 вторая фаза
+/// обязана успеть выстрелить (20 + 200 = 220 < 240).
+#define ATMOS_BENCH_BLAST_SECOND_DELAY 200
 /// Side of the square hull breach punched into the middle of the station.
 #define ATMOS_BENCH_STATION_BREACH_SIDE 5
+
+// sustained-leak geometry. A grid of rooms joined by permanent doorways, fed
+// from the west edge and open to space at the east one, so the arena holds a
+// standing gradient instead of settling. Sized to park the active set in the
+// 1500-2500 band - the range where production rounds cross saturation_ratio 1.0
+// and the cost feedback loop engages (9958 at 1817, 9956 at 1894, 9946 at 1946).
+#define ATMOS_BENCH_LEAK_COLS 8
+#define ATMOS_BENCH_LEAK_ROWS 6
+#define ATMOS_BENCH_LEAK_ROOM 10
+/// Pressure the supply strip is topped back up to every event interval. Above
+/// one atmosphere so the gradient never runs out while the breach drains.
+#define ATMOS_BENCH_LEAK_SUPPLY_RATIO 3
+/// Exhaled CO2 carried by the supply air, per standard mole of oxygen.
+///
+/// Pure O2/N2 at exactly T20C is not what an occupied station looks like, and
+/// the difference is not cosmetic: several hot paths keep a two-key fast lane
+/// (react's clean-air early out, share(), update_visuals), and a room where
+/// anybody has breathed leaves all of them for good. An arena without a third
+/// gas measures a station nobody lives on and reports the cheap half of the
+/// cost curve.
+#define ATMOS_BENCH_LEAK_CO2_RATIO 0.004
+/// Supply temperature. Deliberately above the 294.15 K floor that genericfire's
+/// TEMP requirement lands on (phlogiston sets the lowest fire_temperature at
+/// T20C+1), because a real station sits above it - lights, machinery and bodies
+/// all push a room past 21 C - and the reaction fast path behaves differently on
+/// either side of that one-degree margin.
+#define ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE (T20C + 2)
+/// Openings punched through the east hull, spread one per room row.
+#define ATMOS_BENCH_LEAK_BREACH_WIDTH 2
 
 /// Conductive divider for the heat-wall scenario: standard walls ship with
 /// WALL_HEAT_TRANSFER_COEFFICIENT = 0 (a deliberate balance choice, same as
@@ -96,6 +156,13 @@
 	var/list/turf/headless_bench_storm_walls = list()
 	/// changeturf-storm cursor, so the stripe walks the room instead of flapping.
 	var/headless_bench_storm_column = 0
+	/// Пробуждения турфов с прошлого бенч-тика по имени вызова (ATMOS_BENCH_WAKE):
+	/// harvest уходит полем "wake" в hb-запись и обнуляется там же.
+	var/list/headless_wake_tally = list()
+	/// icemoon-blast: эпицентр, зафиксированный на построении сценария.
+	var/turf/headless_bench_blast_turf
+	/// sustained-leak: турфы, в которые событие каждый интервал доливает газ.
+	var/list/turf/open/headless_bench_supply_turfs = list()
 
 /// Build dispatch: called async from atmos_headless_bench_tick when a scenario
 /// is requested but not yet built.
@@ -105,6 +172,8 @@
 			atmos_headless_bench_build_multi_breach()
 		if("plasma-fire")
 			atmos_headless_bench_build_plasma_fire()
+		if("fire-storm")
+			atmos_headless_bench_build_fire_storm()
 		if("giant-hall")
 			atmos_headless_bench_build_giant_hall()
 		if("giant-hall-eq")
@@ -114,6 +183,8 @@
 			atmos_headless_bench_build_giant_hall()
 		if("room-grid")
 			atmos_headless_bench_build_room_grid()
+		if("sustained-leak")
+			atmos_headless_bench_build_sustained_leak()
 		if("pipenet-stress")
 			atmos_headless_bench_build_pipenet_stress()
 		if("heat-wall")
@@ -130,6 +201,8 @@
 			atmos_headless_bench_build_changeturf_storm()
 		if("station-breach")
 			atmos_headless_bench_build_station_breach()
+		if("icemoon-blast")
+			atmos_headless_bench_build_icemoon_blast()
 		else
 			log_world("ATMOS-BENCH: unknown scenario '[headless_bench_scenario]', running as plain settling")
 			headless_bench_scenario = null
@@ -146,10 +219,24 @@
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_ignite()
+		if("fire-storm")
+			// Поджиг один раз, дальше долив каждый цикл - как у sustained-leak и
+			// ровно по той же причине: интервальный долив дал бы пилу
+			// "вспыхнуло-выгорело", а нужен установившийся режим.
+			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
+				headless_bench_event_fired = TRUE
+				atmos_headless_bench_ignite()
+			else if(headless_bench_event_fired)
+				atmos_headless_bench_prime_fire_storm()
 		if("giant-hall", "giant-hall-eq", "room-grid")
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_open_event_turfs()
+		if("sustained-leak")
+			// Every cycle, deliberately: the supply strip is a boundary condition.
+			// On an interval it would become a sawtooth of refill-and-settle, which
+			// is the decay tail this scenario exists to avoid measuring.
+			atmos_headless_bench_prime_supply_strip()
 		if("pipenet-stress")
 			// Recurring: retarget the vents every interval so the machinery,
 			// its wake paths and the pipenets never settle into sleep.
@@ -180,6 +267,12 @@
 			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
 				headless_bench_event_fired = TRUE
 				atmos_headless_bench_vent_event_turfs()
+		if("icemoon-blast")
+			if(cycle == headless_bench_breach_cycle && !headless_bench_event_fired)
+				headless_bench_event_fired = TRUE
+				atmos_headless_bench_fire_icemoon_first_blast()
+			if(cycle == headless_bench_breach_cycle + ATMOS_BENCH_BLAST_SECOND_DELAY)
+				atmos_headless_bench_fire_icemoon_blast()
 
 /// Writes the standard scenario_ready event record.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_mark_ready(list/extra)
@@ -292,6 +385,55 @@
 		"firedoors" = length(headless_bench_firedoors),
 	))
 
+// ---------------------------------------------------------------------------
+// fire-storm: один большой зал, горящий целиком. Отличие от plasma-fire не в
+// размере ради размера: коридор меряет ФРОНТ (полсотни очагов на кромке плюс
+// выгоревший хвост), а прод-жалоба - про установившийся пожар, где очаг стоит на
+// каждой плитке и фаза платит за все две тысячи разом. Долив каждый цикл держит
+// этот режим весь прогон, поэтому число очагов не плавает и A/B сравнивает
+// одинаковую нагрузку.
+// ---------------------------------------------------------------------------
+/// fire-storm арена, см. блок дефайнов ATMOS_BENCH_FIRESTORM_* наверху файла.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_fire_storm()
+	can_fire = FALSE
+	var/outer_w = ATMOS_BENCH_FIRESTORM_WIDTH + 2
+	var/outer_h = ATMOS_BENCH_FIRESTORM_HEIGHT + 2
+	if(!atmos_headless_bench_reserve(outer_w, outer_h))
+		return
+	var/base_x = headless_bench_reservation.bottom_left_coords[1]
+	var/base_y = headless_bench_reservation.bottom_left_coords[2]
+	var/base_z = headless_bench_reservation.bottom_left_coords[3]
+	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Fire Storm")
+	atmos_headless_bench_fill_box(base_x, base_y, base_z, outer_w, outer_h, room_area)
+	room_area.reg_in_areas_in_z()
+
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		if(!T.air)
+			continue
+		T.air.set_moles(GAS_PLASMA, ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+		T.air.set_moles(GAS_O2, ATMOS_BENCH_FIRESTORM_O2_MOLES)
+		CHECK_TICK
+	// Поджигается весь зал сразу: фронт распространения - предмет plasma-fire.
+	headless_bench_event_turfs = headless_bench_room_turfs.Copy()
+	atmos_headless_bench_activate_floors()
+	atmos_headless_bench_mark_ready(list(
+		"room_turfs" = length(headless_bench_room_turfs),
+	))
+
+/// Долив топлива и окислителя плюс потолок температуры - см. дефайны наверху.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_prime_fire_storm()
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		var/datum/gas_mixture/mix = T.air
+		if(!mix)
+			continue
+		if(mix.get_moles(GAS_PLASMA) < ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+			mix.set_moles(GAS_PLASMA, ATMOS_BENCH_FIRESTORM_PLASMA_MOLES)
+		if(mix.get_moles(GAS_O2) < ATMOS_BENCH_FIRESTORM_O2_MOLES)
+			mix.set_moles(GAS_O2, ATMOS_BENCH_FIRESTORM_O2_MOLES)
+		if(mix.return_temperature() > ATMOS_BENCH_FIRESTORM_TEMPERATURE)
+			mix.set_temperature(ATMOS_BENCH_FIRESTORM_TEMPERATURE)
+		add_to_active(T)
+
 /datum/controller/subsystem/air/proc/atmos_headless_bench_ignite()
 	for(var/turf/open/T as anything in headless_bench_event_turfs)
 		T.hotspot_expose(FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 400, CELL_VOLUME)
@@ -361,6 +503,29 @@
 	)
 	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
 
+/// Раскладывает решётку комнат: стена на каждой границе span, пол внутри ячеек.
+/// Оба решётчатых сценария (room-grid и sustained-leak) строят её слово в слово
+/// и расходятся только тем, что делают с готовой решёткой дальше.
+///
+/// Двери и reg_in_areas_in_z() остаются за вызывающим: первые у сценариев разные
+/// (event против прорезанных на сборке), второй делается один раз после того, как
+/// все турфы переселены в область.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, area/room_area)
+	for(var/x in base_x to base_x + outer_w - 1)
+		for(var/y in base_y to base_y + outer_h - 1)
+			var/turf/T = locate(x, y, base_z)
+			if(T.loc != room_area)
+				var/area/old_area = T.loc
+				room_area.contents += T
+				T.change_area(old_area, room_area, skip_blend = TRUE)
+			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
+			if(on_wall)
+				T.ChangeTurf(/turf/closed/wall)
+			else
+				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
+				headless_bench_room_turfs += floor
+			CHECK_TICK
+
 // ---------------------------------------------------------------------------
 // room-grid: a lattice of small rooms with checkerboard pressures. Every room
 // has a sealed doorway in its shared walls; the event opens all of them in the
@@ -382,20 +547,7 @@
 	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Room Grid")
 
 	// Lattice: wall on every span boundary, floors inside cells.
-	for(var/x in base_x to base_x + outer_w - 1)
-		for(var/y in base_y to base_y + outer_h - 1)
-			var/turf/T = locate(x, y, base_z)
-			if(T.loc != room_area)
-				var/area/old_area = T.loc
-				room_area.contents += T
-				T.change_area(old_area, room_area, skip_blend = TRUE)
-			var/on_wall = ((x - base_x) % span == 0) || ((y - base_y) % span == 0)
-			if(on_wall)
-				T.ChangeTurf(/turf/closed/wall)
-			else
-				var/turf/open/floor/floor = T.ChangeTurf(/turf/open/floor/plasteel)
-				headless_bench_room_turfs += floor
-			CHECK_TICK
+	atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, room_area)
 	room_area.reg_in_areas_in_z()
 
 	// Checkerboard pressures per cell, and one doorway per shared wall.
@@ -424,6 +576,99 @@
 		"room_turfs" = length(headless_bench_room_turfs),
 		"doorways" = length(headless_bench_event_turfs),
 	))
+
+// ---------------------------------------------------------------------------
+// sustained-leak: a standing gradient that never settles.
+//
+// Every other arena here measures SETTLING - disturb once, watch the curve come
+// back down - and the whole suite therefore reports how fast a transient
+// decays. Production does not fail that way. It fails by parking a few thousand
+// turfs active for tens of minutes around a source nobody removes: five air
+// alarms left in Flood mode for the rest of the shift (round 9946), a runaway
+// energy ball pulsing every 22 seconds for 39 minutes (9956). Cost per turf and
+// group lifetime both behave differently in that regime than in a decay tail,
+// so a benchmark made only of decay tails cannot rank changes aimed at it.
+//
+// The arena is a room lattice fed at the west edge and holed at the east one.
+// The supply strip is topped back up EVERY cycle - that is what a Flood vent
+// does - so the gradient is a boundary condition rather than an initial one,
+// and the active set settles onto a plateau instead of a curve. Nothing here
+// uses prob(), mobs or map content, so two runs of the same build differ only
+// by the machine's own timing noise.
+// ---------------------------------------------------------------------------
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_sustained_leak()
+	can_fire = FALSE
+	var/span = ATMOS_BENCH_LEAK_ROOM + 1
+	var/outer_w = ATMOS_BENCH_LEAK_COLS * span + 1
+	var/outer_h = ATMOS_BENCH_LEAK_ROWS * span + 1
+	if(!atmos_headless_bench_reserve(outer_w, outer_h))
+		return
+	var/base_x = headless_bench_reservation.bottom_left_coords[1]
+	var/base_y = headless_bench_reservation.bottom_left_coords[2]
+	var/base_z = headless_bench_reservation.bottom_left_coords[3]
+	var/area/room_area = atmos_headless_bench_make_area("Atmos Bench Sustained Leak")
+
+	atmos_headless_bench_fill_lattice(base_x, base_y, base_z, outer_w, outer_h, span, room_area)
+	room_area.reg_in_areas_in_z()
+
+	// Doorways are carved at build time, not fired as an event: the point of this
+	// arena is the steady state, so the connected zone has to exist from cycle 1.
+	var/room_center = round(ATMOS_BENCH_LEAK_ROOM / 2) + 1
+	for(var/col in 0 to ATMOS_BENCH_LEAK_COLS - 1)
+		for(var/row in 0 to ATMOS_BENCH_LEAK_ROWS - 1)
+			var/cell_x = base_x + col * span
+			var/cell_y = base_y + row * span
+			if(col < ATMOS_BENCH_LEAK_COLS - 1)
+				var/turf/east_wall = locate(cell_x + span, cell_y + room_center, base_z)
+				if(east_wall)
+					headless_bench_room_turfs += east_wall.ChangeTurf(/turf/open/floor/plasteel)
+			if(row < ATMOS_BENCH_LEAK_ROWS - 1)
+				var/turf/north_wall = locate(cell_x + room_center, cell_y + span, base_z)
+				if(north_wall)
+					headless_bench_room_turfs += north_wall.ChangeTurf(/turf/open/floor/plasteel)
+			CHECK_TICK
+
+	// Sink: holes through the east hull, one cluster per room row.
+	for(var/row in 0 to ATMOS_BENCH_LEAK_ROWS - 1)
+		var/hole_y = base_y + row * span + room_center
+		for(var/offset in 0 to ATMOS_BENCH_LEAK_BREACH_WIDTH - 1)
+			var/turf/hull = locate(base_x + outer_w - 1, hole_y + offset, base_z)
+			if(hull)
+				headless_bench_event_turfs += hull.ChangeTurf(/turf/open/space)
+			CHECK_TICK
+
+	// Source: the whole west room column, held above one atmosphere.
+	for(var/turf/open/T as anything in headless_bench_room_turfs)
+		if(!T.air)
+			continue
+		if(T.x < base_x + span)
+			headless_bench_supply_turfs += T
+		T.air.set_moles(GAS_O2, MOLES_O2STANDARD)
+		T.air.set_moles(GAS_N2, MOLES_N2STANDARD)
+		T.air.set_moles(GAS_CO2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_CO2_RATIO)
+		T.air.set_temperature(ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE)
+		CHECK_TICK
+
+	atmos_headless_bench_prime_supply_strip()
+	atmos_headless_bench_activate_floors()
+	atmos_headless_bench_mark_ready(list(
+		"rooms" = ATMOS_BENCH_LEAK_COLS * ATMOS_BENCH_LEAK_ROWS,
+		"room_turfs" = length(headless_bench_room_turfs),
+		"supply_turfs" = length(headless_bench_supply_turfs),
+		"breach_turfs" = length(headless_bench_event_turfs),
+	))
+
+/// Tops the supply strip back up to its target pressure. Called every cycle, so
+/// the west edge behaves as a fixed boundary rather than a finite reservoir.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_prime_supply_strip()
+	for(var/turf/open/T as anything in headless_bench_supply_turfs)
+		if(!T.air)
+			continue
+		T.air.set_moles(GAS_O2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO)
+		T.air.set_moles(GAS_N2, MOLES_N2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO)
+		T.air.set_moles(GAS_CO2, MOLES_O2STANDARD * ATMOS_BENCH_LEAK_SUPPLY_RATIO * ATMOS_BENCH_LEAK_CO2_RATIO)
+		T.air.set_temperature(ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE)
+		add_to_active(T)
 
 // ---------------------------------------------------------------------------
 // pipenet-stress: a row of rooms, each with a vent fed from a distribution
@@ -1024,6 +1269,62 @@
 		"breach_area" = breach_area ? "[breach_area.type]" : null,
 	))
 
+// ---------------------------------------------------------------------------
+// icemoon-blast: реконструкция раунда 9929. Крошечный взрыв (0/0/2/3 - хлопок
+// сварочного бака) в нижнем медбее IceMoon Station поднял актив с ~900 до 40к
+// турфов - вся планетарка трёх z-уровней - и до конца раунда он не осел.
+// Сценарий не строит арену: бьёт по живой карте на event-cycle и смотрит, кто
+// именно просыпается (поле "wake" в hb-записях) и почему не засыпает обратно.
+// ---------------------------------------------------------------------------
+/datum/controller/subsystem/air/proc/atmos_headless_bench_build_icemoon_blast()
+	var/turf/blast = locate(ATMOS_BENCH_BLAST_X, ATMOS_BENCH_BLAST_Y, ATMOS_BENCH_BLAST_Z)
+	if(!blast)
+		log_world("ATMOS-BENCH: icemoon-blast epicenter not found, running as plain settling")
+		headless_bench_scenario = null
+		headless_bench_scenario_ready = TRUE
+		headless_bench_scenario_building = FALSE
+		can_fire = TRUE
+		return
+	headless_bench_blast_turf = blast
+	var/area/blast_area = get_area(blast)
+	atmos_headless_bench_mark_ready(list(
+		"blast_at" = "[blast.x],[blast.y],[blast.z]",
+		"blast_area" = blast_area ? "[blast_area.type]" : null,
+	))
+
+/// Фаза 1, взрыв 09:42 из admin-лога 9929: size (1, 4, 16, 0) в командном
+/// коридоре z7 - настоящая пробоина интерьера на планетарную поверхность.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fire_icemoon_first_blast()
+	var/turf/blast = locate(ATMOS_BENCH_BLAST_FIRST_X, ATMOS_BENCH_BLAST_FIRST_Y, ATMOS_BENCH_BLAST_FIRST_Z)
+	if(!blast)
+		return
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "icemoon_first_blast",
+		"cyc" = headless_bench_cycles,
+		"at" = "[blast.x],[blast.y],[blast.z]",
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(explosion), blast, 1, 4, 16, 0, TRUE, FALSE, 0)
+
+/// Фаза 2, взрыв 09:57: size (0, 0, 2, 3) = dev/heavy/light/flame.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_fire_icemoon_blast()
+	var/turf/blast = headless_bench_blast_turf
+	if(!blast)
+		return
+	var/list/record = list(
+		"rec" = "event",
+		"event" = "icemoon_blast",
+		"cyc" = headless_bench_cycles,
+		"at" = "[blast.x],[blast.y],[blast.z]",
+		"t" = world.time,
+	)
+	rustg_file_append("[json_encode(record)]\n", GLOB.atmos_headless_bench_path)
+	// Взрыв асинхронный по своей природе (SSexplosions дожёвывает очереди
+	// следующими тиками) - но сам вызов обязан уйти из фаера SSair без сна.
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(explosion), blast, 0, 0, 2, 0, TRUE, FALSE, 3)
+
 #undef ATMOS_BENCH_FIRE_CORRIDOR_LENGTH
 #undef ATMOS_BENCH_FIRE_CORRIDOR_WIDTH
 #undef ATMOS_BENCH_FIRE_PLASMA_COLUMNS
@@ -1037,6 +1338,13 @@
 #undef ATMOS_BENCH_GRID_ROOM
 #undef ATMOS_BENCH_GRID_RATIO_HIGH
 #undef ATMOS_BENCH_GRID_RATIO_LOW
+#undef ATMOS_BENCH_LEAK_COLS
+#undef ATMOS_BENCH_LEAK_ROWS
+#undef ATMOS_BENCH_LEAK_ROOM
+#undef ATMOS_BENCH_LEAK_SUPPLY_RATIO
+#undef ATMOS_BENCH_LEAK_CO2_RATIO
+#undef ATMOS_BENCH_LEAK_SUPPLY_TEMPERATURE
+#undef ATMOS_BENCH_LEAK_BREACH_WIDTH
 #undef ATMOS_BENCH_PIPE_ROOMS
 #undef ATMOS_BENCH_PIPE_ROOM_SPAN
 #undef ATMOS_BENCH_PIPE_VENT_TARGET_HIGH
@@ -1063,5 +1371,12 @@
 #undef ATMOS_BENCH_STATION_ITEM_STRIDE
 #undef ATMOS_BENCH_STATION_ITEM_CAP
 #undef ATMOS_BENCH_STATION_BREACH_SIDE
+#undef ATMOS_BENCH_BLAST_X
+#undef ATMOS_BENCH_BLAST_Y
+#undef ATMOS_BENCH_BLAST_Z
+#undef ATMOS_BENCH_BLAST_FIRST_X
+#undef ATMOS_BENCH_BLAST_FIRST_Y
+#undef ATMOS_BENCH_BLAST_FIRST_Z
+#undef ATMOS_BENCH_BLAST_SECOND_DELAY
 
 #endif // ifdef ATMOS_HEADLESS_BENCH

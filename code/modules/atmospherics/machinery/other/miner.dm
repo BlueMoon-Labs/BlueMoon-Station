@@ -147,7 +147,12 @@
 	merger.set_temperature(spawn_temp)
 	O.assume_air(merger)
 	qdel(merger)
-	O.air_update_turf(TRUE)
+	// assume_air() already wakes the turf. The `update = TRUE` that used to sit
+	// here additionally ran ImmediateCalculateAdjacentTurfs() and, through it,
+	// excited_group.garbage_collect() - every single fire, for a machine that
+	// never changes adjacency. The group around a running miner was torn down and
+	// rebuilt continuously, so breakdown_cooldown never accumulated and the room
+	// never got averaged once in a whole round.
 
 /obj/machinery/atmospherics/miner/attack_ai(mob/living/silicon/user)
 	if(broken)

@@ -26,6 +26,9 @@
 
 
 /mob/living/proc/phaseout(obj/effect/decal/cleanable/B)
+	if(is_hilbert_hotel_zlevel(z))
+		to_chat(src, span_danger("Барьеры Отеля Гилберта мешают вам."))
+		return FALSE
 	if(iscarbon(src))
 		var/mob/living/carbon/C = src
 		for(var/obj/item/I in C.held_items)

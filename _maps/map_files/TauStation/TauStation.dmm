@@ -9325,7 +9325,6 @@
 "diy" = (
 /obj/structure/closet/secure_closet/warden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/item/storage/box/prisoner,
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
@@ -9501,7 +9500,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -26024,10 +26022,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "iSX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "iTi" = (
 /obj/structure/sign/poster/official/science,
@@ -27280,8 +27275,7 @@
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "jsz" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jsH" = (
 /obj/structure/table/wood,
@@ -28053,7 +28047,7 @@
 /area/command/heads_quarters/cmo)
 "jHQ" = (
 /obj/structure/pool/ladder,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jIl" = (
 /obj/structure/chair/wood/normal{
@@ -28084,7 +28078,7 @@
 	dir = 8;
 	pixel_x = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jJb" = (
 /obj/machinery/gulag_teleporter,
@@ -29350,7 +29344,6 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
@@ -33851,7 +33844,7 @@
 /area/engineering/atmos)
 "lIh" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "lIi" = (
 /obj/machinery/door/firedoor,
@@ -34620,7 +34613,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "lXP" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -36854,7 +36847,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/service/lawoffice)
@@ -37917,7 +37909,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
 "nan" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding{
 	dir = 4
 	},
@@ -49825,7 +49816,6 @@
 	},
 /obj/structure/closet/firecloset,
 /obj/item/clothing/glasses/meson/engine,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/engineering/main)
@@ -57598,9 +57588,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 9
-	},
 /turf/open/floor/plasteel/dark,
 /area/hallway/secondary/service)
 "tRi" = (
@@ -61004,7 +60991,7 @@
 /turf/open/floor/plating,
 /area/science/lab)
 "vbB" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "vbF" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/visible{
@@ -65195,7 +65182,6 @@
 	name = "warehouse shutters"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/turf_decal/caution/stand_clear,
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel,
@@ -67051,9 +67037,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "wSQ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},

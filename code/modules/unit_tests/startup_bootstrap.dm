@@ -14,7 +14,7 @@
 	TEST_ASSERT(world.time - SSticker.round_start_time <= 90 SECONDS, "unit tests waited more than 90 seconds after roundstart")
 	// Панель спавна должна быть готова к первому клику админа, а не собираться
 	// на 3-5 секунд прямо в раунде. Ассеты обязаны существовать после SSassets.
-	TEST_ASSERT_NOTNULL(GLOB.asset_datums[/datum/asset/spritesheet/spawnpanel], "Spawn Panel spritesheet was not built during startup")
+	TEST_ASSERT_NOTNULL(GLOB.asset_datums[/datum/asset/spritesheet_batched/spawnpanel], "Spawn Panel spritesheet was not built during startup")
 	TEST_ASSERT_NOTNULL(GLOB.asset_datums[/datum/asset/json/spawnpanel], "Spawn Panel JSON was not built during startup")
 	// А порядок сборки ассетов обязан оставаться таким, чтобы карта иконок была
 	// заполнена до генерации JSON - иначе в панели пропадут все превьюшки.

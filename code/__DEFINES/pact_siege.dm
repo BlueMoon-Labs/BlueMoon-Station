@@ -13,5 +13,5 @@
 #define PACT_SIEGE_EVAC_WARNING (1 MINUTES)
 
 /// Metadollar rewards per winning participant
-#define PACT_SIEGE_REWARD_PACT_WIN 15
-#define PACT_SIEGE_REWARD_INTEQ_WIN 15
+#define PACT_SIEGE_REWARD_PACT_WIN 75
+#define PACT_SIEGE_REWARD_INTEQ_WIN 75

@@ -8,7 +8,7 @@
 	if(!length(GLOB.cached_emoji_list))
 		GLOB.cached_emoji_list = list()
 		GLOB.cached_emoji_base64 = list()
-		var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 		for(var/sprite_name in sheet.sprites)
 			if(findtextEx(sprite_name, "emoji-") == 1)
 				var/emoji_name = copytext(sprite_name, 7)

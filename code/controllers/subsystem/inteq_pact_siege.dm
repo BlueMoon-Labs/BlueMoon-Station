@@ -20,6 +20,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/evac_ready = FALSE
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
+	var/list/datum/weakref/head_remains = list()
 	/// Visual sync: whether station gateway was already flipped to «open» overlays
 	var/gateway_visual_open = FALSE
 	/// Round report: siege was activated this round
@@ -51,6 +52,20 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(!user)
 		return FALSE
 	return (ROLE_INTEQ in user.faction)
+
+/datum/inteq_pact_siege/proc/siege_mode_available()
+	return bm_get_round_chaos() >= CONFIG_GET(number/chaos_for_a_hard_dynamic)
+
+/datum/inteq_pact_siege/proc/siege_mode_blocked_reason()
+	if(GLOB.round_type != ROUNDTYPE_EXTENDED && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)
+		return "Протокол осады доступен только в безопасных условиях."
+	var/required = CONFIG_GET(number/chaos_for_a_hard_dynamic)
+	var/chaos = bm_get_round_chaos()
+	if(chaos < required)
+		return "Недостаточный уровень хаоса для активации протокола ([chaos]/[required])."
+	if(world.time - SSticker.round_start_time > 90 MINUTES)
+		return "Протокол осады можно активировать только в течение первых 90 минут."
+	return null
 
 /datum/inteq_pact_siege/proc/is_battle_area(area/A)
 	return istype(A, /area/InteQ_ship)
@@ -142,34 +157,66 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 				. += T
 	return uniqueList(.)
 
-/datum/inteq_pact_siege/proc/is_on_battlefield(mob/living/L)
-	if(!L)
-		return FALSE
-	var/turf/T = get_turf(L)
+/datum/inteq_pact_siege/proc/is_on_battlefield_turf(turf/T)
 	if(!T)
 		return FALSE
 	if(siege_z && T.z == siege_z)
 		return TRUE
 	if(is_pact_siege_level(T.z))
 		return TRUE
-	return is_battle_area(get_area(L))
+	return is_battle_area(get_area(T))
+
+/datum/inteq_pact_siege/proc/is_on_battlefield(mob/living/L)
+	if(!L)
+		return FALSE
+	return is_on_battlefield_turf(get_turf(L))
 
 /datum/inteq_pact_siege/proc/register_defender(mob/living/L)
 	if(QDELETED(L) || !(ROLE_INTEQ in L.faction))
+		return
+	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
 		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
 	defenders |= WEAKREF(L)
 	defenders_ever_registered = TRUE
 	track_participant(L, "defender")
+	RegisterSignal(L, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_defender_station_breach))
+
+/datum/inteq_pact_siege/proc/check_defender_station_breach(datum/source)
+	SIGNAL_HANDLER
+	var/mob/living/L = source
+	if(!istype(L) || QDELETED(L) || L.stat == DEAD || !(ROLE_INTEQ in L.faction))
+		return
+	var/turf/breach_turf = get_turf(L)
+	if(!breach_turf || !is_station_level(breach_turf.z))
+		return
+	to_chat(L, span_userdanger("НАРУШЕНИЕ ГРАНИЦ СЕКТОРА. Активирован протокол ликвидации."))
+	message_admins("[key_name_admin(L)] попытался проникнуть на Z-уровень станции как персонал InteQ и был уничтожен в [ADMIN_VERBOSEJMP(breach_turf)].")
+	log_game("InteQ defender [key_name(L)] entered station z-level at [AREACOORD(breach_turf)] and was gibbed.")
+	gib_defender_breacher(L)
+
+/datum/inteq_pact_siege/proc/gib_defender_breacher(mob/living/L)
+	L.Immobilize(12 SECONDS)
+	var/datum/smite/gib/smite = new
+	smite.should_log = FALSE
+	INVOKE_ASYNC(smite, TYPE_PROC_REF(/datum/smite, effect), null, L)
 
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
 		return
 	if(ROLE_INTEQ in L.faction)
 		return
+	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
+		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
 	attackers |= WEAKREF(L)
 	track_participant(L, "attacker")
+	RegisterSignal(L, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(track_attacker_head))
+
+/datum/inteq_pact_siege/proc/track_attacker_head(mob/living/carbon/source, obj/item/bodypart/limb, dismembered)
+	SIGNAL_HANDLER
+	if(istype(limb, /obj/item/bodypart/head))
+		head_remains |= WEAKREF(limb)
 
 /datum/inteq_pact_siege/proc/living_defenders_count()
 	. = 0
@@ -317,6 +364,11 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(active)
 		if(user)
 			to_chat(user, span_warning("Протокол осады уже активен."))
+		return FALSE
+	var/mode_block = siege_mode_blocked_reason()
+	if(mode_block)
+		if(user)
+			to_chat(user, span_warning(mode_block))
 		return FALSE
 	if(!role_check_inteq(user))
 		to_chat(user, span_warning("Только персонал InteQ может задействовать этот протокол."))
@@ -477,9 +529,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		to_chat(C, span_greentext("<b>InteQ успешно эвакуировался с объекта. Начислено [PACT_SIEGE_REWARD_INTEQ_WIN] метадолларов.</b>"))
 
 /datum/inteq_pact_siege/proc/recall_attackers()
-	/// After the siege, attackers return via the battlefield gateway (standard away gate).
+	recover_dead_attackers()
 	priority_announce(
-		"Протокол штурма завершён. Силам ПАКТ на объекте InteQ надлежит вернуться на станцию через ГЕЙТ.",
+		"Протокол штурма завершён. Живым силам ПАКТ надлежит вернуться на станцию через ГЕЙТ. Тела и головы павших бойцов ПАКТ доставлены на станцию.",
 		"Центральное Командование",
 		'sound/misc/announce_dig.ogg',
 		null,
@@ -492,6 +544,40 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		if(!is_on_battlefield(L))
 			continue
 		to_chat(L, span_notice("Осада завершена. Вернитесь на станцию через ГЕЙТ на объекте InteQ."))
+
+/datum/inteq_pact_siege/proc/recover_dead_attackers()
+	var/recovered = 0
+	for(var/datum/weakref/W as anything in attackers)
+		var/mob/living/L = W.resolve()
+		if(QDELETED(L) || L.stat != DEAD || !is_on_battlefield(L))
+			continue
+		if(teleport_to_station(L))
+			recovered++
+	for(var/datum/weakref/W as anything in head_remains)
+		var/obj/item/bodypart/head/H = W.resolve()
+		if(QDELETED(H))
+			continue
+		if(get(H.loc, /mob/living/carbon))
+			continue /// голову пришили обратно или кто-то несёт её при себе — не трогаем
+		if(!is_on_battlefield_turf(get_turf(H)))
+			continue
+		if(teleport_to_station(H))
+			recovered++
+	if(recovered)
+		log_game("PACT siege: recovered [recovered] attacker remains (bodies and heads) to the station.")
+
+/datum/inteq_pact_siege/proc/teleport_to_station(atom/movable/AM)
+	var/turf/from = get_turf(AM)
+	if(!from)
+		return null
+	var/turf/dest = get_safe_random_station_turf() || find_safe_turf(extended_safety_checks = TRUE)
+	if(!dest)
+		return null
+	new /obj/effect/temp_visual/dir_setting/ninja(from, AM.dir)
+	playsound(from, 'sound/effects/bamf.ogg', 50, TRUE)
+	AM.forceMove(dest)
+	do_sparks(4, TRUE, AM)
+	return dest
 
 /datum/inteq_pact_siege/proc/evacuate_defenders()
 	/// Living InteQ leave the round via goodbye() when the shuttle departs.
@@ -632,6 +718,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	cleanup_gateway()
 	remove_siege_traits()
 	attackers.Cut()
+	head_remains.Cut()
 	/// defenders kept until depart_evac_shuttle() for goodbye targeting
 	defenders_ever_registered = FALSE
 	gateway_announced = FALSE
@@ -653,6 +740,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			continue
 		REMOVE_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
 		REMOVE_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
+		UnregisterSignal(L, COMSIG_CARBON_REMOVE_LIMB)
 
 /datum/inteq_pact_siege/proc/process_tick()
 	if(!active)

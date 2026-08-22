@@ -13,6 +13,7 @@
 	 * в конце иметь приписку с именем ключа в вайтлисте: "armor_type_a".
 	 */
 	var/alist/taur_types_icon_whitelist = alist()
+	var/taur_flags_inv_changed = NONE
 
 /obj/item/clothing/suit/apron/chef/AltClick()
 	. = ..()

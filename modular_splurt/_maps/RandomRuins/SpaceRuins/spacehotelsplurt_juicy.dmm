@@ -433,10 +433,6 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 6
 	},
-/obj/machinery/pool/drain{
-	pixel_x = -17;
-	pixel_y = 17
-	},
 /turf/open/pool,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "cq" = (
@@ -1032,7 +1028,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "eT" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "eV" = (
@@ -1824,7 +1819,6 @@
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "jm" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -5560,9 +5554,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "Bl" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/statue/silver/md{
 	anchored = 1
 	},
@@ -10632,9 +10623,6 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "Yj" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -10832,7 +10820,6 @@
 /turf/open/floor/glass,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Zi" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/ruin/space/has_grav/bluemoon/hotel)
 "Zj" = (

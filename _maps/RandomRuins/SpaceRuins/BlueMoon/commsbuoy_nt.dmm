@@ -219,7 +219,8 @@
 /turf/open/floor/mineral/titanium/white,
 /area/ruin/space/has_grav/Sidi_pidor)
 "FC" = (
-/turf/closed/wall/mineral/iron)
+/turf/closed/wall/mineral/iron,
+/area/ruin/space/has_grav/Sidi_pidor)
 "FH" = (
 /obj/structure/sign/nanotrasen{
 	pixel_x = -32;

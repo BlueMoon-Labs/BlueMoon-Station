@@ -1,0 +1,140 @@
+// Port of NovaSector liquid system. Adapted for BlueMoon codebase.
+// Source: NovaSector modular_nova/modules/liquids + code/__DEFINES/~nova_defines/liquids.dm
+
+#define WATER_HEIGH_DIFFERENCE_SOUND_CHANCE 50
+#define WATER_HEIGH_DIFFERENCE_DELTA_SPLASH 7 //Delta needed for the splash effect to be made in 1 go
+
+#define REQUIRED_EVAPORATION_PROCESSES 80
+#define EVAPORATION_CHANCE 30
+
+/// Portion (out of 1) of reagents that are lost during the transfer from a mop/towel to a container.
+#define SQUEEZING_DISPERSAL_RATIO 0.75
+
+#define REQUIRED_FIRE_PROCESSES 4
+#define REQUIRED_FIRE_POWER_PER_UNIT 5
+
+#define PARTIAL_TRANSFER_AMOUNT 0.3
+
+#define LIQUID_MUTUAL_SHARE 1
+#define LIQUID_NOT_MUTUAL_SHARE 2
+
+#define LIQUID_GIVER 1
+#define LIQUID_TAKER 2
+
+//Required amount of a reagent to be simulated on turf exposures from liquids (to prevent gaming the system with cheap dillutions)
+#define LIQUID_REAGENT_THRESHOLD_TURF_EXPOSURE 5
+
+//Threshold at which the difference of height makes us need to climb/blocks movement/allows to fall down
+#define TURF_HEIGHT_BLOCK_THRESHOLD 20
+
+#define LIQUID_HEIGHT_DIVISOR 10
+
+#define ONE_LIQUIDS_HEIGHT LIQUID_HEIGHT_DIVISOR
+
+#define LIQUID_ATTRITION_TO_STOP_ACTIVITY 2
+
+//Perceived heat capacity for calculations with atmos sharing
+#define REAGENT_HEAT_CAPACITY		5
+
+#define LIQUID_STATE_PUDDLE			1
+#define LIQUID_STATE_ANKLES			2
+#define LIQUID_STATE_WAIST			3
+#define LIQUID_STATE_SHOULDERS		4
+#define LIQUID_STATE_FULLTILE		5
+#define TOTAL_LIQUID_STATES			5
+#define LYING_DOWN_SUBMERGEMENT_STATE_BONUS			2
+
+#define LIQUID_STATE_FOR_HEAT_EXCHANGERS LIQUID_STATE_WAIST
+
+#define LIQUID_ANKLES_LEVEL_HEIGHT 8
+#define LIQUID_WAIST_LEVEL_HEIGHT 19
+#define LIQUID_SHOULDERS_LEVEL_HEIGHT 29
+#define LIQUID_FULLTILE_LEVEL_HEIGHT 39
+
+#define LIQUID_FIRE_STATE_NONE		0
+#define LIQUID_FIRE_STATE_SMALL		1
+#define LIQUID_FIRE_STATE_MILD		2
+#define LIQUID_FIRE_STATE_MEDIUM	3
+#define LIQUID_FIRE_STATE_HUGE		4
+#define LIQUID_FIRE_STATE_INFERNO	5
+
+// Drain structure parameters
+#define DRAIN_STANDARD_FLAT 5
+#define DRAIN_STANDARD_PERCENT 0.1
+#define DRAIN_BIG_FLAT 15
+#define DRAIN_BIG_PERCENT 0.3
+#define DRAIN_WELD_TIME 2 SECONDS
+
+// Portable liquid pump parameters
+#define LIQUID_PUMP_MAX_VOLUME 10000
+#define LIQUID_PUMP_SPEED_PERCENT 0.4
+#define LIQUID_PUMP_SPEED_FLAT 20
+#define LIQUID_PUMP_UNFASTEN_TIME 4 SECONDS
+
+// Underfloor plumbing pump parameters
+#define LIQUID_FLOOR_PUMP_POWER 1000
+#define LIQUID_FLOOR_PUMP_BUFFER 300
+#define LIQUID_FLOOR_PUMP_RCD_COST 20
+#define LIQUID_FLOOR_PUMP_RCD_DELAY 2 SECONDS
+#define LIQUID_FLOOR_PUMP_DRAIN_FLAT 20
+#define LIQUID_FLOOR_PUMP_DRAIN_PERCENT 0.4
+
+//Threshold at which we "choke" on the water, instead of holding our breath
+#define OXYGEN_DAMAGE_CHOKING_THRESHOLD 15
+
+#define IMMUTABLE_LIQUID_SHARE 1
+
+#define LIQUID_RECURSIVE_LOOP_SAFETY 100 //Hundred loops at maximum for adjacency checking
+
+//Height at which we consider the tile "full" and dont drop liquids on it from the upper Z level
+#define LIQUID_HEIGHT_CONSIDER_FULL_TILE 50
+
+//Amount of water pre-filled pool tiles spawn with. Pools are sunken basins
+//(rim at height 0, pool floor at -30), so 250 units keeps the water at a
+//waist level without reaching the rim.
+#define POOL_START_LIQUID 250
+
+//Max units of reagent a decal created from a liquid puddle can hold, so
+//scooping the decal can't duplicate the puddle into an exploit.
+#define LIQUID_DECAL_CAP 5
+
+#define SSLIQUIDS_RUN_TYPE_TURFS 1
+#define SSLIQUIDS_RUN_TYPE_GROUPS 2
+#define SSLIQUIDS_RUN_TYPE_IMMUTABLES 3
+#define SSLIQUIDS_RUN_TYPE_EVAPORATION 4
+#define SSLIQUIDS_RUN_TYPE_FIRE 5
+
+#define LIQUID_GROUP_DECAY_TIME 3
+
+//Scaled with how much a person is submerged
+#define SUBMERGEMENT_REAGENTS_TOUCH_AMOUNT 60
+
+#define CHOKE_REAGENTS_INGEST_ON_FALL_AMOUNT 4
+
+#define CHOKE_REAGENTS_INGEST_ON_BREATH_AMOUNT 2
+
+#define SUBMERGEMENT_PERCENT(carbon, liquids) min(1,(carbon.body_position == LYING_DOWN ? liquids.liquid_state+LYING_DOWN_SUBMERGEMENT_STATE_BONUS : liquids.liquid_state)/TOTAL_LIQUID_STATES)
+
+// Signals
+#define COMSIG_TURF_LIQUIDS_CREATION "turf_liquids_creation" //from liquid_turf Initialize: (obj/effect/abstract/liquid_turf/liquids)
+#define COMSIG_TURF_LIQUIDS_CHANGE "turf_liquids_change" //from liquid_turf/set_new_liquid_state: (new_state)
+#define COMSIG_TURF_MOB_FALL "turf_mob_fall" //from base of turf/handle_fall: (mob/faller)
+
+// Traits
+/// One can breath under water, you get me?
+#define TRAIT_WATER_BREATHING "water_breathing"
+
+/// One can control water with a flip of the hand (emote *water)
+#define TRAIT_WATER_ASPECT "water_aspect"
+
+// Chat
+#define EXAMINE_SECTION_BREAK "<hr>"
+
+// Smoothing - standalone port of /tg's SMOOTH_BITMASK scheme, which the liquid
+// icons (water-0..water-255) were designed for. Not present in this codebase,
+// so the flags/groups below are local to the liquids module. Values avoid the
+// legacy SMOOTH_TRUE/SMOOTH_MORE/etc. bits defined in icon_smoothing.dm.
+#define SMOOTH_BITMASK (1<<5)
+#define SMOOTH_GROUP_WATER (1<<17)
+#define SMOOTH_GROUP_WINDOW_FULLTILE (1<<18)
+#define SMOOTH_GROUP_WALLS (1<<19)

@@ -225,6 +225,27 @@
 	icon_state = "kathari"
 	matrixed_sections = MATRIX_RED_GREEN
 
+//Kathari s
+/datum/sprite_accessory/tails/human/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
 //Kathari alt
 /datum/sprite_accessory/tails/human/bm_tails/kathari_alt
 	name = "Kathari alt"
@@ -245,6 +266,26 @@
 	name = "Kathari alt"
 	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_RED_GREEN
+
+//Kathari alt s
+/datum/sprite_accessory/tails/human/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
 
 
 // vulp straitgh

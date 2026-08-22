@@ -53,7 +53,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	if(switch_on)
 		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
-		var/list/Not_dust_area = list(/area/centcom/holding/exterior,  /area/hilbertshotel)
+		var/list/Not_dust_area = list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel)
 		if(additional_area)
 			Not_dust_area += additional_area
 		AddElement(/datum/element/dusts_on_leaving_area, Not_dust_area)
@@ -71,9 +71,9 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		RemoveElement(/datum/element/dusts_on_catatonia)
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		if(GC)
-			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior,  /area/hilbertshotel, GC.adittonal_allowed_area))
+			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel, GC.adittonal_allowed_area))
 		else
-			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior,  /area/hilbertshotel))
+			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel))
 
 		REMOVE_TRAIT(src, TRAIT_SIXTHSENSE, GHOSTROLE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
@@ -204,6 +204,36 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	. = ..()
 	var/mob/living/carbon/human/H = new_spawn
 	H.mind.make_XenoChangeling()
+
+/datum/antagonist/changeling/xenobio/on_gain()
+	. = ..()
+	if(iscarbon(owner?.current))
+		RegisterSignal(owner.current, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_siege_zone_entry))
+
+/datum/antagonist/changeling/xenobio/on_removal()
+	if(owner?.current)
+		UnregisterSignal(owner.current, COMSIG_MOVABLE_Z_CHANGED)
+	return ..()
+
+/datum/antagonist/changeling/xenobio/proc/check_siege_zone_entry(datum/source)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/C = owner?.current
+	if(!istype(C) || QDELETED(C) || C.stat == DEAD)
+		return
+	var/turf/T = get_turf(C)
+	if(!T || !(is_pact_siege_level(T.z) || T.z == GLOB.inteq_pact_siege.resolve_siege_z()))
+		return
+	to_chat(C, span_userdanger("Вам запрещено находиться в зоне осады InteQ! Производится эвакуация на Космическую Станцию."))
+	message_admins("[key_name_admin(C)] (ERP-генокрад) попытался проникнуть на территорию осады InteQ и был возвращён на станцию телепортом.")
+	log_game("Xenobio changeling [key_name(C)] tried to enter pact siege z-level at [AREACOORD(T)] — returned to station via teleport.")
+	INVOKE_ASYNC(src, PROC_REF(send_changeling_home), C)
+
+/// Возврат на станцию простым телепортом — как останки атакующих после осады.
+/datum/antagonist/changeling/xenobio/proc/send_changeling_home(mob/living/carbon/C)
+	var/turf/landing = GLOB.inteq_pact_siege.teleport_to_station(C)
+	if(!landing)
+		return
+	to_chat(C, span_notice("Вас вернули на Космическую Станцию."))
 
 /obj/effect/mob_spawn/human/slavers
 	name = "Slaver"

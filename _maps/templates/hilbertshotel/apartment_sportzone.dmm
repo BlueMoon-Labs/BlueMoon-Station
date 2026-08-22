@@ -291,7 +291,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "oR" = (
 /obj/structure/chair/sofa/left/brown,
@@ -340,7 +340,7 @@
 /obj/structure/fluff/railing{
 	pixel_y = 32
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "qj" = (
 /obj/effect/turf_decal/siding/dark/corner,
@@ -540,7 +540,7 @@
 /area/hilbertshotel)
 "ya" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "yE" = (
 /obj/effect/turf_decal/tile/bar{
@@ -631,7 +631,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "ET" = (
 /obj/structure/table/glass,
@@ -922,7 +922,7 @@
 	dir = 1;
 	pixel_y = -32
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "OW" = (
 /turf/open/floor/plasteel/dark,
@@ -993,7 +993,7 @@
 	dir = 1;
 	pixel_y = -32
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Si" = (
 /obj/machinery/telecomms/relay/preset/auto,
@@ -1123,7 +1123,7 @@
 /obj/structure/fluff/railing{
 	pixel_y = 32
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Zm" = (
 /obj/effect/turf_decal/siding/dark{
@@ -1142,7 +1142,7 @@
 /turf/open/floor/plasteel,
 /area/hilbertshotel)
 "ZZ" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 
 (1,1,1) = {"

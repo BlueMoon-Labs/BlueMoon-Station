@@ -80,6 +80,57 @@
 		subject.excited_group.dismantle()
 	SSair.remove_from_active(subject)
 
+// ===== Тик очага не запирает волатильный потолок =====
+//
+// Фаза хотспотов идёт после фазы групп, и полный reset_cooldowns() из
+// hotspot.process() обнулял breakdown_cooldown ровно тогда, когда tick_lifecycle
+// поднял его до единицы. Потолок EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING был
+// недостижим, а evict_settled_members() не выполнялся ни разу за раунд - при
+// том, что заведён он именно против вечно горящей группы. Тест держит счётчик
+// как в реальном чередовании фаз и требует, чтобы он рос.
+
+/datum/unit_test/excited_group_hotspot_tick_keeps_ceiling/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+
+	var/turf/base = run_loc_floor_bottom_left
+	for(var/dx in 0 to 2)
+		for(var/dy in 0 to 2)
+			if(dx == 1 && dy == 1)
+				continue
+			var/turf/T = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT_NOTNULL(T, "test zone turf missing at offset [dx],[dy]")
+			T.ChangeTurf(/turf/closed/wall)
+	var/turf/open/subject = locate(base.x + 1, base.y + 1, base.z)
+	TEST_ASSERT(istype(subject), "pocket center must be an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(subject)
+	// Любое ненулевое значение ниже потолка: проверяется, что тик очага его не
+	// трогает, а не конкретное число.
+	var/breakdown_before_tick = EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING - 1
+	group.breakdown_cooldown = breakdown_before_tick
+	group.dismantle_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES - 1
+
+	subject.eg_hotspot_tick()
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, breakdown_before_tick, "тик очага не должен обнулять breakdown_cooldown - иначе волатильный потолок недостижим")
+	TEST_ASSERT_EQUAL(group.dismantle_cooldown, 0, "тик очага обязан держать окно расформирования открытым")
+	TEST_ASSERT(group.turf_reactions & VOLATILE_REACTION, "тик очага обязан пометить группу волатильной")
+	TEST_ASSERT_EQUAL(subject.atmos_cooldown, 0, "тик очага обязан снимать индивидуальный отдых с горящего турфа")
+
+	// И главное: чередование фаз "группа тикнула - очаг тикнул" должно доводить
+	// счётчик до потолка, а не топтаться на месте.
+	group.breakdown_cooldown = EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING - 2
+	group.turf_reactions = VOLATILE_REACTION
+	group.tick_lifecycle()
+	subject.eg_hotspot_tick()
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING - 1, "счётчик обязан расти сквозь тик очага")
+	group.tick_lifecycle()
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 0, "на потолке обязано отработать выселение осевших и сбросить счётчик")
+
+	if(subject.excited_group)
+		subject.excited_group.dismantle()
+	SSair.remove_from_active(subject)
+
 // ===== VOLATILE через реальную реакцию: generic combustion без хотспота =====
 //
 // genericfire пишет reaction_results["fire"] и возвращает REACTING, но hotspot
