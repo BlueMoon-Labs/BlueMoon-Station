@@ -541,6 +541,19 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	too_long[1] = new /list(1000)
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(too_long), 65, "Список длиннее потолка развернулся внутрь, хотя не должен был")
 
+	// Встроенные списки BYOND ассоциативного чтения не терпят вовсе: contents[атом] - это не
+	// null, а "bad index". Перепись обходит vars подряд и такие списки видит на каждом втором
+	// атоме, так что без плоской копии прибор спамил рантайм весь раунд.
+	var/obj/item/paper/sheet = allocate(/obj/item/paper, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(length(sheet.locs), 1, "однотайловый предмет занимает не один турф - проверять нечего")
+	var/runtimes_before = GLOB.total_runtimes
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(sheet.locs), 1, "встроенный locs посчитан неверно")
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "обход встроенного списка поднял рантайм")
+
+	runtimes_before = GLOB.total_runtimes
+	TEST_ASSERT(SStime_track.list_slots_deep(run_loc_floor_bottom_left.contents) >= 1, "contents турфа с предметом посчитан пустым")
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "обход contents поднял рантайм")
+
 /**
  * Пересчёт выборочной длины списков на весь мир.
  *

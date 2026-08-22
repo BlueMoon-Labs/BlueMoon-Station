@@ -1054,11 +1054,18 @@ SUBSYSTEM_DEF(time_track)
 /datum/controller/subsystem/time_track/proc/list_slots_deep(list/outer)
 	var/own_length = length(outer)
 	var/slots = own_length
-	if(own_length > MEMORY_CENSUS_NESTED_SCAN_CAP)
+	if(!own_length || own_length > MEMORY_CENSUS_NESTED_SCAN_CAP)
 		return slots
 
+	// Встроенные списки BYOND - contents, overlays, verbs, locs, vis_contents - ассоциативного
+	// чтения не поддерживают ВООБЩЕ: outer[элемент] на них не отдаёт null, а падает "bad index".
+	// Перепись же обходит vars подряд и такие списки видит постоянно, так что без этой копии
+	// прибор спамил рантайм на каждый второй атом. Плоская копия и снимает запрет, и сохраняет
+	// пары настоящего ассоциативного списка - проверено стендом.
+	var/list/scan = outer.Copy()
+
 	for(var/index in 1 to own_length)
-		var/element = outer[index]
+		var/element = scan[index]
 		// Список прямо элементом - это "список списков", вроде reagent_list или очереди пар.
 		if(islist(element))
 			slots += length(element)
@@ -1068,7 +1075,7 @@ SUBSYSTEM_DEF(time_track)
 		// позиции, и вместо отсутствующего значения вернётся соседний элемент.
 		if(isnull(element) || isnum(element))
 			continue
-		var/nested = outer[element]
+		var/nested = scan[element]
 		if(islist(nested))
 			slots += length(nested)
 	return slots
