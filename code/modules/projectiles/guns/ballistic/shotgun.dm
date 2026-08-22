@@ -1,7 +1,6 @@
 /obj/item/gun/ballistic/shotgun
 	name = "Shotgun"
 	desc = "Традиционный дробовик с деревянным прикладом и подствольным магазином на четыре патрона."
-	sawn_desc = "Но люди сверху решили, что теперь мы друзья. Позволь спросить... Тебя глошит чувство стыда за то что ты делал? -Две крепости. Часть 3."
 	icon_state = "shotgun"
 	item_state = "shotgun-wielded"
 	fire_sound = "sound/weapons/gunshotshotgunshot.ogg"
@@ -29,7 +28,7 @@
 
 	var/jammed = FALSE //Имеет ли осечку
 	var/jam_multiplier = 0  //множитель стресса
-	var/jam_threshold = 160
+	var/jam_threshold = 200
 	var/last_fire_time = 0 //Проверка когда был произведён последний выстрел
 	var/uses_jam = FALSE //Будет ли дробовик иметь осечки
 	var/jam_stress = 0 //Показатель стресса.
@@ -82,23 +81,16 @@
 	return ..() //changed argument value
 
 /obj/item/gun/ballistic/shotgun/proc/update_jam_stress()
-
     if(!uses_jam)
         return
-
     if(jam_stress <= 0)
         last_stress_decay = world.time
         return
-
     var/time_passed = world.time - last_stress_decay
-
-    if(time_passed < 20)
+    if(time_passed < 10)
         return
-
-    var/decay_ticks = round(time_passed / 20) //2 секунды
-
+    var/decay_ticks = round(time_passed / 10) //2 секунды
     jam_stress = max(0, jam_stress - decay_ticks)
-
     last_stress_decay = world.time
 
 /obj/item/gun/ballistic/shotgun/proc/update_stress_effects()
@@ -118,9 +110,6 @@
         stress_spread_mult = 14
         stress_stam_cost = 4
         stress_pump_delay = 2
-
-    if(jam_stress >= jam_threshold)
-        jammed = TRUE
 
 /obj/item/gun/ballistic/shotgun/proc/refresh_stress_effects()
     update_jam_stress()
@@ -177,7 +166,7 @@
         var/ammo_stress_added = 0
         if(chambered)
             ammo_stress_added = chambered.stress_added
-        jam_stress += round(15 * jam_multiplier) + ammo_stress_added
+        jam_stress += round(10 * jam_multiplier) + ammo_stress_added
         update_stress_effects()
     else
         recoil = base_recoil
@@ -188,24 +177,22 @@
 	return
 
 /obj/item/gun/ballistic/shotgun/proc/can_fire_check(mob/living/user)
-
 	if(jammed)
 		to_chat(user, "<span class='warning'>Оружие заклинило!</span>")
-		playsound(user, "sound/weapons/Shotguns_reheated/shared/jam_warning.ogg", 60, TRUE)
-		balloon_alert(user, "Щёлк?!")
+		user.playsound_local(user, 'sound/weapons/Shotguns_reheated/shared/jam_warning.ogg', 60, TRUE)
 		update_jam_stress()
 		return FALSE
 
 	return TRUE
 
 /obj/item/gun/ballistic/shotgun/proc/try_jam(mob/living/user)
+	if(jam_stress >= jam_threshold)
+		jammed = TRUE
+		playsound(user, 'sound/weapons/Shotguns_reheated/shared/misfire.ogg', 60, TRUE)
+		balloon_alert(user, "??!")
+		return TRUE
 
-    if(jam_stress >= jam_threshold)
-        jammed = TRUE
-        to_chat(user, "<span class='warning'>Оружие заклинило!</span>")
-        return TRUE
-
-    return FALSE
+	return FALSE
 
 /obj/item/gun/ballistic/shotgun/proc/clear_jam(mob/living/user, visible = TRUE, play_sound = TRUE)
 	if(!jammed)
@@ -216,7 +203,8 @@
 	playsound(user, 'sound/weapons/Shotguns_reheated/shared/weapon_rattle.ogg', 75, TRUE)
 	playsound(user, pumpsound, 60, TRUE)
 	jam_stress = max(0, jam_stress - 40)
-	shake_camera(user, 1.8, 1.6)
+	shake_camera(user, 1.6, 1.6)
+	user.do_attack_animation(src)
 	// используем существующую механику
 	pump_unload(user)
 	pump_reload(user)
@@ -266,7 +254,7 @@
 		else if(empty_reload && chambered && !magazine.ammo_count())
 			pump_sound = empty_pumpsound_back
 		playsound(M, pump_sound, 60, TRUE)
-		shake_camera(M, 1.2, 0.8)
+		shake_camera(M, 1.1, 0.8)
 	pump_unload(M)
 	pump_reload(M)
 	empty_reload_pending = FALSE
@@ -286,9 +274,10 @@
 		return FALSE
 	var/obj/item/ammo_casing/AC = magazine.get_round() //load next casing.
 	chambered = AC
+
 /obj/item/gun/ballistic/shotgun/examine(mob/user)
     . = ..()
-
+/*
     if(uses_jam)
         . += "<span class='notice'>["DEBUG JAM STATE"]</span>"
         . += "Stress: [jam_stress]"
@@ -316,6 +305,7 @@
         . += "icon file: NONE"
 
     . += "w_class: [w_class]"
+*/
 
 /obj/item/gun/ballistic/shotgun/on_suppressor_installed(obj/item/suppressor/S)
     . = ..()
@@ -355,11 +345,11 @@
 	can_bayonet = TRUE
 	knife_x_offset = 30
 	knife_y_offset = 12
-	jam_multiplier = 0.8
+	jam_multiplier = 1
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/riot
 	sawn_icon_state = "riot-sawn-e"
 	sawn_item_state = "riot-sawn"
-	sawn_desc = "Следуй за мной если хочешь жить."
+	sawn_desc = "Но люди сверху решили, что теперь мы друзья. Позволь спросить... Тебя глошит чувство стыда за то что ты делал? -Две крепости. Часть 3."
 	spread = 0.4
 
 /obj/item/gun/ballistic/shotgun/riot/update_icon()
@@ -409,7 +399,7 @@
 	fire_delay = 2
 	uses_jam = TRUE
 	empty_reload = TRUE
-	jam_multiplier = 3
+	jam_multiplier = 2
 	ignore_twohand_requirement = TRUE
 	w_class = WEIGHT_CLASS_SMALL
 
@@ -601,6 +591,7 @@
     playsound(user, 'sound/weapons/Shotguns_reheated/shared/weapon_rattle.ogg', 75, TRUE)
     playsound(user, pumpsound, 60, TRUE)
     shake_camera(user, 2, 2)
+    user.do_attack_animation(src)
 
     pump_unload_dual(user)
     pump_reload_dual(user)
@@ -666,7 +657,7 @@
     icon = 'icons/obj/guns/ShotgunsReheated.dmi'
     icon_state = "Invictus"
     item_state = "invictus-wielded"
-    mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
+    mag_type = /obj/item/ammo_box/magazine/internal/shot/tube/lethal
     uses_jam = FALSE
     w_class = WEIGHT_CLASS_HUGE
     fire_delay = 6
@@ -763,7 +754,7 @@
     mag_type = /obj/item/ammo_box/magazine/internal/shot
     uses_jam = TRUE
     empty_reload = TRUE
-    jam_multiplier = 1.3
+    jam_multiplier = 2
     fire_delay = 4
     can_suppress = TRUE //Самое частое оружие в лутпуле. Пусть игрок узнает о том что можно у него есть возможность кастомизации таким образом.
     can_bayonet = TRUE
@@ -1739,7 +1730,7 @@
 	uses_jam = TRUE
 	can_bayonet = TRUE
 	can_suppress = FALSE //Высокий шанс что будут ошибки определения веса с механикой приклада.
-	jam_multiplier = 0.8
+	jam_multiplier = 0.6
 	w_class = WEIGHT_CLASS_NORMAL
 	var/stock = FALSE
 	var/stock_removed = FALSE
@@ -1851,7 +1842,7 @@
 	empty_reload = TRUE
 	can_suppress = TRUE
 	uses_jam = TRUE
-	jam_multiplier = 1
+	jam_multiplier = 0.7
 	ignore_twohand_requirement = TRUE
 	w_class = WEIGHT_CLASS_NORMAL
 

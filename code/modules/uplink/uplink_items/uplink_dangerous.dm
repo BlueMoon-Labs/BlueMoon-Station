@@ -130,7 +130,7 @@
 	item = /obj/item/gun/ballistic/shotgun/dp12/traitor
 	cost = 10
 	surplus = 5
-	purchasable_from = (UPLINK_NUKE_OPS)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_TRAITORS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/jackhammer
 	name = "CS-11 'JackHammer'"
@@ -138,15 +138,15 @@
 	item = /obj/item/gun/ballistic/shotgun/jackhammer
 	cost = 3
 	surplus = 10
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS)
 
 /datum/uplink_item/dangerous/aspis
 	name = "HC-X 'Aspis'"
-	desc = "Дешёвый полуавтоматический дробовик, помещающийся в сумку. Без доп боеприпасов."
+	desc = "Дешёвый полуавтоматический дробовик, помещающийся в сумку. Без боеприпасов."
 	item = /obj/item/gun/ballistic/shotgun/automatic/traitor
 	cost = 6
 	surplus = 3
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS)
 
 /datum/uplink_item/dangerous/smg
 	name = "C-20r Submachine Gun"

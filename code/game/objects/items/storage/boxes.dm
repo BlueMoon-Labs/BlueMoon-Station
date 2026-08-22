@@ -1005,7 +1005,7 @@
 
 /obj/item/storage/box/lethalslugs/PopulateContents()
 	for(var/i in 1 to 7)
-		new /obj/item/ammo_casing/shotgun(src)
+		new /obj/item/ammo_casing/shotgun/slug(src)
 
 /obj/item/storage/box/stunslug
 	name = "box of stun slugs"

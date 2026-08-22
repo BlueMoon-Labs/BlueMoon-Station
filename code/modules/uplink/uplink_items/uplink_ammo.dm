@@ -81,7 +81,7 @@
 
 /datum/uplink_item/ammo/shotgun
 	cost = 2
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/ammo/shotgun/bag
 	name = "12g Ammo Duffel Bag"
@@ -156,19 +156,19 @@
 /datum/uplink_item/ammo/shotgun/ammo_box/stunslug
 	name = "12g Stun Slug Clip"
 	desc = "Обойма с 4 оглушающими пулями для дробовиков 12 калибра."
-	cost = 2
+	cost = 1
 	item = /obj/item/ammo_box/shotgun/loaded/stunslug
 
 /datum/uplink_item/ammo/shotgun/ammo_box/dragons_breath
 	name = "12g Dragon's Breath Clip"
 	desc = "Обойма с 4 зажигательными патронами для дробовиков 12 калибра."
-	cost = 2
+	cost = 1
 	item = /obj/item/ammo_box/shotgun/loaded/dragons_breath
 
 /datum/uplink_item/ammo/shotgun/ammo_box/breacher
 	name = "12g Breacher Clip"
 	desc = "Обойма с 4 взламывающими патронами для дробовиков 12 калибра."
-	cost = 2
+	cost = 1
 	item = /obj/item/ammo_box/shotgun/loaded/breacher
 
 /datum/uplink_item/ammo/revolver

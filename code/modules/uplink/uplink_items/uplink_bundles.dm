@@ -58,7 +58,7 @@
     item = /obj/item/storage/briefcase/aspisbundle
     cost = 15
     surplus = 3
-    purchasable_from = (UPLINK_SYNDICATE)
+    purchasable_from = (UPLINK_SYNDICATE | UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/bundles_tc/shotgunner_bundle
 	name = "12 Gauge Surplus Bundle"

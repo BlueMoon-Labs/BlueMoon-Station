@@ -1,15 +1,16 @@
 // 12g слаг — BR2
+// BLUEMOON EDIT: Повышаем бронепробите для всех патронов для большей конкурентоспособности. BR-1 для резины, BR-2 для дроби, BR-3 для слагов и флешетт -RaizlenW
 /obj/item/projectile/bullet/shotgun_slug
 	name = "12g shotgun slug"
 	damage = 45
-	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 30 → BR2(20)... нет, было 30
-// оставляем 30 как есть (между BR2 и BR3, допустимо)
+	armour_penetration = BULLET_BR3
 	sharpness = SHARP_POINTY
 	wound_bonus = 6
 
 /obj/item/projectile/bullet/shotgun_slug/executioner
 	name = "executioner slug" // admin only, can dismember limbs
 	sharpness = SHARP_EDGED
+	armour_penetration = BULLET_BR2
 	wound_bonus = 80
 
 /obj/item/projectile/bullet/shotgun_slug/pulverizer
@@ -25,7 +26,7 @@
 	name = "beanbag slug"
 	damage = 5
 	stamina = 80                      // BLUEMOON EDIT: было 70 → 80
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR1
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
@@ -35,16 +36,18 @@
 /obj/item/projectile/bullet/incendiary/shotgun
 	name = "incendiary slug"
 	damage = 30
+	armour_penetration = BULLET_BR1
 
 /obj/item/projectile/bullet/incendiary/shotgun/dragonsbreath
 	name = "dragonsbreath pellet"
 	damage = 10
+	armour_penetration = BULLET_BR2 // Раскалённая магниевая стружка намного лучше липнет к одежде и проникает через ткань
 
 /obj/item/projectile/bullet/shotgun_stunslug
 	name = "stunslug"
 	damage =  5
-	armour_penetration = BULLET_BR0 // Stunslug — BR0
-	stamina = 60 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
+	armour_penetration = BULLET_BR1
+	stamina = 55 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
 	knockdown = 5
 	stutter = 5
 	jitter = 20
@@ -94,7 +97,7 @@
 	name ="frag12 slug"
 	damage = 25
 	knockdown = 50
-	armour_penetration = BULLET_BR1
+	armour_penetration = BULLET_BR2 //Осколки от взрыва должны быть больнее -RaizlenW
 
 /obj/item/projectile/bullet/shotgun_frag12/on_hit(atom/target, blocked = FALSE)
 	..()
@@ -109,8 +112,8 @@
 // Стандартная дробь 12g — BR1
 /obj/item/projectile/bullet/pellet/shotgun_buckshot
 	name = "buckshot pellet"
-	damage = 12.5                     // BLUEMOON EDIT: было 7.5 → 12.5 (конкретно Bluemoon переопределение)
-	armour_penetration = BULLET_BR1   // BLUEMOON ADD
+	damage = 13.5                     // BLUEMOON EDIT: было 7.5 → 13.5 (конкретно Bluemoon переопределение)
+	armour_penetration = BULLET_BR2   // BLUEMOON ADD
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5  // low damage + additional dropoff will already curb wounding potential anything past point blank
@@ -120,7 +123,7 @@
 	name = "rubbershot pellet"
 	damage = 2
 	stamina = 20                      // BLUEMOON EDIT: было 15 → 20. -RaizlenW
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR1
 	sharpness = SHARP_NONE
 	embedding = null
 
@@ -139,7 +142,7 @@
 
 // Самодельная дробь — BR0 (ненадёжная, слабая)
 /obj/item/projectile/bullet/pellet/shotgun_improvised
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR1 //Хоть как-то но мусор в гильзе да и должен быть эффективным -RaizlenW
 	tile_dropoff = 0.35
 	damage = 8
 	wound_bonus = 0
@@ -157,7 +160,7 @@
 
 /obj/item/projectile/bullet/scattershot
 	damage = 20
-	armour_penetration = BULLET_BR1
+	armour_penetration = BULLET_BR2
 
 /obj/item/projectile/bullet/seed
 	armour_penetration = BULLET_BR0

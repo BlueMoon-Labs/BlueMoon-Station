@@ -10,7 +10,7 @@
 	var/obj/item/ammo_box/magazine/magazine
 	var/casing_ejector = TRUE //whether the gun ejects the chambered casing
 	var/magazine_wording = "magazine"
-	var/sawn_icon_state = "gun"
+	var/sawn_icon_state = null
 	var/sawn_item_state = "gun" //смена модельки оружия от третьего лица при обрезании ствола. ПОНЯТИЯ ИНВЕРТИРОВАНЫ, РАНЬШЕ БЫЛ ТОЛЬКО SAWN_ITEM_STATE, ЧТО МЕНЯЛ ИКОНКУ -RaizlenW
 	/// Можно ли сменить магазин, пока внутри есть другой
 	var/tactical_reload = FALSE

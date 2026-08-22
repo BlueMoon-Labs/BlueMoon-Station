@@ -89,7 +89,7 @@
 	desc = "A shotgun shell rigged with CMC technology, which launches a massive slug when fired."
 	icon_state = "blackshell"
 	projectile_type = /obj/item/projectile/bullet/shotgun_meteorslug
-	stress_added = 30
+	stress_added = 22
 	recoil_added = 2.2
 
 /obj/item/ammo_casing/shotgun/pulseslug
@@ -220,3 +220,20 @@
 	custom_materials = list(/datum/material/iron=4000)
 	stress_added = 14
 	recoil_added = 1.0
+
+/obj/item/ammo_casing/shotgun/examine(mob/user)
+	. = ..()
+
+	if(recoil_added >= 1.5)
+		. += "<span class='info'>Гравировка гласит, что навеска пороха в патроне <span class='warning'>выше нормы</span>.</span>"
+	else if(recoil_added >= 1.0)
+		. += "<span class='info'>Гравировка гласит, что навеска пороха в патроне <span class='inteqradio'>стандартная</span>.</span>"
+	else if(recoil_added >= 0.5)
+		. += "<span class='info'>Гравировка гласит, что навеска пороха в патроне <span class='green'>уменьшена</span>.</span>"
+
+	if(stress_added >= 20)
+		. += "<span class='info'>Этот патрон <span class='warning'>значительно</span> нагревает оружие.</span>"
+	else if(stress_added >= 14)
+		. += "<span class='info'>Этот патрон <span class='inteqradio'>умеренно</span> нагревает оружие.</span>"
+	else if(stress_added >= 5)
+		. += "<span class='info'>Этот патрон <span class='green'>незначительно</span> нагревает оружие.</span>"
