@@ -224,30 +224,16 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	if(!T || !(is_pact_siege_level(T.z) || T.z == GLOB.inteq_pact_siege.resolve_siege_z()))
 		return
 	to_chat(C, span_userdanger("Вам запрещено находиться в зоне осады InteQ! Производится эвакуация на Космическую Станцию."))
-	message_admins("[key_name_admin(C)] (ERP-генокрад) попытался проникнуть на территорию осады InteQ и был возвращён на станцию капсулой.")
-	log_game("Xenobio changeling [key_name(C)] tried to enter pact siege z-level at [AREACOORD(T)] — returned to station via supplypod.")
+	message_admins("[key_name_admin(C)] (ERP-генокрад) попытался проникнуть на территорию осады InteQ и был возвращён на станцию телепортом.")
+	log_game("Xenobio changeling [key_name(C)] tried to enter pact siege z-level at [AREACOORD(T)] — returned to station via teleport.")
 	INVOKE_ASYNC(src, PROC_REF(send_changeling_home), C)
 
+/// Возврат на станцию простым телепортом — как останки атакующих после осады.
 /datum/antagonist/changeling/xenobio/proc/send_changeling_home(mob/living/carbon/C)
-	var/turf/start_turf = get_turf(C)
-
-	new /obj/effect/temp_visual/dir_setting/ninja(start_turf, C.dir)
-
-	playsound(start_turf, 'sound/effects/bamf.ogg', 50, TRUE)
-	C.visible_message(span_notice("[C] vanishes into the droppod."), \
-		span_notice("You are taken by the droppod."))
-
-	var/area/pod_storage_area = locate(/area/centcom/supplypod/podStorage) in GLOB.sortedAreas
-	var/obj/structure/closet/supplypod/centcompod/exportPod = new(pick(get_area_turfs(pod_storage_area)))
-	C.forceMove(exportPod)
-
-	var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
-	if(dropzone)
-		new /obj/effect/pod_landingzone(dropzone.loc, exportPod)
-	else
-		var/turf/landing = get_safe_random_station_turf()
-		if(landing)
-			new /obj/effect/pod_landingzone(landing, exportPod)
+	var/turf/landing = GLOB.inteq_pact_siege.teleport_to_station(C)
+	if(!landing)
+		return
+	to_chat(C, span_notice("Вас вернули на Космическую Станцию."))
 
 /obj/effect/mob_spawn/human/slavers
 	name = "Slaver"
