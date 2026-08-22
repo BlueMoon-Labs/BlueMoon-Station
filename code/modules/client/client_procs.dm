@@ -1822,7 +1822,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	update_clickcatcher()
 	parallax_holder?.Reset()
 	mob?.hud_used?.screentip_text?.update_view()
-	mob.reload_fullscreen()
+	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
+	// (view.dm:86 apply -> chief.change_view) ещё внутри /client/New() - client_procs.dm:826,
+	// то есть в момент, когда моба у клиента может не быть. Локально на MetaStation это
+	// воспроизводилось каждым подключением DreamSeeker: "Cannot execute null.reload
+	// fullscreen()", следом "Cannot read null.comp_lookup", а упавший /client/New() BYOND
+	// трактует как отказ и рвёт соединение. На проде этого рантайма нет ни разу за 144 логина
+	// раунда 10048, то есть там моб к этому моменту уже назначен - но соседние строки этот же
+	// моб и так спрашивают через ?., здесь просто потерян знак вопроса.
+	mob?.reload_fullscreen()
 	if (isliving(mob))
 		var/mob/living/M = mob
 		M.update_damage_hud()
@@ -1830,7 +1838,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
 		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
 		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
-	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
+	if(mob)
+		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
 /client/proc/generate_clickcatcher()
 	if(!void)
