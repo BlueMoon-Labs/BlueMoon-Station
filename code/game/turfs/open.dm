@@ -13,8 +13,6 @@
 
 	/// Dirt level.
 	var/dirtyness = 0
-	/// Dirt level to spawn dirt. Null to use config.
-	var/dirt_spawn_threshold
 
 	/// How much fuel this open turf provides to turf fires
 	var/flammability = 0.2

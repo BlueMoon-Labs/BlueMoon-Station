@@ -191,8 +191,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	hair_overlay = null
 	facial_hair_overlay = null
 	managed_overlays = null
-	realized_overlays = null
-	realized_underlays = null
 
 	var/image/departing_default = ghostimage_default
 	var/image/departing_simple = ghostimage_simple

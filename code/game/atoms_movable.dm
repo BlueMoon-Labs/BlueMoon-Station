@@ -98,9 +98,6 @@
 	var/atom/movable/moving_from_pull		//attempt to resume grab after moving instead of before.
 	///Holds information about any movement loops currently running/waiting to run on the movable. Lazy, will be null if nothing's going on
 	var/datum/movement_packet/move_packet
-	///contains every client mob corresponding to every client eye in this container. lazily updated by SSparallax and is sparse:
-	///only the last container of a client eye has this list assuming no movement since SSparallax's last fire
-	var/list/client_mobs_in_contents
 	/// String representing the spatial grid groups we want to be held in.
 	/// acts as a key to the list of spatial grid contents types we exist in via SSspatial_grid.spatial_grid_categories.
 	/// We do it like this to prevent people trying to mutate them and to save memory on holding the lists ourselves
@@ -125,9 +122,6 @@
 	var/datum/component/orbiter/orbiting
 	/// Used for space ztransit stuff
 	var/can_be_z_moved = TRUE
-	///If we were without gravity and another animation happened, the bouncing will stop, and we need to restart it in next life().
-	var/floating_need_update = FALSE
-
 	var/zfalling = FALSE
 
 	/// Either FALSE, [EMISSIVE_BLOCK_GENERIC], or [EMISSIVE_BLOCK_UNIQUE]
@@ -792,7 +786,6 @@
 	else if (!on && (movement_type & FLOATING))
 		animate(src, pixel_z = initial(pixel_y), time = 10)
 		setMovetype(movement_type & ~FLOATING)
-	floating_need_update = FALSE // assume it's done
 
 /* 	Language procs
 *	Unless you are doing something very specific, these are the ones you want to use.
