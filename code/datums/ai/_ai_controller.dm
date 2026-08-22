@@ -491,6 +491,14 @@ multiple modular subtrees with behaviors
 		return AI_UNABLE_TO_RUN
 	if(world.time < paused_until)
 		return AI_UNABLE_TO_RUN
+	//Труп не бегает. Без этого гарда любой форс статуса (легаси toggle_ai(AI_ON),
+	//которым таймстоп и прочие паузы снимают заморозку) поднимает мёртвого пауна
+	//обратно в бакет ON в обход проверки stat в get_expected_ai_status(); stat у
+	//трупа больше не меняется, так что планировщик гоняет его до конца раунда.
+	if(!(ai_traits & CAN_ACT_WHILE_DEAD) && isliving(pawn))
+		var/mob/living/living_pawn = pawn
+		if(living_pawn.stat == DEAD)
+			return AI_UNABLE_TO_RUN
 	return NONE
 
 ///Runs any actions that are currently running
@@ -851,8 +859,11 @@ multiple modular subtrees with behaviors
 ///Смена stat пауна: пересчитать статус и работоспособность
 /datum/ai_controller/proc/on_stat_changed(mob/living/source, new_stat)
 	SIGNAL_HANDLER
-	reset_ai_status()
+	//able_to_run пересчитываем ПЕРВЫМ: get_expected_ai_status() читает его как
+	//готовый флаг, и со старым значением воскрешённый паун сначала уходил в OFF
+	//лишним переходом, а свежий труп - наоборот, оставался able_to_run.
 	update_able_to_run()
+	reset_ai_status()
 
 /datum/ai_controller/proc/on_sentience_gained()
 	SIGNAL_HANDLER
