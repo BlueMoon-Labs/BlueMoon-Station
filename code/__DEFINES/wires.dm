@@ -29,6 +29,7 @@
 #define WIRE_MOTOR1 "Motor 1"
 #define WIRE_MOTOR2 "Motor 2"
 #define WIRE_OPEN "Open"
+#define WIRE_ON "On"
 #define WIRE_PANIC "Panic Siphon"
 #define WIRE_POWER "Power"
 #define WIRE_POWER1 "Main Power 1"
@@ -48,3 +49,10 @@
 #define WIRE_ZAP "High Voltage Circuit"
 #define WIRE_ZAP1 "High Voltage Circuit 1"
 #define WIRE_ZAP2 "High Voltage Circuit 2"
+
+// Big Manipulator wires
+#define WIRE_DROP "Drop"
+#define WIRE_ITEM_TYPE "Item Type"
+#define WIRE_CHANGE_MODE "Change Mode"
+#define WIRE_ONE_PRIORITY_BUTTON "One Priority Button"
+#define WIRE_THROW_RANGE "Throw Range"
