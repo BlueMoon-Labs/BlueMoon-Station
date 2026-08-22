@@ -171,10 +171,32 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/register_defender(mob/living/L)
 	if(QDELETED(L) || !(ROLE_INTEQ in L.faction))
 		return
+	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
+		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
 	defenders |= WEAKREF(L)
 	defenders_ever_registered = TRUE
 	track_participant(L, "defender")
+	RegisterSignal(L, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_defender_station_breach))
+
+/datum/inteq_pact_siege/proc/check_defender_station_breach(datum/source)
+	SIGNAL_HANDLER
+	var/mob/living/L = source
+	if(!istype(L) || QDELETED(L) || L.stat == DEAD || !(ROLE_INTEQ in L.faction))
+		return
+	var/turf/breach_turf = get_turf(L)
+	if(!breach_turf || !is_station_level(breach_turf.z))
+		return
+	to_chat(L, span_userdanger("НАРУШЕНИЕ ГРАНИЦ СЕКТОРА. Активирован протокол ликвидации."))
+	message_admins("[key_name_admin(L)] попытался проникнуть на Z-уровень станции как персонал InteQ и был уничтожен в [ADMIN_VERBOSEJMP(breach_turf)].")
+	log_game("InteQ defender [key_name(L)] entered station z-level at [AREACOORD(breach_turf)] and was gibbed.")
+	gib_defender_breacher(L)
+
+/datum/inteq_pact_siege/proc/gib_defender_breacher(mob/living/L)
+	L.Immobilize(12 SECONDS)
+	var/datum/smite/gib/smite = new
+	smite.should_log = FALSE
+	INVOKE_ASYNC(smite, TYPE_PROC_REF(/datum/smite, effect), null, L)
 
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
