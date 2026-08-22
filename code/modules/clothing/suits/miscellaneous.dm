@@ -577,6 +577,12 @@
 	heat_protection = CHEST|GROIN|ARMS|LEGS
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
+/obj/item/clothing/suit/jacket/leather_trenchcoat
+	name = "edgelord trenchcoat"
+	desc = "A long, black trenchcoat. Makes you feel like you're the one, but you're not."
+	icon_state = "leather_trenchcoat"
+	item_state = "leather_trenchcoat"
+
 /obj/item/clothing/suit/jacket/puffer
 	name = "puffer jacket"
 	desc = "A thick jacket with a rubbery, water-resistant shell."

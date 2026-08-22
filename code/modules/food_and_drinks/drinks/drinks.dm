@@ -112,6 +112,18 @@
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
 		to_chat(user, "<span class='notice'>You fill <b>[src]</b> with [trans] units of the contents of <b>[target]</b>.</span>")
 
+	else if(reagents.total_volume && reagent_flags & OPENCONTAINER && spillable)
+		if(user.a_intent == INTENT_HARM)
+			user.visible_message("<span class='danger'>[user] pours the contents of [src] onto [target]!</span>", \
+								"<span class='notice'>You pour the contents of [src] onto [target].</span>")
+			// LIQUIDS ADD - pouring (not throwing) also forms a puddle
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					target_turf.add_liquid_from_reagents(reagents)
+			reagents.reaction(target, TOUCH)
+			reagents.clear_reagents()
+
 // /obj/item/reagent_containers/food/drinks/attackby(obj/item/I, mob/user, params)
 // 	var/hotness = I.get_temperature()
 // 	if(hotness && reagents)

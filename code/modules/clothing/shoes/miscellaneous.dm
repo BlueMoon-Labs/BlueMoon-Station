@@ -179,6 +179,11 @@
 	icon_state = "jackboots_sec"
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 50) // BLUEMOON ADD no armor = applying bare wound bonus. These boots now are between CBRN and MOPP
 
+/obj/item/clothing/shoes/jackboots/black
+	name = "dark jackboots"
+	desc = "Nanotrasen-issue Security combat boots for combat scenarios or combat situations. These are fully black."
+	icon_state = "blackjack"
+
 /obj/item/clothing/shoes/jackboots/alliance
 	name = "Alliance Jackboots"
 	desc = "Берцовые Ботинки для представителей Вселенского Союза."

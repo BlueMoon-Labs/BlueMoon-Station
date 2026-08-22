@@ -372,9 +372,12 @@
 		choices["close"] = icon('icons/mob/radial.dmi', "radial_close")
 
 		for (var/item_key in items)
-			var/item = vars[item_key]
+			var/obj/item/item = vars[item_key]
 			if (item)
-				choices[item_key] = item
+				var/image/choice_icon = image(item)
+				choice_icon.pixel_x = item.base_pixel_x
+				choice_icon.pixel_y = item.base_pixel_y
+				choices[item_key] = choice_icon
 			else
 				// If the item doesn't exist, put a silhouette in its place
 				choices[item_key] = items[item_key]

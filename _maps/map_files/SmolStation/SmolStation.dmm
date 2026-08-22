@@ -4771,7 +4771,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
 "dnD" = (
@@ -16416,7 +16415,6 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "lOW" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding,
 /area/commons/dorms)
 "lPS" = (
@@ -17507,7 +17505,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "mFl" = (
@@ -19122,7 +19119,7 @@
 /area/ai_monitored/turret_protected/aisat)
 "nPf" = (
 /obj/structure/pool/ladder,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "nPh" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
@@ -21238,10 +21235,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "puN" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "pvd" = (
 /obj/structure/cable{
@@ -21448,8 +21442,7 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
 "pAq" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "pAu" = (
 /obj/structure/closet/firecloset,
@@ -22767,7 +22760,6 @@
 /area/medical/virology)
 "qFH" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -23366,7 +23358,7 @@
 /area/hallway/primary/aft)
 "rdM" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "reK" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible{
@@ -23404,7 +23396,7 @@
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "rgA" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "rgN" = (
 /obj/effect/turf_decal/tile/red,
@@ -23811,7 +23803,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "rGQ" = (
 /obj/effect/turf_decal/tile/blue,
@@ -25522,7 +25514,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "sTl" = (
@@ -28022,9 +28013,6 @@
 	dir = 8
 	},
 /obj/effect/landmark/start/chief_engineer,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 9
-	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
 "uKb" = (
@@ -32150,7 +32138,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/dorms)
 "xGr" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,

@@ -41,6 +41,10 @@
 
 	WRITE_FILE(.["custom_verb_consent"], custom_verb_consent)
 
+	WRITE_FILE(.["show_heart_over_self"], show_heart_over_self)
+	WRITE_FILE(.["interaction_effect"], interaction_effect)
+	WRITE_FILE(.["block_partner_pixel_shift"], block_partner_pixel_shift)
+
 	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
 	WRITE_FILE(.["arousal_multiplier"],		arousal_multiplier)
 	WRITE_FILE(.["use_moaning_multiplier"],	use_moaning_multiplier)
@@ -67,7 +71,7 @@
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
 	for(var/interaction in favorite_interactions)
-		if(findtext(interaction, CUSTOM_INTERACTION_PREFIX) == 1)
+		if(findtext(interaction, CUSTOM_INTERACTION_PREFIX))
 			continue
 		var/datum/interaction/interaction_path = ispath(interaction) ? interaction : text2path(interaction)
 		if(!interaction_path)
@@ -79,6 +83,15 @@
 
 	.["custom_verb_consent"] >> custom_verb_consent
 	custom_verb_consent = sanitize_integer(custom_verb_consent, 0, 1, TRUE)
+
+	.["show_heart_over_self"] >> show_heart_over_self
+	show_heart_over_self = sanitize_integer(show_heart_over_self, 0, 1, initial(show_heart_over_self))
+
+	.["interaction_effect"] >> interaction_effect
+	if(!(interaction_effect in GLOB.interaction_effects_list))
+		interaction_effect = initial(interaction_effect)
+	.["block_partner_pixel_shift"] >> block_partner_pixel_shift
+	block_partner_pixel_shift = sanitize_integer(block_partner_pixel_shift, 0, 1, initial(block_partner_pixel_shift))
 
 	use_arousal_multiplier = sanitize_integer(use_arousal_multiplier, 0, 1, initial(use_arousal_multiplier))
 	arousal_multiplier = sanitize_integer(arousal_multiplier, 0, 300, initial(arousal_multiplier))

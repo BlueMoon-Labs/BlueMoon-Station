@@ -2585,6 +2585,13 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				if("boiling")
 					loc_temp = max(loc_temp, SHOWER_BOILING_LOCAL_TEMP)
 
+	//LIQUIDS ADD - use liquids temperature when submerged
+	if(isturf(H.loc))
+		var/turf/liquid_turf = H.loc
+		if(liquid_turf.liquids && liquid_turf.liquids.liquid_state > LIQUID_STATE_PUDDLE)
+			var/submergment_percent = SUBMERGEMENT_PERCENT(H, liquid_turf.liquids)
+			loc_temp = (loc_temp*(1-submergment_percent)) + (liquid_turf.liquids.temp * submergment_percent)
+
 	//Body temperature is adjusted in two parts: first there your body tries to naturally preserve homeostasis (shivering/sweating), then it reacts to the surrounding environment
 	//Thermal protection (insulation) has mixed benefits in two situations (hot in hot places, cold in hot places)
 	if(!H.on_fire) //If you're on fire, you do not heat up or cool down based on surrounding gases
