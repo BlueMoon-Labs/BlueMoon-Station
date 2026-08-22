@@ -5887,7 +5887,6 @@
 #include "modular_splurt\code\game\machinery\computer\slavery.dm"
 #include "modular_splurt\code\game\machinery\computer\arcade\tetris.dm"
 #include "modular_splurt\code\game\machinery\doors\brigdoors.dm"
-#include "modular_splurt\code\game\machinery\doors\poddoor.dm"
 #include "modular_splurt\code\game\machinery\doors\shutters.dm"
 #include "modular_splurt\code\game\machinery\porta_turret\portable_turret.dm"
 #include "modular_splurt\code\game\mecha\combat\gygax.dm"
