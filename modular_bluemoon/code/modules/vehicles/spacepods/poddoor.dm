@@ -28,7 +28,7 @@
 /obj/machinery/door/poddoor/multi_tile/proc/apply_opacity_to_my_turfs(new_opacity)
 	for(var/turf/T in locs)
 		T.opacity = new_opacity
-		T.has_opaque_atom = new_opacity
+		// T.has_opaque_atom = new_opacity
 		T.reconsider_lights()
 		T.air_update_turf(TRUE)
 	update_freelook_sight()
