@@ -1,0 +1,119 @@
+/**
+ * Цена подключения клиента: сколько адресного пространства и стенного времени стоит
+ * один client/New(), по этапам.
+ *
+ * Раунд 10083 (Delta, 107 игроков): 300 из 444 МБ роста VmSize за час пришли тринадцатью
+ * ступеньками по 12-84 МБ, и в каждом таком окне число инстансов не двигалось. Детектор
+ * спайков в те же секунды показывал winget <окно>.dpi / winexists browseroutput на
+ * 1.3-2.9 с - то есть client/New() ждал ответа клиента, - а строка ACCESS: Login у тех же
+ * ckey появлялась на 20-100 секунд позже. Это клиенты с холодным кэшем, которым сервер
+ * стримит ресурсы; с числом входов в окне корреляции нет (r = -0.27): платят не все входы,
+ * а только такие. Ни перепись инстансов, ни перепись датумов этих мегабайт не видят - они
+ * не в объектах DM.
+ *
+ * Прибор снимает VmSize/RSS на входе в client/New() и после каждого этапа, который может
+ * ждать клиента или грузить данные (prefs, встроенный Login, первый round-trip dpi, хвост),
+ * и через CONNECT_PROBE_FOLLOWUP_DELAY после входа делает контрольный замер: стриминг
+ * ресурсов продолжается и после New(). Контрольный замер честен только пока между ним и
+ * входом никто больше не подключался - поэтому в строке стоит число других подключений за
+ * это время: при нуле дельта принадлежит этому клиенту, при большем числе это сумма.
+ *
+ * На Windows /proc нет: тогда в строке остаются только времена этапов, и это тоже ответ на
+ * вопрос "сколько секунд сервер провёл в ожидании этого клиента".
+ */
+
+/// Через сколько после конца client/New() снять контрольный замер: стриминг ресурсов
+/// клиенту продолжается после входа, и ступенька может прийти уже после Login.
+#define CONNECT_PROBE_FOLLOWUP_DELAY (60 SECONDS)
+
+/// Порядковый номер подключения за раунд: по разнице номеров контрольный замер видит,
+/// сколько других клиентов вошло между концом New() и им самим.
+GLOBAL_VAR_INIT(client_connect_serial, 0)
+
+/datum/client_connect_probe
+	/// ckey клиента - строкой, потому что к контрольному замеру клиент может уже уйти
+	var/ckey
+	/// Номер этого подключения в GLOB.client_connect_serial
+	var/serial
+	/// REALTIMEOFDAY на входе в client/New()
+	var/started_at
+	/// REALTIMEOFDAY последней отметки - этапы меряются от неё
+	var/last_mark_at
+	/// VmSize/VmRSS на входе; null - замер памяти недоступен (Windows, /proc не читается)
+	var/start_vsz
+	var/start_rss
+	/// VmSize на последней отметке
+	var/last_mark_vsz
+	/// Готовые куски строки по этапам: "prefs 0.1с +0.2 МБ"
+	var/list/stages = list()
+	/// Итог после finish(): VmSize и момент конца New(), от них считается контрольный замер
+	var/finished_vsz
+	var/finished_at
+
+/datum/client_connect_probe/New(ckey)
+	. = ..()
+	src.ckey = ckey
+	serial = ++GLOB.client_connect_serial
+	started_at = REALTIMEOFDAY
+	last_mark_at = started_at
+	var/list/memory = get_process_memory_mb()
+	if(memory)
+		start_vsz = memory["vsz"]
+		start_rss = memory["rss"]
+		last_mark_vsz = start_vsz
+
+/// Закрыть этап: сколько секунд он шёл и на сколько МБ сдвинул VmSize с прошлой отметки.
+/datum/client_connect_probe/proc/mark(stage_name)
+	var/now = REALTIMEOFDAY
+	var/part = "[stage_name] [round(max(now - last_mark_at, 0) / 10, 0.1)]с"
+	last_mark_at = now
+	if(!isnull(start_vsz))
+		var/list/memory = get_process_memory_mb()
+		if(memory)
+			part += " [format_mb_delta(memory["vsz"] - last_mark_vsz)]"
+			last_mark_vsz = memory["vsz"]
+	stages += part
+
+/// Строка итога подключения: общее время, VmSize/RSS до и после, этапы.
+/datum/client_connect_probe/proc/summary_line(login_index)
+	var/total_seconds = round(max(REALTIMEOFDAY - started_at, 0) / 10, 0.1)
+	var/line = "## MEMORY: подключение [ckey] (вход №[login_index]): New() [total_seconds]с"
+	if(isnull(start_vsz))
+		line += ", память не меряется"
+	else
+		var/list/memory = get_process_memory_mb()
+		if(memory)
+			finished_vsz = memory["vsz"]
+			line += ", VmSize [start_vsz] -> [finished_vsz] МБ ([format_mb_delta(finished_vsz - start_vsz)]), RSS [format_mb_delta(memory["rss"] - start_rss)]"
+	if(length(stages))
+		line += "; этапы: [stages.Join(", ")]"
+	return line
+
+/// Конец client/New(): строка в лог мира и контрольный замер через минуту.
+/datum/client_connect_probe/proc/finish(login_index)
+	log_world(summary_line(login_index))
+	finished_at = REALTIMEOFDAY
+	if(isnull(finished_vsz))
+		return
+	addtimer(CALLBACK(src, PROC_REF(followup)), CONNECT_PROBE_FOLLOWUP_DELAY)
+
+/// Строка контрольного замера: дельта VmSize с конца New() и сколько других клиентов
+/// успело войти - при нуле дельта принадлежит этому подключению целиком.
+/datum/client_connect_probe/proc/followup_line(current_vsz, current_serial)
+	var/others = max(current_serial - serial, 0)
+	return "## MEMORY: подключение [ckey] через [round(CONNECT_PROBE_FOLLOWUP_DELAY / 10)]с: VmSize [format_mb_delta(current_vsz - finished_vsz)] с конца New()[others ? ", за это время вошли ещё [others]" : ", других входов не было - дельта его"]"
+
+/datum/client_connect_probe/proc/followup()
+	var/list/memory = get_process_memory_mb()
+	if(memory)
+		log_world(followup_line(memory["vsz"], GLOB.client_connect_serial))
+
+/// "+84.3 МБ" / "-0.5 МБ" / "0 МБ": знак нужен, потому что отрицательная дельта здесь
+/// законна (ушёл другой клиент) и без знака читалась бы как рост.
+/proc/format_mb_delta(delta_mb)
+	var/rounded = round(delta_mb, 0.1)
+	if(rounded > 0)
+		return "+[rounded] МБ"
+	return "[rounded] МБ"
+
+#undef CONNECT_PROBE_FOLLOWUP_DELAY

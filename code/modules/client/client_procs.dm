@@ -517,6 +517,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
+	// Цена этого подключения по этапам - см. client_connect_probe.dm
+	var/datum/client_connect_probe/connect_probe = new(ckey)
+
 	GLOB.clients += src
 	GLOB.directory[ckey] = src
 
@@ -545,6 +548,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	prefs.last_ip = address				//these are gonna be used for banning
 	prefs.last_id = computer_id			//these are gonna be used for banning
 	fps = sanitize_clientfps(prefs.clientfps)
+	connect_probe.mark("prefs")
 
 	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
 	if(byond_version >= 516)
@@ -629,6 +633,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 
 	. = ..()	//calls mob.Login()
+	connect_probe.mark("Login")
 	// if (length(GLOB.stickybanadminexemptions))
 	// 	GLOB.stickybanadminexemptions -= ckey
 	// 	if (!length(GLOB.stickybanadminexemptions))
@@ -661,6 +666,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
 	acquire_dpi()
+	connect_probe.mark("dpi")
 
 	if(alert_mob_dupe_login && !holder)
 		var/dupe_login_message = "Your ComputerID has already logged in with another key this round, please log out of this one NOW or risk being banned!"
@@ -831,6 +837,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
 	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
 	Master.UpdateTickRate()
+	connect_probe.mark("хвост")
+	connect_probe.finish(round_login_index)
 
 /// Отсутствие окна кэша ассетов означает кастомный скин - предупреждаем и только.
 /// Зовётся таймером после логина: winexists ждёт ответа скина, и на входе в игру

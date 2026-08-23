@@ -2504,6 +2504,7 @@
 #include "code\modules\cargo\packs\vending.dm"
 #include "code\modules\chatter\chatter.dm"
 #include "code\modules\client\client_colour.dm"
+#include "code\modules\client\client_connect_probe.dm"
 #include "code\modules\client\client_defines.dm"
 #include "code\modules\client\client_procs.dm"
 #include "code\modules\client\client_vpn_detect.dm"

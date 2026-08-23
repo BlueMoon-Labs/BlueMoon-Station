@@ -106,6 +106,7 @@
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
 #include "chem_dispenser_payload.dm"
+#include "client_connect_probe.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"
