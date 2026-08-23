@@ -152,6 +152,7 @@
 /obj/item/projectile/beam/pulse/heavy
 	name = "heavy pulse laser"
 	icon_state = "pulse1_bl"
+	pixels_per_second = TILES_TO_PIXELS(25)
 	var/life = 20
 
 /obj/item/projectile/beam/pulse/heavy/on_hit(atom/target, blocked = FALSE)

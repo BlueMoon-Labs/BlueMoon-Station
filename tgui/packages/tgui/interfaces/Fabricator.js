@@ -374,32 +374,45 @@ export const FabricatorContent = (props) => {
                         ))}
                     </Tabs>
                   </Stack.Item>
+
+                  {/* вертикальная линия между категориями и таблицей */}
                   <Stack.Divider />
                 </>
               )}
 
               <Stack.Item grow={1} basis={0} minHeight={0}>
-                {/* //содержимое-таблицы */}
-                {items.length === 0 && (
-                  <NoticeBox>
-                    {!searchIsActive
-                      ? 'No items in this category.'
-                      : 'No results found.'}
-                  </NoticeBox>
-                )}
+                <Stack vertical fill minHeight={0}>
+                  <Stack.Item grow={1} basis={0} minHeight={0}>
+                    {/* //содержимое-таблицы */}
+                    {items.length === 0 && (
+                      <NoticeBox>
+                        {!searchIsActive
+                          ? 'No items in this category.'
+                          : 'No results found.'}
+                      </NoticeBox>
+                    )}
 
-                <Section fill scrollable>
-                  <Table>
-                    <ItemList
-                      items={items}
-                      materialsObj={materialsObj}
-                      chemsHaveById={chemsHaveById}
-                      chemsNameById={chemsNameById}
-                      curSecLevel={current_sec_level}
-                      maxBuildButtonAmount={maxBuildButtonAmount}
-                    />
-                  </Table>
-                </Section>
+                    <Section
+                      fill
+                      scrollable
+                      height="calc(100% - 0.4rem)"
+                    >
+                      <Table>
+                        <ItemList
+                          items={items}
+                          materialsObj={materialsObj}
+                          chemsHaveById={chemsHaveById}
+                          chemsNameById={chemsNameById}
+                          curSecLevel={current_sec_level}
+                          maxBuildButtonAmount={maxBuildButtonAmount}
+                        />
+                      </Table>
+                    </Section>
+                  </Stack.Item>
+
+                  {/* горизонтальная линия под содержимым вкладки */}
+                  <Stack.Divider />
+                </Stack>
               </Stack.Item>
             </Stack>
           </Section>
