@@ -1238,6 +1238,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		view_size.chief = null
 	QDEL_NULL(tooltips)
 	QDEL_NULL(parallax_holder)
+	//Ловец кликов заводится в update_clickcatcher() на первом же Login и больше
+	//нигде не удаляется: screen.Cut() ниже снимает его с экрана, а ссылка в
+	//client.click_catcher держит его, пока жив сам клиент. В раунде 10060 с нулём
+	//игроков перепись давала +31..49 click_catcher за интервал при 40-50
+	//оборванных подключениях - по одному на соединение, которое BYOND отверг до
+	//встроенного New() и чей /client так и не дошёл до Del.
+	QDEL_NULL(click_catcher)
 	QDEL_NULL(void)
 	QDEL_NULL(void_right)
 	QDEL_NULL(void_bottom)
@@ -1866,7 +1873,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(!LAZYLEN(char_render_holders))
 		for(var/plane_master_path as anything in subtypesof(/atom/movable/screen/plane_master))
 			var/atom/movable/screen/plane_master/plane_master = new plane_master_path()
-			char_render_holders["plane_master-[plane_master.plane]"] = plane_master
+			var/holder_key = "plane_master-[plane_master.plane]"
+			//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE - одно и то же число (-3),
+			//поэтому ключа по плоскости на всех не хватает: два плейн-мастера из
+			//трёх затирались в списке, но оставались в client.screen. Найти их
+			//clear_character_previews() уже не мог, и каждая пересборка превью
+			//оставляла по два бессмертных экранных объекта.
+			if(char_render_holders[holder_key])
+				holder_key = "plane_master-[plane_master.type]"
+			char_render_holders[holder_key] = plane_master
 			plane_master.backdrop(mob)
 			screen |= plane_master
 			plane_master.screen_loc = "character_preview_map:0,CENTER"

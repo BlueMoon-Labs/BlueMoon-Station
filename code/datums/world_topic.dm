@@ -125,7 +125,14 @@
 	for(var/mob/dead/observer/O in GLOB.player_list)
 		if(O.key == expected_key)
 			if(O.client?.address == addr)
-				new /atom/movable/screen/splash(null, O.client, TRUE)
+				//Заставки здесь больше нет. Аргументы съехали при добавлении
+				//hud_owner в /atom/movable/screen/splash/Initialize: клиент
+				//попадал в hud_owner, а в client/C прилетал TRUE, и Initialize
+				//выходил на первой же проверке istype - объект не попадал ни на
+				//чей экран, Fade() ему никто не звал, и каждый server_hop
+				//оставлял бессмертный экранный объект. Показ ничего не показывал,
+				//так что восстановление аргументов - отдельное решение по UX.
+				break
 			break
 
 /datum/world_topic/adminmsg
