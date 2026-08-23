@@ -675,6 +675,10 @@
 	name = "Pigtails 3"
 	icon_state = "hair_pigtails2"
 
+/datum/sprite_accessory/hair/pigtailss
+	name = "Pigtails 4"
+	icon_state = "hair_pigtailss"
+
 /datum/sprite_accessory/hair/pixie
 	name = "Pixie Cut"
 	icon_state = "hair_pixie"

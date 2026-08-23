@@ -20348,10 +20348,7 @@
 /turf/open/floor/plasteel/freezer,
 /area/medical/surgery)
 "gtj" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "gto" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -20646,7 +20643,7 @@
 /area/maintenance/disposal)
 "gxh" = (
 /obj/structure/pool/ladder,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "gxi" = (
 /obj/machinery/light,
@@ -21736,7 +21733,7 @@
 /area/medical/psychology/petpark)
 "gMO" = (
 /obj/item/toy/plush/bm/shark,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "gNc" = (
 /obj/structure/table/wood,
@@ -38792,7 +38789,7 @@
 /turf/open/floor/grass,
 /area/medical/psychology/petpark)
 "mlB" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "mlF" = (
 /obj/structure/transit_tube/crossing,
@@ -40322,7 +40319,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "mOd" = (
 /obj/structure/table,
@@ -43592,7 +43589,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "nMl" = (
 /obj/effect/landmark/navigate_destination/disposals,
@@ -45566,7 +45563,7 @@
 /area/maintenance/fore/lower)
 "osw" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "osx" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
@@ -56451,7 +56448,6 @@
 /turf/open/floor/plasteel/dark,
 /area/medical/morgue)
 "rLH" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/glass,
 /area/commons/fitness/pool)
@@ -58419,8 +58415,7 @@
 /turf/open/floor/plasteel/textured,
 /area/engineering/break_room)
 "soZ" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "spe" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible,

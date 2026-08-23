@@ -327,9 +327,6 @@
 /area/shuttle/vox_raiders)
 "qJ" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer4{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/manifold/general/visible/layer4{
 	dir = 1
 	},

@@ -51,7 +51,7 @@
 				if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP" || id == REACTION_REQ_MIN_PRESSURE)
 					continue
 				if(id == "FIRE_REAGENTS")
-					if(gasmix.get_oxidation_power(temp) < min_reqs[id] || gasmix.get_fuel_amount(temp) < min_reqs[id])
+					if(gasmix.get_oxidation_power(temp, min_reqs[id]) < min_reqs[id] || gasmix.get_fuel_amount(temp, min_reqs[id]) < min_reqs[id])
 						continue candidate_loop
 					continue
 				if((cached_gases[id] || 0) < min_reqs[id])

@@ -12,6 +12,7 @@ import {
   Input,
   NoticeBox,
   Section,
+  Stack,
   Table,
   Tabs,
 } from '../components';
@@ -218,7 +219,7 @@ export const Fabricator = (props) => {
           {' Production...'}
         </Dimmer>
       )}
-      <Window.Content overflow="auto">
+      <Window.Content>
         <FabricatorContent />
       </Window.Content>
     </Window>
@@ -269,9 +270,9 @@ export const FabricatorContent = (props) => {
   const chemsNameById = chemsArrayToNameById(chems);
 
   return (
-    <Section>
-      <Flex direction="column">
-        <Flex.Item>
+    <Section fill minHeight={0}>
+      <Stack fill vertical minHeight={0}>
+        <Stack.Item>
           <Collapsible
             open
             title={materials_text
@@ -288,9 +289,9 @@ export const FabricatorContent = (props) => {
               }}
             />
           </Collapsible>
-        </Flex.Item>
+        </Stack.Item>
 
-        <Flex.Item mb={2.5}>
+        <Stack.Item mb={2.5}>
           <Collapsible title="Chemicals" color="transparent">
             <Section
               title={`Stored Chemicals: ${chems_total_volume}u / ${chems_maximum}u`}
@@ -319,10 +320,12 @@ export const FabricatorContent = (props) => {
               ))}
             </Section>
           </Collapsible>
-        </Flex.Item>
+        </Stack.Item>
 
-        <Flex.Item>
+        <Stack.Item grow={1} basis={0} minHeight={0}>
           <Section
+            fill
+            minHeight={0}
             title={hacked ? 'Designs (Safety protocols: DISABLED)' : 'Designs'}
             buttons={(
               <>
@@ -347,54 +350,74 @@ export const FabricatorContent = (props) => {
               </>
             )}
           >
-            <Flex>
+            <Stack fill minHeight={0}>
+              {/* //категории */}
               {!searchIsActive && (
-                <Flex.Item>
-                  <Tabs vertical>
-                    {categories
-                      .filter((c) => c.items?.length)
-                      .map((category) => (
-                        <Tabs.Tab
-                          mr={1.5}
-                          key={category.name}
-                          selected={category.name === selectedCategory}
-                          onClick={() => {
-                            setSelectedCategory(category.name);
-                            const ae = document.activeElement;
-                            ae?.blur?.();
-                          }}
-                        >
-                          {category.name} ({category.items.length})
-                        </Tabs.Tab>
-                      ))}
-                  </Tabs>
-                </Flex.Item>
+                <>
+                  <Stack.Item>
+                    <Tabs vertical>
+                      {categories
+                        .filter((c) => c.items?.length)
+                        .map((category) => (
+                          <Tabs.Tab
+                            mr={1.5}
+                            key={category.name}
+                            selected={category.name === selectedCategory}
+                            onClick={() => {
+                              setSelectedCategory(category.name);
+                              const ae = document.activeElement;
+                              ae?.blur?.();
+                            }}
+                          >
+                            {category.name} ({category.items.length})
+                          </Tabs.Tab>
+                        ))}
+                    </Tabs>
+                  </Stack.Item>
+
+                  {/* вертикальная линия между категориями и таблицей */}
+                  <Stack.Divider />
+                </>
               )}
 
-              <Flex.Item grow={1} basis={0}>
-                {items.length === 0 && (
-                  <NoticeBox>
-                    {!searchIsActive
-                      ? 'No items in this category.'
-                      : 'No results found.'}
-                  </NoticeBox>
-                )}
+              <Stack.Item grow={1} basis={0} minHeight={0}>
+                <Stack vertical fill minHeight={0}>
+                  <Stack.Item grow={1} basis={0} minHeight={0}>
+                    {/* //содержимое-таблицы */}
+                    {items.length === 0 && (
+                      <NoticeBox>
+                        {!searchIsActive
+                          ? 'No items in this category.'
+                          : 'No results found.'}
+                      </NoticeBox>
+                    )}
 
-                <Table>
-                  <ItemList
-                    items={items}
-                    materialsObj={materialsObj}
-                    chemsHaveById={chemsHaveById}
-                    chemsNameById={chemsNameById}
-                    curSecLevel={current_sec_level}
-                    maxBuildButtonAmount={maxBuildButtonAmount}
-                  />
-                </Table>
-              </Flex.Item>
-            </Flex>
+                    <Section
+                      fill
+                      scrollable
+                      height="calc(100% - 0.4rem)"
+                    >
+                      <Table>
+                        <ItemList
+                          items={items}
+                          materialsObj={materialsObj}
+                          chemsHaveById={chemsHaveById}
+                          chemsNameById={chemsNameById}
+                          curSecLevel={current_sec_level}
+                          maxBuildButtonAmount={maxBuildButtonAmount}
+                        />
+                      </Table>
+                    </Section>
+                  </Stack.Item>
+
+                  {/* горизонтальная линия под содержимым вкладки */}
+                  <Stack.Divider />
+                </Stack>
+              </Stack.Item>
+            </Stack>
           </Section>
-        </Flex.Item>
-      </Flex>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };

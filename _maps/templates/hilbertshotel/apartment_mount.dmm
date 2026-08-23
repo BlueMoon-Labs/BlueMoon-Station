@@ -234,7 +234,7 @@
 /turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "ej" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "es" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -468,17 +468,13 @@
 /obj/machinery/shower{
 	pixel_y = 16
 	},
-/obj/machinery/pool/drain{
-	pixel_x = -2;
-	pixel_y = -13
-	},
 /obj/structure/pool/ladder{
 	dir = 8;
 	pixel_x = 0;
 	pixel_y = 16;
 	invisibility = 60
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "gh" = (
 /obj/effect/turf_decal/siding/dark{
@@ -654,7 +650,7 @@
 	pixel_y = 6
 	},
 /obj/structure/fans/tiny/invisible,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "jI" = (
 /obj/structure/bed{
@@ -897,7 +893,7 @@
 	pixel_x = -8;
 	pixel_y = -10
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "pr" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -1110,7 +1106,7 @@
 	pixel_y = 16;
 	invisibility = 60
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "sx" = (
 /obj/effect/turf_decal/siding/purple{
@@ -1288,7 +1284,7 @@
 /area/hilbertshotel)
 "wi" = (
 /obj/effect/turf_decal/siding/dark,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "wt" = (
 /obj/structure/bed/pillow_large,
@@ -1541,7 +1537,7 @@
 	pixel_x = 9;
 	pixel_y = -10
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "yQ" = (
 /obj/effect/turf_decal/siding/dark{
@@ -1713,7 +1709,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "BS" = (
 /obj/structure/table/wood/fancy/purple,
@@ -1867,7 +1863,6 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark/end{
 	dir = 1
 	},
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/siding/wood/thin/end{
 	dir = 1
 	},
@@ -2125,7 +2120,7 @@
 	dir = 8;
 	pixel_x = 0
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Kc" = (
 /obj/effect/turf_decal/siding/dark{
@@ -2265,11 +2260,7 @@
 /turf/open/floor/wood/wood_large,
 /area/hilbertshotel)
 "Mg" = (
-/obj/machinery/pool/drain{
-	pixel_x = 0;
-	pixel_y = 17
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Mr" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -2614,7 +2605,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Sy" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
@@ -2699,7 +2690,7 @@
 /obj/effect/light_emitter/podbay{
 	set_luminosity = 2
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Tt" = (
 /obj/effect/turf_decal/siding/dark{
@@ -2908,7 +2899,7 @@
 	pixel_y = 6
 	},
 /obj/structure/fans/tiny/invisible,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "XL" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{

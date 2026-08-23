@@ -277,6 +277,27 @@
 	var/buildstackamount = 5
 	CanAtmosPass = ATMOS_PASS_NO
 
+// Фан - это маппинговая печать проёма: он держит воздух там, где нужен проход
+// для людей (шлюзовые доки, двери руин, камера турбины). Тепло через него
+// ходило как через окно (0.1), поэтому запечатанная фанами камера всё равно
+// прогревала соседнее помещение до срабатывания пожарки - печать была только
+// на газ. Раз структура объявлена барьером, она барьер и по теплу.
+/obj/structure/fans/BlockThermalConductivity()
+	return CanAtmosPass == ATMOS_PASS_NO
+
+/obj/structure/fans/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Держит и воздух, и тепло: проём за ним можно топить.</span>"
+
+/obj/structure/fans/Destroy()
+	// Соседство турфа кэшировано, и снятый фан обязан сам попросить пересчёт:
+	// иначе печать переживает структуру и проём остаётся закрытым - раньше по
+	// газу, теперь ещё и по теплу.
+	CanAtmosPass = ATMOS_PASS_YES
+	density = FALSE
+	air_update_turf(TRUE)
+	return ..()
+
 /obj/structure/fans/deconstruct()
 	if(!(flags_1 & NODECONSTRUCT_1))
 		if(buildstacktype)

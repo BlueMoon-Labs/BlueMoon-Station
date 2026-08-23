@@ -35,9 +35,8 @@
 	if(isnull(range_modifier))
 		range_modifier = RAD_DISTANCE_COEFFICIENT
 	var/turf/open/pool/PL = get_turf(source)
-	if(istype(PL))
-		if(PL.filled == TRUE)
-			intensity *= 0.15
+	if(istype(PL) && PL.liquids)
+		intensity *= 0.15
 	if(intensity <= RAD_BACKGROUND_RADIATION)
 		return
 	var/area/A = get_area(source)

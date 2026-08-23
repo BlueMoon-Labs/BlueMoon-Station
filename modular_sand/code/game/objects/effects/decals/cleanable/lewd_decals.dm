@@ -35,3 +35,10 @@
 	. = ..()
 	add_atom_colour(mix_color_from_reagents(reagents.reagent_list), FIXED_COLOUR_PRIORITY)
 
+/obj/effect/decal/cleanable/semendrip/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food/drinks))
+		. = 1 // Prevent the container from splashing onto / scooping the decal
+		to_chat(user, span_notice("Слишком тягуче, чтобы собрать в ёмкость."))
+		return
+	return ..()
+

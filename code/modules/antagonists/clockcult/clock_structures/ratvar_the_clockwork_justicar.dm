@@ -58,7 +58,7 @@
 		T = get_step(T, dir) //please don't run into a window like a bird, ratvar
 	forceMove(T)
 
-/obj/structure/destructible/clockwork/massive/ratvar/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/obj/structure/destructible/clockwork/massive/ratvar/Process_Spacemove(movement_dir = 0)
 	return clashing
 
 /obj/structure/destructible/clockwork/massive/ratvar/process()

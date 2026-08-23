@@ -246,8 +246,7 @@
 	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	pilot.enable_client_mobs_in_contents() // канал CLIENTS обычно кормит Login
 
-	// стабилизаторы с рабочими двигателями - то самое состояние, которое уводило
-	// меха мимо /atom/movable/Moved()
+	// двигатели с заряженной ячейкой и включённой стабилизацией - рабочее состояние меха в космосе
 	TEST_ASSERT_NOTNULL(mech.cell, "test premise: the test mech must spawn with a power cell")
 	mech.cell.charge = mech.cell.maxcharge
 	var/obj/item/mecha_parts/mecha_equipment/thrusters/rcs = new /obj/item/mecha_parts/mecha_equipment/thrusters(mech)

@@ -307,6 +307,15 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 	return output
 */
+/// Реакция из SSair.gas_reactions по её id, или null. Атмос-тесты дёргают реакции
+/// напрямую (мимо индексатора кандидатов), и один и тот же поиск был скопирован по
+/// файлам пять раз.
+/proc/unit_test_find_gas_reaction(reaction_id)
+	for(var/datum/gas_reaction/candidate as anything in SSair?.gas_reactions)
+		if(candidate.id == reaction_id)
+			return candidate
+	return null
+
 /// Logs a test message. Will use GitHub action syntax found at https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 /datum/unit_test/proc/log_for_test(text, priority, file, line)
 	var/map_name = SSmapping.config.map_name

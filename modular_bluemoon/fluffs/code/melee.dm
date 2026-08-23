@@ -328,3 +328,33 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/trenchknife_kit
+	name = "Trench Knife Kit"
+	desc = "A modkit for making a kitchen knife into a Trench Knife."
+	product = /obj/item/kitchen/knife/trenchknife
+	fromitem = list(/obj/item/kitchen/knife)
+
+/obj/item/kitchen/knife/trenchknife
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Trench Knife"
+	desc = "Для своего 600-летнего возраста этот артефакт Первой мировой войны сохранился великолепно. Массивная латунная рукоять-кастет покрыта благородной темной патиной, но не имеет ни единой трещины. Четыре кольца с шипами до сих пор идеально ложатся на пальцы"
+	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
+	icon_state = "knife"
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/bowie_kit
+	name = "Bowie Knife Kit"
+	desc = "A modkit for making a combat knife into a Bowie Knife."
+	product = /obj/item/kitchen/knife/combat/bowie
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/bowie
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Bowie Knife"
+	desc = "Культовый тяжелый тесак, который спустя шесть веков полностью сохранил свою брутальную функциональность. Характерный хищный скос обуха и массивная стальная гарда не расшатались от времени."
+	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
+	icon_state = "buckknife"
