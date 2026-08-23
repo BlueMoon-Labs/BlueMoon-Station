@@ -38242,10 +38242,6 @@
 	},
 /turf/open/floor/engine,
 /area/maintenance/port/aft)
-"eqN" = (
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/space)
 "eqR" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
@@ -43848,15 +43844,6 @@
 /obj/effect/landmark/navigate_destination/janitor,
 /turf/open/floor/plasteel/textured/large,
 /area/service/janitor)
-"gBV" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/light/small{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/space)
 "gCn" = (
 /obj/structure/disposalpipe/segment,
 /obj/structure/flora/ausbushes/ppflowers,
@@ -51663,16 +51650,6 @@
 	},
 /turf/open/floor/carpet/orange,
 /area/medical/psychology)
-"jJX" = (
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/obj/machinery/door/airlock/external{
-	name = "Escape Airlock"
-	},
-/obj/structure/fans/tiny,
-/turf/open/floor/plating,
-/area/space)
 "jJZ" = (
 /obj/structure/chair{
 	dir = 1
@@ -68842,12 +68819,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/storage)
-"qUJ" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/space)
 "qUS" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /obj/effect/turf_decal/trimline/yellow/filled/mid_joiner,
@@ -138415,8 +138386,8 @@ tsf
 aNa
 tsf
 aNa
-qUJ
-eqN
+tsf
+aNa
 aaa
 aaa
 aaa
@@ -138672,8 +138643,8 @@ aQC
 aNa
 aQC
 aNa
-gBV
-eqN
+aQC
+aNa
 aaa
 aaa
 aaa
@@ -138929,8 +138900,8 @@ aTo
 aRW
 aTo
 aNa
-jJX
-eqN
+aTo
+aNa
 aaa
 aaa
 aaa

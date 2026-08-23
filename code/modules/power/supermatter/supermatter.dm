@@ -404,6 +404,16 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			SEND_SOUND(M, 'sound/magic/charge.ogg')
 			to_chat(M, "<span class='boldannounce'>Вы чувствуете, как реальность на мгновение искажается...</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "delam", /datum/mood_event/delam)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT || GLOB.round_type == ROUNDTYPE_EXTENDED)
+		investigate_log("has performed a soft delamination (light round type [GLOB.round_type]).", INVESTIGATE_SUPERMATTER)
+		for(var/obj/machinery/light/light in GLOB.machines)
+			if(light.z == z)
+				light.on = TRUE
+				INVOKE_ASYNC(light, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
+				light.on = FALSE
+		radiation_pulse(src, 10000, 5, TRUE)
+		qdel(src)
+		return
 	if(combined_gas > MOLE_PENALTY_THRESHOLD)
 		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
 		if(T) //If something fucks up we blow anyhow. This fix is 4 years old and none ever said why it's here. help.
