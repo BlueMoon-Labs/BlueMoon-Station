@@ -86,9 +86,13 @@
 	if(grant_to == owner)
 		return // We already have it
 	var/mob/previous_owner = owner
-	owner = grant_to
+	// Сначала снимаем всё с прежнего владельца и только потом перезаписываем owner:
+	// Remove() отписывает сигналы по owner, и при обратном порядке она отписывала
+	// уже нового владельца, а подписки старого утекали - следующий Grant на того же
+	// моба ловил "mob_statchange overridden. Use override = TRUE..." (маска в руки).
 	if(!isnull(previous_owner))
 		Remove(previous_owner)
+	owner = grant_to
 	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(clear_ref), override = TRUE)
 
 	// Register some signals based on our check_flags
