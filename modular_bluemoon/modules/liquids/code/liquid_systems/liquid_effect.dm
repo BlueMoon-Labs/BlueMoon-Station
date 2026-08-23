@@ -60,6 +60,55 @@
 		"[LIQUID_STATE_FULLTILE]" = "$ going [span_danger("over your head")]",
 	)
 
+/obj/effect/abstract/liquid_turf/Initialize(mapload)
+	. = ..()
+	if(!SSliquids)
+		CRASH("Liquid Turf created with the liquids sybsystem not yet initialized!")
+	if(!immutable)
+		my_turf = loc
+		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
+		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
+		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
+		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
+		SSliquids.add_active_turf(my_turf)
+
+		SEND_SIGNAL(my_turf, COMSIG_TURF_LIQUIDS_CREATION, src)
+
+	update_cleanbot_targetability()
+	update_icon(UPDATE_OVERLAYS)
+	update_liquid_footsteps()
+	if(!no_effects)
+		queue_smooth()
+		queue_smooth_neighbors()
+
+/obj/effect/abstract/liquid_turf/Destroy(force)
+	if(force)
+		restore_liquid_footsteps()
+		lose_cleanbot_targetable()
+		var/turf/old_turf = my_turf
+		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
+		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
+		if(my_turf.lgroup)
+			my_turf.lgroup.remove_from_group(my_turf)
+		if(SSliquids.evaporation_queue[my_turf])
+			SSliquids.evaporation_queue -= my_turf
+		if(SSliquids.processing_fire[my_turf])
+			SSliquids.processing_fire -= my_turf
+		//Is added because it could invoke a change to neighboring liquids
+		SSliquids.add_active_turf(my_turf)
+		my_turf.liquids = null
+		my_turf = null
+		queue_smooth_neighbors(old_turf)
+	else
+		return QDEL_HINT_LETMELIVE
+	return ..()
+
+/obj/effect/abstract/liquid_turf/immutable/Destroy(force)
+	if(force)
+		stack_trace("Something tried to hard destroy an immutable liquid.")
+		return QDEL_HINT_LETMELIVE
+	return ..()
+
 /obj/effect/abstract/liquid_turf/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	return
 
@@ -278,6 +327,7 @@
 	liquid_state = new_state
 	if(!isnull(my_turf))
 		my_turf.liquids_change(new_state)
+	queue_smooth()
 	update_icon(UPDATE_OVERLAYS)
 	update_liquid_footsteps()
 	update_cleanbot_targetability()
@@ -331,15 +381,16 @@
 	if(no_effects)
 		return
 
-	switch(liquid_state)
-		if(LIQUID_STATE_ANKLES)
-			. += make_state_layer(1, has_top = TRUE)
-		if(LIQUID_STATE_WAIST)
-			. += make_state_layer(2, has_top = TRUE)
-		if(LIQUID_STATE_SHOULDERS)
-			. += make_state_layer(3, has_top = TRUE)
-		if(LIQUID_STATE_FULLTILE)
-			. += make_state_layer(4, has_top = FALSE)
+	if(liquid_state > LIQUID_STATE_PUDDLE)
+		switch(liquid_state)
+			if(LIQUID_STATE_ANKLES)
+				. += make_state_layer(1, has_top = TRUE)
+			if(LIQUID_STATE_WAIST)
+				. += make_state_layer(2, has_top = TRUE)
+			if(LIQUID_STATE_SHOULDERS)
+				. += make_state_layer(3, has_top = TRUE)
+			else // LIQUID_STATE_FULLTILE
+				. += make_state_layer(4, has_top = FALSE)
 
 	var/mutable_appearance/shine = mutable_appearance(icon, "shine", alpha = 32, appearance_flags = RESET_COLOR|RESET_ALPHA)
 	if(shine)
@@ -384,28 +435,35 @@
 	if(!my_turf || no_effects)
 		return
 	var/new_junction = 0
-	if(smooths_with_turf(get_step(my_turf, NORTH)))
-		new_junction |= 1
-	if(smooths_with_turf(get_step(my_turf, SOUTH)))
-		new_junction |= 2
-	if(smooths_with_turf(get_step(my_turf, EAST)))
-		new_junction |= 4
-	if(smooths_with_turf(get_step(my_turf, WEST)))
-		new_junction |= 8
-	//Diagonals only connect when both of their cardinals connect, same as the source system
-	//NOTE: the cardinal pair must BOTH be present - a single cardinal + diagonal produces a
-	//junction that has no matching icon state and would fall back to the isolated "water-0"
-	if((new_junction & 9) == 9 && smooths_with_turf(get_step(my_turf, NORTHWEST)))
-		new_junction |= 128
-	if((new_junction & 5) == 5 && smooths_with_turf(get_step(my_turf, NORTHEAST)))
-		new_junction |= 16
-	if((new_junction & 10) == 10 && smooths_with_turf(get_step(my_turf, SOUTHWEST)))
-		new_junction |= 64
-	if((new_junction & 6) == 6 && smooths_with_turf(get_step(my_turf, SOUTHEAST)))
-		new_junction |= 32
+	if(liquid_state <= LIQUID_STATE_PUDDLE)
+		if(smooths_with_turf(get_step(my_turf, NORTH)))
+			new_junction |= 1
+		if(smooths_with_turf(get_step(my_turf, SOUTH)))
+			new_junction |= 2
+		if(smooths_with_turf(get_step(my_turf, EAST)))
+			new_junction |= 4
+		if(smooths_with_turf(get_step(my_turf, WEST)))
+			new_junction |= 8
+		//Diagonals only connect when both of their cardinals connect, same as the source system
+		//NOTE: the cardinal pair must BOTH be present - a single cardinal + diagonal produces a
+		//junction that has no matching icon state and would fall back to the isolated "water-0"
+		if((new_junction & 9) == 9 && smooths_with_turf(get_step(my_turf, NORTHWEST)))
+			new_junction |= 128
+		if((new_junction & 5) == 5 && smooths_with_turf(get_step(my_turf, NORTHEAST)))
+			new_junction |= 16
+		if((new_junction & 10) == 10 && smooths_with_turf(get_step(my_turf, SOUTHWEST)))
+			new_junction |= 64
+		if((new_junction & 6) == 6 && smooths_with_turf(get_step(my_turf, SOUTHEAST)))
+			new_junction |= 32
+	else
+		new_junction = null
 	set_smoothed_icon_state(new_junction)
 
 /obj/effect/abstract/liquid_turf/proc/set_smoothed_icon_state(new_junction)
+	if(isnull(new_junction))
+		icon_state = null
+		smoothing_junction = null
+		return
 	smoothing_junction = new_junction
 	if(cached_water_states == null)
 		cached_water_states = icon_states(icon)
@@ -674,55 +732,6 @@
 				to_chat(falling_carbon, span_userdanger("You fall in and swallow some [reagents_to_text()]!"))
 		else
 			to_chat(M, span_userdanger("You fall in the [reagents_to_text()]!"))
-
-/obj/effect/abstract/liquid_turf/Initialize(mapload)
-	. = ..()
-	if(!SSliquids)
-		CRASH("Liquid Turf created with the liquids sybsystem not yet initialized!")
-	if(!immutable)
-		my_turf = loc
-		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
-		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
-		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
-		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
-		SSliquids.add_active_turf(my_turf)
-
-		SEND_SIGNAL(my_turf, COMSIG_TURF_LIQUIDS_CREATION, src)
-
-	update_cleanbot_targetability()
-	update_icon(UPDATE_OVERLAYS)
-	update_liquid_footsteps()
-	if(!no_effects)
-		queue_smooth()
-		queue_smooth_neighbors()
-
-/obj/effect/abstract/liquid_turf/Destroy(force)
-	if(force)
-		restore_liquid_footsteps()
-		lose_cleanbot_targetable()
-		var/turf/old_turf = my_turf
-		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
-		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
-		if(my_turf.lgroup)
-			my_turf.lgroup.remove_from_group(my_turf)
-		if(SSliquids.evaporation_queue[my_turf])
-			SSliquids.evaporation_queue -= my_turf
-		if(SSliquids.processing_fire[my_turf])
-			SSliquids.processing_fire -= my_turf
-		//Is added because it could invoke a change to neighboring liquids
-		SSliquids.add_active_turf(my_turf)
-		my_turf.liquids = null
-		my_turf = null
-		queue_smooth_neighbors(old_turf)
-	else
-		return QDEL_HINT_LETMELIVE
-	return ..()
-
-/obj/effect/abstract/liquid_turf/immutable/Destroy(force)
-	if(force)
-		stack_trace("Something tried to hard destroy an immutable liquid.")
-		return QDEL_HINT_LETMELIVE
-	return ..()
 
 //Exposes my turf with simulated reagents
 /obj/effect/abstract/liquid_turf/proc/ExposeMyTurf()

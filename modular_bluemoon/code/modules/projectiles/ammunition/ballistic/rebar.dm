@@ -5,7 +5,6 @@
 	icon = 'modular_bluemoon/icons/obj/guns/crossbowbolts.dmi'
 	icon_state = "Sharpenedironrod"
 	projectile_type = /obj/item/projectile/bullet/rebar
-	newtonian_force = 1.5
 	heavy_metal = FALSE
 	custom_materials = list(/datum/material/iron = 1000)
 
@@ -76,5 +75,4 @@
 	desc = "Doink!"
 	icon_state = "paperball"
 	projectile_type = /obj/item/projectile/bullet/paperball
-	newtonian_force = 0.5
 	custom_materials = list(/datum/material/paper = 250)

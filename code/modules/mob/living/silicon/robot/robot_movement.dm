@@ -1,9 +1,7 @@
-/mob/living/silicon/robot/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
-	// Двигатели держат борга как стабилизатор - дрейфа у него не бывает вовсе. Значит и
-	// работа есть только на реальном шаге: стоять на месте им ничего не стоит.
-	if(ionpulse(charge = movement_dir && !continuous_move))
+/mob/living/silicon/robot/Process_Spacemove(movement_dir = 0)
+	if(ionpulse())
 		return TRUE
-	return ..(movement_dir, continuous_move)
+	return ..()
 
 /mob/living/silicon/robot/mob_negates_gravity()
 	return magpulse

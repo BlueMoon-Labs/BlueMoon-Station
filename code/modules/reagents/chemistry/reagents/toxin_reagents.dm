@@ -536,7 +536,7 @@
 	color = "#64916E"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
-	overdose_threshold = 5
+	overdose_threshold = 6
 	var/static/list/overdose_phrases = list(
 		"Я не могу дышать",
 		"Они убьют меня. Они убьют меня",

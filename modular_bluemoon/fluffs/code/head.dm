@@ -639,3 +639,14 @@
             if(active_sound)
                 if(up)
                     playsound(src.loc, "[active_sound]", 100, 0, 4)
+
+/obj/item/clothing/head/donator/bm/commando_beret
+	name = "Commando beret"
+	desc = "Just a simple beret, but with fancy old NVG."
+	icon_state = "commando_beret"
+	item_state = "commando_beret"
+	unique_reskin = list(
+		"Black" = list("icon_state" = "commando_beret", "item_state" = "commando_beret"),
+		"Khaki" = list("icon_state" = "commando_beret_khaki", "item_state" = "commando_beret_khaki"),
+		"Olive" = list("icon_state" = "commando_beret_olive", "item_state" = "commando_beret_olive")
+	)

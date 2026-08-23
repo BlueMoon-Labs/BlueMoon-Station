@@ -284,9 +284,8 @@
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
-#include "space_drift.dm"
+#include "simple_animal_icon_states.dm"
 #include "astro_sensor.dm"
-#include "space_flight_modes.dm"
 #include "space_weather_effects.dm"
 #include "space_weather_graveyard.dm"
 #include "space_weather_phases.dm"
@@ -303,6 +302,7 @@
 #include "ai_body_block.dm"
 #include "ai_boss_selector.dm"
 #include "ai_chokepoint_ambush.dm"
+#include "ai_dead_pawn.dm"
 #include "ai_legacy_clusters.dm"
 #include "ai_legacy_finish.dm"
 #include "ai_movement_hybrid.dm"
@@ -318,11 +318,13 @@
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
 #include "sign_types.dm"
+#include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
 #include "tile_pipe_placement.dm"
 #include "update_icon_short_circuit.dm"
+#include "vent_label_numbering.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH

@@ -137,7 +137,8 @@
 
 	var/area/A = get_base_area(src)
 	if(!A.air_scrub_names[id_tag])
-		name = "\improper [A.name] air scrubber #[A.air_scrub_names.len + 1]"
+		A.air_scrub_serial++
+		name = "\improper [A.name] air scrubber #[A.air_scrub_serial]"
 		A.air_scrub_names[id_tag] = name
 
 	A.air_scrub_info[id_tag] = signal.data
