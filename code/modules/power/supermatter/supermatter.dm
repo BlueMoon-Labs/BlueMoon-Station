@@ -404,6 +404,16 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			SEND_SOUND(M, 'sound/magic/charge.ogg')
 			to_chat(M, "<span class='boldannounce'>Вы чувствуете, как реальность на мгновение искажается...</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "delam", /datum/mood_event/delam)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT || GLOB.round_type == ROUNDTYPE_EXTENDED)
+		investigate_log("has performed a soft delamination (light round type [GLOB.round_type]).", INVESTIGATE_SUPERMATTER)
+		for(var/obj/machinery/light/light in GLOB.machines)
+			if(light.z == z)
+				light.on = TRUE
+				INVOKE_ASYNC(light, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
+				light.on = FALSE
+		radiation_pulse(src, 10000, 5, TRUE)
+		qdel(src)
+		return
 	if(combined_gas > MOLE_PENALTY_THRESHOLD)
 		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
 		if(T) //If something fucks up we blow anyhow. This fix is 4 years old and none ever said why it's here. help.
@@ -536,7 +546,12 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					gas_comp[gasID] = 0
 				gas_comp[gasID] += clamp(max(removed.get_moles(gasID)/combined_gas, 0) - gas_comp[gasID], -1, gas_change_rate)
 
-	var/list/threshold_mod = gases_we_care_about.Copy()
+	// Пороговые множители композиции: ключ - газ, значение - во сколько раз его
+	// доля идёт в модификаторы. Список был копией ПЕРЕЧНЯ газов, то есть плоским
+	// списком идентификаторов, который ниже читают как ассоциативный - на этой
+	// двусмысленности и держалась ошибка со скобкой isnull(). Запись здесь всегда
+	// ровно одна, плюксиумная, и перечень для неё не нужен.
+	var/list/threshold_mod = list()
 
 	var/list/powermix = gas_info[POWER_MIX]
 	var/list/heat = gas_info[HEAT_PENALTY]
@@ -564,7 +579,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/powerloss_inhibition_gas = 0
 	var/radioactivity_modifier = 0
 	for(var/gasID in gas_comp)
-		var/this_comp = gas_comp[gasID] * (isnull(threshold_mod[gasID] ? 1 : threshold_mod[gasID]))
+		// Скобка тернарника стояла внутри isnull(), и вклад газа схлопывался в ноль
+		// на ЛЮБОЙ ветке: с порогом (isnull(1) = 0) и без него (isnull(0) = 0). Для
+		// всех газов, кроме плюксиума, порога нет, и null случайно давал верную
+		// единицу - а сам порог плюксиума не отработал ни разу за всё время: газ не
+		// давал ни своих минусов к мощности, ни гейта на 15%, но продолжал занимать
+		// долю композиции и разбавлять плазму.
+		var/this_comp = gas_comp[gasID] * (isnull(threshold_mod[gasID]) ? 1 : threshold_mod[gasID])
 		gasmix_power_ratio += this_comp * powermix[gasID]
 		dynamic_heat_modifier += this_comp * heat[gasID]
 		dynamic_heat_resistance += this_comp * resist[gasID]
@@ -575,6 +596,14 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	power_transmission_bonus *= h2obonus
 	gasmix_power_ratio = clamp(gasmix_power_ratio, 0, 1)
 	dynamic_heat_modifier = max(dynamic_heat_modifier, 0.5)
+	// Множитель порога теплового урона: "Value between 1 and 10". Кламп потерян
+	// апстримом при слиянии шести пер-газовых циклов в один - соседние по строке
+	// клампы gasmix_power_ratio и dynamic_heat_modifier уцелели, а этот нет. Без
+	// него heat_resistance = 0 у всей штатной смеси (N2/O2/CO2/плазма) роняет
+	// порог (T0C + HEAT_PENALTY_THRESHOLD) * dynamic_heat_resistance с 313 K в
+	// ноль, и кристалл берёт урон от АБСОЛЮТНОЙ температуры камеры всегда - даже
+	// стоя на холодном азоте, где обязан лечиться.
+	dynamic_heat_resistance = max(dynamic_heat_resistance, 1)
 
 	//more moles of gases are harder to heat than fewer, so let's scale heat damage around them
 	mole_heat_penalty = max(combined_gas / MOLE_HEAT_PENALTY, 0.25)
@@ -632,9 +661,14 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//Varies based on power, gas content, and heat
 	removed.adjust_moles(GAS_O2, clamp((device_energy * dynamic_heat_modifier + effective_temperature - T0C) / OXYGEN_RELEASE_MODIFIER, 0, 100))
 
+	// Потолок ограничивает СОБСТВЕННЫЙ выброс тепла кристалла ("lower cap on how
+	// much heat can be released per tick" в комментарии дефайна), а не температуру
+	// газа как таковую. Пока set_temperature стоял снаружи, кристалл каждый фаер
+	// срезал вниз ЧУЖОЕ тепло - пожар в камере, эмиттеры, горячий теплоноситель -
+	// то есть работал холодильником собственной камеры и держал её на 2500 * dhm.
 	if(removed.return_temperature() < max_temp_increase)
 		removed.adjust_heat(device_energy * dynamic_heat_modifier * THERMAL_RELEASE_MODIFIER)
-	removed.set_temperature(min(removed.return_temperature(), max_temp_increase))
+		removed.set_temperature(min(removed.return_temperature(), max_temp_increase))
 
 
 	if(produces_gas)

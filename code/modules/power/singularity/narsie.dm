@@ -172,7 +172,7 @@
 		mezzer()
 
 
-/obj/singularity/narsie/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/obj/singularity/narsie/Process_Spacemove(movement_dir = 0)
 	return clashing
 
 

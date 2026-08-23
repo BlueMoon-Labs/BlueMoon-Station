@@ -1,7 +1,7 @@
 /client/proc/spawn_liquid()
 	set name = "Spawn Liquid"
 	set desc = "Spawns an amount of chosen liquid at your current location."
-	set category = "Admin.Fun"
+	set category = "Admin.Game"
 
 	if(!check_rights(R_ADMIN))
 		return
@@ -31,12 +31,15 @@
 	message_admins("[ADMIN_LOOKUPFLW(usr)] spawned liquid at [epicenter.loc] ([choice] - [volume]).")
 	log_admin("[key_name(usr)] spawned liquid at [epicenter.loc] ([choice] - [volume]).")
 
-/client/proc/remove_liquid(turf/epicenter in world)
+/client/proc/remove_liquid()
 	set name = "Remove liquids"
 	set desc = "Removes all liquids in specified radius."
 	set category = "Admin.Game"
 
 	if(!check_rights(R_ADMIN))
+		return
+	var/turf/epicenter = get_turf(usr)
+	if(!istype(epicenter))
 		return
 
 	var/range = tgui_input_number(usr, "Enter range:", "Range selection", 2)

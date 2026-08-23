@@ -82,11 +82,11 @@
 		M.forceMove(location)
 	update_icon()
 
-/obj/structure/transit_tube_pod/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/obj/structure/transit_tube_pod/Process_Spacemove(movement_dir = 0)
 	if(moving) //No drifting while moving in the tubes
 		return TRUE
 	else
-		return ..(movement_dir, continuous_move)
+		return ..(movement_dir)
 
 /obj/structure/transit_tube_pod/proc/follow_tube()
 	set waitfor = 0

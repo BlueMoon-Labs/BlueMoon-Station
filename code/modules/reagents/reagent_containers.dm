@@ -31,6 +31,7 @@
 		reagents.add_reagent(/datum/reagent/blood, disease_amount, data)
 	add_initial_reagents()
 	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+	register_context()
 
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
@@ -38,6 +39,13 @@
 		. += "В данный момент используется [amount_per_transfer_from_this] u за раз."
 		if(container_flags & APTFT_ALTCLICK && user.Adjacent(src))
 			. += "<span class='notice'>Alt-click для настройки объёмов использования.</span>"
+
+/obj/item/reagent_containers/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(is_refillable() && istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Отжать швабру")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Отжать швабру")
 
 /obj/item/reagent_containers/AltClick(mob/user)
 	. = ..()
