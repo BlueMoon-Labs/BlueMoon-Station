@@ -65,6 +65,9 @@
 			if(extra_heat >= 300)
 				T.hotspot_expose(extra_heat*2, 5)
 		if(!reactable.len) //Nothing to react with. Probably means we're in nullspace.
+			// reagent.holder смотрит обратно на этот датум - без qdel держатель с химией
+			// внутри не собирается никогда, а этот выход единственный обходил qdel ниже.
+			qdel(splash_holder)
 			return
 		for(var/thing in reactable)
 			var/atom/A = thing
