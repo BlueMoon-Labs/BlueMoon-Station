@@ -18,9 +18,10 @@
 	// продлевает текущее качение, пока впереди луб. Дорожка кончилась - цель встаёт на
 	// первый сухой турф, и там качение само останавливается.
 	if(in_flight && (lube_flags & SLIDE) && istype(in_flight.target, /turf))
+		var/turf/open/slip_turf = parent
 		var/slide_dir = get_dir(get_turf(victim), in_flight.target)
-		if(slide_dir && !(slide_dir & (slide_dir - 1))) // только прямые направления, без диагоналей
-			in_flight.target = get_ranged_target_turf(victim, slide_dir, max(1, parent.lube_slide_run(slide_dir) + 1))
+		if(istype(slip_turf) && slide_dir && !(slide_dir & (slide_dir - 1))) // только прямые направления, без диагоналей
+			in_flight.target = get_ranged_target_turf(victim, slide_dir, max(1, slip_turf.lube_slide_run(slide_dir) + 1))
 			return
 	if(victim.slip(intensity, parent, lube_flags) && callback)
 		callback.Invoke(victim)
