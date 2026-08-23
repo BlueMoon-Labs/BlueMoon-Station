@@ -53,11 +53,6 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	if (!turf_source)
 		return
 
-	//allocate a channel if necessary now so its the same for everyone
-	channel = channel || SSsounds.random_available_channel()
-
-	// Looping through the player list has the added bonus of working for mobs inside containers
-	var/sound/S = sound(get_sfx(soundin))
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
 	var/turf/above_turf = SSmapping.get_turf_above(turf_source)
@@ -113,6 +108,21 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 				extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
 
 		extra_dead_listeners = SSmobs.dead_players_by_zlevel[source_z]
+
+	// Слушателей нет - выходим ДО выделения канала и до постройки /sound.
+	// Перепись датумов раунда 10060 (Delta, 3.5 часа без единого игрока):
+	// 1.6 млн /sound за раунд, ~127 штук в секунду. Каждый строился здесь и
+	// умирал, не дойдя ни до одного клиента, а канал из SSsounds занимался
+	// впустую. Проверяем именно собранные списки, а не число клиентов в мире:
+	// слушателем может быть и мёртвый на этом z, и клиент с этажа выше/ниже.
+	if(!length(listeners) && !length(extra_listeners_1) && !length(extra_listeners_2) && !length(extra_dead_listeners))
+		return
+
+	//allocate a channel if necessary now so its the same for everyone
+	channel = channel || SSsounds.random_available_channel()
+
+	// Looping through the player list has the added bonus of working for mobs inside containers
+	var/sound/S = sound(get_sfx(soundin))
 
 	for(var/mob/M as anything in listeners)
 		var/dist = get_dist(M, turf_source)
