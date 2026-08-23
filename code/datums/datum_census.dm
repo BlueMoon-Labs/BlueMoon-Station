@@ -61,6 +61,16 @@ GLOBAL_REAL_VAR(list/datum_census_snapshot_residue)
  *
  * Список создаётся лениво, а не инициализатором глобала: GLOB собирается в
  * /datum/controller/master/New(), а датумы появляются и до него.
+ *
+ * ВЫЗОВ ..() ЗДЕСЬ ОБЯЗАТЕЛЕН, И НЕ РАДИ ПОРЯДКА.
+ *
+ * У /client стоит parent_type = /datum (client_defines.dm), поэтому ..() из /client/New()
+ * приходит СЮДА. Пока этого прока не существовало, ..() из /client/New() попадал во
+ * встроенный New(), а встроенное действие клиента - это и есть создание моба world.mob и
+ * вызов его Login(). Стоит определить /datum/New() и не позвать родителя - и клиент
+ * остаётся без моба, /client/New() возвращает null, а BYOND трактует это как отказ и
+ * молча рвёт соединение: игрок видит "Connection closed.", в логах только Login/Logout
+ * подряд, ни одного рантайма ни в runtime.log, ни в консоли DreamDaemon.
  */
 /datum/New()
 	var/list/created = datum_census_created
@@ -68,6 +78,7 @@ GLOBAL_REAL_VAR(list/datum_census_snapshot_residue)
 		created = list()
 		datum_census_created = created
 	created[type] += 1
+	return ..()
 
 /**
  * Строки переписи датумов для лога мира плюс обновление снимка.
