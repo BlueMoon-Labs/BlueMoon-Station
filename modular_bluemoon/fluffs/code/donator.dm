@@ -2566,3 +2566,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/skull_half_mask
+	name = "Skull Gaiter"
+	slot = ITEM_SLOT_MASK
+	/obj/item/clothing/head/donator/bm/half_mask_skull
+	ckeywhitelist = list("hartty")
