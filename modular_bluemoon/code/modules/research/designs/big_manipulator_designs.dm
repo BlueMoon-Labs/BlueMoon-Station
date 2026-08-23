@@ -6,7 +6,7 @@
 	id = "big_manipulator"
 	build_path = /obj/item/circuitboard/machine/big_manipulator
 	category = list("Engineering Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/manipulator_task_disk
 	name = "Machine Design (Manipulator Task Disk)"
@@ -16,4 +16,4 @@
 	materials = list(/datum/material/glass = 500, /datum/material/iron = 200)
 	build_path = /obj/item/disk/manipulator
 	category = list("Engineering Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
