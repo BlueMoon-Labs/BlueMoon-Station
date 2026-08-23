@@ -146,9 +146,10 @@
 			continue
 		if(istype(M, /obj/machinery/power/grounding_rod))
 			continue // стержень сам переваривает энергию шара, это его работа
+		//intact есть только у пола: у голого /turf его чтение не компилируется
 		if(M.level == 1 && istype(T, /turf/open/floor))
-			var/turf/open/floor/floor_turf = T
-			if(floor_turf.has_tile())
+			var/turf/open/floor/floor_tile = T
+			if(floor_tile.intact)
 				continue // техника под целым полом шару недоступна
 		short_out(M)
 
