@@ -24,6 +24,8 @@
 	maxHealth = 50
 	health = 50
 	speed = 1
+	dextrous = TRUE
+	held_items = list(null, null)
 	wander = TRUE
 	stop_automated_movement_when_pulled = TRUE
 	speak_chance = 5
@@ -264,7 +266,7 @@
 	return TRUE
 
 /mob/living/simple_animal/diona_nymph/proc/update_progression()
-	if(stat != CONSCIOUS || !length(donors))
+	if(QDELETED(src) || stat != CONSCIOUS || !length(donors))
 		return
 	if(length(donors) >= NYMPH_EVOLVE_DONORS)
 		to_chat(src, span_noticealien("Ты чувствуешь готовность перейти на следующую ступень роста."))
@@ -285,9 +287,12 @@
 		return FALSE
 	if(isdiona(loc) && !split())
 		return FALSE
+	var/turf/spawn_turf = get_turf(loc)
+	if(!spawn_turf)
+		return FALSE
 	visible_message(span_danger("[src] начинает дрожать и корчиться, взрываясь ливнем сброшенной коры, и распадается на клубок почти из дюжины новых дионей."), span_danger("Ты начинаешь дрожать, ощущая, как твоё осознание раскалывается. Разом мы поглощаем запасённые питательные вещества, устремляясь в рост. Мы обрели форму гештальта."))
-	playsound(get_turf(src), 'modular_bluemoon/diona/sound/diona_crunch.ogg', 60, TRUE)
-	var/mob/living/carbon/human/adult = new(get_turf(loc))
+	playsound(spawn_turf, 'modular_bluemoon/diona/sound/diona_crunch.ogg', 60, TRUE)
+	var/mob/living/carbon/human/adult = new(spawn_turf)
 	adult.set_species(/datum/species/diona)
 	var/datum/language_holder/my_holder = get_language_holder()
 	var/datum/language_holder/adult_holder = adult.get_language_holder()

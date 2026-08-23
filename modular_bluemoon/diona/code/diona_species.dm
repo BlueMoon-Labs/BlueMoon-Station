@@ -79,11 +79,14 @@
 
 /datum/species/diona/on_species_loss(mob/living/carbon/C)
 	. = ..()
+	if(QDELETED(C) || QDELING(C))
+		return .
 	C.faction -= "plants"
 	C.faction -= "vines"
 	C.RemoveElement(/datum/element/photosynthesis, -1, -1, -1, -1, 10, 0.5, 0.2, -1000)
 	var/datum/language_holder/LH = C.get_language_holder()
-	LH.remove_language(/datum/language/rootsong, ALL, LANGUAGE_ATOM)
+	if(LH)
+		LH.remove_language(/datum/language/rootsong, ALL, LANGUAGE_ATOM)
 	C.RemoveElement(/datum/element/diona_regrowth, DIONA_REGROW_DELAY)
 	C.remove_ability_from_source(list(INNATE_ABILITY_HUMANOID_CUSTOMIZATION), ABILITY_SOURCE_SPECIES)
 
@@ -205,25 +208,34 @@
 	regrow_delay = delay
 	if(!next_regrowth)
 		next_regrowth = list()
+	if(!regen_started)
 		regen_started = list()
-		START_PROCESSING(SSobj, src)
+	if(!mend_progress)
+		mend_progress = list()
+	START_PROCESSING(SSobj, src)
 	next_regrowth[target] = 0
 	regen_started[target] = FALSE
 
 /datum/element/diona_regrowth/Detach(datum/target)
-	if(next_regrowth && LAZYLEN(next_regrowth))
+	if(next_regrowth)
 		next_regrowth -= target
+	if(regen_started)
 		regen_started -= target
+	if(mend_progress)
 		mend_progress -= target
-		if(!length(next_regrowth))
-			STOP_PROCESSING(SSobj, src)
-			next_regrowth = null
-			regen_started = null
-			mend_progress = null
+	if(next_regrowth && !length(next_regrowth))
+		STOP_PROCESSING(SSobj, src)
+		next_regrowth = null
+		regen_started = null
+		mend_progress = null
 	return ..()
 
 /datum/element/diona_regrowth/process()
+	if(!next_regrowth || !regen_started)
+		return
 	for(var/atom/movable/AM as anything in next_regrowth)
+		if(!next_regrowth)
+			break
 		if(QDELETED(AM) || !isliving(AM))
 			next_regrowth -= AM
 			regen_started -= AM
@@ -240,6 +252,8 @@
 		var/nourished = H.nutrition >= NUTRITION_LEVEL_WELL_FED || H.reagents?.has_reagent(/datum/reagent/water)
 		if(light_ok && nourished)
 			mend_wounds(H)
+		if(!next_regrowth || !(AM in next_regrowth))
+			continue
 		if(world.time < next_regrowth[AM])
 			continue
 		// Для роста конечности нужны ВСЕ условия сразу: и свет, и питание/вода.

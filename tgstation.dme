@@ -5259,6 +5259,7 @@
 #include "modular_bluemoon\diona\code\diona_nymph.dm"
 #include "modular_bluemoon\diona\code\diona_hydroponics.dm"
 #include "modular_bluemoon\diona\code\diona_hair.dm"
+#include "modular_bluemoon\diona\code\diona_clothing.dm"
 #include "modular_bluemoon\krashly\code\uplink\uplink.dm"
 #include "modular_bluemoon\krashly\code\uplink\uplink_items.dm"
 #include "modular_bluemoon\krashly\modulars\clownfart\code.dm"
