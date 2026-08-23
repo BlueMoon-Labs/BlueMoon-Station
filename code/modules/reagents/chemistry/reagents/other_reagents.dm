@@ -660,7 +660,7 @@
 	if (!istype(T))
 		return
 	if(reac_volume >= min_turf_volume)
-		T.MakeSlippery(lube_kind, 15 SECONDS, min(reac_volume * 2 SECONDS, 120))
+		T.MakeSlippery(lube_kind, 30 SECONDS, min(reac_volume * 2 SECONDS, 120))
 
 /datum/reagent/lube/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = TRUE, touch_protection = 0, affected_bodypart)
 	..()

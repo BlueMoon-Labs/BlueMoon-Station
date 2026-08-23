@@ -332,21 +332,23 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		// Цепное качение: слайд длится через всю смазанную дорожку и заканчивается
-		// на первом сухом турфе (+1). Одиночная смазанная клетка - прежний разлёт на 4.
+		// Цепное качение: слайд длится через всю смазанную дорожку, а после её конца
+		// персонаж по инерции ещё пролетает пару-тройку клеток и не встаёт сразу.
+		// Одиночная смазанная клетка - прежний разлёт на 4.
 		var/slide_run = lube_slide_run(olddir)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_run ? slide_run + 1 : 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_run ? slide_run + 1 + rand(2, 3) : 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE
 
 /// Сколько турфов подряд по направлению dir_to_scan покрыты смазкой (SLIDE-флаг).
 /// Используется для цепного качения: катимся, пока под нами луб, и останавливаемся,
-/// когда дорожка кончается. Стены не проверяем - forced_movement сам затормозит.
-/turf/open/proc/lube_slide_run(dir_to_scan, max_tiles = MAX_LUBE_SLIDE_RUN)
+/// когда дорожка кончается. Лимита длины нет - катимся до конца дорожки.
+/// Стены не проверяем - forced_movement сам затормозит.
+/turf/open/proc/lube_slide_run(dir_to_scan)
 	. = 0
 	var/turf/open/checking = get_step(src, dir_to_scan)
-	while(. < max_tiles && istype(checking))
+	while(istype(checking))
 		if(!checking.has_gravity())
 			break
 		var/datum/component/slippery/S = checking.GetComponent(/datum/component/slippery)

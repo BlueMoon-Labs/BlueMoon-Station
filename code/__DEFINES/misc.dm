@@ -209,9 +209,6 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 //Maximum amount of time, (in deciseconds) a tile can be wet for.
 #define MAXIMUM_WET_TIME 5 MINUTES
 
-//Максимальная длина цепного скольжения по смазке (в тайлах) за одно подскальзывание.
-#define MAX_LUBE_SLIDE_RUN 12
-
 //unmagic-strings for types of polls
 #define POLLTYPE_OPTION		"OPTION"
 #define POLLTYPE_TEXT		"TEXT"
