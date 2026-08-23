@@ -236,13 +236,14 @@
 		if(isturf(H.loc))
 			var/turf/T = H.loc
 			light_amount = T.get_lumcount()
+		var/light_ok = light_amount >= DIONA_REGROW_LIGHT
 		var/nourished = H.nutrition >= NUTRITION_LEVEL_WELL_FED || H.reagents?.has_reagent(/datum/reagent/water)
-		if(light_amount >= DIONA_REGROW_LIGHT && nourished)
+		if(light_ok && nourished)
 			mend_wounds(H)
 		if(world.time < next_regrowth[AM])
 			continue
-		var/fed = H.nutrition >= NUTRITION_LEVEL_WELL_FED
-		if(!fed && light_amount < DIONA_REGROW_LIGHT)
+		// Для роста конечности нужны ВСЕ условия сразу: и свет, и питание/вода.
+		if(!light_ok || !nourished)
 			if(regen_started[AM])
 				to_chat(H, span_warning("Соки отливают от раны — рост конечности приостановлен."))
 				regen_started[AM] = FALSE

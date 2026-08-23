@@ -1,7 +1,7 @@
 #define GESTALT_ALERT "gestalt screen alert"
 #define NYMPH_ALERT "nymph screen alert"
 #define NYMPH_EVOLVE_NUTRITION 500
-#define NYMPH_EVOLVE_DONORS 5
+#define NYMPH_EVOLVE_DONORS 3
 #define BLOOD_SAMPLE_DELAY 1 SECONDS
 
 /proc/isdiona(mob/target)
@@ -300,7 +300,10 @@
 	adult.vocal_pitch_range = vocal_pitch_range
 	adult.real_name = adult.dna.species.random_name(MALE, FALSE)
 	adult.name = adult.real_name
-	transfer_ckey(adult, FALSE)
+	if(mind)
+		mind.transfer_to(adult)
+	else
+		transfer_ckey(adult, FALSE)
 	log_game("[key_name(src)] эволюционировал в диону-гештальт [key_name(adult)] в [AREACOORD(src)].")
 	clear_alert("[GESTALT_ALERT]-[REF(src)]")
 	qdel(src)
@@ -323,7 +326,7 @@
 /atom/movable/screen/alert/nymph/Click(location, control, params)
 	if(master_ref)
 		var/mob/living/simple_animal/diona_nymph/N = master_ref.resolve()
-		if(istype(N) && !QDELETED(N) && N.loc == owner)
+		if(istype(N) && !QDELETED(N) && isdiona(N.loc))
 			N.split()
 			return
 	return ..()
