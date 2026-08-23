@@ -176,7 +176,7 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 //Ссылка, которую копия не имеет права унаследовать: атом или обычный датум
 //остаётся хозяйством шаблона. Картинка и аппиранс - это значение внешнего вида,
 //а не владение, их копия получить обязана, иначе с турфа слетят оверлеи
-#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value) && !isappearance(value))
+#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value))
 
 /**
  * Копия списка шаблона без чужих ссылок: датум выкидывается и из ключа, и из
