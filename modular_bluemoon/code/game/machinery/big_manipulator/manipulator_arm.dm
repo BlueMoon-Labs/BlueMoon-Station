@@ -13,28 +13,39 @@
 	var/arm_angle = 0
 	/// Weakref to the item currently held in the claw.
 	var/datum/weakref/item_in_my_claw
+	/// The overlay showing the held item.
+	var/mutable_appearance/held_item_overlay
 
-/// Shows the item in the claw via vis_contents. Call BEFORE moving the item into the machine.
+/// Shows the item in the claw as an overlay copy. Hides the original sprite.
 /obj/effect/big_manipulator_arm/proc/show_item(atom/movable/item)
 	item_in_my_claw = WEAKREF(item)
-	item.pixel_w = 32 + calculate_item_offset(is_x = TRUE)
-	item.pixel_z = 32 + calculate_item_offset(is_x = FALSE)
-	vis_contents += item
+	item.invisibility = INVISIBILITY_ABSTRACT
+	held_item_overlay = mutable_appearance(icon = item.icon, icon_state = item.icon_state, layer = item.layer, plane = item.plane)
+	held_item_overlay.color = item.color
+	held_item_overlay.alpha = item.alpha
+	held_item_overlay.pixel_x = 32 + calculate_item_offset(is_x = TRUE)
+	held_item_overlay.pixel_y = 32 + calculate_item_offset(is_x = FALSE)
+	overlays += held_item_overlay
 
-/// Hides the item from the claw. Call BEFORE moving the item to its final destination.
+/// Removes the held item overlay and restores the original item sprite.
 /obj/machinery/big_manipulator/proc/hide_held_item()
 	var/atom/movable/resolved = held_object?.resolve()
 	if(resolved)
-		manipulator_arm.vis_contents -= resolved
-		resolved.pixel_w = initial(resolved.pixel_w)
-		resolved.pixel_z = initial(resolved.pixel_z)
-	manipulator_arm.item_in_my_claw = null
+		resolved.invisibility = initial(resolved.invisibility)
+	manipulator_arm.hide_item_overlay()
+
+/// Removes the overlay from the arm.
+/obj/effect/big_manipulator_arm/proc/hide_item_overlay()
+	if(held_item_overlay)
+		overlays -= held_item_overlay
+		held_item_overlay = null
+	item_in_my_claw = null
 
 /// Updates the claw state when the item changes.
 /obj/machinery/big_manipulator/proc/update_claw(clawed_item)
 	manipulator_arm.item_in_my_claw = clawed_item
 
-/// Calculate x and y coordinates so that the item icon appears in the claw and not somewhere in the corner.
+/// Calculate x and y coordinates so that the item icon appears in the claw.
 /obj/effect/big_manipulator_arm/proc/calculate_item_offset(is_x = TRUE, pixels_to_offset = 32)
 	var/offset
 	switch(dir)
