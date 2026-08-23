@@ -16,6 +16,10 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
+		//носитель уничтожается: human/Destroy удаляет physiology раньше содержимого,
+		//где умирают наниты - возвращать модификаторы некому
+		if(isnull(H.physiology))
+			return
 		H.physiology.stun_mod *= 2
 
 /datum/nanite_program/adrenaline
@@ -48,6 +52,8 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
+		if(isnull(H.physiology)) //см. nervous - "Cannot read null.armor" при смерти носителя
+			return
 		H.physiology.armor.melee -= 35
 		H.physiology.armor.bullet -= 35
 
@@ -68,6 +74,8 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
+		if(isnull(H.physiology)) //см. nervous - тот же путь смерти носителя
+			return
 		H.physiology.armor.laser -= 35
 		H.physiology.armor.energy -= 35
 
@@ -87,6 +95,8 @@
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/H = host_mob
+		if(isnull(H.physiology)) //см. nervous - тот же путь смерти носителя
+			return
 		H.physiology.bleed_mod *= 10
 
 /datum/nanite_program/conductive
