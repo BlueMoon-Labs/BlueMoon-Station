@@ -21,6 +21,7 @@
 			var/datum/effect_system/smoke_spread/chem/smoke = new
 			smoke.set_up(R, 7, get_turf(vent), TRUE)
 			smoke.start()
+			qdel(R)
 		CHECK_TICK
 
 /datum/round_event_control/scrubber_overflow/female
@@ -54,6 +55,7 @@
 			var/datum/effect_system/foam_spread/foam = new
 			foam.set_up(200, get_turf(vent), R)
 			foam.start()
+			qdel(R)
 		CHECK_TICK
 
 /datum/round_event_control/scrubber_overflow/male
@@ -85,6 +87,7 @@
 			var/datum/effect_system/foam_spread/foam = new
 			foam.set_up(200, get_turf(vent), R)
 			foam.start()
+			qdel(R)
 		CHECK_TICK
 
 /datum/round_event_control/scrubber_overflow/crocin
@@ -124,6 +127,7 @@
 			// log_game и message_admins, и админам приходит 270 сообщений за секунду.
 			smoke.set_up(R, 5, get_turf(vent), TRUE)
 			smoke.start()
+			qdel(R)
 		CHECK_TICK
 
 /datum/round_event_control/scrubber_overflow/crocin/hexacrocin
@@ -163,4 +167,5 @@
 			var/datum/effect_system/foam_spread/foam = new
 			foam.set_up(200, get_turf(vent), R)
 			foam.start()
+			qdel(R)
 		CHECK_TICK

@@ -82,6 +82,18 @@
 /// шагов между сверками тик не переполнят - тело цикла состоит из двух проверок типа
 /// и одного инкремента в assoc-списке.
 #define MEMORY_CENSUS_TICK_EVERY 512
+/// Сколько инстансов каждого типа разбирается по переменным ради длины списков.
+///
+/// Выборка, а не сплошной проход: обойти vars у полутора миллионов атомов - это триста
+/// миллионов обращений к ассоциативному списку, дороже всей остальной переписи на два
+/// порядка. Расслоение по типам делает выборку осмысленной: внутри одного типа списки
+/// устроены одинаково, и трёх штук хватает, чтобы узнать средний размер. Смещение у
+/// выборки есть - в неё попадают ПЕРВЫЕ встреченные инстансы типа, то есть выложенные
+/// картой, а не нажитые раундом; для типов, где эти две группы различаются, оценка врёт
+/// в меньшую сторону.
+#define MEMORY_CENSUS_LIST_SAMPLES 3
+/// До какой длины список разворачивается ради вложенного уровня. См. list_slots_deep().
+#define MEMORY_CENSUS_NESTED_SCAN_CAP 64
 
 SUBSYSTEM_DEF(time_track)
 	name = "Time Tracking"
@@ -304,6 +316,13 @@ SUBSYSTEM_DEF(time_track)
 			// Пересборки ВТОРОГО колеса бакетов, SSrunechat. Стоят столько же, сколько
 			// пересборка таймерного, и до этой колонки не были видны нигде.
 			"runechat_bucket_resets",
+			// Провалы сборки иконок. Единственная колонка, ненулевое значение которой само
+			// по себе означает, что мир на грани: рантайм в /icon/New() - это отказ крупной
+			// НЕПРЕРЫВНОЙ аллокации, и в каскаде падений 23.08 (раунды 10084-10090) он был
+			// последним, что мир успевал написать. Умирал он при этом на 2.5-3.0 ГБ, то есть
+			// с запасом больше гигабайта до потолка - никакая колонка про объём такого не
+			// показывает. См. code/__HELPERS/icon_alloc_guard.dm.
+			"icon_alloc_failures",
 		)
 	)
 	log_ping_perf(
@@ -498,7 +517,7 @@ SUBSYSTEM_DEF(time_track)
 	// упираемся мы в свой потолок или машине под нами уже нечем дышать.
 	if(host_memory)
 		warning += ", у хоста свободно [host_memory["available"]] из [host_memory["total"]] МБ"
-	warning += ", объектов [num2text(world.contents.len, 12)], хардделов [SSgarbage.totaldels]"
+	warning += ", объектов [num2text(world.contents.len, 12)], хардделов [num2text(SSgarbage.totaldels, 12)]"
 	if(memory_baseline_mb)
 		warning += ", база раунда [memory_baseline_mb][memory_baseline_provisional ? " МБ (предварительная, раунд ещё не начался)" : " МБ"]"
 	if(memory_growth_mb_per_minute > 0)
@@ -788,7 +807,8 @@ SUBSYSTEM_DEF(time_track)
 			process_address_ceiling_mb ? process_address_ceiling_mb : "",
 			memory_growth_mb_per_minute,
 			host_memory ? host_memory["total"] : "",
-			SSrunechat.runechat_bucket_reset_count
+			SSrunechat.runechat_bucket_reset_count,
+			GLOB.icon_alloc_failures
 		)
 	)
 	var/should_log_ping_perf = ping_samples && (
@@ -860,14 +880,26 @@ SUBSYSTEM_DEF(time_track)
  * картой (полтора миллиона турфов на восемнадцати z-уровнях), они заняли бы весь список и
  * вытеснили то единственное, ради чего перепись по количеству и делается.
  *
- * Зато во второй топ - по весу - турфы входят обязательно, и там они как раз и оказываются
- * ответом. Счёт штук на вопрос "куда ушли мегабайты" не отвечает вовсе: в раунде 10022 за
- * рост в 1375 МБ отвечали 283 тысячи новых объектов, то есть по 4.8 КБ на объект, чего не
- * бывает. Вес считается по числу переменных типа: BYOND держит у каждого инстанса блок под
- * все объявленные переменные, поэтому штука с полутора сотнями переменных стоит на порядок
- * дороже штуки с десятью. Это оценка ПЛОСКОЙ части инстанса - списки (overlays, contents),
- * аппирансы и иконки живут отдельно и в неё не входят, так что сумма по весу заведомо меньше
- * VmSize и сравнивать их лоб в лоб нельзя. Сравнивать надо доли между типами.
+ * Зато во второй топ - по ШИРИНЕ ТИПА - турфы входят обязательно. Счёт штук на вопрос
+ * "куда ушли мегабайты" не отвечает вовсе: в раунде 10022 за рост в 1375 МБ отвечали
+ * 283 тысячи новых объектов, то есть по 4.8 КБ на объект, чего не бывает.
+ *
+ * ВАЖНО про эту вторую строку: ширина типа - это НЕ цена инстанса. Замером на стенде
+ * (полмиллиона датумов, три чередующихся прогона) показано, что BYOND заводит хранилище
+ * переменной ЛЕНИВО, по факту присваивания: голый датум стоит 49 Б, датум с тридцатью
+ * объявленными и ни разу не тронутыми переменными - те же 49 Б, со ста объявленными -
+ * тоже 49 Б. Ненулевые значения по умолчанию тоже бесплатны: они лежат у типа, а не у
+ * инстанса. А вот запись платная и необратимая: одна запись - 125 Б, тридцать - 582 Б,
+ * сто - 1697 Б, то есть около 16 Б за переменную сверх сотни байт за само хранилище.
+ * Платит даже запись значения, РАВНОГО дефолту, и запись null поверх null: 582 Б вышло
+ * и у варианта, писавшего каждой переменной её собственный дефолт, и у варианта,
+ * писавшего null в изначально нулевые. Отсюда и разнобой: турф с 190 объявленными
+ * переменными в нетронутом космосе стоит единицы байт, а тот же турф после ChangeTurf
+ * и полутора десятков присваиваний - несколько сотен.
+ *
+ * Поэтому строка про ширину типа читается как "у кого таблица шире", а не как раскладка
+ * памяти. Раскладку памяти дают три другие строки: количество, длина списков и перепись
+ * не-атомных датумов.
  */
 /datum/controller/subsystem/time_track/proc/run_instance_census()
 	var/list/counts = list()
@@ -875,6 +907,25 @@ SUBSYSTEM_DEF(time_track)
 	// Тип -> длина vars. Спрашивается ровно один раз на тип: length(thing.vars) на каждом из
 	// полутора миллионов элементов стоил бы дороже всей остальной переписи.
 	var/list/type_var_slots = list()
+	// Тип -> сколько его инстансов уже разобрано по переменным, и сколько элементов нашлось
+	// в их списках. Турфы и зоны сюда идут наравне с движимым: списки есть и у них
+	// (contents, overlays, corners), а вопрос "где лежат мегабайты" к ним же и адресован.
+	var/list/type_list_samples = list()
+	var/list/type_list_slots = list()
+	// Тип -> ассоциативный набор СПИСКОВ первого разобранного инстанса, ключами по самим
+	// спискам. По нему следующие инстансы того же типа отличают свой список от общего на
+	// весь тип; см. sample_instance_lists().
+	var/list/type_reference_lists = list()
+	// Тип -> элементы в общих (одна ссылка на все инстансы) списках. Считаются РОВНО ОДИН
+	// раз на тип, потому что и памяти стоят один раз.
+	var/list/type_shared_slots = list()
+	// Тип -> элементы во ВСЕХ списках первого инстанса, вместе с общими. Запасной путь для
+	// типов с единственным инстансом: делить общее и личное там не на чем, а цифра нужна -
+	// именно так выглядит contents космической зоны.
+	var/list/type_first_slots = list()
+	// Количество ПО ВСЕМ типам, включая турфы и зоны. counts держит только движимое, а для
+	// пересчёта выборочной длины списков на весь мир нужен множитель для каждого типа.
+	var/list/all_counts = list()
 	// Индекс - номер z, а не ключ: ассоциативный список с числовыми ключами в DM неотличим
 	// от обращения по индексу и падает на первом же несуществующем ключе.
 	var/list/movables_per_z = new /list(world.maxz)
@@ -893,6 +944,10 @@ SUBSYSTEM_DEF(time_track)
 	// в цифру прироста. Само по себе это не лечится (снимка полутора миллионов элементов
 	// за один тик не сделать), но величину дрейфа надо назвать: прирост меньше неё - шум.
 	var/expected = length(world.contents)
+	// Стенное время, а не world.time: перебор растянут по тикам, и интересна как раз та
+	// длительность, которую видит наблюдатель. Она же - единственный способ заметить, что
+	// перепись подорожала: строка в логе называет её каждый раз.
+	var/started_at = REALTIMEOFDAY
 
 	for(var/atom/thing as anything in world.contents)
 		scanned++
@@ -909,6 +964,20 @@ SUBSYSTEM_DEF(time_track)
 			slots = length(thing.vars)
 			type_var_slots[atom_type] = slots
 		weights[atom_type] += slots
+		all_counts[atom_type] += 1
+		var/sampled = type_list_samples[atom_type]
+		if(sampled < MEMORY_CENSUS_LIST_SAMPLES)
+			type_list_samples[atom_type] = sampled + 1
+			if(!sampled)
+				// Первый инстанс типа только задаёт эталон: его списки запоминаются по
+				// ссылке и в личный счёт не идут - на одном инстансе общий список от
+				// личного не отличить. Тип с единственным инстансом разбирается ниже,
+				// в list_slot_top(), по запасному пути.
+				var/list/reference_lists = list()
+				type_first_slots[atom_type] = collect_instance_lists(thing, reference_lists)
+				type_reference_lists[atom_type] = reference_lists
+			else
+				sample_instance_lists(thing, atom_type, type_reference_lists[atom_type], type_list_slots, type_shared_slots, sampled == 1)
 		if(isturf(thing))
 			turf_count++
 			turf_slots += slots
@@ -940,14 +1009,291 @@ SUBSYSTEM_DEF(time_track)
 	// num2text здесь по той же причине, что и в соседней строке про вес: турфов в мире
 	// больше миллиона, и без него в лог попадает "1.17045e+006" вместо числа.
 	var/drift = expected - scanned
-	log_world("## MEMORY: перепись инстансов: [num2text(turf_count + area_count + movable_count, 12)] всего \
+	log_world("## MEMORY: перепись инстансов за [round((REALTIMEOFDAY - started_at) / 10, 0.1)] с: \
+		[num2text(turf_count + area_count + movable_count, 12)] всего \
 		(турфов [num2text(turf_count, 12)], зон [area_count], прочего [num2text(movable_count, 12)])\
 		[drift ? ", мир сдвинулся на [num2text(drift, 12)] за время перебора - прирост меньше этого читать нельзя" : ""]; \
 		[growth_report ? "прирост с прошлой переписи" : "самые многочисленные типы"]: \
 		[length(top) ? top.Join(", ") : "пусто"]")
 
 	log_instance_weights(weights, counts, type_var_slots, turf_slots, area_slots, movable_slots)
+	log_list_slots(all_counts, type_list_samples, type_list_slots, type_first_slots)
+	log_shared_list_slots(type_shared_slots)
+	log_global_list_slots()
 	log_movables_per_z(movables_per_z)
+	#ifdef DATUM_CENSUS
+	for(var/line in datum_census_lines(MEMORY_CENSUS_TOP))
+		log_world(line)
+	#endif
+
+/**
+ * Сколько элементов лежит в списочных переменных одного инстанса.
+ *
+ * Третье слепое пятно переписи после не-атомных датумов и внутренних таблиц BYOND: растущий
+ * ассоциативный список на живом атоме даёт мегабайты при НУЛЕВОМ приросте инстансов, а
+ * length(vars) считает ШИРИНУ таблицы типа, то есть про длину списков не знает ничего.
+ *
+ * Цена элемента списка измерена стендом (по триста тысяч списков, два чередующихся
+ * прогона на каждую длину): пустой list() - 41 Б, список от одного до четырёх элементов -
+ * 107 Б, дальше по 8 Б за элемент (8/16/32 элемента - 141/205/336 Б). Ассоциативный
+ * дороже впятеро: 149 Б за один ключ и по 47-51 Б за каждый следующий (1/4/16/32 ключа -
+ * 149/274/869/1696 Б). То есть двадцать тысяч ключей в assoc - это мегабайт, и в переписи
+ * инстансов он не виден никак.
+ *
+ * "vars" пропускается намеренно: это ссылка на сам список переменных, и её длина - это
+ * ширина типа, уже посчитанная в weights. Всё остальное считается как есть, включая
+ * contents и overlays: слот списка стоит памяти независимо от того, что в нём лежит.
+ *
+ * ОБЩИЕ СПИСКИ ОТДЕЛЕНЫ ОТ ЛИЧНЫХ. `var/static/list/` виден в vars как обычная переменная,
+ * и раньше такой список приписывался КАЖДОМУ инстансу, раздувая строку на порядок. Это не
+ * теоретическая оговорка: в прод-переписи 23.08 топ строки состоял почти целиком из статиков.
+ * /atom/movable/lighting_object отдавал по 69 элементов на штуку, из которых сорок - два
+ * двадцатиэлементных набора (общий на тип буфер цветовой матрицы и матрица color, живущая
+ * в аппирансе). Скрытые трубы отдавали 177 элементов на штуку и "росли" до 194 за раунд -
+ * это рос общий `pipeimages` из atmosmachinery.dm. Человек показывал 5071 на штуку, а
+ * обезьяна 4656 - почти одно и то же число, потому что обе цифры были общим на весь
+ * /mob/living/carbon кэшем `limb_icon_cache`, а вовсе не личными списками мобов. Строка,
+ * которая должна отвечать на вопрос "кто накопил мегабайты за раунд", отвечала на вопрос
+ * "у какого типа есть большой статик", то есть не отвечала ни на что.
+ *
+ * Отличаются они ПО ССЫЛКЕ: первый инстанс типа запоминает свои списки, следующие сверяются
+ * с этим набором. Совпала ссылка - список общий, платится за него один раз на тип; не
+ * совпала - список личный, и его длину можно умножать на популяцию. Заодно так же
+ * отсеиваются типовые дефолты: список-дефолт в DM до первой записи один на всех
+ * инстансов, и стоит он тоже один раз.
+ */
+/datum/controller/subsystem/time_track/proc/collect_instance_lists(datum/thing, list/reference_lists)
+	var/slots = 0
+	var/list/instance_vars = thing.vars
+	for(var/var_name in instance_vars)
+		if(var_name == "vars")
+			continue
+		var/value = instance_vars[var_name]
+		if(!islist(value))
+			continue
+		// Ключом идёт сам список: сверка нужна по ссылке, а не по содержимому, и REF()
+		// ради этого звать незачем - он на каждый вызов заводит новую строку, а строки
+		// в BYOND живут до конца раунда.
+		reference_lists[value] = TRUE
+		slots += list_slots_deep(value)
+	return slots
+
+/**
+ * Разбор ВТОРОГО и дальше инстанса типа: личные списки отдельно, общие отдельно.
+ *
+ * Аргументы:
+ * * thing - разбираемый инстанс
+ * * thing_type - его тип, ключ во всех накопителях
+ * * reference_lists - списки первого инстанса этого типа, набор ссылок из collect_instance_lists()
+ * * clean_slots - тип -> элементы в ЛИЧНЫХ списках, накапливается по всем таким инстансам
+ * * shared_slots - тип -> элементы в ОБЩИХ списках, заполняется ровно один раз на тип
+ * * count_shared - TRUE только на втором инстансе: общие списки считаются один раз
+ */
+/datum/controller/subsystem/time_track/proc/sample_instance_lists(datum/thing, thing_type, list/reference_lists, list/clean_slots, list/shared_slots, count_shared)
+	var/slots = 0
+	var/list/instance_vars = thing.vars
+	for(var/var_name in instance_vars)
+		if(var_name == "vars")
+			continue
+		var/value = instance_vars[var_name]
+		if(!islist(value))
+			continue
+		if(reference_lists?[value])
+			if(count_shared)
+				shared_slots[thing_type] += list_slots_deep(value)
+			continue
+		slots += list_slots_deep(value)
+	clean_slots[thing_type] += slots
+
+/**
+ * Длина списка вместе с вложенным уровнем.
+ *
+ * Один уровень вложенности - не прихоть. Ровно так устроен самый крупный из найденных
+ * накопителей: /mob/var/list/logging - это assoc из ПЯТИ ключей (по типу сообщения), в
+ * каждом из которых лежит список на тысячи записей. Плоский length() отдал бы пятёрку и
+ * не заметил бы ничего; для той же причины вложенность нужна reagent_list, comp_lookup,
+ * datum_components и любому "список списков".
+ *
+ * Глубже второго уровня не идём и списки длиннее MEMORY_CENSUS_NESTED_SCAN_CAP не
+ * разворачиваем вовсе. Второе важнее первого: contents космической зоны на MetaStation -
+ * это 809 тысяч элементов, и перебор её ради поиска вложенных списков стоил бы дороже
+ * всей переписи. Её собственная длина при этом считается как надо - пропускается только
+ * заглядывание внутрь.
+ *
+ * Фиксированная глубина заодно закрывает вопрос циклов: список, лежащий сам в себе,
+ * перебор не зациклит, потому что перебора глубже второго уровня нет.
+ */
+/datum/controller/subsystem/time_track/proc/list_slots_deep(list/outer)
+	var/own_length = length(outer)
+	var/slots = own_length
+	if(!own_length || own_length > MEMORY_CENSUS_NESTED_SCAN_CAP)
+		return slots
+
+	// Встроенные списки BYOND - contents, overlays, verbs, locs, vis_contents - ассоциативного
+	// чтения не поддерживают ВООБЩЕ: outer[элемент] на них не отдаёт null, а падает "bad index".
+	// Перепись же обходит vars подряд и такие списки видит постоянно, так что без этой копии
+	// прибор спамил рантайм на каждый второй атом. Плоская копия и снимает запрет, и сохраняет
+	// пары настоящего ассоциативного списка - проверено стендом.
+	var/list/scan = outer.Copy()
+
+	for(var/index in 1 to own_length)
+		var/element = scan[index]
+		// Список прямо элементом - это "список списков", вроде reagent_list или очереди пар.
+		if(islist(element))
+			slots += length(element)
+			continue
+		// Ассоциативная половина: перебор списка отдаёт КЛЮЧИ, значение достаётся индексацией.
+		// Числовой ключ так брать нельзя - для плоского списка outer[число] это обращение по
+		// позиции, и вместо отсутствующего значения вернётся соседний элемент.
+		if(isnull(element) || isnum(element))
+			continue
+		var/nested = scan[element]
+		if(islist(nested))
+			slots += length(nested)
+	return slots
+
+/**
+ * Четвёртая строка переписи: чей вес лежит в списках, а не в переменных.
+ *
+ * Считаются только ЛИЧНЫЕ списки инстансов - общие на весь тип уходят отдельной строкой,
+ * см. log_shared_list_slots() и collect_instance_lists().
+ *
+ * Аргументы:
+ * * all_counts - тип -> количество инстансов, включая турфы и зоны
+ * * type_list_samples - тип -> сколько его инстансов разобрано по переменным
+ * * type_list_slots - тип -> элементы в личных списках инстансов со ВТОРОГО и дальше
+ * * type_first_slots - тип -> элементы во всех списках первого инстанса, запасной путь
+ */
+/datum/controller/subsystem/time_track/proc/log_list_slots(list/all_counts, list/type_list_samples, list/type_list_slots, list/type_first_slots)
+	var/list/top = list_slot_top(all_counts, type_list_samples, type_list_slots, type_first_slots)
+	if(!length(top))
+		return
+	log_world("## MEMORY: элементы ЛИЧНЫХ списков (выборка по [MEMORY_CENSUS_LIST_SAMPLES] инстанса на тип, \
+		общие на тип списки не в счёт, пересчёт на мир): [top.Join(", ")]")
+
+/**
+ * Пятая строка переписи: сколько лежит в ОБЩИХ на весь тип списках.
+ *
+ * Отдельная строка, а не слагаемое в предыдущей, потому что отвечает на другой вопрос.
+ * Личный список типа с миллионной популяцией - это миллион списков; общий список того же
+ * типа - ровно один, сколько бы инстансов ни было. Складывать их в одну цифру означало бы
+ * ровно ту ошибку, ради которой они и разделены.
+ *
+ * Зато сама по себе строка ценна: растущий статик - это утечка ничем не хуже прочих, и до
+ * этого разделения увидеть её было нечем. Первые кандидаты, ради которых строка написана, -
+ * `limb_icon_cache` на /mob/living/carbon и `pipeimages` на атмос-машинерии: оба без капа,
+ * оба растут весь раунд, оба держат иконки.
+ */
+/datum/controller/subsystem/time_track/proc/log_shared_list_slots(list/type_shared_slots)
+	sortTim(type_shared_slots, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	var/total = 0
+	for(var/type_path in type_shared_slots)
+		total += type_shared_slots[type_path]
+		if(length(top) < MEMORY_CENSUS_TOP)
+			top += "[type_path] [num2text(type_shared_slots[type_path], 12)]"
+	if(!length(top))
+		return
+	log_world("## MEMORY: элементы ОБЩИХ на тип списков (статики и типовые дефолты, \
+		считаются один раз на тип): всего [num2text(total, 12)]; \
+		крупнейшие: [top.Join(", ")]")
+
+/**
+ * Шестая строка переписи: глобальные списки и списки подсистем.
+ *
+ * ЗАЧЕМ. Перепись инстансов обходит world.contents, то есть видит атомы. Глобальных
+ * переменных там нет ВООБЩЕ, переменных подсистем - тоже. А между тем это последний
+ * DM-видимый резервуар памяти, и он же самый удобный для накопителя: любой `GLOB.что_то`
+ * растёт весь раунд, никем не измеряемый. Разбор роста 23.08 упёрся ровно в это: за сто
+ * минут раунда 10083 инстансов прибавилось 33 тысячи при росте адресного пространства на
+ * 600 МБ, то есть инстансами объясняется меньше трёх процентов, а посмотреть, где лежит
+ * остальное, было нечем.
+ *
+ * Обход дешёвый: глобалок порядка тысячи, подсистем несколько десятков, и это на порядки
+ * меньше полутора миллионов атомов основного прохода. CHECK_TICK всё равно стоит - длина
+ * отдельной глобалки бывает шестизначной.
+ */
+/datum/controller/subsystem/time_track/proc/log_global_list_slots()
+	var/list/found = list()
+	var/total = 0
+	var/list/built_in = GLOB.gvars_datum_in_built_vars
+	for(var/var_name in GLOB.vars)
+		if(var_name == "vars" || (built_in && (var_name in built_in)))
+			continue
+		var/value = GLOB.vars[var_name]
+		if(!islist(value))
+			continue
+		var/slots = list_slots_deep(value)
+		if(!slots)
+			continue
+		found["GLOB.[var_name]"] = slots
+		total += slots
+		CHECK_TICK
+
+	// Подсистемы разбираются здесь же, а не отдельной строкой: живут они столько же,
+	// сколько глобалки, накапливают так же, и разделять их означало бы две коротких
+	// строки вместо одной содержательной.
+	for(var/datum/controller/subsystem/subsystem as anything in Master?.subsystems)
+		for(var/var_name in subsystem.vars)
+			if(var_name == "vars")
+				continue
+			var/value = subsystem.vars[var_name]
+			if(!islist(value))
+				continue
+			var/slots = list_slots_deep(value)
+			if(!slots)
+				continue
+			found["[subsystem.name].[var_name]"] = slots
+			total += slots
+		CHECK_TICK
+
+	if(!length(found))
+		return
+	sortTim(found, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	for(var/entry in found)
+		if(length(top) >= MEMORY_CENSUS_TOP)
+			break
+		top += "[entry] [num2text(found[entry], 12)]"
+	log_world("## MEMORY: элементы глобальных списков и списков подсистем: \
+		всего [num2text(total, 12)] в [length(found)] списках; крупнейшие: [top.Join(", ")]")
+
+/**
+ * Топ типов по суммарной длине ЛИЧНЫХ списочных переменных, строками для лога.
+ *
+ * Отдельным проком по той же причине, что и instance_weight_top(): перебирать world.contents
+ * в тесте нечего, а пересчёт выборки на мир проверить надо - ошибка в множителе даёт
+ * правдоподобную и полностью выдуманную цифру.
+ *
+ * Делитель здесь - число разобранных инстансов МИНУС ОДИН: первый инстанс типа тратится на
+ * эталон ссылок и в личный счёт не идёт. Типу с единственным инстансом делить не на что, и
+ * для него берётся запасной путь - все списки первого инстанса как есть. Разделять там
+ * нечего и незачем: инстанс один, и платит он за свои списки ровно один раз, общие они или нет.
+ */
+/datum/controller/subsystem/time_track/proc/list_slot_top(list/all_counts, list/type_list_samples, list/type_list_slots, list/type_first_slots)
+	var/list/estimated = list()
+	var/list/per_instance_slots = list()
+	for(var/type_path in type_list_samples)
+		var/sampled = type_list_samples[type_path]
+		if(sampled <= 0)
+			continue
+		var/per_instance
+		if(sampled > 1)
+			per_instance = type_list_slots[type_path] / (sampled - 1)
+		else
+			per_instance = type_first_slots?[type_path]
+		if(!per_instance)
+			continue
+		per_instance_slots[type_path] = per_instance
+		estimated[type_path] = round(per_instance * all_counts[type_path])
+
+	sortTim(estimated, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top = list()
+	for(var/type_path in estimated)
+		if(length(top) >= MEMORY_CENSUS_TOP)
+			break
+		top += "[type_path] [num2text(estimated[type_path], 12)] (по [round(per_instance_slots[type_path], 0.1)] на штуку)"
+	return top
 
 /**
  * Вторая строка переписи: чей вес, а не чьё количество.
@@ -963,11 +1309,12 @@ SUBSYSTEM_DEF(time_track)
 
 	var/list/top = instance_weight_top(weights, counts, type_var_slots, total_slots)
 
-	log_world("## MEMORY: вес мира по переменным: [round(total_slots / 1000000, 0.1)] млн слотов \
+	log_world("## MEMORY: ширина типов (объявленные переменные, НЕ цена в байтах): \
+		[round(total_slots / 1000000, 0.1)] млн слотов \
 		(турфы [round(turf_slots / total_slots * 100, 0.1)]%, \
 		движимое [round(movable_slots / total_slots * 100, 0.1)]%, \
 		зоны [round(area_slots / total_slots * 100, 0.1)]%); \
-		самые тяжёлые типы: [length(top) ? top.Join(", ") : "пусто"]")
+		самые широкие типы: [length(top) ? top.Join(", ") : "пусто"]")
 
 /**
  * Топ типов по весу, строками для лога.
@@ -1067,4 +1414,6 @@ SUBSYSTEM_DEF(time_track)
 #undef MEMORY_CENSUS_TOP
 #undef MEMORY_CENSUS_TOP_Z
 #undef MEMORY_CENSUS_TICK_EVERY
+#undef MEMORY_CENSUS_LIST_SAMPLES
+#undef MEMORY_CENSUS_NESTED_SCAN_CAP
 #undef PING_SAMPLE_STALE_AFTER

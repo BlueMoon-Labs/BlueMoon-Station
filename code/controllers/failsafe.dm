@@ -82,7 +82,7 @@ GLOBAL_REAL(Failsafe, /datum/controller/failsafe)
 					// МК стоит, а вместе с ним стоит и его собственная запись чёрного ящика.
 					// Снимок отсюда - единственный, в котором last_type_processed указывает на
 					// подвисшую подсистему, а не на ту, что отработала перед ней.
-					Master.write_state_snapshot()
+					Master.write_state_snapshot(force = TRUE)
 					var/stuck_note = Master.stuck_subsystem_note()
 					switch(defcon)
 						if(4,5)

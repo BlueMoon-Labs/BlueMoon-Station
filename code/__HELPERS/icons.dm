@@ -1153,13 +1153,22 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 		// 130-450 мс, то есть рвала тик в три-девять раз.
 		CHECK_TICK
 		var/icon/partial
-		if(isnull(frozen_appearance))
-			partial = getFlatIcon(subject, defdir = photo_dir, no_anim = no_anim)
-		else
-			var/image/dir_snapshot = new
-			dir_snapshot.appearance = frozen_appearance
-			dir_snapshot.dir = photo_dir
-			partial = getFlatIcon(dir_snapshot, defdir = photo_dir, no_anim = no_anim)
+		// try/catch, а не проверка результата: отказ крупной непрерывной аллокации внутри
+		// getFlatIcon приходит рантаймом в /icon/New() и без перехвата рвёт весь стек до
+		// самого МК. Именно так умер раунд 10088 (23.08) - см. code/__HELPERS/icon_alloc_guard.dm.
+		try
+			if(isnull(frozen_appearance))
+				partial = getFlatIcon(subject, defdir = photo_dir, no_anim = no_anim)
+			else
+				var/image/dir_snapshot = new
+				dir_snapshot.appearance = frozen_appearance
+				dir_snapshot.dir = photo_dir
+				partial = getFlatIcon(dir_snapshot, defdir = photo_dir, no_anim = no_anim)
+		catch(var/exception/icon_error)
+			// Не continue прямо отсюда: выход управлением из catch наружу в цикл в кодовой
+			// базе нигде не встречается, а проверка ниже и так отбрасывает пустой кадр.
+			partial = null
+			note_icon_alloc_failure("многодирекционный кадр [subject?.type], дирекция [photo_dir]", icon_error)
 		if(!istype(partial, /icon) || !partial.Width() || !partial.Height())
 			continue
 		good_partials += partial

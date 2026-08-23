@@ -485,7 +485,15 @@
 
 /obj/item/card/id/proc/get_cached_flat_icon()
 	if(!cached_flat_icon)
-		cached_flat_icon = getFlatIcon(src)
+		// Examine ID-карты - обычное действие обычного игрока, и именно на нём умер раунд
+		// 10087 (23.08): getFlatIcon отсюда упал рантаймом в /icon/New(), и мир не написал
+		// больше ни строки. См. code/__HELPERS/icon_alloc_guard.dm.
+		try
+			cached_flat_icon = getFlatIcon(src)
+		catch(var/exception/icon_error)
+			// Результат намеренно НЕ кэшируется: отказ аллокации - состояние минуты, а не
+			// свойство карты, и запомненная пустышка осталась бы в чате до конца раунда.
+			return note_icon_alloc_failure("плоская иконка ID-карты [type]", icon_error)
 	return cached_flat_icon
 
 

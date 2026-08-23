@@ -237,11 +237,7 @@
 
 		//now we're on the new z_level, proceed the space drifting
 		stoplag()//Let a diagonal move finish, if necessary
-		// Плавный дрейф переживает смену z сам: smooth_move берёт z из самого движимого.
-		// Голый вызов доливал по единице силы на каждом переходе, и путешествие через
-		// несколько уровней само по себе разгоняло. Он нужен только легаси-пути без обработчика.
-		if(!A.drift_handler)
-			A.newtonian_move(A.inertia_dir)
+		A.newtonian_move(A.inertia_dir)
 
 
 /turf/open/space/Exited(atom/movable/AM, atom/OldLoc)

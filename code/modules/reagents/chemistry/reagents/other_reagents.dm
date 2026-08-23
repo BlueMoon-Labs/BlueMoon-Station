@@ -653,19 +653,36 @@
 	taste_description = "cherry" // by popular demand
 	boiling_point = 330
 	var/lube_kind = TURF_WET_LUBE ///What kind of slipperiness gets added to turfs.
+	var/min_turf_volume = 1
 
 /datum/reagent/lube/reaction_turf(turf/open/T, reac_volume)
 	..()
 	if (!istype(T))
 		return
-	if(reac_volume >= 1)
-		T.MakeSlippery(lube_kind, 15 SECONDS, min(reac_volume * 2 SECONDS, 120))
+	if(reac_volume >= min_turf_volume)
+		T.MakeSlippery(lube_kind, 30 SECONDS, min(reac_volume * 2 SECONDS, 120))
+
+/datum/reagent/lube/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = TRUE, touch_protection = 0, affected_bodypart)
+	..()
+	if(method != TOUCH && method != VAPOR)
+		return
+	if(reac_volume < min_turf_volume)
+		return
+	if(!ishuman(M))
+		return
+	var/mob/living/carbon/human/victim = M
+	if(victim.body_position != LYING_DOWN || victim.buckled || victim.stat == DEAD || !(victim.status_flags & CANKNOCKDOWN))
+		return
+	if(!istype(victim.loc, /turf/open))
+		return
+	victim.slip(80, null, SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING)
 
 ///Stronger kind of lube. Applies TURF_WET_SUPERLUBE.
 /datum/reagent/lube/superlube
 	name = "Super Duper Lube"
 	description = "This \[REDACTED\] has been outlawed after the incident on \[DATA EXPUNGED\]."
 	lube_kind = TURF_WET_SUPERLUBE
+	min_turf_volume = 0.25
 
 /datum/reagent/spraytan
 	name = "Spray Tan"

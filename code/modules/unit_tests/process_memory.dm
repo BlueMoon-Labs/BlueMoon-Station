@@ -508,3 +508,208 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	tracker.memory_growth_mb_per_minute = 30
 	tracker.check_memory_admin_warning(3600)
 	TEST_ASSERT(tracker.memory_admin_warned, "Прогноз не поднял тревогу на настоящей быстрой утечке")
+
+/**
+ * Длина списка вместе с вложенным уровнем.
+ *
+ * Плоский length() на самом крупном из найденных накопителей отвечает пятёркой: /mob.logging
+ * - это assoc из пяти ключей по типу сообщения, а тысячи записей лежат ВНУТРИ. Прибор, не
+ * умеющий заглянуть на уровень вниз, такой накопитель не увидит вовсе, и проверять тут надо
+ * именно это.
+ */
+/datum/unit_test/list_slots_deep
+
+/datum/unit_test/list_slots_deep/Run()
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list(1, 2, 3)), 3, "Плоский список посчитан неверно")
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list()), 0, "Пустой список обязан дать ноль")
+
+	// Устройство /mob.logging: пять ключей, внутри - записи. Пять плюс 10 плюс 4.
+	var/list/logging_shaped = list("say" = new /list(10), "attack" = new /list(4))
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(logging_shaped), 2 + 10 + 4, "Вложенный уровень ассоциативного списка не посчитан")
+
+	// Список списков без ключей - так устроены reagent_list и очереди пар.
+	var/list/nested_flat = list(new /list(3), new /list(7))
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(nested_flat), 2 + 3 + 7, "Вложенный уровень списка списков не посчитан")
+
+	// Числовой элемент плоского списка индексацией трогать нельзя: outer[2] это обращение
+	// по ПОЗИЦИИ, и без гарда сюда приехал бы соседний элемент вместо отсутствующего значения.
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list(2, 3, 1)), 3, "Числовой элемент принят за ключ - счёт уехал на соседа")
+
+	// Длинный список внутрь не разворачивается (contents космической зоны - 800 тысяч
+	// элементов), но своя длина у него считается как надо.
+	var/list/too_long = new /list(65)
+	too_long[1] = new /list(1000)
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(too_long), 65, "Список длиннее потолка развернулся внутрь, хотя не должен был")
+
+	// Встроенные списки BYOND ассоциативного чтения не терпят вовсе: contents[атом] - это не
+	// null, а "bad index". Перепись обходит vars подряд и такие списки видит на каждом втором
+	// атоме, так что без плоской копии прибор спамил рантайм весь раунд.
+	var/obj/item/paper/sheet = allocate(/obj/item/paper, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(length(sheet.locs), 1, "однотайловый предмет занимает не один турф - проверять нечего")
+	var/runtimes_before = GLOB.total_runtimes
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(sheet.locs), 1, "встроенный locs посчитан неверно")
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "обход встроенного списка поднял рантайм")
+
+	runtimes_before = GLOB.total_runtimes
+	TEST_ASSERT(SStime_track.list_slots_deep(run_loc_floor_bottom_left.contents) >= 1, "contents турфа с предметом посчитан пустым")
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "обход contents поднял рантайм")
+
+/// Стенд для разделения общих и личных списков: статик на всех, личный у каждого.
+/datum/memory_census_sample_dummy
+	var/static/list/shared_cache = list("a" = 1, "b" = 2, "c" = 3, "d" = 4, "e" = 5)
+	var/list/personal = list()
+
+/**
+ * Общий на тип список не должен приписываться каждому инстансу.
+ *
+ * Ради чего проверка. В прод-переписи 23.08 топ строки "элементы списков" состоял почти
+ * целиком из статиков: /atom/movable/lighting_object отдавал 69 элементов на штуку при
+ * 235 тысячах инстансов, скрытые трубы - 177 и "росли" до 194 (рос общий pipeimages),
+ * а человек и обезьяна показывали 5071 и 4656 - почти одно число, потому что обе цифры
+ * были общим кэшем limb_icon_cache. Умноженный на популяцию статик выдумывает миллионы
+ * элементов там, где лежит один список, и топ отвечает не на тот вопрос, ради которого
+ * написан.
+ */
+/datum/unit_test/memory_census_shared_lists
+
+/datum/unit_test/memory_census_shared_lists/Run()
+	var/datum/memory_census_sample_dummy/first = new
+	var/datum/memory_census_sample_dummy/second = new
+	first.personal = list(1, 2)
+	second.personal = list(1, 2)
+
+	var/list/reference_lists = list()
+	var/first_slots = SStime_track.collect_instance_lists(first, reference_lists)
+	// Пять ключей статика плюс два своих: первый инстанс считается целиком, разделять на
+	// нём нечего.
+	TEST_ASSERT_EQUAL(first_slots, 7, "Первый инстанс посчитан неверно: [first_slots]")
+	TEST_ASSERT(reference_lists[first.shared_cache], "Статик не попал в эталонный набор ссылок")
+	TEST_ASSERT(reference_lists[first.personal], "Личный список первого инстанса не попал в эталонный набор ссылок")
+
+	var/list/clean_slots = list()
+	var/list/shared_slots = list()
+	SStime_track.sample_instance_lists(second, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, TRUE)
+
+	TEST_ASSERT_EQUAL(clean_slots[/datum/memory_census_sample_dummy], 2, "Личный список второго инстанса посчитан неверно - статик просочился в личный счёт")
+	TEST_ASSERT_EQUAL(shared_slots[/datum/memory_census_sample_dummy], 5, "Общий на тип список не отнесён в общий счёт")
+
+	// Третий инстанс общее уже не считает: платится за него один раз на тип, а не по разу
+	// на каждый разобранный инстанс.
+	var/datum/memory_census_sample_dummy/third = new
+	third.personal = list(1, 2)
+	SStime_track.sample_instance_lists(third, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, FALSE)
+	TEST_ASSERT_EQUAL(shared_slots[/datum/memory_census_sample_dummy], 5, "Общий список посчитан дважды")
+	TEST_ASSERT_EQUAL(clean_slots[/datum/memory_census_sample_dummy], 4, "Личные списки двух инстансов не сложились")
+
+/**
+ * Пересчёт выборочной длины списков на весь мир.
+ *
+ * Списочные слоты - третье слепое пятно переписи после не-атомных датумов и внутренних
+ * таблиц BYOND: растущий ассоциативный список на живом атоме даёт мегабайты при НУЛЕВОМ
+ * приросте инстансов. Обойти vars у полутора миллионов атомов нельзя по цене, поэтому
+ * длина берётся с выборки и умножается на количество - и вот этот множитель проверяется
+ * здесь. Ошибка в нём даёт правдоподобную и полностью выдуманную цифру, а сверить её в
+ * логе не с чем.
+ */
+/datum/unit_test/list_slot_top
+
+/datum/unit_test/list_slot_top/Run()
+	// Турфов вдесятеро больше, чем шкафов, но списки у шкафа длиннее в двадцать раз -
+	// и по слотам шкафы обязаны обойти турфы.
+	var/list/all_counts = list(
+		/turf/open/floor/plating = 100000,
+		/obj/structure/closet = 10000,
+		/obj/effect/decal/cleanable/dirt = 5000,
+	)
+	var/list/type_list_samples = list(
+		/turf/open/floor/plating = 3,
+		/obj/structure/closet = 3,
+		/obj/effect/decal/cleanable/dirt = 3,
+	)
+	// Первый инстанс типа тратится на эталон ссылок, так что личные слоты копятся с
+	// ДВУХ инстансов из трёх - делитель тоже двойка.
+	var/list/type_list_slots = list(
+		/turf/open/floor/plating = 2 * 2,
+		/obj/structure/closet = 2 * 40,
+		/obj/effect/decal/cleanable/dirt = 0,
+	)
+
+	var/list/top = SStime_track.list_slot_top(all_counts, type_list_samples, type_list_slots, list())
+
+	TEST_ASSERT_EQUAL(length(top), 2, "Тип без единого списочного элемента обязан выпасть из топа, а не занимать место")
+	TEST_ASSERT(findtext(top[1], "/obj/structure/closet"), "Топ по списочным слотам отсортирован не по слотам: первым идёт [top[1]]")
+	// 10000 штук по 40 элементов - четыреста тысяч.
+	TEST_ASSERT(findtext(top[1], "400000"), "Пересчёт выборки на мир посчитан неверно: [top[1]]")
+	TEST_ASSERT(findtext(top[2], "200000"), "Пересчёт выборки на мир посчитан неверно для турфов: [top[2]]")
+	// BYOND интерполирует числа от миллиона шестью значащими цифрами, и без num2text в лог
+	// поедет "2e+006" вместо количества слотов.
+	TEST_ASSERT(!findtext(top[1], "e+"), "В строке списочных слотов осталась экспоненциальная запись: [top[1]]")
+
+	// Тип, попавший в счёт количества, но не в выборку, делить не на что: нулевой знаменатель
+	// не должен ни ронять перепись, ни выдумывать бесконечность.
+	var/list/empty_top = SStime_track.list_slot_top(list(/turf/open/floor/plating = 100), list(/turf/open/floor/plating = 0), list(/turf/open/floor/plating = 10), list())
+	TEST_ASSERT_EQUAL(length(empty_top), 0, "Нулевая выборка обязана дать пустой топ, а не деление на ноль")
+
+	// Единственный инстанс типа: делить не на что, и берётся запасной путь - все списки
+	// первого инстанса как есть. Именно так выглядит contents космической зоны, самая
+	// крупная строка настоящей переписи, и потерять её нельзя.
+	var/list/lone_top = SStime_track.list_slot_top(list(/area/space = 1), list(/area/space = 1), list(), list(/area/space = 813931))
+	TEST_ASSERT_EQUAL(length(lone_top), 1, "Тип с единственным инстансом выпал из топа вместо запасного пути")
+	TEST_ASSERT(findtext(lone_top[1], "813931"), "Запасной путь для одиночного инстанса посчитан неверно: [lone_top[1]]")
+
+#ifdef DATUM_CENSUS
+/**
+ * Отчёт переписи не-атомных датумов.
+ *
+ * Перепись инстансов перебирает world.contents, а туда BYOND кладёт только турфы, зоны,
+ * объекты и мобов: компоненты, газовые смеси, углы освещения, таймеры и коллбеки не видит
+ * ни один прибор. Здесь проверяется арифметика разницы "создано минус qdel" - именно она
+ * отвечает на вопрос "что из этого не удаляется", и ошибка в ней читается как утечка.
+ */
+/datum/unit_test/datum_census_report
+
+/datum/unit_test/datum_census_report/Run()
+	var/list/created = list(
+		/datum/callback = 500000,
+		/datum/reagents = 900,
+		/datum/component/simple_rotation = 4000,
+	)
+	var/list/destroyed = list(
+		/datum/reagents = 900,
+		/datum/component/simple_rotation = 3990,
+		// Атом в счёте удалений законен: /datum/Destroy() общий для всех, а отсев делает
+		// перебор по ключам created, куда атом не доходит (/atom/New() родителя не зовёт).
+		/obj/item/crowbar = 12000,
+	)
+
+	// Первая перепись: снимка ещё нет, отчёт абсолютный.
+	var/list/first = datum_census_report_lines(created, destroyed, null, null, 2)
+
+	TEST_ASSERT_EQUAL(length(first), 2, "Отчёт переписи датумов обязан быть ровно из двух строк")
+	TEST_ASSERT(findtext(first[1], "/datum/callback x500000"), "Топ по созданию отсортирован неверно: [first[1]]")
+	TEST_ASSERT(!findtext(first[1], "/obj/item/crowbar"), "Атом просочился в отчёт переписи датумов: [first[1]]")
+	// 500000 мимо qdel, 900-900=0, 4000-3990=10. Итого 500010.
+	TEST_ASSERT(findtext(first[1], "не удалено через qdel 500010"), "Остаток мимо qdel посчитан неверно: [first[1]]")
+	TEST_ASSERT(findtext(first[2], "/datum/callback x500000"), "Топ мимо qdel отсортирован неверно: [first[2]]")
+
+	// Вторая перепись поверх снимка: в топ обязан попасть тот, кто вырос, а не тот, кого
+	// за раунд просто много. Ради этого разница и считается.
+	var/list/snapshot_created = created.Copy()
+	var/list/snapshot_residue = datum_census_residue(created, destroyed)
+	created[/datum/component/simple_rotation] = 9000
+	created[/datum/callback] = 500100
+	destroyed[/datum/component/simple_rotation] = 4990
+
+	var/list/second = datum_census_report_lines(created, destroyed, snapshot_created, snapshot_residue, 2)
+
+	TEST_ASSERT(findtext(second[1], "/datum/component/simple_rotation x5000"), "Разница по созданию посчитана неверно: [second[1]]")
+	TEST_ASSERT(findtext(second[1], "/datum/callback x100"), "Разница по созданию потеряла второй тип: [second[1]]")
+	// Компонентов создано на 5000 больше, удалено на 1000 больше - мимо qdel ушло 4000.
+	TEST_ASSERT(findtext(second[2], "/datum/component/simple_rotation x4000"), "Разница по остатку посчитана неверно: [second[2]]")
+
+	// Ничего не изменилось - в топах обязана быть пустота, а не прошлые цифры.
+	var/list/third = datum_census_report_lines(created, destroyed, created.Copy(), datum_census_residue(created, destroyed), 2)
+	TEST_ASSERT(findtext(third[1], "пусто"), "Перепись без единого нового датума показала прирост: [third[1]]")
+
+	TEST_ASSERT_EQUAL(length(datum_census_report_lines(list(), list(), null, null, 5)), 1, "Пустой счётчик обязан дать одну строку, а не рантайм")
+#endif

@@ -482,6 +482,11 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		door.refresh_fire_detection()
 
 /area/proc/set_fire_alarm_effects(boolean)
+	// Повторный взвод уже взведённой тревоги (burglaralert, декомп-тревога воздушного
+	// сенсора раз в секунду) - не событие: без этого выхода каждый вызов гонял
+	// update() по всем лампам зоны и по всем сигнализациям впустую.
+	if(fire == boolean)
+		return
 	fire = boolean
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	for(var/i in sub_areas)
@@ -493,8 +498,14 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		F.update_icon()
 	if(area_emergency_mode) //Fires are not legally allowed if the power is off
 		return
+	// Лампы при смене тревоги только перекрашиваются, и делать это надо молча:
+	// update() без silent играет light_on.ogg на каждой лампе зоны при каждом
+	// переключении в обе стороны. На пустой Delta (раунд 10060, ноль игроков)
+	// это был главный источник сотен /sound в секунду - 845 ламп на карте, и любая
+	// зона, качающаяся между firealert() и firereset(), выдавала 2 x ламп звуков
+	// за цикл. В tg у смены цвета по тревоге звука нет вовсе.
 	for(var/obj/machinery/light/L in get_sub_areas_contents(src))
-		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update))
+		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), TRUE, TRUE)
 
 /area/proc/updateicon()
 /**

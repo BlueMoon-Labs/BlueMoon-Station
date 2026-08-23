@@ -1253,8 +1253,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		else if(species_id == "moth")
 			species_id = "insect"
 
+		// Тот же тип - тот же экземпляр. Датум вида в prefs только читают (.type, .id,
+		// mutant_bodyparts), ни один прок его не правит, а mutant_bodyparts собирается из
+		// константного GLOB.unlocked_mutant_parts - значит новый экземпляр того же типа
+		// неотличим от старого. Инициализатор поля (preferences.dm) уже завёл
+		// /datum/species/human, и безусловный new заводил на каждый вход человеком второй
+		// экземпляр, который тут же становился мусором. Перепись раунда 10060: 15-21
+		// /datum/species/human за 30-минутный интервал при НУЛЕ игроков - ровно по числу
+		// попыток подключения.
 		var/newtype = GLOB.species_list[species_id]
-		if(newtype)
+		if(newtype && (isnull(pref_species) || newtype != pref_species.type))
 			pref_species = new newtype
 
 

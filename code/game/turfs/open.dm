@@ -13,8 +13,6 @@
 
 	/// Dirt level.
 	var/dirtyness = 0
-	/// Dirt level to spawn dirt. Null to use config.
-	var/dirt_spawn_threshold
 
 	/// How much fuel this open turf provides to turf fires
 	var/flammability = 0.2
@@ -334,10 +332,30 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		// Цепное качение: слайд длится через всю смазанную дорожку, а после её конца
+		// персонаж по инерции ещё пролетает пару-тройку клеток и не встаёт сразу.
+		// Одиночная смазанная клетка - прежний разлёт на 4.
+		var/slide_run = lube_slide_run(olddir)
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_run ? slide_run + 1 + rand(2, 3) : 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE
+
+/// Сколько турфов подряд по направлению dir_to_scan покрыты смазкой (SLIDE-флаг).
+/// Используется для цепного качения: катимся, пока под нами луб, и останавливаемся,
+/// когда дорожка кончается. Лимита длины нет - катимся до конца дорожки.
+/// Стены не проверяем - forced_movement сам затормозит.
+/turf/open/proc/lube_slide_run(dir_to_scan)
+	. = 0
+	var/turf/open/checking = get_step(src, dir_to_scan)
+	while(istype(checking))
+		if(!checking.has_gravity())
+			break
+		var/datum/component/slippery/S = checking.GetComponent(/datum/component/slippery)
+		if(!(S?.lube_flags & SLIDE))
+			break
+		.++
+		checking = get_step(checking, dir_to_scan)
 
 /turf/open/proc/MakeSlippery(wet_setting = TURF_WET_WATER, min_wet_time = 0, wet_time_to_add = 0, max_wet_time = MAXIMUM_WET_TIME, permanent)
 	AddComponent(/datum/component/wet_floor, wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)

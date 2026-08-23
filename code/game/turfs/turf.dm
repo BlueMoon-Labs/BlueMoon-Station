@@ -74,7 +74,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
-	temperature = initial_temperature
+	// BYOND платит за каждую ЗАПИСАННУЮ переменную инстанса независимо от того, равно ли
+	// записанное значение типовому дефолту (замерено: ~16 Б на слот, ступенями по четыре).
+	// У /turf оба дефолта - T20C, то есть на подавляющем большинстве турфов эта запись
+	// покупала слот под значение, которое там и так стояло.
+	if(temperature != initial_temperature)
+		temperature = initial_temperature
 	assemble_baseturfs()
 
 	levelupdate()
@@ -429,14 +434,17 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		var/list/premade_baseturfs = created_baseturf_lists[current_target]
 		if(length(premade_baseturfs))
 			baseturfs = premade_baseturfs.Copy()
-		else
+		else if(baseturfs != premade_baseturfs)
 			baseturfs = premade_baseturfs
 		return baseturfs
 
 	var/turf/next_target = initial(current_target.baseturfs)
 	//Most things only have 1 baseturf so this loop won't run in most cases
 	if(current_target == next_target)
-		baseturfs = current_target
+		// та же экономия слота, что и с temperature: обычно current_target уже равен
+		// типовому дефолту baseturfs, и запись покупала слот впустую
+		if(baseturfs != current_target)
+			baseturfs = current_target
 		created_baseturf_lists[current_target] = current_target
 		return current_target
 	var/list/new_baseturfs = list(current_target)

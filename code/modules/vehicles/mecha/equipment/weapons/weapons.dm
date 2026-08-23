@@ -53,9 +53,8 @@
 		sleep(max(0, projectile_delay))
 		if(!chassis)
 			break
-	// Recoil once per volley (not once per pellet) and capped, so spam-firing can't ratchet drift toward the global cap.
 	if(kickback && chassis)
-		chassis.newtonian_move(newtonian_target, controlled_cap = INERTIA_FORCE_RECOIL_CAP)
+		chassis.newtonian_move(newtonian_target)
 	if(chassis)
 		chassis.log_message("Fired from [src], targeting [target].", LOG_MECHA)
 

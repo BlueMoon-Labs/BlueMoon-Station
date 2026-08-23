@@ -1,7 +1,7 @@
 //Vars that will not be copied when using /DuplicateObject
 //signal_procs/active_timers: шальная копия рождает "регистрации", которых никто
 //не делал (подвисшие ключи-датумы), а Destroy клона гасит таймеры оригинала.
-//important_recursive_contents/spatial_grid_key/client_mobs_in_contents: клон
+//important_recursive_contents/spatial_grid_key: клон
 //объявил бы себя держателем чужого содержимого и травил ячейки спатиал-грида
 //component_parts/debris/actions: списки чужих датумов. Копия списка мелкая, поэтому клон
 //получал ссылки на детали, обломки и экшены оригинала, а его QDEL_LIST в Destroy убивал их
@@ -13,7 +13,7 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars,list(
 	"tag", "datum_components", "area", "type", "loc", "locs", "vars", "parent", "parent_type", "verbs", "ckey", "key",
 	"power_supply", "contents", "reagents", "stat", "x", "y", "z", "group", "atmos_adjacent_turfs", "comp_lookup",
 	"pixloc", "signal_procs", "signal_enabled", "active_timers", "important_recursive_contents", "spatial_grid_key",
-	"client_mobs_in_contents", "component_parts", "debris", "actions"
+	"component_parts", "debris", "actions"
 	))
 
 GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(

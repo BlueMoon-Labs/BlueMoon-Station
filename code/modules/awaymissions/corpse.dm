@@ -200,6 +200,9 @@
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
 		special(M, name)
+		// BLUEMOON ADD START - глобальный сигнал для модульных реакций на занятие гост-роли игроком
+		SEND_GLOBAL_SIGNAL(COMSIG_GHOST_ROLE_CLAIMED, M)
+		// BLUEMOON ADD END
 		if(director_source_action)
 			SSdirector.track_ghost_role_spawn(
 				director_source_action,

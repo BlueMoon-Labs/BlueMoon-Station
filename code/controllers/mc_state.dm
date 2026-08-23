@@ -22,12 +22,22 @@
 /datum/controller/master
 	/// Медленная половина сводки: обновляется раз в десять секунд из SStime_track, пишется как есть.
 	var/state_snapshot_context
+	/// Отметка о происшествии, после которого мир может не дожить до следующей записи.
+	/// Взводится один раз и не снимается: сводку читают ПОСЛЕ смерти, и снятая отметка
+	/// означала бы, что улику стёрли своими руками.
+	var/state_snapshot_note
 	/// Подсистема, которая инициализируется прямо сейчас. Вне Initialize() всегда null.
 	var/datum/controller/subsystem/initializing_subsystem
 	/// Сколько записей сводки упало подряд. Обнуляется удачной записью.
 	var/state_snapshot_failures = 0
 	/// Через сколько проходов петли МК пишется сводка. Подбирается под замер цены записи.
 	var/state_snapshot_interval = MC_STATE_MIN_INTERVAL
+	/// С какой итерации петли МК разрешена следующая запись. Двигается только на УДАВШЕЙСЯ:
+	/// отложенная из-за плотного тика запись повторяется на следующем проходе, а не через интервал.
+	var/state_snapshot_next_iteration = 0
+	/// Выше какой занятости тика запись откладывается. Переменная, а не дефайн прямо в проверке,
+	/// только ради юнит-теста: занятость тика извне не задать, а поведение гарда проверить надо.
+	var/state_snapshot_skip_above = MC_STATE_TICK_SKIP_ABOVE
 	/// Сглаженная цена одной записи в процентах тика.
 	var/state_snapshot_cost = 0
 	/// Интервал, о котором последний раз написали в лог. Чтобы не писать на каждый шаг подстройки.
@@ -74,6 +84,9 @@ GLOBAL_VAR(mc_state_death_cause)
 	if(state_snapshot_context)
 		lines += state_snapshot_context
 
+	if(state_snapshot_note)
+		lines += state_snapshot_note
+
 	return lines.Join("\n")
 
 /**
@@ -86,9 +99,20 @@ GLOBAL_VAR(mc_state_death_cause)
  *
  * Зовётся из петли МК, поэтому падать наружу ей нельзя: рантайм внутри Loop() уводит
  * мастер-контроллер в Recover(), то есть диагностика убивала бы ровно то, что диагностирует.
+ *
+ * force - писать, не глядя на занятость тика. Это путь Failsafe и смерти мира: там сводка
+ * и есть единственная цель вызова, а тик всё равно уже потерян.
  */
-/datum/controller/master/proc/write_state_snapshot(path = MC_STATE_SNAPSHOT_FILE)
+/datum/controller/master/proc/write_state_snapshot(path = MC_STATE_SNAPSHOT_FILE, force = FALSE)
 	if(state_snapshot_frozen || state_snapshot_failures >= MC_STATE_FAILURE_LIMIT)
+		return FALSE
+	// Подстройка интервала держит СРЕДНЮЮ цену в бюджете, но не трогает выброс: одна
+	// запись стоит столько, сколько стоит. В проде 23.08 это доходило до 121% тика
+	// (раунд 10087) и до 80% (10091) - и оба раза ровно в шторме логинов, то есть прибор
+	// добивал тик именно тогда, когда миру было тяжелее всего. Отсюда гард: в уже плотный
+	// тик запись не лезет, а откладывается до следующего прохода петли. Свежесть сводки
+	// при этом теряется на считанные тики, зато перегруженный тик не получает добавки.
+	if(!force && TICK_USAGE > state_snapshot_skip_above)
 		return FALSE
 	var/write_started_at = TICK_USAGE
 	try

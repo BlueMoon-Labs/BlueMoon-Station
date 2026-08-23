@@ -101,10 +101,10 @@
 	if(movement_type & GROUND && dirtyness_maker)
 		dirt_buildup()
 
-/mob/living/carbon/human/Process_Spacemove(movement_dir = 0, continuous_move = FALSE) //Temporary laziness thing. Will change to handles by species reee.
+/mob/living/carbon/human/Process_Spacemove(movement_dir = 0) //Temporary laziness thing. Will change to handles by species reee.
 	if(dna?.species?.space_move(src))
 		return TRUE
-	return ..(movement_dir, continuous_move)
+	return ..()
 
 /mob/living/carbon/human/proc/dirt_buildup(strength = 1)
 	if(!shoes || !(shoes.body_parts_covered & FEET))
@@ -122,7 +122,11 @@
 		D.dirty(strength)
 	else
 		T.dirtyness += strength
-		if(T.dirtyness >= (isnull(T.dirt_spawn_threshold)? CONFIG_GET(number/turf_dirt_threshold) : T.dirt_spawn_threshold))
+		if(T.dirtyness >= CONFIG_GET(number/turf_dirt_threshold))
 			D = new /obj/effect/decal/cleanable/dirt(T)
-			D.dirty(T.dirt_spawn_threshold - T.dirtyness)
+			// dirt_spawn_threshold была объявлена на /turf/open, но её никто никогда не выставлял,
+			// поэтому здесь всегда считалось null - dirtyness, то есть отрицательная величина.
+			// Поведение сохранено как было; по смыслу свежий декаль должен получать накопленную
+			// грязь, а не терять альфу - это отдельный баг, чинить его надо отдельным коммитом.
+			D.dirty(-T.dirtyness)
 			T.dirtyness = 0		// reset.

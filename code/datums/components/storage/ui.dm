@@ -145,6 +145,7 @@ GLOBAL_LIST_EMPTY(storage_volumetric_box_pool)
 	var/cx = screen_start_x
 	var/cy = screen_start_y
 	if(islist(numbered_contents))
+		var/list/shown_samples = list()
 		for(var/type in numbered_contents)
 			var/datum/numbered_display/ND = numbered_contents[type]
 			ND.sample_object.mouse_opacity = MOUSE_OPACITY_OPAQUE
@@ -153,12 +154,23 @@ GLOBAL_LIST_EMPTY(storage_volumetric_box_pool)
 			ND.sample_object.layer = ABOVE_HUD_LAYER
 			ND.sample_object.plane = ABOVE_HUD_PLANE
 			. += ND.sample_object
+			shown_samples[ND.sample_object] = TRUE
 			cx++
 			if(cx - screen_start_x >= columns)
 				cx = screen_start_x
 				cy++
 				if(cy - screen_start_y >= rows)
 					break
+		for(var/type in numbered_contents)
+			var/datum/numbered_display/ND = numbered_contents[type]
+			//Экраны, до которых сетка не дошла (вышли за rows), в возвращаемый
+			//список не попали, а значит ui_hide их не переработает - возвращаем
+			//в пул сами, иначе они уходят из пула навсегда.
+			if(!isnull(ND?.sample_object) && !shown_samples[ND.sample_object])
+				_recycle_ui_objects(list(ND.sample_object))
+			//Сам датум витрины нужен только на время сборки: раньше его не
+			//удалял никто, и каждая перерисовка оставляла по одному на тип.
+			qdel(ND)
 	else
 		for(var/obj/O in accessible_items())
 			if(QDELETED(O))

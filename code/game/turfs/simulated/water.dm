@@ -48,6 +48,7 @@
 	baseturfs = /turf/open/water/safe/cooling_luiquid
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	initial_temperature = TCMB
+	temperature = TCMB
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	color = LIGHT_COLOR_DARK_BLUE
