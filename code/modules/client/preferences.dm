@@ -219,8 +219,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "mam_snouts" = "None",
 "mam_tail" = "None",
 "mam_tail_animated" = "None",
-"xenodorsal" = "Standard",
-"xenohead" = "Standard",
+"xenodorsal" = "None",
+"xenohead" = "None",
 "xenotail" = "Xenomorph Tail",
 "taur" = "None",
 "hardsuit_with_tail" = FALSE,
@@ -1712,7 +1712,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					for(var/mutant_part in GLOB.all_mutant_parts)
 						if(mutant_part == "mam_body_markings")
 							continue
-						if(parent?.can_have_part(mutant_part))
+						var/show_mutant_part = parent?.can_have_part(mutant_part)
+						if(mutant_part in GLOB.mismatched_toggle_parts)
+							show_mutant_part = show_mutant_part && pref_species.id == SPECIES_XENOHYBRID
+						if(show_mutant_part || (show_mismatched_markings && (mutant_part in GLOB.mismatched_toggle_parts)))
 							if(!mutant_category)
 								dat += APPEARANCE_CATEGORY_COLUMN
 							var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -4021,6 +4024,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						if(pref_species.id == "felinid")
 							features["mam_tail"] = "Cat"
 							features["mam_ears"] = "Cat"
+
+						if(pref_species.id == SPECIES_XENOHYBRID)
+							features["xenohead"] = "Standard"
+							features["xenodorsal"] = "Standard"
+						else
+							features["xenohead"] = "None"
+							features["xenodorsal"] = "None"
 
 						//Now that we changed our species, we must verify that the mutant colour is still allowed.
 						var/temp_hsv = RGBtoHSV(features["mcolor"])
