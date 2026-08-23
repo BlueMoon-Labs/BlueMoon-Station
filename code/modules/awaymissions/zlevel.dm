@@ -90,6 +90,8 @@
 		if(found)
 			break
 	for(var/datum/gateway_destination/gateway/GD as anything in GLOB.gateway_destinations)
+		if(!istype(GD, /datum/gateway_destination/gateway))
+			continue
 		var/obj/machinery/gateway/G = GD.target_gateway
 		if(!G || G.z != z)
 			continue

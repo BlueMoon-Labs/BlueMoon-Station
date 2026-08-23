@@ -89,6 +89,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/suppress_auto_away_destinations()
 	/// Awaystarts / away gateways on Inteq_base auto-register destinations at mapload — hide them so only the siege channel is used.
 	for(var/datum/gateway_destination/gateway/GD as anything in GLOB.gateway_destinations)
+		if(!istype(GD, /datum/gateway_destination/gateway))
+			continue
 		var/obj/machinery/gateway/G = GD.target_gateway
 		if(!G)
 			continue
