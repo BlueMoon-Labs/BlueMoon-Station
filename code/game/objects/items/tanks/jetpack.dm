@@ -56,21 +56,16 @@
 		var/datum/action/A = X
 		A.UpdateButtons()
 
-/// Единая точка переключения режима: её же дёргает клик по алерту полёта.
+/// Единая точка переключения режима.
 /obj/item/tank/jetpack/proc/set_stabilizers(new_state, mob/user)
 	if(!on || stabilizers == new_state)
 		return FALSE
 	stabilizers = new_state
 	if(user)
 		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
-		user.update_flight_alert()
 	for(var/datum/action/current_action as anything in actions)
 		current_action.UpdateButtons()
 	return TRUE
-
-/// Потолок, до которого этот двигатель разгоняет свободный полёт. Подобран вровень с шаговой скоростью носителя в этом же джетпаке.
-/obj/item/tank/jetpack/proc/thrust_cap()
-	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
 
 /obj/item/tank/jetpack/proc/turn_on(mob/user)
 	if(!user)
@@ -79,12 +74,10 @@
 	icon_state = "[initial(icon_state)]-on"
 	ion_trail.start()
 	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_user_death), override = TRUE)
-	user.register_thrust_source(src, cap = thrust_cap())
 	if(full_speed)
 		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	else
 		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	user.update_flight_alert()
 
 /obj/item/tank/jetpack/proc/turn_off(mob/user)
 	on = FALSE
@@ -93,10 +86,8 @@
 	if(!user)
 		return
 	UnregisterSignal(user, COMSIG_LIVING_DEATH)
-	user.unregister_thrust_source(src)
 	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	user.update_flight_alert()
 
 /// Мёртвый не тянет рычаги. Дрейф при этом остаётся - тело летит по инерции, как и положено.
 /obj/item/tank/jetpack/proc/on_user_death(mob/living/source)
@@ -314,59 +305,4 @@
 		var/obj/item/clothing/suit/space/hardsuit/C = wear_suit
 		J = C.jetpack
 	return J
-
-/**
- * Пересобирает алерт невесомости под текущий режим полёта.
- *
- * Базовая версия только возвращает старую табличку "вы болтаетесь в пустоте": режимы есть
- * лишь у тех, кто способен носить двигатель.
- *
- * Клиента не спрашиваем: алерты живут на мобе и достаются вселившемуся позже, а на NPC
- * опирается отложенный проход гравитации (см. [/proc/update_nonclient_mob_gravity]).
- */
-/mob/proc/update_flight_alert()
-	if(mob_has_gravity())
-		return
-	throw_alert("gravity", /atom/movable/screen/alert/weightless)
-
-/mob/living/carbon/update_flight_alert()
-	if(mob_has_gravity())
-		return
-	var/stabilizing = get_thrust_mode()
-	if(isnull(stabilizing))
-		throw_alert("gravity", /atom/movable/screen/alert/weightless)
-		return
-	var/atom/movable/screen/alert/weightless/thrusting/flight_alert = throw_alert(
-		"gravity",
-		stabilizing ? /atom/movable/screen/alert/weightless/thrusting/stabilized : /atom/movable/screen/alert/weightless/thrusting/freeflight,
-	)
-	flight_alert?.describe_flight(src)
-
-/// TRUE - стабилизация, FALSE - свободный полёт, null - работающего двигателя нет.
-/mob/living/carbon/proc/get_thrust_mode()
-	var/obj/item/thruster = get_jetpack()
-	if(istype(thruster, /obj/item/tank/jetpack))
-		var/obj/item/tank/jetpack/pack = thruster
-		if(pack.on)
-			return pack.stabilizers
-	else if(istype(thruster, /obj/item/mod/module/jetpack))
-		var/obj/item/mod/module/jetpack/module = thruster
-		if(module.active)
-			return module.stabilizers
-	// Имплант-трастеры стабилизации не имеют - для них режим всегда свободный полёт.
-	var/obj/item/organ/cyberimp/chest/thrusters/implant = getorganslot(ORGAN_SLOT_THRUSTERS)
-	if(implant?.on)
-		return FALSE
-	return null
-
-/// Переключение режима из одной точки: кнопка действия, конфиг MOD-костюма и клик по алерту приходят сюда.
-/mob/living/carbon/proc/set_jetpack_stabilizers(new_state)
-	var/obj/item/thruster = get_jetpack()
-	if(istype(thruster, /obj/item/tank/jetpack))
-		var/obj/item/tank/jetpack/pack = thruster
-		return pack.set_stabilizers(new_state, src)
-	if(istype(thruster, /obj/item/mod/module/jetpack))
-		var/obj/item/mod/module/jetpack/module = thruster
-		return module.set_stabilizers(new_state, src)
-	return FALSE
 

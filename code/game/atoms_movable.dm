@@ -74,22 +74,6 @@
 	var/inertia_moving = 0
 	var/inertia_next_move = 0
 	var/inertia_move_delay = 5
-	/// Set while Space Drift 2.0 (smooth newtonian loop) is active
-	var/datum/drift_handler/drift_handler
-	/// Last time we used this atom as a push-off point (anti double-count same tick)
-	var/last_pushoff = 0
-	/// Last time drift actually moved this atom — prevents spamming inputs to bypass move delay (see /datum/drift_handler)
-	var/last_drift_time = 0
-	/// Scalar for impulse math (higher = harder to nudge)
-	var/inertia_force_weight = 1
-	/// Species / vehicle modifiers
-	var/inertia_move_multiplier = 1
-	/// How much drift one voluntary step in weightlessness adds. See [/atom/movable/proc/register_thrust_source]
-	var/self_thrust_force = INERTIA_THRUST_FORCE_DEFAULT
-	/// Ceiling that self-thrust may accelerate the drift to. External impulses (explosions, recoil) ignore it.
-	var/self_thrust_cap = INERTIA_THRUST_CAP_UNAIDED
-	/// Lazy assoc of thrust source -> list(force, cap). Null while nothing but bare limbs is pushing.
-	var/list/thrust_sources
 	/// Things we can pass through while moving. If any of this matches the thing we're trying to pass's [pass_flags_self], then we can pass through.
 	var/pass_flags = NONE
 	/// If false makes CanPass call CanPassThrough on this type instead of using default behaviour
@@ -198,7 +182,6 @@
 	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
-	thrust_sources = null
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null
@@ -217,7 +200,6 @@
 
 	invisibility = INVISIBILITY_ABSTRACT
 
-	QDEL_NULL(drift_handler)
 	if(inertia_dir)
 		inertia_dir = 0
 		inertia_last_loc = null
@@ -421,11 +403,7 @@
 	pulling.set_pulledby(null)
 	var/mob/living/ex_pulled = pulling
 	setGrabState(GRAB_PASSIVE)
-	// Отпущенный в невесомости уносит наш вектор, а не тормозит до своего потолка тяги.
-	// Иначе разжатая рука читается как рывок: буксир идёт на крейсерской, буксируемый
-	// мгновенно проседает до скорости голого толчка.
 	pulling = null
-	hand_off_drift(ex_pulled)
 	if(isliving(ex_pulled))
 		var/mob/living/L = ex_pulled
 		L.update_mobility()// mob gets up if it was lyng down in a chokehold
@@ -451,7 +429,7 @@
 	if(A == loc && pulling.density)
 		return FALSE
 	var/move_dir = get_dir(pulling.loc, A)
-	if(!Process_Spacemove(move_dir, FALSE))
+	if(!Process_Spacemove(move_dir))
 		return FALSE
 	pulling.Move(get_step(pulling.loc, move_dir), move_dir, glide_size)
 	return TRUE
@@ -651,7 +629,7 @@
 /atom/movable/proc/on_enter_storage(datum/component/storage/concrete/S)
 	// SEND_SIGNAL(src, COMSIG_STORAGE_ENTERED, master_storage)
 
-/atom/movable/proc/get_spacemove_backup(moving_direction = 0, continuous_move = FALSE, include_floors = FALSE)
+/atom/movable/proc/get_spacemove_backup()
 	var/atom/movable/dense_object_backup
 	for(var/A in orange(1, get_turf(src)))
 		if(isarea(A))
