@@ -49,6 +49,43 @@
 	var/datum/action/innate/diona_nymph/steal_blood/steal_blood_action
 	var/static/list/edible_types = list(/obj/item/reagent_containers/food/snacks/grown)
 
+/obj/item/carry_nymph
+	name = "diona nymph"
+	desc = "Маленькая нимфа дионы, устроившаяся на руках."
+	icon = 'modular_bluemoon/diona/icons/mob/nymph.dmi'
+	icon_state = "nymph"
+	w_class = WEIGHT_CLASS_SMALL
+	var/mob/living/simple_animal/diona_nymph/nymph
+
+/obj/item/carry_nymph/Initialize(mapload)
+	. = ..()
+	if(nymph)
+		name = nymph.name
+
+/obj/item/carry_nymph/Destroy()
+	if(nymph && !QDELETED(nymph))
+		release(get_turf(src))
+	return ..()
+
+/obj/item/carry_nymph/dropped(mob/user, silent = FALSE)
+	. = ..()
+	if(!QDELETED(src) && nymph && !QDELETED(nymph))
+		release(get_turf(src))
+		qdel(src)
+
+/obj/item/carry_nymph/attack_self(mob/user)
+	release(get_turf(src))
+	user.dropItemToGround(src)
+	qdel(src)
+
+/obj/item/carry_nymph/proc/release(turf/T)
+	if(!nymph || QDELETED(nymph))
+		nymph = null
+		return
+	var/mob/living/simple_animal/diona_nymph/N = nymph
+	nymph = null
+	N.forceMove(T || get_turf(src))
+
 /mob/living/simple_animal/diona_nymph/Initialize(mapload)
 	. = ..()
 	if(name == initial(name))
@@ -63,6 +100,9 @@
 	steal_blood_action.Grant(src)
 
 /mob/living/simple_animal/diona_nymph/death(gibbed)
+	if(istype(loc, /obj/item/carry_nymph))
+		var/obj/item/carry_nymph/HI = loc
+		HI.release(get_turf(src))
 	playsound(get_turf(src), 'modular_bluemoon/diona/sound/nymphchirp.ogg', 40, TRUE)
 	..(gibbed)
 
@@ -122,13 +162,31 @@
 	qdel(plant)
 
 /mob/living/simple_animal/diona_nymph/attack_hand(mob/living/carbon/human/M)
-	if(M.a_intent == INTENT_HELP && stat != DEAD && isdiona(M))
-		do_merge(M)
-		return
+	if(M.a_intent == INTENT_HELP && stat != DEAD)
+		if(isdiona(M))
+			do_merge(M)
+			return
+		if(!M.get_active_held_item())
+			pickup_by(M)
+			return
 	..()
 
+/mob/living/simple_animal/diona_nymph/proc/pickup_by(mob/living/carbon/human/M)
+	if(M.incapacitated() || istype(loc, /obj/item/carry_nymph))
+		return
+	var/obj/item/carry_nymph/holder_item = new(get_turf(src))
+	holder_item.nymph = src
+	forceMove(holder_item)
+	holder_item.name = name
+	if(!M.put_in_hands(holder_item))
+		holder_item.release(get_turf(src))
+		qdel(holder_item)
+		return
+	to_chat(M, span_notice("Ты аккуратно берёшь [src] на руки."))
+	to_chat(src, span_notice("[M] бережно берёт тебя на руки."))
+
 /mob/living/simple_animal/diona_nymph/proc/merge()
-	if(stat != CONSCIOUS)
+	if(stat != CONSCIOUS || istype(loc, /obj/item/carry_nymph))
 		return FALSE
 	var/list/choices = list()
 	for(var/mob/living/carbon/human/H in view(1, src))
@@ -216,6 +274,9 @@
 /mob/living/simple_animal/diona_nymph/proc/evolve()
 	if(stat != CONSCIOUS)
 		return FALSE
+	if(istype(loc, /obj/item/carry_nymph))
+		var/obj/item/carry_nymph/HI = loc
+		HI.release(get_turf(HI))
 	if(length(donors) < NYMPH_EVOLVE_DONORS)
 		to_chat(src, span_warning("Тебе нужно больше крови, чтобы подняться на новую ступень сознания..."))
 		return FALSE
@@ -278,6 +339,13 @@
 /mob/living/simple_animal/diona_nymph/resist()
 	if(isdiona(loc))
 		split()
+		return
+	if(istype(loc, /obj/item/carry_nymph))
+		var/obj/item/carry_nymph/holder_item = loc
+		var/turf/T = get_turf(holder_item)
+		holder_item.release(T)
+		to_chat(src, span_notice("Ты спрыгиваешь с рук и оказываешься на земле."))
+		qdel(holder_item)
 		return
 	..()
 

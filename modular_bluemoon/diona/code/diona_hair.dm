@@ -1,7 +1,7 @@
 /datum/sprite_accessory/hair/diona
 	icon = 'modular_bluemoon/diona/icons/mob/hair_diona.dmi'
 	recommended_species = list(SPECIES_DIONA)
-	do_colouration = FALSE
+	do_colouration = TRUE
 
 /datum/sprite_accessory/hair/diona/bracket
 	name = "Bracket"

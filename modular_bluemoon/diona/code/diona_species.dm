@@ -8,6 +8,12 @@
 #define DIONA_REGROW_LIGHT 0.4
 #define DIONA_REGROW_DELAY 6 MINUTES
 #define DIONA_SHOE_SLOWDOWN 0.6
+/// Сколько кровотока в тик закрывает фотосинтез при свете и сытости
+#define DIONA_WOUND_SAP_FLOW 0.5
+/// Сколько повреждений плоти/заражения снимает за тик лечение соками
+#define DIONA_WOUND_SAP_FLESH 0.5
+/// Базовое число тиков "срастания" на единицу тяжести перелома
+#define DIONA_WOUND_MEND_BASE 60
 
 /datum/species/diona
 	name = "Diona"
@@ -51,7 +57,7 @@
 	species_language_holder = /datum/language_holder/diona
 	languagewhitelist = list("Rootsong")
 	species_category = SPECIES_CATEGORY_PLANT
-	speedmod = 1
+	speedmod = 1.25
 	inherent_traits = list(CAN_BE_OPERATED_WITHOUT_PAIN, TRAIT_NOBREATH, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE)
 
 	var/pod_grown = FALSE
@@ -66,14 +72,20 @@
 	C.faction |= "plants"
 	C.faction |= "vines"
 	C.AddElement(/datum/element/photosynthesis, -1, -1, -1, -1, 10, 0.5, 0.2, -1000)
+	var/datum/language_holder/LH = C.get_language_holder()
+	LH.grant_language(/datum/language/rootsong, SPOKEN_LANGUAGE|UNDERSTOOD_LANGUAGE, LANGUAGE_ATOM)
 	C.AddElement(/datum/element/diona_regrowth, DIONA_REGROW_DELAY)
+	C.grant_ability_from_source(list(INNATE_ABILITY_HUMANOID_CUSTOMIZATION), ABILITY_SOURCE_SPECIES)
 
 /datum/species/diona/on_species_loss(mob/living/carbon/C)
 	. = ..()
 	C.faction -= "plants"
 	C.faction -= "vines"
 	C.RemoveElement(/datum/element/photosynthesis, -1, -1, -1, -1, 10, 0.5, 0.2, -1000)
+	var/datum/language_holder/LH = C.get_language_holder()
+	LH.remove_language(/datum/language/rootsong, ALL, LANGUAGE_ATOM)
 	C.RemoveElement(/datum/element/diona_regrowth, DIONA_REGROW_DELAY)
+	C.remove_ability_from_source(list(INNATE_ABILITY_HUMANOID_CUSTOMIZATION), ABILITY_SOURCE_SPECIES)
 
 /datum/species/diona/on_hit(obj/item/projectile/P, mob/living/carbon/human/H)
 	switch(P.type)
@@ -183,6 +195,8 @@
 	var/regrow_delay = DIONA_REGROW_DELAY
 	var/list/next_regrowth
 	var/list/regen_started
+	/// Моб -> ассоц-лист (рана -> накопленные тики срастания перелома)
+	var/list/mend_progress
 
 /datum/element/diona_regrowth/Attach(datum/target, delay)
 	. = ..()
@@ -200,10 +214,12 @@
 	if(next_regrowth && LAZYLEN(next_regrowth))
 		next_regrowth -= target
 		regen_started -= target
+		mend_progress -= target
 		if(!length(next_regrowth))
 			STOP_PROCESSING(SSobj, src)
 			next_regrowth = null
 			regen_started = null
+			mend_progress = null
 	return ..()
 
 /datum/element/diona_regrowth/process()
@@ -211,16 +227,20 @@
 		if(QDELETED(AM) || !isliving(AM))
 			next_regrowth -= AM
 			regen_started -= AM
+			mend_progress -= AM
 			continue
 		var/mob/living/carbon/human/H = AM
 		if(H.stat == DEAD)
-			continue
-		if(world.time < next_regrowth[AM])
 			continue
 		var/light_amount = 0
 		if(isturf(H.loc))
 			var/turf/T = H.loc
 			light_amount = T.get_lumcount()
+		var/nourished = H.nutrition >= NUTRITION_LEVEL_WELL_FED || H.reagents?.has_reagent(/datum/reagent/water)
+		if(light_amount >= DIONA_REGROW_LIGHT && nourished)
+			mend_wounds(H)
+		if(world.time < next_regrowth[AM])
+			continue
 		var/fed = H.nutrition >= NUTRITION_LEVEL_WELL_FED
 		if(!fed && light_amount < DIONA_REGROW_LIGHT)
 			if(regen_started[AM])
@@ -245,7 +265,84 @@
 		regen_started[AM] = FALSE
 		next_regrowth[AM] = world.time + regrow_delay
 
+/**
+ * Медленное заживление ран соками: требуется и свет (DIONA_REGROW_LIGHT), и питание
+ * (сытость либо вода в организме). Порезы и колотые раны просто теряют кровоток -
+ * их собственный процесс довершает свёртывание и понижение тяжести. Ожоги теряют
+ * повреждения плоти и заражение. Переломы копят прогресс и срастаются сами,
+ * по тем же правилам неспешности, что и отращивание конечностей.
+ */
+/datum/element/diona_regrowth/proc/mend_wounds(mob/living/carbon/human/H)
+	var/list/finished_mends
+	for(var/obj/item/bodypart/BP as anything in H.bodyparts)
+		if(BP.is_robotic_limb())
+			continue
+		for(var/datum/wound/W as anything in BP.wounds)
+			if(istype(W, /datum/wound/slash))
+				var/datum/wound/slash/cut = W
+				if(cut.blood_flow <= 0)
+					continue
+				cut.blood_flow = max(cut.blood_flow - DIONA_WOUND_SAP_FLOW, 0)
+				BP.update_part_wound_overlay()
+				if(prob(10))
+					to_chat(H, span_notice("Соки стекаются к ране на [BP.ru_name_v], медленно затягивая её."))
+			else if(istype(W, /datum/wound/pierce))
+				var/datum/wound/pierce/puncture = W
+				if(puncture.blood_flow <= 0)
+					continue
+				puncture.blood_flow = max(puncture.blood_flow - DIONA_WOUND_SAP_FLOW, 0)
+				BP.update_part_wound_overlay()
+				if(prob(10))
+					to_chat(H, span_notice("Соки стекаются к ране на [BP.ru_name_v], медленно затягивая её."))
+			else if(istype(W, /datum/wound/burn))
+				var/datum/wound/burn/scorch = W
+				var/mended = FALSE
+				if(scorch.flesh_damage > 0)
+					scorch.flesh_damage = max(scorch.flesh_damage - DIONA_WOUND_SAP_FLESH, 0)
+					mended = TRUE
+				if(scorch.infestation > 0)
+					scorch.infestation = max(scorch.infestation - DIONA_WOUND_SAP_FLESH, 0)
+					mended = TRUE
+				if(mended && prob(10))
+					to_chat(H, span_notice("Обожжённая кора на [BP.ru_name_v] размягчается и нарастает заново."))
+			else if(istype(W, /datum/wound/blunt))
+				if(mend_bone(H, W, BP))
+					LAZYADD(finished_mends, W)
+	for(var/datum/wound/W as anything in finished_mends)
+		log_wound(H, W)
+		W.remove_wound()
+
+/**
+ * Срастание переломов/вывихов силами самого растения. Скорость привязана к
+ * регенерации конечностей: базовые DIONA_WOUND_MEND_BASE тиков SSobj (2 сек.)
+ * за каждую ступень тяжести, т.е. вывих ~4 минуты, тяжёлый перелом ~6,
+ * открытый ~8 минут при свете и сытости. Возвращает TRUE, когда рана полностью
+ * срослась и её можно снять (снятие - вне цикла по списку ран).
+ */
+/datum/element/diona_regrowth/proc/mend_bone(mob/living/carbon/human/H, datum/wound/blunt/W, obj/item/bodypart/BP)
+	var/list/my_mends = mend_progress[H]
+	if(!my_mends)
+		my_mends = list()
+		mend_progress[H] = my_mends
+	var/progress = my_mends[W] + 1
+	my_mends[W] = progress
+	if(progress == 1)
+		to_chat(H, span_notice("Нимфы в глубине твоей [BP.ru_name] принимаются стягивать разошедшиеся волокна, заполняя трещины свежей древесиной."))
+		return FALSE
+	if(progress < DIONA_WOUND_MEND_BASE * W.severity)
+		if(prob(5))
+			to_chat(H, span_notice("Повреждение в твоей [BP.ru_name] потрескивает, срастаясь под напором соков..."))
+		return FALSE
+	my_mends -= W
+	if(!length(my_mends))
+		mend_progress -= H
+	to_chat(H, span_green("Волокна твоей [BP.ru_name] сплелись заново — повреждение больше не грозит тебе!"))
+	return TRUE
+
 #undef RAD_EAT_AMOUNT
 #undef RAD_EAT_MESSAGE_PROB
 #undef NYMPH_DEATH_MIN
 #undef NYMPH_DEATH_MAX
+#undef DIONA_WOUND_SAP_FLOW
+#undef DIONA_WOUND_SAP_FLESH
+#undef DIONA_WOUND_MEND_BASE
