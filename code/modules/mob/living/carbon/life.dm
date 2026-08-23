@@ -146,6 +146,11 @@
 						failed_last_breath = FALSE
 						clear_alert("not_enough_oxy")
 						return FALSE
+					var/obj/item/clothing/mouth_cover = get_item_by_slot(ITEM_SLOT_MASK)
+					if(mouth_cover && (mouth_cover.flags_cover & MASKCOVERSMOUTH))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
 					breath = null // uh oh where'd the air go
 					check_breath(breath)
 					if(oxyloss <= OXYGEN_DAMAGE_CHOKING_THRESHOLD && !(stat >= UNCONSCIOUS || stat >= SOFT_CRIT))

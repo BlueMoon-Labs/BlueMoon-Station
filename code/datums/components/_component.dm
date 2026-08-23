@@ -124,6 +124,9 @@
 /datum/component/proc/_RemoveFromParent()
 	var/datum/P = parent
 	var/list/dc = P.datum_components
+	if(!dc)
+		UnregisterFromParent()
+		return
 	for(var/I in _GetInverseTypeList())
 		var/list/components_of_type = dc[I]
 		if(length(components_of_type))	//
@@ -450,6 +453,8 @@
 						old_comp.InheritComponent(arglist(arguments))
 					else
 						old_comp.InheritComponent(new_comp, TRUE)
+						qdel(new_comp)
+						new_comp = null
 				if(COMPONENT_DUPE_SELECTIVE)
 					var/list/arguments = raw_args.Copy()
 					arguments[1] = new_comp
