@@ -52,7 +52,7 @@
 	languagewhitelist = list("Rootsong")
 	species_category = SPECIES_CATEGORY_PLANT
 	speedmod = 1
-	inherent_traits = list(CAN_BE_OPERATED_WITHOUT_PAIN)
+	inherent_traits = list(CAN_BE_OPERATED_WITHOUT_PAIN, TRAIT_NOBREATH, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE)
 
 	var/pod_grown = FALSE
 
