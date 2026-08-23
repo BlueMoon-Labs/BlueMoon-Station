@@ -61,7 +61,7 @@
 
 	TEST_ASSERT_NULL(mc_state_previous_snapshot(MC_STATE_TEST_FILE), "Несуществующий файл сводки прочитался как улика")
 
-	TEST_ASSERT(Master.write_state_snapshot(MC_STATE_TEST_FILE), "Сводка не записалась на диск")
+	TEST_ASSERT(Master.write_state_snapshot(MC_STATE_TEST_FILE, force = TRUE), "Сводка не записалась на диск")
 	var/recovered = mc_state_previous_snapshot(MC_STATE_TEST_FILE)
 	TEST_ASSERT_NOTNULL(recovered, "Записанная сводка не прочиталась обратно")
 	TEST_ASSERT(findtext(recovered, "итерация"), "Прочитанная сводка не похожа на сводку: [recovered]")
@@ -87,10 +87,10 @@
 	var/cached_cause = GLOB.mc_state_death_cause
 	var/cached_frozen = Master.state_snapshot_frozen
 
-	Master.write_state_snapshot(MC_STATE_TEST_FILE)
+	Master.write_state_snapshot(MC_STATE_TEST_FILE, force = TRUE)
 	var/noted = mc_state_note_death("юнит-тест: кончилась память", MC_STATE_TEST_FILE)
 	var/marked_clean = mc_state_mark_clean("юнит-тест", MC_STATE_TEST_FILE)
-	var/wrote_while_frozen = Master.write_state_snapshot(MC_STATE_TEST_FILE)
+	var/wrote_while_frozen = Master.write_state_snapshot(MC_STATE_TEST_FILE, force = TRUE)
 	var/recovered = mc_state_previous_snapshot(MC_STATE_TEST_FILE)
 
 	// Глобалка и заморозка снимаются ДО проверок: упавший TEST_ASSERT возвращается из прока,
@@ -105,6 +105,32 @@
 	TEST_ASSERT_NOTNULL(recovered, "Чёрный ящик после аварийного обрыва прочитался как штатное завершение")
 	TEST_ASSERT(findtext(recovered, "итерация"), "Дописанная причина затёрла сам снимок: [recovered]")
 	TEST_ASSERT(findtext(recovered, "кончилась память"), "В чёрном ящике нет причины обрыва: [recovered]")
+
+/**
+ * В плотный тик чёрный ящик не пишет, но и записи не теряет.
+ *
+ * Подстройка интервала держит СРЕДНЮЮ цену в бюджете и ничего не может сделать с выбросом:
+ * сколько стоит один вызов rustg_file_write, столько он и стоит. В проде 23.08 отдельные
+ * записи стоили 121% тика (раунд 10087) и 80% (10091) - и оба раза в шторме логинов, то есть
+ * прибор добивал тик ровно тогда, когда миру было тяжелее всего.
+ */
+/datum/unit_test/mc_state_snapshot_skips_busy_tick/Run()
+	var/cached_skip_above = Master.state_snapshot_skip_above
+	fdel(MC_STATE_TEST_FILE)
+
+	// Планка ниже нуля означает "тик плотный всегда": занятость тика извне не задать, а
+	// поведение гарда проверить надо.
+	Master.state_snapshot_skip_above = -1
+	var/wrote_on_busy_tick = Master.write_state_snapshot(MC_STATE_TEST_FILE)
+	var/forced_on_busy_tick = Master.write_state_snapshot(MC_STATE_TEST_FILE, force = TRUE)
+	Master.state_snapshot_skip_above = cached_skip_above
+
+	var/recovered = mc_state_previous_snapshot(MC_STATE_TEST_FILE)
+	fdel(MC_STATE_TEST_FILE)
+
+	TEST_ASSERT(!wrote_on_busy_tick, "Чёрный ящик полез писать в плотный тик")
+	TEST_ASSERT(forced_on_busy_tick, "force не пробил гард по занятости тика - путь Failsafe и смерти мира остался бы без снимка")
+	TEST_ASSERT_NOTNULL(recovered, "Принудительная запись не легла на диск")
 
 /**
  * Цена снимка и подстройка частоты под неё.
@@ -128,7 +154,9 @@
 	fdel(MC_STATE_TEST_FILE)
 	var/write_started_at = REALTIMEOFDAY
 	for(var/sample in 1 to MC_STATE_WRITE_SAMPLES)
-		Master.write_state_snapshot(MC_STATE_TEST_FILE)
+		// force: тест меряет цену записи, а гард по занятости тика на сотне записей подряд
+		// выкинул бы почти все замеры - мерить стало бы нечего.
+		Master.write_state_snapshot(MC_STATE_TEST_FILE, force = TRUE)
 	var/write_cost = REALTIMEOFDAY - write_started_at
 	fdel(MC_STATE_TEST_FILE)
 	log_world("MC_STATE: запись сводки - [write_cost] дс на [MC_STATE_WRITE_SAMPLES] записей, замер подсистемы [round(Master.state_snapshot_cost, 0.01)]% тика, интервал [Master.state_snapshot_interval] тик(ов)")

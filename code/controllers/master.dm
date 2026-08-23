@@ -301,7 +301,9 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		// Recover(), раздавая подсистемам штрафы за перезапуски МК, и подсовывать ей
 		// подсистему, которая ещё ни разу не запускалась, нельзя.
 		initializing_subsystem = SS
-		write_state_snapshot()
+		// force: инициализация идёт вообще без бюджета тика, и гард по занятости выкинул бы
+		// ровно те пометки, ради которых запись здесь и стоит.
+		write_state_snapshot(force = TRUE)
 		SS.Initialize(REALTIMEOFDAY)
 		CHECK_TICK
 	initializing_subsystem = null
@@ -509,8 +511,12 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		// подбирает сам чёрный ящик под цену записи, см. adjust_state_snapshot_interval().
 		// max(1, ...) не про адаптацию, а про варедит: интервал 0 - это деление на ноль в
 		// главной петле МК, то есть рантайм каждый тик и мёртвый мастер.
-		if(!(iteration % max(1, state_snapshot_interval)))
-			write_state_snapshot()
+		// Гард по занятости тика внутри записи откладывает её, а не пропускает: счётчик
+		// следующей записи двигается только на удавшейся, иначе один плотный тик стоил бы
+		// целого интервала слепоты вместо одного прохода петли.
+		if(iteration >= state_snapshot_next_iteration)
+			if(write_state_snapshot())
+				state_snapshot_next_iteration = iteration + max(1, state_snapshot_interval)
 
 		if (queue_head)
 			if (RunQueue() <= 0)

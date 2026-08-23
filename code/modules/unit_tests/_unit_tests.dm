@@ -253,6 +253,7 @@
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
 #include "hud_screen_lifecycle.dm"
+#include "icon_alloc_guard.dm"
 #include "keybindings_idle_move_delay.dm"
 #include "mob_population_perf.dm"
 #include "mob_update_cascade.dm"
