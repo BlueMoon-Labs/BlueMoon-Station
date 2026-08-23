@@ -225,12 +225,14 @@
 /datum/manipulator_task/cargo/dropoff_base/drop/do_dropoff(obj/machinery/big_manipulator/manipulator)
 	manipulator.try_drop_thing(src)
 
-/// Finds where exactly on this point things should go: an open closet, a storage item, or the turf itself.
 /datum/manipulator_task/cargo/dropoff_base/drop/proc/find_drop_endpoint()
 	if(!is_valid())
 		return null
 	for(var/atom/movable/thing as anything in interaction_turf.contents)
 		if(iscloset(thing))
+			return thing
+	for(var/atom/movable/thing as anything in interaction_turf.contents)
+		if(istype(thing, /obj/machinery/smartfridge))
 			return thing
 	for(var/atom/movable/thing as anything in interaction_turf.contents)
 		if(isitem(thing) && !isnull(thing.GetComponent(/datum/component/storage)))

@@ -118,12 +118,20 @@
 
 	var/atom/drop_target = drop_endpoint
 
-	// Try to insert into a closet.
+
 	if(iscloset(drop_target))
 		var/obj/structure/closet/target_closet = drop_target
 		if(target_closet.insert(actual_held_object))
 			finish_manipulation()
 			return TRUE
+
+	// Try to insert into a smartfridge.
+	else if(istype(drop_target, /obj/machinery/smartfridge))
+		var/obj/machinery/smartfridge/target_fridge = drop_target
+		if(isitem(actual_held_object) && target_fridge.accept_check(actual_held_object))
+			if(target_fridge.load(actual_held_object))
+				finish_manipulation()
+				return TRUE
 
 	// Try to insert into a storage item (backpacks, bags and so on).
 	else if(isitem(actual_held_object))
