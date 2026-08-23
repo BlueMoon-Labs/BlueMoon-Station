@@ -99,7 +99,7 @@
 
 /// Числовой режим витрины хранилища заводил свой item_holder мимо пула на каждый
 /// тип предмета при КАЖДОЙ перерисовке, а `_recycle_ui_objects` складывал
-/// показанные экраны в `pooled_item_holders`, откуда числовой режим их никогда не
+/// показанные экраны в `GLOB.storage_item_holder_pool`, откуда числовой режим их никогда не
 /// доставал. Пул рос до конца раунда: перепись прода давала +219 и +170
 /// /atom/movable/screen/storage/item_holder за интервал.
 /datum/unit_test/storage_numerical_display_reuses_pool
@@ -128,8 +128,10 @@
 		first_holders += holder
 	TEST_ASSERT_EQUAL(length(first_holders), 2, "Числовая витрина отдала [length(first_holders)] экранов вместо двух (по одному на тип)")
 
+	//Пул общий на все хранилища и без сна его никто, кроме нас, не двигает
+	var/pool_before = length(GLOB.storage_item_holder_pool)
 	storage._recycle_ui_objects(first_pass)
-	TEST_ASSERT_EQUAL(length(storage.pooled_item_holders), 2, "Переработка не вернула экраны предметов в пул")
+	TEST_ASSERT_EQUAL(length(GLOB.storage_item_holder_pool), pool_before + 2, "Переработка не вернула экраны предметов в пул")
 
 	var/list/second_pass = storage.orient2hud_legacy(viewer, 7)
 	var/list/fresh = list()

@@ -12,7 +12,7 @@
 	//Экран берётся из пула хранилища и туда же вернётся. Собственный new
 	//заводил новый /atom/movable/screen/storage/item_holder на каждый тип
 	//предмета при КАЖДОЙ перерисовке числового режима, а _recycle_ui_objects
-	//складывал показанные экраны в pooled_item_holders, откуда числовой режим
+	//складывал показанные экраны в GLOB.storage_item_holder_pool, откуда числовой режим
 	//их никогда не доставал: пул рос до конца раунда (перепись прода: +219 и
 	//+170 item_holder за интервал).
 	sample_object = parent._acquire_item_holder(null, sample)
