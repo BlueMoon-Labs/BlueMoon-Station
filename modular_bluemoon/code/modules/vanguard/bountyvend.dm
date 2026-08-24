@@ -207,7 +207,7 @@
 
 /obj/machinery/bountyvend/proc/RedeemVoucher(obj/item/vanguard_voucher_class/voucher, mob/redeemer)
 	var/items = list(	"Demolition Expert" = image(icon = 'modular_bluemoon/icons/obj/guns/energy.dmi', icon_state = "flashgun"),
-						"Field Surgeon" = image(icon = 'icons/obj/mining.dmi', icon_state = "resonator"),
+						"Field Surgeon" = image(icon = 'icons/obj/stack_objects.dmi', icon_state = "cms"),
 						"Combatant" = image(icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi', icon_state = "sauer"))
 
 	var/selection = show_radial_menu(redeemer, src, items, require_near = TRUE, tooltips = TRUE)
@@ -216,22 +216,41 @@
 	var/drop_location = drop_location()
 	switch(selection)
 		if("Demolition Expert")
-			new /obj/item/storage/belt/mining/vendor(drop_location)
-		if("Field Surgeon")
+			new /obj/item/storage/secure/briefcase/vanguard/lasgun(drop_location)
+			new /obj/item/storage/belt/military/assault/demolition(drop_location)
 			new /obj/item/extinguisher/mini(drop_location)
-			new /obj/item/resonator(drop_location)
+			new /obj/item/storage/box/red/demolition(drop_location)
+		if("Field Surgeon")
+			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
+			new /obj/item/storage/belt/military/assault/surgeon(drop_location)
+			new /obj/item/melee/tomahawk(drop_location)
+			new /obj/item/storage/box/blue/surgeon(drop_location)
 		if("Combatant")
-			new /mob/living/simple_animal/hostile/mining_drone(drop_location)
-			new /obj/item/weldingtool/hugetank(drop_location)
-			new /obj/item/clothing/head/welding(drop_location)
-			new /obj/item/borg/upgrade/modkit/minebot_passthrough(drop_location)
+			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
+			new /obj/item/shield/riot/pointman(drop_location)
+			new /obj/item/storage/box/orange/combatant(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
 	qdel(voucher)
 
 /obj/machinery/bountyvend/proc/RedeemSVoucher(/obj/item/vanguard_voucher_suit, mob/redeemer)
-	var/items = list(	"Exo-suit" = image(icon = 'icons/obj/clothing/suits.dmi', icon_state = "exo"),
-						"HEVA suit" = image(icon = 'icons/obj/clothing/suits.dmi', icon_state = "heva"))
+	var/items = list(	"EVA" = image(icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi', icon_state = "vanguard_eva"),
+						"Combined suit" = image(icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi', icon_state = "combined"))
+
+	var/selection = show_radial_menu(redeemer, src, items, require_near = TRUE, tooltips = TRUE)
+	if(!selection || !Adjacent(redeemer) || QDELETED(voucher) || voucher.loc != redeemer)
+		return
+	var/drop_location = drop_location()
+	switch(selection)
+		if("EVA")
+			new /obj/item/clothing/suit/space/vanguard(drop_location)
+			new /obj/item/clothing/head/helmet/space/vanguard(drop_location)
+		if("Combined suit")
+			new /obj/item/clothing/suit/armor/vanguard(drop_location)
+			new /obj/item/clothing/head/helmet/vanguard(drop_location)
+	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
+	SSblackbox.record_feedback("tally", "suit_voucher_redeemed", 1, selection)
+	qdel(voucher)
 
 // ============================================
 // Ваучеры снаряжения

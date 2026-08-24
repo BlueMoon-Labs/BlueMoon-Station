@@ -53,7 +53,7 @@
 
 /obj/item/gun/ballistic/automatic/pistol/sigsauer
 	name = "P320"
-	desc = " пистолет SIG Sauer P320, он же рабочая лошадка эксадронами Авангарда. Оснащён встроенным фонариком "
+	desc = " пистолет SIG Sauer P320, он же рабочая лошадка эксадронов Авангарда. Оснащён встроенным фонариком "
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "sauer"
 	w_class = WEIGHT_CLASS_SMALL
@@ -109,9 +109,9 @@
 	name = "pointman shield"
 	desc = "A shield fit for those that want to sprint headfirst into the unknown! Cumbersome as hell."
 	icon_state = "riot"
-	icon = 'modular_skyrat/modules/exp_corps/icons/riot.dmi'
-	lefthand_file = 'modular_skyrat/modules/exp_corps/icons/riot_left.dmi'
-	righthand_file = 'modular_skyrat/modules/exp_corps/icons/riot_right.dmi'
+	icon = 'modular_bluemoon/icons/mob/vanguard/riot.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/vanguard/riot_left.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/vanguard/riot_right.dmi'
 	force = 14
 	throwforce = 5
 	throw_speed = 1
@@ -125,7 +125,7 @@
 	name = "Vanguard magnetic tomahawk"
 	desc = "A somewhat dulled axe blade upon a short fibremetal handle. \
 		A powerful electromagnet in the grip ensures this weapon always finds its way back to the thrower's hand when activated."
-	icon = 'modular_skyrat/modules/exp_corps/icons/tomahawk.dmi'
+	icon = 'modular_bluemoon/icons/mob/vanguard/tomahawk.dmi'
 	icon_state = "tomahawk"
 	lefthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_l.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_r.dmi'
@@ -282,6 +282,60 @@
 	if(!QDELETED(src) && thrown_by && !QDELETED(thrown_by))
 		deductcharge(return_cost, FALSE)
 		throw_at(thrown_by, throw_range + 2, throw_speed, null, TRUE)
+
+// тут же оставлю брифы с оружием и инструментами экспы
+
+/obj/item/storage/secure/briefcase/vanguard/lasgun
+	name = "\improper Energy gun kit"
+	desc = "A storage case for a Vanguard energy Handgun. Lasers flying everywhere !"
+
+/obj/item/storage/secure/briefcase/vanguard/lasgun/PopulateContents()
+	new /obj/item/gun/ballistic/automatic/laser/vanguard(src)
+	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
+	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
+	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
+
+/obj/item/storage/secure/briefcase/vanguard/p320
+	name = "\improper P320 gun kit"
+	desc = "A storage case for a Vanguard P320 sevice pistol. One bullet per bastard !"
+
+/obj/item/storage/secure/briefcase/vanguard/p320/PopulateContents()
+	new /obj/item/gun/ballistic/automatic/pistol/sigsauer(src)
+	new /obj/item/ammo_box/magazine/sig(src)
+	new /obj/item/ammo_box/magazine/sig(src)
+	new /obj/item/ammo_box/magazine/sig(src)
+
+/obj/item/storage/box/red/demolition
+	name = "Breaching & Reinforcment"
+
+/obj/item/storage/box/red/demolition/PopulateContents()
+	new /obj/item/reagent_containers/glass/bottle/thermite(src)
+	new /obj/item/reagent_containers/glass/bottle/thermite(src)
+	new /obj/item/reagent_containers/glass/bottle/thermite(src)
+	new /obj/item/stack/sheet/metal/twenty(src)
+	new /obj/item/stack/sheet/glass/twenty(src)
+
+/obj/item/storage/box/blue/surgeon
+	name = "Field surgery suply"
+
+/obj/item/storage/box/blue/surgeon/PopulateContents()
+	new /obj/item/reagent_containers/glass/bottle/morphine(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
+	new /obj/item/bonesetter(src)
+	new /obj/item/stack/medical/bone_gel(src)
+	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
+	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
+
+/obj/item/storage/box/orange/combatant
+	name = "Stay alive kit"
+
+/obj/item/storage/box/orange/combatant/PopulateContents()
+	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
+	new /obj/item/reagent_containers/hypospray/medipen/salacid(src)
+	new /obj/item/reagent_containers/hypospray/medipen/salacid(src)
+	new /obj/item/reagent_containers/hypospray/medipen/oxandrolone(src)
+	new /obj/item/reagent_containers/hypospray/medipen/oxandrolone(src)
+	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
 
 #undef MAGNETIC_TOMAHAWK_CHARGE_LENIENCY
 #undef MAGNETIC_TOMAHAWK_DEPLETION_RATE
