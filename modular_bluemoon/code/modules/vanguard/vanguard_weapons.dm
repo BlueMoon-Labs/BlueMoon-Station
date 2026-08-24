@@ -173,7 +173,7 @@
 	copper_top.use(min(chrgdeductamt, copper_top.charge), explode)
 	if(QDELETED(src))
 		return FALSE
-	if(turned_on && (!copper_top || !copper_top.charge || copper_top.charge < (hitcost * MAGNETIC_TOMAHAWK_CHARGE_LENIENCY)
+	if(turned_on && (!copper_top || !copper_top.charge || copper_top.charge < (hitcost * MAGNETIC_TOMAHAWK_CHARGE_LENIENCY)))
 		switch_status(FALSE)
 
 /obj/item/melee/tomahawk/proc/switch_status(new_status = FALSE, silent = FALSE)
