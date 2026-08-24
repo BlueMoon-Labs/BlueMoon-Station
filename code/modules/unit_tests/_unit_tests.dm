@@ -186,6 +186,7 @@
 #include "say_input_encoding.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
+#include "shared_list_diet.dm"
 #include "shuttle_move_atmos_exposure.dm"
 #include "signal_teardown.dm"
 // #include "siunit.dm"

@@ -7,8 +7,12 @@
 	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	anchored = TRUE
 	rad_flags = RAD_NO_CONTAMINATE
-	// Initial color is the fully-lit white matrix so the first animate() interpolates correctly
-	color = LIGHTING_BASE_MATRIX
+	// color ставится в New() ПОСЛЕ ..(), а не типовым дефолтом. Типовой дефолт цвета
+	// проходит через /atom/Initialize -> `if(color) add_atom_colour(...)`, а тот заводит
+	// каждому инстансу личный atom_colours на четыре слота с личной копией этой самой
+	// двадцатиэлементной матрицы внутри. Читать atom_colours у объекта освещения некому:
+	// update() пишет color напрямую, мимо системы приоритетов. При четверти миллиона
+	// объектов на мир это 344 Б на штуку впустую. У tg по той же причине color = null.
 
 	///whether we are already in the SSlighting.objects_queue list
 	var/needs_update = FALSE
@@ -44,6 +48,10 @@
 	// Обходы contents от служебного атома огорожены точечно: onShuttleMove() no-op,
 	// скип в фотозахвате, блэклист радиации. Каноническое создание - new(turf).
 	..()
+	// Начальная матрица - полностью освещённая белая, чтобы первый animate() интерполировал
+	// от неё, а не от пустого цвета. Ставится здесь, а не типовым дефолтом: см. комментарий
+	// у объявления типа.
+	color = LIGHTING_BASE_MATRIX
 	if(!isturf(source))
 		qdel(src, force=TRUE)
 		stack_trace("a lighting object was assigned to [source], a non turf! ")

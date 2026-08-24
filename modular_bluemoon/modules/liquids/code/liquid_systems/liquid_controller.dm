@@ -84,6 +84,16 @@ SUBSYSTEM_DEF(liquids)
 		if(evaporation_counter >= REQUIRED_EVAPORATION_PROCESSES)
 			for(var/t in evaporation_queue.Copy())
 				var/turf/T = t
+				// Тот же гард, что и в блоке огня десятью строками ниже. Без него запись,
+				// у которой жидкость уже исчезла, роняла рантайм ПРЯМО В fire(): кадр
+				// подсистемы обрывался, evaporation_counter не сбрасывался в ноль, run_type
+				// не переводился дальше - и стадии турфов, групп и иммутаблов переставали
+				// выполняться вовсе, до конца раунда. На проде это стоило 52% раунда 10101.
+				// Мёртвую запись снимаем здесь же, иначе очередь растёт и упирается в неё
+				// на каждом проходе.
+				if(!T?.liquids)
+					evaporation_queue -= t
+					continue
 				if(prob(EVAPORATION_CHANCE))
 					T.liquids.process_evaporation()
 				if(MC_TICK_CHECK)

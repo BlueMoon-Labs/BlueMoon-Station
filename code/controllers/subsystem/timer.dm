@@ -295,6 +295,21 @@ SUBSYSTEM_DEF(timer)
 		if (!bucket_list[practical_offset])
 			// Empty the bucket, check if anything in the secondary queue should be shifted to this bucket
 			bucket_list[practical_offset++] = null
+			// Дальше пустые бакеты проматываются ПАЧКОЙ, а не по одному за прогон.
+			//
+			// Хвостовой MC_TICK_CHECK прерывает проход после первого же бакета, как только
+			// тик исчерпан, а под нагрузкой МК зовёт подсистему заметно реже раза в тик:
+			// sleep_delta растёт, и одна итерация петли приходится на десятки тиков. Колесо
+			// в этих условиях идёт медленнее реального времени и, отстав однажды, не
+			// догоняет уже никогда. Замер на multiz_debug в CI: мир прошёл 1934 дс, курсор
+			// колеса - 30 дс, полтора процента скорости. Дальше отставание только росло
+			// (659 -> 1765 -> 2564 дс), TIMER_FITS_BUCKETS переставал пускать в колесо всё
+			// новое, second_queue пухла (73 -> 115), и ни один обычный таймер за раунд уже
+			// не срабатывал: тесты, ждущие отложку, выпадали по потолку ожидания.
+			//
+			// Пустой бакет работы не несёт - чтение слота и инкремент. Уступать ради них
+			// целый прогон подсистемы незачем, а вот возможность догнать мир это возвращает.
+			practical_offset = skip_empty_buckets(bucket_list, practical_offset, min(BUCKET_LEN, round((world.time - head_offset) / world.tick_lag) + 1))
 			var/i = 0
 			for (i in 1 to length(second_queue))
 				timer = second_queue[i]
@@ -329,6 +344,20 @@ SUBSYSTEM_DEF(timer)
 				second_queue.Cut(1, i+1)
 		if (MC_TICK_CHECK)
 			break
+
+/**
+ * Проматывает курсор через подряд идущие ПУСТЫЕ бакеты, чьё время уже наступило.
+ *
+ * Возвращает позицию первого бакета, ради которого стоит остановиться: непустого или
+ * ещё не наступившего. Отдельным проком - чтобы поведение проверялось юнит-тестом на
+ * синтетическом колесе, без правки боевого SStimer.
+ *
+ * last_due - последний наступивший бакет, уже прижатый к длине колеса вызывающим.
+ */
+/datum/controller/subsystem/timer/proc/skip_empty_buckets(list/bucket_list, position, last_due)
+	while (position <= last_due && !bucket_list[position])
+		position++
+	return position
 
 /**
  * Generates a string with details about the timed event for debugging purposes
