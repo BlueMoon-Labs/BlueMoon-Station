@@ -937,9 +937,7 @@
 	if(istype(user))
 		switch(currentState)
 			if (0) //default speed
-				user.vtec = initial(user.vtec)
-				user.vtec_expire = 0
-				user.vtec_drain = 0
+				user.disable_vtec()
 			if (1) //slightly faster than running, 20 seconds per activation
 				user.vtec = initial(user.vtec) - 0.75 //cyborg sprinting is roughly -2. don't forget we can't sprint with vtec.  //BLUEMOON EDIT Снижение модификатора скорости со стандартных -1,25 до -0,75 для второго режима VTEC
 				user.vtec_expire = world.time + VTEC_BOOST_DURATION
