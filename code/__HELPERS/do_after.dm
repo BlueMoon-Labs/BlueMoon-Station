@@ -29,6 +29,8 @@
 		if (progress)
 			if(!QDELETED(progbar))
 				progbar.update(world.time - starttime + resume_time)
+		if(!QDELETED(cog))
+			cog.update()
 
 		if(drifting && !user.inertia_dir)
 			drifting = FALSE
@@ -70,7 +72,7 @@
 		checked_health["health"] = health
 	return ..()
 
-/proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS, progress_loc, cog_icon = 'icons/effects/progressbar.dmi', cog_iconstate = "cog")
+/proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS, progress_loc, cog_icon = 'icons/effects/progressbar.dmi', cog_iconstate = "cog", show_cog = TRUE)
 	if(!user)
 		return FALSE
 	var/atom/target_loc = null
@@ -90,7 +92,7 @@
 	var/holding = user.get_active_held_item()
 
 	var/datum/cogbar/cog
-	if (progress && delay >= 1 SECONDS)
+	if (progress && show_cog && delay >= 1 SECONDS)
 		cog = new(user, cog_icon, cog_iconstate)
 
 	delay *= user.cached_multiplicative_actions_slowdown
@@ -107,6 +109,8 @@
 		if (progress)
 			if(!QDELETED(progbar))
 				progbar.update(world.time - starttime + resume_time)
+		if(!QDELETED(cog))
+			cog.update()
 
 		if(drifting && !user.inertia_dir)
 			drifting = FALSE
@@ -185,6 +189,8 @@
 
 		if(!QDELETED(progbar))
 			progbar.update(world.time - starttime)
+		if(!QDELETED(cog))
+			cog.update()
 		if(QDELETED(user) || !length(targets))
 			. = FALSE
 			break

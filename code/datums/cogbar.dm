@@ -1,5 +1,6 @@
 #define COGBAR_ANIMATION_TIME (0.5 SECONDS)
 #define COGBAR_PIXEL_OFFSET_Y 32
+#define COGBAR_HIDE_ALPHA 25
 
 /// Ported from tgstation: represents that the user is busy doing something
 /datum/cogbar
@@ -11,6 +12,8 @@
 	var/image/blank
 	var/cogicon
 	var/cogiconstate
+	/// TRUE while the cog is hidden because the user is invisible
+	var/hidden = FALSE
 
 
 /datum/cogbar/New(mob/user, cogicon = 'icons/effects/progressbar.dmi', cogiconstate = "cog")
@@ -45,7 +48,9 @@
 /datum/cogbar/proc/add_cog_to_user()
 	cog = SSvis_overlays.add_vis_overlay(user, cogicon, cogiconstate, ABOVE_MOB_LAYER, HIGH_GAME_PLANE, user.dir, alpha = 0, add_appearance_flags = APPEARANCE_UI_IGNORE_ALPHA, unique = TRUE)
 	cog.pixel_y = COGBAR_PIXEL_OFFSET_Y
-	animate(cog, alpha = user.alpha, time = COGBAR_ANIMATION_TIME)
+	cog.invisibility = user.invisibility
+	hidden = user.alpha < COGBAR_HIDE_ALPHA
+	animate(cog, alpha = hidden ? 0 : user.alpha, time = COGBAR_ANIMATION_TIME)
 
 	if(isnull(user_client))
 		return
@@ -56,6 +61,21 @@
 	blank.override = TRUE
 
 	user_client.images += blank
+
+
+/// Keeps the cog in sync with the user's stealth: same invisibility tier and hidden while the user is transparent
+/datum/cogbar/proc/update()
+	if(isnull(cog) || isnull(user))
+		return
+
+	cog.invisibility = user.invisibility
+
+	var/should_hide = user.alpha < COGBAR_HIDE_ALPHA
+	if(should_hide == hidden)
+		return
+
+	hidden = should_hide
+	animate(cog, alpha = should_hide ? 0 : user.alpha, time = COGBAR_ANIMATION_TIME, flags = ANIMATION_PARALLEL)
 
 
 /datum/cogbar/proc/remove()
