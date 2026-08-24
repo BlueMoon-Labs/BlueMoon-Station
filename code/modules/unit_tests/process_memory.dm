@@ -858,6 +858,12 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_EQUAL(memory_endgame_step(3506, ceiling, 5.7, 85 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
 		"пока запаса больше срока, раунд трогать нельзя")
 
+	// 104-я минута 10105: 3706 МБ (91% потолка), но получасовое окно показывает 9.7 МБ/мин
+	// против 5.7 средних по раунду, и прогноз даёт ровно 40 минут. Планка 0.85 или 0.90
+	// срезала бы здесь полтора часа живого раунда - именно поэтому она 0.93.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3706, ceiling, 9.7, 104 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"всплеск скорости роста на 91% потолка не должен обрезать раунд")
+
 	// 160-я минута 10105: 3892 МБ (95%), рост 5.7 - расчётного запаса 35 минут.
 	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 5.7, 160 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_EVAC,
 		"при 95% потолка и 35 расчётных минутах обязан вызываться шаттл")
@@ -871,13 +877,13 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 0, 160 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
 		"без замеренной скорости роста срок посчитать нельзя, ступени быть не должно")
 
-	// Бэкстоп: до потолка 100 МБ. Работает даже когда шаттл уже вызван и даже когда
+	// Бэкстоп: до потолка 94 МБ. Работает даже когда шаттл уже вызван и даже когда
 	// автоэвакуация выключена конфигом - иначе выключенный флаг возвращал бы молчаливую смерть.
-	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, FALSE, TRUE), MEMORY_ENDGAME_FORCE_END,
-		"на остатке 100 МБ раунд обязан завершаться принудительно даже с вызванным шаттлом")
-	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, FALSE, FALSE), MEMORY_ENDGAME_FORCE_END,
+	TEST_ASSERT_EQUAL(memory_endgame_step(4000, ceiling, 5.7, late_round, lead, TRUE, FALSE, TRUE), MEMORY_ENDGAME_FORCE_END,
+		"на остатке 94 МБ раунд обязан завершаться принудительно даже с вызванным шаттлом")
+	TEST_ASSERT_EQUAL(memory_endgame_step(4000, ceiling, 5.7, late_round, lead, TRUE, FALSE, FALSE), MEMORY_ENDGAME_FORCE_END,
 		"выключенная автоэвакуация не отменяет бэкстоп")
-	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, TRUE, TRUE), MEMORY_ENDGAME_NONE,
+	TEST_ASSERT_EQUAL(memory_endgame_step(4000, ceiling, 5.7, late_round, lead, TRUE, TRUE, TRUE), MEMORY_ENDGAME_NONE,
 		"бэкстоп одноразовый")
 
 	// Выключенный флаг: эвакуации нет, пока бэкстоп не достигнут.
