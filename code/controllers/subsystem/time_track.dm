@@ -504,6 +504,9 @@ SUBSYSTEM_DEF(time_track)
 	// Админский порог проверяется до базового уровня: если мир стартовал уже под потолком,
 	// ждать, пока раунд отстоится, незачем - его может не стать раньше.
 	check_memory_admin_warning(vsz, host_memory)
+	// Ступени конца раунда по памяти идут следом за предупреждением и по тем же цифрам:
+	// сообщение админам без действия раунд 10105 не спасло.
+	check_memory_pressure_endgame(vsz)
 
 	if(memory_baseline_due())
 		take_memory_baseline(vsz, host_memory)

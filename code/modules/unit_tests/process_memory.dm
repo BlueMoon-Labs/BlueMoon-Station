@@ -834,3 +834,57 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	filter_holder.filters += filter(type = "outline", size = 1)
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(filter_holder.filters), 2,
 		"список фильтров обязан считаться копией, а не перебором ключей")
+
+/**
+ * Ступени конца раунда по давлению памяти.
+ *
+ * Цифры в кейсах взяты из настоящих раундов 24.08.2026: потолок 4094, раунд 10105 стартовал
+ * с 2306 МБ и упёрся в 4094.1 на 210-й минуте при росте 5.7 МБ/мин. Ошибка порога здесь
+ * стоит либо целого раунда (сработали рано), либо молчаливой смерти процесса (не сработали).
+ */
+/datum/unit_test/memory_endgame_thresholds
+
+/datum/unit_test/memory_endgame_thresholds/Run()
+	var/ceiling = 4094
+	var/lead = 40
+	var/late_round = 200 MINUTES
+
+	// Старт раунда: 2306 МБ - это 56% потолка. Даже с абсурдной скоростью роста ступени быть
+	// не должно, иначе автоэвакуация срывается на роундстарте каждый раунд.
+	TEST_ASSERT_EQUAL(memory_endgame_step(2306, ceiling, 200, 5 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"на старте раунда ступени быть не должно ни при какой скорости роста")
+
+	// Середина 10105: 3506 МБ (86% потолка), рост 5.7 - до потолка ещё сто минут.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3506, ceiling, 5.7, 85 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"пока запаса больше срока, раунд трогать нельзя")
+
+	// 160-я минута 10105: 3892 МБ (95%), рост 5.7 - расчётного запаса 35 минут.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 5.7, 160 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_EVAC,
+		"при 95% потолка и 35 расчётных минутах обязан вызываться шаттл")
+
+	// Тот же замер, но шаттл уже вызван - повторного вызова быть не должно.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 5.7, 160 MINUTES, lead, TRUE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"ступень эвакуации одноразовая")
+
+	// Высокая занятость без роста: срока нет, ступени нет. Иначе плоская память у потолка
+	// означала бы вечную эвакуацию.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 0, 160 MINUTES, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"без замеренной скорости роста срок посчитать нельзя, ступени быть не должно")
+
+	// Бэкстоп: до потолка 100 МБ. Работает даже когда шаттл уже вызван и даже когда
+	// автоэвакуация выключена конфигом - иначе выключенный флаг возвращал бы молчаливую смерть.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, FALSE, TRUE), MEMORY_ENDGAME_FORCE_END,
+		"на остатке 100 МБ раунд обязан завершаться принудительно даже с вызванным шаттлом")
+	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, FALSE, FALSE), MEMORY_ENDGAME_FORCE_END,
+		"выключенная автоэвакуация не отменяет бэкстоп")
+	TEST_ASSERT_EQUAL(memory_endgame_step(3994, ceiling, 5.7, late_round, lead, TRUE, TRUE, TRUE), MEMORY_ENDGAME_NONE,
+		"бэкстоп одноразовый")
+
+	// Выключенный флаг: эвакуации нет, пока бэкстоп не достигнут.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3892, ceiling, 5.7, 160 MINUTES, lead, FALSE, FALSE, FALSE), MEMORY_ENDGAME_NONE,
+		"выключенная автоэвакуация обязана отключать именно эвакуацию")
+
+	// Потолок не замерен - решать не по чему.
+	TEST_ASSERT_EQUAL(memory_endgame_step(3892, PROCESS_ADDRESS_CEILING_UNKNOWN, 5.7, late_round, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
+		"без замеренного потолка ступеней быть не может")
+
