@@ -102,6 +102,8 @@
 #define ui_internal "EAST-1:28,CENTER+1:21" // RIP, although nobody will remember this, unsmart coders have used this for other stuff. DO NOT REMOVE UNLESS RENAMING OR REPLACING.
 #define ui_mood "EAST-1:28,CENTER:21"
 #define ui_stamina "EAST-1:28,CENTER-3:14"
+#define ui_coolant_display "EAST,CENTER+2:10"
+#define ui_hunger_thirst "EAST-1:28,CENTER+1:24"
 // #define ui_spacesuit "EAST-1:28,CENTER-4:14"
 
 //Pop-up inventory
@@ -133,7 +135,7 @@
 #define ui_drone_head "CENTER-3:14,SOUTH:5"
 
 //Cyborgs
-#define ui_borg_health "EAST-1:28,CENTER-1:15"
+#define ui_borg_health "EAST-1:25,CENTER-1:20"
 #define ui_borg_pull "EAST-2:26,SOUTH+1:7"
 #define ui_borg_radio "EAST-1:28,SOUTH+1:7"
 #define ui_borg_intents "EAST-2:26,SOUTH:5"

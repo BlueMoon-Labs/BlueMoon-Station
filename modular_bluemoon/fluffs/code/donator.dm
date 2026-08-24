@@ -2559,7 +2559,7 @@
 	name = "VP78 Tactic ModKit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/vp78tactic
-	ckeywhitelist = list("rockymed", "hartty", "leony24")
+	ckeywhitelist = list("rockymed", "hartty", "leony24", "dragon9090")
 
 /datum/gear/donator/bm/kumikoshouko_case
 	name = "Kumiko Weapon Case"
