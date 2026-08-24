@@ -82557,10 +82557,6 @@
 "wvs" = (
 /turf/closed/wall,
 /area/security/brig)
-"wvt" = (
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/space/basic,
-/area/security/checkpoint/escape)
 "wvX" = (
 /obj/structure/table/reinforced,
 /obj/machinery/light,
@@ -138115,7 +138111,7 @@ aaa
 aaa
 aaa
 aaa
-wvt
+vxM
 vxM
 iCb
 vxM
