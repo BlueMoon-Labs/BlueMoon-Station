@@ -12137,7 +12137,7 @@
 	req_one_access_txt = "152";
 	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
 	},
-/obj/item/inteq/uplink/radio/nuclear,
+/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "IC" = (
@@ -13905,12 +13905,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
-"NW" = (
-/obj/item/gun/ballistic/automatic/pistol/deagle/gold{
-	pixel_y = 17
-	},
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "NX" = (
 /obj/machinery/light{
 	dir = 8;
@@ -42258,7 +42252,7 @@ Al
 jT
 KH
 mH
-NW
+mH
 Jb
 nX
 pR
