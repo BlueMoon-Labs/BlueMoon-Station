@@ -179,6 +179,11 @@
 	icon_state = "jackboots_sec"
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 50) // BLUEMOON ADD no armor = applying bare wound bonus. These boots now are between CBRN and MOPP
 
+/obj/item/clothing/shoes/jackboots/black
+	name = "dark jackboots"
+	desc = "Nanotrasen-issue Security combat boots for combat scenarios or combat situations. These are fully black."
+	icon_state = "blackjack"
+
 /obj/item/clothing/shoes/jackboots/alliance
 	name = "Alliance Jackboots"
 	desc = "Берцовые Ботинки для представителей Вселенского Союза."
@@ -300,6 +305,8 @@
 	name = "jump boots"
 	desc = "A specialized pair of combat boots with a built-in propulsion system for rapid foward movement."
 	icon_state = "jetboots"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 	resistance_flags = FIRE_PROOF
 	cold_protection = FEET|LEGS
 	min_cold_protection_temperature = SHOES_MIN_TEMP_PROTECT
@@ -317,6 +324,14 @@
 	var/recharging_rate = 60 //default 6 seconds between each dash
 	var/recharging_time = 0 //time until next dash
 	var/jumping = FALSE //are we mid-jump?
+
+/// Награда кристаллизатора за нитрий. Более быстрый цикл ускорителя отличает её
+/// от шахтёрских прыжковых ботинок, но дальность рывка остаётся прежней.
+/obj/item/clothing/shoes/bhop/crystallizer
+	name = "nitrium impulse boots"
+	desc = "Прыжковые ботинки с нитриумным ускорителем. Они совершают такой же рывок, как шахтёрская модель, но восстанавливают импульс за четыре с половиной секунды вместо шести."
+	icon_state = "jetboots_nitrium"
+	recharging_rate = 45
 
 /obj/item/clothing/shoes/bhop/ui_action_click(mob/user, action)
 	if(!isliving(user))

@@ -32,6 +32,8 @@
 	var/turf/target
 	var/oldloc = null
 	var/box_latches = "single_latch"
+	///Do not immediately replace one unreachable autonomous target with its neighbour.
+	var/next_path_attempt = 0
 
 	var/toolbox = /obj/item/storage/toolbox/mechanical
 	/// Цвет тулбокса для более явного хранения после инициализации
@@ -129,6 +131,7 @@
 	..()
 	target = null
 	oldloc = null
+	next_path_attempt = 0
 	ignore_list = list()
 	anchored = FALSE
 	update_icon()
@@ -291,6 +294,7 @@
 	var/list/cached_view
 
 	//Normal scanning procedure. We have tiles loaded, are not emagged.
+	var/autonomous_pathing_ready = world.time >= next_path_attempt
 	if(!target && emagged < 2)
 		if(targetdirection != null) //The bot is in line mode.
 			var/turf/T = get_step(src, targetdirection)
@@ -300,24 +304,24 @@
 			if(isfloorturf(T)) //Check for floor
 				target = T
 
-		if(!target)
+		if(!target && autonomous_pathing_ready)
 			cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 			process_type = HULL_BREACH //Ensures the floorbot does not try to "fix" space areas or shuttle docking zones.
 			target = scan(/turf/open/space, cached_view = cached_view)
 
-		if(!target && placetiles) //Finds a floor without a tile and gives it one.
+		if(!target && placetiles && autonomous_pathing_ready) //Finds a floor without a tile and gives it one.
 			process_type = PLACE_TILE //The target must be the floor and not a tile. The floor must not already have a floortile.
 			target = scan(/turf/open/floor, cached_view = cached_view)
 
-		if(!target && fixfloors) //Repairs damaged floors and tiles.
+		if(!target && fixfloors && autonomous_pathing_ready) //Repairs damaged floors and tiles.
 			process_type = FIX_TILE
 			target = scan(/turf/open/floor, cached_view = cached_view)
 
-		if(!target && replacetiles && specialtiles > 0) //Replace a floor tile with custom tile
+		if(!target && replacetiles && specialtiles > 0 && autonomous_pathing_ready) //Replace a floor tile with custom tile
 			process_type = REPLACE_TILE //The target must be a tile. The floor must already have a floortile.
 			target = scan(/turf/open/floor, cached_view = cached_view)
 
-	if(!target && emagged == 2) //We are emagged! Time to rip up the floors!
+	if(!target && emagged == 2 && autonomous_pathing_ready) //We are emagged! Time to rip up the floors!
 		process_type = TILE_EMAG
 		target = scan(/turf/open/floor, cached_view = cached_view)
 
@@ -351,17 +355,24 @@
 			path = list()
 			return
 		if(path.len == 0)
-			if(!isturf(target))
-				var/turf/TL = get_turf(target)
-				path = get_path_to(src, TL, BOT_TARGET_PATH_LIMIT, id=access_card,simulated_only = 0)
-			else
-				path = get_path_to(src, target, BOT_TARGET_PATH_LIMIT, id=access_card,simulated_only = 0)
+			var/turf/path_target = isturf(target) ? target : get_turf(target)
+			path = get_path_to(src, path_target, BOT_TARGET_PATH_LIMIT, id=access_card, simulated_only = 0)
 
-			if(!bot_move(target))
+			// Arm the retry cooldown from the JPS result before bot_move()/set_path(null)
+			// or ignore-list bookkeeping: a runtime there used to leave next_path_attempt at 0.
+			if(!length(path))
+				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
 				add_to_ignore(target)
 				target = null
 				mode = BOT_IDLE
 				return
+			if(!bot_move(target))
+				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
+				add_to_ignore(target)
+				target = null
+				mode = BOT_IDLE
+				return
+			next_path_attempt = 0
 		else if(!bot_move(target))
 			target = null
 			mode = BOT_IDLE

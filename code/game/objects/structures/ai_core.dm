@@ -9,7 +9,7 @@ GLOBAL_LIST_EMPTY(ai_cores)
 	density = TRUE
 	anchored = FALSE
 	name = "\improper AI core"
-	icon = 'icons/mob/ai.dmi'
+	icon = 'icons/mob/AI.dmi'
 	icon_state = "0"
 	desc = "The framework for an artificial intelligence core."
 	max_integrity = 500

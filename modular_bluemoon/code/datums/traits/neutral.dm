@@ -124,12 +124,6 @@
 	give_item(/obj/item/clothing/accessory/badge_syndi, quirk_holder)
 	give_item(/obj/item/card_sticker/syndicate/loadout, quirk_holder, list("backpack" = ITEM_SLOT_BACKPACK))
 
-/datum/quirk/lewdjob
-	name = "Секс это работа"
-	desc = "Ничего личного, просто бизнес. В моменты интимной близости у вас над головой не будут появляться сердечки."
-	flavor_quirk = TRUE
-	mob_trait = TRAIT_LEWD_JOB
-
 /datum/quirk/common_pregnancy
 	name = "Обычная беременность"
 	desc = "Ваша беременность протекает как у нормального млекопитающего и вы не откладываете яйца! Залетев, вы не скоро родите ребёнка!"

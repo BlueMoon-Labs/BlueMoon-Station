@@ -6,6 +6,14 @@
 	dirt_buildup_allowed = FALSE
 
 	initial_temperature = TCMB
+	// Собственная температура турфа тоже обязана быть космической. Обычным турфам
+	// её выставляет /turf/Initialize() из initial_temperature, но у космоса свой
+	// Initialize без вызова родителя - значение по умолчанию (T20C) оставалось
+	// навсегда. Пока /turf/return_temperature() был пустой заглушкой эпохи
+	// auxmos, этого никто не видел; с живым проком тёплый вар начали читать
+	// get_temperature() мобов (isspaceturf-ветка) и теплообмен - "космос тёплый",
+	// слаймы и фауна перестали замерзать в открытом космосе.
+	temperature = TCMB
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	wave_explosion_multiply = EXPLOSION_DAMPEN_SPACE
@@ -101,6 +109,9 @@
 /turf/open/space/AfterChange()
 	..()
 	atmos_overlay_types = null
+	// Оверлей снят в обход update_visuals(), значит и его ключ мемо больше не
+	// описывает состояние турфа - иначе гейт вернёт "уже посчитано" на пустоте.
+	atmos_visual_rev = -1
 
 /turf/open/space/Assimilate_Air()
 	return
@@ -228,11 +239,7 @@
 
 		//now we're on the new z_level, proceed the space drifting
 		stoplag()//Let a diagonal move finish, if necessary
-		// Плавный дрейф переживает смену z сам: smooth_move берёт z из самого движимого.
-		// Голый вызов доливал по единице силы на каждом переходе, и путешествие через
-		// несколько уровней само по себе разгоняло. Он нужен только легаси-пути без обработчика.
-		if(!A.drift_handler)
-			A.newtonian_move(A.inertia_dir)
+		A.newtonian_move(A.inertia_dir)
 
 
 /turf/open/space/Exited(atom/movable/AM, atom/OldLoc)

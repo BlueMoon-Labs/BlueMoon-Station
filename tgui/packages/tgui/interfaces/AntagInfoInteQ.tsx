@@ -20,7 +20,7 @@ const goalstyle = {
   fontWeight: 'bold',
 };
 
-type Objective = {
+export type Objective = {
   count: number;
   name: string;
   explanation: string;
@@ -40,7 +40,7 @@ type Info = {
   objectives: Objective[];
 };
 
-const ObjectivePrintout = (props) => {
+export const ObjectivePrintout = (props) => {
   const { data } = useBackend<Info>();
   const {
     objectives,

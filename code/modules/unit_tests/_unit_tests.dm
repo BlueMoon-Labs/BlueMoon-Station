@@ -71,16 +71,41 @@
 
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
+#include "airalarm_mode_cutoff.dm"
+#include "airalarm_thresholds.dm"
+#include "atmos_engineering_fixes.dm"
+#include "atmos_exposure_consumers.dm"
+#include "atmos_frozen_vapor_pin.dm"
 #include "atmos_gas_propagation.dm"
+#include "atmos_high_pressure_pile.dm"
 #include "atmos_native.dm"
 #include "atmos_performance.dm"
+#include "atmos_superconduction.dm"
 #include "atmos_planetary_churn.dm"
+#include "atmos_saturation_valve.dm"
+#include "atmos_sleeping_edges.dm"
+#include "atmos_fire_gate.dm"
+#include "atmos_speed_lever.dm"
+#include "atmos_vector_reductions.dm"
+#include "atmos_he_pipe_sleep.dm"
+#include "atmos_idle_churn.dm"
+#include "canister_valve.dm"
+#include "atmos_zone_walk.dm"
+#include "atmos_sprite_states.dm"
+#include "atmos_pipe_paint.dm"
+#include "atmos_pipenet_rebuild.dm"
+#include "atmos_gas_balance.dm"
+#include "atmos_handbook.dm"
+#include "firelock_alarm.dm"
+#include "rpd_fixes.dm"
+#include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
 // #include "bloody_footprints.dm"
 // #include "breath.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
+#include "chem_dispenser_payload.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"
@@ -97,11 +122,15 @@
 #include "event_ports.dm"
 #include "families.dm"
 // #include "food_edibility_check.dm"
+#include "gas_mixture_parser.dm"
 #include "gc_rewrite.dm"
+#include "healium_nerf.dm"
 #include "harddel_round_9813.dm"
 #include "harddel_round_9824.dm"
 #include "harddel_round_9827.dm"
 #include "harddel_round_9832.dm"
+#include "harddel_round_9860.dm"
+#include "holofan_charge.dm"
 #include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
@@ -152,6 +181,8 @@
 #include "say_input_encoding.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
+#include "shuttle_move_atmos_exposure.dm"
+#include "signal_teardown.dm"
 // #include "siunit.dm"
 #include "sort_tim.dm"
 #include "space_cleaner_gentle.dm"
@@ -159,6 +190,7 @@
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
 #include "spritesheet_asset_snapshot.dm"
+#include "spritesheet_batched.dm"
 #include "startup_bootstrap.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
@@ -198,6 +230,7 @@
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "bugreports_2026_07.dm"
+#include "bugreports_2026_08.dm"
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
 #include "director_beat_cost.dm"
@@ -209,6 +242,7 @@
 #include "manifest_photo_deferred.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
+#include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
 #include "keybindings_idle_move_delay.dm"
@@ -235,22 +269,29 @@
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
+#include "parallax_profiles.dm"
 #include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
+#include "perf_pass_non_atmos.dm"
 #include "ping_measurement.dm"
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
+#include "preferences_save_deferral.dm"
 #include "image_leak_audit.dm"
 #include "radiation_contamination.dm"
 #include "rtt_window.dm"
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
-#include "space_drift.dm"
-#include "space_flight_modes.dm"
+#include "simple_animal_icon_states.dm"
+#include "astro_sensor.dm"
+#include "space_weather_effects.dm"
+#include "space_weather_graveyard.dm"
+#include "space_weather_phases.dm"
 #include "spirit_regressions.dm"
 #include "statpanel_listedturf.dm"
+#include "status_tab_suit_readouts.dm"
 #include "ssmobs_optimization.dm"
 #include "hostile_ai_baseline.dm"
 #include "ai_behavior_scenarios.dm"
@@ -261,6 +302,7 @@
 #include "ai_body_block.dm"
 #include "ai_boss_selector.dm"
 #include "ai_chokepoint_ambush.dm"
+#include "ai_dead_pawn.dm"
 #include "ai_legacy_clusters.dm"
 #include "ai_legacy_finish.dm"
 #include "ai_movement_hybrid.dm"
@@ -271,13 +313,18 @@
 #include "ai_tactics.dm"
 #include "ai_targeting.dm"
 #include "simple_animal_environment_gate.dm"
+#include "singularity_containment.dm"
 #include "slime_ai.dm"
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
+#include "sign_types.dm"
+#include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
+#include "tile_pipe_placement.dm"
 #include "update_icon_short_circuit.dm"
+#include "vent_label_numbering.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH
@@ -310,15 +357,28 @@ TEST_FOCUS(/datum/unit_test/ai_hybrid_direct_to_jps_switch)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_direct_retries_mob_blocker)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_congestion_retargets_relevant_enemy)
 TEST_FOCUS(/datum/unit_test/ai_tactics_safe_firing_lane)
+TEST_FOCUS(/datum/unit_test/ai_ranged_seated_corpse_blocks_lane)
 TEST_FOCUS(/datum/unit_test/ai_ranged_diagonal_wall_lane)
 TEST_FOCUS(/datum/unit_test/ai_nanotrasen_rechecks_friendly_fire)
 TEST_FOCUS(/datum/unit_test/ai_ranged_rechecks_line_of_sight)
+TEST_FOCUS(/datum/unit_test/ai_buckled_pawn_requests_unbuckle_on_cooldown)
+TEST_FOCUS(/datum/unit_test/ai_body_block_clears_seated_corpse)
+TEST_FOCUS(/datum/unit_test/ai_body_block_barricade_attempt_budget)
+TEST_FOCUS(/datum/unit_test/ai_targets_occupied_mecha)
+TEST_FOCUS(/datum/unit_test/ai_ignores_empty_mecha)
 TEST_FOCUS(/datum/unit_test/ai_inteq_space_pathing_capability)
 TEST_FOCUS(/datum/unit_test/ai_hybrid_controller_path_budget)
 TEST_FOCUS(/datum/unit_test/ai_pirate_tactical_atmosphere_gate)
 TEST_FOCUS(/datum/unit_test/ai_unreachable_route_releases_target)
 TEST_FOCUS(/datum/unit_test/ai_watcher_can_pursue_across_lava)
 TEST_FOCUS(/datum/unit_test/patient_machine_idle_sleep)
+TEST_FOCUS(/datum/unit_test/cleanbot_combined_scan_keeps_category_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_combined_scan_keeps_adjacent_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_grid_ground_target_lifecycle)
+TEST_FOCUS(/datum/unit_test/cleanbot_small_candidate_filter_preserves_view_los)
+TEST_FOCUS(/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
+TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
 
 #undef TEST_ASSERT

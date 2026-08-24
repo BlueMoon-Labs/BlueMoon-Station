@@ -36,6 +36,7 @@
 	var/list/datum/lighting_corner/_corners_buf
 
 	var/applied = FALSE // Whether we have applied our light yet or not.
+	var/logged_corner_desync = FALSE // Рассинхрон угла и таблицы затухания логируем один раз на источник, а не на каждый угол
 	var/applied_power = 0 // The light_power used to compute current effect_str values (for deriving raw falloff)
 	var/cone_signal_registered = FALSE // Whether COMSIG_ATOM_DIR_CHANGE is registered on top_atom.
 
@@ -382,6 +383,18 @@
 
 /datum/light_source/proc/recalc_corner(var/datum/lighting_corner/C)
 	SETUP_CORNERS_CACHE(src)
+	// Угол приходит из lc_* соседнего турфа, а таблица затухания построена вокруг
+	// pixel_turf. Если турфу подсунули чужие углы (так делало копирование ареа,
+	// см. copy_template_vars), смещение вылетает за таблицу и LUM_FALLOFF роняет
+	// "list index out of bounds" на каждый источник у каждого перекрашенного турфа.
+	// Индексы те же, что в LUM_FALLOFF: round() в DM - это floor.
+	var/_check_x = round(C.x - _pixel_turf_x + _range_offset)
+	var/_check_y = round(C.y - _pixel_turf_y + _range_offset)
+	if(_check_x < 1 || _check_x > _sheet_size || _check_y < 1 || _check_y > _sheet_size)
+		if(!logged_corner_desync)
+			logged_corner_desync = TRUE
+			stack_trace("recalc_corner: угол ([C.x],[C.y],z[C.z]) вне таблицы источника [source_atom || "?"] ([source_atom?.type]) в ([_pixel_turf_x],[_pixel_turf_y],z[pixel_turf?.z]), range=[light_range], sheet=[_sheet_size]")
+		return
 	LAZYINITLIST(effect_str)
 	if (effect_str[C])
 		REMOVE_CORNER(C)
@@ -623,6 +636,11 @@
 	var/datum/lighting_corner/C
 	var/thing
 
+	var/datum/lighting_corner/corner_tr
+	var/datum/lighting_corner/corner_br
+	var/datum/lighting_corner/corner_bl
+	var/datum/lighting_corner/corner_tl
+
 	if (source_turf)
 		var/oldlum = source_turf.luminosity
 		source_turf.luminosity = CEILING(light_range, 1)
@@ -630,12 +648,27 @@
 		for(var/turf/T in _view_result)
 			if((!IS_DYNAMIC_LIGHTING(T) && !T.light_sources) || T.has_opaque_atom )
 				continue
-			if(!T.lighting_corners_initialised)
+			corner_tr = T.lc_topright
+			corner_br = T.lc_bottomright
+			corner_bl = T.lc_bottomleft
+			corner_tl = T.lc_topleft
+			// Флаг инициализации не гарантирует четырёх углов: хард-делит обнуляет
+			// ссылку на месте, и турф остаётся "инициализированным" с дырой. Дыра
+			// уезжала в corners ключом null, а дальше падала на C.active. Тот же
+			// расклад уже обрабатывают руками в SSlighting (см. lighting.dm),
+			// здесь его чиним - generate_missing_corners() досоздаёт недостающие.
+			if(!T.lighting_corners_initialised || !corner_tr || !corner_br || !corner_bl || !corner_tl)
 				T.generate_missing_corners()
-			corners[T.lc_topright] = 0
-			corners[T.lc_bottomright] = 0
-			corners[T.lc_bottomleft] = 0
-			corners[T.lc_topleft] = 0
+				corner_tr = T.lc_topright
+				corner_br = T.lc_bottomright
+				corner_bl = T.lc_bottomleft
+				corner_tl = T.lc_topleft
+				if(!corner_tr || !corner_br || !corner_bl || !corner_tl)
+					continue
+			corners[corner_tr] = 0
+			corners[corner_br] = 0
+			corners[corner_bl] = 0
+			corners[corner_tl] = 0
 		source_turf.luminosity = oldlum
 
 	SETUP_CORNERS_CACHE(src)

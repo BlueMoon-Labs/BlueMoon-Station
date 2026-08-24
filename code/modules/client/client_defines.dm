@@ -157,6 +157,9 @@
 	var/last_macro_fix = 0
 	/// Keys currently held
 	var/list/keys_held = list()
+	/// Last initial/repeated movement KeyDown. Native +REP and TGUI repeats lease held movement;
+	/// if focus loss eats KeyUp and the repeats stop, SSinput releases only movement keys.
+	var/last_movement_key_repeat
 	/// These next two vars are to apply movement for keypresses and releases made while move delayed.
 	/// Because discarding that input makes the game less responsive.
  	/// On next move, add this dir to the move that would otherwise be done

@@ -39,7 +39,7 @@
 	var/list/gas_max = list(
 		GAS_CO2 = 30, // Yes it's an arbitrary value who cares?
 		GAS_METHYL_BROMIDE = 1,
-		GAS_PLASMA = MOLES_GAS_VISIBLE
+		GAS_PLASMA = (MOLES_GAS_VISIBLE * 2)
 	)
 	var/list/gas_damage = list(
 		"default" = list(
@@ -274,10 +274,10 @@
 
 		var/SA_pp = PP(breath, GAS_NITROUS)
 		if(SA_pp > SA_para_min) // Enough to make us stunned for a bit
-			H.Unconscious(60) // 60 gives them one second to wake up and run away a bit!
-			if(SA_pp > SA_sleep_min) // Enough to make us sleep as well
-				H.Sleeping(max(H.AmountSleeping() + 100, 400)) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400)) - сервак лагает и под анестезией просыпаются
-		else if(SA_pp > 0.01)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
+			H.Unconscious(6 SECONDS) // 60 gives them one second to wake up and run away a bit!
+			if(SA_pp > SA_sleep_min && H.AmountSleeping() < 84 SECONDS) // Enough to make us sleep as well
+				H.AdjustSleeping(17 SECONDS) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400))
+		else if(SA_pp > 0.25)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
 			if(prob(20))
 				H.emote(pick("giggle", "laugh"))
 				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "chemical_euphoria", /datum/mood_event/chemical_euphoria)
@@ -384,14 +384,14 @@
 				H.reagents.add_reagent(/datum/reagent/zauker, max(0, 1 - existing))
 			breath.adjust_moles(GAS_ZAUKER, -gas_breathed)
 
-	// Healium — лечит брутал и берн при дыхании (не breath_reagent: иначе газ вычитается до этого блока и лечение не срабатывает)
+	// Healium — кладём реагент в кровь (как заукер выше), а не лечим напрямую:
+	// иначе облако газа лечило бесплатно и мимо любого баланса реагента
 		gas_breathed = breath.get_moles(GAS_HEALIUM)
 		if (gas_breathed > 0.0001)
 			var/healium_pp = PP(breath, GAS_HEALIUM)
-			var/heal_amount = clamp(round(healium_pp * 6), 3, 18)
-			H.adjustBruteLoss(-heal_amount)
-			H.adjustFireLoss(-heal_amount)
-			H.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+			if(healium_pp > gas_stimulation_min)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/healium)
+				H.reagents.add_reagent(/datum/reagent/healium, max(0, 1 - existing))
 			breath.adjust_moles(GAS_HEALIUM, -gas_breathed)
 
 	// Helium — high-pitched voice

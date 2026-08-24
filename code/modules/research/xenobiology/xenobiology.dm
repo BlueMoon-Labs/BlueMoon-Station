@@ -460,7 +460,10 @@
 				return
 			to_chat(user, "<span class='notice'>You feel your skin harden and become more resistant.</span>")
 			species.armor += 25
-			addtimer(CALLBACK(src, PROC_REF(reset_armor), species), 1200)
+			// BLUEMOON ADD START - BRC второй бакет для адамантьевого экстракта
+			user.brc_mitigation += 30
+			// BLUEMOON ADD END
+			addtimer(CALLBACK(src, PROC_REF(reset_armor), species, user), 1200)
 			return 450
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -471,9 +474,13 @@
 				return
 			to_chat(user, "<span class='notice'>You stop feeding [src], and your body returns to its slimelike state.</span>")
 
-/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species)
+/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species, mob/living/M)
 	if(istype(species))
 		species.armor -= 25
+	// BLUEMOON ADD START
+	if(isliving(M) && !QDELETED(M))
+		M.brc_mitigation = max(0, M.brc_mitigation - 30)
+	// BLUEMOON ADD END
 
 /obj/item/slime_extract/bluespace
 	name = "bluespace slime extract"

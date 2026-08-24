@@ -20,6 +20,24 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 	/obj/item/gun/energy = "ammo_type"
 	)))
 
+//Дополнительный запрет для копирования ВАРОВ ТУРФА: в отличие от DuplicateObject
+//турф не создаётся заново, а перекрашивается через ChangeTurf, и слепое присваивание
+//утаскивало на приёмник ещё и состояние освещения шаблона:
+//lc_* - углы шаблона с его координатами. Источник света рядом с копией брал их из
+//соседнего турфа и лез в таблицу затухания по смещению в десятки тайлов
+//("list index out of bounds" в LUM_FALLOFF, 166 рантаймов за один ресет тандердома).
+//lighting_object/lighting_corners_initialised - настоящий оверлей приёмника терялся
+//без qdel и уходил в харддел, а флаг инициализации врал про наличие четырёх углов.
+//light/light_sources - источники, принадлежащие атомам шаблона.
+//has_opaque_atom/shadow_weight_sum/cached_lumcount/dynamic_lumcount/luminosity -
+//производные величины, их пересчитывает сам ChangeTurf.
+GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
+	"light", "light_sources", "lighting_object", "lighting_corners_initialised",
+	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
+	"has_opaque_atom", "shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
+	"luminosity"
+	))
+
 /proc/DuplicateObject(atom/original, perfectcopy = TRUE, sameloc = FALSE, atom/newloc = null, nerf = FALSE, holoitem=FALSE)
 	RETURN_TYPE(original.type)
 	if(!original)
@@ -144,13 +162,7 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 			copiedobjs += SM
 			copiedobjs += SM.GetAllContents()
 
-		for(var/V in T.vars - GLOB.duplicate_forbidden_vars)
-			if(V == "air")
-				var/turf/open/O1 = B
-				var/turf/open/O2 = T
-				O1.air.copy_from(O2.return_air())
-				continue
-			B.vars[V] = T.vars[V]
+		B.copy_template_vars(T)
 		toupdate += B
 
 	if(toupdate.len)
@@ -160,3 +172,75 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 	rebuild_duplicated_proximity_monitors(copiedobjs)
 
 	return copiedobjs
+
+//Ссылка, которую копия не имеет права унаследовать: атом или обычный датум
+//остаётся хозяйством шаблона. Картинка и аппиранс - это значение внешнего вида,
+//а не владение, их копия получить обязана, иначе с турфа слетят оверлеи
+#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value) && !isappearance(value))
+
+/**
+ * Копия списка шаблона без чужих ссылок: датум выкидывается и из ключа, и из
+ * значения, вложенные списки чистятся тем же правилом.
+ *
+ * Итерация for(in) даёт ключи списка - позиционный доступ source[i] тут не годится:
+ * он возвращает ЗНАЧЕНИЕ слота. Прошлый вариант принимал значения за ключи, поэтому
+ * элемент-список (atom_colours хранит пары цвет+приоритет вложенными списками)
+ * уезжал в source[ключ] как индекс - голодек падал "bad index" на загрузке Beach.
+ * Ассоциативные пары при этом разваливались: настоящий ключ через source[i] вообще
+ * не достать, typecacheof-словари превращались в кучу элементов TRUE.
+ */
+/proc/copy_template_list(list/source)
+	var/list/scrubbed = list()
+	for(var/key in source)
+		if(islist(key)) //вложенный список - обычный элемент без ассоциации; списком как индексом значение не спросить
+			scrubbed += list(copy_template_list(key))
+			continue
+		if(IS_BORROWED_TEMPLATE_REF(key))
+			continue //чужой датум-ключ уносит с собой всю пару
+		//число и null ключами ассоциации не бывают, а source[число] - это доступ по индексу
+		var/value = (isnum(key) || isnull(key)) ? null : source[key]
+		if(IS_BORROWED_TEMPLATE_REF(value))
+			continue //датум в значении выкидывает пару целиком, огрызок-ключ не нужен
+		if(islist(value))
+			value = copy_template_list(value)
+		if(isnull(value))
+			//простой элемент; += съел бы его молча, если это null
+			scrubbed.len++
+			scrubbed[scrubbed.len] = key
+		else //ассоциированная пара встаёт одним слотом и в нужном месте порядка
+			scrubbed[key] = value
+	return scrubbed
+
+/**
+ * Переносит вары турфа-шаблона на этот турф (голодек, ресет тандердома).
+ *
+ * Правила те же, что у DuplicateObject: список копируется, а не шарится (иначе
+ * геймплей в копии мутировал бы списки шаблона), ссылка на датум не переносится
+ * вовсе - она сломается, как только оригинал удалят, и неважно, лежит она в варе
+ * или внутри списка. Сверх этого отсекается лайтинг-состояние,
+ * см. GLOB.turf_copy_forbidden_vars.
+ */
+/turf/proc/copy_template_vars(turf/template)
+	if(!template)
+		return
+	for(var/varname in template.vars - GLOB.duplicate_forbidden_vars - GLOB.turf_copy_forbidden_vars)
+		if(varname == "air")
+			var/turf/open/open_copy = src
+			var/turf/open/open_template = template
+			if(istype(open_copy) && istype(open_template))
+				open_copy.air.copy_from(open_template.return_air())
+			continue
+		var/template_value = template.vars[varname]
+		if(islist(template_value))
+			vars[varname] = copy_template_list(template_value)
+			continue
+		if(IS_BORROWED_TEMPLATE_REF(template_value))
+			continue
+		vars[varname] = template_value
+	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
+	//заводим/гасим собственный по свежим light_range/light_power/light_on.
+	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов
+	if(light || light_range)
+		update_light()
+
+#undef IS_BORROWED_TEMPLATE_REF

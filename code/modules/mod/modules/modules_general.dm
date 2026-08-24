@@ -157,21 +157,16 @@
 	return ..()
 
 /// Потолок, до которого этот двигатель разгоняет свободный полёт. Вровень с шаговой скоростью носителя в этом же костюме.
-/obj/item/mod/module/jetpack/proc/thrust_cap()
-	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
-
 /obj/item/mod/module/jetpack/on_activation()
 	. = ..()
 	if(!.)
 		return
 	ion_trail.start()
 	RegisterSignal(mod.wearer, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death), override = TRUE)
-	mod.wearer.register_thrust_source(src, cap = thrust_cap())
 	if(full_speed)
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	else
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	mod.wearer.update_flight_alert()
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
@@ -181,10 +176,8 @@
 	if(!mod?.wearer)
 		return
 	UnregisterSignal(mod.wearer, COMSIG_LIVING_DEATH)
-	mod.wearer.unregister_thrust_source(src)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
-	mod.wearer.update_flight_alert()
 
 /**
  * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только
@@ -211,16 +204,13 @@
 		if("stabilizers")
 			set_stabilizers(text2num(value), mod?.wearer)
 
-/// Единая точка переключения режима: её же дёргает клик по алерту полёта.
+/// Единая точка переключения режима: её же дёргает конфиг MOD-костюма.
 /obj/item/mod/module/jetpack/proc/set_stabilizers(new_state, mob/user)
 	if(stabilizers == new_state)
 		return FALSE
 	stabilizers = new_state
 	if(user)
 		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
-	// Алерт висит на носителе, а не на том, кто щёлкнул тумблером: режим мог поменять кто угодно
-	// через конфиг-меню костюма, и надпись обязана догнать состояние в любом случае.
-	mod?.wearer?.update_flight_alert()
 	return TRUE
 
 /**

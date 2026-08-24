@@ -152,7 +152,20 @@
 /mob/living/simple_animal/slime/regenerate_icons()
 	cut_overlays()
 	var/icon_text = "[colour] [is_adult ? "adult" : "baby"] slime"
-	icon_dead = "[icon_text] dead"
+	//Цвет и возраст меняются на лету, а icon_living оставался дефолтным "grey baby
+	//slime" - воскрешённый фиолетовый взрослый слайм рисовался серым детёнышем
+	icon_living = icon_text
+	//Спрайты трупа в slimes.dmi есть только у детёнышей: взрослому подставляем его
+	//же живой спрайт, иначе icon_state = "" и труп не рисуется вообще. Проверку по
+	//иконке кэшируем - regenerate_icons() дёргается на каждой смене настроения.
+	var/static/list/known_dead_states = list()
+	var/dead_state = "[icon_text] dead"
+	var/cache_key = "[icon][dead_state]"
+	var/has_dead_sprite = known_dead_states[cache_key]
+	if(isnull(has_dead_sprite))
+		has_dead_sprite = (dead_state in icon_states(icon))
+		known_dead_states[cache_key] = has_dead_sprite
+	icon_dead = has_dead_sprite ? dead_state : icon_text
 	if(stat != DEAD)
 		icon_state = icon_text
 		if(mood && !stat)
@@ -190,7 +203,11 @@
 	var/mod = 0
 	if(bodytemperature >= 330.23) // 135 F or 57.08 C
 		mod = -1	// slimes become supercharged at high temperatures
-	else if(bodytemperature < 183.222)
+	// Порог обязан совпадать с точкой отсчёта формулы ниже. С опечаткой 183.222
+	// замедление включалось на 40 K ХОЛОДНЕЕ, чем начинает убивать урон от холода
+	// (223.15 K), то есть слайм успевал умереть, ни разу не притормозив, и на
+	// морозе бегал на полной скорости.
+	else if(bodytemperature < 283.222)
 		mod = min(15, (283.222 - bodytemperature) / 10 * 1.75)
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_tempmod, multiplicative_slowdown = mod)
 
@@ -218,7 +235,7 @@
 						Atkcool = 1
 					addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_DELETE_ME)
 
-/mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/mob/living/simple_animal/slime/Process_Spacemove(movement_dir = 0)
 	return 2
 
 /mob/living/simple_animal/slime/get_status_tab_items()
@@ -430,11 +447,13 @@
 
 /mob/living/simple_animal/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
-	if(!client)
-		if(Target) // Like cats
-			Target = null
-			++Discipline
-	return
+	// Вода обязана не только жечь, но и срывать слайма с жертвы. Раньше здесь
+	// стоял только сброс Target, да и тот у НЕигровых слаймов: присосавшегося
+	// слайма нельзя было смыть огнетушителем вообще - он держал захват и просто
+	// медленно умирал на жертве, а игровой слайм не замечал воду совсем.
+	// discipline_slime() снимает захват через Feedstop, сбрасывает цель и
+	// коротко оглушает - это и есть штатная реакция слайма на воду.
+	discipline_slime()
 
 /mob/living/simple_animal/slime/examine(mob/user)
 	. = list("<span class='info'>This is [icon2html(src, user)] \a <EM>[src]</EM>!")

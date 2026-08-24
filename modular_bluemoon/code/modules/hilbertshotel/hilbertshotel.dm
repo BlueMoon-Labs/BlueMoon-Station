@@ -214,7 +214,7 @@
 	if(pulled && iscarbon(user))
 		var/mob/living/carbon/C = user
 		if((C.stat > CONSCIOUS || C.restrained(TRUE)) && ((user.job in protected_jobs) || (user.mind?.assigned_role in protected_jobs)) \
-			&& !is_away_level(user.z))
+			&& !is_hilbert_hotel_zlevel(user.z))
 			return
 	if(GLOB.master_mode == "Extended")
 		return TRUE
@@ -321,7 +321,7 @@
 			var/turf/T = locate(reservation.bottom_left_coords[1] + i, reservation.bottom_left_coords[2] + j, reservation.bottom_left_coords[3])
 			var/list/turfContents = list()
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top) || istype(A, /obj/machinery/atmospherics/components)) // Skip pool water and effects, and atmos components
+				if(istype(A, /obj/machinery/atmospherics/components)) // Skip atmos components
 					continue
 				if(istype(A, /atom/movable/lighting_object)) // Оверлей света принадлежит турфу: из стока он вернётся на тайл вторым слоем и зарендерит протухшую тьму
 					continue
@@ -400,8 +400,6 @@
 		for(var/j in 0 to mapTemplate.height - 1)
 			var/turf/T = locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3])
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top)) // Skip pool water overlays
-					continue
 				QDEL_LIST(A.contents)
 				qdel(A)
 
@@ -456,7 +454,7 @@
 			else
 				pulledAtom = null
 		else
-			pulledAtom.forceMove(T)
+			Atom_forceMove(pulledAtom, T)
 	if(user.buckled && !user.buckled.anchored)
 		if(!check_user(user, TRUE))
 			return
@@ -465,10 +463,10 @@
 			if(check_user(seating))
 				MobTransfer(seating, T, depth)
 			else
-				user.forceMove(T)
+				Atom_forceMove(user, T)
 		else
-			seating.forceMove(T)
-			user.forceMove(T)
+			Atom_forceMove(seating, T)
+			Atom_forceMove(user, T)
 			seating.buckle_mob(user, TRUE, TRUE)
 	else if(user.buckled_mobs)
 		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
@@ -477,9 +475,9 @@
 			if(!check_user(I, TRUE))
 				continue
 			buckled_mob = I
-			I.forceMove(T)
+			Atom_forceMove(I, T)
 		user.unbuckle_all_mobs(TRUE)
-		user.forceMove(T)
+		Atom_forceMove(user, T)
 		if(buckled_mob)
 			if(riding_datum_human && ishuman(user))
 				var/mob/living/carbon/human/H = user
@@ -487,9 +485,29 @@
 			else
 				user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else
-		user.forceMove(T)
+		Atom_forceMove(user, T)
 	if(pulledAtom)
 		user.start_pulling(pulledAtom)
+
+/obj/item/hilbertshotel/proc/Atom_forceMove(atom/movable/AM, turf/T)
+	AM.forceMove(T)
+	if(!is_hilbert_hotel_zlevel(AM.z))
+		return
+	if(isliving(AM))
+		var/mob/living/L = AM
+		L.client?.view_size?.zoomIn()
+		L.update_sight(TRUE)
+		RegisterSignal(L, COMSIG_ENTER_AREA, PROC_REF(handler_living_hotel), TRUE)
+
+/obj/item/hilbertshotel/proc/handler_living_hotel(mob/living/L, area/A)
+	SIGNAL_HANDLER
+	if(QDELETED(L))
+		UnregisterSignal(L, COMSIG_ENTER_AREA)
+		return
+	if(is_hilbert_hotel_area(A))
+		return
+	L.update_sight(TRUE)
+	UnregisterSignal(L, COMSIG_ENTER_AREA)
 
 /obj/item/hilbertshotel/proc/getMapTemplate(roomType) // To load a map and remove it's atoms
 	if(roomType == "Mystery Room")

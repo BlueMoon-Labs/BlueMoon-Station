@@ -56,7 +56,7 @@
 
 /datum/spawnpanel/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/spawnpanel),
+		get_asset_datum(/datum/asset/spritesheet_batched/spawnpanel),
 		get_asset_datum(/datum/asset/json/spawnpanel),
 	)
 

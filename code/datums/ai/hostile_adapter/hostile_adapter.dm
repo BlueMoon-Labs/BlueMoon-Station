@@ -20,7 +20,26 @@
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_SET(BB_AI_CURRENT_TARGET), PROC_REF(on_target_key_set))
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_CLEARED(BB_AI_CURRENT_TARGET), PROC_REF(on_target_key_cleared))
 	RegisterSignal(new_pawn, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_pawn_shot))
+	assign_idle_routine(new_pawn)
 	return ..()
+
+///A hostile must resist buckling even when its current plan does not require a
+///movement step (for example, a ranged mob already inside its firing band).
+///The movement pre-check remains a fallback for a buckle between planning ticks.
+/datum/ai_controller/hostile_adapter/SelectBehaviors(delta_time)
+	request_unbuckle()
+	return ..()
+
+///Живой idle: рутина выбирается по типу моба один раз при захвате пауна.
+///Профили, задавшие своё фоновое поведение явно (майнбот, floor cluwne), не
+///трогаются - там idle это часть сценария, а не декорация.
+/datum/ai_controller/hostile_adapter/proc/assign_idle_routine(mob/living/simple_animal/hostile/hostile_pawn)
+	if(idle_behavior?.type != /datum/idle_behavior/idle_random_walk/hostile_ambience)
+		return
+	var/routine_type = ai_idle_routine_for(hostile_pawn)
+	if(!routine_type || routine_type == idle_behavior.type)
+		return
+	idle_behavior = new routine_type
 
 /datum/ai_controller/hostile_adapter/UnpossessPawn(destroy)
 	if(pawn)
@@ -262,11 +281,20 @@
 ///Цель движения: тайл подхода от tactical_approach (фланг/окружение), если он
 ///ведётся, иначе сама цель. Тайл лежит вплотную к цели, так что адъяценси-гейт
 ///атаки в perform() срабатывает как обычно.
+///
+///Тайл в пределах required_distance от пешки больше не ведёт: гейт прибытия
+///мовера считает его достигнутым и не делает ни шага, а атака ещё не в
+///адъяценси - моб замирал в двух клетках от жертвы до самого поводка погони
+///(плейтест round-01.18.04: STALL дист 2, move_loop=нет). Дотянувшись до
+///тайла, последний шаг ведём на саму цель.
 /datum/ai_behavior/hostile_melee_attack/proc/desired_movement_goal(datum/ai_controller/controller, atom/target)
 	var/turf/approach = controller.blackboard[BB_AI_APPROACH_TILE]
-	if(!isnull(approach) && !QDELETED(approach))
-		return approach
-	return target
+	if(isnull(approach) || QDELETED(approach))
+		return target
+	var/atom/movable/moving_pawn = controller.pawn
+	if(isnull(moving_pawn) || get_dist(moving_pawn, approach) <= required_distance)
+		return target
+	return approach
 
 /datum/ai_behavior/hostile_melee_attack/perform(delta_time, datum/ai_controller/controller, target_key)
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
@@ -282,6 +310,8 @@
 	var/atom/attack_origin = hostile_pawn.targets_from || hostile_pawn
 	if(target.Adjacent(attack_origin))
 		hostile_pawn.in_melee = TRUE
+		controller.note_combat_exchange()
+		controller.note_melee_attempt(target)
 		//MeleeAction -> AttackingTarget: сабтиповые переопределения (иерофант)
 		//синхронно кастуют спящие способности - детачимся, как легаси NPC-пул
 		INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, MeleeAction), FALSE)
@@ -339,14 +369,26 @@
 	hostile_pawn.enter_charge(target)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-///Сайдстеп: легаси-уворот в ближнем бою
+///Сайдстеп: легаси-уворот в ближнем бою.
+///
+///Легаси гейтил уворот вероятностью dodge_prob раз в тик NPC-пула, то есть
+///примерно 0.15 уворота в секунду. При переезде на контроллер гейт потеряли:
+///поведение срабатывало безусловно каждые 0.5 с - в тринадцать раз чаще, и
+///игроки читали это как "ниндзя, прыгающий сквозь тебя". Возвращаем оба
+///ограничения: и каденс пула, и саму вероятность.
 /datum/ai_behavior/hostile_sidestep
 	action_cooldown = 0.5 SECONDS
+
+/datum/ai_behavior/hostile_sidestep/get_cooldown(datum/ai_controller/cooldown_for)
+	return max(world.tick_lag, SSnpcpool.wait)
 
 /datum/ai_behavior/hostile_sidestep/perform(delta_time, datum/ai_controller/controller)
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
 	if(!istype(hostile_pawn))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/datum/ai_temperament/temperament = controller.get_temperament()
+	if(!prob(hostile_pawn.dodge_prob * temperament.dodge_mult))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	hostile_pawn.sidestep()
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 

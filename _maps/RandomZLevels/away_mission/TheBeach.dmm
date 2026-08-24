@@ -1000,7 +1000,7 @@
 /area/awaymission/beachhotel)
 "dl" = (
 /obj/machinery/vending/medical{
-	req_access = "201"
+	req_access_txt = "201"
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/beachhotel)

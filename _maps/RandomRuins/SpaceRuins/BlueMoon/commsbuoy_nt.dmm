@@ -1,0 +1,977 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aJ" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Comms Buoy Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"aL" = (
+/obj/structure/lattice,
+/obj/structure/lattice,
+/turf/template_noop,
+/area/space/nearstation)
+"bj" = (
+/obj/structure/sign/flag/syndicate/directional/west,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Sidi_pidor)
+"dO" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/mineral/titanium/white,
+/area/ruin/space/has_grav/Sidi_pidor)
+"ew" = (
+/obj/structure/fluff{
+	name = "telecommunication hub";
+	desc = "A mighty piece of hardware used to send/receive massive amounts of data.";
+	icon = 'icons/obj/machines/telecomms.dmi';
+	icon_state = "hub"
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"eX" = (
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating,
+/area/space/nearstation)
+"fl" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"fJ" = (
+/turf/template_noop,
+/area/template_noop)
+"gw" = (
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"hk" = (
+/obj/structure/table,
+/obj/item/modkit/p226_syndicate,
+/obj/structure/sign/flag/syndicate/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"hn" = (
+/obj/structure/lattice,
+/turf/template_noop,
+/area/space/nearstation)
+"hH" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/space{
+	pixel_y = 5;
+	pixel_x = -10
+	},
+/obj/item/clothing/suit/space{
+	pixel_y = 1;
+	pixel_x = 5
+	},
+/obj/item/clothing/head/helmet/space{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/item/clothing/head/helmet/space{
+	pixel_y = -10;
+	pixel_x = 8
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"ih" = (
+/obj/structure/sign/flag/inteq,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Sidi_pidor)
+"in" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"io" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"iv" = (
+/obj/item/stock_parts/subspace/treatment,
+/obj/item/stock_parts/subspace/transmitter,
+/obj/item/stock_parts/subspace/filter,
+/obj/item/stock_parts/subspace/crystal,
+/obj/item/stock_parts/subspace/ansible,
+/obj/item/stock_parts/subspace/analyzer,
+/obj/item/stock_parts/subspace/amplifier,
+/obj/item/storage/box/lights/bulbs,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"iH" = (
+/obj/structure/sign/flag/syndicate/directional/west,
+/obj/structure/sign/nanotrasen{
+	pixel_x = 32;
+	dir = 4
+	},
+/obj/structure/sign/flag/inteq,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Sidi_pidor)
+"iV" = (
+/obj/item/documents/syndicate,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"jy" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Comms Buoy Airlock"
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"jz" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"kZ" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"lu" = (
+/obj/machinery/porta_turret/syndicate/energy,
+/turf/open/floor/mineral/titanium/yellow,
+/area/ruin/space/has_grav/Sidi_pidor)
+"lB" = (
+/obj/effect/decal/cleanable/blood/footprints{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"lY" = (
+/obj/structure/table,
+/obj/structure/noticeboard/directional/north,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"nn" = (
+/obj/structure/frame/computer{
+	dir = 1
+	},
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"pJ" = (
+/obj/structure/sign/nanotrasen{
+	pixel_x = 32;
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"pN" = (
+/mob/living/simple_animal/pet/syndifox,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"pR" = (
+/turf/open/floor/mineral/titanium/white/airless,
+/area/space/nearstation)
+"rl" = (
+/turf/open/floor/plating,
+/area/space/nearstation)
+"rB" = (
+/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro/cat,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"tq" = (
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 9
+	},
+/obj/structure/rack,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"tx" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/space/nearstation)
+"tO" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"vr" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/titanium{
+	name = "Comms Buoy Airlock"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"xI" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"zt" = (
+/obj/effect/decal/cleanable/blood,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/titanium{
+	name = "Comms Buoy Airlock"
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"zO" = (
+/obj/structure/lattice,
+/turf/open/floor/plating,
+/area/space/nearstation)
+"Br" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/ruin/space/has_grav/Sidi_pidor)
+"CN" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"EA" = (
+/obj/structure/closet/firecloset/full,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"ES" = (
+/turf/open/floor/mineral/titanium/white,
+/area/ruin/space/has_grav/Sidi_pidor)
+"FC" = (
+/turf/closed/wall/mineral/iron,
+/area/ruin/space/has_grav/Sidi_pidor)
+"FH" = (
+/obj/structure/sign/nanotrasen{
+	pixel_x = -32;
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/space/syndicate/orange{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/clothing/head/helmet/space/syndicate/orange{
+	pixel_x = 9;
+	pixel_y = -5
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Gd" = (
+/obj/machinery/smartfridge/black_box,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Gw" = (
+/obj/structure/sign/nanotrasen{
+	pixel_x = 32;
+	dir = 4
+	},
+/obj/structure/sign/flag/inteq,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Sidi_pidor)
+"II" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Jp" = (
+/obj/structure/cable,
+/obj/machinery/power/rtg/advanced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Kr" = (
+/obj/machinery/power/rtg/advanced,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+"KS" = (
+/mob/living/simple_animal/hostile/syndimouse{
+	name = "Syndicate Chefpretive";
+	desc = "A strange mouse in a Syndicate combat MODsuit, built for mice!";
+	faction = list("Syndicate,neutral")
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/ruin/space/has_grav/Sidi_pidor)
+"LI" = (
+/obj/machinery/telecomms/relay/preset/telecomms,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"LL" = (
+/obj/machinery/blackbox_recorder,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Mc" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Mp" = (
+/obj/machinery/light/small/directional/west,
+/obj/machinery/modular_computer/console{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Qb" = (
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/titanium{
+	name = "Comms Buoy Airlock"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Qd" = (
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"QC" = (
+/obj/structure/sign/nanotrasen{
+	pixel_x = 32;
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Sy" = (
+/mob/living/simple_animal/hostile/syndimouse{
+	name = "Syndicate Chefpretive";
+	desc = "A strange mouse in a Syndicate combat MODsuit, built for mice!";
+	faction = list("Syndicate,neutral")
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Ws" = (
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating,
+/area/space/nearstation)
+"Yp" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"Yr" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/space)
+"YN" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Sidi_pidor)
+
+(1,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(2,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+rl
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(3,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+zO
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(4,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Yr
+fJ
+zO
+fJ
+Yr
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(5,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Yr
+Yr
+pR
+Yr
+Yr
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(6,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Yr
+Yr
+Yr
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(7,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+pJ
+FC
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(8,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+Mc
+Mc
+Mc
+Mc
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(9,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+tO
+Mp
+hk
+Mc
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(10,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+tO
+rB
+gw
+Mc
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(11,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+Mc
+Mc
+aJ
+Mc
+bj
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(12,1,1) = {"
+fJ
+hn
+fJ
+fJ
+fJ
+fJ
+Mc
+tq
+gw
+Sy
+EA
+Mc
+Mc
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(13,1,1) = {"
+fJ
+hn
+fJ
+fJ
+fJ
+hn
+iH
+Sy
+gw
+gw
+ih
+Mc
+Mc
+Mc
+fJ
+fJ
+fJ
+fJ
+"}
+(14,1,1) = {"
+fJ
+aL
+fJ
+hn
+hn
+Mc
+Mc
+LL
+Sy
+Br
+Mc
+iV
+iv
+Mc
+fJ
+fJ
+hn
+fJ
+"}
+(15,1,1) = {"
+fJ
+zO
+zO
+zO
+zO
+Mc
+Mc
+ew
+pN
+Br
+Qb
+xI
+xI
+Mc
+fJ
+fJ
+hn
+fJ
+"}
+(16,1,1) = {"
+fJ
+hn
+hn
+hn
+fJ
+eX
+Mc
+LI
+gw
+KS
+Mc
+xI
+YN
+Mc
+fJ
+hn
+hn
+fJ
+"}
+(17,1,1) = {"
+fJ
+hn
+zO
+zO
+fJ
+zO
+Mc
+Gd
+io
+gw
+Mc
+Kr
+Jp
+Mc
+fJ
+hn
+hn
+fJ
+"}
+(18,1,1) = {"
+fJ
+fJ
+hn
+hn
+fJ
+fJ
+Mc
+Mc
+Mc
+jy
+Mc
+Mc
+Mc
+Mc
+fJ
+hn
+aL
+fJ
+"}
+(19,1,1) = {"
+fJ
+fJ
+hn
+fJ
+fJ
+fJ
+fJ
+Mc
+gw
+gw
+gw
+EA
+Gw
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(20,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+iH
+jz
+ES
+ES
+Yp
+Mc
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(21,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+gw
+ES
+ES
+gw
+Mc
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(22,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+Mc
+gw
+ES
+ES
+gw
+bj
+Mc
+fJ
+hn
+hn
+fJ
+"}
+(23,1,1) = {"
+fJ
+fJ
+Yr
+Yr
+fJ
+fJ
+Mc
+lu
+gw
+ES
+ES
+gw
+lu
+Mc
+fJ
+zO
+hn
+fJ
+"}
+(24,1,1) = {"
+fJ
+fJ
+fJ
+Yr
+Yr
+fJ
+Mc
+tO
+gw
+ES
+ES
+gw
+tO
+Mc
+eX
+tx
+hn
+fJ
+"}
+(25,1,1) = {"
+fJ
+rl
+zO
+pR
+Yr
+FC
+Mc
+in
+gw
+ES
+ES
+gw
+nn
+Mc
+Ws
+tx
+aL
+fJ
+"}
+(26,1,1) = {"
+fJ
+fJ
+fJ
+Yr
+Yr
+fJ
+Mc
+tO
+fl
+ES
+dO
+Yp
+Mc
+Mc
+fJ
+tx
+hn
+fJ
+"}
+(27,1,1) = {"
+fJ
+fJ
+Yr
+Yr
+fJ
+fJ
+Mc
+lY
+kZ
+gw
+lB
+QC
+Mc
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(28,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+Mc
+Mc
+ih
+zt
+Mc
+Mc
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(29,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+FH
+CN
+Qd
+Mc
+fJ
+fJ
+fJ
+hn
+hn
+fJ
+"}
+(30,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+II
+xI
+hH
+Mc
+fJ
+fJ
+fJ
+hn
+fJ
+fJ
+"}
+(31,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+Mc
+Mc
+vr
+Mc
+Mc
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}
+(32,1,1) = {"
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+hn
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+fJ
+"}

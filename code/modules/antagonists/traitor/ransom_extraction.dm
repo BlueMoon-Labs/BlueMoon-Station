@@ -6,6 +6,10 @@
 	var/area/return_target_area
 	var/force_victim_into_pod = FALSE
 	var/datum/weakref/pirate_console
+	///Цель "собрать на N кредитов" той же команды. Выкуп идёт на счёт терминала, но терминал
+	///может не дожить до конца сделки, а цель живёт до конца раунда - тогда кредиты за
+	///заложника кладём прямо в неё.
+	var/datum/weakref/pirate_objective
 	var/pirate_gang_value = 0
 
 /datum/ransom_extraction/Destroy()
@@ -13,6 +17,8 @@
 		linked_contract.active_ransom = null
 	linked_contract = null
 	forced_pirate_victim = null
+	pirate_console = null
+	pirate_objective = null
 	return ..()
 
 /proc/pick_ransom_return_area()
@@ -41,11 +47,27 @@
 	forced_pirate_victim = victim
 	ransom_credits = station_ransom
 	pirate_gang_value = gang_points
-	if(console)
-		pirate_console = WEAKREF(console)
+	bind_pirate_console(console)
 	return_target_area = pick_ransom_return_area()
 	force_victim_into_pod = TRUE
 	launch_extraction(landing, victim)
+
+/**
+ * Запоминает, куда зачислять выкуп, когда заложника наконец выкупят.
+ *
+ * Терминал берём слабой ссылкой, но вместе с ним - и цель той же команды: сделка идёт
+ * десяток минут, за которые консоль может исчезнуть, а цель живёт до конца раунда.
+ * Arguments:
+ * * console - терминал трюма, с которого заложника отправили.
+ */
+/datum/ransom_extraction/proc/bind_pirate_console(obj/machinery/computer/piratepad_control/console)
+	if(!console)
+		return
+	pirate_console = WEAKREF(console)
+	for(var/datum/objective/loot/booty in GLOB.objectives)
+		if(booty.cargo_hold == console)
+			pirate_objective = WEAKREF(booty)
+			return
 
 /datum/ransom_extraction/proc/launch_extraction(turf/empty_pod_turf, mob/living/carbon/human/expected_victim)
 	if(QDELETED(expected_victim) || !empty_pod_turf)
@@ -168,11 +190,28 @@
 			id_card.registered_account.adjust_money(pay_points * 0.35)
 			id_card.registered_account.bank_card_talk("Выкуп проведён, агент. Ваша доля зачислена. Текущий баланс: \
 			[id_card.registered_account.account_balance] кр.", TRUE)
-	var/obj/machinery/computer/piratepad_control/ppc = pirate_console?.resolve()
-	if(ppc && pirate_gang_value)
-		ppc.points += pirate_gang_value
+	pay_out_pirate_gang()
+
+/**
+ * Зачисляет команде выкуп за отданного заложника.
+ *
+ * Цена заложника вычитается из терминала ещё при отправке, а приходит только здесь, минут через
+ * десять. Если терминала за это время не стало, кредиты кладём прямо в цель: иначе набранное за
+ * заложника не вернётся никуда - счёт исчез вместе с консолью, а цель осталась со старым снимком.
+ */
+/datum/ransom_extraction/proc/pay_out_pirate_gang()
+	if(pirate_gang_value)
+		var/obj/machinery/computer/piratepad_control/ppc = pirate_console?.resolve()
+		if(ppc)
+			ppc.points += pirate_gang_value
+			ppc.total_collected += pirate_gang_value
+		else
+			var/datum/objective/loot/booty = pirate_objective?.resolve()
+			if(booty)
+				booty.stored_value += pirate_gang_value
 	pirate_gang_value = 0
 	pirate_console = null
+	pirate_objective = null
 
 /datum/ransom_extraction/proc/return_ransom_victim(mob/living/returning)
 	if(QDELETED(returning))

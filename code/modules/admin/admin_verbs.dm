@@ -34,6 +34,8 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/cmd_admin_rejuvenate, // SPLURT EDIT
 	/client/proc/game_panel,			/*game panel, allows to change game-mode etc*/
 	/client/proc/mail_panel,			/*BLUEMOON ADD - панель управления почтой*/
+	/client/proc/spawn_liquid,			/*LIQUIDS ADD - spawn a liquid on admin's location*/
+	/client/proc/remove_liquid,			/*LIQUIDS ADD - remove liquids in radius*/
 	/client/proc/show_admin_ticket_stats, /*BLUEMOON ADD - панель статистики тикетов*/
 	/client/proc/check_ai_laws,			/*shows AI and borg laws*/
 	// /client/proc/ghost_pool_protection,	/*opens a menu for toggling ghost roles*/
@@ -185,6 +187,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -238,6 +242,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
 	/datum/admins/proc/atmos_active_report,
+	/datum/admins/proc/atmos_heat_toggle,
+	/datum/admins/proc/atmos_control_panel,
 	#ifndef TGS
 	/datum/admins/proc/atmos_benchmark,
 	#endif
@@ -313,6 +319,8 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/callproc_datum,
 	/client/proc/Debug2,
 	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/reload_admins,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/startSinglo, // tg removed this

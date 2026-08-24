@@ -129,7 +129,7 @@
 /datum/unit_test/conveyor_idle_processing/Run()
 	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor)
 	belt.forceMove(run_loc_floor_bottom_left)
-	belt.operating = 0
+	belt.operating = CONVEYOR_OFF
 
 	// An idle conveyor must ask the fast-process subsystem to drop it.
 	TEST_ASSERT_EQUAL(belt.process(2), PROCESS_KILL, "an idle conveyor's process() must return PROCESS_KILL")
@@ -144,12 +144,45 @@
 	STOP_PROCESSING(SSfastprocess, auto_belt)
 	TEST_ASSERT(!(auto_belt in SSfastprocess.processing), "the auto belt should start out of SSfastprocess for this check")
 	auto_belt.update()
-	TEST_ASSERT_EQUAL(auto_belt.operating, 1, "a powered auto conveyor must turn operating on in update()")
+	TEST_ASSERT_EQUAL(auto_belt.operating, CONVEYOR_FORWARD, "a powered auto conveyor must turn operating on in update()")
 	TEST_ASSERT(auto_belt.datum_flags & DF_ISPROCESSING, "an operating auto conveyor must be flagged DF_ISPROCESSING")
 	TEST_ASSERT(auto_belt in SSfastprocess.processing, "an operating auto conveyor must (re-)register itself in SSfastprocess via update()")
 	// Stop it so teardown doesn't queue a convey() timer on a soon-to-be-qdel'd belt.
 	STOP_PROCESSING(SSfastprocess, auto_belt)
-	auto_belt.operating = 0
+	auto_belt.operating = CONVEYOR_OFF
+
+/// B2c: лента, включённая свитчем, обязана пережить блэкаут. PROCESS_KILL вышвыривает её из
+/// SSfastprocess и обнуляет operating, поэтому после восстановления питания update() должен
+/// сам вернуть ленту в строй - иначе рычаг стоит в положении "вкл", а конвейер стоит колом.
+/datum/unit_test/conveyor_survives_power_loss/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor, floor, EAST, "unit_test_blackout")
+	var/obj/machinery/conveyor_switch/toggle = allocate(/obj/machinery/conveyor_switch, floor, "unit_test_blackout")
+	belt.set_machine_stat(0) // резервация без питания, снимаем NOPOWER руками
+
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	toggle.interact(user)
+	TEST_ASSERT(toggle.position != CONVEYOR_OFF, "interact() must flip the switch position")
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "a powered belt must follow the switch")
+	TEST_ASSERT(belt in SSfastprocess.processing, "a running belt must be in SSfastprocess")
+
+	// Блэкаут: power_change() -> update() гасит ленту, а process() просит выкинуть её из подсистемы.
+	belt.set_machine_stat(NOPOWER)
+	belt.update()
+	TEST_ASSERT_EQUAL(belt.operating, CONVEYOR_OFF, "an unpowered belt must stop")
+	TEST_ASSERT_EQUAL(belt.process(2), PROCESS_KILL, "an unpowered belt's process() must return PROCESS_KILL")
+	STOP_PROCESSING(SSfastprocess, belt) // то, что делает с этим ответом подсистема
+
+	// Питание вернулось, рычаг всё это время стоял во включённом положении.
+	belt.set_machine_stat(0)
+	belt.update()
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "a belt must resume the switch's last command when power returns")
+	TEST_ASSERT_EQUAL(belt.movedir, belt.forwards, "a resumed belt must know which way to move")
+	TEST_ASSERT(belt in SSfastprocess.processing, "a resumed belt must re-register itself in SSfastprocess")
+
+	STOP_PROCESSING(SSfastprocess, belt)
+	belt.last_command = CONVEYOR_OFF
+	belt.operating = CONVEYOR_OFF
 
 /// Counts how many times the warden re-scans for targets.
 /obj/structure/destructible/clockwork/ocular_warden/unit_test_scan_counter
@@ -535,19 +568,19 @@
 	TEST_ASSERT_NOTNULL(belt_turf, "test zone must have a neighbouring turf for the belt")
 	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor, belt_turf, EAST, "unit_test_conv")
 	belt.set_machine_stat(0) // резервация без питания - update() лент сбрасывает operating под NOPOWER
-	TEST_ASSERT_EQUAL(belt.operating, 0, "the belt must start idle")
+	TEST_ASSERT_EQUAL(belt.operating, CONVEYOR_OFF, "the belt must start idle")
 
 	// interact() без очереди: ленты приходят в движение сразу.
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
 	toggle.interact(user)
-	TEST_ASSERT(toggle.position != 0, "interact() must flip the switch position")
+	TEST_ASSERT(toggle.position != CONVEYOR_OFF, "interact() must flip the switch position")
 	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "interact() must drive the linked belts immediately")
 	TEST_ASSERT(belt.datum_flags & DF_ISPROCESSING, "a running belt must be processing")
 
 	// Выключение тем же путём.
 	toggle.interact(user)
-	TEST_ASSERT_EQUAL(toggle.position, 0, "the second interact() must switch the belts off")
-	TEST_ASSERT_EQUAL(belt.operating, 0, "the belts must stop when the switch goes off")
+	TEST_ASSERT_EQUAL(toggle.position, CONVEYOR_OFF, "the second interact() must switch the belts off")
+	TEST_ASSERT_EQUAL(belt.operating, CONVEYOR_OFF, "the belts must stop when the switch goes off")
 	// Лента сама уйдёт из процессинга через PROCESS_KILL; погасим для детерминизма.
 	STOP_PROCESSING(SSfastprocess, belt)
 

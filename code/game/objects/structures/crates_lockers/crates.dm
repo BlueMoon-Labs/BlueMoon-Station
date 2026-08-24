@@ -10,7 +10,7 @@
 	allow_objects = TRUE
 	allow_dense = TRUE
 	dense_when_open = TRUE
-	pass_flags_self = PASSTABLE
+	pass_flags_self = PASSJUMP
 	climbable = TRUE
 	climb_time = 10 //real fast, because let's be honest stepping into or onto a crate is easy
 	climb_stun = 0 //climbing onto crates isn't hard, guys
@@ -292,3 +292,12 @@
 	..()
 	for(var/i in 1 to 5)
 		new /obj/item/coin/silver(src)
+
+/obj/structure/closet/crate/tarkov
+	name = "Tarkov Crate"
+	icon_state = "exocrate"
+
+/obj/structure/closet/crate/syndie
+	name = "Syndicate Crate"
+	icon = 'icons/obj/crates_new.dmi'
+	icon_state = "syndicrate"

@@ -584,7 +584,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 
 /datum/game_mode/dynamic/process()
 	// BLUEMOON ADD START - напоминание антагонистам, что они антагонисты
-	for(var/datum/antagonist/A in GLOB.antagonists_to_remind)
+	// Обход по копии: напоминалка снимает себя из этого же списка, а правка списка
+	// прямо в for() по нему сдвигает индекс и пропускает каждого второго антага.
+	for(var/datum/antagonist/A as anything in GLOB.antagonists_to_remind.Copy())
 		A.remind_them_they_are_antagonists()
 	// BLUEMOON ADD END
 	for (var/datum/dynamic_ruleset/rule in current_rules)

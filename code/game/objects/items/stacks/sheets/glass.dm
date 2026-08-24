@@ -15,6 +15,7 @@
 GLOBAL_LIST_INIT(glass_recipes, list ( \
 	new/datum/stack_recipe("directional window", /obj/structure/window/unanchored, time = 10, on_floor = TRUE, window_checks = TRUE), \
 	new/datum/stack_recipe("fulltile window", /obj/structure/window/fulltile/unanchored, 2, time = 20, on_floor = TRUE, window_checks = TRUE), \
+	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/glass, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS), \
 	new/datum/stack_recipe("shard", /obj/item/shard, 1), \
 	null, \
 	new/datum/stack_recipe_list("glass working bases", list( \

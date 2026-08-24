@@ -127,7 +127,11 @@
 			mob_gender = pick(MALE, FEMALE)
 		M.gender = mob_gender
 	if(faction)
-		M.faction = list(faction)
+		//Варэдит на карте может задать и строку, и готовый список. Голое list(faction) во втором
+		//случае давало список внутри списка: такая фракция не совпадала ни с одной чужой, и моб
+		//становился врагом вообще всем, включая своих.
+		var/list/spawn_faction = islist(faction) ? faction : list(faction)
+		M.faction = spawn_faction.Copy()
 	if(disease)
 		M.ForceContractDisease(new disease)
 	if(death)
@@ -196,6 +200,9 @@
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
 		special(M, name)
+		// BLUEMOON ADD START - глобальный сигнал для модульных реакций на занятие гост-роли игроком
+		SEND_GLOBAL_SIGNAL(COMSIG_GHOST_ROLE_CLAIMED, M)
+		// BLUEMOON ADD END
 		if(director_source_action)
 			SSdirector.track_ghost_role_spawn(
 				director_source_action,

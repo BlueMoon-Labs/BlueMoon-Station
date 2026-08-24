@@ -101,7 +101,7 @@
 	slowdown = 0.3
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/iron_tombstone
 	actions_types = list(/datum/action/item_action/toggle_helmet)
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 // -----------------------------------------------[Космодесантник]-------------------------------------------
 // Взрыв при экипировке

@@ -142,6 +142,10 @@
 	if(owner.mind)
 		originalmind = owner.mind
 		owner.mind.transfer_to(clone)
+	//Перенос сознания дёргает Logout() у оригинала, и тело уезжает в список SSD. Автокрио
+	//через несколько минут стирало его - клону было некуда возвращаться, и игрок терял
+	//персонажа насовсем. Пока клон жив, оригинал не кандидат на автоматическое крио.
+	GLOB.ssd_mob_list -= owner
 	clone.apply_status_effect(/datum/status_effect/slime_clone_decay)
 	return ..()
 

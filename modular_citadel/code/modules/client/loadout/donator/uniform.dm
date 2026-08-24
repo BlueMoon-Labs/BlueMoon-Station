@@ -57,10 +57,3 @@
 	name = "Pentagram Crop Top"
 	path = /obj/item/clothing/under/pentatop
 
-/datum/gear/donator/uniform/victorian_purple
-	name = "Purple Victorian Suit"
-	path = /obj/item/clothing/under/rank/civilian/victorian_purple
-
-/datum/gear/donator/uniform/jester_suit
-	name = "Jester Suit"
-	path = /obj/item/clothing/under/rank/civilian/clown/jester

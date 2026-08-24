@@ -148,6 +148,10 @@ GLOBAL_LIST(topic_status_cache)
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
 	start_log(GLOB.test_log)
 #endif
+#ifdef TESTING
+	GLOB.ai_trace_log = "[GLOB.log_directory]/ai_trace.log"
+	start_log(GLOB.ai_trace_log)
+#endif
 	GLOB.harddel_log = "[GLOB.log_directory]/harddels.log"
 	start_log(GLOB.harddel_log)
 	start_log(GLOB.world_game_log)
@@ -436,6 +440,10 @@ GLOBAL_LIST(topic_status_cache)
 	// Цена шага выравнивается по тику, а тик только что сменился - самое время
 	// сказать, если конфиг движения с новой сеткой не согласуется.
 	movement_audit_config_delays()
+	// Пол скорости AI-погони тоже кратен тику: fps из конфига применяется ПОСЛЕ
+	// инициализации подсистем (master.dm), и без пересчёта здесь GLOB держал бы
+	// значение, испечённое на старом tick_lag.
+	update_ai_pursuit_speed_floor()
 
 /world/proc/init_byond_tracy()
 	var/library

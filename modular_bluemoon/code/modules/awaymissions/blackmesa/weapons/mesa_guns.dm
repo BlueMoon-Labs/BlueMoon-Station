@@ -275,10 +275,11 @@
 	caliber = "4.6mm"
 	projectile_type = /obj/item/projectile/bullet/mm46
 
+// 5mm/4.6mm мини-патроны — BR0/BR1
 /obj/item/projectile/bullet/mm46
 	name = "4.6mm bullet"
 	damage = 10
-	armour_penetration = 3
+	armour_penetration = BULLET_BR0   // BLUEMOON EDIT: было 3 → BR0 (слишком мелкий)
 	wound_bonus = -3
 	bare_wound_bonus = 1
 
@@ -328,10 +329,11 @@
 	caliber = "7.62mm"
 	projectile_type = /obj/item/projectile/bullet/mm762
 
+// 7.62mm мини (не путать с x39) — BR1
 /obj/item/projectile/bullet/mm762
 	name = "7.62mm bullet"
 	damage = 25
-	armour_penetration = 4
+	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 4 → BR1
 	wound_bonus = -6
 	bare_wound_bonus = 5
 
@@ -384,7 +386,7 @@
 /obj/item/projectile/bullet/mm57
 	name = "5.7mm bullet"
 	damage = 10
-	armour_penetration = 4
+	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 4 → BR1 (5.7мм аналог FN57)
 	wound_bonus = -4
 	bare_wound_bonus = 2
 

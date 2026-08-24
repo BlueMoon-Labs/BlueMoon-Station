@@ -3502,13 +3502,8 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/civilian)
 "bik" = (
-/obj/docking_port/stationary{
-	dir = 4;
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 4
 	},
 /turf/open/space/basic,
 /area/space)
@@ -4089,7 +4084,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/engine,
@@ -4652,7 +4647,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 4
 	},
@@ -6387,13 +6382,7 @@
 /turf/open/space/basic,
 /area/space)
 "cjt" = (
-/obj/docking_port/stationary{
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
-	},
+/obj/docking_port/stationary/escape_pod,
 /turf/open/space/basic,
 /area/space)
 "cju" = (
@@ -8156,7 +8145,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 6
 	},
 /turf/open/floor/engine,
@@ -9336,7 +9325,6 @@
 "diy" = (
 /obj/structure/closet/secure_closet/warden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/item/storage/box/prisoner,
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
@@ -9512,7 +9500,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -16128,7 +16115,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/hallway)
 "fzW" = (
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer1{
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer2{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark/side{
@@ -23101,7 +23088,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/binary/pump/layer1{
+/obj/machinery/atmospherics/components/binary/pump/layer2{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -25347,7 +25334,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on/layer2{
 	dir = 8;
 	pixel_y = 1
 	},
@@ -26035,10 +26022,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
 "iSX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "iTi" = (
 /obj/structure/sign/poster/official/science,
@@ -27291,8 +27275,7 @@
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "jsz" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jsH" = (
 /obj/structure/table/wood,
@@ -28064,7 +28047,7 @@
 /area/command/heads_quarters/cmo)
 "jHQ" = (
 /obj/structure/pool/ladder,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jIl" = (
 /obj/structure/chair/wood/normal{
@@ -28095,7 +28078,7 @@
 	dir = 8;
 	pixel_x = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "jJb" = (
 /obj/machinery/gulag_teleporter,
@@ -29361,7 +29344,6 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
@@ -33862,7 +33844,7 @@
 /area/engineering/atmos)
 "lIh" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "lIi" = (
 /obj/machinery/door/firedoor,
@@ -34631,7 +34613,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "lXP" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -36865,7 +36847,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/service/lawoffice)
@@ -37928,7 +37909,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
 "nan" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding{
 	dir = 4
 	},
@@ -38586,7 +38566,7 @@
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/engine,
@@ -49836,7 +49816,6 @@
 	},
 /obj/structure/closet/firecloset,
 /obj/item/clothing/glasses/meson/engine,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/engineering/main)
@@ -57609,9 +57588,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 9
-	},
 /turf/open/floor/plasteel/dark,
 /area/hallway/secondary/service)
 "tRi" = (
@@ -61015,7 +60991,7 @@
 /turf/open/floor/plating,
 /area/science/lab)
 "vbB" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "vbF" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/visible{
@@ -65206,7 +65182,6 @@
 	name = "warehouse shutters"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/turf_decal/caution/stand_clear,
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel,
@@ -67062,9 +67037,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "wSQ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
