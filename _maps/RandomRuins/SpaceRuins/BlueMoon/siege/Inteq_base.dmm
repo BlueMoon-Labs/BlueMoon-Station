@@ -821,8 +821,7 @@
 "cy" = (
 /obj/structure/safe/floor,
 /obj/item/gun/ballistic/revolver/reverse,
-/obj/item/gun/ballistic/automatic/hellgate_c74,
-/obj/item/ammo_box/magazine/hellgate_c74,
+/obj/item/gun/energy/laser/sniper,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "cz" = (
@@ -2412,6 +2411,18 @@
 	},
 /turf/open/floor/plating/airless,
 /area/InteQ_ship/ship4)
+"he" = (
+/obj/structure/closet/wall/red{
+	name = "Uniform Closet";
+	pixel_y = 31
+	},
+/obj/item/gun_voucher/syndicate,
+/obj/item/clothing/gloves/combat,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/storage/belt/military,
+/obj/machinery/light/cold/dim/directional/north,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "hf" = (
 /turf/open/floor/plating{
 	heat_capacity = 1e+006;
@@ -4226,6 +4237,7 @@
 	silicon_access = 0
 	},
 /obj/machinery/vending/security/syndicate,
+/obj/machinery/light/cold/dim/directional/east,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "mg" = (
@@ -4905,6 +4917,11 @@
 /obj/structure/reagent_dispensers/foamtank,
 /turf/open/floor/plating,
 /area/InteQ_ship)
+"nV" = (
+/obj/effect/turf_decal/arrows/red,
+/obj/machinery/light/cold/dim/directional/east,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "nW" = (
 /obj/effect/spawner/lootdrop/salvage,
 /turf/open/floor/engine/airless,
@@ -5055,7 +5072,7 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "oq" = (
-/obj/item/gun/energy/laser/sniper,
+/obj/item/ammo_box/magazine/hellgate_c74,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship3)
 "or" = (
@@ -6590,6 +6607,7 @@
 "sM" = (
 /obj/machinery/vending/wallmed/directional/east,
 /obj/machinery/sleeper/syndie/fullupgrade,
+/obj/machinery/light/cold/dim/directional/east,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "sN" = (
@@ -6834,6 +6852,10 @@
 /obj/item/paper,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"tF" = (
+/obj/machinery/light/cold/dim/directional/west,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "tG" = (
 /obj/effect/turf_decal{
 	icon_state = "arrows_red";
@@ -6947,6 +6969,7 @@
 	silicon_access = 0
 	},
 /obj/machinery/suit_storage_unit/syndicate,
+/obj/machinery/light/cold/dim/directional/west,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "tY" = (
@@ -8072,6 +8095,11 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
+"xl" = (
+/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded,
+/obj/machinery/light/cold/dim/directional/west,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "xm" = (
 /obj/item/stack/sheet/metal,
 /turf/open/floor/plating{
@@ -8747,6 +8775,14 @@
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/SOLVED)
+"zt" = (
+/obj/effect/portal/permanent{
+	id = "right_siege";
+	name = "RIGHT: InteQ Siege"
+	},
+/obj/machinery/light/cold/dim/directional/south,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "zu" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/condiment/soymilk,
@@ -8914,6 +8950,10 @@
 /obj/structure/rack,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
+"zQ" = (
+/obj/item/gun/ballistic/automatic/hellgate_c74,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "zR" = (
 /obj/structure/noticeboard,
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -8950,6 +8990,7 @@
 	pixel_x = -32;
 	silicon_access = 0
 	},
+/obj/machinery/light/cold/dim/directional/west,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "zZ" = (
@@ -11084,6 +11125,14 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
+"FO" = (
+/obj/effect/portal/permanent{
+	id = "left_siege";
+	name = "LEFT: InteQ Siege"
+	},
+/obj/machinery/light/cold/dim/directional/south,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "FP" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/end{
 	dir = 4;
@@ -11434,6 +11483,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
+"GM" = (
+/obj/machinery/light/cold/dim/directional/east,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "GN" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor1-old"
@@ -11472,6 +11525,7 @@
 /area/InteQ_ship)
 "GS" = (
 /obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light/cold/dim/directional/north,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "GT" = (
@@ -13961,6 +14015,7 @@
 /area/InteQ_ship/SOLVED)
 "Ok" = (
 /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded,
+/obj/machinery/light/cold/dim/directional/east,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Ol" = (
@@ -15256,6 +15311,7 @@
 	silicon_access = 0
 	},
 /obj/machinery/suit_storage_unit/syndicate,
+/obj/machinery/light/cold/dim/directional/east,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Sk" = (
@@ -16202,6 +16258,11 @@
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
+"UV" = (
+/obj/machinery/suit_storage_unit/syndicate,
+/obj/machinery/light/cold/dim/directional/south,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "UW" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/structure/closet/crate/freezer,
@@ -16508,6 +16569,7 @@
 "VO" = (
 /obj/machinery/vending/wallmed/directional/west,
 /obj/machinery/sleeper/syndie/fullupgrade,
+/obj/machinery/light/cold/dim/directional/west,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "VP" = (
@@ -36544,7 +36606,7 @@ AM
 AM
 gV
 bm
-Ok
+xl
 GA
 GA
 tX
@@ -36967,7 +37029,7 @@ gV
 gV
 gV
 gV
-ZZ
+he
 kW
 kW
 kW
@@ -37176,7 +37238,7 @@ gV
 gV
 ZZ
 pp
-kW
+tF
 pp
 gV
 ZZ
@@ -37598,17 +37660,17 @@ gV
 gV
 jl
 gV
-ZZ
+he
 kW
 kW
-PO
+FO
 gV
 Xt
 VO
 GA
 GA
 zY
-pp
+UV
 gV
 gV
 rW
@@ -38018,7 +38080,7 @@ Ee
 fI
 gV
 gV
-kW
+tF
 kW
 kW
 kW
@@ -38247,7 +38309,7 @@ kW
 kW
 kW
 kW
-kW
+tF
 kW
 ls
 RH
@@ -38883,7 +38945,7 @@ kW
 kW
 sH
 sH
-sH
+nV
 Tn
 ls
 RH
@@ -39078,7 +39140,7 @@ om
 Ee
 gV
 gV
-kW
+GM
 kW
 kW
 kW
@@ -39506,17 +39568,17 @@ gV
 gV
 jl
 gV
-ZZ
+he
 kW
 kW
-Lt
+zt
 gV
 ge
 sM
 UU
 UU
 mf
-pp
+UV
 gV
 gV
 rW
@@ -39932,7 +39994,7 @@ gV
 gV
 ZZ
 pp
-kW
+GM
 pp
 gV
 ZZ
@@ -40147,7 +40209,7 @@ gV
 gV
 gV
 gV
-ZZ
+he
 kW
 kW
 kW
@@ -47427,7 +47489,7 @@ Nr
 Nr
 Nr
 OG
-OG
+zQ
 wr
 sp
 Nr
@@ -47639,8 +47701,8 @@ Lz
 Ex
 Nr
 Ox
-oq
 OG
+oq
 Xu
 Nr
 iD
