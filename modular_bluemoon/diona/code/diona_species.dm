@@ -14,6 +14,8 @@
 #define DIONA_WOUND_SAP_FLESH 0.5
 /// Базовое число тиков "срастания" на единицу тяжести перелома
 #define DIONA_WOUND_MEND_BASE 60
+/// Сколько урона органа (включая глаза) лечит за тик лечение соками
+#define DIONA_ORGAN_SAP_HEAL 0.5
 
 /datum/species/diona
 	name = "Diona"
@@ -58,7 +60,7 @@
 	languagewhitelist = list("Rootsong")
 	species_category = SPECIES_CATEGORY_PLANT
 	speedmod = 1.25
-	inherent_traits = list(CAN_BE_OPERATED_WITHOUT_PAIN, TRAIT_NOBREATH, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE)
+	inherent_traits = list(CAN_BE_OPERATED_WITHOUT_PAIN, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE)
 
 	var/pod_grown = FALSE
 
@@ -252,6 +254,7 @@
 		var/nourished = H.nutrition >= NUTRITION_LEVEL_WELL_FED || H.reagents?.has_reagent(/datum/reagent/water)
 		if(light_ok && nourished)
 			mend_wounds(H)
+			mend_organs(H)
 		if(!next_regrowth || !(AM in next_regrowth))
 			continue
 		if(world.time < next_regrowth[AM])
@@ -328,6 +331,21 @@
 		W.remove_wound()
 
 /**
+ * Медленное восстановление органов соками, включая глаза-узлы: те же условия,
+ * что и для ран - свет и питание. Лечит и отказавшие органы: отрицательный
+ * applyOrganDamage() сам снимает флаг ORGAN_FAILING.
+ */
+/datum/element/diona_regrowth/proc/mend_organs(mob/living/carbon/human/H)
+	for(var/obj/item/organ/O in H.internal_organs)
+		if(O.organ_flags & ORGAN_SYNTHETIC)
+			continue
+		if(O.damage <= 0)
+			continue
+		O.applyOrganDamage(-DIONA_ORGAN_SAP_HEAL)
+		if(prob(3))
+			to_chat(H, span_notice("Ты чувствуешь разливающееся тепло - соки восстанавливают твои внутренние органы."))
+
+/**
  * Срастание переломов/вывихов силами самого растения. Скорость привязана к
  * регенерации конечностей: базовые DIONA_WOUND_MEND_BASE тиков SSobj (2 сек.)
  * за каждую ступень тяжести, т.е. вывих ~4 минуты, тяжёлый перелом ~6,
@@ -361,3 +379,4 @@
 #undef DIONA_WOUND_SAP_FLOW
 #undef DIONA_WOUND_SAP_FLESH
 #undef DIONA_WOUND_MEND_BASE
+#undef DIONA_ORGAN_SAP_HEAL
