@@ -22,6 +22,8 @@
 		var/list/pending_corners = GLOB.lighting_update_corners.Copy()
 		GLOB.lighting_update_corners.Cut()
 		for(var/datum/lighting_corner/queued_corner as anything in pending_corners)
+			if(QDELETED(queued_corner))
+				continue
 			queued_corner.update_objects()
 			queued_corner.needs_update = FALSE
 			CHECK_TICK

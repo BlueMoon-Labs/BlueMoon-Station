@@ -383,6 +383,7 @@
 		REMOVE_CORNER(C)
 
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 
 	effect_str = null
 
@@ -556,6 +557,7 @@
 				C = thing
 				REMOVE_CORNER(C)
 				LAZYREMOVE(C.affecting, src)
+				C.queue_idle_check()
 			if(to_remove)
 				effect_str -= to_remove
 		else if(!geometry_changed && applied_power)
@@ -714,6 +716,7 @@
 		C = thing
 		REMOVE_CORNER(C)
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 	effect_str -= L
 
 

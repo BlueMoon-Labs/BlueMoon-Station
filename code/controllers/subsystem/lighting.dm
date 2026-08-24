@@ -367,6 +367,12 @@ SUBSYSTEM_DEF(lighting)
 			break
 		var/datum/lighting_corner/C = GLOB.lighting_update_corners[i]
 
+		// Угол мог снести себя сам (self_destruct_if_idle), пока очередь ждала своей фазы.
+		// Из очереди он при этом НЕ вынимается намеренно - вынимать элемент из-под курсора
+		// этого прохода нельзя, закрывающий Cut выбросил бы необработанные углы.
+		if(QDELETED(C))
+			continue
+
 		C.update_objects()
 		C.needs_update = FALSE
 		if(init_tick_checks)
