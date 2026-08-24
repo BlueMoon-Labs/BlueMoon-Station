@@ -913,13 +913,13 @@
 	muzzle_ignore = FALSE
 	restraint_check = FALSE
 
-/datum/emote/sound/human/medic/run_emote(mob/user, params)
-	sound = pick('sound/magic/tf2/demoman_medic01.ogg, sound/magic/tf2/demoman_medic02.ogg, sound/magic/tf2/demoman_medic03.ogg, \
-				sound/magic/tf2/engineer_medic01.ogg, sound/magic/tf2/engineer_medic01.ogg, sound/magic/tf2/engineer_medic01.ogg, \
-				sound/magic/tf2/heavy_medic01.ogg, sound/magic/tf2/heavy_medic01.ogg, sound/magic/tf2/heavy_medic01.ogg, \
-				sound/magic/tf2/medic1.ogg, sound/magic/tf2/medic2.ogg, sound/magic/tf2/pyro_medic01.ogg, \
-				sound/magic/tf2/scout_medic01.ogg, sound/magic/tf2/scout_medic02.ogg, sound/magic/tf2/scout_medic03.ogg, \
-				sound/magic/tf2/sniper_medic01.ogg, sound/magic/tf2/sniper_medic01.ogg, \
-				sound/magic/tf2/soldier_medic01.ogg, sound/magic/tf2/soldier_medic01.ogg, sound/magic/tf2/soldier_medic01.ogg, \
-				sound/magic/tf2/spy_medic01.ogg, sound/magic/tf2/spy_medic01.ogg, sound/magic/tf2/spy_medic01.ogg')
+/datum/emote/sound/human/blubbr/run_emote(mob/user, params)
+	sound = pick('sound/magic/tf2/demoman_medic01.ogg', 'sound/magic/tf2/demoman_medic02.ogg', 'sound/magic/tf2/demoman_medic03.ogg', \
+				'sound/magic/tf2/engineer_medic01.ogg', 'sound/magic/tf2/engineer_medic01.ogg', 'sound/magic/tf2/engineer_medic01.ogg', \
+				'sound/magic/tf2/heavy_medic01.ogg', 'sound/magic/tf2/heavy_medic01.ogg', 'sound/magic/tf2/heavy_medic01.ogg', \
+				'sound/magic/tf2/medic1.ogg', 'sound/magic/tf2/medic2.ogg', 'sound/magic/tf2/pyro_medic01.ogg', \
+				'sound/magic/tf2/scout_medic01.ogg', 'sound/magic/tf2/scout_medic02.ogg', 'sound/magic/tf2/scout_medic03.ogg', \
+				'sound/magic/tf2/sniper_medic01.ogg', 'sound/magic/tf2/sniper_medic01.ogg', \
+				'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', \
+				'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg')
 	. = ..()
