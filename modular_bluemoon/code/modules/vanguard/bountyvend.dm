@@ -1,4 +1,23 @@
 // ============================================
+// Ваучеры снаряжения
+// ============================================
+
+/obj/item/vanguard_voucher_class
+	name = "specialization voucher"
+	desc = "A token to redeem a piece of equipment. Use it on a mining equipment vendor."
+	icon = 'icons/obj/vending.dmi'
+	icon_state = "syndie-voucher"
+	w_class = WEIGHT_CLASS_TINY
+
+/obj/item/vanguard_voucher_suit
+	name = "vanguard suit voucher"
+	desc = "A token to redeem a new suit. Use it on a mining equipment vendor."
+	icon = 'icons/obj/vending.dmi'
+	icon_state = "syndie-voucher"
+	w_class = WEIGHT_CLASS_TINY
+
+
+// ============================================
 // DATUM ДЛЯ ТОВАРОВ
 // ============================================
 /datum/data/bounty_equipment
@@ -230,10 +249,10 @@
 			new /obj/item/shield/riot/pointman(drop_location)
 			new /obj/item/storage/box/orange/combatant(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
-	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
+	SSblackbox.record_feedback("tally", "vanguard_voucher_redeemed", 1, selection)
 	qdel(voucher)
 
-/obj/machinery/bountyvend/proc/RedeemSVoucher(/obj/item/vanguard_voucher_suit/voucher, mob/redeemer)
+/obj/machinery/bountyvend/proc/RedeemSVoucher(obj/item/vanguard_voucher_suit/voucher, mob/redeemer)
 	var/items = list(	"EVA" = image(icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi', icon_state = "vanguard_eva"),
 						"Combined suit" = image(icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi', icon_state = "combined"))
 
@@ -251,21 +270,3 @@
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "suit_voucher_redeemed", 1, selection)
 	qdel(voucher)
-
-// ============================================
-// Ваучеры снаряжения
-// ============================================
-
-/obj/item/vanguard_voucher_class
-	name = "specialization voucher"
-	desc = "A token to redeem a piece of equipment. Use it on a mining equipment vendor."
-	icon = 'icons/obj/vending.dmi'
-	icon_state = "syndie-voucher"
-	w_class = WEIGHT_CLASS_TINY
-
-/obj/item/vanguard_voucher_suit
-	name = "vanguard suit voucher"
-	desc = "A token to redeem a new suit. Use it on a mining equipment vendor."
-	icon = 'icons/obj/vending.dmi'
-	icon_state = "syndie-voucher"
-	w_class = WEIGHT_CLASS_TINY
