@@ -903,3 +903,16 @@
 	message = "видит вкусняшку."
 	sound = 'sound/voice/yummers.ogg'
 	stat_allowed = SOFT_CRIT
+
+/datum/emote/sound/human/medic
+	name = "Медик!"
+	key = "medic"
+	key_third_person = "medics"
+	message = "зовёт медика!"
+	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = FALSE
+	restraint_check = FALSE
+
+/datum/emote/sound/human/blubbr/run_emote(mob/user, params)
+	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/blubbr3.ogg')
+	. = ..()

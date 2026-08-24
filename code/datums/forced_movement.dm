@@ -7,6 +7,7 @@
 	var/allow_climbing
 	var/datum/callback/on_step
 	var/moved_at_all = FALSE
+	var/drift_released = FALSE // BLUEMOON ADD - скольжение уже передало жертву космическому дрейфу
 															//as fast as ssfastprocess
 /datum/forced_movement/New(atom/movable/_victim, atom/_target, _steps_per_tick = 0.5, _allow_climbing = FALSE, datum/callback/_on_step = null)
 	victim = _victim
@@ -90,8 +91,10 @@
 			S.do_climb(src)
 
 /// BLUEMOON ADD - on_step-коллбек скольжения с флагом SLIDE_INTO_SPACE (суперлубрикант).
-/// Крутит жертву, как обычное скольжение, но в невесомости (космос за бортом)
-/// каждый шаг продлевает траекторию - полёт длится до стены/астероида, а не 14 тайлов.
+/// Крутит жертву, как обычное скольжение. Как только тело покидает гравитацию,
+/// принудительное скольжение НЕ тянется бесконечно: даём ему сделать ещё один шаг
+/// по курсу и передаём тело честному ньютоновскому дрейфу. Дальше игрок выбирается
+/// сам - бросок предмета меняет траекторию, работает джетпак, можно подхватить.
 /proc/slide_into_space_step(mob/living/carbon/victim, slide_dir)
 	if(!istype(victim) || QDELETED(victim))
 		return
@@ -101,7 +104,20 @@
 		return
 	var/turf/T = get_turf(victim)
 	if(!T || T.has_gravity(victim))
-		return // ещё на полу - траектория не продлевается
-	var/turf/extended = get_ranged_target_turf(victim, slide_dir, SLIDE_INTO_SPACE_RANGE)
-	if(extended) // null только у края z-уровня: там и остановимся
-		FM.target = extended
+		return // ещё на полу - обычное скольжение
+	if(FM.drift_released)
+		return // финальный шаг уже назначен
+	FM.drift_released = TRUE
+	FM.target = get_step(T, slide_dir) // доехали до этой клетки - и всё, datum завершится сам
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(release_into_space_drift), WEAKREF(victim), slide_dir), 2)
+
+/// Запуск дрейфа после завершения forced_movement (Destroy() сбрасывает инерцию,
+/// поэтому newtonian_move зовём только когда victim.force_moving уже пуст)
+/proc/release_into_space_drift(datum/weakref/W, slide_dir)
+	var/mob/living/carbon/victim = W?.resolve()
+	if(!istype(victim) || QDELETED(victim))
+		return
+	if(victim.force_moving) // ещё шагает - повторим попытку следующим тиком
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(release_into_space_drift), W, slide_dir), 2)
+		return
+	victim.newtonian_move(slide_dir)

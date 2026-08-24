@@ -30,12 +30,15 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/conclude_reason_text = ""
 	/// ckey -> "defender" | "attacker"
 	var/list/siege_participant_roles = list()
+	/// BLUEMOON ADD - ckey -> имя получившего награду за победу (для отчёта об осаде)
+	var/list/reward_recipients = list()
 
 /datum/inteq_pact_siege/proc/reset_round_report_data()
 	siege_was_activated = FALSE
 	concluded_side = null
 	conclude_reason_text = ""
 	siege_participant_roles = list()
+	reward_recipients = list() // BLUEMOON ADD
 
 /datum/inteq_pact_siege/proc/track_participant(mob/living/L, role)
 	if(QDELETED(L))
@@ -508,12 +511,44 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	track_round_earning(ck, amount, category)
 	return TRUE
 
+/datum/inteq_pact_siege/proc/note_reward_recipient(mob/living/L)
+	/// BLUEMOON ADD - фиксируем получателя награды для roundend-отчёта
+	if(QDELETED(L))
+		return
+	var/raw_key = L.mind?.key || L.ckey
+	if(!raw_key)
+		return
+	reward_recipients[ckey(raw_key)] = list(
+		"name" = L.real_name || L.name,
+		"key" = raw_key,
+		/// BLUEMOON ADD - уважаем настройку получателя «Hide ckey»
+		"hide_ckey" = L.mind?.hide_ckey,
+	)
+
+/datum/inteq_pact_siege/proc/reward_report_lines()
+	/// BLUEMOON ADD - строки отчёта: сколько получила победившая сторона и кому начислено
+	if(!concluded_side || !length(reward_recipients))
+		return list()
+	var/reward_amount = concluded_side == PACT_SIEGE_SIDE_PACT ? PACT_SIEGE_REWARD_PACT_WIN : PACT_SIEGE_REWARD_INTEQ_WIN
+	var/list/names = list()
+	for(var/ck in reward_recipients)
+		var/list/record = reward_recipients[ck]
+		/// ckey показывается только тем, кто не включил «Hide ckey»
+		names += record["hide_ckey"] \
+			? record["name"] \
+			: "[record["name"]] <small>(игрок: <b>[record["key"]]</b>)</small>"
+	return list(
+		"Награда победившей стороне: <b>[reward_amount] М$</b> каждому (всего [length(names)] чел.)",
+		"Получили: [names.Join(", ")]",
+	)
+
 /datum/inteq_pact_siege/proc/reward_pact_winner(mob/living/L)
 	if(QDELETED(L) || L.stat == DEAD || !HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
 		return
 	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_PACT_WIN, "pact_siege"))
 		log_game("PACT siege: failed to grant PACT reward to [key_name(L)]")
 		return
+	note_reward_recipient(L) // BLUEMOON ADD
 	var/client/C = resolve_reward_client(L)
 	if(C)
 		to_chat(C, span_greentext("<b>ПАКТ победил в протоколе осады. Начислено [PACT_SIEGE_REWARD_PACT_WIN] метадолларов.</b>"))
@@ -526,6 +561,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(!grant_siege_metadollars(L, PACT_SIEGE_REWARD_INTEQ_WIN, "pact_siege"))
 		log_game("PACT siege: failed to grant InteQ reward to [key_name(L)]")
 		return
+	note_reward_recipient(L) // BLUEMOON ADD
 	var/client/C = resolve_reward_client(L)
 	if(C)
 		to_chat(C, span_greentext("<b>InteQ успешно эвакуировался с объекта. Начислено [PACT_SIEGE_REWARD_INTEQ_WIN] метадолларов.</b>"))
@@ -711,6 +747,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 	scan_battlefield_participants()
 
+	reward_recipients.Cut() // BLUEMOON ADD - собираем получателей заново для этого исхода
+
 	if(side == PACT_SIEGE_SIDE_PACT)
 		for(var/datum/weakref/W as anything in attackers)
 			var/mob/living/L = W.resolve()
@@ -772,7 +810,12 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return ""
 	var/outcome = concluded_side == PACT_SIEGE_SIDE_INTEQ ? "Победа InteQ" : (concluded_side == PACT_SIEGE_SIDE_PACT ? "Победа ПАКТ" : "исход не определён")
 	var/reason = conclude_reason_text || "раунд завершился до определения исхода осады"
-	return "<div class='panel clockborder'><span class='header'>Осада InteQ / ПАКТ</span><br>Исход: <b>[outcome]</b><br><small>[reason]</small></div>"
+	var/list/lines = list(
+		"<div class='panel clockborder'><span class='header'>Осада InteQ / ПАКТ</span><br>Исход: <b>[outcome]</b><br><small>[reason]</small>",
+	)
+	lines += reward_report_lines() // BLUEMOON ADD - сумма и получатели награды
+	lines += "</div>"
+	return lines.Join("<br>")
 
 /datum/inteq_pact_siege/proc/personal_roundend_html(client/C)
 	if(!C?.ckey || !siege_was_activated)
@@ -802,6 +845,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		var/won = (role == "defender" && concluded_side == PACT_SIEGE_SIDE_INTEQ) || (role == "attacker" && concluded_side == PACT_SIEGE_SIDE_PACT)
 		if(won)
 			lines += "<small>Метадоллары за победу не начислены (не выполнены условия выплаты или нет префов).</small>"
+	lines += reward_report_lines() // BLUEMOON ADD - сколько получила победившая сторона и кто именно
 	return "<div class='panel clockborder'><span class='header'>Ваш протокол осады</span><br><small>[lines.Join("<br>")]</small></div>"
 
 
