@@ -151,6 +151,14 @@ SUBSYSTEM_DEF(time_track)
 	var/list/memory_census_previous
 	/// world.time последней переписи.
 	var/memory_census_at = 0
+	/// Сколько списков за проход переписи пришлось разворачивать по выборке, а не считать
+	/// целиком (длиннее MEMORY_CENSUS_NESTED_SCAN_CAP). Печатается в строке личных списков:
+	/// молча выдавать оценку за замер прибор не должен. Обнуляется на каждом проходе.
+	var/census_lists_extrapolated = 0
+	/// Итог элементов личных списков по ВСЕМУ миру за последний проход. Без него строка
+	/// личных списков отдавала топ-15 и ничего больше, и баланс памяти по ней не сводился -
+	/// в отличие от строк общих и глобальных списков, где итог был с самого начала.
+	var/census_personal_slots_total = 0
 
 	var/ping_samples = 0
 	var/ping_rtt_last_avg = 0
@@ -396,7 +404,13 @@ SUBSYSTEM_DEF(time_track)
  * тоже растёт, и остаться в нём вовсе без порогов нельзя.
  */
 /datum/controller/subsystem/time_track/proc/memory_baseline_due()
-	if(SSticker?.current_state >= GAME_STATE_PLAYING && SSticker.round_start_time)
+	// Именно РАВЕНСТВО, а не >=. GAME_STATE_FINISHED больше GAME_STATE_PLAYING, и раунд,
+	// кончившийся внутри окна отстаивания, отдавал уровень, снятый посреди обработки конца
+	// раунда - фотографии манифеста, итоговые отчёты, генерация иконок. В раунде 10098
+	// (кончился через 14 секунд после старта) это напечатало 3164 МБ, то есть 77% потолка,
+	// вместо реальных ~2600, и подняло лестницу до 3420 МБ. Числа-мусора в логе, от
+	// которого потом считают пороги, быть не должно.
+	if(SSticker?.current_state == GAME_STATE_PLAYING && SSticker.round_start_time)
 		if(world.time < SSticker.round_start_time + MEMORY_BASELINE_SETTLE_TIME)
 			return FALSE
 		// Уровень, снятый в лобби, здесь пересматривается. Лобби бывает длинным, и
@@ -416,7 +430,7 @@ SUBSYSTEM_DEF(time_track)
  */
 /datum/controller/subsystem/time_track/proc/take_memory_baseline(vsz, list/host_memory)
 	memory_baseline_mb = vsz
-	memory_baseline_provisional = !(SSticker?.current_state >= GAME_STATE_PLAYING)
+	memory_baseline_provisional = SSticker?.current_state != GAME_STATE_PLAYING
 	// Окно скорости роста начинается здесь заново. Останься в нём замеры роундстарта,
 	// первая же оценка получила бы сотни МБ/мин, прогноз дал бы пару минут до потолка,
 	// и админам ушла бы ложная тревога - ровно на том раунде, который ничем не болен.
@@ -426,7 +440,12 @@ SUBSYSTEM_DEF(time_track)
 	memory_warn_at_mb = max(vsz + MEMORY_WARN_STEP_MB, process_address_ceiling_mb \
 		? round(process_address_ceiling_mb * MEMORY_WARN_CEILING_FRACTION) \
 		: MEMORY_WARN_FALLBACK_MB)
-	log_world("## MEMORY: [memory_baseline_provisional ? "предварительный (раунд ещё не начался)" : "базовый"] уровень раунда VmSize [vsz] МБ\
+	var/level_label = "базовый"
+	if(memory_baseline_provisional)
+		level_label = SSticker?.current_state > GAME_STATE_PLAYING \
+			? "предварительный (раунд уже закончился, замер захватил обработку конца раунда)" \
+			: "предварительный (раунд ещё не начался)"
+	log_world("## MEMORY: [level_label] уровень раунда VmSize [vsz] МБ\
 		[process_address_ceiling_mb ? " ([round(vsz / process_address_ceiling_mb * 100)]% потолка в [process_address_ceiling_mb] МБ)" : ""], \
 		объектов [num2text(world.contents.len, 12)] на [world.maxz] z-уровнях, \
 		хост [host_memory ? "[host_memory["available"]] из [host_memory["total"]] МБ свободно" : "не опрошен"]; \
@@ -902,6 +921,8 @@ SUBSYSTEM_DEF(time_track)
  * не-атомных датумов.
  */
 /datum/controller/subsystem/time_track/proc/run_instance_census()
+	census_lists_extrapolated = 0
+	census_personal_slots_total = 0
 	var/list/counts = list()
 	var/list/weights = list()
 	// Тип -> длина vars. Спрашивается ровно один раз на тип: length(thing.vars) на каждом из
@@ -919,6 +940,13 @@ SUBSYSTEM_DEF(time_track)
 	// Тип -> элементы в общих (одна ссылка на все инстансы) списках. Считаются РОВНО ОДИН
 	// раз на тип, потому что и памяти стоят один раз.
 	var/list/type_shared_slots = list()
+	// Набор уже посчитанных ОБЩИХ списков, ключами по самим спискам, на весь проход.
+	// Статик, объявленный у родителя, в DM хранится в одном экземпляре, но КАЖДЫЙ подтип
+	// видит его у себя и раньше приписывал себе целиком. В прод-переписи 10100 это заняло
+	// все пятнадцать строк топа: семь подтипов chem_dispenser по 5432, четыре ловушки по
+	// 2815, четыре винтеркоута по 1603 - на деле три списка, а не пятнадцать. Настоящая
+	// растущая утечка (limb_icon_cache) из топа при этом вытеснялась.
+	var/list/counted_shared_lists = list()
 	// Тип -> элементы во ВСЕХ списках первого инстанса, вместе с общими. Запасной путь для
 	// типов с единственным инстансом: делить общее и личное там не на чем, а цифра нужна -
 	// именно так выглядит contents космической зоны.
@@ -977,7 +1005,7 @@ SUBSYSTEM_DEF(time_track)
 				type_first_slots[atom_type] = collect_instance_lists(thing, reference_lists)
 				type_reference_lists[atom_type] = reference_lists
 			else
-				sample_instance_lists(thing, atom_type, type_reference_lists[atom_type], type_list_slots, type_shared_slots, sampled == 1)
+				sample_instance_lists(thing, atom_type, type_reference_lists[atom_type], type_list_slots, type_shared_slots, counted_shared_lists, sampled == 1)
 		if(isturf(thing))
 			turf_count++
 			turf_slots += slots
@@ -1087,9 +1115,10 @@ SUBSYSTEM_DEF(time_track)
  * * reference_lists - списки первого инстанса этого типа, набор ссылок из collect_instance_lists()
  * * clean_slots - тип -> элементы в ЛИЧНЫХ списках, накапливается по всем таким инстансам
  * * shared_slots - тип -> элементы в ОБЩИХ списках, заполняется ровно один раз на тип
+ * * counted_shared - набор уже посчитанных общих списков на весь проход, ключами по спискам
  * * count_shared - TRUE только на втором инстансе: общие списки считаются один раз
  */
-/datum/controller/subsystem/time_track/proc/sample_instance_lists(datum/thing, thing_type, list/reference_lists, list/clean_slots, list/shared_slots, count_shared)
+/datum/controller/subsystem/time_track/proc/sample_instance_lists(datum/thing, thing_type, list/reference_lists, list/clean_slots, list/shared_slots, list/counted_shared, count_shared)
 	var/slots = 0
 	var/list/instance_vars = thing.vars
 	for(var/var_name in instance_vars)
@@ -1099,7 +1128,12 @@ SUBSYSTEM_DEF(time_track)
 		if(!islist(value))
 			continue
 		if(reference_lists?[value])
-			if(count_shared)
+			// Один список - одна запись, независимо от того, сколько подтипов его видят.
+			// Статик родителя наследуется подтипами ОДНИМ объектом, и приписывать его
+			// каждому - это считать одну и ту же память по нескольку раз. Тип, дошедший
+			// до списка первым, его и получает; строка в логе про это предупреждает.
+			if(count_shared && !counted_shared[value])
+				counted_shared[value] = TRUE
 				shared_slots[thing_type] += list_slots_deep(value)
 			continue
 		slots += list_slots_deep(value)
@@ -1114,33 +1148,41 @@ SUBSYSTEM_DEF(time_track)
  * не заметил бы ничего; для той же причины вложенность нужна reagent_list, comp_lookup,
  * datum_components и любому "список списков".
  *
- * Глубже второго уровня не идём и списки длиннее MEMORY_CENSUS_NESTED_SCAN_CAP не
- * разворачиваем вовсе. Второе важнее первого: contents космической зоны на MetaStation -
- * это 809 тысяч элементов, и перебор её ради поиска вложенных списков стоил бы дороже
- * всей переписи. Её собственная длина при этом считается как надо - пропускается только
- * заглядывание внутрь.
+ * Глубже второго уровня не идём, а длинные списки РАЗБИРАЕМ ПО ВЫБОРКЕ, а не пропускаем.
+ * Прежняя редакция для списка длиннее MEMORY_CENSUS_NESTED_SCAN_CAP возвращала только его
+ * собственную длину, и это была главная слепота прибора: cached_game_recipes_data на 747
+ * ключей, в каждом из которых лежит список на 28 полей, отдавал ровно "747" - недоучёт в
+ * тридцать раз. Всё, что "список списков" и длиннее шестидесяти четырёх, недосчитывалось
+ * систематически; отсюда и берётся большая часть неатрибутированного роста.
+ *
+ * Теперь копия берётся ОТРЕЗКОМ в те же шестьдесят четыре элемента, вложенное считается по
+ * нему и линейно разворачивается на всю длину. Отрезок решает и вторую задачу, ради которой
+ * стоял кап: contents космической зоны на MetaStation - это 809 тысяч элементов, и полная
+ * копия ради поиска вложенных списков стоила бы дороже всей переписи, а копия первых
+ * шестидесяти четырёх стоит столько же, сколько у любого другого списка.
+ *
+ * Копия нужна потому, что встроенные списки BYOND - contents, overlays, verbs, locs,
+ * vis_contents - ассоциативного чтения не поддерживают ВООБЩЕ: outer[элемент] на них не
+ * отдаёт null, а падает "bad index". Плоская копия и снимает запрет, и сохраняет пары
+ * настоящего ассоциативного списка.
  *
  * Фиксированная глубина заодно закрывает вопрос циклов: список, лежащий сам в себе,
  * перебор не зациклит, потому что перебора глубже второго уровня нет.
  */
 /datum/controller/subsystem/time_track/proc/list_slots_deep(list/outer)
 	var/own_length = length(outer)
-	var/slots = own_length
-	if(!own_length || own_length > MEMORY_CENSUS_NESTED_SCAN_CAP)
-		return slots
+	if(!own_length)
+		return 0
 
-	// Встроенные списки BYOND - contents, overlays, verbs, locs, vis_contents - ассоциативного
-	// чтения не поддерживают ВООБЩЕ: outer[элемент] на них не отдаёт null, а падает "bad index".
-	// Перепись же обходит vars подряд и такие списки видит постоянно, так что без этой копии
-	// прибор спамил рантайм на каждый второй атом. Плоская копия и снимает запрет, и сохраняет
-	// пары настоящего ассоциативного списка - проверено стендом.
-	var/list/scan = outer.Copy()
+	var/sample_size = min(own_length, MEMORY_CENSUS_NESTED_SCAN_CAP)
+	var/list/scan = outer.Copy(1, sample_size + 1)
+	var/nested_slots = 0
 
-	for(var/index in 1 to own_length)
+	for(var/index in 1 to sample_size)
 		var/element = scan[index]
 		// Список прямо элементом - это "список списков", вроде reagent_list или очереди пар.
 		if(islist(element))
-			slots += length(element)
+			nested_slots += length(element)
 			continue
 		// Ассоциативная половина: перебор списка отдаёт КЛЮЧИ, значение достаётся индексацией.
 		// Числовой ключ так брать нельзя - для плоского списка outer[число] это обращение по
@@ -1149,8 +1191,14 @@ SUBSYSTEM_DEF(time_track)
 			continue
 		var/nested = scan[element]
 		if(islist(nested))
-			slots += length(nested)
-	return slots
+			nested_slots += length(nested)
+
+	if(nested_slots && sample_size < own_length)
+		// Разворот выборки на всю длину. Цифра становится оценкой, поэтому такие списки
+		// считаются отдельно и называются в логе - читать их как точный замер нельзя.
+		nested_slots = round(nested_slots * own_length / sample_size)
+		census_lists_extrapolated++
+	return own_length + nested_slots
 
 /**
  * Четвёртая строка переписи: чей вес лежит в списках, а не в переменных.
@@ -1169,7 +1217,9 @@ SUBSYSTEM_DEF(time_track)
 	if(!length(top))
 		return
 	log_world("## MEMORY: элементы ЛИЧНЫХ списков (выборка по [MEMORY_CENSUS_LIST_SAMPLES] инстанса на тип, \
-		общие на тип списки не в счёт, пересчёт на мир): [top.Join(", ")]")
+		общие на тип списки не в счёт, пересчёт на мир): всего [num2text(census_personal_slots_total, 12)]\
+		[census_lists_extrapolated ? ", из них [num2text(census_lists_extrapolated, 12)] списков длиннее [MEMORY_CENSUS_NESTED_SCAN_CAP] развёрнуты по выборке (оценка, не замер)" : ""]; \
+		крупнейшие: [top.Join(", ")]")
 
 /**
  * Пятая строка переписи: сколько лежит в ОБЩИХ на весь тип списках.
@@ -1194,8 +1244,9 @@ SUBSYSTEM_DEF(time_track)
 			top += "[type_path] [num2text(type_shared_slots[type_path], 12)]"
 	if(!length(top))
 		return
-	log_world("## MEMORY: элементы ОБЩИХ на тип списков (статики и типовые дефолты, \
-		считаются один раз на тип): всего [num2text(total, 12)]; \
+	log_world("## MEMORY: элементы ОБЩИХ на тип списков (статики и типовые дефолты, каждый список \
+		считается ОДИН раз на весь мир и записывается тому типу, который дошёл до него первым - \
+		у статика родителя это может быть любой из подтипов): всего [num2text(total, 12)]; \
 		крупнейшие: [top.Join(", ")]")
 
 /**
@@ -1286,6 +1337,9 @@ SUBSYSTEM_DEF(time_track)
 			continue
 		per_instance_slots[type_path] = per_instance
 		estimated[type_path] = round(per_instance * all_counts[type_path])
+		// Итог по ВСЕМУ миру, а не только по топу: без него строка отдавала пятнадцать
+		// строк и ничего больше, и свести баланс памяти по переписи было нечем.
+		census_personal_slots_total += estimated[type_path]
 
 	sortTim(estimated, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
 	var/list/top = list()
@@ -1309,7 +1363,17 @@ SUBSYSTEM_DEF(time_track)
 
 	var/list/top = instance_weight_top(weights, counts, type_var_slots, total_slots)
 
-	log_world("## MEMORY: ширина типов (объявленные переменные, НЕ цена в байтах): \
+	// "Ширина" - это ОБЪЯВЛЕННЫЕ переменные, а платится только за ЗАПИСАННЫЕ, ступенями по
+	// четыре слота. Числа из этой строки нельзя брать списком целей: снятие переменной,
+	// которую никто не писал, не освобождает ни байта, а снятие одной из четырёх записанных
+	// не двигает ступень. Разделить объявленные и записанные прибор не может: BYOND бита
+	// "слот записан" не отдаёт, а обходные пути (initial() по имени переменной такого не
+	// умеет; держать эталонный инстанс - это подмешивать фантомного держателя в диагностику
+	// хардделов; WEAKREF пишет датум прямо в измеряемый объект) искажают сам замер.
+	// Куда смотреть вместо неё, сказано в строке-подсказке ниже.
+	log_world("## MEMORY: ширина типов (ОБЪЯВЛЕННЫЕ переменные - это НЕ цена и НЕ список целей, \
+		платится только за записанные, ступенями по 4 слота; раскладку памяти дают строки \
+		количества, личных списков и переписи датумов): \
 		[round(total_slots / 1000000, 0.1)] млн слотов \
 		(турфы [round(turf_slots / total_slots * 100, 0.1)]%, \
 		движимое [round(movable_slots / total_slots * 100, 0.1)]%, \

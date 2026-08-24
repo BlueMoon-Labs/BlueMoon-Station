@@ -469,6 +469,52 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_EQUAL(tracker.memory_growth_mb_per_minute, 0, "Скорость роста посчиталась по огрызку окна сразу после базового уровня")
 
 /**
+ * Базовый уровень не снимается с закончившегося раунда.
+ *
+ * Тест на конкретную ошибку из раунда 10098. Раунд кончился через 14 секунд после старта,
+ * уровень снялся через две минуты - посреди обработки конца раунда, с фотографиями манифеста
+ * и итоговыми отчётами, - и напечатал 3164 МБ, то есть 77% потолка, вместо реальных ~2600.
+ * Лестница от этой цифры встала на 3420 МБ. Причина - сравнение `>= GAME_STATE_PLAYING`, а
+ * GAME_STATE_FINISHED больше GAME_STATE_PLAYING.
+ */
+/datum/unit_test/memory_baseline_ignores_finished_round
+	parent_type = /datum/unit_test/memory_tracker_state
+	var/saved_ticker_state
+	var/ticker_state_taken = FALSE
+
+/datum/unit_test/memory_baseline_ignores_finished_round/Destroy()
+	if(ticker_state_taken)
+		SSticker.current_state = saved_ticker_state
+		ticker_state_taken = FALSE
+	return ..()
+
+/datum/unit_test/memory_baseline_ignores_finished_round/Run()
+	var/datum/controller/subsystem/time_track/tracker = take_tracker_state()
+	// Перепись заказывается из take_memory_baseline() и перебирает world.contents целиком.
+	tracker.memory_census_at = max(world.time, 1)
+	tracker.memory_admin_warned = TRUE
+	tracker.process_address_ceiling_mb = 4092
+
+	saved_ticker_state = SSticker.current_state
+	ticker_state_taken = TRUE
+
+	// Живой раунд: уровень настоящий.
+	SSticker.current_state = GAME_STATE_PLAYING
+	tracker.take_memory_baseline(2620, null)
+	TEST_ASSERT(!tracker.memory_baseline_provisional, "Уровень идущего раунда помечен предварительным")
+
+	// Закончившийся раунд: уровень обязан остаться предварительным, потому что замер
+	// захватил обработку конца раунда, а не установившееся состояние.
+	SSticker.current_state = GAME_STATE_FINISHED
+	tracker.take_memory_baseline(3164, null)
+	TEST_ASSERT(tracker.memory_baseline_provisional, "Уровень, снятый с закончившегося раунда, выдан за базовый")
+
+	// И повторно снимать его с закончившегося раунда прибор не берётся: настоящего
+	// установившегося уровня у такого раунда уже не будет.
+	tracker.memory_baseline_mb = 3164
+	TEST_ASSERT(!tracker.memory_baseline_due(), "Прибор снова просит базовый уровень у закончившегося раунда")
+
+/**
  * Последний рубеж перед потолком: предупреждение по остатку, а не по доле.
  *
  * Цифры боевые, все четыре из логов 19.08.2026 при потолке около 4090 МБ. Раунд 10022 дожил
@@ -535,11 +581,33 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	// по ПОЗИЦИИ, и без гарда сюда приехал бы соседний элемент вместо отсутствующего значения.
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list(2, 3, 1)), 3, "Числовой элемент принят за ключ - счёт уехал на соседа")
 
-	// Длинный список внутрь не разворачивается (contents космической зоны - 800 тысяч
-	// элементов), но своя длина у него считается как надо.
-	var/list/too_long = new /list(65)
+	// Длинный список разбирается ПО ВЫБОРКЕ, а не пропускается. Прежняя редакция для всего
+	// длиннее потолка возвращала одну собственную длину, и это была главная слепота прибора:
+	// книга рецептов диспенсера (747 ключей по 28 полей) отдавала "747" вместо ~21 тысячи.
+	// Здесь 128 элементов, из них первые 64 - выборка; вложенный список ровно один, на
+	// 1000 элементов, и разворот выборки на всю длину даёт 1000 * 128 / 64 = 2000.
+	var/list/too_long = new /list(128)
 	too_long[1] = new /list(1000)
-	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(too_long), 65, "Список длиннее потолка развернулся внутрь, хотя не должен был")
+	var/extrapolated_before = SStime_track.census_lists_extrapolated
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(too_long), 128 + 2000, "Длинный список не развёрнут по выборке")
+	TEST_ASSERT_EQUAL(SStime_track.census_lists_extrapolated - extrapolated_before, 1, "Оценка по выборке не отмечена счётчиком - в логе она выдаст себя за точный замер")
+
+	// Форма книги рецептов диспенсера: длинный АССОЦИАТИВНЫЙ список, у которого вложенное
+	// лежит в значениях, а не элементами. Срезанная копия обязана сохранять пары - иначе
+	// разворот по выборке даст ноль и недоучёт вернётся ровно там, где он и был.
+	var/list/long_assoc = list()
+	for(var/i in 1 to 100)
+		long_assoc["ключ[i]"] = list(1, 2, 3, 4, 5)
+	extrapolated_before = SStime_track.census_lists_extrapolated
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(long_assoc), 100 + 500, "Длинный ассоциативный список: вложенное в значениях не сосчиталось - срезанная копия потеряла пары")
+	TEST_ASSERT_EQUAL(SStime_track.census_lists_extrapolated - extrapolated_before, 1, "Длинный ассоциативный список не отмечен как оценённый по выборке")
+
+	// А список без вложенного внутри - это всё ещё ровно его длина, без всякой оценки:
+	// contents космической зоны на 800 тысяч элементов не должен ни во что разворачиваться.
+	var/list/long_and_flat = new /list(128)
+	extrapolated_before = SStime_track.census_lists_extrapolated
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(long_and_flat), 128, "Плоский длинный список получил выдуманную вложенность")
+	TEST_ASSERT_EQUAL(SStime_track.census_lists_extrapolated - extrapolated_before, 0, "Плоский список зря помечен как оценённый по выборке")
 
 	// Встроенные списки BYOND ассоциативного чтения не терпят вовсе: contents[атом] - это не
 	// null, а "bad index". Перепись обходит vars подряд и такие списки видит на каждом втором
@@ -588,7 +656,8 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 
 	var/list/clean_slots = list()
 	var/list/shared_slots = list()
-	SStime_track.sample_instance_lists(second, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, TRUE)
+	var/list/counted_shared = list()
+	SStime_track.sample_instance_lists(second, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, counted_shared, TRUE)
 
 	TEST_ASSERT_EQUAL(clean_slots[/datum/memory_census_sample_dummy], 2, "Личный список второго инстанса посчитан неверно - статик просочился в личный счёт")
 	TEST_ASSERT_EQUAL(shared_slots[/datum/memory_census_sample_dummy], 5, "Общий на тип список не отнесён в общий счёт")
@@ -597,9 +666,22 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	// на каждый разобранный инстанс.
 	var/datum/memory_census_sample_dummy/third = new
 	third.personal = list(1, 2)
-	SStime_track.sample_instance_lists(third, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, FALSE)
+	SStime_track.sample_instance_lists(third, /datum/memory_census_sample_dummy, reference_lists, clean_slots, shared_slots, counted_shared, FALSE)
 	TEST_ASSERT_EQUAL(shared_slots[/datum/memory_census_sample_dummy], 5, "Общий список посчитан дважды")
 	TEST_ASSERT_EQUAL(clean_slots[/datum/memory_census_sample_dummy], 4, "Личные списки двух инстансов не сложились")
+
+	// Тот же статик, увиденный ДРУГИМ типом, второй раз не платится. Именно на этом
+	// перепись 10100 потеряла весь топ: семь подтипов chem_dispenser записали себе один
+	// и тот же список рецептов по 5432 элемента каждый, и настоящая утечка из топа выпала.
+	var/datum/memory_census_sample_dummy/heir = new
+	heir.personal = list(1, 2)
+	var/list/heir_reference_lists = list()
+	SStime_track.collect_instance_lists(heir, heir_reference_lists)
+	var/datum/memory_census_sample_dummy/heir_second = new
+	heir_second.personal = list(1, 2)
+	// Ключом идёт любой другой тип: важно не какой именно, а что он второй.
+	SStime_track.sample_instance_lists(heir_second, /datum, heir_reference_lists, clean_slots, shared_slots, counted_shared, TRUE)
+	TEST_ASSERT(!shared_slots[/datum], "Один и тот же общий список записан двум типам сразу - память посчитана дважды")
 
 /**
  * Пересчёт выборочной длины списков на весь мир.
