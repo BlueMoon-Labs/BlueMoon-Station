@@ -1175,23 +1175,41 @@ SUBSYSTEM_DEF(time_track)
 		return 0
 
 	var/sample_size = min(own_length, MEMORY_CENSUS_NESTED_SCAN_CAP)
-	var/list/scan = outer.Copy(1, sample_size + 1)
 	var/nested_slots = 0
 
-	for(var/index in 1 to sample_size)
-		var/element = scan[index]
-		// Список прямо элементом - это "список списков", вроде reagent_list или очереди пар.
-		if(islist(element))
-			nested_slots += length(element)
-			continue
-		// Ассоциативная половина: перебор списка отдаёт КЛЮЧИ, значение достаётся индексацией.
-		// Числовой ключ так брать нельзя - для плоского списка outer[число] это обращение по
-		// позиции, и вместо отсутствующего значения вернётся соседний элемент.
-		if(isnull(element) || isnum(element))
-			continue
-		var/nested = scan[element]
-		if(islist(nested))
-			nested_slots += length(nested)
+	if(!istype(outer, /list))
+		// alist из 516: islist() отвечает на него правдой, а istype(x, /list) - нет, и это
+		// единственный способ его отличить. Позиционного доступа у alist нет вовсе, поэтому
+		// отрезок Copy(1, N) на нём падает "list index out of bounds" - перепись валила раунд
+		// на каждой мехе с её facing_modifiers и на profile_*_by_type любой подсистемы.
+		// Копия ему и не нужна: перебор отдаёт ключи, а чтение по ключу законно всегда,
+		// включая числовой ключ.
+		var/scanned = 0
+		for(var/key in outer)
+			scanned++
+			if(scanned > sample_size)
+				break
+			if(islist(key))
+				nested_slots += length(key)
+			var/nested = outer[key]
+			if(islist(nested))
+				nested_slots += length(nested)
+	else
+		var/list/scan = outer.Copy(1, sample_size + 1)
+		for(var/index in 1 to sample_size)
+			var/element = scan[index]
+			// Список прямо элементом - это "список списков", вроде reagent_list или очереди пар.
+			if(islist(element))
+				nested_slots += length(element)
+				continue
+			// Ассоциативная половина: перебор списка отдаёт КЛЮЧИ, значение достаётся индексацией.
+			// Числовой ключ так брать нельзя - для плоского списка outer[число] это обращение по
+			// позиции, и вместо отсутствующего значения вернётся соседний элемент.
+			if(isnull(element) || isnum(element))
+				continue
+			var/nested = scan[element]
+			if(islist(nested))
+				nested_slots += length(nested)
 
 	if(nested_slots && sample_size < own_length)
 		// Разворот выборки на всю длину. Цифра становится оценкой, поэтому такие списки

@@ -795,3 +795,32 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 
 	TEST_ASSERT_EQUAL(length(datum_census_report_lines(list(), list(), null, null, 5)), 1, "Пустой счётчик обязан дать одну строку, а не рантайм")
 #endif
+
+/**
+ * alist (516) в переписи списков.
+ *
+ * islist() отвечает на alist правдой, поэтому в list_slots_deep() он заходит наравне с
+ * обычным списком - а позиционного доступа у него нет вовсе, и отрезок Copy(1, N) падает
+ * "list index out of bounds". Ловить это некому: перепись живёт в INVOKE_ASYNC, её рантайм
+ * виден только в логе. На проде хватало одной мехи (facing_modifiers) или любой подсистемы
+ * (profile_cost_by_type), чтобы каждая перепись сыпала рантаймами до конца раунда.
+ */
+/datum/unit_test/census_list_slots_alist
+
+/datum/unit_test/census_list_slots_alist/Run()
+	// Вложенное внутри alist обязано считаться, а не ронять прок: 2 ключа + 3 + 2 элемента.
+	var/list/nested_alist = alist("шлем" = list(1, 2, 3), "корпус" = list(4, 5))
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(nested_alist), 7, "перепись обязана досчитать вложенные списки alist, а не упасть на срезе")
+
+	// Числовой ключ у alist - обычный ключ, а не позиция.
+	var/list/numeric_alist = alist(1 = list("a", "b"), 2 = "плоское значение")
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(numeric_alist), 4, "числовой ключ alist читается как ключ, вложенный список по нему теряться не должен")
+
+	// alist без вложенного - только собственная длина.
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(alist("a" = 1.5, "b" = 1, "c" = 0.5)), 3, "у alist без вложенных списков считается только своя длина")
+
+	// Обычный список считается ровно как раньше: 2 своих слота + 2 + 3 вложенных.
+	var/list/plain = list("ключ" = list(1, 2), list(3, 4, 5))
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(plain), 7, "плоский путь переписи не должен измениться")
+
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(alist()), 0, "пустой alist - это ноль слотов, а не рантайм")
