@@ -483,12 +483,6 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/service/sauna)
-"aeR" = (
-/obj/machinery/light/small{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/security/checkpoint/escape)
 "aeV" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -2056,11 +2050,6 @@
 /obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"aqz" = (
-/turf/open/floor/plasteel/textured/half{
-	dir = 8
-	},
-/area/hallway/secondary/exit)
 "aqD" = (
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 4
@@ -7646,6 +7635,9 @@
 "aQC" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/exit)
@@ -32381,16 +32373,6 @@
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/exit)
-"cyr" = (
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/obj/machinery/door/airlock/external{
-	name = "Cargo Escape Airlock"
-	},
-/obj/structure/fans/tiny,
-/turf/open/floor/plating,
-/area/hallway/secondary/exit)
 "cyu" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
@@ -32723,10 +32705,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/disposal)
-"cAJ" = (
-/obj/structure/grille,
-/turf/open/floor/plating,
-/area/maintenance/port/aft)
 "cAK" = (
 /obj/machinery/light/small,
 /turf/open/floor/plating,
@@ -36818,6 +36796,14 @@
 	dir = 8
 	},
 /area/cargo/storage)
+"dKC" = (
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/plasteel/textured/corner{
+	dir = 8
+	},
+/area/security/checkpoint/escape)
 "dLl" = (
 /obj/item/stack/rods,
 /turf/open/space,
@@ -42824,15 +42810,6 @@
 /obj/structure/table/wood,
 /turf/open/floor/carpet/blue,
 /area/service/bar)
-"ggm" = (
-/obj/machinery/door/airlock/external{
-	name = "Cargo Escape Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/hallway/secondary/exit)
 "ggr" = (
 /obj/structure/reagent_dispensers/virusfood{
 	pixel_x = -32
@@ -48130,6 +48107,18 @@
 "ilw" = (
 /turf/open/floor/grass/grass0,
 /area/service/chapel/main)
+"ilI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/red/anticorner,
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/turf/open/floor/plasteel/textured/corner{
+	dir = 8
+	},
+/area/security/checkpoint/escape)
 "imk" = (
 /obj/structure/lattice,
 /obj/machinery/atmospherics/pipe/simple/orange/visible{
@@ -50313,13 +50302,6 @@
 /obj/structure/sign/warning/securearea,
 /turf/closed/wall,
 /area/engineering/main)
-"jiR" = (
-/obj/machinery/light/small,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/hallway/secondary/exit)
 "jjE" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -51445,13 +51427,7 @@
 	},
 /area/security/brig)
 "jHf" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/caution{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/red/anticorner,
+/obj/effect/turf_decal/tile/red/half,
 /turf/open/floor/plasteel/textured/corner{
 	dir = 1
 	},
@@ -73732,6 +73708,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/yellow/corner,
+/obj/item/kirbyplants{
+	icon_state = "plant-21"
+	},
 /turf/open/floor/plasteel/textured/half{
 	dir = 8
 	},
@@ -77743,6 +77722,9 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
+/obj/machinery/light/small{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/escape)
 "uCQ" = (
@@ -81629,8 +81611,15 @@
 /turf/open/floor/plasteel/white/textured/large,
 /area/science/explab)
 "wcm" = (
-/obj/effect/turf_decal/tile/red,
-/turf/open/floor/plasteel/textured,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_x = 32
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/textured/half{
+	dir = 8
+	},
 /area/hallway/secondary/exit)
 "wcn" = (
 /obj/machinery/power/apc{
@@ -83721,10 +83710,6 @@
 /obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"wUU" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/commons/fitness/recreation)
 "wUY" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
@@ -86393,11 +86378,6 @@
 	dir = 1
 	},
 /area/security/processing)
-"yeV" = (
-/turf/open/pool/water{
-	icon_state = "dark_small"
-	},
-/area/commons/fitness/recreation)
 "yeZ" = (
 /obj/effect/turf_decal/trimline/blue/filled/corner,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -103994,7 +103974,7 @@ bHE
 bHE
 bHE
 bCq
-cAJ
+cqn
 wSN
 bCq
 aaa
@@ -118591,7 +118571,7 @@ khh
 qrT
 sex
 uyk
-wUU
+gva
 bSu
 mIJ
 bSu
@@ -118851,7 +118831,7 @@ uyk
 gva
 bSu
 bSu
-yeV
+bSu
 bSu
 bSu
 rPh
@@ -137618,7 +137598,7 @@ aaa
 aaa
 aaa
 vxM
-vBn
+dKC
 jHf
 vxM
 oBm
@@ -137875,8 +137855,8 @@ aaa
 aaa
 aaa
 vxM
-vxM
-iCb
+vBn
+ilI
 vxM
 dNt
 rRl
@@ -137888,7 +137868,7 @@ aPs
 taa
 aPs
 mCw
-aqz
+aPs
 wcm
 aQF
 aNa
@@ -138131,9 +138111,9 @@ aaa
 aaa
 aaa
 aaa
-aaa
 vxM
-nRX
+vxM
+iCb
 vxM
 cyp
 aNa
@@ -138143,9 +138123,9 @@ aNa
 aNa
 cyp
 aNa
-ggm
+cyp
 aNa
-aNa
+cyp
 aNa
 aNa
 aNa
@@ -138390,7 +138370,7 @@ aaa
 aaa
 aaa
 vxM
-aeR
+nRX
 vxM
 tsf
 aNa
@@ -138400,10 +138380,10 @@ aaf
 aNa
 tsf
 aNa
-jiR
+tsf
 aNa
-aaa
-aaa
+tsf
+aNa
 aaa
 aaa
 aaa
@@ -138659,8 +138639,8 @@ aQC
 aNa
 aQC
 aNa
-aaa
-aaa
+aQC
+aNa
 aaa
 aaa
 aaa
@@ -138914,10 +138894,10 @@ aaa
 aNa
 aTo
 aRW
-cyr
+aTo
 aNa
-aaa
-aaa
+aTo
+aNa
 aaa
 aaa
 aaa

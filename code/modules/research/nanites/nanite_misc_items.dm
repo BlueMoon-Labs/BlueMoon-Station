@@ -46,7 +46,10 @@
 	STOP_PROCESSING(SSobj, src)
 	var/volume = SEND_SIGNAL(source, COMSIG_NANITE_GET_VOLUME)
 	SEND_SIGNAL(source, COMSIG_NANITE_DELETE)
-	if(source.AddComponent(/datum/component/nanites, volume) != COMPONENT_INCOMPATIBLE)
+	// Помпа растворяется на несовместимом носителе, и возвращать ему наниты после
+	// извлечения нельзя - AddComponent пишет "Incompatible ... assigned to a ..."
+	// (раунд 9881). Те же условия совместимости, что и у check_nanites().
+	if(can_be_implanted_in(source) && source.AddComponent(/datum/component/nanites, volume) != COMPONENT_INCOMPATIBLE)
 		SEND_SIGNAL(source, COMSIG_NANITE_SYNC, pump_nanites)
 		SEND_SIGNAL(source, COMSIG_NANITE_SET_REGEN, -50)
 
