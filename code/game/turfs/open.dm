@@ -336,7 +336,13 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		// BLUEMOON CHANGE - обычная смазка катит 4 тайла, SLIDE_INTO_SPACE (суперлубрикант)
+		// планирует длинную траекторию и продлевает её в невесомости, пока жертва не во что-то не врежется
+		var/slide_range = (lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4
+		var/datum/callback/on_step = CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1)
+		if(lube & SLIDE_INTO_SPACE)
+			on_step = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(slide_into_space_step), C, olddir)
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_range), 1, FALSE, on_step)
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE

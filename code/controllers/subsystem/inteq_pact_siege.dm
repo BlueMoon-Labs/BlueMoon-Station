@@ -405,7 +405,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	suppress_auto_away_destinations()
 
 	priority_announce(
-		"Внимание, обнаружена активность в области подбитого объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: УНИЧТОЖИТЬ ВЫЖИВШИХ. Всем подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционный ГЕЙТ откалиброван на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
+		"Внимание, обнаружена активность в области подбитого объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: УНИЧТОЖИТЬ ВЫЖИВШИХ. АБСОЛЮТНО всем боевым подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционный ГЕЙТ откалиброван на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
 		"Центральное Командование",
 		'sound/misc/announce_syndi.ogg',
 		"Priority",
@@ -585,7 +585,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	/// Living InteQ leave the round via goodbye() when the shuttle departs.
 	for(var/datum/weakref/W as anything in defenders)
 		var/mob/living/L = W.resolve()
-		if(QDELETED(L) || L.stat == DEAD)
+		if(QDELETED(L))
+			continue
+		if(L.stat == DEAD)
+			/// BLUEMOON FIX - трупы InteQ убираем вместе с эвакуацией,
+			/// wipe_inteq_forgotten_ship() чистит только палубу шаттла,
+			/// а тела с поля боя (или утащенные ПАКТ) иначе остаются навсегда
+			log_game("PACT siege: removing dead InteQ defender [key_name(L)] during evacuation.")
+			if(L.client)
+				L.ghostize(FALSE)
+			qdel(L, TRUE)
 			continue
 		to_chat(L, span_notice("Эвакуационный шаттл InteQ покидает зону боя..."))
 		L.goodbye()

@@ -88,3 +88,20 @@
 		var/obj/structure/S = A
 		if(S.climbable)
 			S.do_climb(src)
+
+/// BLUEMOON ADD - on_step-коллбек скольжения с флагом SLIDE_INTO_SPACE (суперлубрикант).
+/// Крутит жертву, как обычное скольжение, но в невесомости (космос за бортом)
+/// каждый шаг продлевает траекторию - полёт длится до стены/астероида, а не 14 тайлов.
+/proc/slide_into_space_step(mob/living/carbon/victim, slide_dir)
+	if(!istype(victim) || QDELETED(victim))
+		return
+	victim.spin(1, 1)
+	var/datum/forced_movement/FM = victim.force_moving
+	if(!FM || QDELETED(FM))
+		return
+	var/turf/T = get_turf(victim)
+	if(!T || T.has_gravity(victim))
+		return // ещё на полу - траектория не продлевается
+	var/turf/extended = get_ranged_target_turf(victim, slide_dir, SLIDE_INTO_SPACE_RANGE)
+	if(extended) // null только у края z-уровня: там и остановимся
+		FM.target = extended
