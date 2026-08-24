@@ -174,36 +174,44 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	return copiedobjs
 
 //Ссылка, которую копия не имеет права унаследовать: атом или обычный датум
-//остаётся хозяйством шаблона. Картинка и аппиранс - это значение внешнего вида,
-//а не владение, их копия получить обязана, иначе с турфа слетят оверлеи
-#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value) && !isappearance(value))
+//остаётся хозяйством шаблона. Картинка - значение внешнего вида, её копия получить
+//обязана, иначе с турфа слетят оверлеи. Сырые аппирансы и фильтры - не датумы вовсе,
+//istype(x, /datum) на них ложь, поэтому отдельная проверка isappearance тут не нужна:
+//она наоборот пробивала фильтр для голых /datum - isappearance сверяется через
+//istype(картинка, thing), а /image - наследник /datum, так что для typeof == /datum
+//"аппирансом" объявлялся любой посторонний датум и оставался в копии шаблона.
+#define IS_BORROWED_TEMPLATE_REF(value) (isdatum(value) && !isimage(value))
 
 /**
  * Копия списка шаблона без чужих ссылок: датум выкидывается и из ключа, и из
  * значения, вложенные списки чистятся тем же правилом.
  *
- * Мелкая .Copy() отсеивала одиночную ссылку на датум, но список таких же ссылок
- * проезжал целиком: копия получала vis_contents шаблона (и показывала его атомы)
- * вместе с alternate_appearances, а Destroy копии дёргал за них чужие HUD-датумы.
+ * Итерация for(in) даёт ключи списка - позиционный доступ source[i] тут не годится:
+ * он возвращает ЗНАЧЕНИЕ слота. Прошлый вариант принимал значения за ключи, поэтому
+ * элемент-список (atom_colours хранит пары цвет+приоритет вложенными списками)
+ * уезжал в source[ключ] как индекс - голодек падал "bad index" на загрузке Beach.
+ * Ассоциативные пары при этом разваливались: настоящий ключ через source[i] вообще
+ * не достать, typecacheof-словари превращались в кучу элементов TRUE.
  */
 /proc/copy_template_list(list/source)
 	var/list/scrubbed = list()
-	for(var/index in 1 to length(source))
-		var/key = source[index]
-		if(IS_BORROWED_TEMPLATE_REF(key))
+	for(var/key in source)
+		if(islist(key)) //вложенный список - обычный элемент без ассоциации; списком как индексом значение не спросить
+			scrubbed += list(copy_template_list(key))
 			continue
+		if(IS_BORROWED_TEMPLATE_REF(key))
+			continue //чужой датум-ключ уносит с собой всю пару
 		//число и null ключами ассоциации не бывают, а source[число] - это доступ по индексу
 		var/value = (isnum(key) || isnull(key)) ? null : source[key]
 		if(IS_BORROWED_TEMPLATE_REF(value))
-			continue
-		if(islist(key))
-			key = copy_template_list(key)
+			continue //датум в значении выкидывает пару целиком, огрызок-ключ не нужен
 		if(islist(value))
 			value = copy_template_list(value)
-		//не += : список приехал бы слитым, а null потерялся бы молча
-		scrubbed.len++
-		scrubbed[scrubbed.len] = key
-		if(!isnull(value))
+		if(isnull(value))
+			//простой элемент; += съел бы его молча, если это null
+			scrubbed.len++
+			scrubbed[scrubbed.len] = key
+		else //ассоциированная пара встаёт одним слотом и в нужном месте порядка
 			scrubbed[key] = value
 	return scrubbed
 

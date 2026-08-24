@@ -1725,8 +1725,14 @@
 /obj/item/modkit/vp78tactic
 	name = "VP78 Tactic ModKit"
 	desc = "A modkit for making an tactic version of Enforcer pistol."
-	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic
-	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag)
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcerred)
+
+/obj/item/modkit/vp78tactic/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	if(istype(target, /obj/item/gun/ballistic/automatic/pistol/enforcerred))
+		product = /obj/item/gun/ballistic/automatic/pistol/enforcerred/vp78tactic
+	else
+		product = /obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic
+	. = ..()
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic
 	DONATE_ITEM_TOOLTIP_PARENT
@@ -1741,6 +1747,29 @@
 	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_reload.ogg'
 	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
 	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
+	hole = null
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/vp78tactic/CtrlShiftClick(mob/living/carbon/human/user as mob)
+	return
+
+/obj/item/gun/ballistic/automatic/pistol/enforcerred/vp78tactic
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "VP78 Tactic (.45)"
+	desc = "A massive, modifide, formidable fully automatic handgun chambered in .45 inch squash-head rounds. Typicly used by PMC forces. This weapon is also undergoing limited field testing as part of the SolFed next generation pistol program. The slide is engraved with some logo reminding you who's really in charge."
+	icon = 'modular_bluemoon/fluffs/icons/obj/vptactic.dmi'
+	icon_state = "vptactic"
+	flight_x_offset = 19
+	unique_reskin = null
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_reload.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_reload.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/vptactic_unload.ogg'
+	hole = null
+
+// No sex allowed
+/obj/item/gun/ballistic/automatic/pistol/enforcerred/vp78tactic/CtrlShiftClick(mob/living/carbon/human/user as mob)
+	return
 
 /obj/item/modkit/largrizzly_kit
 	name = "Lar Grizzly Kit"

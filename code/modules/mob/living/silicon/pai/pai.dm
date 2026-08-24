@@ -335,8 +335,8 @@
 	..()
 	P.toggle_integrated_light()
 
-/mob/living/silicon/pai/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
-	. = ..(movement_dir, continuous_move)
+/mob/living/silicon/pai/Process_Spacemove(movement_dir = 0)
+	. = ..()
 	if(!.)
 		add_movespeed_modifier(/datum/movespeed_modifier/pai_spacewalk)
 		return TRUE

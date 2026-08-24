@@ -134,7 +134,9 @@
 				O.make_unfrozen()
 		add_wet(TURF_WET_WATER, max_time_left())
 		dry(null, TURF_WET_ICE)
-	dry(null, ALL, FALSE, decrease)
+	// BLUEMOON ADDITION - суперсмазка не высыхает сама по себе, убрать её может только уборка.
+	// Сила порога - TURF_WET_LUBE: всё слабее высыхает, суперсмазка (сильнее) - нет.
+	dry(null, TURF_WET_LUBE, FALSE, decrease)
 	check()
 	last_process = world.time
 

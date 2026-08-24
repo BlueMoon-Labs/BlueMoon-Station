@@ -199,6 +199,13 @@
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/choice_beacon/box/desk
 
+/datum/metadollar_shop_item/item/medbeam
+	name = "Гражданская Медицинская Пушка"
+	desc = "Ого, лечебные наниты. Круто!"
+	cost = 25
+	catalog = METADOLLAR_CATALOG_LEGIT
+	spawn_type = /obj/item/gun/medbeam/weak
+
 /datum/metadollar_shop_item/item/pet_beacon
 	name = "Маяк питомца"
 	desc = "Позволяет призвать компаньона-питомца."

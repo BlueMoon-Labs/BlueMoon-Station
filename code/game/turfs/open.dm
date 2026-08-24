@@ -336,9 +336,12 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		// BLUEMOON CHANGE - обычная смазка катит 4 тайла, SLIDE_INTO_SPACE (суперлубрикант)
-		// планирует длинную траекторию и продлевает её в невесомости, пока жертва не во что-то не врежется
-		var/slide_range = (lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4
+		// BLUEMOON CHANGE - цепное качение: слайд идёт через всю смазанную дорожку плюс инерция,
+		// одиночная смазанная клетка - прежний разлёт на 4. Суперлубрикант (SLIDE_INTO_SPACE)
+		// при покидании гравитации передаёт тело ньютоновскому дрейфу: полёт без лимита,
+		// траекторию игрок меняет сам (бросок предмета, джетпак).
+		var/slide_run = lube_slide_run(olddir)
+		var/slide_range = slide_run ? slide_run + 1 + rand(2, 3) : ((lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4)
 		var/datum/callback/on_step = CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1)
 		if(lube & SLIDE_INTO_SPACE)
 			on_step = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(slide_into_space_step), C, olddir)
@@ -346,6 +349,22 @@
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE
+
+/// Сколько турфов подряд по направлению dir_to_scan покрыты смазкой (SLIDE-флаг).
+/// Используется для цепного качения: катимся, пока под нами луб, и останавливаемся,
+/// когда дорожка кончается. Лимита длины нет - катимся до конца дорожки.
+/// Стены не проверяем - forced_movement сам затормозит.
+/turf/open/proc/lube_slide_run(dir_to_scan)
+	. = 0
+	var/turf/open/checking = get_step(src, dir_to_scan)
+	while(istype(checking))
+		if(!checking.has_gravity())
+			break
+		var/datum/component/slippery/S = checking.GetComponent(/datum/component/slippery)
+		if(!(S?.lube_flags & SLIDE))
+			break
+		.++
+		checking = get_step(checking, dir_to_scan)
 
 /turf/open/proc/MakeSlippery(wet_setting = TURF_WET_WATER, min_wet_time = 0, wet_time_to_add = 0, max_wet_time = MAXIMUM_WET_TIME, permanent)
 	AddComponent(/datum/component/wet_floor, wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)

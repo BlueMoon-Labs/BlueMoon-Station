@@ -16,6 +16,14 @@
 
 	var/main_heal = -10
 	var/second_heal = -5
+	// BLUEMOON ADD START - медлуч восстанавливает кровь и заживляет раны (раны через on_xadone)
+	/// Сколько крови восстанавливается за тик обработки луча
+	var/blood_restore_per_tick = 5
+	/// Сила заживления ран за тик обработки луча (см. /datum/wound/proc/on_xadone)
+	var/wound_heal_power = 3
+	/// Плоское восстановление brute/burn за тик (heal_overall_damage)
+	var/overall_restore_per_tick = 2
+	// BLUEMOON ADD END
 
 	weapon_weight = WEAPON_MEDIUM
 
@@ -36,6 +44,7 @@
 		QDEL_NULL(current_beam)
 		active = 0
 		on_beam_release(current_target)
+		playsound(src, 'sound/magic/tf2/medigun_heal_detach.ogg', 50, FALSE, 3)
 	STOP_PROCESSING(SSobj, src)
 	current_target = null
 
@@ -62,6 +71,7 @@
 	// INVOKE_ASYNC(current_beam, TYPE_PROC_REF(/datum/beam, Start))
 	current_beam = user.Beam(current_target, icon_state="medbeam", time = 10 MINUTES, maxdistance = max_range, beam_type = /obj/effect/ebeam/medical)
 	RegisterSignal(current_beam, COMSIG_PARENT_QDELETING, PROC_REF(beam_died))
+	playsound(src, 'sound/magic/tf2/medigun_heal.ogg', 50, FALSE, 3)
 	START_PROCESSING(SSobj, src)
 
 	SSblackbox.record_feedback("tally", "gun_fired", 1, type)
@@ -142,7 +152,13 @@
 	return
 
 /obj/item/gun/medbeam/proc/on_beam_tick(var/mob/living/target)
-	if(target.health != target.maxHealth)
+	// BLUEMOON EDIT - луч теперь виден и когда лечим раны или кровь, а не только урон
+	var/healing_something = target.health != target.maxHealth
+	if(iscarbon(target))
+		var/mob/living/carbon/carbon_target = target
+		if(length(carbon_target.all_wounds) || carbon_target.blood_volume < BLOOD_VOLUME_NORMAL)
+			healing_something = TRUE
+	if(healing_something)
 		new /obj/effect/temp_visual/heal(get_turf(target), "#80F5FF")
 	target.drowsyness = max(target.drowsyness-5, 0)
 	target.AdjustUnconscious(main_heal, FALSE)
@@ -150,10 +166,20 @@
 	target.adjustStaminaLoss(main_heal, FALSE)
 	target.adjustBruteLoss(main_heal, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
 	target.adjustFireLoss(main_heal, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
-	target.heal_overall_damage(2, 2, 0, only_robotic = FALSE, only_organic = FALSE, updating_health = TRUE)
+	target.heal_overall_damage(overall_restore_per_tick, overall_restore_per_tick, 0, only_robotic = FALSE, only_organic = FALSE, updating_health = TRUE)
 	target.adjustToxLoss(second_heal, forced = TRUE)
 	target.adjustOxyLoss(second_heal)
 	target.adjust_disgust(second_heal)
+	// Восстановление крови и заживление ран (порезы, проколы, ожоги,
+	// переломы через общий механизм крио-прогресса). Копия списка обязательна: on_xadone
+	// может удалить полностью залеченную рану прямо во время обхода.
+	if(iscarbon(target))
+		var/mob/living/carbon/carbon_target = target
+		if(carbon_target.blood_volume < BLOOD_VOLUME_NORMAL)
+			carbon_target.blood_volume = min(carbon_target.blood_volume + blood_restore_per_tick, BLOOD_VOLUME_NORMAL)
+		if(length(carbon_target.all_wounds))
+			for(var/datum/wound/wound as anything in carbon_target.all_wounds.Copy())
+				wound.on_xadone(wound_heal_power)
 	return
 
 /obj/item/gun/medbeam/proc/on_beam_release(var/mob/living/target)
@@ -164,23 +190,121 @@
 
 /obj/item/gun/medbeam/weak
 	name = "Civilian Medical Beamgun"
-	desc = "Just like a regular beamgun, but cheaper. Used only to stabilize patients in critical condition."
+	desc = "Just like a regular beamgun, but cheaper."
+	main_heal = -5
+	second_heal = -2.5
+	blood_restore_per_tick = 2.5
+	wound_heal_power = 1.5
+	overall_restore_per_tick = 1
 
-/obj/item/gun/medbeam/weak/on_beam_tick(var/mob/living/target)
-	if(target.stat == DEAD)
-		LoseTarget()
-		return
-	if(target.health != target.maxHealth)
-		new /obj/effect/temp_visual/heal(get_turf(target), "#80F5FF")
-	if(target.health < 50)
-		target.adjustBruteLoss(main_heal/2, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
-		target.adjustFireLoss(main_heal/2, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
-		target.adjustOxyLoss(second_heal/2)
-		target.adjustToxLoss(second_heal/2, forced=TRUE)
+///////////////////////////////Syndicate Version///////////////////////////////
+
+#define MEDBEAM_UBER_CHARGE_PER_TICK 2
+
+/obj/item/gun/medbeam/syndicate
+	name = "\improper Syndicate Medical Beamgun"
+	desc = "Чудо инженерии Syndicate с модулем Уберзаряда. Держа луч на пациенте, вы заряжаете \
+			Уберзаряд; когда он полон, активируйте его кнопкой использования предмета (Пробел): \
+			вы и ваш пациент на десять секунд покрываетесь неуязвимым алым сиянием."
+
+	/// Текущий заряд убера, 0-100
+	var/uber_charge = 0
+	/// Активен ли уберзаряд прямо сейчас (на это время новый заряд не копится)
+	var/uber_deployed = FALSE
+	/// Длительность неуязвимости
+	var/uber_duration = 10 SECONDS
+	/// Сообщили ли уже пользователю о готовности заряда
+	var/charge_ready_reported = FALSE
+
+/obj/item/gun/medbeam/syndicate/examine(mob/user)
+	. = ..()
+	if(uber_deployed)
+		. += span_warning("Уберзаряд активен!")
 	else
-		target.adjustBruteLoss(main_heal/4, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
-		target.adjustFireLoss(main_heal/4, FALSE, TRUE, only_robotic = FALSE, only_organic = FALSE)
-	return
+		. += span_notice("Заряд Уберзаряда: [round(uber_charge)]%[uber_charge >= 100 ? ". ГОТОВ - активируйте кнопкой использования предмета!" : "."]")
+
+/obj/item/gun/medbeam/syndicate/attack_self(mob/living/user)
+	activate_uber(user)
+
+/// Пока луч работает, уберзаряд копится сам собой
+/obj/item/gun/medbeam/syndicate/on_beam_tick(var/mob/living/target)
+	..()
+	if(uber_deployed || !isliving(loc))
+		return
+	uber_charge = min(100, uber_charge + MEDBEAM_UBER_CHARGE_PER_TICK)
+	if(uber_charge >= 100 && !charge_ready_reported)
+		charge_ready_reported = TRUE
+		var/mob/living/user = loc
+		user.balloon_alert(user, "уберзаряд готов!")
+
+/obj/item/gun/medbeam/syndicate/proc/activate_uber(mob/living/user)
+	if(uber_deployed)
+		to_chat(user, "<span class='warning'>Уберзаряд уже активен!</span>")
+		return
+	if(uber_charge < 100)
+		user.balloon_alert(user, "уберзаряд не готов ([round(uber_charge)]%)")
+		return
+
+	uber_charge = 0
+	charge_ready_reported = FALSE
+	uber_deployed = TRUE
+	addtimer(CALLBACK(src, PROC_REF(end_uber)), uber_duration)
+	playsound(src, 'sound/magic/tf2/medigun_charged.ogg', 50, TRUE)
+
+	// Неуязвимость получает и медик, и пациент под лучом
+	if(isliving(user) && !(user.status_flags & GODMODE))
+		user.apply_status_effect(/datum/status_effect/ubercharged, uber_duration)
+	if(isliving(current_target) && current_target != user && !(current_target.status_flags & GODMODE))
+		current_target.apply_status_effect(/datum/status_effect/ubercharged, uber_duration)
+
+/obj/item/gun/medbeam/syndicate/proc/end_uber()
+	uber_deployed = FALSE
+
+#undef MEDBEAM_UBER_CHARGE_PER_TICK
+
+/// Кратковременная полная неуязвимость с алым оверлеем, как уберзаряд из Team Fortress 2.
+/// Ставится парой: на медика с пушкой и на пациента под лучом.
+/datum/status_effect/ubercharged
+	id = "ubercharged"
+	duration = 10 SECONDS
+	status_type = STATUS_EFFECT_REPLACE
+	alert_type = /atom/movable/screen/alert/status_effect/ubercharged
+	/// Цвет владельца до покрытия алым сиянием, возвращаем при снятии
+	var/old_color
+
+/atom/movable/screen/alert/status_effect/ubercharged
+	name = "Уберзаряд"
+	desc = "Алое сияние защищает вас от любого вреда!"
+	icon_state = "blooddrunk"
+
+/datum/status_effect/ubercharged/on_creation(mob/living/new_owner, set_duration)
+	if(isnum(set_duration))
+		duration = set_duration
+	return ..()
+
+/datum/status_effect/ubercharged/on_apply()
+	. = ..()
+	if(!.)
+		return
+	old_color = owner.color
+	owner.log_message("gained ÜberCharge invulnerability", LOG_ATTACK)
+	owner.visible_message("<span class='warning'>[owner] вспыхивает алым сиянием!</span>", \
+		"<span class='userdanger'>Вас накрывает алое сияние уберзаряда - вы неуязвимы!</span>")
+	// Алый оверлей: красный канал сохранён, зелёный и синий приглушены
+	animate(owner, color = list(1,0,0,0, 0,0.25,0,0, 0,0,0.25,0, 0,0,0,1), time = 5)
+	owner.status_flags |= GODMODE
+	playsound(owner, 'sound/magic/tf2/medi_shield_deploy.ogg', 50, TRUE)
+
+/datum/status_effect/ubercharged/on_remove()
+	. = ..()
+	owner.status_flags &= ~GODMODE
+	owner.log_message("lost ÜberCharge invulnerability", LOG_ATTACK)
+	owner.visible_message("<span class='warning'>Алое сияние вокруг [owner] гаснет.</span>", \
+		"<span class='boldwarning'>Сияние гаснет - вы снова уязвимы!</span>")
+	animate(owner, color = old_color, time = 5)
+	playsound(owner, 'sound/magic/tf2/medi_shield_retract.ogg', 50, TRUE)
+
+// BLUEMOON ADD END
 
 //////////////////////////////Mech Version///////////////////////////////
 /obj/item/gun/medbeam/mech

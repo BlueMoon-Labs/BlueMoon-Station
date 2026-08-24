@@ -36,6 +36,7 @@
 
 /obj/item/projectile/bullet/pellet/rubbershot23
 	name = "23 rubbershot pellet"
+	icon_state = "pellet"
 	damage = 3
 	stamina = 18
 	armour_penetration = BULLET_BR0
@@ -48,6 +49,7 @@
 // КС-23 боевая дробь — BR3 в упор (шьёт бронежилет), BR0 на 4+ тайлах
 /obj/item/projectile/bullet/pellet/buckshot23
 	name = "23 buckshot pellet"
+	icon_state = "pellet"
 	damage = 12
 	stamina = 8
 	armour_penetration = 35    // BLUEMOON EDIT: было BR1(10) → 35 (BR3 в упор, падает быстро)

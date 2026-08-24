@@ -579,7 +579,14 @@
 /datum/unit_test/ai_obstacle_policy_climbs_sandbags/Run()
 	var/turf/start_turf = run_loc_floor_bottom_left
 	var/turf/barrier_turf = get_step(start_turf, EAST)
+	//на резервационном z гравитации нет: шаг залезания оставляет мобу инерцию,
+	//и дрейф укатывает его с мешков раньше ассерта позиции
+	var/area/test_area = get_area(start_turf)
+	var/saved_gravity = test_area.has_gravity
+	test_area.has_gravity = STANDARD_GRAVITY
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	//NPC-пул блуждает свежих hostile каждый свой фаер и тоже укатывает пешку
+	pawn.stop_automated_movement = TRUE
 	var/datum/ai_controller/unit_test_mover/controller = new(pawn)
 	var/obj/structure/barricade/sandbags/sandbags = allocate(/obj/structure/barricade/sandbags, barrier_turf)
 	var/datum/obstacle_policy/policy = GET_OBSTACLE_POLICY(/datum/obstacle_policy)
@@ -594,6 +601,7 @@
 	TEST_ASSERT_EQUAL(sandbags.obj_integrity, integrity_before, "Climbing must not damage the sandbags")
 
 	qdel(controller)
+	test_area.has_gravity = saved_gravity
 
 ///Spacewalkers may plan through vacuum, while an oxygen-dependent pawn must
 ///not gain that permission merely because it can push itself through space.

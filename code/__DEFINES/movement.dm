@@ -46,50 +46,12 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 #define MOVEMENT_LOOP_IGNORE_GLIDE (1<<2)
 /// Don't change facing on each move (used by smooth space drift)
 #define MOVEMENT_LOOP_NO_DIR_UPDATE (1<<3)
-/// External movement (no footstep etc.); also used for space drift priority
-#define MOVEMENT_LOOP_OUTSIDE_CONTROL (1<<4)
-
-/// Return from [/datum/move_loop/proc/move] when the step did not succeed
-#define MOVELOOP_FAILURE FALSE
-/// Return from [/datum/move_loop/proc/move] when the step succeeded
-#define MOVELOOP_SUCCESS TRUE
 
 /// CanAStarPass() may only reject this object while it is dense. This lets the
 /// pathfinder skip a proc call for the overwhelmingly common non-dense object.
 #define CANASTARPASS_DENSITY 0
 /// CanAStarPass() has meaningful behavior even while the object is non-dense.
 #define CANASTARPASS_ALWAYS_PROC 1
-
-// Space drift / newtonian tuning (WhiteMoon-style)
-#define DEFAULT_INERTIA_SPEED 4
-#define INERTIA_SPEED_COEF 0.4
-#define INERTIA_FORCE_CAP 15
-/// Recoil/click sources (weapon fire) may top drift up to this ceiling, but never beyond it and never as a brake. Stops "click to accelerate".
-#define INERTIA_FORCE_RECOIL_CAP 3
-#define INERTIA_FORCE_SPACEMOVE_GRAB 0.4
-#define INERTIA_FORCE_SPACEMOVE_REDUCTION 0.2
-
-// Собственная тяга: сколько добровольный шаг в невесомости добавляет к дрейфу и до какой
-// скорости он вправе разогнать. Без потолка каждый шаг клался в общий INERTIA_FORCE_CAP, и
-// пятнадцать шагов подряд выводили на один тайл за тик - втрое быстрее станционного бега.
-// Потолки подобраны так, чтобы крейсерская скорость свободного полёта совпадала с шаговой
-// скоростью того же носителя: свободный полёт не быстрее стабилизации, он дешевле.
-//
-// Пересчёт задержки: 4 / (0.6 + 0.4 * F), затем округление до кратного тику (0.5 при FPS 20).
-#define INERTIA_THRUST_FORCE_DEFAULT 1
-/// Толчки от стен и решёток: 3 дс на тайл. Шарканьем по обшивке не разогнаться.
-#define INERTIA_THRUST_CAP_UNAIDED 2
-/// Базовый джетпак, хардсьютовый апгрейд, имплант-трастеры: 1.5 дс на тайл, вровень с бегом.
-#define INERTIA_THRUST_CAP_JETPACK 5
-/// Полноскоростной баллон и ионный MOD: 1 дс на тайл, вровень с их же ускоренным шагом.
-#define INERTIA_THRUST_CAP_JETPACK_FULL 7
-/// Дальше этого угла шаг считается поворотом, а не разгоном по курсу (и потому платный).
-#define INERTIA_THRUST_TURN_ANGLE 45
-
-//Индексы записи в [/atom/movable/var/thrust_sources]
-#define THRUST_SOURCE_FORCE 1
-#define THRUST_SOURCE_CAP 2
-#define THRUST_SOURCE_REF 3
 
 //Index defines for movement bucket data packets
 #define MOVEMENT_BUCKET_TIME 1

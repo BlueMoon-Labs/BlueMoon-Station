@@ -94,8 +94,23 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	var/datum/action_group/listed/listed_actions
 	var/list/floating_actions
 
-	var/atom/movable/screen/healths
+	/// HUD здоровья обычных mob/living/carbon/human
+	var/atom/movable/screen/healths/healths
+	/// Вариант HUD здоровья для синтетов isrobotic()
+	var/atom/movable/screen/healths/robot/healths_synth
 	var/atom/movable/screen/healthdoll
+
+	/// UI element for hunger
+	var/atom/movable/screen/hunger
+	/// UI element for thirst
+	var/atom/movable/screen/thirst
+	/// UI элемент для "голода" синтетов
+	var/atom/movable/screen/hunger/robotic/charge
+
+	/// Extra inventory slots visible?
+	var/extra_shown = FALSE
+	/// Equipped item screens that don't show up even if using the initial toggle
+	var/list/extra_inventory = list()
 
 	var/atom/movable/screen/wanted/wanted_lvl
 	// subtypes can override this to force a specific UI style
@@ -174,11 +189,14 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	QDEL_LIST(infodisplay)
 
 	healths = null
+	healths_synth = null
 	healthdoll = null
-	wanted_lvl = null
 
 	hunger = null
 	thirst = null
+	charge = null
+
+	wanted_lvl = null
 
 	lingchemdisplay = null
 	devilsouldisplay = null
@@ -525,6 +543,43 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 			button = action.viewers[src]
 		else
 			position_action(button, button.location)
+
+// Called after updating extra inventory
+/datum/hud/proc/extra_inventory_update()
+	return
+
+/proc/ui_style_modular(ui_style, variant = "base")
+	var/static/cache = list()
+
+	var/check = LAZYACCESSASSOC(cache, ui_style, variant)
+	if(check)
+		return check
+
+	switch(ui_style)
+		if('icons/mob/screen_plasmafire.dmi')
+			. = "modular_sand/icons/hud/screen_plasmafire/"
+		if('icons/mob/screen_slimecore.dmi')
+			. = "modular_sand/icons/hud/screen_slimecore/"
+		if('icons/mob/screen_operative.dmi')
+			. = "modular_sand/icons/hud/screen_operative/"
+		if('icons/mob/screen_clockwork.dmi')
+			. = "modular_sand/icons/hud/screen_clockwork/"
+		if('icons/mob/screen_glass.dmi')
+			. = "modular_sand/icons/hud/screen_glass/"
+		if('icons/mob/screen_trasenknox.dmi')
+			. = "modular_sand/icons/hud/screen_trasenknox/"
+		if('icons/mob/screen_detective.dmi')
+			. = "modular_sand/icons/hud/screen_detective/"
+		if('modular_sand/icons/hud/screen_liteweb/base.dmi')
+			. = "modular_sand/icons/hud/screen_liteweb/"
+		if('modular_sand/icons/hud/screen_corru/base.dmi')
+			. = "modular_sand/icons/hud/screen_corru/"
+		else
+			. = "modular_sand/icons/hud/screen_midnight/"
+
+	. = file("[.][variant].dmi")
+	LAZYADDASSOC(cache, ui_style, variant)
+	cache[ui_style][variant] = .
 
 /datum/action_group
 	/// The hud we're owned by

@@ -586,7 +586,7 @@
 	name = "P940 Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/pf940_kit
-	ckeywhitelist = list("leony24")
+	ckeywhitelist = list("leony24", "hartty")
 
 /datum/gear/donator/bm/p940_g22
 	name = "P940 G22 Kit"
@@ -2554,15 +2554,21 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/commando_beret
 	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak")
-  
+
 /datum/gear/donator/bm/vp78tactic
 	name = "VP78 Tactic ModKit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/vp78tactic
-	ckeywhitelist = list("rockymed", "hartty", "leony24")
+	ckeywhitelist = list("rockymed", "hartty", "leony24", "dragon9090")
 
 /datum/gear/donator/bm/kumikoshouko_case
 	name = "Kumiko Weapon Case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/skull_half_mask
+	name = "Skull Gaiter"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/head/donator/bm/half_mask_skull
+	ckeywhitelist = list("hartty")

@@ -61,7 +61,7 @@
 			DefaultCombatKnockdown(1)
 			to_chat(src, "<span class='warning'>Error - Malfunction in actuator circuitry.</span>")
 		if("nutriloss")
-			nutrition = max(0, nutrition - 50)
+			adjust_nutrition(-50)
 			to_chat(src, "<span class='warning'>Power surge detected in internal battery cell.</span>")
 		if("selfflash")
 			if(flash_act(override_protection = 1))
