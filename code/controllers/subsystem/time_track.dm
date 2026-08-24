@@ -1177,9 +1177,11 @@ SUBSYSTEM_DEF(time_track)
 	var/sample_size = min(own_length, MEMORY_CENSUS_NESTED_SCAN_CAP)
 	var/nested_slots = 0
 
-	if(!istype(outer, /list))
-		// alist из 516: islist() отвечает на него правдой, а istype(x, /list) - нет, и это
-		// единственный способ его отличить. Позиционного доступа у alist нет вовсе, поэтому
+	if(istype(outer, /alist))
+		// alist из 516: islist() отвечает на него правдой, а istype(x, /list) - нет. Проверять
+		// надо именно /alist, а не отсутствие /list: под "не /list" попадает ещё и filters
+		// атома, у которого всё наоборот - срез работает, а чтения по ключу нет вовсе
+		// ("bad index"). Позиционного доступа у alist нет вовсе, поэтому
 		// отрезок Copy(1, N) на нём падает "list index out of bounds" - перепись валила раунд
 		// на каждой мехе с её facing_modifiers и на profile_*_by_type любой подсистемы.
 		// Копия ему и не нужна: перебор отдаёт ключи, а чтение по ключу законно всегда,

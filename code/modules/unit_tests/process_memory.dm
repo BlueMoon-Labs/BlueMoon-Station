@@ -824,3 +824,13 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(plain), 7, "плоский путь переписи не должен измениться")
 
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(alist()), 0, "пустой alist - это ноль слотов, а не рантайм")
+
+	// filters атома - третий вид списка: islist() признаёт, istype(x, /list) - нет, и при этом
+	// он ровно противоположен alist'у - срез Copy() по нему работает, а чтения по ключу нет
+	// вовсе ("bad index"). Отличать alist по ОТСУТСТВИЮ /list поэтому нельзя: filters уезжал
+	// в ключевой перебор и валил перепись на каждом атоме с фильтром.
+	var/obj/filter_holder = allocate(/obj)
+	filter_holder.filters += filter(type = "blur", size = 1)
+	filter_holder.filters += filter(type = "outline", size = 1)
+	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(filter_holder.filters), 2,
+		"список фильтров обязан считаться копией, а не перебором ключей")
