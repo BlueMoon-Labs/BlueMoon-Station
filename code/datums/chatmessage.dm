@@ -21,6 +21,12 @@
 /// The number of z-layer 'slices' usable by the chat message layering
 #define CHAT_LAYER_MAX_Z			(CHAT_LAYER_MAX - CHAT_LAYER) / CHAT_LAYER_Z_STEP
 
+#define RUNECHAT_ANIM_NONE			0
+#define RUNECHAT_ANIM_RISE			1
+#define RUNECHAT_ANIM_TYPEWRITER	2
+#define CHAT_MESSAGE_RISE_OFFSET	8
+#define CHAT_MESSAGE_TYPING_TIME	1.5 SECONDS
+
 /**
   * # Chat Message Overlay
   *
@@ -237,22 +243,30 @@
 		current_z_idx = 0
 
 	// Build message image
+	var/anim_mode = owned_by.prefs ? owned_by.prefs.runechat_anim : RUNECHAT_ANIM_NONE
+	var/final_pixel_y = owner.bound_height * 0.95
+
 	message = image(loc = message_loc, layer = CHAT_LAYER + CHAT_LAYER_Z_STEP * current_z_idx++)
 	message.plane = CHAT_PLANE
 	message.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART
 	message.alpha = 0
-	message.pixel_y = owner.bound_height * 0.95
+	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y
 	message.maptext_width = CHAT_MESSAGE_WIDTH
 	message.maptext_height = mheight
 	message.maptext_x = (CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5
-	message.maptext = MAPTEXT(complete_text)
+	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
 	// View the message
 	LAZYADDASSOC(owned_by.seen_messages, message_loc, src)
 	in_seen_messages = TRUE
 	owned_by.images |= message
 	in_client_images = TRUE
-	animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
+	animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME, flags = ANIMATION_PARALLEL)
+	switch(anim_mode)
+		if(RUNECHAT_ANIM_RISE)
+			animate(message, pixel_y = final_pixel_y, time = CHAT_MESSAGE_SPAWN_TIME, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+		if(RUNECHAT_ANIM_TYPEWRITER)
+			INVOKE_ASYNC(src, PROC_REF(typewriter_reveal), complete_text)
 
 	// Register with the runechat SS to handle EOL and destruction
 	scheduled_destruction = world.time + (lifespan - CHAT_MESSAGE_EOL_FADE)
@@ -268,6 +282,51 @@
 	eol_complete = scheduled_destruction + fadetime
 	animate(message, alpha = 0, time = fadetime, flags = ANIMATION_PARALLEL)
 	enter_subsystem(eol_complete) // re-enter the runechat SS with the EOL completion time to QDEL self
+
+/datum/chatmessage/proc/typewriter_reveal(complete_text)
+	var/list/steps = typewriter_build_steps(complete_text)
+	if(!length(steps))
+		message?.maptext = MAPTEXT(complete_text)
+		return
+	var/total_ticks = max(1, CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1))
+	var/per_tick = max(1, CEILING(length(steps) / total_ticks, 1))
+	var/index = 1
+	while(index < length(steps))
+		if(!owned_by || QDELETED(src) || !message || eol_complete)
+			return
+		index = min(index + per_tick, length(steps))
+		message.maptext = MAPTEXT(steps[index])
+		sleep(world.tick_lag)
+
+/datum/chatmessage/proc/typewriter_build_steps(complete_text)
+	var/list/tokens = list()
+	var/total_chars = length_char(complete_text)
+	var/i = 1
+	while(i <= total_chars)
+		var/char = copytext_char(complete_text, i, i + 1)
+		var/token_end = i
+		if(char == "<")
+			token_end = typewriter_scan_until(complete_text, i, ">")
+		else if(char == "&")
+			token_end = typewriter_scan_until(complete_text, i, ";")
+		else if(char == "\\")
+			token_end = typewriter_scan_until(complete_text, i, "]")
+		tokens += copytext_char(complete_text, i, token_end + 1)
+		i = token_end + 1
+
+	var/list/steps = list()
+	var/built = ""
+	for(var/token in tokens)
+		built += token
+		steps += built
+	return steps
+
+/datum/chatmessage/proc/typewriter_scan_until(text, start, stop, max_chars = 64)
+	var/limit = min(start + max_chars, length_char(text))
+	for(var/j in start + 1 to limit)
+		if(copytext_char(text, j, j + 1) == stop)
+			return j
+	return start
 
 /**
   * Creates a message overlay at a defined location for a given speaker

@@ -74,6 +74,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
 	var/see_chat_non_mob = TRUE
+	var/runechat_anim = RUNECHAT_ANIM_RISE
 	/// Custom Keybindings
 	var/list/key_bindings = list()
 	/// List with a key string associated to a list of keybindings. Unlike key_bindings, this one operates on raw key, allowing for binding a key that triggers regardless of if a modifier is depressed as long as the raw key is sent.
@@ -5480,6 +5481,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					chat_on_map_looc = !chat_on_map_looc
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
+				if("runechat_anim")
+					runechat_anim = (runechat_anim + 1) % (RUNECHAT_ANIM_TYPEWRITER + 1)
 				//Sandstorm changes begin
 				if("see_chat_emotes")
 					see_chat_emotes = !see_chat_emotes
