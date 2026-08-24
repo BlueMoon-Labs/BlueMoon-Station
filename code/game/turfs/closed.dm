@@ -99,8 +99,13 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 ///helper proc that will center the screen if the icon is changed to a generic width, to make admins have to fudge around with pixel_x less. returns null
 /turf/closed/indestructible/splashscreen/proc/handle_generic_titlescreen_sizes() //BlueMoon reload
-	var/icon/size_check = icon(SStitle.icon, icon_state)
-	var/width = size_check.Width()
+	// Width() спрашивается у самой SStitle.icon, а не у копии через icon(): копия - это
+	// ещё один /icon/New(), то есть полная распаковка заставки в память ради одного числа.
+	// На 25-мегабайтном GIF это было 500 МБ непрерывного блока на каждый вызов.
+	var/icon/title_icon = SStitle.icon
+	if(!title_icon)
+		return
+	var/width = title_icon.Width()
 	pixel_x = (672 - width) * 0.5 //The title screen is mapped with the expectation that it's 672x480. Should probably turn the title screen size into a define some time!
 
 
