@@ -586,21 +586,50 @@ SUBSYSTEM_DEF(lighting)
 	for(var/z in parked_z)
 		if(z < 1 || z > SSmapping.z_list.len)
 			continue
-		var/has_occupant = (z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[z])) || (z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[z]))
-		if(!has_occupant)
+		if(!zlevel_has_occupant(z))
 			continue
 		// Спасение флашит атомы этого z и само инвалидирует кэш (Phase 1); гард self-heal внутри
 		// create_lighting_for_zlevel отсеивает ложное срабатывание протухшего кэша авторитетным проходом.
 		create_lighting_for_zlevel(z)
 	stuck_scan_busy_until = 0
 
+/// Есть ли на z-уровне живой клиент или наблюдатель. Мёртвые считаются наравне: именно они
+/// первыми добираются до эвей- и резервных уровней, и именно на них ловится залипший z.
+/datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
+	if(z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[z]))
+		return TRUE
+	if(z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[z]))
+		return TRUE
+	return FALSE
+
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()
 	// Pick a z-level to work on
 	if(!bg_current_zlevel)
 		if(!bg_queued_zlevels?.len)
 			return
-		bg_current_zlevel = bg_queued_zlevels[1]
-		bg_queued_zlevels.Cut(1, 2)
+		// Пустой отложенный уровень остаётся лежать в очереди.
+		//
+		// create_all_lighting_objects() откладывает уровни с ZTRAIT_MINING/ZTRAIT_RESERVED
+		// намеренно, а этот краулер до сих пор разбирал очередь БЕЗУСЛОВНО и через 30-70
+		// секунд после инициализации отменял всю отсрочку: оба Лаваленда получали объекты
+		// освещения при нуле игроков на них. Замер по шести раундам 24.08.2026: изолированное
+		// окно фоновой сборки одного лаваландского z - 167-253 МБ (медиана 202) и 66 300
+		// объектов. Два уровня - около 400 МБ адресного пространства, 10% потолка
+		// 32-битного DreamDaemon, за свет, который никто не видит.
+		//
+		// Ровно этот гард уже стоит в scan_stuck_deferred_zlevels() с той же мотивацией
+		// ("force-initing it would defeat the deferral optimization"). Игрок, который войдёт
+		// на уровень, поднимет свет синхронным create_lighting_for_zlevel() - этот путь
+		// работает и на проде используется постоянно ("On-demand init ... background preempted").
+		var/picked_index = 0
+		for(var/queue_index in 1 to length(bg_queued_zlevels))
+			if(zlevel_has_occupant(bg_queued_zlevels[queue_index]))
+				picked_index = queue_index
+				break
+		if(!picked_index)
+			return
+		bg_current_zlevel = bg_queued_zlevels[picked_index]
+		bg_queued_zlevels.Cut(picked_index, picked_index + 1)
 		bg_phase = 0
 		bg_turfs = null
 		bg_turf_index = 0
