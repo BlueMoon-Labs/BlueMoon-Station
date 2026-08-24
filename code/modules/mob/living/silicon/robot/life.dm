@@ -15,24 +15,39 @@
 /mob/living/silicon/robot/proc/use_power()
 	if(cell?.charge)
 		if((cell.charge <= 500) && (vtec != initial(vtec)))
-			to_chat(src, "<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
-			vtec = initial(vtec)
+			disable_vtec("<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
 		if(cell.charge <= 100)
 			uneq_all()
 		var/amt = clamp((lamp_enabled * lamp_intensity),1,cell.charge) //Lamp will use a max of 5 charge, depending on brightness of lamp. If lamp is off, borg systems consume 1 point of charge, or the rest of the cell if it's lower than that.
 		cell.use(amt) //Usage table: 1/tick if off/lowest setting, 4 = 4/tick, 6 = 8/tick, 8 = 12/tick, 10 = 16/tick
 	else
 		uneq_all()
-		vtec = initial(vtec)
+		disable_vtec()
 		low_power_mode = TRUE
 		toggle_headlamp(TRUE)
 	//VTEC power drain
-	if((vtec <= -3) && (!vtec_disabled))	//"vtec" is a negative value and the lesser it is the faster we move.
-		if(cell?.charge)
-			if((!cell.self_recharge && !cell.use(500)) || (cell.self_recharge && !cell.use(max(cell.chargerate, 500)))) //default cell maxcharge is 10.000. 1/2 per 10 seconds of superspeed
-				to_chat(src, "<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
-				vtec = initial(vtec)
+	if((vtec != initial(vtec)) && (!vtec_disabled))
+		if(world.time >= vtec_expire)
+			disable_vtec("<span class='warning'>VTEC перегрелся, ускорение отключено до следующей активации.</span>")
+		else if(cell?.charge)
+			if(!cell.use(vtec_drain))
+				disable_vtec("<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
 	diag_hud_set_borgcell()
+
+/// Полностью гасит разгон VTEC: сбрасывает скорость, таймер, расход и кнопку способности, запускает перезарядку
+/mob/living/silicon/robot/proc/disable_vtec(message)
+	if(vtec != initial(vtec))
+		vtec_cooldown_until = world.time + VTEC_COOLDOWN
+	vtec = initial(vtec)
+	vtec_expire = 0
+	vtec_drain = 0
+	if(message)
+		to_chat(src, message)
+	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC = locate() in abilities
+	if(VC)
+		VC.currentState = 0
+		VC.action.button_icon_state = "Chevron_State_0"
+		VC.action.UpdateButtons()
 
 /mob/living/silicon/robot/proc/handle_robot_hud_updates()
 	if(!client)
