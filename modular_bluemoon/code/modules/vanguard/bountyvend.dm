@@ -233,7 +233,7 @@
 	SSblackbox.record_feedback("tally", "mining_voucher_redeemed", 1, selection)
 	qdel(voucher)
 
-/obj/machinery/bountyvend/proc/RedeemSVoucher(/obj/item/vanguard_voucher_suit, mob/redeemer)
+/obj/machinery/bountyvend/proc/RedeemSVoucher(/obj/item/vanguard_voucher_suit/voucher, mob/redeemer)
 	var/items = list(	"EVA" = image(icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi', icon_state = "vanguard_eva"),
 						"Combined suit" = image(icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi', icon_state = "combined"))
 

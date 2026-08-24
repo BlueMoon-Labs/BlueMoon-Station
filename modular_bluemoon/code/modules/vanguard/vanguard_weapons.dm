@@ -68,7 +68,7 @@
 	can_flashlight = 0
 	can_suppress = FALSE
 
-/obj/item/gun/ballistic/automatic/pistol/hl9mm/Initialize(mapload)
+/obj/item/gun/ballistic/automatic/pistol/sigsauer/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
 	return ..()
 

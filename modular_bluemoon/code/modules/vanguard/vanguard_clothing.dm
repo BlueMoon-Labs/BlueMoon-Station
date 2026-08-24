@@ -12,6 +12,7 @@
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi'
 	tail_state = "bombsuit_sci"
+	slowdown = 0.2
 
 
 /obj/item/clothing/head/helmet/space/vanguard
@@ -23,7 +24,6 @@
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
-	slowdown = 0.2
 
 /obj/item/clothing/head/helmet/space/hardsuit/exploration
 	name = "шлем рейнджера"

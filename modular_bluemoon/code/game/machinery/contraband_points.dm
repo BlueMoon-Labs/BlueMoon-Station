@@ -118,9 +118,13 @@
 		/obj/item/reagent_containers/glass/bottle = 15
 	)
 
-/obj/machinery/computer/vanguard_control/contraband/Initialize()
-	. = ..()
-	pad = locate() in range(4, src)
++/obj/machinery/computer/vanguard_control/contraband/Initialize(mapload)
++	. = ..()
++	return INITIALIZE_HINT_LATELOAD
++
++/obj/machinery/computer/vanguard_control/contraband/LateInitialize()
++	. = ..()
++	pad = locate() in range(4, src)
 
 /obj/machinery/computer/vanguard_control/contraband/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
@@ -244,48 +248,6 @@
 
 	last_user = null
 	stop_sending()
-
-	// Тестовый список стоимости контрабанды в очках
-	var/list/contraband_values = list(
-		// Оружие
-		/obj/item/gun/ballistic = 50,
-		/obj/item/gun/ballistic/automatic = 80,
-		/obj/item/gun/ballistic/revolver = 60,
-		/obj/item/gun/energy/laser = 60,
-		/obj/item/gun/energy/disabler = 30,
-		// Ближний бой
-		/obj/item/melee/baton = 20,
-		/obj/item/kitchen/knife = 10,
-		/obj/item/kitchen/knife/combat = 25,
-		// Броня
-		/obj/item/clothing/suit/armor = 40,
-		/obj/item/clothing/suit/armor/vest = 50,
-		/obj/item/clothing/head/helmet = 30,
-		// Синди-снаряжение
-		/obj/item/clothing/under/syndicate = 25,
-		/obj/item/storage/box/syndie_kit = 100,
-		/obj/item/storage/backpack/duffelbag/syndie = 60,
-		// Медицина
-		/obj/item/reagent_containers/hypospray = 30,
-		/obj/item/reagent_containers/hypospray/medipen = 20,
-		/obj/item/storage/firstaid = 15,
-		// Ресурсы
-		/obj/item/stack/sheet/plasteel = 5,
-		/obj/item/stack/sheet/mineral/gold = 10,
-		/obj/item/stack/sheet/mineral/diamond = 20,
-		/obj/item/stack/ore/bluespace_crystal = 30,
-		// Алкоголь и развлечения
-		/obj/item/reagent_containers/food/drinks/bottle/whiskey = 10,
-		/obj/item/reagent_containers/glass/bottle = 15,
-		/obj/item/clothing/mask/cigarette/cigar = 15,
-		// Инструменты
-		/obj/item/multitool = 10,
-		/obj/item/weldingtool = 5,
-		/obj/item/crowbar = 5,
-		/obj/item/screwdriver = 5,
-		// Специальное
-		/obj/item/door_remote = 50,
-	)
 
 
 /obj/machinery/computer/vanguard_control/contraband/attackby(obj/item/I, mob/user, params)
