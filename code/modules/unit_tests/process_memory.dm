@@ -894,3 +894,16 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_EQUAL(memory_endgame_step(3892, PROCESS_ADDRESS_CEILING_UNKNOWN, 5.7, late_round, lead, FALSE, FALSE, TRUE), MEMORY_ENDGAME_NONE,
 		"без замеренного потолка ступеней быть не может")
 
+/**
+ * Перепись графа освещения обязана отработать на живом мире и не уронить рантайм.
+ *
+ * Строка эта - единственный замер `corner.affecting` и `source.effect_str`: эти структуры не
+ * видит ни перепись инстансов (углы и источники не лежат в world.contents), ни перепись
+ * глобальных списков (они не глобалки). Рантайм внутри неё убил бы весь проход переписи, а не
+ * только эту строку, поэтому проверяется именно то, что она проходит по настоящему миру.
+ */
+/datum/unit_test/memory_lighting_graph_census/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	TEST_ASSERT_NOTNULL(GLOB.all_light_sources, "список источников света обязан существовать")
+	SStime_track.log_lighting_graph_slots()
+
