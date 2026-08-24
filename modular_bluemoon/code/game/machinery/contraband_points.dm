@@ -118,13 +118,13 @@
 		/obj/item/reagent_containers/glass/bottle = 15
 	)
 
-+/obj/machinery/computer/vanguard_control/contraband/Initialize(mapload)
-+	. = ..()
-+	return INITIALIZE_HINT_LATELOAD
-+
-+/obj/machinery/computer/vanguard_control/contraband/LateInitialize()
-+	. = ..()
-+	pad = locate() in range(4, src)
+/obj/machinery/computer/vanguard_control/contraband/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/computer/vanguard_control/contraband/LateInitialize()
+	. = ..()
+	pad = locate() in range(4, src)
 
 /obj/machinery/computer/vanguard_control/contraband/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
