@@ -39,7 +39,10 @@
 	port_y_offset = offset[2]
 	//SPLURT EDIT END
 
-	if(!cached_map)
+	// Проверять надо force_cache, а не cached_map: выше по проку уже стоит ранний return по
+	// тому же условию, так что ветка была недостижима, и разобранная карта каждого шаблона
+	// шаттла оставалась в памяти до конца раунда. Кэш просили только ради discover_offset().
+	if(!force_cache && !keep_cached_map)
 		cached_map = null
 
 /* SPLURT EDIT - Refractored in modular

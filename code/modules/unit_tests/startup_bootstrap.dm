@@ -17,14 +17,9 @@
 	TEST_ASSERT_NOTNULL(GLOB.asset_datums[/datum/asset/spritesheet_batched/spawnpanel], "Spawn Panel spritesheet was not built during startup")
 	TEST_ASSERT_NOTNULL(GLOB.asset_datums[/datum/asset/json/spawnpanel], "Spawn Panel JSON was not built during startup")
 	// А порядок сборки ассетов обязан оставаться таким, чтобы карта иконок была
-	// заполнена до генерации JSON - иначе в панели пропадут все превьюшки.
-	TEST_ASSERT(length(GLOB.spawnpanel_icon_map) > 0, "Spawn Panel icon map is empty after startup")
+	// заполнена до генерации JSON - иначе в панели пропадут все превьюшки. Проверяем это
+	// по счётчику, снятому на самой генерации: перегенерировать JSON здесь уже нельзя,
+	// register() освобождает карту иконок сразу после того, как записал файл.
 	var/datum/asset/json/spawnpanel/atom_data = GLOB.asset_datums[/datum/asset/json/spawnpanel]
-	var/list/generated = atom_data.generate()
-	var/list/generated_atoms = generated["atoms"]
-	var/with_sprite = 0
-	for(var/type_key in generated_atoms)
-		var/list/entry = generated_atoms[type_key]
-		if(entry["iconid"])
-			with_sprite++
-	TEST_ASSERT(with_sprite > 1000, "Spawn Panel JSON has only [with_sprite] entries with a sprite id out of [length(generated_atoms)]")
+	TEST_ASSERT(atom_data.sprites_registered > 1000, "Spawn Panel JSON got only [atom_data.sprites_registered] entries with a sprite id")
+	TEST_ASSERT(!length(GLOB.spawnpanel_icon_map), "Spawn Panel icon map was not released after its JSON asset registered")

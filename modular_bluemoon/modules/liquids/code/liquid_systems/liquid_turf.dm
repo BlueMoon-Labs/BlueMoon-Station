@@ -196,7 +196,13 @@
 			liquids.temp = reagents.chem_temp
 			if(!liquids.total_reagents) //Our reaction exerted all of our reagents, remove self
 				qdel(reagents)
-				qdel(liquids)
+				// Именно force: /obj/effect/abstract/liquid_turf/Destroy() держит ВСЮ уборку
+				// под if(force), а без него возвращает QDEL_HINT_LETMELIVE. То есть простой
+				// qdel() здесь не удалял ничего и не снимал турф ни с evaporation_queue,
+				// ни с processing_fire, ни с группы - пустой эффект жидкости оставался
+				// на турфе до конца раунда. Соседние вызовы (change_turf.dm:183/198,
+				// process_evaporation) флаг не забывают.
+				qdel(liquids, TRUE)
 				return
 		qdel(reagents)
 		//Expose turf
