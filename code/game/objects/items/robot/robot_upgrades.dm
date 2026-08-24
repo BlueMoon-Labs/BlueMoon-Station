@@ -79,6 +79,12 @@
 	require_module = 1
 	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC
 
+#define VTEC_BOOST_DURATION 20 SECONDS
+/// Расход заряда за тик жизни (2 сек) в режиме спринта
+#define VTEC_SPRINT_DRAIN 150
+/// Расход заряда за тик жизни (2 сек) в режиме оверклока
+#define VTEC_OVERCLOCK_DRAIN 300
+
 /obj/item/borg/upgrade/vtec/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if(!.)
@@ -910,7 +916,7 @@
 // Citadel's Vtech Controller
 /obj/effect/proc_holder/silicon/cyborg/vtecControl
 	name = "vTec Control"
-	desc = "Позволяет более тонко контролировать ускорение vTec."
+	desc = "Позволяет более тонко контролировать ускорение vTec. Разгон действует 20 секунд и ощутимо расходует заряд."
 	action_icon = 'icons/mob/actions.dmi'
 	action_icon_state = "Chevron_State_0"
 
@@ -927,11 +933,17 @@
 	if(istype(user))
 		switch(currentState)
 			if (0) //default speed
-				user.vtec = initial(user.vtec) //"vtec" value is negative and the lesser it is the faster we move.
-			if (1) //slightly faster than runnung
+				user.vtec = initial(user.vtec)
+				user.vtec_expire = 0
+				user.vtec_drain = 0
+			if (1) //slightly faster than running, 20 seconds per activation
 				user.vtec = initial(user.vtec) - 0.75 //cyborg sprinting is roughly -2. don't forget we can't sprint with vtec.  //BLUEMOON EDIT Снижение модификатора скорости со стандартных -1,25 до -0,75 для второго режима VTEC
-			if (2) //overclocking module
+				user.vtec_expire = world.time + VTEC_BOOST_DURATION
+				user.vtec_drain = VTEC_SPRINT_DRAIN
+			if (2) //overclocking module, 20 seconds per activation
 				user.vtec = initial(user.vtec) - 1 //while changing this value check /mob/living/silicon/robot/proc/use_power() to maintain proper power drain //BLUEMOON EDIT Снижение модификатора скорости со стандартных -1,75 до -1 для третьего режима VTEC
+				user.vtec_expire = world.time + VTEC_BOOST_DURATION
+				user.vtec_drain = VTEC_OVERCLOCK_DRAIN
 
 	action.button_icon_state = "Chevron_State_[currentState]"
 	action.UpdateButtons()

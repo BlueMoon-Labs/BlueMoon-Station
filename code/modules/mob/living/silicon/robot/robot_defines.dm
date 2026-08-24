@@ -69,6 +69,10 @@
 	var/vtec = 0 // VTEC speed boost.
 	/// vtec shorted out
 	var/vtec_disabled = FALSE
+	/// world.time, когда текущий разгон VTEC выключится
+	var/vtec_expire = 0
+	/// расход заряда за тик жизни, пока активен разгон VTEC
+	var/vtec_drain = 0
 	var/magpulse = FALSE // Magboot-like effect.
 	var/ionpulse = FALSE // Jetpack-like effect.
 	var/ionpulse_on = FALSE // Jetpack-like effect.
