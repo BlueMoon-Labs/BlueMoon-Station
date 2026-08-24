@@ -1490,14 +1490,10 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/InteQ_ship/ship1)
 "et" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
 /obj/structure/closet/crate/large,
 /obj/item/gun/energy/plasmacutter,
 /obj/item/gun/energy/plasmacutter,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "eu" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1744,9 +1740,8 @@
 /turf/open/floor/plasteel/stairs/left,
 /area/InteQ_ship)
 "ff" = (
-/obj/effect/turf_decal/tile/brown/full,
 /obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "fg" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2848,9 +2843,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
-"iq" = (
-/turf/closed/indestructible/syndicate,
-/area/space)
 "is" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/tile/brown/full,
@@ -4156,10 +4148,6 @@
 /obj/machinery/power/rtg,
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
-"lQ" = (
-/obj/structure/lattice,
-/turf/closed/indestructible/syndicate,
-/area/space)
 "lR" = (
 /obj/structure/table/reinforced,
 /obj/effect/decal/cleanable/dirt,
@@ -4697,24 +4685,13 @@
 	},
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship2)
-"nr" = (
-/obj/structure/lattice,
-/turf/open/floor/plasteel/dark,
-/area/space)
 "ns" = (
+/obj/structure/closet/crate/bin,
 /obj/effect/turf_decal/tile/brown/full,
-/obj/machinery/light{
-	dir = 4;
-	light_color = "#c1caff";
-	pixel_x = 3
+/obj/item/storage/firstaid/tactical{
+	pixel_x = 3;
+	pixel_y = 1
 	},
-/obj/structure/closet/crate/large,
-/obj/item/stack/sheet/metal,
-/obj/item/stack/sheet/rglass,
-/obj/item/stack/sheet/rglass,
-/obj/item/stack/sheet/rglass,
-/obj/item/stack/sheet/metal,
-/obj/item/stack/sheet/metal,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "nu" = (
@@ -5498,9 +5475,6 @@
 /obj/structure/deployable_barricade/metal,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
-"pz" = (
-/turf/open/space/basic,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "pA" = (
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
@@ -6582,14 +6556,13 @@
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "sI" = (
-/obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/light{
 	dir = 4;
 	light_color = "#c1caff";
 	pixel_x = 3
 	},
 /obj/machinery/autolathe/hacked,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "sJ" = (
 /obj/structure/cable{
@@ -7641,8 +7614,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "vU" = (
-/obj/effect/turf_decal/tile/brown/full,
-/obj/structure/reagent_dispensers/watertank,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/item/pickaxe/drill/diamonddrill,
+/obj/item/pickaxe/drill/diamonddrill,
+/obj/item/pickaxe/drill/diamonddrill,
+/obj/structure/closet/crate/large,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "vV" = (
@@ -8000,12 +7979,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "wZ" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
 /obj/machinery/portable_atmospherics/pump,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "xa" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -8382,14 +8357,6 @@
 /obj/item/stack/sheet/metal,
 /turf/open/floor/plating,
 /area/InteQ_ship)
-"yi" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
-/obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "yj" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -8702,8 +8669,7 @@
 /area/InteQ_ship/ship3)
 "zc" = (
 /obj/machinery/portable_atmospherics/scrubber,
-/obj/effect/turf_decal/tile/brown/full,
-/turf/open/floor/plasteel,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "zd" = (
 /obj/machinery/ore_silo,
@@ -10671,10 +10637,6 @@
 /obj/machinery/door/firedoor/closed,
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
-"Ew" = (
-/obj/item/stack/conveyor,
-/turf/open/floor/plasteel,
-/area/InteQ_ship)
 "Ex" = (
 /obj/machinery/mech_bay_recharge_port{
 	dir = 1
@@ -10902,11 +10864,6 @@
 "Fh" = (
 /obj/effect/turf_decal/tile/brown/full,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"Fi" = (
-/obj/effect/turf_decal/tile/brown/full,
-/obj/machinery/portable_atmospherics/pump,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Fj" = (
@@ -12087,12 +12044,8 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Iw" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
 /obj/structure/reagent_dispensers/watertank,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Ix" = (
 /turf/open/floor/plasteel/dark,
@@ -12503,8 +12456,16 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "JB" = (
+/obj/effect/turf_decal/tile/brown/full,
+/obj/structure/closet/crate/large,
+/obj/item/stack/sheet/metal,
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/sheet/rglass,
+/obj/item/stack/sheet/metal,
+/obj/item/stack/sheet/metal,
 /turf/open/floor/plasteel/dark,
-/area/space)
+/area/InteQ_ship)
 "JC" = (
 /obj/machinery/vending/cola/random,
 /turf/open/floor/plasteel/dark,
@@ -13362,9 +13323,8 @@
 /turf/open/floor/mineral/titanium/white,
 /area/InteQ_ship/SOLVED)
 "Mo" = (
-/obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/space_heater,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "Mq" = (
 /obj/machinery/power/port_gen/pacman,
@@ -14501,14 +14461,6 @@
 /obj/machinery/dish_drive,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
-"PM" = (
-/obj/effect/turf_decal/tile/brown/full,
-/obj/structure/closet/crate/large,
-/obj/item/pickaxe/drill/diamonddrill,
-/obj/item/pickaxe/drill/diamonddrill,
-/obj/item/pickaxe/drill/diamonddrill,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "PO" = (
 /obj/effect/portal/permanent{
 	id = "left_siege";
@@ -14864,7 +14816,7 @@
 /obj/machinery/door/poddoor,
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
-/area/space)
+/area/InteQ_ship)
 "QV" = (
 /obj/structure/table/wood/bar,
 /obj/effect/decal/cleanable/dirt,
@@ -17818,14 +17770,6 @@
 "ZB" = (
 /turf/closed/wall/r_wall/rust,
 /area/InteQ_ship/SOLVED)
-"ZD" = (
-/obj/effect/turf_decal/tile/brown{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown,
-/obj/machinery/space_heater,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "ZE" = (
 /obj/machinery/light/floor,
 /turf/open/floor/mineral/plastitanium,
@@ -37777,7 +37721,7 @@ DN
 DN
 DN
 Ee
-Ee
+tB
 Ee
 Ee
 Ee
@@ -37989,7 +37933,7 @@ Bp
 SD
 ML
 Ci
-gw
+An
 nn
 Ee
 zR
@@ -38201,7 +38145,7 @@ hc
 An
 Vt
 An
-Vt
+An
 wY
 Ee
 ML
@@ -38422,7 +38366,7 @@ DV
 TN
 ik
 DV
-HO
+ns
 Ee
 DV
 UR
@@ -39482,7 +39426,7 @@ DV
 TN
 DV
 DV
-HO
+ns
 Ee
 DV
 DV
@@ -40990,7 +40934,7 @@ hR
 Fn
 Fn
 hR
-pz
+hR
 hR
 Fn
 Rv
@@ -43325,7 +43269,7 @@ pR
 pR
 pR
 pR
-JB
+Al
 Al
 Ee
 Wt
@@ -43537,7 +43481,7 @@ iQ
 iQ
 Tg
 pR
-nr
+Rv
 Al
 Ee
 Wt
@@ -43749,7 +43693,7 @@ iQ
 iQ
 KO
 pR
-nr
+Rv
 Al
 Ee
 vR
@@ -43961,7 +43905,7 @@ iQ
 iQ
 rw
 pR
-nr
+Rv
 Al
 Ee
 An
@@ -44174,7 +44118,7 @@ pR
 pR
 Sh
 jT
-Ee
+Al
 Ee
 wY
 wY
@@ -44599,12 +44543,12 @@ hR
 cY
 eM
 cW
+DV
 YD
 GP
 Bw
 os
-wY
-wY
+JB
 wY
 xn
 Al
@@ -44811,12 +44755,12 @@ Lc
 WB
 zH
 cW
+DV
 Tm
 jo
 gg
 oh
-wY
-wY
+vU
 wY
 Al
 oH
@@ -45030,7 +44974,7 @@ DV
 DV
 DV
 DV
-Ew
+DV
 Ee
 Ee
 Ps
@@ -45215,7 +45159,7 @@ AM
 AM
 AM
 AM
-iq
+gz
 Al
 pR
 CL
@@ -45235,9 +45179,9 @@ zp
 fv
 df
 cW
-PM
-ZD
-yi
+DV
+Mo
+ff
 et
 Iw
 wZ
@@ -45427,7 +45371,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 Bm
 Sh
@@ -45446,13 +45390,13 @@ Bj
 AY
 Sh
 dE
-gz
-ns
+cW
+DV
 Mo
 ff
 sI
-vU
-Fi
+Iw
+wZ
 gz
 gz
 vB
@@ -45639,7 +45583,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 Al
 pR
@@ -45658,7 +45602,7 @@ pR
 pR
 pR
 Al
-gz
+Al
 gz
 gz
 EV
@@ -45851,7 +45795,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Rv
 Rv
 bR
@@ -45870,8 +45814,8 @@ pR
 Rv
 Rv
 Rv
-iq
-yF
+Rv
+gz
 yF
 yF
 yF
@@ -46063,7 +46007,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 pR
 pR
@@ -46082,8 +46026,8 @@ pR
 pR
 pR
 pR
-iq
-yF
+Al
+gz
 yF
 yF
 yF
@@ -46275,7 +46219,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 pR
 wg
@@ -46294,8 +46238,8 @@ JN
 TA
 ps
 pR
-iq
-yF
+Al
+gz
 yF
 yF
 yF
@@ -46487,7 +46431,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 mI
 rP
@@ -46506,8 +46450,8 @@ bj
 jK
 vL
 pR
-iq
-AM
+sN
+gz
 wF
 wF
 wF
@@ -46699,7 +46643,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 Al
 DH
 Sh
@@ -46718,8 +46662,8 @@ pR
 BP
 Sh
 HQ
-iq
-wF
+sN
+gz
 wF
 AM
 AM
@@ -46911,7 +46855,7 @@ WO
 WO
 WO
 AM
-lQ
+EV
 Al
 sN
 pR
@@ -46930,8 +46874,8 @@ pR
 pR
 pR
 be
-lQ
-wF
+sN
+EV
 AM
 AM
 AM
@@ -47123,7 +47067,7 @@ WO
 WO
 WO
 AM
-lQ
+EV
 sN
 be
 be
@@ -47142,8 +47086,8 @@ pR
 Wx
 be
 be
-iq
-AM
+sN
+gz
 AM
 AM
 AM
@@ -47335,7 +47279,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 sN
 sN
 sN
@@ -47354,8 +47298,8 @@ Wx
 sN
 sN
 sN
-iq
-AM
+sN
+gz
 AM
 AM
 AM
@@ -47547,7 +47491,7 @@ WO
 WO
 WO
 AM
-iq
+gz
 NC
 sN
 sN
@@ -47565,9 +47509,9 @@ sN
 Ql
 sN
 sN
+sN
 NC
-iq
-AM
+gz
 AM
 AM
 AM
@@ -47759,8 +47703,8 @@ WO
 WO
 WO
 AM
-iq
-iq
+gz
+gz
 QU
 QU
 QU
@@ -47778,8 +47722,8 @@ QU
 QU
 QU
 QU
-iq
-AM
+gz
+gz
 AM
 AM
 AM
