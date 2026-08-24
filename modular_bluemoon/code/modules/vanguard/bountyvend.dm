@@ -110,7 +110,7 @@
 
 /obj/machinery/bountyvend/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/vending),
+		get_asset_datum(/datum/asset/spritesheet_batched/vending),
 	)
 
 /obj/machinery/bountyvend/ui_interact(mob/user, datum/tgui/ui)

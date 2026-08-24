@@ -180,7 +180,7 @@
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
-			playsound(loc, 'sound/weapons/sparks.ogg', 75, 1, -1)
+			playsound(loc, 'sound/effects/sparks3.ogg', 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
 		else
