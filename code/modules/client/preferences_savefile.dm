@@ -1323,6 +1323,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
 	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
+	S["onelife_death_type"]					>> onelife_death_type // BLUEMOON ADD - форма рассыпания для Одной Жизни
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1672,6 +1673,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	onelife_death_type = sanitize_inlist(onelife_death_type, GLOB.onelife_death_forms, "Пепел") // BLUEMOON ADD
 	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
 	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
 	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
@@ -2017,6 +2019,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["shriek_type"]							, shriek_type) // BLUEMOON ADD
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
 	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
+	WRITE_FILE(S["onelife_death_type"]					, onelife_death_type) // BLUEMOON ADD
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)

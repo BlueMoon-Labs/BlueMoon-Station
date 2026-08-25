@@ -103,7 +103,6 @@
 		RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(jostleCheck))
 		RegisterSignal(parent, COMSIG_CARBON_EMBED_RIP, PROC_REF(ripOutCarbon))
 		RegisterSignal(parent, COMSIG_CARBON_EMBED_REMOVAL, PROC_REF(safeRemoveCarbon))
-		RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(examineCarbon))
 	else if(isclosedturf(parent))
 		RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(examineTurf))
 		RegisterSignal(parent, COMSIG_PARENT_QDELETING, PROC_REF(itemMoved))
@@ -165,16 +164,20 @@
 
 	fall_chance *= 0.2 // BLUEMOON ADD - застрявшие предметы выпадают намного реже
 
-/datum/component/embedded/proc/examineCarbon(datum/source, mob/user, list/examine_list)
+/// Ссылки на извлечение застрявших предметов теперь строятся прямо в examine() моба
+/// (см. carbon/human examine.dm), чтобы их гарантированно видели все осматривающие.
+/datum/component/embedded/proc/can_be_ripped_by(mob/user)
 	var/mob/living/carbon/victim = parent
 	if(user == victim || !isliving(user) || !user.Adjacent(victim))
-		return
-	if(!user.canUseTopic(victim, BE_CLOSE))
-		return
-	if(harmful)
-		examine_list += "<a href='?src=[REF(victim)];embedded_object=[REF(weapon)];embedded_limb=[REF(limb)]' class='warning'>Вы можете вырвать [weapon] из [limb.ru_name_v]!</a>"
-	else
-		examine_list += "<a href='?src=[REF(victim)];embedded_object=[REF(weapon)];embedded_limb=[REF(limb)]' class='warning'>Вы можете извлечь [weapon] с [limb.ru_name_v]!</a>"
+		return FALSE
+	return !!user.canUseTopic(victim, BE_CLOSE)
+
+/// Возвращает компонент застревания, отвечающий за конкретный предмет в конкретной конечности.
+/proc/get_embedded_component(mob/living/carbon/victim, obj/item/stuck, obj/item/bodypart/part)
+	for(var/datum/component/embedded/embed as anything in victim.GetComponents(/datum/component/embedded))
+		if(embed.weapon == stuck && embed.limb == part)
+			return embed
+	return null
 
 /// Called every time a carbon with a harmful embed moves, rolling a chance for the item to cause pain. The chance is halved if the carbon is crawling or walking.
 /datum/component/embedded/proc/jostleCheck()

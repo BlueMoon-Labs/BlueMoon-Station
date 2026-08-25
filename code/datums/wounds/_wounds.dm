@@ -51,6 +51,8 @@
 	var/list/treatable_by_grabbed
 	/// Tools with the specified tool flag will also be able to try directly treating this wound
 	var/treatable_tool
+	/// Дополнительные инструменты (помимо treatable_tool), которыми можно лечить эту рану. BLUEMOON ADD - зажимание сосудов гемостатом
+	var/list/also_treatable_tools
 	/// How long it will take to treat this wound with a standard effective tool, assuming it doesn't need surgery
 	var/base_treat_time = 5 SECONDS
 
@@ -283,7 +285,7 @@
 	var/allowed = FALSE
 
 	// check if we have a valid treatable tool (or, if cauteries are allowed, if we have something hot)
-	if((I.tool_behaviour == treatable_tool) || (treatable_tool == TOOL_CAUTERY && I.get_temperature()))
+	if((I.tool_behaviour == treatable_tool) || (I.tool_behaviour in also_treatable_tools) || (treatable_tool == TOOL_CAUTERY && I.get_temperature()))
 		allowed = TRUE
 	// failing that, see if we're aggro grabbing them and if we have an item that works for aggro grabs only
 	else if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE && check_grab_treatments(I, user))
@@ -398,6 +400,17 @@
 /// Used when we're being dragged while bleeding, the value we return is how much bloodloss this wound causes from being dragged. Since it's a proc, you can let bandages soak some of the blood
 /datum/wound/proc/drag_bleed_amount()
 	return
+
+/**
+ * BLUEMOON ADD - глушит ли свежая повязка истечение крови из этой раны.
+ *
+ * Бинт не лечит рану, а останавливает кровопотерю: пока на конечности есть
+ * впитывающая повязка с ресурсом, рана не вычитает кровь у жертвы (см.
+ * /obj/item/bodypart/get_bleed_rate), но сама никуда не девается. Когда ресурс
+ * кончается или бинт снимают - кровотечение возобновляется во всей красе.
+ */
+/datum/wound/proc/is_bleed_suppressed()
+	return FALSE
 
 /**
   * get_examine_description() is used in carbon/examine and human/examine to show the status of this wound. Useful if you need to show some status like the wound being splinted or bandaged.

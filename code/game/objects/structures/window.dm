@@ -900,7 +900,23 @@
 	icon = 'icons/obj/smooth_structures/rice_window.dmi'
 	icon_state = "ice_window"
 	max_integrity = 150
-	canSmoothWith = list(/obj/structure/window/fulltile, /obj/structure/window/reinforced/fulltile, /obj/structure/window/reinforced/tinted/fulltile, /obj/structure/window/plasma/fulltile, /obj/structure/window/plasma/reinforced/fulltile, /turf/closed/indestructible/riveted)
+	canSmoothWith = list(
+		/turf/closed/wall,
+		/turf/closed/wall/r_wall,
+		/turf/closed/wall/rust,
+		/turf/closed/wall/r_wall/rust,
+		/turf/closed/wall/clockwork,
+		/turf/closed/indestructible/riveted,
+		/obj/structure/falsewall,
+		/obj/structure/falsewall/brass,
+		/obj/structure/falsewall/reinforced,
+		/obj/structure/window/fulltile,
+		/obj/structure/window/reinforced/fulltile,
+		/obj/structure/window/reinforced/fulltile/ice,
+		/obj/structure/window/reinforced/tinted/fulltile,
+		/obj/structure/window/plasma/fulltile,
+		/obj/structure/window/plasma/reinforced/fulltile
+		)
 	level = 3
 	glass_amount = 2
 

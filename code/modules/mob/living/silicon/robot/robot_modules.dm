@@ -189,6 +189,9 @@
 				EG.update_icon()
 			else
 				EG.charge_tick = 0
+		else if(istype(I, /obj/item/gun/ballistic/revolver/grenadelauncher/cyborg))
+			var/obj/item/gun/ballistic/revolver/grenadelauncher/cyborg/GL = I
+			GL.recharge_from_station(coeff)
 
 	R.toner = R.tonermax
 
@@ -2405,7 +2408,7 @@
 		/obj/item/card/emag,
 		/obj/item/pinpointer/syndicate_cyborg,
 		/obj/item/stack/medical/gauze/cyborg,
-		/obj/item/gun/medbeam,
+		/obj/item/gun/medbeam/syndicate,
 		/obj/item/organ_storage)
 	ratvar_modules = list(
 		/obj/item/clockwork/slab/cyborg/medical,

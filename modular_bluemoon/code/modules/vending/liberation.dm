@@ -70,23 +70,24 @@
 	icon_vend = "syndicate-marine-vend"
 	req_access = list(ACCESS_SYNDICATE)
 	products = list(
-		/obj/item/restraints/handcuffs = 3,
-		/obj/item/assembly/flash/handheld = 2,
-		/obj/item/flashlight/seclite = 2,
-		/obj/item/ammo_box/magazine/m10mm = 3,
-		/obj/item/ammo_box/magazine/smgm45 = 3,
-		/obj/item/ammo_box/magazine/sniper_rounds = 3,
-		/obj/item/ammo_box/magazine/m556 = 2,
-		/obj/item/ammo_box/magazine/m12g = 3,
-		/obj/item/grenade/plastic/c4 = 2,
+		/obj/item/restraints/handcuffs = 9,
+		/obj/item/assembly/flash/handheld = 6,
+		/obj/item/flashlight/seclite = 6,
+		/obj/item/ammo_box/magazine/m10mm = 9,
+		/obj/item/ammo_box/magazine/smgm45 = 9,
+		// /obj/item/ammo_box/magazine/sniper_rounds = 9,
+		/obj/item/ammo_box/magazine/m556 = 6,
+		/obj/item/ammo_casing/a40mm = 6,
+		/obj/item/ammo_box/magazine/m12g = 9,
+		/obj/item/grenade/plastic/c4 = 4,
 		/obj/item/grenade/frag = 4,
-		/obj/item/melee/transforming/energy/sword/saber/red = 2,
+		/obj/item/melee/transforming/energy/sword/saber/red = 6,
 	)
 	var/voucher_items = list(
-		"M-90gl Carbine" = /obj/item/gun/ballistic/automatic/m90,
-		"Sniper Rifle" = /obj/item/gun/ballistic/automatic/sniper_rifle,
-		"C-20r SMG" = /obj/item/gun/ballistic/automatic/c20r,
-		"Bulldog Shotgun" = /obj/item/gun/ballistic/automatic/shotgun/bulldog
+		"M-90gl Carbine" = /obj/item/gun/ballistic/automatic/m90/unrestricted,
+		// "Sniper Rifle" = /obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted,
+		"C-20r SMG" = /obj/item/gun/ballistic/automatic/c20r/unrestricted,
+		"Bulldog Shotgun" = /obj/item/gun/ballistic/automatic/shotgun/bulldog/unrestricted
 	)
 
 /obj/machinery/vending/security/syndicate/attackby(obj/item/I, mob/user, params) //WS edit: THERE IS NO GOD. THERE IS ONLY GUNS. REPENT. //shiptest: i should remove this comment, but its funny

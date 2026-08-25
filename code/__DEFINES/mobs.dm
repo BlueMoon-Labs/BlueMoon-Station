@@ -253,6 +253,10 @@
 #define SLIDE_ICE			 (1<<4)
 #define SLIP_WHEN_CRAWLING	 (1<<5)	// clown planet ruin amongst others
 #define SLIP_WHEN_JOGGING	 (1<<6)	// slips prevented by walking are also dodged if the mob is nor sprinting or fatigued... unless this flag is on.
+// BLUEMOON ADD - скольжение не глохнет на 4 тайлах: жертва улетает, пока не во что-то не врежется
+#define SLIDE_INTO_SPACE	 (1<<7)
+/// На сколько тайлов вперёд планирует траекторию скольжение с SLIDE_INTO_SPACE
+#define SLIDE_INTO_SPACE_RANGE 14
 
 
 #define MAX_CHICKENS 50

@@ -6,6 +6,7 @@
 #include "map_files\generic\CentCom_minimal.dmm"
 #else
 #include "map_files\generic\CentCom.dmm"
+#include "RandomRuins\SpaceRuins\BlueMoon\siege\Inteq_base.dmm"
 #endif
 
 #ifndef LOWMEMORYMODE

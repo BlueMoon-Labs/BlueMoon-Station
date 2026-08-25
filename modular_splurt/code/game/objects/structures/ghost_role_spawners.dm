@@ -255,6 +255,7 @@
 
 /datum/outfit/inteqspace/inteq_crew/post_equip(mob/living/carbon/human/H)
 	H.faction |= ROLE_INTEQ
+	GLOB.inteq_pact_siege.register_defender(H)
 
 	var/obj/item/radio/R = H.ears
 	R.set_frequency(FREQ_GHOST_INTEQ)
@@ -263,6 +264,7 @@
 
 /datum/outfit/inteqspace/inteq_engineer/post_equip(mob/living/carbon/human/H)
 	H.faction |= ROLE_INTEQ
+	GLOB.inteq_pact_siege.register_defender(H)
 
 	var/obj/item/radio/R = H.ears
 	R.set_frequency(FREQ_GHOST_INTEQ)
@@ -300,6 +302,7 @@
 
 /datum/outfit/inteqspace/inteq_captain/post_equip(mob/living/carbon/human/H)
 	H.faction |= ROLE_INTEQ
+	GLOB.inteq_pact_siege.register_defender(H)
 
 	var/obj/item/radio/R = H.ears
 	R.set_frequency(FREQ_GHOST_INTEQ)
