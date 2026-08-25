@@ -285,10 +285,15 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			// BLUEMOON ADD END
 		missing -= BP.body_zone
 		for(var/obj/item/I in BP.embedded_objects)
+			var/datum/component/embedded/embed = get_embedded_component(src, I, BP)
 			if(I.isEmbedHarmless())
-				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>\n"
+				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>"
 			else
-				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>\n"
+				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
+			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
+			if(embed?.can_be_ripped_by(user))
+				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
+			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/iter_wound = i
 			msg += "[iter_wound.get_examine_description(user)]\n"

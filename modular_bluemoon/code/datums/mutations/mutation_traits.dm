@@ -1751,13 +1751,13 @@
 /datum/mutation/human/bm/onelife/proc/get_rid_of_them(mob/user, datum/emote/emote)
 	if(owner.stat == DEAD)
 		remove_signals()
-		owner.dust(TRUE, TRUE)
+		onelife_crumble(owner)
 
 /datum/mutation/human/bm/onelife/proc/get_rid_of_them_emote(mob/user, datum/emote/emote)
 	var/key = emote.key
 	if(key == "deathgasp")
 		remove_signals()
-		owner.dust(TRUE, TRUE)
+		onelife_crumble(owner)
 
 /datum/mutation/human/bm/waddle
 	name = "Неуклюжесть"

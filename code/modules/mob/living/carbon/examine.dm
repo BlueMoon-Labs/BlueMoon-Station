@@ -40,10 +40,15 @@
 			disabled += BP
 		missing -= BP.body_zone
 		for(var/obj/item/I in BP.embedded_objects)
-			if(I.isEmbedHarmless())
-				msg += "<B>[t_He] \a [icon2html(I, user)] [I] врезался в [t_his] [BP.ru_name_v]!</B>\n"
+			var/datum/component/embedded/embed = get_embedded_component(src, I, BP)
+			if(!I.isEmbedHarmless())
+				msg += "<B>[t_He] \a [icon2html(I, user)] [I] застрял в [t_his] [BP.ru_name_v]!</B>"
 			else
-				msg += "<B>[t_He] \a [icon2html(I, user)] [I] застрял в [t_his] [BP.ru_name_v]!</B>\n"
+				msg += "<B>[t_He] \a [icon2html(I, user)] [I] врезался в [t_his] [BP.ru_name_v]!</B>"
+			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
+			if(embed?.can_be_ripped_by(user))
+				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
+			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/W = i
 			msg += "[W.get_examine_description(user)]\n"

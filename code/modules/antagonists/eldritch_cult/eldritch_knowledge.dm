@@ -319,6 +319,12 @@
 				var/datum/antagonist/heretic/EC = carbon_user.mind.has_antag_datum(/datum/antagonist/heretic)
 				LH.sac_targetter = EC
 				EC.sac_targetted.Add(LH.target.real_name)
+				// BLUEMOON ADD START - потусторонние покровители не признают "Одну Жизнь":
+				// цель должна быть способна умереть окончательно, иначе жертва невозможна.
+				if(ishuman(LH.target))
+					remove_onelife_source(LH.target, "<span class='userdanger'><i>Нечто потустороннее смотрит на вас...</i> Вы чувствуете, что мучительная смерть снова стала для вас реальной угрозой.</span>")
+
+				// BLUEMOON ADD END
 			else
 				to_chat(user,"<span class='warning'>не удалось найти цель для живого сердца.</span>")
 

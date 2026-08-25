@@ -86,7 +86,13 @@
 		forge_objectives()
 	owner.current.get_language_holder().omnitongue = TRUE
 	remove_clownmut()
+	remove_onelife() // BLUEMOON ADD - генокраду не нужна "Одна Жизнь"
 	. = ..()
+
+/datum/antagonist/changeling/proc/remove_onelife()
+	var/mob/living/carbon/C = owner.current
+	if(istype(C))
+		remove_onelife_source(C, "<span class='notice'>Ваше новое естество умеет перерождаться - хрупкость одной жизни более вам не грозит.</span>")
 
 /datum/antagonist/changeling/on_removal()
 	//We'll be using this from now on
