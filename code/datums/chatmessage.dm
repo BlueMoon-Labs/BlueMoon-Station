@@ -25,7 +25,8 @@
 #define RUNECHAT_ANIM_RISE			1
 #define RUNECHAT_ANIM_TYPEWRITER	2
 #define CHAT_MESSAGE_RISE_OFFSET	8
-#define CHAT_MESSAGE_TYPING_TIME	1.5 SECONDS
+#define CHAT_MESSAGE_RISE_TIME		0.4 SECONDS
+#define CHAT_MESSAGE_TYPING_TIME	2 SECONDS
 
 /**
   * # Chat Message Overlay
@@ -59,6 +60,8 @@
 	var/in_client_images = FALSE
 	/// The current index used for adjusting the layer of each sequential chat message such that recent messages will overlay older ones
 	var/static/current_z_idx = 0
+	/// Current logical integer pixel_y of the message, kept whole to avoid subpixel text rendering
+	var/current_y = 0
 
 /**
   * Constructs a chat message overlay
@@ -228,7 +231,8 @@
 		var/combined_height = approx_lines
 		for(var/msg in owned_by.seen_messages[message_loc])
 			var/datum/chatmessage/m = msg
-			animate(m.message, pixel_y = m.message.pixel_y + mheight, time = CHAT_MESSAGE_SPAWN_TIME)
+			m.current_y += round(mheight)
+			animate(m.message, pixel_y = m.current_y, time = CHAT_MESSAGE_SPAWN_TIME)
 			combined_height += m.approx_lines
 
 			// When choosing to update the remaining time we have to be careful not to update the
@@ -244,16 +248,17 @@
 
 	// Build message image
 	var/anim_mode = owned_by.prefs ? owned_by.prefs.runechat_anim : RUNECHAT_ANIM_NONE
-	var/final_pixel_y = owner.bound_height * 0.95
+	var/final_pixel_y = round(owner.bound_height * 0.95)
 
 	message = image(loc = message_loc, layer = CHAT_LAYER + CHAT_LAYER_Z_STEP * current_z_idx++)
 	message.plane = CHAT_PLANE
 	message.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART
 	message.alpha = 0
 	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y
+	current_y = final_pixel_y
 	message.maptext_width = CHAT_MESSAGE_WIDTH
 	message.maptext_height = mheight
-	message.maptext_x = (CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5
+	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5)
 	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
 	// View the message
@@ -261,12 +266,18 @@
 	in_seen_messages = TRUE
 	owned_by.images |= message
 	in_client_images = TRUE
-	animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME, flags = ANIMATION_PARALLEL)
 	switch(anim_mode)
 		if(RUNECHAT_ANIM_RISE)
-			animate(message, pixel_y = final_pixel_y, time = CHAT_MESSAGE_SPAWN_TIME, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+			animate(message, alpha = 255, pixel_y = final_pixel_y, time = CHAT_MESSAGE_RISE_TIME, easing = SINE_EASING | EASE_OUT)
 		if(RUNECHAT_ANIM_TYPEWRITER)
-			INVOKE_ASYNC(src, PROC_REF(typewriter_reveal), complete_text)
+			animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
+			var/list/steps = typewriter_build_steps(complete_text)
+			if(length(steps) < 2)
+				message.maptext = MAPTEXT(complete_text)
+			else
+				INVOKE_ASYNC(src, PROC_REF(typewriter_reveal), steps)
+		else
+			animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
 
 	// Register with the runechat SS to handle EOL and destruction
 	scheduled_destruction = world.time + (lifespan - CHAT_MESSAGE_EOL_FADE)
@@ -283,11 +294,7 @@
 	animate(message, alpha = 0, time = fadetime, flags = ANIMATION_PARALLEL)
 	enter_subsystem(eol_complete) // re-enter the runechat SS with the EOL completion time to QDEL self
 
-/datum/chatmessage/proc/typewriter_reveal(complete_text)
-	var/list/steps = typewriter_build_steps(complete_text)
-	if(!length(steps))
-		message?.maptext = MAPTEXT(complete_text)
-		return
+/datum/chatmessage/proc/typewriter_reveal(list/steps)
 	var/total_ticks = max(1, CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1))
 	var/per_tick = max(1, CEILING(length(steps) / total_ticks, 1))
 	var/index = 1
