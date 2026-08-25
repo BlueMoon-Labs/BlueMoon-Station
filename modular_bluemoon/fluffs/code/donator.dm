@@ -2577,4 +2577,4 @@
     name = "Mountaineering Jacket"
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
-    ckeywhitelist = list("hartty", "ordinarylife", "spoopy_man228")
+    ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")
