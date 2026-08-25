@@ -112,6 +112,10 @@
 /datum/species/diona/spec_life(mob/living/carbon/human/H)
 	if(H.stat == DEAD)
 		return
+	if(H.GetComponent(/datum/component/nanites))
+		H.adjustToxLoss(2)
+		if(prob(5))
+			to_chat(H, span_noticealien("Инородные организмы в моем теле воспринимаются как паразиты, мне нужно их уничтожить.. Они мне вредят"))
 	if(H.nutrition < NUTRITION_LEVEL_STARVING + 50)
 		H.take_overall_damage(2, 0)
 	if(H.shoes)
