@@ -183,7 +183,7 @@
 		to_chat(heir, span_noticealien("Отголоски твоего расщепившегося сознания собираются в одном маленьком теле. Ты выжил — в каком-то смысле."))
 	else
 		poll_ghost_for_nymph(pick(spawned))
-	qdel(H)
+	H.dust(TRUE, TRUE)
 	return TRUE
 
 /datum/species/diona/pod
