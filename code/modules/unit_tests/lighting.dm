@@ -861,3 +861,35 @@
 	TEST_ASSERT(!QDELETED(fresh_corner), "пересозданный угол оказался снесённым")
 	TEST_ASSERT(LAZYLEN(fresh_corner.affecting), "пересозданный угол не подхватил источник")
 
+/**
+ * Источник света обязан отпускать углы после полного прохода update_corners().
+ *
+ * Буфер _corners_buf держит ключами КАЖДЫЙ угол, накрытый view() последнего полного прохода -
+ * включая отсеянные порогом видимости, которых нет ни в effect_str, ни в corner.affecting.
+ * Destroy() угла ходит только по affecting и вынуть себя из буфера не может, а у неподвижной
+ * лампы следующего полного прохода может не быть до конца раунда - ссылка живёт вечно.
+ * Прод-цена (раунд 10112, Delta): 1333 hard delete угла по 80-175 мс за 88 минут.
+ */
+/datum/unit_test/lighting_source_releases_corner_buffer/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/obj/machinery/light/test_light = allocate(/obj/machinery/light, test_turf)
+	test_light.status = LIGHT_OK
+	test_light.on = TRUE
+	test_light.switchcount = 0
+	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	var/datum/light_source/source = test_light.light
+	TEST_ASSERT_NOTNULL(source, "у включённой лампы нет источника света")
+	TEST_ASSERT(LAZYLEN(source.effect_str), "источник не набрал ни одного угла - проверять нечего")
+	TEST_ASSERT_EQUAL(length(source._corners_buf), 0, "после полного прохода источник держит углы в _corners_buf: снесённый угол не соберётся сборщиком и уйдёт в hard delete")
+
+	// Смена радиуса гонит полный проход заново - буфер обязан опустеть и после него.
+	test_light.set_light(l_range = 3)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	TEST_ASSERT_EQUAL(length(source._corners_buf), 0, "после смены радиуса источник держит углы в _corners_buf")

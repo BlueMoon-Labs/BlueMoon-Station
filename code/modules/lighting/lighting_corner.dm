@@ -224,26 +224,27 @@
 
 	// Соответствие обратных ссылок задано SET_DIAGONAL в New(): турф, лежащий к северо-востоку
 	// от угла, держит этот угол в своём lc_bottomleft, и так по кругу. Флаг "все четыре угла
-	// на месте" снимается: следующий generate_missing_corners() досоздаст недостающий.
+	// на месте" снимается только там, где слот действительно опустел: иначе укомплектованный
+	// турф гонял бы generate_missing_corners() впустую. Следующий проход досоздаст недостающий.
 	if(northeast)
 		if(northeast.lc_bottomleft == src)
 			northeast.lc_bottomleft = null
-		northeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+			northeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
 		northeast = null
 	if(northwest)
 		if(northwest.lc_bottomright == src)
 			northwest.lc_bottomright = null
-		northwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+			northwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
 		northwest = null
 	if(southwest)
 		if(southwest.lc_topright == src)
 			southwest.lc_topright = null
-		southwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+			southwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
 		southwest = null
 	if(southeast)
 		if(southeast.lc_topleft == src)
 			southeast.lc_topleft = null
-		southeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+			southeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
 		southeast = null
 
 	// Из GLOB.lighting_update_corners себя НЕ вынимаем намеренно. Очередь углов
