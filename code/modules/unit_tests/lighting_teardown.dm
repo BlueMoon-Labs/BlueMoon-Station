@@ -312,3 +312,23 @@
 	TEST_ASSERT(started, "снос не запустился, тест проверил бы не то")
 	TEST_ASSERT(aborted_on_reinit, "снос продолжился на уровне, который уже подняли обратно")
 	TEST_ASSERT(aborted_on_builder, "снос продолжился, пока другой проход строит свет")
+
+/**
+ * Реестры мобов по z читаются за границей списка без рантайма.
+ *
+ * clients_by_zlevel и dead_players_by_zlevel растут только в MaxZChanged(), а обращаются
+ * к ним раньше. Прямое индексирование в этот момент давало "cannot read from list" в
+ * playsound() прямо на инициализации мира - и этот единственный рантайм валил dm-test на
+ * КАЖДОЙ карте: FinishTestRun требует total_runtimes == 0, а декремент для ожидаемых
+ * рантаймов работает только внутри теста, когда GLOB.current_test уже выставлен.
+ */
+/datum/unit_test/mob_zlevel_registry_reads_out_of_range
+	requires_full_map = FALSE
+
+/datum/unit_test/mob_zlevel_registry_reads_out_of_range/Run()
+	var/beyond = length(SSmobs.clients_by_zlevel) + 5
+	TEST_ASSERT_NULL(SSmobs.clients_on_zlevel(beyond), "чтение клиентов за границей реестра обязано отдавать null, а не рантаймить")
+	TEST_ASSERT_NULL(SSmobs.dead_players_on_zlevel(beyond), "чтение мёртвых за границей реестра обязано отдавать null")
+	TEST_ASSERT_NULL(SSmobs.clients_on_zlevel(0), "нулевой z не индексируется")
+	TEST_ASSERT_NULL(SSmobs.clients_on_zlevel(-1), "отрицательный z не индексируется")
+	TEST_ASSERT_NOTNULL(SSmobs.clients_on_zlevel(run_loc_floor_bottom_left.z), "существующий z обязан отдавать список")

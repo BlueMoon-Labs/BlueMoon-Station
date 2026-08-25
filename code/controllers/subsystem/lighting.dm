@@ -847,14 +847,12 @@ SUBSYSTEM_DEF(lighting)
  * уровень, на котором никого нет).
  */
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
-	if(z <= length(SSmobs.clients_by_zlevel))
-		for(var/mob/occupant as anything in SSmobs.clients_by_zlevel[z])
-			if(!QDELETED(occupant))
-				return TRUE
-	if(z <= length(SSmobs.dead_players_by_zlevel))
-		for(var/mob/occupant as anything in SSmobs.dead_players_by_zlevel[z])
-			if(!QDELETED(occupant))
-				return TRUE
+	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
+		if(!QDELETED(occupant))
+			return TRUE
+	for(var/mob/occupant as anything in SSmobs.dead_players_on_zlevel(z))
+		if(!QDELETED(occupant))
+			return TRUE
 	return FALSE
 
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()

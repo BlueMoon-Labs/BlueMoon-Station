@@ -79,7 +79,7 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 			if(below_turf && istransparentturf(turf_source))
 				listeners += get_hearers_in_view(maxdistance, below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-			extra_dead_listeners = SSmobs.dead_players_by_zlevel[source_z]
+			extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)
 		else
 			listeners = SSspatial_grid.orthogonal_range_search(turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
@@ -89,8 +89,12 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 			if(below_turf && istransparentturf(turf_source))
 				extra_listeners_2 = SSspatial_grid.orthogonal_range_search(below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 	else //фолбэк до инита грида: старый обход клиентов z-уровня
+		// Реестры читаем через гарды: до MaxZChanged() строки под свежий z в них ещё нет,
+		// и прямое индексирование даёт рантайм "cannot read from list" прямо на
+		// инициализации мира, где погасить его нечем.
 		if(!ignore_walls)
-			listeners = SSmobs.clients_by_zlevel[source_z].Copy()
+			var/list/z_listeners = SSmobs.clients_on_zlevel(source_z)
+			listeners = z_listeners ? z_listeners.Copy() : list()
 			listeners = listeners & hearers(maxdistance,turf_source)
 
 			if(above_turf && istransparentturf(above_turf))
@@ -99,15 +103,15 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 			if(below_turf && istransparentturf(turf_source))
 				listeners += hearers(maxdistance,below_turf)
 		else
-			listeners = SSmobs.clients_by_zlevel[source_z]
+			listeners = SSmobs.clients_on_zlevel(source_z)
 
 			if(above_turf && istransparentturf(above_turf))
-				extra_listeners_1 = SSmobs.clients_by_zlevel[above_turf.z]
+				extra_listeners_1 = SSmobs.clients_on_zlevel(above_turf.z)
 
 			if(below_turf && istransparentturf(turf_source))
-				extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
+				extra_listeners_2 = SSmobs.clients_on_zlevel(below_turf.z)
 
-		extra_dead_listeners = SSmobs.dead_players_by_zlevel[source_z]
+		extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)
 
 	// Слушателей нет - выходим ДО выделения канала и до постройки /sound.
 	// Перепись датумов раунда 10060 (Delta, 3.5 часа без единого игрока):
