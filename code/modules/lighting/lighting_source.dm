@@ -383,6 +383,7 @@
 		REMOVE_CORNER(C)
 
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 
 	effect_str = null
 
@@ -556,6 +557,7 @@
 				C = thing
 				REMOVE_CORNER(C)
 				LAZYREMOVE(C.affecting, src)
+				C.queue_idle_check()
 			if(to_remove)
 				effect_str -= to_remove
 		else if(!geometry_changed && applied_power)
@@ -714,6 +716,7 @@
 		C = thing
 		REMOVE_CORNER(C)
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 	effect_str -= L
 
 
@@ -723,6 +726,13 @@
 	applied_power = light_power
 
 	UNSETEMPTY(effect_str)
+
+	// Буфер держит ключами КАЖДЫЙ угол, который накрыл view() этого прохода - включая отсеянные
+	// по порогу видимости и выброшенные из effect_str. Он переживает прок, а у неподвижной лампы
+	// следующего полного прохода может не быть вовсе, так что снесённый угол остался бы висеть
+	// ключом у всех соседних источников: GC его не соберёт, и он уйдёт в hard delete на 100+ мс.
+	// Сам список не выбрасываем - его переиспользует следующий полный проход.
+	_corners_buf.Cut()
 
 #undef EFFECT_UPDATE
 #undef SETUP_CORNERS_CACHE

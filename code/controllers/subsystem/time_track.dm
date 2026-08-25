@@ -504,6 +504,9 @@ SUBSYSTEM_DEF(time_track)
 	// Админский порог проверяется до базового уровня: если мир стартовал уже под потолком,
 	// ждать, пока раунд отстоится, незачем - его может не стать раньше.
 	check_memory_admin_warning(vsz, host_memory)
+	// Ступени конца раунда по памяти идут следом за предупреждением и по тем же цифрам:
+	// сообщение админам без действия раунд 10105 не спасло.
+	check_memory_pressure_endgame(vsz)
 
 	if(memory_baseline_due())
 		take_memory_baseline(vsz, host_memory)
@@ -1048,6 +1051,7 @@ SUBSYSTEM_DEF(time_track)
 	log_list_slots(all_counts, type_list_samples, type_list_slots, type_first_slots)
 	log_shared_list_slots(type_shared_slots)
 	log_global_list_slots()
+	log_lighting_graph_slots()
 	log_movables_per_z(movables_per_z)
 	#ifdef DATUM_CENSUS
 	for(var/line in datum_census_lines(MEMORY_CENSUS_TOP))
@@ -1328,6 +1332,46 @@ SUBSYSTEM_DEF(time_track)
 		top += "[entry] [num2text(found[entry], 12)]"
 	log_world("## MEMORY: элементы глобальных списков и списков подсистем: \
 		всего [num2text(total, 12)] в [length(found)] списках; крупнейшие: [top.Join(", ")]")
+
+/**
+ * Связи освещения: источники, углы и рёбра между ними.
+ *
+ * Это единственная крупная структура мира, которую не видит НИ ОДИН прибор. `/datum/light_source`
+ * и `/datum/lighting_corner` не лежат в world.contents, поэтому перепись инстансов их не берёт;
+ * их списки не глобалки и не типовые статики, поэтому строки личных и общих списков их тоже не
+ * берут. По оценке через вычитание на них приходится 60-80 МБ, и до этой строки цифра выводилась
+ * ровно так - вычитанием, а не замером.
+ *
+ * `corner.affecting` и `source.effect_str` - это два взгляда на один двудольный граф, поэтому
+ * рёбра считаются один раз, по источникам, а расхождение между взглядами печатается отдельно:
+ * если оно ненулевое, где-то отписка от угла прошла в одну сторону.
+ */
+/datum/controller/subsystem/time_track/proc/log_lighting_graph_slots()
+	var/sources = 0
+	var/edges_by_source = 0
+	var/edges_by_corner = 0
+	var/list/seen_corners = list()
+	for(var/datum/light_source/source as anything in GLOB.all_light_sources)
+		if(QDELETED(source))
+			continue
+		sources++
+		var/list/effect_str = source.effect_str
+		if(!length(effect_str))
+			continue
+		edges_by_source += length(effect_str)
+		for(var/datum/lighting_corner/corner as anything in effect_str)
+			if(QDELETED(corner) || seen_corners[corner])
+				continue
+			seen_corners[corner] = TRUE
+			edges_by_corner += LAZYLEN(corner.affecting)
+		CHECK_TICK
+
+	var/corners = length(seen_corners)
+	// Цена по измеренной модели: непустой список стоит 108 Б сверх слота, элемент списка - 8 Б,
+	// сам датум угла с его двумя десятками записанных переменных - около 368 Б. Оценка идёт в
+	// строку намеренно: без неё число рёбер ни о чём не говорит читателю лога.
+	var/estimate_mb = round((corners * (368 + 108) + edges_by_source * 8 * 2 + sources * 108) / (1024 * 1024), 0.1)
+	log_world("## MEMORY: граф освещения: источников [num2text(sources, 12)], углов [num2text(corners, 12)], 		рёбер [num2text(edges_by_source, 12)][edges_by_source == edges_by_corner ? "" : " (со стороны углов [num2text(edges_by_corner, 12)] - взгляды разошлись, где-то отписка прошла в одну сторону)"]; 		по измеренной модели это около [estimate_mb] МБ")
 
 /**
  * Топ типов по суммарной длине ЛИЧНЫХ списочных переменных, строками для лога.

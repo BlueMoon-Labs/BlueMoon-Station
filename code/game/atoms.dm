@@ -1494,7 +1494,14 @@
 			custom_material.on_removed(src, custom_materials[i], material_flags) //Remove the current materials
 
 	if(!length(materials))
-		custom_materials = null
+		// Гард не косметика: запись null в уже-null переменную BYOND считает настоящей
+		// записью и заводит под неё слот в блоке инстанса (замер: та же цена, что у записи
+		// любого другого значения, ступенями по 4 слота). Материалов нет у подавляющего
+		// большинства из полутора миллионов атомов мира, и раньше каждый из них платил за
+		// эту строчку. Прок при этом по-прежнему зовётся - переопределения у стака и монеты
+		// на своём месте.
+		if(custom_materials)
+			custom_materials = null
 		return
 
 	if(material_flags)

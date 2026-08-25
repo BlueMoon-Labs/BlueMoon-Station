@@ -21,7 +21,13 @@
 	if(GLOB.lighting_update_corners.len)
 		var/list/pending_corners = GLOB.lighting_update_corners.Copy()
 		GLOB.lighting_update_corners.Cut()
-		for(var/datum/lighting_corner/queued_corner as anything in pending_corners)
+		// Слот гасим сразу: угол, снёсший себя в начале прохода, иначе висел бы ссылкой в снимке
+		// до конца драйна, а тот на инициализации мира длиннее окна сборщика.
+		for(var/corner_index in 1 to pending_corners.len)
+			var/datum/lighting_corner/queued_corner = pending_corners[corner_index]
+			pending_corners[corner_index] = null
+			if(QDELETED(queued_corner))
+				continue
 			queued_corner.update_objects()
 			queued_corner.needs_update = FALSE
 			CHECK_TICK
