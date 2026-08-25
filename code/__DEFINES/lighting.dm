@@ -86,6 +86,12 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_BG_INIT_PENDING_THRESHOLD 100 // Background z-level init only runs when normal queue < this
 #define LIGHTING_STUCK_SCAN_INTERVAL 50    // Fires between safety-net scans for stuck deferred z-levels (~5-10s)
 #define LIGHTING_STUCK_SCAN_LEASE (1 MINUTES) // Лиза занятости сейфнет-скана: рантайм внутри спасательного вызова не латчит скан навечно - лиза протухает сама
+/// Сколько z-уровень должен простоять пустым, прежде чем его свет снесут обратно в отложку.
+/// Порог намеренно большой: подъём уровня стоит секунд работы, и качать его туда-сюда за
+/// вышедшим покурить шахтёром дороже, чем подержать свет лишние четверть часа.
+#define LIGHTING_TEARDOWN_IDLE_TIME (15 MINUTES)
+/// Фаеров между проверками, не пора ли сносить свет опустевшего уровня (~15-30 с).
+#define LIGHTING_TEARDOWN_SCAN_INTERVAL 150
 #define LIGHTING_DILATION_HIGH 40          // Time dilation threshold for minimum cap
 #define LIGHTING_DILATION_MEDIUM 20        // Time dilation threshold for reduced cap
 

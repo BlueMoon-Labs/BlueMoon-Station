@@ -41,14 +41,51 @@
 				queued_object.needs_update = FALSE
 			CHECK_TICK
 
+/**
+ * Поднимаем ли свет этого уровня сразу, или ждём первого посетителя.
+ *
+ * Единственный источник правды на две стороны отсрочки: пропуск уровня в
+ * create_all_lighting_objects() и парковку источников в /atom/update_light(). Разъедься
+ * они - и на пропущенном уровне живые источники сами достроят себе углы через
+ * generate_missing_corners(), то есть отсрочка перестанет экономить хоть что-нибудь.
+ *
+ * ZTRAIT_AWAY тут по данным прода 25.08. Эвей-миссия и VR - это отдельные z, куда на
+ * старте раунда не заходит НИКТО, а нередко не заходит и вовсе никогда, но свет им
+ * строился наравне со станцией. Разброс их содержимого при этом восьмикратный:
+ * Academy - 10 402 движимых, ihategordon - 88 942. Раунд 10114 вытянул ihategordon
+ * вместе с тяжёлым VR, стартовал с базой на 1150 МБ выше обычного для той же карты и
+ * упёрся в потолок адресного пространства на 61-й минуте.
+ */
+/proc/zlevel_lighting_deferred(datum/space_level/level)
+	if(!level)
+		return FALSE
+	return level.traits[ZTRAIT_RESERVED] || level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_AWAY]
+
+/**
+ * Можно ли сносить свет этого уровня, когда он опустел.
+ *
+ * Уже, чем zlevel_lighting_deferred(): транзитно-резервный уровень отложить на старте
+ * можно и нужно, а вот сносить бессмысленно. Его постоянно перерабатывают шаттлы и
+ * резервации, docking.dm сам зовёт create_lighting_for_zlevel() на стыковке, а освобождение
+ * резервации и так гасит свет поштучно через lighting_clear_overlay(). Снос уровня под
+ * этим оборотом только гонялся бы наперегонки со стыковкой и не освобождал бы ничего.
+ *
+ * Остаются те, ради кого всё и затевалось: шахтёрские уровни (два Лаваланда, 167-253 МБ
+ * и 66 300 объектов на каждый) и эвей-миссия с VR, куда за раунд может не зайти никто.
+ */
+/proc/zlevel_lighting_teardownable(datum/space_level/level)
+	if(!level || level.traits[ZTRAIT_RESERVED])
+		return FALSE
+	return level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_AWAY]
+
 /proc/create_all_lighting_objects()
 	SSlighting.init_in_progress = TRUE
 
-	// Build set of z-levels to skip (reserved/transit/mining — deferred until player visits)
+	// Build set of z-levels to skip (reserved/transit/mining/away — deferred until player visits)
 	var/list/skip_z = list()
 	if(SSmapping?.initialized)
 		for(var/datum/space_level/level as anything in SSmapping.z_list)
-			if(level.traits[ZTRAIT_RESERVED] || level.traits[ZTRAIT_MINING])
+			if(zlevel_lighting_deferred(level))
 				skip_z["[level.z_value]"] = TRUE
 
 	for(var/area/A in world)
@@ -118,6 +155,12 @@
 	if(level.lighting_initialized && !zlevel_has_deferred_lighting(z_level))
 		return
 	level.lighting_initialized = TRUE
+	// Снос света этого уровня отменяем первым делом: он спит между срезами, и его
+	// следующий срез иначе разобрал бы ровно то, что мы сейчас построим. Сам снос тоже
+	// смотрит на lighting_initialized, но снять его состояние здесь дешевле и честнее.
+	if(SSlighting.teardown_zlevel == z_level)
+		SSlighting.abort_zlevel_lighting_teardown()
+	SSlighting.zlevel_empty_since -= "[z_level]"
 	// Cancel background init if it was working on this z-level
 	if(SSlighting.bg_current_zlevel == z_level)
 		SSlighting.bg_current_zlevel = 0

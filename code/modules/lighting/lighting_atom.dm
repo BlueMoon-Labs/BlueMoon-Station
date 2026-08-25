@@ -105,14 +105,15 @@
 		if (light) // Update the light or create it if it does not exist.
 			light.update(.)
 		else
-			// Defer source creation for mining/reserved z-levels whose lighting objects don't exist yet.
+			// Defer source creation for z-levels whose lighting objects don't exist yet
+			// (see zlevel_lighting_deferred() — one predicate shared with create_all_lighting_objects).
 			// Trait check needed during early init (before SSlighting) when ALL z-levels have lighting_initialized=FALSE.
 			// The lighting_initialized check covers post-SSlighting-init period (bg init not yet complete).
 			if(SSmapping?.initialized)
 				var/turf/T = get_turf(src)
 				if(T)
 					var/datum/space_level/level = SSmapping.z_list.len >= T.z ? SSmapping.z_list[T.z] : null
-					if(level && !level.lighting_initialized && (level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_RESERVED]))
+					if(level && !level.lighting_initialized && zlevel_lighting_deferred(level))
 						GLOB.lighting_deferred_atoms |= src
 						GLOB.lighting_deferred_z_cache = null // множество отложенных z изменилось
 						return
