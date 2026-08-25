@@ -140,35 +140,9 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
  * ОБЩАЯ МЕХАНИКА РАССЫПАНИЯ
  */
 
-/// Полное выпадение всего снаряжения персонажа, включая то,
-/// что обычно остаётся внутри: застрявшие предметы, импланты, содержимое органов.
-/proc/onelife_spill_items(mob/living/carbon/human/H)
-	H.unequip_everything()
-	var/turf/T = get_turf(H)
-
-	// Застрявшие в конечностях предметы - при обычном dust() они исчезают вместе с телом
-	for(var/obj/item/bodypart/LB as anything in H.bodyparts)
-		if(!LB.embedded_objects.len)
-			continue
-		for(var/obj/item/I as anything in LB.embedded_objects)
-			LB.embedded_objects -= I
-			I.unembedded()
-			I.forceMove(T)
-		LB.embedded_objects.Cut()
-
-	if(!H.has_embedded_objects())
-		H.clear_alert("embeddedobject")
-		SEND_SIGNAL(H, COMSIG_CLEAR_MOOD_EVENT, "embedded")
-
-	// Содержимое имплантов (например, имплант хранилища) и проглоченные предметы
-	for(var/obj/item/implant/IM as anything in H.implants)
-		for(var/obj/item/IT in IM.contents)
-			IT.forceMove(T)
-	for(var/obj/item/organ/O as anything in H.internal_organs)
-		for(var/obj/item/IT in O.contents)
-			IT.forceMove(T)
-
 /// Рассыпать носителя Одной Жизни в выбранную им форму смерти.
+/// Полный дроп вещей (включая застрявшее, импланты и проглоченное) делает сам
+/// dust(TRUE, TRUE) через /mob/living/proc/dust_spill_everything().
 /proc/onelife_crumble(mob/living/carbon/human/H)
 	if(!istype(H) || QDELETED(H))
 		return
@@ -177,7 +151,7 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
 	var/datum/onelife_death/form = new form_type()
 
 	H.death(TRUE) // уже мёртв - просто страховка от вызова на живом
-	onelife_spill_items(H)
+	H.dust_spill_everything()
 	if(H.buckled)
 		H.buckled.unbuckle_mob(H, force = TRUE)
 	H.dust_animation()
