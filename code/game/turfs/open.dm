@@ -332,11 +332,16 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		// Цепное качение: слайд длится через всю смазанную дорожку, а после её конца
-		// персонаж по инерции ещё пролетает пару-тройку клеток и не встаёт сразу.
-		// Одиночная смазанная клетка - прежний разлёт на 4.
+		// BLUEMOON CHANGE - цепное качение: слайд идёт через всю смазанную дорожку плюс инерция,
+		// одиночная смазанная клетка - прежний разлёт на 4. Суперлубрикант (SLIDE_INTO_SPACE)
+		// при покидании гравитации передаёт тело ньютоновскому дрейфу: полёт без лимита,
+		// траекторию игрок меняет сам (бросок предмета, джетпак).
 		var/slide_run = lube_slide_run(olddir)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_run ? slide_run + 1 + rand(2, 3) : 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		var/slide_range = slide_run ? slide_run + 1 + rand(2, 3) : ((lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4)
+		var/datum/callback/on_step = CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1)
+		if(lube & SLIDE_INTO_SPACE)
+			on_step = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(slide_into_space_step), C, olddir)
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_range), 1, FALSE, on_step)
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE

@@ -1028,6 +1028,28 @@
 		. = t_air.return_temperature()
 	return
 
+/obj/vehicle/sealed/mecha/emag_act(mob/user, obj/item/card/emag/E)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	obj_flags |= EMAGGED
+	log_message("Emagged - DNA lock removed, one extra equipment slot installed.", LOG_MECHA)
+	log_combat(user, src, "emagged", E)
+	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
+	if(dna_lock)
+		dna_lock = null
+		desc = initial(desc)
+	max_equip++
+	user.visible_message(
+		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
+		"<span class='notice'>Свободных слотов снаряжения теперь: [max_equip].</span>"
+	)
+	do_sparks(5, TRUE, src)
+	playsound(src, 'sound/effects/sparks1.ogg', 50)
+	return TRUE
+
+/obj/vehicle/sealed/mecha/proc/is_emagged()
+	return !!(obj_flags & EMAGGED)
+
 /obj/vehicle/sealed/mecha/mob_try_enter(mob/M)
 	if(!ishuman(M)) // no silicons or drones in mechas.
 		return

@@ -1844,3 +1844,15 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	radio = /obj/item/radio/headset/tarkoff
 	announcement_channel = RADIO_CHANNEL_TARKOFF
 	req_one_access = list(ACCESS_TARKOFF)
+
+/obj/effect/mob_spawn/human/inteqspace/captain/PACTDaivers
+	name = "InteQ 1 arm Captain"
+	short_desc = "Вы -Глава Первой наступательной армии,что разворачивает авангард на одной из производственных плане."
+	flavour_text = "Большая часть сил Пакта на планете уже были подавлены,но вы видели летящие в небе шатлы."
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."
+
+/obj/effect/mob_spawn/human/inteqspace/PACTDaivers
+	name = "InteQ 1 arm Crew Member"
+	short_desc = "Вы - Оперативник  InteQ в составе первой наступательной армии."
+	flavour_text = "Вы член первой экспедеционной армии Интекью. Вы уже подавили большую часть местных войс и развенули часть своих баз,но в небе зияют двигатели челноков.Нужно быть на готове"
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."

@@ -877,6 +877,10 @@
 						hud_used.healths.icon_state = "health7"
 					if(SCREWYHUD_HEALTHY)
 						hud_used.healths.icon_state = "health0"
+
+			if(hud_used.healths_synth)
+				hud_used.healths_synth.icon_state = hud_used.healths.icon_state
+
 		if(hud_used.healthdoll)
 			// The doll has six states per limb, so almost every health change
 			// leaves it looking exactly the same. Only redraw when it wouldn't.

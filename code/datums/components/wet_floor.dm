@@ -91,7 +91,8 @@
 			lube_flags = SLIDE_ICE | GALOSHES_DONT_HELP
 		if(TURF_WET_SUPERLUBE)
 			intensity = 120
-			lube_flags = SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING
+			// BLUEMOON CHANGE - суперлубрикант отправляет в полёт в космос, а не катит 4 тайла
+			lube_flags = SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING | SLIDE_INTO_SPACE
 		else
 			qdel(parent.GetComponent(/datum/component/slippery))
 			return

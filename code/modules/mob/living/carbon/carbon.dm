@@ -543,6 +543,98 @@
 		return FALSE
 	return ..()
 
+///////////////////////////////////////////////////////////////////////////
+// РАССЧЁТ ИЗМЕНЕНИЯ ГОЛОДА И ЖАЖДЫ, И ИЗМЕНЕНИЯ HUD ИЗ-ЗА ЭТОГО
+// Цепочка проков сначала сравнивает старое значение
+
+// Голод
+/mob/living/carbon/adjust_nutrition(change, max = INFINITY)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/set_nutrition(change)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/proc/get_nutrition_hud_level(value)
+	if(!hud_used)
+		return
+	switch(value)
+		if(NUTRITION_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+			return 1
+		if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_WELL_FED)
+			return 2
+		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+			return 3
+		if(-INFINITY to NUTRITION_LEVEL_STARVING)
+			return 4
+
+// Жажда
+/mob/living/carbon/adjust_thirst(change, max = INFINITY)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/set_thirst(change)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/proc/get_thirst_hud_level(value)
+	if(!hud_used)
+		return
+	if(HAS_TRAIT(src, TRAIT_NOTHIRST)) // Персонажи, которые не имеют жажды, вечно полные
+		return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+	switch(value)
+		if(THIRST_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+			return 1
+		if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_QUENCHED)
+			return 2
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			return 3
+		if(0 to THIRST_LEVEL_PARCHED)
+			return 4
+
+/// Уже переписанный Sandstorm прок обновления HUD, отвечающих за индикацию голода
+/mob/living/carbon/proc/update_hunger_and_thirst_hud(update_hunger, update_thirst, nutrition_level, thirst_level)
+	if(!client || !hud_used)
+		return
+
+	var/robotic_user = isrobotic(src)
+	if(update_hunger && (hud_used.hunger || hud_used.charge))
+		var/nutrition_prefix = robotic_user ? "charge" : "nutrition" // Тип стейта
+		var/nutrition_status = isnull(nutrition_level) ? get_nutrition_hud_level(nutrition) : nutrition_level
+		var/nutrition_state = "[nutrition_prefix][nutrition_status]"
+
+		if(robotic_user)
+			if(hud_used.charge.icon_state != nutrition_state)
+				hud_used.charge.icon_state = nutrition_state
+		else
+			if(hud_used.hunger.icon_state != nutrition_state)
+				hud_used.hunger.icon_state = nutrition_state
+
+	if(!robotic_user && update_thirst && hud_used.thirst)
+		var/thirst_status = isnull(thirst_level) ? get_thirst_hud_level(thirst) : thirst_level
+		var/thirst_state = "hydration[thirst_status]"
+		if(hud_used.thirst.icon_state != thirst_state)
+			hud_used.thirst.icon_state = thirst_state
+
+///////////////////////////////////////////////////////////////////////////
+
 /mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = FALSE, purge_ratio = 0.1)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER) && !force)
 		return TRUE
@@ -963,7 +1055,6 @@
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
-	update_hunger_and_thirst_hud()
 	med_hud_set_status()
 	..()
 

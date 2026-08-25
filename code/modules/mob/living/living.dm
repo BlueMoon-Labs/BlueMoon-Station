@@ -1201,7 +1201,7 @@
 		if(!silent)
 			to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
 		return FALSE
-	if(!no_dextery)
+	if(!no_dextery && !IsAdvancedToolUser()) // BLUEMOON EDIT - раньше проверка была инвертирована и отсекала вообще всех без флага NO_DEXTERY
 		if(!silent)
 			to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
 		return FALSE

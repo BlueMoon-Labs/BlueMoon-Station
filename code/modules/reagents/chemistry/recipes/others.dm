@@ -305,6 +305,17 @@
 	level_min = 2
 	level_max = 4
 
+/datum/chemical_reaction/mix_virus/mix_virus_2/on_reaction(datum/reagents/holder, multiplier)
+	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in holder.reagent_list
+	if(!B || !islist(B.data))
+		return
+	var/datum/disease/advance/D = locate(/datum/disease/advance) in B.data["viruses"]
+	if(D)
+		for(var/i in 1 to min(multiplier, 5))
+			D.Evolve(level_min, level_max)
+		return
+	holder.add_reagent(B.type, multiplier, null, holder.chem_temp)
+
 /datum/chemical_reaction/mix_virus/mix_virus_2/synth
 	id = "mixvirus2_synth"
 	required_catalysts = list(/datum/reagent/blood/synthetics = 1)

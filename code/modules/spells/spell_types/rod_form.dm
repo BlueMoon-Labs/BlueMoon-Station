@@ -27,13 +27,16 @@
 	var/max_distance = 13
 	var/damage_bonus = 0
 	var/turf/start_turf
+	///The wizard who is currently piloting the rod.
+	var/mob/living/wizard
 	notify = FALSE
+	dnd_style_level_up = FALSE
 
-/obj/effect/immovablerod/wizard/Move()
+/obj/effect/immovablerod/wizard/Moved(atom/old_loc, movement_dir, forced)
 	if(get_dist(start_turf, get_turf(src)) >= max_distance)
 		qdel(src)
 		return //без выхода ..() двигал уже уничтоженный род
-	..()
+	return ..()
 
 /obj/effect/immovablerod/wizard/Destroy()
 	if(wizard)
@@ -44,10 +47,24 @@
 	start_turf = null
 	return ..()
 
-/obj/effect/immovablerod/wizard/penetrate(mob/living/L)
-	if(L.anti_magic_check())
-		L.visible_message("<span class='danger'>[src] hits [L], but it bounces back, then vanishes!</span>" , "<span class='userdanger'>[src] hits you... but it bounces back, then vanishes!</span>" , "<span class ='danger'>You hear a weak, sad, CLANG.</span>")
+/obj/effect/immovablerod/wizard/penetrate(mob/living/smeared_mob)
+	if(smeared_mob.anti_magic_check())
+		smeared_mob.visible_message(span_danger("[src] hits [smeared_mob], but it bounces back, then vanishes!") , span_userdanger("[src] hits you... but it bounces back, then vanishes!") , span_danger("You hear a weak, sad, CLANG."))
 		qdel(src)
 		return
-	L.visible_message("<span class='danger'>[L] is penetrated by an immovable rod!</span>" , "<span class='userdanger'>The rod penetrates you!</span>" , "<span class ='danger'>You hear a CLANG!</span>")
-	L.adjustBruteLoss(70 + damage_bonus)
+	smeared_mob.visible_message(span_danger("[smeared_mob] is penetrated by an immovable rod!") , span_userdanger("The rod penetrates you!") , span_danger("You hear a CLANG!"))
+	smeared_mob.adjustBruteLoss(70 + damage_bonus)
+
+/obj/effect/immovablerod/wizard/suplex_rod(mob/living/strongman)
+	if(!wizard)
+		return ..() //Нет визарда в стержне? Тогда это просто обычный стержень
+
+	strongman.visible_message(
+		span_boldwarning("[src] превращается обратно в [wizard], когда [strongman] суплексит его!"),
+		span_warning("Когда вы хватаете [src], он внезапно превращается в [wizard], которого вы впечатываете в пол!")
+		)
+	to_chat(wizard, span_boldwarning("Вас внезапно выбивает из формы стержня, когда [strongman] каким-то образом ухитряется схватить вас и впечатать вас в пол!"))
+	wizard.Stun(60)
+	wizard.apply_damage(25, BRUTE)
+	qdel(src)
+	return TRUE

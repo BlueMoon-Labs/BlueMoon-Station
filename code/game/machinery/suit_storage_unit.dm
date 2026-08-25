@@ -231,6 +231,11 @@
 		storage = new storage_type(src)
 	update_icon()
 
+/obj/machinery/suit_storage_unit/LateInitialize()
+	. = ..()
+	if(state_open)
+		take_mapload_contents()
+
 /obj/machinery/suit_storage_unit/Destroy()
 	QDEL_NULL(suit)
 	QDEL_NULL(helmet)
@@ -289,6 +294,48 @@
 	mod = null
 	storage = null
 	occupant = null
+
+///При mapload забирает предметы с той же клетки, что и шкаф (как closet/take_contents).
+/obj/machinery/suit_storage_unit/proc/take_mapload_contents()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	for(var/atom/movable/AM in T)
+		if(AM == src || !isitem(AM))
+			continue
+		store_mapload_item(AM)
+	update_icon()
+
+///Кладёт предмет в первый подходящий свободный слот. TRUE — внутри, FALSE — не влез.
+/obj/machinery/suit_storage_unit/proc/store_mapload_item(obj/item/I)
+	if(istype(I, /obj/item/clothing/suit))
+		if(suit)
+			return FALSE
+		suit = I
+	else if(istype(I, /obj/item/clothing/head))
+		if(helmet)
+			return FALSE
+		helmet = I
+	else if(istype(I, /obj/item/clothing/mask))
+		if(mask)
+			return FALSE
+		mask = I
+	else if(istype(I, /obj/item/clothing/shoes))
+		if(shoes)
+			return FALSE
+		shoes = I
+	else if(istype(I, /obj/item/mod/control))
+		if(mod)
+			return FALSE
+		mod = I
+	else
+		if(storage)
+			return FALSE
+		storage = I
+	I.forceMove(src)
+	if(mod == I)
+		machine_wake()
+	return TRUE
 
 /obj/machinery/suit_storage_unit/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))

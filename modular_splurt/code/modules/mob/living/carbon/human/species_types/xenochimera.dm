@@ -233,8 +233,8 @@
 		if(stat == DEAD)
 
 			//Reviving from ded takes extra nutrition - if it isn't provided from outside sources, it comes from you
-			if(!nutrition > 0)
-				nutrition=nutrition * 0.75
+			if(nutrition > 0)
+				adjust_nutrition(-nutrition * 0.25)
 			chimera_hatch()
 
 			visible_message("<span class='warning'><p><font size=4>The former corpse staggers to its feet, all its former wounds having vanished...</font></p></span>") //Bloody hell...
@@ -245,7 +245,7 @@
 		else
 			chimera_hatch()
 
-			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell... How beautiful! 
+			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell... How beautiful!
 			clear_alert("hatch")
 
 /mob/living/carbon/human/proc/chimera_hatch()
@@ -260,7 +260,7 @@
 
 
 	if(!uninjured)
-		nutrition = old_nutrition * 0.5
+		set_nutrition(old_nutrition * 0.5)
 		//Drop everything
 		for(var/obj/item/W in src)
 			dropItemToGround(W, 1)
@@ -271,7 +271,7 @@
 		visible_message("<span class='danger'><p><font size=4>The lifeless husk of [src] bursts open, revealing a new, intact copy in the pool of viscera.</font></p></span>") //Bloody hell...
 
 	else //lower cost for doing a quick cosmetic revive
-		nutrition = old_nutrition * 0.9
+		set_nutrition(old_nutrition * 0.9)
 
 	//Unfreeze some things
 	//does_not_breathe = FALSE

@@ -174,7 +174,7 @@
 			to_chat(H, "<span class='notice'>You feel very bloated!</span>")
 	else if(H.nutrition >= NUTRITION_LEVEL_WELL_FED)
 		H.adjust_integration_blood(3)
-		H.nutrition -= 2.5
+		H.adjust_nutrition(-2.5)
 
 	..()
 

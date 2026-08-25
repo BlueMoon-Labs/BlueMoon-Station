@@ -22,6 +22,11 @@
 #define BLUESPACE_STORM_ANOMALY_CHANCE 4
 /// Сколько аномалий шторм выпускает за раз максимум.
 #define BLUESPACE_STORM_ANOMALY_CAP 2
+#define BLUESPACE_STORM_THUNDER list(\
+	'sound/magic/tf2/medieval_thunder2.ogg', \
+	'sound/magic/tf2/medieval_thunder3.ogg', \
+	'sound/magic/tf2/medieval_thunder4.ogg')
+#define BLUESPACE_STORM_THUNDER_CHANCE 5
 
 /datum/round_event_control/space_weather/bluespace_storm
 	name = "Bluespace Storm"
@@ -57,12 +62,26 @@
 /datum/round_event/space_weather/bluespace_storm/apply_intensity(current_intensity)
 	// Разброс растёт вместе со штормом: на подходе телепорт ещё точен, на пике уже нет.
 	GLOB.bluespace_teleport_noise = round(BLUESPACE_STORM_NOISE * current_intensity)
+	thunder(current_intensity)
 	// Проколы и аномалии - только на пике: подход даёт время дойти туда, куда собирались
 	// телепортом, и убрать со столов то, что жалко потерять.
 	if(phase != PHENOMENON_PHASE_PEAK)
 		return
 	punch_through(current_intensity)
 	release_anomaly(current_intensity)
+
+/**
+ * BLUEMOON ADD - раскат грома блюспейс-шторма.
+ *
+ * Случайный файл из набора играется всем игрокам сразу (sound_to_playing_players):
+ * шторм окружает станцию целиком, локальный источник звука тут не годится. Частота
+ * раскатов привязана к интенсивности: на подходе редкие, на пике - каждые ~25 секунд
+ * в среднем, к уходу стихают. Тик директора - две секунды.
+ */
+/datum/round_event/space_weather/bluespace_storm/proc/thunder(current_intensity)
+	if(!prob(current_intensity * BLUESPACE_STORM_THUNDER_CHANCE))
+		return
+	sound_to_playing_players(pick(BLUESPACE_STORM_THUNDER), volume = 65)
 
 /datum/round_event/space_weather/bluespace_storm/cleanup_effects()
 	GLOB.bluespace_teleport_noise = 0
@@ -139,3 +158,5 @@
 #undef BLUESPACE_STORM_PUNCTURE_RANGE
 #undef BLUESPACE_STORM_ANOMALY_CHANCE
 #undef BLUESPACE_STORM_ANOMALY_CAP
+#undef BLUESPACE_STORM_THUNDER
+#undef BLUESPACE_STORM_THUNDER_CHANCE
