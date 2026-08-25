@@ -284,17 +284,39 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 				vol = round(volume * M.client.prefs.get_sound_volume(sound_id) / 100)
 			M.playsound_local(M, null, vol, vary, frequency, null, channel, pressure_affected, S)
 
+/**
+ * Команды каналу (стоп и громкость) шлются одним и тем же датумом на весь раунд.
+ *
+ * SEND_SOUND - это `target << sound`, и BYOND сериализует состояние датума прямо в
+ * момент вывода: после отправки датум никому не принадлежит и переиспользуется без
+ * последствий. Ровно на этом уже держится сама playsound() (один S на всех слушателей)
+ * и джукбокс, который мутирует один долгоживущий датум под каждого моба.
+ *
+ * Цена вопроса не в размере, а в черне аллокатора: process_decay() инструментов зовёт
+ * set_sound_channel_volume() на КАЖДЫЙ живой канал КАЖДОМУ слышащему КАЖДЫЙ тик - до
+ * 128 каналов на инструмент. Один играющий на гитаре закрывает бюджет в три миллиона
+ * /sound за раунд (перепись раунда 10113) в одиночку, а этот черн двигает храповик
+ * VmSize в 32-битном DreamDaemon.
+ *
+ * Оба датума не имеют состояния сверх полей, которые переписываются перед каждой
+ * отправкой, поэтому залипнуть между вызовами нечему. Спать между присвоением и
+ * SEND_SOUND тут негде - иначе общий датум успел бы уехать чужому адресату.
+ */
 /mob/proc/stop_sound_channel(chan)
 	if(QDELETED(src) || !isnum(chan) || chan <= 0)
 		return
-	SEND_SOUND(src, sound(null, repeat = 0, wait = 0, channel = chan))
+	var/static/sound/channel_stop = sound(null, repeat = 0, wait = 0)
+	channel_stop.channel = chan
+	SEND_SOUND(src, channel_stop)
 
 /mob/proc/set_sound_channel_volume(channel, volume)
 	if(QDELETED(src) || !isnum(channel) || channel <= 0)
 		return
-	var/sound/S = sound(null, FALSE, FALSE, channel, volume)
-	S.status = SOUND_UPDATE
-	SEND_SOUND(src, S)
+	var/static/sound/channel_volume = sound(null, FALSE, FALSE)
+	channel_volume.channel = channel
+	channel_volume.volume = volume
+	channel_volume.status = SOUND_UPDATE
+	SEND_SOUND(src, channel_volume)
 
 /client/proc/playtitlemusic(vol = 85)
 	set waitfor = FALSE
