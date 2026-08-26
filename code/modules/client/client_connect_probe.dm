@@ -30,6 +30,29 @@
 /// сколько других клиентов вошло между концом New() и им самим.
 GLOBAL_VAR_INIT(client_connect_serial, 0)
 
+/// Мегабайты VmSize, которые фоновая работа уже записала на СВОЙ счёт. Счётчик только
+/// растёт; прибор подключения вычитает его прирост за этап, потому что client/New() спит
+/// секундами в acquire_dpi() и всё, что успело сделаться в это окно, иначе выставляется
+/// счётом входящему игроку. В раунде 10119 так набежало 368 "МБ dpi" на десяти входах,
+/// пока рядом строился свет z-уровней.
+GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
+
+/// Готовая строка одного этапа. Вынесена из mark() отдельным проком: это единственное
+/// место, где живёт арифметика вычета фона, и без живого клиента её иначе не проверить.
+/// Вычтенный фон НАЗЫВАЕТСЯ в строке - молчаливый вычет прячет от читателя, что окно
+/// было не его.
+/proc/probe_stage_line(stage_name, seconds, vsz_delta, attributed_delta, measured = TRUE)
+	var/line = "[stage_name] [seconds]с"
+	if(!measured)
+		return line
+	// Счётчик фона монотонный, но отрицательная разница между отметками смысла не имеет и
+	// прибавлять подключению мегабайт не должна.
+	var/background = max(attributed_delta, 0)
+	line += " [format_mb_delta(vsz_delta - background)]"
+	if(background > 0)
+		line += " (мимо: [format_mb_delta(background)] фоновой работы)"
+	return line
+
 /datum/client_connect_probe
 	/// ckey клиента - строкой, потому что к контрольному замеру клиент может уже уйти
 	var/ckey
@@ -44,6 +67,11 @@ GLOBAL_VAR_INIT(client_connect_serial, 0)
 	var/start_rss
 	/// VmSize на последней отметке
 	var/last_mark_vsz
+	/// GLOB.memory_attributed_elsewhere_mb на последней отметке - разница с текущим и есть
+	/// фон, который в это окно сделал не этот клиент
+	var/last_mark_attributed = 0
+	/// Тот же счётчик на входе в New(): из ИТОГОВОЙ дельты вычитается он
+	var/start_attributed = 0
 	/// Готовые куски строки по этапам: "prefs 0.1с +0.2 МБ"
 	var/list/stages = list()
 	/// Итог после finish(): VmSize и момент конца New(), от них считается контрольный замер
@@ -56,6 +84,8 @@ GLOBAL_VAR_INIT(client_connect_serial, 0)
 	serial = ++GLOB.client_connect_serial
 	started_at = REALTIMEOFDAY
 	last_mark_at = started_at
+	start_attributed = GLOB.memory_attributed_elsewhere_mb
+	last_mark_attributed = start_attributed
 	var/list/memory = get_process_memory_mb()
 	if(memory)
 		start_vsz = memory["vsz"]
@@ -65,13 +95,16 @@ GLOBAL_VAR_INIT(client_connect_serial, 0)
 /// Закрыть этап: сколько секунд он шёл и на сколько МБ сдвинул VmSize с прошлой отметки.
 /datum/client_connect_probe/proc/mark(stage_name)
 	var/now = REALTIMEOFDAY
-	var/part = "[stage_name] [round(max(now - last_mark_at, 0) / 10, 0.1)]с"
+	var/seconds = round(max(now - last_mark_at, 0) / 10, 0.1)
 	last_mark_at = now
-	if(!isnull(start_vsz))
-		var/list/memory = get_process_memory_mb()
-		if(memory)
-			part += " [format_mb_delta(memory["vsz"] - last_mark_vsz)]"
-			last_mark_vsz = memory["vsz"]
+	var/attributed_now = GLOB.memory_attributed_elsewhere_mb
+	var/list/memory = isnull(start_vsz) ? null : get_process_memory_mb()
+	var/part = memory \
+		? probe_stage_line(stage_name, seconds, memory["vsz"] - last_mark_vsz, attributed_now - last_mark_attributed) \
+		: probe_stage_line(stage_name, seconds, 0, 0, measured = FALSE)
+	if(memory)
+		last_mark_vsz = memory["vsz"]
+	last_mark_attributed = attributed_now
 	stages += part
 
 /// Строка итога подключения: общее время, VmSize/RSS до и после, этапы.
@@ -84,7 +117,12 @@ GLOBAL_VAR_INIT(client_connect_serial, 0)
 		var/list/memory = get_process_memory_mb()
 		if(memory)
 			finished_vsz = memory["vsz"]
-			line += ", VmSize [start_vsz] -> [finished_vsz] МБ ([format_mb_delta(finished_vsz - start_vsz)]), RSS [format_mb_delta(memory["rss"] - start_rss)]"
+			// VmSize до и после - сырой факт, а вот дельта в скобках уже за вычетом фона:
+			// именно её складывают, когда считают цену клиента.
+			var/background = max(GLOB.memory_attributed_elsewhere_mb - start_attributed, 0)
+			line += ", VmSize [start_vsz] -> [finished_vsz] МБ ([format_mb_delta(finished_vsz - start_vsz - background)]"
+			line += background > 0 ? ", мимо [format_mb_delta(background)] фоновой работы), " : "), "
+			line += "RSS [format_mb_delta(memory["rss"] - start_rss)]"
 	if(length(stages))
 		line += "; этапы: [stages.Join(", ")]"
 	return line

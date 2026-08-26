@@ -107,6 +107,7 @@
 #include "chain_pull_through_space.dm"
 #include "chem_dispenser_payload.dm"
 #include "client_connect_probe.dm"
+#include "connect_probe_attribution.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"

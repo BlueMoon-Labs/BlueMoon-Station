@@ -171,6 +171,14 @@
 		SSlighting.bg_queued_zlevels -= z_level
 	log_world("## LIGHTING: On-demand init for z-level [z_level] ([level.name]) (background preempted)")
 
+	// Свет целого z-уровня - самая крупная разовая аллокация идущего раунда: в 10119 три
+	// таких постройки стоили 466 МБ из 4094 потолка, и восстанавливать эту цифру пришлось
+	// вручную по ступенькам перф-CSV. Меряем прямо здесь и записываем на СВОЙ счёт, чтобы
+	// прибор подключения не выставлял её счётом игроку, спящему в acquire_dpi().
+	// Окно честно только пока внутри него нет второй такой постройки: краул отменяется
+	// выше, а параллельный on-demand на другом z в него попадёт и будет посчитан дважды.
+	var/list/memory_before = get_process_memory_mb()
+
 	SSlighting.init_in_progress = TRUE
 
 	// Phase 0: Create lighting objects FIRST — corners must be active before sources process
@@ -225,3 +233,18 @@
 	// collapses to ~20-40 sources/fire under atmospherics load: tens of seconds of black, far longer
 	// on heavy away-maps). fire() Phase -1 still creates the queued starlight sources separately.
 	drain_lighting_queues_snapshot()
+
+	log_zlevel_lighting_cost(z_level, level.name, memory_before)
+
+/// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
+/// проком, потому что вызывать его придётся и из фонового краула, и из сноса.
+/proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before)
+	if(!memory_before)
+		return
+	var/list/memory_after = get_process_memory_mb()
+	if(!memory_after)
+		return
+	var/spent = memory_after["vsz"] - memory_before["vsz"]
+	if(spent > 0)
+		GLOB.memory_attributed_elsewhere_mb += spent
+	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize")
