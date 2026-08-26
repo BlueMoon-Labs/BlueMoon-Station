@@ -395,6 +395,6 @@
 		return
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(B?.size || 0), 0, 7)
-	icon_state = "[initial(icon_state)]_[breast_size]"
+	icon_state = "lapkee-carrier-coat_[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
