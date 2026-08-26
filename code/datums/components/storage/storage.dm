@@ -301,13 +301,16 @@
 
 /datum/component/storage/proc/mass_remove_from_storage(atom/target, list/things, datum/progressbar/progress, trigger_on_found = TRUE, mob/user)
 	var/atom/real_location = real_location()
+	var/target_isturf = isturf(target)
 	for(var/obj/item/I in things)
 		things -= I
 		if(I.loc != real_location)
 			continue
 		if(trigger_on_found && user && (user.active_storage != src) && I.on_found(user))
 			return FALSE
-		remove_from_storage(I, target)
+		if(remove_from_storage(I, target))
+			if(target_isturf)
+				I.randomize_pixel_position(usr)
 		if(TICK_CHECK)
 			progress.update(progress.goal - length(things))
 			return TRUE
