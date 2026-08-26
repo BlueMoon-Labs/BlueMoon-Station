@@ -143,6 +143,7 @@
 // #include "language_transfer.dm"
 #include "lighting.dm"
 #include "lighting_deferred_init.dm"
+#include "lighting_object_var_diet.dm"
 #include "lighting_teardown.dm"
 #include "light_range_cap.dm"
 #include "airalarm_danger_read.dm"

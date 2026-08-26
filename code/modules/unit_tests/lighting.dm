@@ -471,6 +471,11 @@
 	new_emitter.set_light(3, 1, COLOR_WHITE)
 	TEST_ASSERT(new_emitter.light, "New emitter should have a live light source after set_light")
 
+	// Пачкаем профиль ДО починки: без этого проверка ниже проходила вхолостую - она сверяла
+	// blended_temperature с 999, которую в этом тесте никто никогда не ставил
+	test_lo.blend_is_local = TRUE
+	test_lo.blended_temperature = 999
+
 	// --- Apply the fix: rebuild lighting ---
 	test_turf.recalc_atom_opacity()
 	test_turf.reconsider_lights()
@@ -486,8 +491,9 @@
 	TEST_ASSERT(new_emitter.light, "Light source should still exist after repair cycle")
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_lo, "Lighting object should still be on the turf after repair")
 	TEST_ASSERT(test_lo in test_turf.vis_contents, "Lighting object should be in vis_contents after repair")
-	// Verify the lighting_object was queued for update (blend recalc happened)
-	TEST_ASSERT_NOTEQUAL(test_lo.blended_temperature, 999, "Blend values should have been recalculated")
+	// Verify the lighting_object was queued for update (blend recalc happened): в однородной
+	// окрестности пересчёт обязан сбросить личный профиль обратно на зонный
+	TEST_ASSERT(!test_lo.blend_is_local, "Stale local blend should have been cleared by the repair cycle recalc")
 
 /// Verifies has_opaque_atom is correctly rescanned after simulated repair.
 /datum/unit_test/repair_cycle_opacity_rescan/Run()
@@ -531,12 +537,12 @@
 	var/atom/movable/lighting_object/test_lo = ensure_lighting_object(test_turf)
 	process_nightshift_lighting_work()
 
-	// Record blend values (should match area defaults)
-	var/area/test_area = test_turf.loc
-	var/expected_temp = test_area.light_temperature
-	TEST_ASSERT_EQUAL(test_lo.blended_temperature, expected_temp, "Initial blend temperature should match area")
+	// В однородной окрестности личного профиля быть не должно - update() читает его прямо
+	// из зоны, см. lighting_object_var_diet.dm
+	TEST_ASSERT(!test_lo.blend_is_local, "Initial blend should not be local in a uniform neighbourhood")
 
-	// Corrupt blend values to simulate stale state
+	// Corrupt blend values to simulate stale state left by a boundary the turf no longer has
+	test_lo.blend_is_local = TRUE
 	test_lo.blended_temperature = 999
 
 	// Queue blend recalc (the fix)
@@ -547,8 +553,9 @@
 
 	process_nightshift_lighting_work()
 
-	// Verify blend was recalculated
-	TEST_ASSERT_EQUAL(test_lo.blended_temperature, expected_temp, "Blend temperature should be restored after recalc (got [test_lo.blended_temperature], expected [expected_temp])")
+	// Verify blend was recalculated: the stale local profile is dropped and the area's own
+	// values are back in charge
+	TEST_ASSERT(!test_lo.blend_is_local, "Stale local blend should be cleared after recalc")
 
 /// Verifies lighting_object recovers from prev_was_dark state when light is added.
 /// Tests the corner lum pipeline: light_source → update_corners → corner lum values.
