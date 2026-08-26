@@ -110,9 +110,10 @@
 	for(var/i in 1 to length(grind_results)) //This should only call if it's ground, so no need to check if grind_results exists
 		grind_results[grind_results[i]] *= get_amount() //Gets the key at position i, then the reagent amount of that key, then multiplies it by stack size
 
-/obj/item/stack/grind_requirements()
+/obj/item/stack/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE)
 	if(is_cyborg)
-		to_chat(usr, "<span class='warning'>[src] is electronically synthesized in your chassis and can't be ground up!</span>")
+		if(!silent)
+			to_chat(usr, "<span class='warning'>[src] is electronically synthesized in your chassis and can't be ground up!</span>")
 		return
 	return TRUE
 

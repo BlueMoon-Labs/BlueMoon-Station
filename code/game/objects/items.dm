@@ -957,7 +957,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/proc/on_mob_death(mob/living/L, gibbed)
 
-/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R) //Used to check for extra requirements for grinding an object
+/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE) //Used to check for extra requirements for grinding an object
 	return TRUE
 
  //Called BEFORE the object is ground up - use this to change grind results based on conditions

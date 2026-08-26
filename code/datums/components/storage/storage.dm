@@ -648,7 +648,7 @@
 	if(message && . && user)
 		to_chat(user, "<span class='warning'>[parent] seems to be locked!</span>")
 
-/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted)
+/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted, datum/callback/extra_checks)
 	if(!force)
 		if(check_adjacent)
 			if(!user || !user.CanReach(destination) || !user.CanReach(parent))
@@ -658,10 +658,12 @@
 		taking.len = amount
 	if(inserted)			//duplicated code for performance, don't bother checking retval/checking for list every item.
 		for(var/i in taking)
-			if(remove_from_storage(i, destination))
+			if((!extra_checks || extra_checks.Invoke(i)) && remove_from_storage(i, destination))
 				inserted |= i
 	else
 		for(var/i in taking)
+			if(extra_checks && !extra_checks.Invoke(i))
+				continue
 			remove_from_storage(i, destination)
 	return TRUE
 
