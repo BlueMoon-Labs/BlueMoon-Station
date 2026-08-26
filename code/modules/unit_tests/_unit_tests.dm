@@ -143,6 +143,7 @@
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
+#include "lighting_build_scope.dm"
 #include "lighting_deferred_init.dm"
 #include "lighting_object_var_diet.dm"
 #include "lighting_teardown.dm"

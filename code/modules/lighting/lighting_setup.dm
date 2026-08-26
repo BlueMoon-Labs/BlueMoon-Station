@@ -79,7 +79,7 @@
 	return level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_AWAY]
 
 /proc/create_all_lighting_objects()
-	SSlighting.init_in_progress = TRUE
+	SSlighting.begin_lighting_build()
 
 	// Build set of z-levels to skip (reserved/transit/mining/away — deferred until player visits)
 	var/list/skip_z = list()
@@ -108,7 +108,7 @@
 		S.update_starlight()
 		CHECK_TICK
 	GLOB.lighting_deferred_starlight.Cut()
-	SSlighting.init_in_progress = FALSE
+	SSlighting.end_lighting_build()
 
 	// Batch process all queued sources/corners/objects directly during init — instant lighting, no
 	// adaptive cap or animate(). Prefix-cut inside the helper keeps any cascade tail dirtied during a
@@ -175,15 +175,18 @@
 	// таких постройки стоили 466 МБ из 4094 потолка, и восстанавливать эту цифру пришлось
 	// вручную по ступенькам перф-CSV. Меряем прямо здесь и записываем на СВОЙ счёт, чтобы
 	// прибор подключения не выставлял её счётом игроку, спящему в acquire_dpi().
-	// Окно честно только пока внутри него нет второй такой постройки: краул отменяется
-	// выше, а параллельный on-demand на другом z в него попадёт и будет посчитан дважды.
+	// Окно честно только пока внутри него нет второй такой постройки. Пустой повторный
+	// проход по этому же z отсечён ниже по objects_created, а вот параллельный подъём
+	// ДРУГОГО z в окно попадёт и будет посчитан дважды - на проде такое видно по сумме
+	// строк, заметно превышающей реальный шаг VmSize.
 	var/list/memory_before = get_process_memory_mb()
 
-	SSlighting.init_in_progress = TRUE
+	SSlighting.begin_lighting_build()
 
 	// Phase 0: Create lighting objects FIRST — corners must be active before sources process
 	// Objects make corners active; without them, update_corners() stores effect_str[C]=0 and skips APPLY_CORNER
 	var/list/zlevel_turfs = block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level))
+	var/objects_created = 0
 	for(var/turf/T as anything in zlevel_turfs)
 		var/area/A = T.loc
 		if(!IS_DYNAMIC_LIGHTING(A))
@@ -193,6 +196,7 @@
 		if(T.lighting_object)
 			continue
 		new /atom/movable/lighting_object(T)
+		objects_created++
 		// Activate corners created during init with active=FALSE (no objects existed then)
 		if(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED)
 			if(T.lc_topright) T.lc_topright.active = TRUE
@@ -201,7 +205,7 @@
 			if(T.lc_topleft) T.lc_topleft.active = TRUE
 		CHECK_TICK
 
-	SSlighting.init_in_progress = FALSE
+	SSlighting.end_lighting_build()
 
 	// Phase 1: Create deferred light sources — objects exist now, corners are active
 	// Sources get queued to GLOB.lighting_update_lights; fire() processes them with active corners.
@@ -234,12 +238,25 @@
 	// on heavy away-maps). fire() Phase -1 still creates the queued starlight sources separately.
 	drain_lighting_queues_snapshot()
 
-	log_zlevel_lighting_cost(z_level, level.name, memory_before)
+	log_zlevel_lighting_cost(z_level, level.name, memory_before, objects_created)
+
+/**
+ * Есть ли смысл отчитываться о цене прохода постройки света.
+ *
+ * Пустой проход (ни одного созданного объекта) МОЛЧИТ. Повторный подъём уже поднятого
+ * уровня - второй INVOKE_ASYNC на том же z, сейфнет-скан, стыковка шаттла - не создаёт
+ * ничего: фаза 0 пропускает турфы, у которых объект уже есть. Но его окно замера
+ * перекрывается с окном соседнего ЖИВОГО прохода, и одна и та же работа записалась бы
+ * дважды: в раунде 10121 на z7 так вышли +83.9 и +109 МБ за один подъём, и обе цифры уехали
+ * в счётчик, из которого прибор подключения вычитает фон у входящих игроков.
+ */
+/proc/should_report_zlevel_lighting_cost(objects_created, list/memory_before)
+	return objects_created > 0 && !isnull(memory_before)
 
 /// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
 /// проком, потому что вызывать его придётся и из фонового краула, и из сноса.
-/proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before)
-	if(!memory_before)
+/proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before, objects_created)
+	if(!should_report_zlevel_lighting_cost(objects_created, memory_before))
 		return
 	var/list/memory_after = get_process_memory_mb()
 	if(!memory_after)
@@ -247,4 +264,4 @@
 	var/spent = memory_after["vsz"] - memory_before["vsz"]
 	if(spent > 0)
 		GLOB.memory_attributed_elsewhere_mb += spent
-	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize")
+	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize на [objects_created] объектов")
