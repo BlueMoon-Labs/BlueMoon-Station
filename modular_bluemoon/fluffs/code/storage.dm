@@ -374,6 +374,7 @@
 	desc = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "lapkee-carrier-top"
 	unique_reskin = list(
 		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
@@ -382,19 +383,17 @@
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
 	. = ..()
-	if(slot != ITEM_SLOT_OCLOTHING)
-		return
 	update_icon()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/update_icon_state()
 	. = ..()
-	if(!istype(loc, /mob/living/carbon/human))
+	var/base_state = current_skin == "Coat" ? "lapkee-carrier-coat" : "lapkee-carrier-top"
+	icon_state = base_state
+	if(base_state != "lapkee-carrier-coat" || !istype(loc, /mob/living/carbon/human))
 		return
 	var/mob/living/carbon/human/H = loc
-	if(icon_state == "lapkee-carrier-top")
-		return
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(B?.size || 0), 0, 7)
-	icon_state = "lapkee-carrier-coat_[breast_size]"
+	icon_state = "lapkee-carrier-coat-[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
