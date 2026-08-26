@@ -874,6 +874,24 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	can_adjust = TRUE
 
+/obj/item/clothing/under/donator/bm/concord/update_icon_state()
+	. = ..()
+	if(istype(loc, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = loc
+		if(adjusted)
+			return
+		if(!(DIGITIGRADE in H.dna.species.species_traits))
+			return
+		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
+		if(B?.size > 7)
+			icon_state = "[initial(icon_state)]_7"
+		else
+			icon_state = "[initial(icon_state)]_[B?.size || 0]"
+		H.update_inv_w_shirt()
+		H.update_body()
+	else
+		icon_state = "[initial(icon_state)]"
+
 /obj/item/clothing/under/donator/bm/h_pmc_jeans
 	name = "PMC jeans"
 	desc = "Некогда обычные джинсы адаптированные под нужды оперативника неизвестных наемнических структур."
