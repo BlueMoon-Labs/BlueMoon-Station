@@ -7,7 +7,6 @@
 	plane = FLOOR_PLANE
 	layer = ABOVE_OPEN_TURF_LAYER
 	appearance_flags = TILE_BOUND
-	color = "#DDF"
 
 	//For being on fire
 	light_range = 0
@@ -569,8 +568,10 @@
 		if(check_fire(TRUE))
 			SSliquids.processing_fire[my_turf] = TRUE
 
-/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid()
-	color = mix_color_from_reagent_list(reagent_list)
+/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid(color_to_set)
+	if(!color_to_set)
+		color_to_set = mix_color_from_reagent_list(reagent_list)
+	add_atom_colour(color_to_set, FIXED_COLOUR_PRIORITY)
 
 /obj/effect/abstract/liquid_turf/proc/calculate_height()
 	var/new_height = ceil(total_reagents)/LIQUID_HEIGHT_DIVISOR
