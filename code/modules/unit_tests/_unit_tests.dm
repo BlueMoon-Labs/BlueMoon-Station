@@ -186,6 +186,7 @@
 #include "runtime_null_guards.dm"
 // #include "say.dm"
 #include "say_input_encoding.dm"
+#include "secret_satchel_pool_cap.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
 #include "shared_list_diet.dm"
