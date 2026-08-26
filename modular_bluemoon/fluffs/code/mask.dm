@@ -112,3 +112,16 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "krieg_mask"
 	item_state = "krieg_mask"
+
+/obj/item/clothing/mask/gas/half_mask_skull
+    name = "Skull Gaiter"
+    desc = "Gaiter made from high-quality materials. On the inside, there is a label: Harr."
+    actions_types = list(/datum/action/item_action/adjust)
+    icon_state = "half_mask_skull"
+    item_state = "half_mask_skull"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+    flags_inv = HIDEFACE|HIDEFACIALHAIR
+
+/obj/item/clothing/mask/gas/half_mask_skull/attack_self(mob/user)
+    adjustmask(user)
