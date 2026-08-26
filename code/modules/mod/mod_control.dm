@@ -592,22 +592,26 @@
 			INVOKE_ASYNC(src, PROC_REF(toggle_activate), wearer, TRUE)
 		return
 
-/obj/item/mod/control/AltClick(mob/user)
+/obj/item/mod/control/CtrlShiftClick(mob/user)
 	. = ..()
-	if(!wearer)
+	var/on = is_active()
+	if(!wearer || is_activating())
 		return
 	for(var/index in mod_parts)
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		if(index == MOD_PART_CELL)
 			continue
+
+		ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 		if(part.loc == null)
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-				part.seal_part(seal = FALSE)
-				deploy(user, part)
+				part.seal_part(seal = on)
+				deploy(wearer, part)
 		else
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-				part.seal_part(seal = FALSE)
-				conceal(user, part)
+				part.seal_part(seal = on)
+				conceal(wearer, part)
+		DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 
 /obj/item/mod/control/proc/on_borg_charge(datum/source, amount)
 	SIGNAL_HANDLER
