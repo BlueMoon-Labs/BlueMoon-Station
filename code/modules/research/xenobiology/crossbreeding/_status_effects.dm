@@ -69,8 +69,9 @@
 
 /datum/status_effect/slimerecall/on_apply()
 	RegisterSignal(owner, COMSIG_LIVING_RESIST, PROC_REF(resistField))
-	to_chat(owner, "<span class='danger'>You feel a sudden tug from an unknown force, and feel a pull to bluespace!</span>")
-	to_chat(owner, "<span class='notice'>Resist if you wish avoid the force!</span>")
+	to_chat(owner, span_danger("You feel a sudden tug from an unknown force, and feel a pull to bluespace!</span>"))
+	to_chat(owner, span_notice("[span_eldritch_big("Resist")] if you wish avoid the force!"))
+	SEND_SOUND(owner, 'sound/magic/ethereal_enter.ogg')
 	bluespace = icon('icons/effects/effects.dmi',"chronofield")
 	owner.add_overlay(bluespace)
 	return ..()
