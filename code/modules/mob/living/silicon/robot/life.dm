@@ -27,24 +27,46 @@
 		toggle_headlamp(TRUE)
 	//VTEC power drain
 	if((vtec != initial(vtec)) && (!vtec_disabled))
-		if(world.time >= vtec_expire)
-			disable_vtec("<span class='warning'>VTEC перегрелся, ускорение отключено до следующей активации.</span>")
+		if(vtec_expire && world.time >= vtec_expire) //лимит по времени есть только у форсажа; крейсерский режим бесконечен
+			vtec_overdrive_expired("<span class='notice'>Форсаж VTEC исчерпан, система перешла в крейсерский режим.</span>")
 		else if(cell?.charge)
 			if(!cell.use(vtec_drain))
 				disable_vtec("<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
 	diag_hud_set_borgcell()
 
-/// Полностью гасит разгон VTEC: сбрасывает скорость, таймер, расход и кнопку способности, запускает перезарядку
-/mob/living/silicon/robot/proc/disable_vtec(message)
-	if(vtec != initial(vtec))
-		vtec_cooldown_until = world.time + VTEC_COOLDOWN
+/// Гасит активный разгон VTEC: сбрасывает скорость, таймер и расход. Кнопку способности и перезарядку не трогает.
+/mob/living/silicon/robot/proc/clear_vtec_boost(message)
 	vtec = initial(vtec)
 	vtec_expire = 0
 	vtec_drain = 0
 	if(message)
 		to_chat(src, message)
+
+/// Включает крейсерский режим VTEC (режим 2): скорость обычного человека, без лимита времени
+/mob/living/silicon/robot/proc/activate_vtec_cruise()
+	clear_vtec_boost()
+	vtec = initial(vtec) - 0.5 //гасит штатный штраф борга +0.5 из movement_delay(), итог - скорость бегущего человека
+	vtec_drain = VTEC_CRUISE_DRAIN //while changing this value check /mob/living/silicon/robot/proc/use_power() to maintain proper power drain
+
+/// Форсаж исчерпан: он уходит на перезарядку, а система проваливается в крейсерский режим (режим 2)
+/mob/living/silicon/robot/proc/vtec_overdrive_expired(message)
+	vtec_cooldown_until = world.time + VTEC_COOLDOWN
 	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC = locate() in abilities
 	if(VC)
+		VC.applyState(src, 1)
+	else
+		activate_vtec_cruise()
+	if(message)
+		to_chat(src, message)
+
+/// Полностью выключает VTEC: сброс разгона, перезарядка после форсажа, сброс кнопки способности.
+/// На перезарядку уходит только форсаж (vtec_expire выставлен); крейсерский режим выключается свободно.
+/mob/living/silicon/robot/proc/disable_vtec(message, force_cooldown = FALSE)
+	if(vtec_expire || force_cooldown)
+		vtec_cooldown_until = world.time + VTEC_COOLDOWN
+	clear_vtec_boost(message)
+	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC = locate() in abilities
+	if(VC && VC.currentState)
 		VC.currentState = 0
 		VC.action.button_icon_state = "Chevron_State_0"
 		VC.action.UpdateButtons()
