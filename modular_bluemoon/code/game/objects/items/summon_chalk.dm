@@ -213,12 +213,12 @@
 /obj/effect/summon_rune/proc/transfer_items(mob/living/carbon/human/target)
 	// Деактивируем модсьют во избежание багов
 	var/obj/item/mod/control/modsuit = target.get_item_by_slot(ITEM_SLOT_BACK)
-	if(modsuit && istype(modsuit) && modsuit.active)
+	if(modsuit && istype(modsuit) && modsuit.is_active())
 		modsuit.toggle_activate(target, TRUE)
 		modsuit.conceal(target, target.shoes)
 		modsuit.conceal(target, target.wear_suit)
 		modsuit.conceal(target, target.gloves)
-		if(istype(target.head, /obj/item/clothing/head/mod))
+		if(istype(target.head, /obj/item/clothing/mod_part/head))
 			modsuit.conceal(target, target.head)
 		target.transferItemToLoc(modsuit, src, TRUE)
 
@@ -230,12 +230,12 @@
 /obj/effect/summon_rune/return_rune/transfer_items(mob/living/carbon/human/target)
 	// Деактивируем модсьют во избежание багов
 	var/obj/item/mod/control/modsuit = target.get_item_by_slot(ITEM_SLOT_BACK)
-	if(modsuit && istype(modsuit) && modsuit.active)
+	if(modsuit && istype(modsuit) && modsuit.is_active())
 		modsuit.toggle_activate(target, TRUE)
 		modsuit.conceal(target, target.shoes)
 		modsuit.conceal(target, target.wear_suit)
 		modsuit.conceal(target, target.gloves)
-		if(istype(target.head, /obj/item/clothing/head/mod))
+		if(istype(target.head, /obj/item/clothing/mod_part/head))
 			modsuit.conceal(target, target.head)
 
 	for(var/obj/item/I in target.contents)

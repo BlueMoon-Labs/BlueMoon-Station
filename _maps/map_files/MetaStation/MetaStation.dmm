@@ -244,7 +244,10 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/door/poddoor/shutters/window/armory/officers,
+/obj/machinery/door/poddoor/shutters/window{
+	id = "armory";
+	name = "Armoury Shutters"
+	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "aaZ" = (
@@ -2155,6 +2158,15 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "ahF" = (
+/obj/machinery/power/apc/highcap/five_k{
+	areastring = "/area/ai_monitored/security/armory";
+	name = "Armory APC";
+	pixel_x = 1;
+	pixel_y = -23
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /obj/machinery/light,
 /obj/machinery/camera/motion{
 	c_tag = "Armory - Internal";
@@ -2169,17 +2181,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
-	},
-/obj/machinery/button/door/armory/warden{
-	pixel_y = -24;
-	pixel_x = -6
-	},
-/obj/machinery/button/door/armory/officers{
-	pixel_y = -24;
-	pixel_x = 6
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -2237,7 +2238,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "ahQ" = (
@@ -2447,7 +2447,6 @@
 "aiA" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
-/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plating,
 /area/ai_monitored/security/armory)
 "aiB" = (
@@ -2460,7 +2459,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plating,
 /area/ai_monitored/security/armory)
 "aiJ" = (
@@ -2721,10 +2719,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/button/door/armory/warden{
-	pixel_x = 24;
-	pixel_y = 6
-	},
 /turf/open/floor/plasteel,
 /area/security/warden)
 "ajx" = (
@@ -2745,10 +2739,6 @@
 	},
 /obj/effect/turf_decal/tile/red{
 	dir = 8
-	},
-/obj/machinery/button/door/armory/officers{
-	pixel_x = -24;
-	pixel_y = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
@@ -6210,6 +6200,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "avj" = (
@@ -8034,6 +8025,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "aBe" = (
@@ -20195,7 +20187,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
 	},
-/obj/item/kirbyplants/random,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "bIG" = (
@@ -24437,6 +24429,7 @@
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 10
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/maintenance/disposal/incinerator)
 "ccH" = (
@@ -25249,11 +25242,11 @@
 /area/medical/medbay/central)
 "ceG" = (
 /obj/machinery/light,
-/obj/structure/bed/roller,
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
 "ceH" = (
@@ -31793,6 +31786,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "cun" = (
@@ -32647,10 +32643,19 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "cwq" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -41696,10 +41701,10 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/obj/item/beacon,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "cPT" = (
@@ -41969,6 +41974,7 @@
 "cQM" = (
 /obj/machinery/holopad,
 /obj/effect/turf_decal/delivery,
+/obj/item/beacon,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "cQN" = (
@@ -43404,6 +43410,7 @@
 	dir = 1;
 	network = list("ss13","rd")
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/white,
 /area/science/circuit)
 "cYJ" = (
@@ -50647,6 +50654,11 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
+"fby" = (
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/recharge_station,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/exit/departure_lounge)
 "fbJ" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -51159,28 +51171,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/treatment_center)
-"fod" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/machinery/power/apc/highcap/five_k{
-	areastring = "/area/ai_monitored/security/armory";
-	name = "Armory APC";
-	pixel_x = 1;
-	pixel_y = -23
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ai_monitored/security/armory)
 "foj" = (
 /obj/machinery/power/smes{
 	charge = 5e+006
@@ -52254,6 +52244,7 @@
 /obj/effect/turf_decal/loading_area{
 	dir = 1
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "fQp" = (
@@ -52336,6 +52327,10 @@
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
+"fSH" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plating,
+/area/maintenance/starboard/fore)
 "fTp" = (
 /obj/machinery/door/airlock{
 	name = "Cryogenics"
@@ -54479,6 +54474,7 @@
 /area/commons/storage/primary)
 "gST" = (
 /obj/effect/turf_decal/delivery,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/science/research/abandoned)
 "gSX" = (
@@ -59006,6 +59002,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/commons/toilet/auxiliary)
+"iZL" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plating,
+/area/maintenance/starboard)
 "iZM" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/sink{
@@ -59448,6 +59448,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange/hidden{
 	dir = 10
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "jje" = (
@@ -60365,6 +60366,10 @@
 /obj/item/kirbyplants/random,
 /turf/open/floor/plasteel,
 /area/commons/locker)
+"jDX" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/wood,
+/area/maintenance/port/aft)
 "jEj" = (
 /obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
@@ -66840,6 +66845,7 @@
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/yellow/visible,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/cafeteria,
 /area/engineering/atmos)
 "mzh" = (
@@ -74200,6 +74206,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "pSm" = (
@@ -78407,6 +78414,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/prison)
+"rLz" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plasteel/dark,
+/area/engineering/main)
 "rLA" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
@@ -79862,6 +79873,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/service/park)
 "ssp" = (
@@ -82539,7 +82551,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/ai_upload)
 "tHe" = (
-/obj/structure/closet/wardrobe/pjs,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -82550,6 +82561,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/medical/treatment_center)
 "tHs" = (
@@ -82832,6 +82844,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel,
 /area/commons/locker)
+"tNq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "tNF" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/pipedispenser,
@@ -84846,7 +84864,7 @@
 /area/command/heads_quarters/hop)
 "uEe" = (
 /obj/effect/turf_decal/delivery,
-/obj/item/kirbyplants/random,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "uEu" = (
@@ -87884,9 +87902,6 @@
 /turf/open/floor/carpet,
 /area/service/chapel/main)
 "wfY" = (
-/obj/structure/toilet/secret/low_loot{
-	pixel_y = 8
-	},
 /obj/machinery/light/small{
 	dir = 4
 	},
@@ -87900,6 +87915,7 @@
 /obj/machinery/newscaster{
 	pixel_y = -32
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/commons/toilet/auxiliary)
 "wgf" = (
@@ -90483,6 +90499,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
 "xnc" = (
@@ -91961,7 +91978,7 @@
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
 "xQZ" = (
-/obj/item/kirbyplants/random,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
 "xRM" = (
@@ -108796,7 +108813,7 @@ dux
 dux
 dux
 lRU
-ckP
+jDX
 dux
 aaa
 aaa
@@ -114203,7 +114220,7 @@ cqd
 crs
 cxT
 duH
-cul
+tNq
 cAU
 css
 mMV
@@ -114460,7 +114477,7 @@ cqe
 crt
 cxT
 ctr
-cul
+tNq
 cAU
 cwo
 cxe
@@ -114974,7 +114991,7 @@ cqg
 crv
 cxT
 ctt
-cul
+tNq
 cAU
 cwq
 cxg
@@ -119362,7 +119379,7 @@ bTs
 cJC
 cKA
 cLq
-cMf
+fby
 cMU
 qtT
 cOs
@@ -120804,7 +120821,7 @@ aEz
 ahH
 ahF
 aeq
-adY
+ajx
 akG
 ama
 anr
@@ -121059,7 +121076,7 @@ afg
 fqu
 nrv
 lYq
-fod
+ahH
 aeq
 ajy
 akH
@@ -135981,7 +135998,7 @@ ocS
 hzd
 stG
 vPE
-roz
+rLz
 iMF
 jyo
 qkC
@@ -135997,7 +136014,7 @@ jfY
 lJc
 uia
 sKz
-apc
+iZL
 apc
 dgo
 apc
@@ -137260,7 +137277,7 @@ dnh
 lMJ
 aaa
 dni
-dnS
+fSH
 aYe
 dqT
 dqT

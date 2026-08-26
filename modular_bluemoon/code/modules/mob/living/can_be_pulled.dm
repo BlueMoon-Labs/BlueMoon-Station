@@ -42,7 +42,7 @@
 					can_pull = TRUE
 				if(istype(human_pulling.back, /obj/item/mod/control)) // обычные персонажи с активированными клешнями из МОДа на спине могут тащить
 					var/obj/item/mod/control/MOD = human_pulling.back
-					if(MOD.active && istype(MOD.selected_module, /obj/item/mod/module/clamp))
+					if(MOD.is_active() && istype(MOD.selected_module, /obj/item/mod/module/clamp))
 						can_pull = TRUE
 				/* на будущее, если понадобятся проверки на предмет в руке
 				var/item_in_hand = human_pulling.get_active_held_item()

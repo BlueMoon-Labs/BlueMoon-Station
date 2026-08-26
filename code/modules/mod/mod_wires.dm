@@ -14,13 +14,13 @@
 	if(!..())
 		return FALSE
 	var/obj/item/mod/control/mod = holder
-	return mod.open
+	return mod.is_open()
 
 /datum/wires/mod/get_status()
 	var/obj/item/mod/control/mod = holder
 	var/list/status = list()
 	status += "The orange light is [mod.seconds_electrified ? "on" : "off"]."
-	status += "The red light is [mod.malfunctioning ? "off" : "blinking"]."
+	status += "The red light is [mod.is_malfunctioning() ? "off" : "blinking"]."
 	status += "The yellow light is [mod.interface_break ? "off" : "on"]."
 	return status
 
@@ -28,7 +28,7 @@
 	var/obj/item/mod/control/mod = holder
 	switch(wire)
 		if(WIRE_DISABLE)
-			mod.malfunctioning = TRUE
+			ENABLE_BITFIELD(mod.status_flags, MOD_MALFUNCTION)
 		if(WIRE_SHOCK)
 			mod.seconds_electrified = MACHINE_DEFAULT_ELECTRIFY_TIME
 		if(WIRE_INTERFACE)
@@ -41,7 +41,10 @@
 			if(!mend)
 				mod.req_access = list()
 		if(WIRE_DISABLE)
-			mod.malfunctioning = !mend
+			if(mend)
+				DISABLE_BITFIELD(mod.status_flags, MOD_MALFUNCTION)
+			else
+				ENABLE_BITFIELD(mod.status_flags, MOD_MALFUNCTION)
 		if(WIRE_SHOCK)
 			if(mend)
 				mod.seconds_electrified = MACHINE_NOT_ELECTRIFIED

@@ -12,12 +12,12 @@
 
 /obj/item/mod/module/backpack_harness/on_install()
 	. = ..()
-	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	chestplate.allowed += /obj/item/storage/backpack
 
 /obj/item/mod/module/backpack_harness/on_uninstall()
 	. = ..()
-	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	var/mob/living/carbon/human/wearer = mod.wearer
 	var/obj/item/item_to_drop
 	if(/obj/item/storage/backpack in chestplate.allowed)
@@ -69,6 +69,7 @@
 		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
 	icon_state = "storage_syndi"
 	complexity = 2 //на 1 меньше, чем обычная версия.
+	max_volume = DEFAULT_VOLUME_NORMAL * 8
 
 /obj/item/mod/module/storage/extended/syndicate
 	name = "MOD Blood-red Extended storage module"
@@ -258,16 +259,18 @@
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
 
 /obj/item/mod/module/mouthhole/on_install()
-	former_flags = mod.helmet.flags_cover
-	former_visor_flags = mod.helmet.visor_flags_cover
-	mod.helmet.flags_cover &= ~HEADCOVERSMOUTH
-	mod.helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	former_flags = helmet.flags_cover
+	former_visor_flags = helmet.visor_flags_cover
+	helmet.flags_cover &= ~HEADCOVERSMOUTH
+	helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
 
 /obj/item/mod/module/mouthhole/on_uninstall(deleting = FALSE)
 	if(deleting)
 		return
-	mod.helmet.flags_cover |= former_flags
-	mod.helmet.visor_flags_cover |= former_visor_flags
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flags_cover |= former_flags
+	helmet.visor_flags_cover |= former_visor_flags
 
 ///EMP Shield - Protects the suit from EMPs.
 /obj/item/mod/module/emp_shield

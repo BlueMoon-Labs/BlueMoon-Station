@@ -887,10 +887,10 @@ BLUEMOON REMOVAL END */
 	if(istype(head_item, /obj/item/clothing/head/helmet/space) && istype(suit_item, /obj/item/clothing/suit/space))
 		return TRUE
 
-	if(istype(head_item, /obj/item/clothing/head/mod) && istype(suit_item, /obj/item/clothing/suit/mod))
-		var/obj/item/clothing/suit/mod/modsuit = suit_item
+	if(istype(head_item, /obj/item/clothing/mod_part/head) && istype(suit_item, /obj/item/clothing/mod_part/suit))
+		var/obj/item/clothing/mod_part/suit/modsuit = suit_item
 		var/obj/item/mod/control/mod_control = modsuit.mod
-		if(mod_control && mod_control.active)
+		if(mod_control && mod_control.is_active())
 			return TRUE
 
 	if(T && is_mining_level(T.z) && istype(head_item, /obj/item/clothing/head/hooded/explorer) && istype(suit_item, /obj/item/clothing/suit/hooded/explorer))

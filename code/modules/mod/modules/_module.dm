@@ -101,7 +101,7 @@
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
-	if(((!mod.active || mod.activating) && !allowed_inactive))
+	if(((!mod.is_active() || mod.is_activating()) && !allowed_inactive))
 		mod.balloon_alert(mod.wearer, "Сначала активируйте костюм!")
 		return
 	if(module_type != MODULE_USABLE)
@@ -115,10 +115,11 @@
 
 /// Called when the module is activated
 /obj/item/mod/module/proc/on_activation()
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE
-	if(!mod.active || mod.activating || !mod.cell?.charge)
+	if(!mod.is_active() || mod.is_activating() || !cell?.charge)
 		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
@@ -206,13 +207,15 @@
 
 /// Drains power from the suit cell
 /obj/item/mod/module/proc/drain_power(amount)
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!check_power(amount))
 		return FALSE
-	mod.cell.charge = max(0, mod.cell.charge - amount)
+	cell.charge = max(0, cell.charge - amount)
 	return TRUE
 
 /obj/item/mod/module/proc/check_power(amount)
-	if(!mod.cell || (mod.cell.charge < amount))
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
+	if(!cell || (cell.charge < amount))
 		return FALSE
 	return TRUE
 
@@ -256,7 +259,7 @@
 /// Generates an icon to be used for the suit's worn overlays
 /obj/item/mod/module/proc/generate_worn_overlay()
 	. = list()
-	if(!mod.active)
+	if(!mod.is_active())
 		return
 	var/used_overlay
 	if(overlay_state_use && !COOLDOWN_FINISHED(src, cooldown_timer))

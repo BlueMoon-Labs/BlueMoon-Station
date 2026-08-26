@@ -801,7 +801,7 @@
 			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
 		if(length(G.color_cutoffs))
 			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
-	if(head && istype(head, /obj/item/clothing/head))
+	if(head && istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
 		see_in_dark = max(H.darkness_view, see_in_dark)
@@ -868,7 +868,7 @@
 
 /mob/living/carbon/proc/get_total_tint()
 	. = 0
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
 	if(istype(wear_mask, /obj/item/clothing))
