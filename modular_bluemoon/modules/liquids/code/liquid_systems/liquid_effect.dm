@@ -69,6 +69,7 @@
 		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
 		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
 		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
+		RegisterSignal(my_turf, COMSIG_TURF_MAKE_DRY, PROC_REF(dry))
 		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
 		SSliquids.add_active_turf(my_turf)
 
@@ -86,7 +87,7 @@
 		restore_liquid_footsteps()
 		lose_cleanbot_targetable()
 		var/turf/old_turf = my_turf
-		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
+		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE, COMSIG_TURF_MAKE_DRY))
 		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
 		if(my_turf.lgroup)
 			my_turf.lgroup.remove_from_group(my_turf)
@@ -111,6 +112,11 @@
 
 /obj/effect/abstract/liquid_turf/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	return
+
+/obj/effect/abstract/liquid_turf/proc/dry()
+	if(immutable)
+		return
+	qdel(src, TRUE)
 
 /obj/effect/abstract/liquid_turf/proc/check_fire(hotspotted = FALSE)
 	var/my_burn_power = get_burn_power(hotspotted)

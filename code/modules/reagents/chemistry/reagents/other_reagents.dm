@@ -1460,6 +1460,9 @@
 		for(var/mob/living/simple_animal/slime/M in T)
 			M.adjustToxLoss(rand(5,10))
 
+		if(T.liquids && !T.liquids.immutable)
+			T.liquids.liquid_simple_delete_flat(T.liquids.total_reagents * 0.5)
+
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
 // покраску баров и библиотек, которую экипаж наносил целый раунд.
 /datum/reagent/space_cleaner/gentle
