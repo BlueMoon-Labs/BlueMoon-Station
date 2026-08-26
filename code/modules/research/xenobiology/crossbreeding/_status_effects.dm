@@ -59,10 +59,23 @@
 		"<span class='notice'>Your gel second-skin dissolves!</span>")
 	return ..()
 
+/atom/movable/screen/alert/status_effect/chilling_bluespace
+	name = "Extract Recall"
+	desc = "You feel a sudden tug from an unknown force, and feel a pull to bluespace! \nResist if you wish avoid the force!"
+	icon_state = "template"
+	overlay_state = "chronofield"
+	clickable_glow = TRUE
+
+/atom/movable/screen/alert/status_effect/chilling_bluespace/Click(location, control, params)
+	. = ..()
+	if(isliving(usr))
+		var/mob/living/L = usr
+		L.resist()
+
 /datum/status_effect/slimerecall
 	id = "slime_recall"
 	duration = -1 //Will be removed by the extract.
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/chilling_bluespace
 	var/interrupted = FALSE
 	var/mob/target
 	var/icon/bluespace
