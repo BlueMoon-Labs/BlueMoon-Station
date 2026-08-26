@@ -1,6 +1,5 @@
 #define KS23_HEAD_GIB_CLOSE_RANGE 2
 #define KS23_HEAD_GIB_CHANCE 30
-#define KS23_RUBBER_HEAD_BRAIN_DAMAGE 150
 #define KS23_RUBBER_HEAD_EFFECT_CHANCE 25
 
 // КС-23 слаг — BR4, огромный калибр
@@ -31,7 +30,7 @@
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
-	nonlethal_headshot_brain_damage = KS23_RUBBER_HEAD_BRAIN_DAMAGE
+
 	nonlethal_headshot_chance = KS23_RUBBER_HEAD_EFFECT_CHANCE
 
 /obj/item/projectile/bullet/pellet/rubbershot23
@@ -42,7 +41,7 @@
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
-	nonlethal_headshot_brain_damage = KS23_RUBBER_HEAD_BRAIN_DAMAGE
+
 	nonlethal_headshot_chance = KS23_RUBBER_HEAD_EFFECT_CHANCE
 
 // Стартовые AP для пеллетов — высокие, но быстро падают через Range()

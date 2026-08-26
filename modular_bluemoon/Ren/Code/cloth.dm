@@ -394,10 +394,6 @@
 	strip_delay = 90 //You dont take a Major Leage cap
 	dog_fashion = null
 
-///Исследовательский риг
-/obj/item/tank/jetpack/suit/fast
-	full_speed = TRUE
-
 /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
 	name = "Expedition hardsuit helmet"
 	desc = "Армированный шлем, в котором не страшно сунуть свой нос даже в самые опасные заброшенные станции и обломки кораблей."
@@ -447,7 +443,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp.ogg'
 	slowdown = 0.1
-	jetpack = /obj/item/tank/jetpack/suit/fast
+	jetpack = /obj/item/tank/jetpack/suit
 	unique_reskin = list()
 
 ///Инженерный риг

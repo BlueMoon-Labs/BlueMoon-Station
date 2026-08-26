@@ -560,6 +560,9 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_GAMERGOD "gamer-god"
 /// makes your footsteps completely silent
 #define TRAIT_SILENT_FOOTSTEPS "silent_footsteps"
+/// Моб находится в состоянии прыжка (компонент /datum/component/jump).
+/// Минам, ловушкам и капканам не реагируют на прыжок; railing пропускает прыгающего.
+#define TRAIT_JUMPING "jumping"
 /// prevents the damage done by a brain tumor
 #define TRAIT_TUMOR_SUPPRESSED "brain_tumor_suppressed"
 /// overrides the update_fire proc to always add fire (for lava)

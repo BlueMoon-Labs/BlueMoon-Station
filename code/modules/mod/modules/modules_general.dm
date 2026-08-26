@@ -163,10 +163,7 @@
 		return
 	ion_trail.start()
 	RegisterSignal(mod.wearer, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death), override = TRUE)
-	if(full_speed)
-		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	else
-		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_movespeed()
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
@@ -176,8 +173,7 @@
 	if(!mod?.wearer)
 		return
 	UnregisterSignal(mod.wearer, COMSIG_LIVING_DEATH)
-	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_movespeed()
 
 /**
  * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только

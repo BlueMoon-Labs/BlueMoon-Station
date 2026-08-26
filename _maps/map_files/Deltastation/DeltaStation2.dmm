@@ -1795,6 +1795,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/machinery/firealarm/directional/north,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "ajK" = (
@@ -6765,7 +6766,7 @@
 /area/security/prison)
 "aPn" = (
 /obj/structure/cable/white,
-/obj/effect/spawner/structure/window/plastitanium,
+/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/security/prison)
 "aPo" = (
@@ -6780,7 +6781,7 @@
 	name = "Lockdown Shutters"
 	},
 /obj/structure/cable/white,
-/obj/effect/spawner/structure/window/plastitanium,
+/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/security/prison)
 "aPu" = (
@@ -20079,6 +20080,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
+"cPl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "cPm" = (
 /obj/structure/table,
 /obj/item/storage/box/bodybags,
@@ -39795,6 +39806,12 @@
 /obj/effect/spawner/lootdrop/prison_contraband,
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/cells)
+"eUv" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "eUD" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -46852,6 +46869,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/firealarm/directional/west,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "guw" = (
@@ -49129,7 +49147,7 @@
 	id = "PermaLockdown";
 	name = "Lockdown Shutters"
 	},
-/obj/effect/spawner/structure/window/plastitanium,
+/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/security/prison)
 "haf" = (
@@ -52533,10 +52551,9 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/obj/machinery/door/poddoor/preopen{
-	id = "armoryblast";
-	name = "bridge blast door"
-	},
+/obj/machinery/door/poddoor/shutters/window/armory/warden,
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "hMK" = (
@@ -63670,25 +63687,19 @@
 	c_tag = "Armory South";
 	dir = 1
 	},
-/obj/machinery/button/door{
-	id = "armorywindow";
-	name = "Armory Shutters";
-	pixel_y = -23;
-	req_access_txt = "3";
-	pixel_x = -8
-	},
-/obj/machinery/button/door{
-	id = "armory3";
-	name = "Armory Shutters";
-	pixel_y = -23;
-	req_access_txt = "3";
-	pixel_x = 3
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
+	},
+/obj/machinery/button/door/armory/warden{
+	pixel_y = -24;
+	pixel_x = -6
+	},
+/obj/machinery/button/door/armory/officers{
+	pixel_y = -24;
+	pixel_x = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -66826,15 +66837,10 @@
 	req_access_txt = "3"
 	},
 /obj/machinery/door/window/brigdoor,
-/obj/machinery/door/poddoor/shutters{
-	id = "armorywindow"
-	},
-/obj/machinery/door/poddoor/preopen{
-	id = "armoryblast";
-	name = "bridge blast door"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/door/poddoor/shutters/window/armory/warden,
+/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "kMg" = (
@@ -73205,6 +73211,14 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
+"maq" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "maK" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
@@ -73334,6 +73348,10 @@
 	},
 /turf/open/floor/plating,
 /area/security/warden)
+"mcj" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/security/prison)
 "mcs" = (
 /obj/structure/table/reinforced,
 /obj/structure/disposalpipe/segment{
@@ -83139,13 +83157,6 @@
 	req_access_txt = "3";
 	pixel_x = -7
 	},
-/obj/machinery/button/door{
-	id = "armoryblast";
-	name = "Armory Blast";
-	req_access_txt = "3";
-	pixel_x = 6;
-	pixel_y = 9
-	},
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
@@ -87352,17 +87363,11 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/machinery/door/airlock/security{
-	name = "Armory";
-	req_access_txt = "3"
-	},
-/obj/machinery/door/poddoor/preopen{
-	id = "armoryblast";
-	name = "bridge blast door"
-	},
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/machinery/door/poddoor/shutters/window/armory/officers,
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "paP" = (
@@ -89477,6 +89482,19 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/r_wall,
 /area/command/heads_quarters/rd)
+"pxf" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
 "pxp" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/disposalpipe/segment,
@@ -90754,6 +90772,14 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/entry)
+"pKT" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/obj/machinery/firealarm/directional/west,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "pLa" = (
@@ -96358,6 +96384,14 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
+"qVO" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "qVU" = (
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/wall/r_wall,
@@ -96448,6 +96482,14 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/machinery/button/door/armory/warden{
+	pixel_y = 24;
+	pixel_x = -6
+	},
+/obj/machinery/button/door/armory/officers{
+	pixel_y = 24;
+	pixel_x = 6
 	},
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
@@ -101235,6 +101277,22 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
+/obj/machinery/button/door/armory/officers{
+	pixel_x = 24;
+	pixel_y = -6
+	},
+/obj/machinery/button/door/armory/warden{
+	pixel_x = 24;
+	pixel_y = 6
+	},
+/obj/machinery/button/door/armory/officers{
+	pixel_x = -24;
+	pixel_y = -6
+	},
+/obj/machinery/button/door/armory/warden{
+	pixel_x = -24;
+	pixel_y = 6
+	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "rWv" = (
@@ -103849,6 +103907,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/machinery/firealarm/directional/east,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "syB" = (
@@ -123913,6 +123972,14 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel,
 /area/engineering/atmospherics_engine)
+"wGM" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "wGX" = (
 /obj/structure/cable/white{
 	icon_state = "0-8"
@@ -126761,13 +126828,8 @@
 /area/cargo/storage)
 "xqe" = (
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/poddoor/shutters{
-	id = "armory3"
-	},
-/obj/machinery/door/poddoor/preopen{
-	id = "armoryblast";
-	name = "bridge blast door"
-	},
+/obj/machinery/door/poddoor/shutters/window/armory/officers,
+/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "xqi" = (
@@ -164115,7 +164177,7 @@ aaO
 aaO
 abf
 abf
-tiy
+cPl
 yjW
 eFL
 fIO
@@ -167968,7 +168030,7 @@ fuh
 wco
 pUo
 pUo
-waT
+maq
 oOO
 bPW
 bmv
@@ -168998,7 +169060,7 @@ aaa
 aaa
 aaa
 abf
-pyU
+pxf
 uUM
 wZK
 kVt
@@ -169006,7 +169068,7 @@ kxo
 sDY
 eMh
 roG
-roG
+eUv
 oOO
 gur
 xrd
@@ -169783,7 +169845,7 @@ arN
 xJM
 jkh
 rjv
-opE
+wGM
 opE
 opE
 opE
@@ -170313,7 +170375,7 @@ lfa
 wuQ
 inE
 ecS
-inE
+qVO
 inE
 jyl
 jeA
@@ -172080,7 +172142,7 @@ uMG
 pKO
 uMG
 uMG
-nJS
+pKT
 wQI
 fUY
 mrI
@@ -188557,10 +188619,10 @@ iYo
 aSC
 lZK
 tME
-aKV
+aFm
 aJA
 aSG
-aKV
+aFm
 aWh
 qBX
 tTP
@@ -188817,7 +188879,7 @@ xKL
 aPn
 aRe
 uDm
-aKV
+aFm
 aWf
 qBX
 aZw
@@ -189071,10 +189133,10 @@ ghl
 aSC
 lZK
 rja
-aKV
+aFm
 gZV
 gZV
-aKV
+aFm
 enn
 qBX
 aZw
@@ -189331,7 +189393,7 @@ vxs
 aPp
 mzQ
 gBw
-pVk
+mcj
 kzu
 roV
 aZw
@@ -189845,7 +189907,7 @@ aFm
 aFm
 nxE
 knW
-pVk
+mcj
 mHH
 qBX
 kQq
@@ -190102,7 +190164,7 @@ uOw
 aFm
 pjT
 cGA
-aKV
+aFm
 tIZ
 fnS
 qlx

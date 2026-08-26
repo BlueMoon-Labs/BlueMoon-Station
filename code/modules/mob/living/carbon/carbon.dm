@@ -404,7 +404,7 @@
 	if(!cuff_break)
 		visible_message("<span class='warning'>[src] пытается сбросить [I]!</span>")
 		to_chat(src, "<span class='notice'>Ты пытаешься сбросить [I]... (Это займёт около [DisplayTimeText(breakouttime)]. Тебе не стоит делать лишних движений.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сбросить [I]!</span>")
@@ -413,7 +413,7 @@
 		breakouttime = 50
 		visible_message("<span class='warning'>[src] is trying to break [I]!</span>")
 		to_chat(src, "<span class='notice'>You attempt to break [I]... (This will take around 5 seconds and you need to stand still.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сломать [I]!</span>")
@@ -845,7 +845,8 @@
 
 	if(see_override)
 		see_invisible = see_override
-	if(is_hilbert_hotel_zlevel(z))
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		sight = initial(sight)
 
 	. = ..()
