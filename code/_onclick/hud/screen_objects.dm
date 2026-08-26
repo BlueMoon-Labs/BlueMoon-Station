@@ -755,13 +755,11 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	if(!visible)
 		alpha = 0
 
-	if(!use_previous_title)
-		if(SStitle.icon)
-			icon = SStitle.icon
-	else
-		if(!SStitle.previous_icon)
-			return INITIALIZE_HINT_QDEL
-		icon = SStitle.previous_icon
+	var/splash_icon = title_splash_icon(use_previous_title)
+	if(use_previous_title && !splash_icon)
+		return INITIALIZE_HINT_QDEL
+	if(splash_icon)
+		icon = splash_icon
 
 	holder.screen += src
 

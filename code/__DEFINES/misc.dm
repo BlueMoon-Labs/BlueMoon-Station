@@ -80,6 +80,12 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER				2		//stuff for things like cultism indicators (clock cult glow, cultist red halos, whatever else new that comes up)
 #define FIRE_LAYER				1		//If you're on fire
 #define TOTAL_LAYERS			43		//KEEP THIS UP-TO-DATE OR SHIT WILL BREAK ;_;
+/// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
+/// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого
+/// сочетания вида, цвета, маркингов и состояния конечностей, но одновременно ЖИВЫХ
+/// сочетаний у ста игроков сотни, а не тысячи. Всё сверх - это осевшие рендеры превью
+/// из редактора персонажа и тела давно ушедших игроков.
+#define LIMB_ICON_CACHE_MAX 2000
 
 //Human Overlay Index Shortcuts for alternate_worn_layer, layers
 //Because I *KNOW* somebody will think layer+1 means "above"

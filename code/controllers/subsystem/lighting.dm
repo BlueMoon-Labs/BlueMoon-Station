@@ -120,8 +120,15 @@ SUBSYSTEM_DEF(lighting)
 	/// Queue growth rate tracking: objects added to queue between fires
 	var/objects_queue_growth = 0
 	var/last_objects_queue_len = 0
-	/// When TRUE, lighting_object/New() defers starlight to a batch (set during create_all_lighting_objects)
-	var/init_in_progress = FALSE
+	/// Сколько проходов постройки света идёт ПРЯМО СЕЙЧАС. Пока не ноль,
+	/// lighting_object/New() откладывает старлайт в батч, а снос света отказывается
+	/// начинаться (см. abort_reason "другой проход строит свет").
+	///
+	/// Именно счётчик, а не булев флаг: подъёмы двух z-уровней идут параллельно
+	/// (INVOKE_ASYNC из update_z, краул фона, стыковка шаттла), и раньше тот, кто заканчивал
+	/// первым, гасил состояние тому, кто ещё крутил свои 65 тыс. турфов. В логах прода это
+	/// видно парами строк "On-demand init for z-level 7" подряд (раунды 10119, 10121).
+	var/init_in_progress = 0
 	/// Queue of z-levels to initialize in the background (populated after main init)
 	var/list/bg_queued_zlevels
 	/// Z-level currently being background-initialized (0 = none)
@@ -697,6 +704,16 @@ SUBSYSTEM_DEF(lighting)
 	level.lighting_initialized = FALSE
 	log_world("## LIGHTING: Снос света z-уровня [z] ([level.name]) - пусто дольше [LIGHTING_TEARDOWN_IDLE_TIME / 600] мин")
 
+/// Открыть проход постройки света. Счётчик, а не флаг: параллельные подъёмы двух z-уровней
+/// иначе гасят состояние друг другу.
+/datum/controller/subsystem/lighting/proc/begin_lighting_build()
+	init_in_progress++
+
+/// Закрыть проход. Пол по нулю обязателен: лишнее закрытие увело бы счётчик в минус, и
+/// снос света считал бы, что постройка идёт всегда.
+/datum/controller/subsystem/lighting/proc/end_lighting_build()
+	init_in_progress = max(init_in_progress - 1, 0)
+
 /// Прекращает снос, не откатывая сделанное: уровень уже помечен неинициализированным, и
 /// подъём по требованию достроит недостающее (create_lighting_for_zlevel пропускает турфы,
 /// у которых объект уже есть).
@@ -899,7 +916,7 @@ SUBSYSTEM_DEF(lighting)
 		if(!bg_turfs)
 			bg_turfs = block(locate(1, 1, z), locate(world.maxx, world.maxy, z))
 			bg_turf_index = 1
-		init_in_progress = TRUE
+		begin_lighting_build()
 		while(bg_turf_index <= bg_turfs.len)
 			var/turf/T = bg_turfs[bg_turf_index++]
 			var/area/A = T.loc
@@ -912,9 +929,9 @@ SUBSYSTEM_DEF(lighting)
 				if(T.lc_bottomleft) T.lc_bottomleft.active = TRUE
 				if(T.lc_topleft) T.lc_topleft.active = TRUE
 			if(MC_TICK_CHECK)
-				init_in_progress = FALSE
+				end_lighting_build()
 				return
-		init_in_progress = FALSE
+		end_lighting_build()
 		bg_turfs = null
 		var/datum/space_level/level = SSmapping.get_level(z)
 		level.lighting_initialized = TRUE
