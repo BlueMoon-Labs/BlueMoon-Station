@@ -102,6 +102,7 @@
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
 	desc = "A modkit for making a Security Gas Mask into a \"Star dust\" rebriser mask."
+	icon_state = "gas-mask_kit"
 	product = /obj/item/clothing/mask/gas/sechailer/star_dust
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
 

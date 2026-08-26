@@ -586,6 +586,7 @@
 /obj/item/modkit/concord_riot_helmet_kit
 	name = "Concord light riot helmet Kit"
 	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	icon_state = "riot-helmet_kit"
 	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 

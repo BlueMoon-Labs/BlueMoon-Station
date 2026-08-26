@@ -264,23 +264,24 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "nebula_box"
 
-/obj/item/storage/box/lapkee_kit/PopulateContents()
-	new /obj/item/modkit/star_dust_kit(src)
-	new /obj/item/modkit/nebular_kit(src)
-	new /obj/item/modkit/katana_kit(src)
-	new /obj/item/modkit/nebular_t_kit(src)
-	new /obj/item/modkit/supernova_kit(src)
-	new /obj/item/modkit/pulsar_knife_kit(src)
+/obj/item/storage/box/lapkee_kit/PopulateContents() // я заебался ебаться с тем что мне лапки пишет названия предметов из сски, а не кастомных, пропишу тут в комментах
 	new /obj/item/clothing/under/donator/bm/concord(src)
-	new /obj/item/modkit/quasar_kit(src)
-	new /obj/item/modkit/comet_kit(src)
-	new /obj/item/modkit/neutron_kit(src)
-	new /obj/item/modkit/spectral_kit(src)
-	new /obj/item/modkit/pulsar_kit(src)
-	new /obj/item/modkit/lapkee_arm_shield_kit(src)
-	new /obj/item/modkit/white_belt_kit(src)
-	new /obj/item/modkit/lapkee_carrier_kit(src)
-	new /obj/item/modkit/concord_riot_helmet_kit(src)
+	// тут будет плащ. WIP.
+	new /obj/item/modkit/star_dust_kit(src) // противогаз
+	new /obj/item/modkit/lapkee_carrier_kit(src) // плитка
+	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
+	new /obj/item/modkit/white_belt_kit(src) // пояс
+	new /obj/item/modkit/nebular_kit(src) // пистоль - энфорсер
+	new /obj/item/modkit/comet_kit(src) // WT-550 PDW
+	new /obj/item/modkit/nebular_t_kit(src) // тазер
+	new /obj/item/modkit/spectral_kit(src) // температурка
+	new /obj/item/modkit/quasar_kit(src) // АЕГ - advanced energy gun
+	new /obj/item/modkit/neutron_kit(src) // x-ray
+	new /obj/item/modkit/pulsar_kit(src) // riot дробаш
+	new /obj/item/modkit/supernova_kit(src) // комбат дробаш
+	new /obj/item/modkit/katana_kit(src) // стан-катана
+	new /obj/item/modkit/pulsar_knife_kit(src) // ножик-режик
+	new /obj/item/modkit/lapkee_arm_shield_kit(src) // имплант щита
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
@@ -294,6 +295,7 @@
 /obj/item/modkit/white_belt_kit
 	name = "White security belt Kit"
 	desc = "A modkit for making a brig officer webbing into a White security belt."
+	icon_state = "belt_kit"
 	product = /obj/item/storage/belt/security/webbing/ds/lapkee_belt
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
@@ -342,6 +344,7 @@
 /obj/item/modkit/lapkee_carrier_kit
 	name = "Concord armored top Kit"
 	desc = "A modkit for making a plate carrier into a Concord armored top."
+	icon = "plate-carrier_kit"
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 
