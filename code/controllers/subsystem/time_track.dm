@@ -189,150 +189,7 @@ SUBSYSTEM_DEF(time_track)
 	// амбиент в неё не попадают вообще. Колонку не убираем, по ней сравнивают с
 	// историей прошлых раундов, но реальное население смотреть надо в соседних:
 	// timer_buckets (bucket_count), timer_second_queue, timer_clienttime, timer_hashes.
-	log_perf(
-		list(
-			"time",
-			"players",
-			"tidi",
-			"tidi_fastavg",
-			"tidi_avg",
-			"tidi_slowavg",
-			"maptick",
-			"num_timers",
-			"timer_buckets",
-			"timer_second_queue",
-			"timer_clienttime",
-			"timer_hashes",
-			"air_turf_cost",
-			// Несглаженная стоимость фазы турфов последнего прохода. Раньше здесь
-			// стоял auxmos-овский огрызок turf_process_time() - прок без тела,
-			// то есть null, то есть пустая строка во всех строках всех логов.
-			"air_turf_cost_last",
-			"air_equalize_cost",
-			"air_post_process_cost",
-			"air_eg_cost",
-			"air_highpressure_cost",
-			"air_hotspots_cost",
-			"air_heat_spread_cost",
-			"air_pipenets_cost",
-			"air_rebuilds_cost",
-			"air_amt_gas_mixes",
-			"air_alloc_gas_mixes",
-			"air_hotspot_count",
-			"air_network_count",
-			// Сколько турфов фаза высокого давления реально обработала. Длина
-			// самой очереди тут бесполезна: фаза съедает список по ходу, и любой
-			// сэмплер видит либо ноль, либо случайный срез середины прохода.
-			"air_highpressure_processed",
-			// Главная величина фазы турфов: её стоимость - это ровно
-			// "сколько активных турфов" на "сколько стоит process_cell".
-			// Без неё разбор раунда не отличает подорожавшую клетку от
-			// разросшегося фронта.
-			"air_active_turfs",
-			"air_excited_groups",
-			"air_superconduct_turfs",
-			"air_machinery_count",
-			"air_atom_process_count",
-			// Вход и выход клапана насыщения. Тайм-дилатация к фоновой
-			// подсистеме слепа (MC_TICK_CHECK уступает ровно по бюджету тика,
-			// и МК держит свои 20 fps, сколько бы SSair ни ел), поэтому
-			// "нагрузка атмоса" - это длина полного прохода, делённая на
-			// интервал, в который она обязана была уложиться.
-			// air_pass_ms - процессорное время прохода, air_pass_wall_ms - реальное.
-			// Они расходятся в пять с лишним раз, потому что МК отдаёт фоновой
-			// подсистеме лишь долю остатка тика. Перегрузка живёт во второй
-			// величине, и клапан подключён именно к ней.
-			"air_pass_ms",
-			"air_pass_wall_ms",
-			"air_saturation_ratio",
-			"air_saturation_scale",
-			"air_pass_fire_slices",
-			"air_wait",
-			// Фаза машинерии не логировалась вообще, а это вторая по размеру
-			// статья прохода: разбор раунда 9868 видел её только как разницу
-			// между air_pass_ms и суммой остальных колонок (до 11 мс на проход).
-			// Вместе с ней сюда же две другие немые фазы.
-			"air_machinery_cost",
-			"air_decompression_cost",
-			"air_atoms_cost",
-			// Машины, спящие на сердцебиении, и сети, ждущие сведения. Обе
-			// величины - вход в решение "ротация или работа", и обе были видны
-			// только из админской верхи.
-			"air_machinery_idle",
-			"air_dirty_pipenets",
-			// Инвариант грязного списка: сеть с поднятым update, потерянная мимо
-			// очереди, больше не обсчитается никогда. Обязан быть нулём.
-			"air_orphan_dirty_pipenets",
-			// Сколько активных турфов реально сдвинули газ. Главная колонка фазы:
-			// 307 из 2980 в раунде 9868.
-			"air_sharing_turfs",
-			// Память процесса. Крашей 17.08.2026 разбор не взял ровно потому, что этих
-			// четырёх колонок не было: процесс умирал молча, а сколько он ел - неизвестно.
-			// Пиковые величины ведёт ядро, поэтому они переживают промах сэмплера между
-			// строками CSV, а всплеск, который добивает процесс, живёт доли секунды.
-			"mem_vsz_mb",
-			"mem_rss_mb",
-			"mem_peak_vsz_mb",
-			"mem_peak_rss_mb",
-			// Свободная память ХОСТА. Отличает упор в потолок адресного пространства
-			// (мы у потолка, хосту хорошо) от OOM-killer'а (нам не тесно, хосту нечем
-			// дышать). По одним только mem_* эти два случая неразличимы.
-			"mem_host_avail_mb",
-			// Дальше - косвенные счётчики роста, без которых по mem_* видно только "растёт",
-			// но не видно, ЧТО растёт.
-			// instances - всё, что BYOND считает содержимым мира (турфы, объекты, мобы,
-			// зоны). Растёт вместе с mem_vsz - течёт объектами; стоит на месте, а память
-			// идёт вверх - течёт тем, что объектами не считается: аппирансы, строки,
-			// иконки, rsc-кэш. Величина уже считалась для админской стат-панели, но
-			// нигде не сохранялась, то есть после раунда её было негде взять.
-			"instances",
-			// Хардделы это утечка по определению: объект, который не собрался. Разница
-			// между строками CSV даёт скорость утечки, а не итог за раунд.
-			"harddels",
-			"softdels",
-			// Очередь GC целиком. Затор в ней - это отложенная память, ещё не посчитанная
-			// ни в хардделах, ни в софтделах.
-			"gc_queue",
-			// Z-уровни. Каждый - это maxx*maxy турфов, десятки мегабайт разом. Ступенька
-			// в памяти без роста instances почти всегда означает подгруженную карту, и
-			// двойные загрузки руин у нас уже случались.
-			"maxz",
-			// Сколько раз пересобиралось колесо таймеров, см. SStimer.bucket_reset_count.
-			"timer_bucket_resets",
-			// Колонки ниже дописаны позже и стоят в хвосте, а не рядом с роднёй из mem_*,
-			// намеренно: разбор ходит по CSV разных раундов одним и тем же awk по номеру
-			// колонки, и вставка в середину молча съехала бы на соседнюю величину во всём,
-			// что было записано раньше. Дописывать в хвост можно всегда, вставлять - нет.
-			//
-			// Куча процесса и резидентная память по происхождению. Отвечают на следующий
-			// вопрос после "память растёт": растёт ЧТО. VmData - куча, RssFile - отображённые
-			// файлы (rsc, иконки, бинарь). В раунде 10020 память шла вверх на 21.7 МБ/мин
-			// при почти неизменном числе объектов, и без этого разделения дальше разбора нет.
-			"mem_data_mb",
-			"mem_rss_anon_mb",
-			"mem_rss_file_mb",
-			// Потолок адресного пространства. Константа на весь раунд, но по одному только
-			// CSV иначе нельзя сказать, 3378 МБ - это 80% потолка или 45%.
-			"mem_ceiling_mb",
-			// Скорость роста по получасовому окну. Дублирует наклон соседней колонки, но
-			// именно эта величина решает, когда админам уходит предупреждение, - без неё
-			// решение подсистемы нельзя перепроверить постфактум.
-			"mem_growth_mb_min",
-			// Всего памяти у хоста. Свободное без общего не читается: 45 ГБ свободно - это
-			// просторно на машине с 62 ГБ и вообще-то тесно на машине с 512.
-			"mem_host_total_mb",
-			// Пересборки ВТОРОГО колеса бакетов, SSrunechat. Стоят столько же, сколько
-			// пересборка таймерного, и до этой колонки не были видны нигде.
-			"runechat_bucket_resets",
-			// Провалы сборки иконок. Единственная колонка, ненулевое значение которой само
-			// по себе означает, что мир на грани: рантайм в /icon/New() - это отказ крупной
-			// НЕПРЕРЫВНОЙ аллокации, и в каскаде падений 23.08 (раунды 10084-10090) он был
-			// последним, что мир успевал написать. Умирал он при этом на 2.5-3.0 ГБ, то есть
-			// с запасом больше гигабайта до потолка - никакая колонка про объём такого не
-			// показывает. См. code/__HELPERS/icon_alloc_guard.dm.
-			"icon_alloc_failures",
-		)
-	)
+	log_perf(perf_log_header())
 	log_ping_perf(
 		list(
 			"time",
@@ -760,79 +617,7 @@ SUBSYSTEM_DEF(time_track)
 		track_process_memory(memory, host_memory)
 	refresh_mc_state_context(memory, gc_queue_depth)
 	SSblackbox.record_feedback("associative", "time_dilation_current", 1, list("[SQLtime()]" = list("current" = "[time_dilation_current]", "avg_fast" = "[time_dilation_avg_fast]", "avg" = "[time_dilation_avg]", "avg_slow" = "[time_dilation_avg_slow]")))
-	log_perf(
-		list(
-			world.time,
-			length(GLOB.clients),
-			time_dilation_current,
-			time_dilation_avg_fast,
-			time_dilation_avg,
-			time_dilation_avg_slow,
-			MAPTICK_LAST_INTERNAL_TICK_USAGE,
-			length(SStimer.timer_id_dict),
-			SStimer.bucket_count,
-			length(SStimer.second_queue),
-			length(SStimer.clienttime_timers),
-			length(SStimer.hashes),
-			SSair.cost_turfs,
-			SSair.cost_turfs_last,
-			SSair.cost_equalize,
-			SSair.cost_post_process,
-			SSair.cost_groups,
-			SSair.cost_highpressure,
-			SSair.cost_hotspots,
-			SSair.cost_superconductivity,
-			SSair.cost_pipenets,
-			SSair.cost_rebuilds,
-			SSair.get_amt_gas_mixes(),
-			SSair.get_max_gas_mixes(),
-			length(SSair.hotspots),
-			length(SSair.networks),
-			SSair.high_pressure_processed,
-			length(SSair.active_turfs),
-			length(SSair.excited_groups),
-			length(SSair.active_super_conductivity),
-			length(SSair.atmos_machinery),
-			length(SSair.atom_process),
-			SSair.cost_full.last_complete_ms,
-			SSair.pass_wall_ds * 100,
-			SSair.saturation_ratio,
-			SSair.saturation_scale,
-			SSair.pass_fire_slices_last,
-			SSair.wait,
-			SSair.cost_atmos_machinery,
-			SSair.cost_decompression,
-			SSair.cost_atmos_atoms,
-			SSair.idle_machine_count(),
-			length(SSair.dirty_networks),
-			SSair.count_orphan_dirty_pipenets(),
-			SSair.sharing_turfs,
-			memory ? memory["vsz"] : "",
-			memory ? memory["rss"] : "",
-			memory ? memory["peak_vsz"] : "",
-			memory ? memory["peak_rss"] : "",
-			host_memory ? host_memory["available"] : "",
-			// Счётчики, переваливающие за миллион, идут через num2text: интерполяция берёт
-			// шесть значащих цифр, и в клетке оказывается "1.63212e+006" вместо 1632122.
-			// Итог от этого ещё читается, а вот разность соседних строк - та самая скорость
-			// роста, ради которой колонки и заведены, - становится шумом округления: шаг
-			// округления на шести миллионах софтделов это целые десятки штук.
-			num2text(world.contents.len, 12),
-			num2text(SSgarbage.totaldels, 12),
-			num2text(SSgarbage.totalgcs, 12),
-			gc_queue_depth,
-			world.maxz,
-			SStimer.bucket_reset_count,
-			memory ? memory["data"] : "",
-			memory ? memory["rss_anon"] : "",
-			memory ? memory["rss_file"] : "",
-			process_address_ceiling_mb ? process_address_ceiling_mb : "",
-			memory_growth_mb_per_minute,
-			host_memory ? host_memory["total"] : "",
-			SSrunechat.runechat_bucket_reset_count,
-			GLOB.icon_alloc_failures
-		)
-	)
+	log_perf(perf_log_row(memory, host_memory, gc_queue_depth))
 	var/should_log_ping_perf = ping_samples && (
 		(times_fired % PING_PERF_LOG_EVERY_TICKS == 0) || \
 		(ping_rtt_last_max >= PING_PERF_SPIKE_RTT_MS) || \
@@ -1545,3 +1330,249 @@ SUBSYSTEM_DEF(time_track)
 #undef MEMORY_CENSUS_LIST_SAMPLES
 #undef MEMORY_CENSUS_NESTED_SCAN_CAP
 #undef PING_SAMPLE_STALE_AFTER
+
+
+/// Заголовок перф-CSV. Вынесен из Initialize() отдельным проком, чтобы юнит-тест мог
+/// сверить его длину с длиной строки значений: разъехавшись на один элемент, они дают
+/// файл, где КАЖДАЯ величина сдвинута на соседнюю колонку, а числа остаются
+/// правдоподобными. См. perf_log_columns.dm.
+/datum/controller/subsystem/time_track/proc/perf_log_header()
+	return list(
+	"time",
+	"players",
+	"tidi",
+	"tidi_fastavg",
+	"tidi_avg",
+	"tidi_slowavg",
+	"maptick",
+	"num_timers",
+	"timer_buckets",
+	"timer_second_queue",
+	"timer_clienttime",
+	"timer_hashes",
+	"air_turf_cost",
+	// Несглаженная стоимость фазы турфов последнего прохода. Раньше здесь
+	// стоял auxmos-овский огрызок turf_process_time() - прок без тела,
+	// то есть null, то есть пустая строка во всех строках всех логов.
+	"air_turf_cost_last",
+	"air_equalize_cost",
+	"air_post_process_cost",
+	"air_eg_cost",
+	"air_highpressure_cost",
+	"air_hotspots_cost",
+	"air_heat_spread_cost",
+	"air_pipenets_cost",
+	"air_rebuilds_cost",
+	"air_amt_gas_mixes",
+	"air_alloc_gas_mixes",
+	"air_hotspot_count",
+	"air_network_count",
+	// Сколько турфов фаза высокого давления реально обработала. Длина
+	// самой очереди тут бесполезна: фаза съедает список по ходу, и любой
+	// сэмплер видит либо ноль, либо случайный срез середины прохода.
+	"air_highpressure_processed",
+	// Главная величина фазы турфов: её стоимость - это ровно
+	// "сколько активных турфов" на "сколько стоит process_cell".
+	// Без неё разбор раунда не отличает подорожавшую клетку от
+	// разросшегося фронта.
+	"air_active_turfs",
+	"air_excited_groups",
+	"air_superconduct_turfs",
+	"air_machinery_count",
+	"air_atom_process_count",
+	// Вход и выход клапана насыщения. Тайм-дилатация к фоновой
+	// подсистеме слепа (MC_TICK_CHECK уступает ровно по бюджету тика,
+	// и МК держит свои 20 fps, сколько бы SSair ни ел), поэтому
+	// "нагрузка атмоса" - это длина полного прохода, делённая на
+	// интервал, в который она обязана была уложиться.
+	// air_pass_ms - процессорное время прохода, air_pass_wall_ms - реальное.
+	// Они расходятся в пять с лишним раз, потому что МК отдаёт фоновой
+	// подсистеме лишь долю остатка тика. Перегрузка живёт во второй
+	// величине, и клапан подключён именно к ней.
+	"air_pass_ms",
+	"air_pass_wall_ms",
+	"air_saturation_ratio",
+	"air_saturation_scale",
+	"air_pass_fire_slices",
+	"air_wait",
+	// Фаза машинерии не логировалась вообще, а это вторая по размеру
+	// статья прохода: разбор раунда 9868 видел её только как разницу
+	// между air_pass_ms и суммой остальных колонок (до 11 мс на проход).
+	// Вместе с ней сюда же две другие немые фазы.
+	"air_machinery_cost",
+	"air_decompression_cost",
+	"air_atoms_cost",
+	// Машины, спящие на сердцебиении, и сети, ждущие сведения. Обе
+	// величины - вход в решение "ротация или работа", и обе были видны
+	// только из админской верхи.
+	"air_machinery_idle",
+	"air_dirty_pipenets",
+	// Инвариант грязного списка: сеть с поднятым update, потерянная мимо
+	// очереди, больше не обсчитается никогда. Обязан быть нулём.
+	"air_orphan_dirty_pipenets",
+	// Сколько активных турфов реально сдвинули газ. Главная колонка фазы:
+	// 307 из 2980 в раунде 9868.
+	"air_sharing_turfs",
+	// Память процесса. Крашей 17.08.2026 разбор не взял ровно потому, что этих
+	// четырёх колонок не было: процесс умирал молча, а сколько он ел - неизвестно.
+	// Пиковые величины ведёт ядро, поэтому они переживают промах сэмплера между
+	// строками CSV, а всплеск, который добивает процесс, живёт доли секунды.
+	"mem_vsz_mb",
+	"mem_rss_mb",
+	"mem_peak_vsz_mb",
+	"mem_peak_rss_mb",
+	// Свободная память ХОСТА. Отличает упор в потолок адресного пространства
+	// (мы у потолка, хосту хорошо) от OOM-killer'а (нам не тесно, хосту нечем
+	// дышать). По одним только mem_* эти два случая неразличимы.
+	"mem_host_avail_mb",
+	// Дальше - косвенные счётчики роста, без которых по mem_* видно только "растёт",
+	// но не видно, ЧТО растёт.
+	// instances - всё, что BYOND считает содержимым мира (турфы, объекты, мобы,
+	// зоны). Растёт вместе с mem_vsz - течёт объектами; стоит на месте, а память
+	// идёт вверх - течёт тем, что объектами не считается: аппирансы, строки,
+	// иконки, rsc-кэш. Величина уже считалась для админской стат-панели, но
+	// нигде не сохранялась, то есть после раунда её было негде взять.
+	"instances",
+	// Хардделы это утечка по определению: объект, который не собрался. Разница
+	// между строками CSV даёт скорость утечки, а не итог за раунд.
+	"harddels",
+	"softdels",
+	// Очередь GC целиком. Затор в ней - это отложенная память, ещё не посчитанная
+	// ни в хардделах, ни в софтделах.
+	"gc_queue",
+	// Z-уровни. Каждый - это maxx*maxy турфов, десятки мегабайт разом. Ступенька
+	// в памяти без роста instances почти всегда означает подгруженную карту, и
+	// двойные загрузки руин у нас уже случались.
+	"maxz",
+	// Сколько раз пересобиралось колесо таймеров, см. SStimer.bucket_reset_count.
+	"timer_bucket_resets",
+	// Колонки ниже дописаны позже и стоят в хвосте, а не рядом с роднёй из mem_*,
+	// намеренно: разбор ходит по CSV разных раундов одним и тем же awk по номеру
+	// колонки, и вставка в середину молча съехала бы на соседнюю величину во всём,
+	// что было записано раньше. Дописывать в хвост можно всегда, вставлять - нет.
+	//
+	// Куча процесса и резидентная память по происхождению. Отвечают на следующий
+	// вопрос после "память растёт": растёт ЧТО. VmData - куча, RssFile - отображённые
+	// файлы (rsc, иконки, бинарь). В раунде 10020 память шла вверх на 21.7 МБ/мин
+	// при почти неизменном числе объектов, и без этого разделения дальше разбора нет.
+	"mem_data_mb",
+	"mem_rss_anon_mb",
+	"mem_rss_file_mb",
+	// Потолок адресного пространства. Константа на весь раунд, но по одному только
+	// CSV иначе нельзя сказать, 3378 МБ - это 80% потолка или 45%.
+	"mem_ceiling_mb",
+	// Скорость роста по получасовому окну. Дублирует наклон соседней колонки, но
+	// именно эта величина решает, когда админам уходит предупреждение, - без неё
+	// решение подсистемы нельзя перепроверить постфактум.
+	"mem_growth_mb_min",
+	// Всего памяти у хоста. Свободное без общего не читается: 45 ГБ свободно - это
+	// просторно на машине с 62 ГБ и вообще-то тесно на машине с 512.
+	"mem_host_total_mb",
+	// Пересборки ВТОРОГО колеса бакетов, SSrunechat. Стоят столько же, сколько
+	// пересборка таймерного, и до этой колонки не были видны нигде.
+	"runechat_bucket_resets",
+	// Провалы сборки иконок. Единственная колонка, ненулевое значение которой само
+	// по себе означает, что мир на грани: рантайм в /icon/New() - это отказ крупной
+	// НЕПРЕРЫВНОЙ аллокации, и в каскаде падений 23.08 (раунды 10084-10090) он был
+	// последним, что мир успевал написать. Умирал он при этом на 2.5-3.0 ГБ, то есть
+	// с запасом больше гигабайта до потолка - никакая колонка про объём такого не
+	// показывает. См. code/__HELPERS/icon_alloc_guard.dm.
+	"icon_alloc_failures",
+	// Свет. До этих колонок SSlighting не писал о себе на диск НИЧЕГО: cost_* и
+	// worst_fire_cost уходили только в stat_entry(), то есть во вкладку МК, которую в
+	// headless и на проде не читает никто. При том что свет - вторая по цене подсистема
+	// и главная статья базовой памяти (в раунде 10119 три постройки z-уровней = 466 МБ),
+	// а любой размен "память против тика" в нём до сих пор было нечем проверить.
+	// cost_* - сглаженные MC_AVERAGE миллисекунды фазы, worst - настоящий максимум
+	// одного прогона, очереди - незакрытый хвост работы.
+	"light_cost_sources",
+	"light_cost_corners",
+	"light_cost_objects",
+	"light_worst_fire_ms",
+	"light_queue_sources",
+	"light_queue_corners",
+	"light_queue_objects",
+	)
+
+/// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
+/// аргументах: без /proc (Windows) memory/host_memory приходят null, и колонки просто
+/// пустые - выкидывать их нельзя, иначе CSV прода и локального прогона не сравнить.
+/datum/controller/subsystem/time_track/proc/perf_log_row(list/memory, list/host_memory, gc_queue_depth)
+	return list(
+	world.time,
+	length(GLOB.clients),
+	time_dilation_current,
+	time_dilation_avg_fast,
+	time_dilation_avg,
+	time_dilation_avg_slow,
+	MAPTICK_LAST_INTERNAL_TICK_USAGE,
+	length(SStimer.timer_id_dict),
+	SStimer.bucket_count,
+	length(SStimer.second_queue),
+	length(SStimer.clienttime_timers),
+	length(SStimer.hashes),
+	SSair.cost_turfs,
+	SSair.cost_turfs_last,
+	SSair.cost_equalize,
+	SSair.cost_post_process,
+	SSair.cost_groups,
+	SSair.cost_highpressure,
+	SSair.cost_hotspots,
+	SSair.cost_superconductivity,
+	SSair.cost_pipenets,
+	SSair.cost_rebuilds,
+	SSair.get_amt_gas_mixes(),
+	SSair.get_max_gas_mixes(),
+	length(SSair.hotspots),
+	length(SSair.networks),
+	SSair.high_pressure_processed,
+	length(SSair.active_turfs),
+	length(SSair.excited_groups),
+	length(SSair.active_super_conductivity),
+	length(SSair.atmos_machinery),
+	length(SSair.atom_process),
+	SSair.cost_full.last_complete_ms,
+	SSair.pass_wall_ds * 100,
+	SSair.saturation_ratio,
+	SSair.saturation_scale,
+	SSair.pass_fire_slices_last,
+	SSair.wait,
+	SSair.cost_atmos_machinery,
+	SSair.cost_decompression,
+	SSair.cost_atmos_atoms,
+	SSair.idle_machine_count(),
+	length(SSair.dirty_networks),
+	SSair.count_orphan_dirty_pipenets(),
+	SSair.sharing_turfs,
+	memory ? memory["vsz"] : "",
+	memory ? memory["rss"] : "",
+	memory ? memory["peak_vsz"] : "",
+	memory ? memory["peak_rss"] : "",
+	host_memory ? host_memory["available"] : "",
+	// Счётчики, переваливающие за миллион, идут через num2text: интерполяция берёт
+	// шесть значащих цифр, и в клетке оказывается "1.63212e+006" вместо 1632122.
+	// Итог от этого ещё читается, а вот разность соседних строк - та самая скорость
+	// роста, ради которой колонки и заведены, - становится шумом округления: шаг
+	// округления на шести миллионах софтделов это целые десятки штук.
+	num2text(world.contents.len, 12),
+	num2text(SSgarbage.totaldels, 12),
+	num2text(SSgarbage.totalgcs, 12),
+	gc_queue_depth,
+	world.maxz,
+	SStimer.bucket_reset_count,
+	memory ? memory["data"] : "",
+	memory ? memory["rss_anon"] : "",
+	memory ? memory["rss_file"] : "",
+	process_address_ceiling_mb ? process_address_ceiling_mb : "",
+	memory_growth_mb_per_minute,
+	host_memory ? host_memory["total"] : "",
+	SSrunechat.runechat_bucket_reset_count,
+	GLOB.icon_alloc_failures,
+	SSlighting.cost_sources,
+	SSlighting.cost_corners,
+	SSlighting.cost_objects,
+	SSlighting.worst_fire_cost,
+	length(GLOB.lighting_update_lights),
+	length(GLOB.lighting_update_corners),
+	length(GLOB.lighting_update_objects)
+	)
