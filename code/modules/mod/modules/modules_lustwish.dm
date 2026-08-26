@@ -1,3 +1,18 @@
+/obj/item/mod/module/nudity_lover
+	name = "Genitals Hardlight Module"
+	desc = "Доработанный штатный проектор твёрдого цвета от Silver Love Co. \
+	Позволяет беспрепядственно демонстрировать собственное тело даже в открытом космосе."
+	complexity = 0
+	idle_power_cost = 0
+
+/obj/item/mod/module/nudity_lover/on_install()
+	. = ..()
+	mod.allowed_genital_overlays = TRUE
+
+/obj/item/mod/module/nudity_lover/on_uninstall()
+	. = ..()
+	mod.allowed_genital_overlays = FALSE
+
 /obj/item/mod/module/hypno_visor
 	name = "hypnosis module"
 	desc = "A module inserted into the visor of a suit in which commands can be processed. Use on self to set directives."

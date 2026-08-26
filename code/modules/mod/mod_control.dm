@@ -73,6 +73,7 @@
 	var/can_install_pai = FALSE
 	var/current_armor_module_installed = 0
 	var/max_armor_module_count = 3
+	var/allowed_genital_overlays = FALSE
 
 /obj/item/mod/control/proc/get_mod_part_by_index(index)
 	return mod_parts[index]
@@ -592,17 +593,17 @@
 			INVOKE_ASYNC(src, PROC_REF(toggle_activate), wearer, TRUE)
 		return
 
-/obj/item/mod/control/CtrlShiftClick(mob/user)
-	. = ..()
+/obj/item/mod/control/proc/quick_toggle_parts(mob/user)
 	var/on = is_active()
 	if(!wearer || is_activating())
-		return
+		return FALSE
 	for(var/index in mod_parts)
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		if(index == MOD_PART_CELL)
 			continue
 
 		ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+
 		if(part.loc == null)
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 				part.seal_part(seal = on)
@@ -611,7 +612,9 @@
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 				part.seal_part(seal = on)
 				conceal(wearer, part)
+
 		DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+	return TRUE
 
 /obj/item/mod/control/proc/on_borg_charge(datum/source, amount)
 	SIGNAL_HANDLER

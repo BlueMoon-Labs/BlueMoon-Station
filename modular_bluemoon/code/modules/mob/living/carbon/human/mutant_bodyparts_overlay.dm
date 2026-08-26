@@ -9,6 +9,7 @@ GLOBAL_LIST_INIT(mutant_overlays_cache, list())
 #define INSECT_FLUFF_APPEARANCE "insect_fluff"
 #define HORNS_APPEARANCE "horns"
 #define HAIR_APPEARANCE "hair"
+
 #define PENIS_APPEARANCE "penis"
 #define TESTICLES_APPEARANCE "testicles"
 #define VAGINA_APPEARANCE "vagina"

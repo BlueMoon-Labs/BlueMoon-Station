@@ -47,7 +47,7 @@
 	if(!IsAvailable())
 		return FALSE
 	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
-		// Обработка открытия/снятия всех частей мода
+		return mod.quick_toggle_parts(mod.wearer)
 	mod.choose_deploy(usr)
 	return TRUE
 

@@ -26,11 +26,12 @@
 	icon_icon = 'modular_bluemoon/icons/mob/actions/mod_radial.dmi'
 	button_icon_state = "open"
 	var/list/radial_menu_choises //по-сути кэш изображений, чтобы не генерить их постоянно.
+	var/list/standart_overlay_choices = list()
+	var/list/genital_overlay_choices = list()
 
-/datum/action/item_action/mod/hardlight_deploy/Trigger(trigger_flags)
+/datum/action/item_action/mod/hardlight_deploy/Grant(mob/user)
 	. = ..()
-	if(!radial_menu_choises)
-		radial_menu_choises = list(
+	standart_overlay_choices = list(
 			"ears" = new /image(icon_icon, "ears"),
 			"snout" = new /image(icon_icon, "snout"),
 			"tail" = new /image(icon_icon, "tail"),
@@ -42,6 +43,27 @@
 			"xenodorsal" = new /image(icon_icon, "xenodorsal"),
 			"spines" = new /image(icon_icon, "spines"),
 		)
+
+	genital_overlay_choices = list(
+			"breasts" = new /image(icon_icon, "ears"),
+			"penis" = new /image(icon_icon, "ears"),
+			"testicles" = new /image(icon_icon, "ears"),
+			"vagina"= new /image(icon_icon, "ears"),
+			"butt"= new /image(icon_icon, "ears"),
+			"belly"= new /image(icon_icon, "ears"),
+		)
+
+/datum/action/item_action/mod/hardlight_deploy/Trigger(trigger_flags)
+	. = ..()
+
+	if(!radial_menu_choises)
+		radial_menu_choises = standart_overlay_choices
+		if(mod.allowed_genital_overlays)
+			radial_menu_choises += genital_overlay_choices
+
+	if(genital_overlay_choices in radial_menu_choises && !mod.allowed_genital_overlays)
+		radial_menu_choises -= genital_overlay_choices
+
 	var/choice = show_radial_menu(mod.wearer, mod.wearer, radial_menu_choises)
 	if(!choice)
 		return
