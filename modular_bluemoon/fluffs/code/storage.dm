@@ -367,6 +367,7 @@
 	else
 		to_chat(user, span_warning("You can't modify [target] with this kit!"))
 	return TRUE
+
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Concord armored top"
@@ -378,3 +379,22 @@
 		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
 		"Coat" = list("icon_state" = "lapkee-carrier-coat", "desc" = " Альтернативный стильный вариант переработанных бронежилетов, оформленный на манер бронехалата. Обычно - используется научными и медицинскими бригадами, служа цели защиты конечностей от биологических, бактериологических, радиационных угроз. В меньшей степени от вражеского огня, но как повезло, что это именно вариант с повышенной защитой, да? В комплекте два смешных подсумка для мелочёвки.", "name" = "Concord armored coat")
 	)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_OCLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/update_icon_state()
+	. = ..()
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/H = loc
+	if(icon_state == "lapkee-carrier-top")
+		return
+	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(B?.size || 0), 0, 7)
+	icon_state = "[initial(icon_state)]_[breast_size]"
+	H.update_inv_wear_suit()
+	H.update_body()

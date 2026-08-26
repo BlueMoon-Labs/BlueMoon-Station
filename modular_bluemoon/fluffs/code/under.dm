@@ -874,23 +874,30 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	can_adjust = TRUE
 
+/obj/item/clothing/under/donator/bm/concord/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
 /obj/item/clothing/under/donator/bm/concord/update_icon_state()
 	. = ..()
-	if(istype(loc, /mob/living/carbon/human))
-		var/mob/living/carbon/human/H = loc
-		if(adjusted)
-			return
-		if(!(DIGITIGRADE in H.dna.species.species_traits))
-			return
-		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-		if(B?.size > 7)
-			icon_state = "[initial(icon_state)]_7"
-		else
-			icon_state = "[initial(icon_state)]_[B?.size || 0]"
-		H.update_inv_w_shirt()
-		H.update_body()
-	else
-		icon_state = "[initial(icon_state)]"
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/H = loc
+	if(adjusted || !(DIGITIGRADE in H.dna.species.species_traits))
+		return
+	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(B?.size || 0), 0, 7)
+	icon_state = "[initial(icon_state)]_[breast_size]"
+	H.update_inv_w_uniform()
+	H.update_body()
+
+/obj/item/clothing/under/donator/bm/concord/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		update_icon()
 
 /obj/item/clothing/under/donator/bm/h_pmc_jeans
 	name = "PMC jeans"
