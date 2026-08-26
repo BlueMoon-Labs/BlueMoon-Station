@@ -37,6 +37,14 @@ GLOBAL_VAR_INIT(client_connect_serial, 0)
 /// пока рядом строился свет z-уровней.
 GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 
+/// Записать МБ VmSize на счёт фоновой работы. Единственная точка записи в счётчик:
+/// монотонность - его контракт, а не деталь вызывающего (см.
+/// /datum/unit_test/lighting_cost_counter_is_monotonic). Отрицательная дельта между
+/// отметками законна и означает "за окно ничего не сделано", а не "верните мегабайты".
+/proc/attribute_memory_elsewhere_mb(spent_mb)
+	if(spent_mb > 0)
+		GLOB.memory_attributed_elsewhere_mb += spent_mb
+
 /// Готовая строка одного этапа. Вынесена из mark() отдельным проком: это единственное
 /// место, где живёт арифметика вычета фона, и без живого клиента её иначе не проверить.
 /// Вычтенный фон НАЗЫВАЕТСЯ в строке - молчаливый вычет прячет от читателя, что окно
@@ -45,13 +53,22 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 	var/line = "[stage_name] [seconds]с"
 	if(!measured)
 		return line
-	// Счётчик фона монотонный, но отрицательная разница между отметками смысла не имеет и
-	// прибавлять подключению мегабайт не должна.
-	var/background = max(attributed_delta, 0)
-	line += " [format_mb_delta(vsz_delta - background)]"
+	var/background = probe_stage_background_mb(attributed_delta)
+	line += " [format_mb_delta(probe_stage_own_mb(vsz_delta, attributed_delta))]"
 	if(background > 0)
 		line += " (мимо: [format_mb_delta(background)] фоновой работы)"
 	return line
+
+/// Сколько из окна принадлежит самому этапу. Прибор раздачи тел (ticker_handoff_probe.dm)
+/// берёт ту же цифру, чтобы записать её на счёт фона - арифметика вычета обязана жить в
+/// одном месте, иначе две копии разъедутся молча.
+/proc/probe_stage_own_mb(vsz_delta, attributed_delta)
+	return vsz_delta - probe_stage_background_mb(attributed_delta)
+
+/// Счётчик фона монотонный, но отрицательная разница между отметками смысла не имеет и
+/// прибавлять этапу мегабайт не должна.
+/proc/probe_stage_background_mb(attributed_delta)
+	return max(attributed_delta, 0)
 
 /datum/client_connect_probe
 	/// ckey клиента - строкой, потому что к контрольному замеру клиент может уже уйти

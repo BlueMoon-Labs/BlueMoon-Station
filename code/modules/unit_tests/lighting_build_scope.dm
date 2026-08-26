@@ -83,3 +83,16 @@
 	GLOB.memory_attributed_elsewhere_mb = restore
 
 	TEST_ASSERT_EQUAL(after, 100, "Пустые проходы не должны двигать счётчик фоновой работы")
+
+/**
+ * Проход по уже поднятому уровню объектов почти не создаёт - он только флашит
+ * запаркованные атомы. Раунд 10121 дал одиннадцать строк "On-demand init" при двух
+ * реальных постройках: обе формулировки читались одинаково, и разбор ушёл в ложную улику.
+ */
+/datum/unit_test/lighting_pass_line_names_self_heal/Run()
+	var/real_build = zlevel_lighting_pass_line(7, "Lavaland", self_heal = FALSE)
+	var/flush_pass = zlevel_lighting_pass_line(1, "CentCom", self_heal = TRUE)
+
+	TEST_ASSERT(findtext(real_build, "On-demand init"), "Настоящая постройка обязана остаться прежней строкой: [real_build]")
+	TEST_ASSERT(!findtext(flush_pass, "On-demand init"), "Флаш отложенных атомов не должен называться постройкой уровня: [flush_pass]")
+	TEST_ASSERT(findtext(flush_pass, "Self-heal"), "Флаш обязан называть себя своим именем: [flush_pass]")

@@ -14,6 +14,14 @@ SUBSYSTEM_DEF(title)
 	var/file_path
 	var/icon/icon
 	var/icon/previous_icon
+	/// Та же заставка, но записью в .rsc, а не датумом /icon. Присваивание /icon в atom.icon
+	/// заставляет BYOND расплющить изменяемый битмап в ресурс на КАЖДОМ присваивании, а
+	/// сплеш-экран присваивается поштучно каждому клиенту: на старте раунда - всем ста с
+	/// лишним разом, в Shutdown() - ещё раз всем. Ссылка на готовую запись .rsc копируется
+	/// указателем. Сам /icon остаётся: у него спрашивают Width() и его правят через VV.
+	var/icon_source
+	/// То же для прошлой заставки (сервер-хоп, конец раунда).
+	var/previous_icon_source
 	var/turf/closed/indestructible/splashscreen/splash_turf
 	var/sound_path
 
@@ -28,7 +36,8 @@ SUBSYSTEM_DEF(title)
 		// previous_icon - прежняя строка `new(previous_icon)` разворачивала null и клала
 		// в previous_icon пустую иконку.
 		if(istext(previous_path) && fexists(previous_path) && title_screen_file_size(previous_path) <= TITLE_SCREEN_MAX_BYTES)
-			previous_icon = new(previous_path)
+			previous_icon_source = fcopy_rsc(previous_path)
+			previous_icon = new(previous_icon_source)
 	fdel("data/previous_title.dat")
 
 	var/list/provisional_title_screens = flist("[global.config.directory]/title_screens/images/")
@@ -65,7 +74,8 @@ SUBSYSTEM_DEF(title)
 
 	ASSERT(fexists(file_path))
 
-	icon = new(fcopy_rsc(file_path))
+	icon_source = fcopy_rsc(file_path)
+	icon = new(icon_source)
 
 	// Check for a corresponding sound file
 	var/list/L = splittext(file_path, "+")
@@ -88,8 +98,21 @@ SUBSYSTEM_DEF(title)
 	if(.)
 		switch(var_name)
 			if(NAMEOF(src, icon))
-				if(splash_turf)
-					splash_turf.icon = icon
+				set_title_icon(icon)
+
+/**
+ * Подменить заставку и пересобрать её .rsc-ссылку.
+ *
+ * Единственная точка записи в icon/icon_source после инициализации. Правок заставки через
+ * VV две (сам SStitle и турф заставки), и разъехавшаяся пара оставила бы турф с новой
+ * картинкой, а сплеш-экран - со старой: title_splash_icon() предпочитает icon_source.
+ */
+/datum/controller/subsystem/title/proc/set_title_icon(icon/new_icon)
+	icon = new_icon
+	icon_source = new_icon ? fcopy_rsc(new_icon) : null
+	if(splash_turf)
+		splash_turf.icon = icon
+		splash_turf.handle_generic_titlescreen_sizes()
 
 /datum/controller/subsystem/title/Shutdown()
 	if(file_path)
@@ -109,13 +132,32 @@ SUBSYSTEM_DEF(title)
 
 /datum/controller/subsystem/title/Recover()
 	icon = SStitle.icon
+	icon_source = SStitle.icon_source
 	splash_turf = SStitle.splash_turf
 	file_path = SStitle.file_path
 	previous_icon = SStitle.previous_icon
+	previous_icon_source = SStitle.previous_icon_source
 
 	// Recover the sound path
 	if(fexists("data/previous_title_sound.dat"))
 		sound_path = file2text("data/previous_title_sound.dat")
+
+/**
+ * Что положить в icon сплеш-экрана.
+ *
+ * Предпочитается ЗАПИСЬ В .rsc, а не датум /icon: сплеш заводится поштучно на каждого
+ * клиента - на старте раунда всем ста с лишним разом, в Shutdown() ещё раз всем, - а
+ * присваивание /icon в atom.icon каждый раз заставляет BYOND расплющивать изменяемый
+ * битмап заставки в ресурс. Ссылка на .rsc копируется указателем.
+ *
+ * Откат на сам /icon обязателен: заставку можно подменить через VV на турфе
+ * (splashscreen/vv_edit_var пишет SStitle.icon напрямую, мимо icon_source), и без отката
+ * сплеш в такой раунд ушёл бы пустым. null означает "заставки нет вовсе".
+ */
+/proc/title_splash_icon(use_previous_title)
+	if(use_previous_title)
+		return SStitle.previous_icon_source || SStitle.previous_icon
+	return SStitle.icon_source || SStitle.icon
 
 /// Вес файла заставки в байтах, 0 если файла нет. Отдельным проком: `length()` на /file
 /// читается неочевидно, а место у него ровно одно - решение "разворачивать или нет".

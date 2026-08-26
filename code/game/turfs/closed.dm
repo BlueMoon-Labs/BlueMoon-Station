@@ -114,7 +114,11 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	if(.)
 		switch(var_name)
 			if(NAMEOF(src, icon))
-				SStitle.icon = icon
+				// Через сеттер, а не присваиванием: он же пересобирает .rsc-ссылку, из
+				// которой заставку берёт сплеш-экран (см. title_splash_icon).
+				SStitle.set_title_icon(icon)
+				// Сеттер подгоняет размер КАНОНИЧЕСКОМУ турфу заставки (SStitle.splash_turf),
+				// а вареэдитят иногда не его: свой размер турф подгоняет себе сам.
 				handle_generic_titlescreen_sizes()
 
 /turf/closed/indestructible/start_area

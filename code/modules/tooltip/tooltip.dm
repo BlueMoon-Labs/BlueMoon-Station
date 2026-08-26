@@ -51,8 +51,13 @@ Notes:
 /datum/tooltip/New(client/C)
 	if (C)
 		owner = C
-		var/datum/asset/stuff = get_asset_datum(/datum/asset/simple/jquery)
-		stuff.send(owner)
+		// jQuery отсюда убран, страница переписана на ванильный JS. Это был ЕДИНСТВЕННЫЙ
+		// ассет с legacy = TRUE, то есть единственный, который на проде с CDN уезжал по
+		// игровому соединению, и единственный, который межсессионный кэш пропустить не
+		// может: клиентский список ассетов выбрасывает всё с расширением .js
+		// (asset_cache_client.dm). За прод-раунд 10121 набегало 117 отправок по 95 КБ на
+		// 104 игрока - 11.2 МБ, треть из них в первые полторы минуты, ровно когда курсор
+		// впервые задевает кнопку действия или экранный алерт.
 		var/datum/asset/simple/namespaced/fonts/fonts = get_asset_datum(/datum/asset/simple/namespaced/fonts)
 		fonts.send(owner)
 		var/static/file2send

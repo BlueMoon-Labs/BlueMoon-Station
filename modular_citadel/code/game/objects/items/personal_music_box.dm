@@ -258,6 +258,13 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 		curfile_path = null
 		to_chat(user, span_warning("Не удалось загрузить трек."))
 		return
+	// ЦЕНА: file2text материализует строкой ВЕСЬ файл (до шести мегабайт, см.
+	// PERSONAL_MUSIC_BOX_MAX_FILE_SIZE) ради четырёх байт заголовка, и так двенадцать раз
+	// за прод-раунд 10121. Разовый запрос непрерывного блока такого размера во
+	// фрагментированной куче 32-битного DreamDaemon - нежелательный класс аллокации.
+	// Чинить нечем: у rust-g в этой сборке нет чтения диапазона, а rustg_file_seek_line()
+	// на бинарнике без переводов строки выродится в то же самое чтение целиком. Убирать
+	// саму проверку нельзя - она отсеивает переименованный не-ogg.
 	var/file_header = copytext(file2text(logged_filename), 1, 5)
 	if(file_header != "OggS")
 		if(fexists(logged_filename))

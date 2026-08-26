@@ -154,6 +154,14 @@
 	// this z unflushed — otherwise the level stays flagged "initialized" yet permanently black.
 	if(level.lighting_initialized && !zlevel_has_deferred_lighting(z_level))
 		return
+	// Проход по УЖЕ поднятому уровню объектов почти не создаёт: фаза 0 пропускает турфы, у
+	// которых объект есть, и вся его работа - флаш запаркованных атомов. Строка обязана
+	// называть себя иначе, иначе читатель лога считает такой проход постройкой целого z.
+	// Раунд 10121: одиннадцать строк "On-demand init", включая z1 CentCom, который вообще
+	// не отложен (ZTRAITS_CENTCOM не даёт ни MINING, ни AWAY, ни RESERVED) - при двух
+	// РЕАЛЬНЫХ постройках по шагам instances в перф-CSV. Разбор раунда ушёл в эту ложную
+	// улику дважды, в 10119 и в 10121.
+	var/self_heal = level.lighting_initialized
 	level.lighting_initialized = TRUE
 	// Снос света этого уровня отменяем первым делом: он спит между срезами, и его
 	// следующий срез иначе разобрал бы ровно то, что мы сейчас построим. Сам снос тоже
@@ -169,7 +177,7 @@
 		SSlighting.bg_turf_index = 0
 	else if(SSlighting.bg_queued_zlevels)
 		SSlighting.bg_queued_zlevels -= z_level
-	log_world("## LIGHTING: On-demand init for z-level [z_level] ([level.name]) (background preempted)")
+	log_world(zlevel_lighting_pass_line(z_level, level.name, self_heal))
 
 	// Свет целого z-уровня - самая крупная разовая аллокация идущего раунда: в 10119 три
 	// таких постройки стоили 466 МБ из 4094 потолка, и восстанавливать эту цифру пришлось
@@ -253,6 +261,19 @@
 /proc/should_report_zlevel_lighting_cost(objects_created, list/memory_before)
 	return objects_created > 0 && !isnull(memory_before)
 
+/**
+ * Строка о начале прохода постройки света.
+ *
+ * Отдельным проком, потому что различие между настоящей постройкой отложенного уровня и
+ * флашем запаркованных атомов на уже поднятом - это ровно то, на чём разбор прод-логов
+ * ошибался: обе строки читались как "поднят целый z-уровень". Настоящих построек за
+ * раунд 10121 было две, строк - одиннадцать.
+ */
+/proc/zlevel_lighting_pass_line(z_level, level_name, self_heal)
+	if(self_heal)
+		return "## LIGHTING: Self-heal pass for z-level [z_level] ([level_name]) - флаш отложенных атомов, уровень уже поднят"
+	return "## LIGHTING: On-demand init for z-level [z_level] ([level_name]) (background preempted)"
+
 /// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
 /// проком, потому что вызывать его придётся и из фонового краула, и из сноса.
 /proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before, objects_created)
@@ -262,6 +283,5 @@
 	if(!memory_after)
 		return
 	var/spent = memory_after["vsz"] - memory_before["vsz"]
-	if(spent > 0)
-		GLOB.memory_attributed_elsewhere_mb += spent
+	attribute_memory_elsewhere_mb(spent)
 	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize на [objects_created] объектов")
