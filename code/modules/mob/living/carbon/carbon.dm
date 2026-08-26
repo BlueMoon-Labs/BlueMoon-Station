@@ -845,7 +845,8 @@
 
 	if(see_override)
 		see_invisible = see_override
-	if(is_hilbert_hotel_zlevel(z))
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		sight = initial(sight)
 
 	. = ..()

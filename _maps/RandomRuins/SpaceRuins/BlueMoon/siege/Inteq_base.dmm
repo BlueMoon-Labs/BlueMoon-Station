@@ -429,9 +429,9 @@
 	},
 /obj/item/gun_voucher/syndicate,
 /obj/item/clothing/gloves/combat,
-/obj/item/card/id/syndicate,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/card/id/syndicate/one_access_copy,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "bn" = (
@@ -2077,19 +2077,14 @@
 /area/InteQ_ship/SOLVED)
 "gb" = (
 /obj/structure/table/reinforced/plastitanium,
-/obj/item/pinpointer/crew/centcom{
-	pixel_x = 12
-	},
-/obj/item/pinpointer/crew/centcom{
-	pixel_y = 6;
-	pixel_x = 6
-	},
-/obj/item/pinpointer/crew/centcom{
-	pixel_y = 12
-	},
-/obj/item/pinpointer/crew/centcom{
-	pixel_y = 16;
+/obj/item/sensor_device_siege{
+	pixel_y = -6;
 	pixel_x = -6
+	},
+/obj/item/sensor_device_siege,
+/obj/item/sensor_device_siege{
+	pixel_x = 6;
+	pixel_y = 6
 	},
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
@@ -3103,6 +3098,7 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "jg" = (
@@ -4203,6 +4199,10 @@
 /obj/structure/hellgate_vehicle,
 /turf/open/floor/plating,
 /area/InteQ_ship)
+"lZ" = (
+/obj/machinery/sleeper/syndie/fullupgrade,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "ma" = (
 /obj/structure/fans,
 /turf/open/floor/mineral/titanium/blue,
@@ -5492,6 +5492,10 @@
 /obj/structure/deployable_barricade/metal,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"pz" = (
+/obj/structure/hivebot_beacon,
+/turf/open/floor/plating/asteroid/airless,
+/area/space)
 "pA" = (
 /obj/structure/sign/flag/inteq{
 	pixel_y = -32
@@ -8096,8 +8100,8 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
 "xl" = (
-/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded,
 /obj/machinery/light/cold/dim/directional/west,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "xm" = (
@@ -13303,14 +13307,6 @@
 /obj/machinery/seed_extractor,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"LV" = (
-/obj/item/gun/ballistic/automatic/pistol/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
-/obj/structure/closet/crate/large,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "LW" = (
 /turf/open/space/basic,
 /area/InteQ_ship)
@@ -14008,8 +14004,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "Ok" = (
-/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded,
 /obj/machinery/light/cold/dim/directional/east,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Ol" = (
@@ -17160,7 +17156,7 @@
 /turf/open/floor/plasteel/airless,
 /area/space)
 "XF" = (
-/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares,
 /turf/open/floor/circuit/red,
 /area/InteQ_ship)
 "XG" = (
@@ -20064,7 +20060,7 @@ kW
 kW
 kW
 kW
-kW
+gb
 gV
 WO
 WO
@@ -27283,7 +27279,7 @@ WO
 WO
 on
 aY
-SS
+pz
 on
 WO
 WO
@@ -27491,14 +27487,14 @@ vB
 WO
 WO
 WO
-on
+pz
 on
 on
 on
 on
 on
 WO
-on
+pz
 on
 on
 WO
@@ -28125,7 +28121,7 @@ vB
 vB
 vB
 WO
-on
+pz
 on
 wF
 Xy
@@ -28349,7 +28345,7 @@ on
 on
 on
 on
-on
+pz
 WO
 WO
 WO
@@ -29409,7 +29405,7 @@ TT
 on
 on
 on
-on
+pz
 WO
 WO
 WO
@@ -30033,7 +30029,7 @@ vB
 vB
 vB
 WO
-on
+pz
 on
 on
 on
@@ -30246,8 +30242,8 @@ vB
 vB
 WO
 WO
-on
-on
+WO
+WO
 on
 Nj
 on
@@ -30670,13 +30666,13 @@ vB
 vB
 WO
 on
-on
+WO
 TT
 on
 on
 SI
 on
-on
+pz
 WO
 WO
 WO
@@ -30882,10 +30878,10 @@ vB
 vB
 on
 on
-on
 WO
 WO
-on
+WO
+pz
 on
 jI
 WO
@@ -38077,7 +38073,7 @@ gV
 tF
 kW
 kW
-kW
+lZ
 kW
 kW
 kW
@@ -38507,8 +38503,8 @@ kW
 kW
 kW
 Cr
-LV
-LV
+kW
+kW
 zf
 zf
 nd
@@ -38719,8 +38715,8 @@ kW
 kW
 kW
 oc
-LV
-LV
+kW
+kW
 zf
 zf
 nd
@@ -39137,7 +39133,7 @@ gV
 GM
 kW
 kW
-kW
+lZ
 kW
 kW
 kW
@@ -61731,7 +61727,7 @@ WO
 WO
 WO
 gV
-kW
+gb
 kW
 kW
 kW

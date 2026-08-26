@@ -4598,6 +4598,7 @@
 #include "modular_bluemoon\code\game\area\areas\ruins\space.dm"
 #include "modular_bluemoon\code\game\machinery\astro_sensor.dm"
 #include "modular_bluemoon\code\game\machinery\aug_manipulator.dm"
+#include "modular_bluemoon\code\game\machinery\doors\armory_shutters.dm"
 #include "modular_bluemoon\code\game\machinery\cloth_drive.dm"
 #include "modular_bluemoon\code\game\machinery\coffeemaker.dm"
 #include "modular_bluemoon\code\game\machinery\makeshift_autolathe.dm"
