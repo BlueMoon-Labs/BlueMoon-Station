@@ -344,7 +344,7 @@
 /obj/item/modkit/lapkee_carrier_kit
 	name = "Concord armored top Kit"
 	desc = "A modkit for making a plate carrier into a Concord armored top."
-	icon = "plate-carrier_kit"
+	icon_state = "plate-carrier_kit"
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 
