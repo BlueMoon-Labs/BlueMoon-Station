@@ -222,7 +222,8 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				if (nanite_sensors || U.sensor_mode >= SENSOR_COORDS)
 					if (!pos)
 						pos = get_turf(H)
-					if(is_hilbert_hotel_zlevel(H.z))
+					var/turf/mob_turf = get_turf(H)
+					if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 						area = "Hilbert Hotel"
 					else
 						area = get_area_name(H, TRUE)
