@@ -41,10 +41,13 @@
 	name = "Deploy MODsuit"
 	desc = "Развернуть/Скрыть часть MOD-костюма."
 	button_icon_state = "deploy"
+	button_block_right_click_context_menu = TRUE
 
-/datum/action/item_action/mod/deploy/Trigger()
+/datum/action/item_action/mod/deploy/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
+	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
+		// Обработка открытия/снятия всех частей мода
 	mod.choose_deploy(usr)
 	return TRUE
 

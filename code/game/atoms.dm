@@ -1662,9 +1662,27 @@
 //hovered atom once per tick instead of on every input event (tg port).
 /atom/MouseEntered(location, control, params)
 	. = ..()
-	if(isnull(usr) || !usr.client)
+	if(isnull(usr))
+		return
+	var/client/user_client = usr.client
+	if(!user_client)
 		return
 	SSmouse_entered.hovers[usr.client] = src
+	if(CHECK_BITFIELD(flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1))
+		if(isnull(user_client.show_popup_menus_before_disable))
+			user_client.show_popup_menus_before_disable = user_client.show_popup_menus
+			user_client.show_popup_menus = FALSE
+
+/atom/MouseExited(location, control, params)
+	. = ..()
+	if(isnull(usr))
+		return
+	var/client/user_client = usr.client
+	if(!user_client)
+		return
+	if(!isnull(user_client.show_popup_menus_before_disable))
+		user_client.show_popup_menus = user_client.show_popup_menus_before_disable
+		user_client.show_popup_menus_before_disable = null
 
 ///Deferred hover handler: called by SSmouse_entered at most once per tick per
 ///client, with the most recently hovered atom. Updates the screentip.
