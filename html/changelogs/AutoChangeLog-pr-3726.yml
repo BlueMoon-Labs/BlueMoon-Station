@@ -1,4 +1,0 @@
-author: Herobrine998
-delete-after: true
-changes:
-  - bugfix: Пофикшен баг, что внутри шкафов и других объектах иксрей включался в инфинити
