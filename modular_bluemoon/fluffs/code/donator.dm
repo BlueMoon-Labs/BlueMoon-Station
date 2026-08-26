@@ -2570,11 +2570,11 @@
 /datum/gear/donator/bm/skull_half_mask
 	name = "Skull Gaiter"
 	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/head/donator/bm/half_mask_skull
+	path = /obj/item/clothing/mask/gas/half_mask_skull
 	ckeywhitelist = list("hartty")
 
 /datum/gear/donator/bm/mountaineering_jacket
     name = "Mountaineering Jacket"
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
-    ckeywhitelist = list("hartty", "ordinarylife", "spoopy_man228")
+    ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")

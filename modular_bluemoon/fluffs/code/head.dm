@@ -651,12 +651,3 @@
 		"Olive" = list("icon_state" = "commando_beret_olive", "item_state" = "commando_beret_olive")
 	)
 
-/obj/item/clothing/head/donator/bm/half_mask_skull
-	name = "Skull Gaiter"
-	desc = "Gaiter made from high-quality materials. On the inside, there is a label: Harr."
-	actions_types = list(/datum/action/item_action/adjust)
-	icon_state = "half_mask_skull"
-	item_state = "half_mask_skull"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
-	flags_inv = HIDEFACE|HIDEFACIALHAIR
