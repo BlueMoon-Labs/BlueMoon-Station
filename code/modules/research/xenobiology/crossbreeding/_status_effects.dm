@@ -60,8 +60,8 @@
 	return ..()
 
 /atom/movable/screen/alert/status_effect/chilling_bluespace
-	name = "Extract Recall"
-	desc = "You feel a sudden tug from an unknown force, and feel a pull to bluespace! \nResist if you wish avoid the force!"
+	name = "Проваливание в блюспейс"
+	desc = "Вы внезапно ощущаете как неведомая сила тянет вас в блюспейс! \nСопротивляйтесь если вы хотите избежать это!"
 	icon_state = "template"
 	overlay_state = "chronofield"
 	clickable_glow = TRUE
@@ -82,8 +82,8 @@
 
 /datum/status_effect/slimerecall/on_apply()
 	RegisterSignal(owner, COMSIG_LIVING_RESIST, PROC_REF(resistField))
-	to_chat(owner, span_danger("You feel a sudden tug from an unknown force, and feel a pull to bluespace!</span>"))
-	to_chat(owner, span_notice("[span_eldritch_big("Resist")] if you wish avoid the force!"))
+	to_chat(owner, span_danger("Вы внезапно ощущаете как неведомая сила тянет вас в блюспейс!</span>"))
+	to_chat(owner, span_notice("[span_eldritch_big("Сопротивляйтесь")] если вы хотите избежать это!"))
 	SEND_SOUND(owner, 'sound/magic/ethereal_enter.ogg')
 	bluespace = icon('icons/effects/effects.dmi',"chronofield")
 	owner.add_overlay(bluespace)
