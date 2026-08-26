@@ -316,8 +316,7 @@
 	message_param = "отправляет воздушный поцелуй для %t."
 
 /datum/emote/sound/human/kiss/run_emote(mob/living/user, params, type_override, intentional)
-	. = ..()
-	if(!.)
+	if(!istype(user))
 		return
 	var/kiss_type = /obj/item/hand_item/kisser
 
@@ -351,11 +350,17 @@
 		kiss_type = /obj/item/hand_item/kisser/heartboom
 
 	var/obj/item/kiss_blower = new kiss_type(user)
-	if(user.put_in_hands(kiss_blower))
+	if(user.put_in_hands(kiss_blower) && !QDELETED(kiss_blower))
 		to_chat(user, span_notice("You ready your kiss-blowing hand."))
 	else
 		qdel(kiss_blower)
 		to_chat(user, span_warning("You're incapable of blowing a kiss in your current state."))
+		return
+
+	. = ..()
+	if(!.)
+		qdel(kiss_blower)
+		return
 
 /datum/emote/sound/human/kiss2
 	key = "kiss2"
