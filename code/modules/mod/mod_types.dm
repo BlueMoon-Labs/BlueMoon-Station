@@ -55,7 +55,6 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/magboot,
 		/obj/item/mod/module/drill,
-		/obj/item/mod/module/armor/prebuild/melee,
 	)
 
 /obj/item/mod/control/pre_equipped/medical
