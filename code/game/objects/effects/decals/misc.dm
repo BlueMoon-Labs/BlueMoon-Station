@@ -2,7 +2,7 @@
 /obj/effect/decal/chempuff
 	name = "chemicals"
 	icon = 'icons/obj/chempuff.dmi'
-	pass_flags = PASSTABLE | PASSGRILLE
+	pass_flags = PASSTABLE | PASSGRILLE | PASSMACHINE
 	layer = FLY_LAYER
 	var/stream = FALSE
 	var/speed = 1

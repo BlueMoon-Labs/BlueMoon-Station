@@ -1006,6 +1006,9 @@
 
 	vtec = 0
 	vtec_disabled = FALSE
+	vtec_expire = 0
+	vtec_drain = 0
+	vtec_cooldown_until = 0
 	ionpulse = FALSE
 	revert_shell()
 
