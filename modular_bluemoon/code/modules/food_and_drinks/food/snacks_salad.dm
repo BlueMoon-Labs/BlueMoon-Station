@@ -36,5 +36,5 @@
 		/datum/reagent/consumable/nutriment/vitamin = 3,
 	)
 	tastes = list("leaves" = 1, "shrimp" = 2, "garlic" = 1, "cheese" = 1)
-	foodtype = VEGETABLES | SEAFOOD
+	foodtype = VEGETABLES | SEAFOOD | DAIRY
 	w_class = WEIGHT_CLASS_SMALL

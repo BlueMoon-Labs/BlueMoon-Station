@@ -89,7 +89,7 @@
 
 /obj/item/storage/box/shrimp_pack
 	name = "vacuum-packed shrimp"
-	desc = "A small foam tray of shrimp, tightly wrapped in cling film. Use in hand to unwrap it."
+	desc = "Небольшой лоток с креветками, плотно завернутыми в пищевую пленку. Разверните пленку, держа ее в руке."
 	icon = 'modular_bluemoon/icons/obj/food/shrimp_pack.dmi'
 	icon_state = "shrimp_pack"
 	foldable = null
@@ -121,7 +121,7 @@
 	if(user.mind && (user.mind.assigned_role == "Cook"))
 		unwrap_time = 1 SECONDS
 
-	balloon_alert(user, "unwrapping...")
+	balloon_alert(user, "распаковка...")
 	if(!do_after(user, unwrap_time, src))
 		return
 	if(!wrapped)
@@ -131,7 +131,7 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.locked = FALSE
 	playsound(loc, 'sound/items/poster_ripped.ogg', vol = 50, vary = TRUE)
-	user.visible_message(span_notice("[user] unwraps [src]."), span_notice("You unwrap [src]."))
+	user.visible_message(span_notice("[user] распаковывает [src]."), span_notice("Вы распаковали [src]."))
 	update_icon()
 
 /obj/item/storage/box/shrimp_pack/update_icon_state()
