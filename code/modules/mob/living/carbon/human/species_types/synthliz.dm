@@ -48,3 +48,13 @@
 		// They're also robots
 		/obj/item/stock_parts/cell/family
 	)
+
+/datum/species/synthliz/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.AddSource("SPECIES")
+	. = ..()
+
+/datum/species/synthliz/on_species_loss(mob/living/carbon/human/C, datum/species/new_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
+	. = ..()

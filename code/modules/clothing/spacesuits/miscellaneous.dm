@@ -70,7 +70,7 @@ Contains:
 	icon_state = "ertarmor_cmd"
 	item_state = "armor"
 	slowdown = 0
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Security
@@ -79,7 +79,7 @@ Contains:
 	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
 	icon_state = "ertarmor_sec"
 	slowdown = 0
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Engineer
@@ -88,7 +88,7 @@ Contains:
 	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
 	icon_state = "ertarmor_eng"
 	slowdown = 0
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Medical
@@ -97,7 +97,7 @@ Contains:
 	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
 	icon_state = "ertarmor_med"
 	slowdown = 0
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
@@ -107,7 +107,7 @@ Contains:
 	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
 	icon_state = "ertarmor_jan"
 	slowdown = 0
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/head/helmet/space/beret

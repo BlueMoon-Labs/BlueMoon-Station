@@ -275,8 +275,8 @@
 		var/SA_pp = PP(breath, GAS_NITROUS)
 		if(SA_pp > SA_para_min) // Enough to make us stunned for a bit
 			H.Unconscious(6 SECONDS) // 60 gives them one second to wake up and run away a bit!
-			if(SA_pp > SA_sleep_min && H.AmountSleeping() < 84 SECONDS) // Enough to make us sleep as well
-				H.AdjustSleeping(17 SECONDS) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400))
+			if(SA_pp > SA_sleep_min && H.AmountSleeping() < 100 SECONDS) // Enough to make us sleep as well
+				H.AdjustSleeping(20 SECONDS) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400))
 		else if(SA_pp > 0.25)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
 			if(prob(20))
 				H.emote(pick("giggle", "laugh"))

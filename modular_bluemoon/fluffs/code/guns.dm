@@ -1819,6 +1819,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
 	inhand_x_dimension = 64
+	inhand_y_dimension = 64
 	unique_reskin = null
 	sawn_item_state = "1887 short"
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1887_shot.ogg'
@@ -1843,6 +1844,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
 	inhand_x_dimension = 64
+	inhand_y_dimension = 64
 	unique_reskin = null
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	load_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_load.ogg'
@@ -1874,6 +1876,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
 	inhand_x_dimension = 64
+	inhand_y_dimension = 64
 	can_bayonet = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_shot.ogg'
 	load_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
@@ -1933,7 +1936,6 @@
 	STR.max_combined_w_class = 21
 
 /obj/item/storage/box/kumikoshouko_case/PopulateContents()
-	new /obj/item/modkit/vp78tactic(src)
 	new /obj/item/modkit/largrizzly_kit(src)
 	new /obj/item/modkit/winchester1887_kit(src)
 	new /obj/item/modkit/winchester1897_kit(src)

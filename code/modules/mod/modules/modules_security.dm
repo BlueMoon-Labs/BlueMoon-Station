@@ -186,6 +186,7 @@
 	cooldown_time = 0.5 SECONDS
 	/// List of spans we add to the speaker.
 	var/list/voicespan = list(SPAN_COMMAND)
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/megaphone/on_activation()
 	. = ..()
