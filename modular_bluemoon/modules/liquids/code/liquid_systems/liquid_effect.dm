@@ -113,6 +113,7 @@
 	return
 
 /obj/effect/abstract/liquid_turf/proc/dry()
+	SIGNAL_HANDLER
 	if(immutable)
 		return
 	qdel(src, TRUE)
@@ -626,7 +627,7 @@
 				))
 			playsound(my_turf, sound_to_play, 60, 0)
 		var/obj/splashy = new /obj/effect/temp_visual/liquid_splash(my_turf)
-		splashy.color = color
+		splashy.add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 		if(height >= LIQUID_WAIST_LEVEL_HEIGHT)
 			//Push things into some direction, like space wind
 			var/turf/dest_turf
