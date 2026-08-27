@@ -158,17 +158,52 @@
 	severity_min = 0
 	var/obj/effect/synthcorrupt_particles_holder/holder
 
+/**
+ * ОДИН эмиттер на оверлей, а не по эмиттеру на вызов.
+ *
+ * overlay_fullscreen() ПЕРЕИСПОЛЬЗУЕТ уже созданный экранный объект (пересоздаёт его
+ * только при смене типа) и зовёт SetSeverity() КАЖДЫЙ раз. А зовут его из
+ * update_damage_hud() при любом ненулевом токсинном уроне, то есть на каждом обновлении
+ * здоровья - раз в тик Life() у отравленного моба.
+ *
+ * Прежняя версия на каждый такой вызов делала new() и LAZYADD в vis_contents, затирая
+ * ссылку holder и не убирая предыдущий холдер ниоткуда: ни из vis_contents, ни из
+ * contents (loc холдера - сам экранный объект). Destroy() чистил только ПОСЛЕДНИЙ.
+ * Каждый осиротевший холдер при этом остаётся живым эмиттером /particles на 960x960
+ * с count до 300 - и рисует его клиент.
+ *
+ * Раунд 10129 (27.08.2026): 32-битный Dream Seeker набирал 2.4 ГБ за восемь минут и
+ * падал около 3400 МБ, а перед падением рисовал чужие спрайты вместо штатных и
+ * чёрно-белые квадраты вместо тайлов - это исчерпание адресного пространства клиента.
+ * В чате раунда: "персонажи заменяются на любой рандомный спрайт чего-то".
+ *
+ * Гейт isrobotic() стоит в ShouldShow(), а тот вызывается ПОСЛЕ SetSeverity(), поэтому
+ * холдеры копил любой отравленный карбон, а не только синтетик.
+ */
 /atom/movable/screen/fullscreen/scaled/synthcorrupt/SetSeverity(severity)
-	src.severity = clamp(severity, severity_min, severity_max)
-	src.alpha = clamp(10 * src.severity**2, 0, 255)
-
-	holder = new(src, severity)
+	var/new_severity = clamp(severity, severity_min, severity_max)
+	src.alpha = clamp(10 * new_severity ** 2, 0, 255)
+	// Тот же уровень при живом холдере - работы нет. Именно этот путь и был горячим:
+	// урон стоит на месте, а хендлер здоровья дёргается каждый тик.
+	if(src.severity == new_severity && !QDELETED(holder))
+		return
+	src.severity = new_severity
+	if(holder)
+		LAZYREMOVE(vis_contents, holder)
+		QDEL_NULL(holder)
+	// Нулевая тяжесть - это alpha 0, эмиттер под ней всё равно не виден.
+	if(!new_severity)
+		return
+	// Тяжесть берём КЛАМПНУТУЮ: count и spawning считаются от неё, и сырой аргумент
+	// выше severity_max раздул бы эмиттер мимо потолка.
+	holder = new(src, new_severity)
 	LAZYADD(vis_contents, holder)
 
 /atom/movable/screen/fullscreen/scaled/synthcorrupt/Destroy()
-	LAZYREMOVE(vis_contents, holder)
-	qdel(holder)
-	. = ..()
+	if(holder)
+		LAZYREMOVE(vis_contents, holder)
+		QDEL_NULL(holder)
+	return ..()
 
 /obj/effect/synthcorrupt_particles_holder
 	alpha = 255
