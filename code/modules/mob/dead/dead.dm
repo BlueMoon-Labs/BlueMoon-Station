@@ -128,7 +128,7 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
 				// living player arrives or background init crawls there.
 				if(should_ondemand_init_zlevel(new_z))
-					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
+					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z, LIGHTING_INIT_REASON_GHOST)
 			registered_z = new_z
 		else
 			registered_z = null
