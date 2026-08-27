@@ -5213,6 +5213,10 @@
 /obj/machinery/telecomms/receiver,
 /turf/open/floor/mineral/titanium/blue,
 /area/InteQ_ship/ship3)
+"oL" = (
+/obj/item/gun/medbeam/syndicate,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "oM" = (
 /obj/structure/lattice,
 /obj/structure/shipping_container/kahraman,
@@ -6983,7 +6987,9 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol{
+	armor = list("melee" = 70, "bullet" = 50, "laser" = 50, "energy" = 50, "bomb" = 65, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100, "wound" = 50)
+	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
 "uc" = (
@@ -7928,6 +7934,14 @@
 /obj/machinery/vending/inteq_vendomat,
 /turf/open/floor/wood,
 /area/InteQ_ship)
+"wO" = (
+/obj/structure/closet/crate/large,
+/obj/item/gun/ballistic/automatic/magrifle/magrrinei,
+/obj/item/ammo_box/magazine/mmag/lethal,
+/obj/item/ammo_box/magazine/mmag/lethal,
+/obj/item/ammo_box/magazine/mmag/lethal,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "wP" = (
 /obj/item/clothing/glasses/hud/health/night,
 /obj/item/storage/pill_bottle/stimulant,
@@ -10262,7 +10276,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "Di" = (
-/obj/item/gun/blastcannon,
+/obj/item/gun/medbeam/syndicate,
 /turf/open/floor/plating,
 /area/space)
 "Dj" = (
@@ -13304,11 +13318,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "LV" = (
-/obj/item/gun/ballistic/automatic/pistol/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
-/obj/item/ammo_box/magazine/hellgate_vp78,
 /obj/structure/closet/crate/large,
+/obj/item/gun/ballistic/automatic/shotgun/bulldog,
+/obj/item/ammo_box/magazine/m12g/meteor,
+/obj/item/ammo_box/magazine/m12g/meteor,
+/obj/item/ammo_box/magazine/m12g/meteor,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "LW" = (
@@ -16157,6 +16171,11 @@
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
+"UG" = (
+/obj/structure/closet/crate/large,
+/obj/item/gun/ballistic/automatic/l6_saw,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "UH" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable{
@@ -17392,6 +17411,14 @@
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
+"Yu" = (
+/obj/structure/closet/crate/large,
+/obj/item/gun/ballistic/automatic/flechette,
+/obj/item/ammo_box/magazine/flechette,
+/obj/item/ammo_box/magazine/flechette,
+/obj/item/ammo_box/magazine/flechette,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "Yw" = (
 /obj/machinery/door/poddoor/multi_tile/two_tile_ver{
 	id = "pact_poddurs_right_right";
@@ -32364,9 +32391,9 @@ AM
 AM
 vB
 vB
-vB
-vB
-vB
+WO
+WO
+WO
 WO
 WO
 WO
@@ -32577,8 +32604,8 @@ AM
 vB
 vB
 vB
-vB
-vB
+WO
+WO
 WO
 WO
 WO
@@ -32789,8 +32816,8 @@ AM
 vB
 vB
 vB
-vB
-vB
+WO
+WO
 WO
 WO
 WO
@@ -33001,8 +33028,8 @@ AM
 vB
 vB
 vB
-vB
-vB
+WO
+WO
 WO
 WO
 WO
@@ -33213,8 +33240,8 @@ AM
 vB
 vB
 vB
-vB
-vB
+WO
+WO
 WO
 WO
 WO
@@ -33426,7 +33453,7 @@ CX
 vB
 vB
 vB
-vB
+WO
 WO
 WO
 WO
@@ -33638,7 +33665,7 @@ AM
 vB
 vB
 vB
-vB
+WO
 WO
 WO
 WO
@@ -33850,7 +33877,7 @@ AM
 vB
 vB
 vB
-vB
+WO
 WO
 WO
 WO
@@ -34062,7 +34089,7 @@ AM
 vB
 vB
 vB
-vB
+WO
 WO
 WO
 WO
@@ -34274,7 +34301,7 @@ AM
 vB
 vB
 vB
-vB
+WO
 WO
 WO
 WO
@@ -35335,7 +35362,7 @@ vB
 vB
 vB
 vB
-WO
+AM
 WO
 WO
 WO
@@ -35547,7 +35574,7 @@ vB
 vB
 vB
 vB
-WO
+AM
 WO
 WO
 WO
@@ -35759,8 +35786,8 @@ vB
 vB
 vB
 vB
-WO
-WO
+AM
+AM
 WO
 WO
 WO
@@ -37655,7 +37682,7 @@ gV
 jl
 gV
 he
-kW
+oL
 kW
 FO
 gV
@@ -38507,8 +38534,8 @@ kW
 kW
 kW
 Cr
-LV
-LV
+UG
+wO
 zf
 zf
 nd
@@ -38720,7 +38747,7 @@ kW
 kW
 oc
 LV
-LV
+Yu
 zf
 zf
 nd
@@ -39563,7 +39590,7 @@ gV
 jl
 gV
 he
-kW
+oL
 kW
 zt
 gV
