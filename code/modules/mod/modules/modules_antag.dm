@@ -64,6 +64,7 @@
 	name = "MOD Storage Updgrader"
 	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
 	Позволяет увеличить размер встроенного рюкзака до уроня БС сумки."
+	icon_state = "storage_updater"
 	var/obj/item/mod/module/storage/linked_storage_module
 
 /obj/item/mod/module/storage_upgrader/on_install()
