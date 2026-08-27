@@ -149,8 +149,8 @@
 			airlock.emergency = !airlock.emergency
 			airlock.update_icon()
 		if(WAND_TIME)
-			airlock.normalspeed = !door.normalspeed
-			interacting_with.balloon_alert(user, "[airlock.normalspeed ? "normal" : "fast"] speed")
+			door.normalspeed = !door.normalspeed
+			interacting_with.balloon_alert(user, "[door.normalspeed ? "normal" : "fast"] speed")
 		if(WAND_SHOCK)
 			if(!istype(airlock))
 				interacting_with.balloon_alert(user, "only airlocks!")
