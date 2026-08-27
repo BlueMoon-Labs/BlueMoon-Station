@@ -1460,7 +1460,7 @@
 		M.adjustToxLoss(rand(5,10))
 
 	if(T.liquids && !T.liquids.immutable)
-		T.liquids.liquid_simple_delete_flat(LIQUID_WAIST_LEVEL_HEIGHT * min(2, reac_volume) * 0.5) // На каждые 2 юнита, уровень воды
+		T.liquids.liquid_simple_delete_flat(max(2, reac_volume) * 0.5 * max(LIQUID_ANKLES_LEVEL_HEIGHT * ONE_LIQUIDS_HEIGHT, T.liquids.total_reagents * 0.5))
 
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
 // покраску баров и библиотек, которую экипаж наносил целый раунд.
