@@ -86,7 +86,7 @@ export const CharacterPrefsTab = (props) => {
       )}
       <LabeledList>
         <LabeledList.Item label={<Tooltip content="Эротические взаимодействия"><span>ERP Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -120,7 +120,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Принудительные сцены без вашего согласия"><span>Noncon Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -154,7 +154,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Пожирание и переваривание."><span>Vore Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -188,7 +188,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Татуировки"><span>Tattoo Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -222,7 +222,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Грязные взаимодействия, моча, смегма, запахи"><span>Unholy Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -247,7 +247,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Особые грязные взаимодействия, коричневое золото, газы, другое"><span>Unholy Hard Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -272,7 +272,7 @@ export const CharacterPrefsTab = (props) => {
           </Stack>
         </LabeledList.Item>
         <LabeledList.Item label={<Tooltip content="Экстремальные сцены"><span>Extreme Preference</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
@@ -298,7 +298,7 @@ export const CharacterPrefsTab = (props) => {
         </LabeledList.Item>
         {extreme_pref ? (
           <LabeledList.Item label={<Tooltip content="Особо жестокие сцены"><span>Extreme Harm</span></Tooltip>}>
-            <Stack>
+            <Stack textAlign="center">
               <Stack.Item grow>
                 <Button
                   fluid
@@ -317,7 +317,7 @@ export const CharacterPrefsTab = (props) => {
           </LabeledList.Item>
         ) : (null)}
         <LabeledList.Item label={<Tooltip content="Принудительный секс с мобами"><span>Mob Noncon Sex</span></Tooltip>}>
-          <Stack>
+          <Stack textAlign="center">
             <Stack.Item grow>
               <Button
                 fluid
