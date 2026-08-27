@@ -85515,7 +85515,7 @@
 	dir = 1
 	},
 /obj/machinery/door/poddoor{
-	id = s;
+	id = "gatewinroom";
 	name = "Gateway Windows Door"
 	},
 /turf/open/floor/plasteel,
