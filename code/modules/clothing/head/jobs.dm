@@ -319,6 +319,17 @@
 	desc = "A fancy beret with a blue cross, smells sterile"
 	icon_state = "beret_med"
 
+/obj/item/clothing/head/beret/medical
+	name = "medical beret"
+	desc = "A medical-flavored beret for the doctor in you!"
+	icon_state = "beret_med"
+
+/obj/item/clothing/head/beret/medical/paramedic
+	name = "paramedic beret"
+	desc = "For finding corpses in style!"
+	icon_state = "beret_paramedic"
+	item_state = "beret_paramedic"
+
 /obj/item/clothing/head/beret/chem
 	name = "chemist's beret"
 	desc = "A fancy beret with a orange beaker, you're not sure if you should smell it"
