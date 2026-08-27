@@ -20,6 +20,33 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_SOFT_EDGE 0.8            // Normalized distance where soft falloff begins (linear mode) — smooths visible "ring" at light boundary
 #define LIGHTING_FALLOFF_CULL_THRESHOLD 0.005 // Skip storing corners with falloff below this (invisible, saves memory on large-range lights)
 #define LIGHTING_ROUND_VALUE    (1 / 32) //Value used to round lumcounts, values smaller than 1/129 don't matter (if they do, thanks sinking points), greater values will make lighting less precise, but in turn increase performance, VERY SLIGHTLY.
+/**
+ * Шаг сетки, к которой округляется ИТОГОВАЯ матрица цвета объекта освещения.
+ *
+ * ЗАЧЕМ. BYOND интернирует appearance ПО ЗНАЧЕНИЮ и держит их у клиента до конца сессии:
+ * освободить интернированный appearance нечем. Углы света для этого и округляются к
+ * LIGHTING_ROUND_VALUE (lighting_corner.dm, update_objects) - сетка ограничивает число
+ * различных состояний, и повторный цвет схлопывается в УЖЕ существующий appearance,
+ * не отъедая у клиента ни байта.
+ *
+ * Инвариант сетки ломается ниже по течению: update() домножает округлённые значения углов
+ * на непрерывные множители - контактную тень (contact_str), контраст и температуру зоны,
+ * а сверху добавляет подкраску теней. Все они дробные и у каждого тайла свои, поэтому на
+ * выходе получается ПРОИЗВОЛЬНЫЙ float, и каждое движение любого источника света рождает
+ * у каждого видящего клиента новый уникальный appearance навсегда.
+ *
+ * Цена измерена на проде 27.08.2026 (раунд 10127, 87-105 игроков): Dream Seeker - 32-битный
+ * процесс - стартует с 732 МБ сразу после входа и добирает 2.4 ГБ за восемь минут, после
+ * чего падает около 3400 МБ. Перед падением он рисует чужие спрайты на месте штатных и
+ * чёрно-белые квадраты вместо тайлов: это не баги логики, а исчерпание адресного
+ * пространства клиента.
+ *
+ * Округление возвращает выход update() на сетку, и повторяющееся состояние тайла снова
+ * попадает в уже существующий appearance. Шаг вдвое мельче углового (1/64 против 1/32),
+ * чтобы контраст, температура и подкраска теней остались различимы: 8-битный канал цвета
+ * имеет шаг 1/255, так что 1/64 всё ещё грубее экрана и визуально не заметен.
+ */
+#define LIGHTING_MATRIX_ROUND_VALUE (1 / 64)
 
 // Системы света атома (var/light_system). COMPLEX_LIGHT = корнер-система (статика, тени, конусы).
 // OVERLAY_* = компонент /datum/component/overlay_lighting: текстурная маска в underlays держателя,
