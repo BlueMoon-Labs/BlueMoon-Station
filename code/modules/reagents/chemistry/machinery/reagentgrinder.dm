@@ -125,7 +125,7 @@
 	//Fill machine with a bag!
 	if(istype(I, /obj/item/storage/bag))
 		var/list/inserted = list()
-		if(SEND_SIGNAL(I, COMSIG_TRY_STORAGE_TAKE_TYPE, /obj/item/reagent_containers/food/snacks/grown, src, limit - length(holdingitems), null, null, user, inserted))
+		if(SEND_SIGNAL(I, COMSIG_TRY_STORAGE_TAKE_TYPE, /obj/item, src, limit - length(holdingitems), null, null, user, inserted, CALLBACK(src, PROC_REF(inserting_check))))
 			for(var/i in inserted)
 				holdingitems[i] = TRUE
 			if(!I.contents.len)
@@ -145,6 +145,9 @@
 		to_chat(user, "<span class='notice'>Вы добавили [I] внутрь [src].</span>")
 		holdingitems[I] = TRUE
 		return FALSE
+
+/obj/machinery/reagentgrinder/proc/inserting_check(obj/item/I)
+	return (I.grind_results || I.juice_results) && I.grind_requirements(src, TRUE)
 
 /obj/machinery/reagentgrinder/ui_interact(mob/user) // The microwave Menu //I am reasonably certain that this is not a microwave
 	. = ..()

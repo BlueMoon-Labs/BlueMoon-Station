@@ -166,6 +166,7 @@
 	var/obj/item/ammo_casing/AC = chambered //Find chambered round
 	if(magazine)
 		magazine.forceMove(drop_location())
+		magazine.randomize_pixel_position(user)
 		user.put_in_hands(magazine)
 		magazine.update_icon()
 		if(magazine.ammo_count())

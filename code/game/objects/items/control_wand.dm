@@ -1,6 +1,7 @@
 #define WAND_OPEN "open"
 #define WAND_BOLT "bolt"
 #define WAND_EMERGENCY "emergency"
+#define WAND_TIME "time"
 #define WAND_SHOCK "shock"
 #define WAND_DEPOWER "depower"
 
@@ -62,6 +63,7 @@
 		WAND_OPEN = "Open Door",
 		WAND_BOLT = "Toggle Bolts",
 		WAND_EMERGENCY = "Toggle Emergency Access",
+		WAND_TIME = "Change Close Time",
 		WAND_SHOCK = "Shock Door",
 		WAND_DEPOWER = "Depower Door",
 	)
@@ -71,6 +73,8 @@
 		if(WAND_BOLT)
 			mode = WAND_EMERGENCY
 		if(WAND_EMERGENCY)
+			mode = WAND_TIME
+		if(WAND_TIME)
 			if(!(obj_flags & EMAGGED))
 				mode = WAND_OPEN
 			else
@@ -144,6 +148,9 @@
 				return
 			airlock.emergency = !airlock.emergency
 			airlock.update_icon()
+		if(WAND_TIME)
+			door.normalspeed = !door.normalspeed
+			interacting_with.balloon_alert(user, "[door.normalspeed ? "normal" : "fast"] speed")
 		if(WAND_SHOCK)
 			if(!istype(airlock))
 				interacting_with.balloon_alert(user, "only airlocks!")
@@ -166,17 +173,16 @@
 				airlock.loseBackupPower()
 
 /obj/item/door_remote/update_icon_state()
-	var/icon_state_mode
-	if(!(obj_flags & EMAGGED))
-		switch(mode)
-			if(WAND_OPEN)
-				icon_state_mode = "open"
-			if(WAND_BOLT)
-				icon_state_mode = "bolt"
-			if(WAND_EMERGENCY)
-				icon_state_mode = "emergency"
-	else
-		icon_state_mode = "emergency"
+	var/icon_state_mode = "emergency"
+	switch(mode)
+		if(WAND_OPEN)
+			icon_state_mode = "open"
+		if(WAND_BOLT)
+			icon_state_mode = "bolt"
+		if(WAND_EMERGENCY)
+			icon_state_mode = "emergency"
+		if(WAND_TIME)
+			icon_state_mode = "time"
 
 	icon_state = "[base_icon_state]_[department]_[icon_state_mode]"
 	return ..()
@@ -257,5 +263,6 @@
 #undef WAND_OPEN
 #undef WAND_BOLT
 #undef WAND_EMERGENCY
+#undef WAND_TIME
 #undef WAND_SHOCK
 #undef WAND_DEPOWER

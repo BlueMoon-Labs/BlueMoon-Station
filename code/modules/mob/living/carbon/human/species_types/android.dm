@@ -13,3 +13,13 @@
 	limbs_id = SPECIES_SYNTH
 	species_category = SPECIES_CATEGORY_ROBOT
 	wings_icons = SPECIES_WINGS_ROBOT
+
+/datum/species/android/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.AddSource("SPECIES")
+	. = ..()
+
+/datum/species/android/on_species_loss(mob/living/carbon/human/C, datum/species/new_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
+	. = ..()
