@@ -71,7 +71,7 @@
 	for(var/obj/item/mod/module/M in mod.modules)
 		if(istype(M, /obj/item/mod/module/storage))
 			linked_storage_module = M
-	M.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
+	linked_storage_module.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
 
 /obj/item/mod/module/storage_upgrader/on_uninstall()
 	. = ..()
