@@ -23,6 +23,7 @@
 	automatic_burst_overlay = FALSE
 	w_class = WEIGHT_CLASS_SMALL
 	weapon_weight = WEAPON_LIGHT
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT)
 	burst_size = 2
 	actions_types = list()
 	fire_sound = 'sound/weapons/lasgun.ogg'
@@ -37,7 +38,7 @@
 
 
 /obj/item/gun/ballistic/automatic/laser/vanguard/update_icon_state()
-	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
 
 /obj/item/ammo_box/magazine/recharge/vanguard
 	name = "Detachable laser battery"
@@ -46,7 +47,7 @@
 	icon_state = "energypack"
 	ammo_type = /obj/item/ammo_casing/caseless/laser
 	caliber = LASER
-	max_ammo = 9
+	max_ammo = 15
 
 /obj/item/ammo_box/magazine/recharge/vanguard/update_icon_state()
 	icon_state = "[initial(icon_state)]-[round(ammo_count(),3)]"
@@ -67,6 +68,7 @@
 	gunlight_state = "mini-light"
 	can_flashlight = 0
 	can_suppress = FALSE
+	pin = /obj/item/firing_pin/explorer
 
 /obj/item/gun/ballistic/automatic/pistol/sigsauer/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -129,8 +131,8 @@
 	icon_state = "tomahawk"
 	lefthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_l.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_r.dmi'
-	force = 15 // Melee damage
-	throwforce = 25 // Thrown damage
+	force = 15
+	throwforce = 25
 	throw_speed = 4
 	throw_range = 8
 	w_class = WEIGHT_CLASS_SMALL
@@ -143,11 +145,11 @@
 
 	// Battery & Magnetic system
 	var/obj/item/stock_parts/cell/cell
-	var/hitcost = 750 // Base cost for charge checks
+	var/hitcost = 0 // Base cost for charge checks
 	var/preload_cell_type = /obj/item/stock_parts/cell/high/plus // Starts with a battery
 	var/turned_on = FALSE // Magnetic return system status
-	var/throw_cost = 750 // Energy cost to throw with magnetic return
-	var/return_cost = 500 // Energy cost to return to hand
+	var/throw_cost = 500 // Energy cost to throw with magnetic return
+	var/return_cost = 0 // Energy cost to return to hand
 
 /obj/item/melee/tomahawk/Initialize(mapload)
 	. = ..()
@@ -249,7 +251,7 @@
 // --- Throwing & Return Mechanics ---
 
 /obj/item/melee/tomahawk/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force, quickstart = TRUE)
-	if(turned_on)
+	if(turned_on && thrower)
 		var/obj/item/stock_parts/cell/copper_top = get_cell()
 		if(!copper_top || copper_top.charge < throw_cost)
 			to_chat(thrower, "<span class='warning'>[src] doesn't have enough charge to activate the magnetic return!</span>")

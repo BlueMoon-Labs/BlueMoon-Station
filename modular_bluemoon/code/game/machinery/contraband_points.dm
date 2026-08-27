@@ -107,15 +107,125 @@
 
 	// Таблица стоимости контрабанды в очках
 	var/list/contraband_values = list(
-		/obj/item/gun/ballistic = 50,
-		/obj/item/gun/energy = 40,
-		/obj/item/melee/baton = 20,
-		/obj/item/reagent_containers/hypospray = 30,
-		/obj/item/stack/sheet/plasteel = 5,
-		/obj/item/storage/box/syndie_kit = 100,
-		/obj/item/clothing/under/syndicate = 25,
-		/obj/item/reagent_containers/food/drinks/bottle/whiskey = 10,
-		/obj/item/reagent_containers/glass/bottle = 15
+		//Pistols
+		/obj/item/gun/ballistic/automatic/pistol = 250,
+		/obj/item/gun/ballistic/automatic/pistol/modular = 250,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 0,
+		/obj/item/gun/ballistic/automatic/pistol/m1911/kitchengun = 300,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 500,
+		/obj/item/gun/ballistic/automatic/pistol/APS = 300,
+		/obj/item/gun/ballistic/automatic/pistol/antitank = 2000,
+		/obj/item/gun/ballistic/automatic/pistol/m9mmpistol = 0,
+		/obj/item/gun/ballistic/automatic/pistol/enforcergold = 0,
+		/obj/item/gun/ballistic/automatic/pistol/enforcerred = 0,
+		/obj/item/gun/ballistic/automatic/pistol/enforcer = 0,
+		/obj/item/gun/ballistic/automatic/pistol/m22pistol = 0,
+		/obj/item/gun/ballistic/automatic/pistol/deagle2 = 500,
+		//revolvers
+		/obj/item/gun/ballistic/revolver = 500,
+		/obj/item/gun/ballistic/revolver/detective = 0,
+		/obj/item/gun/ballistic/revolver/requiem = 10000,
+		/obj/item/gun/ballistic/revolver/mateba = 1000,
+		/obj/item/gun/ballistic/revolver/nagant = 750,
+		/obj/item/gun/ballistic/revolver/russian = 0,
+		/obj/item/gun/ballistic/revolver/doublebarrel = 0,
+		/obj/item/gun/ballistic/revolver/mws = 0,
+		/obj/item/gun/ballistic/revolver/grenadelauncher = 2000,
+		/obj/item/gun/ballistic/automatic/gyropistol = 50000,
+		/obj/item/gun/ballistic/automatic/speargun = 10000,
+		/obj/item/gun/ballistic/rocketlauncher = 25000,
+		/obj/item/gun/ballistic/revolver/r22lr = 0,
+		/obj/item/gun/ballistic/revolver/r45l = 0,
+		/obj/item/gun/ballistic/revolver/inteq = 750, //наценка за контробанду врага!
+		//Automatic rifles & some misc weapon
+		/obj/item/gun/ballistic/automatic/acr5m30 = 1500,
+		/obj/item/gun/ballistic/automatic/m16a4 = 2500,
+		/obj/item/gun/ballistic/automatic/ak47 = 3500,
+		/obj/item/gun/ballistic/automatic/ak47/homemade = 3000,
+		/obj/item/gun/ballistic/automatic/m1garand = 1000,
+		/obj/item/gun/ballistic/automatic/fal = 2500,
+		/obj/item/gun/ballistic/automatic/m46a1 = 4000,
+		/obj/item/gun/ballistic/automatic/autoaegis = 3000,
+		/obj/item/gun/ballistic/automatic/caelus = 5000,
+		/obj/item/gun/ballistic/automatic/kaijukill = 10000,
+		/obj/item/gun/ballistic/automatic/m9smg = 1000,
+		/obj/item/gun/ballistic/automatic/ak12 = 2000,
+		/obj/item/gun/ballistic/automatic/c20r = 2500,
+		/obj/item/gun/ballistic/automatic/mini_uzi = 750,
+		/obj/item/gun/ballistic/automatic/m90 = 3000,
+		/obj/item/gun/ballistic/automatic/tommygun = 2000,
+		/obj/item/gun/ballistic/automatic/ar = 5000,
+		/obj/item/gun/ballistic/automatic/l6_saw = 10000,
+		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 2500,
+		/obj/item/gun/ballistic/automatic/sniper_rifle = 5000,
+		/obj/item/gun/ballistic/automatic/surplus = 500,
+		/obj/item/gun/ballistic/automatic/laser = 1500,
+		/obj/item/gun/ballistic/automatic/laser/lasgun = 0,
+		/obj/item/gun/energy/laser/scatter = 1500,
+		/obj/item/gun/energy/laser/sniper = 1000,
+		/obj/item/gun/energy/laser/canceller = 3500, //bonus point for InteQ tech!
+		/obj/item/gun/energy/pulse/pistol/inteq = 5000,
+		// Mele weapons
+		/obj/item/melee/rapier/karakurt = 1500,
+		/obj/item/melee/baseball_bat/ablative/inteq = 2000,
+		/obj/item/katana = 1500,
+		/obj/item/melee/baseball_bat/ablative/syndi = 1000,
+		/obj/item/dualsaber = 5000,
+		/obj/item/dualsaber/hypereutactic = 0,
+		/obj/item/melee/transforming/energy/axe = 50000, //this is shit-spawn
+		/obj/item/melee/transforming/energy/sword = 2000,
+		/obj/item/melee/transforming/energy/sword/pirate = 1500,
+		/obj/item/pickaxe/drill/jackhammer/angle_grinder = 5000,
+		/obj/item/melee/transforming/plasmasword = 3500,
+		/obj/item/plasmascythe = 7500,
+		//Suits & unders
+		/obj/item/clothing/suit/space/hardsuit/syndi = 2500,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite = 4000,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/winter = 5000,
+		/obj/item/clothing/suit/space/hardsuit/wizard = 3000,
+		/obj/item/clothing/suit/space/hardsuit/soviet = 3000,
+		/obj/item/clothing/suit/space/hardsuit/shielded = 5000,
+		/obj/item/clothing/suit/space/hardsuit/lavaknight = 2000,
+		/obj/item/clothing/suit/space/hardsuit/shielded/syndi = 7500,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 7500,
+		/obj/item/clothing/suit/space/hardsuit/syndi/inteq = 4500,
+		/obj/item/clothing/suit/space/hardsuit/shielded/syndi/inteq = 12500,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 750,
+		/obj/item/clothing/suit/space/syndicate/inteq = 750,
+		/obj/item/clothing/head/helmet/space/syndicate = 500,
+		/obj/item/clothing/suit/space/syndicate = 500,
+		/obj/item/clothing/suit/armor/inteq = 300,
+		/obj/item/clothing/suit/armor/inteq/honorable_vanguard = 500,
+		/obj/item/clothing/suit/hooded/wintercoat/syndicate/inteq = 300,
+		/obj/item/clothing/under/inteq = 150,
+		/obj/item/clothing/under/syndicate = 100,
+		/obj/item/clothing/mask/gas/inteq = 200,
+		/obj/item/clothing/head/helmet/swat/inteq = 300,
+		//Other stuff
+		/obj/item/storage/toolbox/syndicate = 100,
+		/obj/item/storage/toolbox/inteq = 200,
+		/obj/item/storage/toolbox/inteq/cooler = 300,
+		/obj/item/storage/backpack/satchel/flat = 300,
+		/obj/item/toy/cards/deck/syndicate = 200,
+		/obj/item/storage/box/syndie_kit/space = 150,
+		/obj/item/card/id/syndicate = 750,
+		/obj/item/card/id/inteq = 1250,
+		/obj/item/ammo_box/magazine/m10mm = 50,
+		/obj/item/ammo_box/magazine/pistolm9mm = 50,
+		/obj/item/mod/control/pre_equipped/inteq = 5000,
+		/obj/item/mod/control/pre_equipped/syndicate_empty = 2500,
+		/obj/item/mod/control/pre_equipped/syndicate_empty/elite = 5000,
+		/obj/item/mod/control/pre_equipped/elite = 5000,
+		/obj/item/mod/control/pre_equipped/nuclear = 2500,
+		/obj/item/mod/control/pre_equipped/traitor = 2500,
+		//Mechs
+		/obj/vehicle/sealed/mecha/combat/five_stars = 50000,
+		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,
+		/obj/vehicle/sealed/mecha/combat/gygax/dark = 12500,
+		/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes = 20000,
+		/obj/vehicle/sealed/mecha/combat/marauder/mauler = 25000,
+		/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares = 50000,
+		/obj/vehicle/sealed/mecha/combat/durand/tu802 = 15000
 	)
 
 /obj/machinery/computer/vanguard_control/contraband/Initialize(mapload)
@@ -143,14 +253,16 @@
 	return TRUE
 
 /obj/machinery/computer/vanguard_control/contraband/proc/get_contraband_value(obj/item/I)
-	for(var/typepath in contraband_values)
-		if(istype(I, typepath))
-			var/value = contraband_values[typepath]
-			if(istype(I, /obj/item/stack))
-				var/obj/item/stack/S = I
-				value *= S.amount
-			return value
-	return 0
+    var/best_value = 0
+    var/best_depth = -1
+    for(var/typepath in contraband_values)
+        if(istype(I, typepath))
+            // Считаем глубину наследования по количеству "/" в текстовом представлении пути
+            var/depth = length(splittext("[typepath]", "/"))
+            if(depth > best_depth)
+                best_depth = depth
+                best_value = contraband_values[typepath]
+    return best_value
 
 /obj/machinery/vanguard/contraband/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()

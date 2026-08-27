@@ -24,7 +24,7 @@
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
 
 /obj/structure/closet/secure_closet/vanguard //Bluemoon add
-	name = "\proper vanguard opertive locker"
+	name = "\proper vanguard operative locker"
 	req_access = list(ACCESS_GATEWAY)
 	icon_state = "vanguard"
 

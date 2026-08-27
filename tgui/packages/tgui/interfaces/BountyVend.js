@@ -1,92 +1,104 @@
-import { useBackend, useSharedState } from '../backend';
-import { Box, Button, Section, Table, Tabs } from '../components';
+import { useBackend } from '../backend';
+import { useState } from 'react';
+import { Box, Button, Flex, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const BountyVend = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { user, product_records, categories, discount } = data;
-  const [selectedCategory, setSelectedCategory] = useSharedState(context, 'category', categories[0]);
+export const BountyVend = (props) => {
+  const { act, data } = useBackend();
+  const [selectedCategory, setCategory] = useState('Weaponry');
 
-  const filteredProducts = product_records.filter(
-    (p) => p.category === selectedCategory
+  const allProducts = data?.product_records || [];
+  const dataCategories = data?.categories || [];
+
+  const categories = dataCategories.filter(cat =>
+    allProducts.some(p => p.category === cat)
   );
 
+  const inventory = selectedCategory
+    ? allProducts.filter(p => p.category === selectedCategory)
+    : allProducts;
+
+  inventory.sort((a, b) => a.price - b.price);
+
   return (
-    <Window width={600} height={600}>
+    <Window width={620} height={550}>
       <Window.Content scrollable>
-        <Section title="BountyVend Terminal">
-          {user ? (
-            <Box color="good">
-              Welcome, <b>{user.name}</b> ({user.job})<br />
-              Bounty Points: <b>{user.points}</b>
+        <Section title="User">
+          {data.user ? (
+            <Box>
+              Welcome, <b>{data.user.name || "Unknown"}</b>,{' '}
+              <b>{data.user.job || "Unemployed"}</b>!
+              <br />
+              Your balance is <b>{data.user.points} bounty points</b>.
+              <br />
+              <Box color="good">
+                Current discount is: <b>{Math.round((data.discount || 0) * 100)}%</b>
+                {data.discount === 0 && ' What a shame...'}
+              </Box>
             </Box>
           ) : (
-            <Box color="bad">
-              No ID Card Detected — Hold ID in hand or wear it
-            </Box>
-          )}
-          {discount > 0 && (
-            <Box color="good" mt={1}>
-              Current Discount: <b>{Math.round(discount * 100)}%</b>
+            <Box color="light-gray">
+              No registered ID card!<br />
+              Please contact your local HoP!
             </Box>
           )}
         </Section>
-
-        <Section title="Categories">
-          <Tabs>
-            {categories.map((cat) => (
-              <Tabs.Tab
-                key={cat}
-                selected={cat === selectedCategory}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat}
-              </Tabs.Tab>
-            ))}
-          </Tabs>
-        </Section>
-
-        <Section title={selectedCategory}>
-          {filteredProducts.length > 0 ? (
-            <Table>
-              <Table.Row header>
-                <Table.Cell>Item</Table.Cell>
-                <Table.Cell>Price</Table.Cell>
-                <Table.Cell>Action</Table.Cell>
-              </Table.Row>
-              {filteredProducts.map((p, i) => (
-                <Table.Row key={i}>
-                  <Table.Cell>
-                    <Box
-                      as="span"
-                      dangerouslySetInnerHTML={{ __html: p.icon }}
-                      style={{
-                        'display': 'inline-block',
-                        'width': '32px',
-                        'height': '32px',
-                        'vertical-align': 'middle',
-                        'margin-right': '8px',
-                      }}
-                    />
-                    <Box inline verticalAlign="middle">
-                      {p.name}
-                    </Box>
-                  </Table.Cell>
-                  <Table.Cell>{p.price} pts</Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      icon="shopping-cart"
-                      content="Purchase"
-                      disabled={!user || user.points < p.price}
-                      onClick={() => act('purchase', { ref: p.ref })}
-                    />
-                  </Table.Cell>
-                </Table.Row>
+        <Section title="Equipment">
+          <Flex>
+            <Flex.Item
+              basis="140px"
+              grow={0}
+              shrink={0}
+              mr={1}
+              style={{ borderRight: '1px solid rgba(255,255,255,0.1)' }}
+            >
+              {categories.map(category => (
+                <Box key={category} mb={0.5}>
+                  <Button
+                    fluid
+                    selected={selectedCategory === category}
+                    onClick={() => setCategory(category)}
+                  >
+                    {category}
+                  </Button>
+                </Box>
               ))}
-            </Table>
-          ) : (
-            <Box color="label">No items in this category.</Box>
-          )}
+            </Flex.Item>
+            <Flex.Item grow={1}>
+              <Table>
+                {inventory.map(product => (
+                  <Table.Row key={product.name}>
+                    <Table.Cell>
+                      <Box inline mr={1}>
+                        <span
+                          className={`vending32x32 ${product.path}`}
+                          style={{ verticalAlign: 'middle' }}
+                        />
+                      </Box>
+                      {' '}<b>{product.name}</b>
+                    </Table.Cell>
+                    <Table.Cell collapsing textAlign="right">
+                      <Button
+                        fluid
+                        style={{ minWidth: '100px', textAlign: 'center' }}
+                        disabled={!data.user || product.price > data.user.points}
+                        onClick={() => act('purchase', { ref: product.ref })}
+                      >
+                        {product.price} points
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+                {inventory.length === 0 && (
+                  <Table.Row>
+                    <Table.Cell colSpan="2" textAlign="center">
+                      <Box color="label">No items in this category.</Box>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table>
+            </Flex.Item>
+          </Flex>
         </Section>
       </Window.Content>
     </Window>

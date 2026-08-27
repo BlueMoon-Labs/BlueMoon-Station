@@ -6,7 +6,7 @@
 	name = "Vanguard EVA suit"
 	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный костюм для иследования космоса эксадронов Авангарда"
 	armor = list(MELEE = 20, BULLET = 15, LASER = 15, ENERGY = 0, BOMB = 35, BIO = 100, RAD = 20, FIRE = 50, ACID = 65, WOUND = 20)
-	icon_state = "vanguard_eva"
+	icon_state = "hardsuit-explorer"
 	item_state = "hardsuit-explorer"
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
@@ -35,17 +35,20 @@
 	hardsuit_type = "exploration"
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 
 /obj/item/clothing/suit/space/hardsuit/exploration
 	icon_state = "hardsuit-exploration"
 	item_state = "hardsuit-exploration"
 	name = "костюм рейнджера"
 	desc = "Продвинутый костюм, который спасёт от космоса и других угроз."
+	slowdown = 0
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/exploration
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 
 /obj/item/clothing/suit/armor/vanguard
 	name = "Combined suit "

@@ -16,7 +16,6 @@
 	icon_state = "syndie-voucher"
 	w_class = WEIGHT_CLASS_TINY
 
-
 // ============================================
 // DATUM ДЛЯ ТОВАРОВ
 // ============================================
@@ -50,41 +49,44 @@
 	circuit = /obj/item/circuitboard/machine/bountyvend
 	var/icon_deny = "syndicate-marine-deny"
 
-	var/list/prize_list = list(
-		// Melee Weaponry
-		new /datum/data/bounty_equipment("Baton",					/obj/item/melee/baton,										30,		"Melee Weaponry"),
-		new /datum/data/bounty_equipment("Survival Knife",			/obj/item/kitchen/knife/combat/survival,					80,		"Melee Weaponry"),
-		// Armor
-		new /datum/data/bounty_equipment("Armor Vest",				/obj/item/clothing/suit/armor/vest,						50,		"Armor"),
-		new /datum/data/bounty_equipment("Ballistic Helmet",		/obj/item/clothing/head/helmet,							40,		"Armor"),
-		// Medical
-		new /datum/data/bounty_equipment("First-Aid Kit",			/obj/item/storage/firstaid/regular,						25,		"Medical"),
-		new /datum/data/bounty_equipment("Brute First-Aid Kit",		/obj/item/storage/firstaid/brute,							40,		"Medical"),
-		new /datum/data/bounty_equipment("Burn First-Aid Kit",		/obj/item/storage/firstaid/fire,							40,		"Medical"),
-		new /datum/data/bounty_equipment("Survival Medipen",		/obj/item/reagent_containers/hypospray/medipen/survival,	60,	"Medical"),
-		new /datum/data/bounty_equipment("CMS",						/obj/item/stack/medical/fracture_kit/cms,	150,	"Medical"),
-		new /datum/data/bounty_equipment("Surv12",					/obj/item/stack/medical/fracture_kit/surv12,	250,	"Medical"),
-		// Tools
-		new /datum/data/bounty_equipment("Multitool",				/obj/item/multitool,										40,		"Tools"),
-		new /datum/data/bounty_equipment("Welder",					/obj/item/weldingtool,									30,		"Tools"),
-		new /datum/data/bounty_equipment("Crowbar",					/obj/item/crowbar,										20,		"Tools"),
-		// Recreational
-		new /datum/data/bounty_equipment("Whiskey",					/obj/item/reagent_containers/food/drinks/bottle/whiskey,	40,		"Recreational"),
-		new /datum/data/bounty_equipment("Cigar",					/obj/item/clothing/mask/cigarette/cigar/havana,			60,		"Recreational"),
+	var/list/prize_config = list(
+		list("name" = "Premium KA", "path" = /obj/item/gun/energy/kinetic_accelerator/premiumka, "cost" = 1250, "category" = "Weaponry"),
+		list("name" = "Combat knife", "path" = /obj/item/kitchen/knife/combat, "cost" = 100, "category" = "Weaponry"),
+		list("name" = "Electronic Firing Pin", "path" = /obj/item/firing_pin, "cost" = 500, "category" = "Weaponry"),
+		list("name" = "Supressor", "path" = /obj/item/suppressor, "cost" = 500, "category" = "Weaponry"),
+		list("name" = "Munitions datadisk", "path" = /obj/item/disk/ammo_workbench/advanced, "cost" = 1000, "category" = "Weaponry"),
+		list("name" = "Vanguard specialization", "path" = /obj/item/vanguard_voucher_class, "cost" = 2000, "category" = "Weaponry"),
+		list("name" = "Sig Suaer extended mag", "path" = /obj/item/ammo_box/magazine/sig/sig_ext, "cost" = 500, "category" = "Weaponry"),
+		list("name" = "Vanguard armor", "path" = /obj/item/vanguard_voucher_suit, "cost" = 1500, "category" = "Armor"),
+		list("name" = "Ranger hardsuit", "path" = /obj/item/clothing/suit/space/hardsuit/exploration, "cost" = 2500, "category" = "Armor"),
+		list("name" = "Jetpack upgrade", "path" = /obj/item/tank/jetpack/suit, "cost" = 1000, "category" = "Armor"),
+		list("name" = "Jump boots", "path" = /obj/item/clothing/shoes/bhop, "cost" = 1250, "category" = "Armor"),
+		list("name" = "First-Aid Kit", "path" = /obj/item/storage/firstaid/regular, "cost" = 25, "category" = "Medical"),
+		list("name" = "Brute First-Aid Kit", "path" = /obj/item/storage/firstaid/brute, "cost" = 50, "category" = "Medical"),
+		list("name" = "Burn First-Aid Kit", "path" = /obj/item/storage/firstaid/fire, "cost" = 50, "category" = "Medical"),
+		list("name" = "Survival Medipen", "path" = /obj/item/reagent_containers/hypospray/medipen/survival, "cost" = 100, "category" = "Medical"),
+		list("name" = "CMS", "path" = /obj/item/stack/medical/fracture_kit/cms, "cost" = 150, "category" = "Medical"),
+		list("name" = "Surv12", "path" = /obj/item/stack/medical/fracture_kit/surv12, "cost" = 250, "category" = "Medical"),
+		list("name" = "Lazarus injector", "path" = /obj/item/lazarus_injector, "cost" = 500, "category" = "Tools"),
+		list("name" = "Fulton pack", "path" = /obj/item/extraction_pack, "cost" = 500, "category" = "Tools"),
+		list("name" = "Auto surgeon", "path" = /obj/item/autosurgeon, "cost" = 750, "category" = "Tools"),
+		list("name" = "Illegal technology disk", "path" = /obj/item/disk/tech_disk/illegal, "cost" = 5000, "category" = "Tools"),
+		list("name" = "Fulton beacon", "path", = /obj/item/fulton_core, "cost" = 200, "category" = "Tools" ),
+		list("name" = "Whiskey", "path" = /obj/item/reagent_containers/food/drinks/bottle/whiskey, "cost" = 50, "category" = "Recreational"),
+		list("name" = "Cigar", "path" = /obj/item/clothing/mask/cigarette/cigar/havana, "cost" = 75, "category" = "Recreational"),
+		list("name" = "High quality Soap", "path" = /obj/item/soap/syndie, "cost" = 150, "category" = "Recreational"),
+		list("name" = "MRE pack", "path" = /obj/item/storage/box/mre/menu2, "cost" = 300, "category" = "Recreational"),
+		list("name" = "1 Metadollar", "path" = /obj/item/stack/metadollar, "cost" = 25000, "category" = "Miscellaneous"),
+		list("name" = "space cash", "path" = /obj/item/stack/spacecash/c1000, "cost" = 1500, "category" = "Miscellaneous"),
 	)
 
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================
+	var/list/prize_list = list()
 
 /obj/machinery/bountyvend/Initialize(mapload)
 	. = ..()
-	build_inventory()
-
-/obj/machinery/bountyvend/proc/build_inventory()
-	for(var/p in prize_list)
-		var/datum/data/bounty_equipment/M = p
-		GLOB.vending_products[M.equipment_path] = 1
+	for(var/list/config in prize_config)
+		var/datum/data/bounty_equipment/prize = new(config["name"], config["path"], config["cost"], config["category"])
+		prize_list += prize
 
 /obj/machinery/bountyvend/update_icon_state()
 	if(powered())
@@ -92,21 +94,14 @@
 	else
 		icon_state = "[initial(icon_state)]-off"
 
-// ============================================
-// СИСТЕМА СКИДОК (как в mining vendor)
-// ============================================
-
 /obj/machinery/bountyvend/RefreshParts()
 	var/discount_rate = 0.0
-	// По 2.5% за каждый тир matter bin ВЫШЕ первого
-	// T1 = 0%, T2 = 2.5%, T3 = 5%, T4 = 7.5%
-	// 3× T4 = 22.5% скидки
 	for(var/obj/item/stock_parts/matter_bin/bin in component_parts)
 		discount_rate += 0.025 * (bin.rating - 1)
-
-	for(var/datum/data/bounty_equipment/prize in prize_list)
+	for (var/datum/data/bounty_equipment/prize in prize_list)
+		if(ispath(prize.equipment_path, /obj/item/stack/metadollar))
+			continue
 		prize.cost = max(1, round(prize.base_cost * (1 - discount_rate)))
-
 	update_static_data_for_all_viewers()
 
 /obj/machinery/bountyvend/proc/get_discount()
@@ -115,17 +110,9 @@
 		discount_rate += 0.025 * (bin.rating - 1)
 	return discount_rate
 
-// ============================================
-// ОСМОТР
-// ============================================
-
 /obj/machinery/bountyvend/examine(mob/user)
 	. = ..()
 	. += "\nDisplay shows you current discount of the vending machine: [span_green("[get_discount() * 100]%")]"
-
-// ============================================
-// TGUI
-// ============================================
 
 /obj/machinery/bountyvend/ui_assets(mob/user)
 	return list(
@@ -140,54 +127,38 @@
 
 /obj/machinery/bountyvend/ui_static_data(mob/user)
 	. = list()
-	.["product_records"] = list()
+	var/list/records = list()
 	for(var/datum/data/bounty_equipment/prize in prize_list)
 		if(!prize.category || prize.category == "")
 			prize.category = "Miscellaneous"
-
-		// Генерируем HTML с иконкой предмета
-		var/obj/item/temp = new prize.equipment_path()
-		var/icon_html = icon2html(temp, user)
-		qdel(temp)
-
 		var/list/product_data = list(
-			path = replacetext(replacetext("[prize.equipment_path]", "/obj/item/", ""), "/", "-"),
-			name = prize.equipment_name,
-			price = prize.cost,
-			category = prize.category,
-			ref = REF(prize),
-			icon = icon_html
+			"path" = replacetext(replacetext("[prize.equipment_path]", "/obj/item/", ""), "/", "-"),
+			"name" = prize.equipment_name,
+			"price" = prize.cost,
+			"category" = prize.category,
+			"ref" = REF(prize)
 		)
-		.["product_records"] += list(product_data)
-
-	.["categories"] = list(
-		"Melee Weaponry",
-		"Armor",
-		"Medical",
-		"Tools",
-		"Recreational",
-		"Miscellaneous"
-	)
+		records += list(product_data)
+	.["product_records"] = records
+	.["categories"] = list("Weaponry", "Armor", "Medical", "Tools", "Recreational", "Miscellaneous")
 	.["discount"] = get_discount()
 
 /obj/machinery/bountyvend/ui_data(mob/user)
 	. = list()
-	var/mob/living/L = user
-	var/obj/item/card/id/C = L?.get_idcard(TRUE)
+	var/obj/item/card/id/C = user?.get_idcard(TRUE)
 	if(C)
 		.["user"] = list()
 		.["user"]["points"] = C.contraband_points
 		if(C.registered_account)
-			.["user"]["name"] = C.registered_account.account_holder
-			if(C.registered_account.account_job)
-				.["user"]["job"] = C.registered_account.account_job.title
-			else
-				.["user"]["job"] = "No Job"
+			.["user"]["name"] = C.registered_account.account_holder || "Unknown"
+			.["user"]["job"] = C.registered_account.account_job?.title || "No Job"
+		else
+			.["user"]["name"] = "Unknown"
+			.["user"]["job"] = "No ID"
 
 /obj/machinery/bountyvend/ui_act(action, params)
 	if(..())
 		return
-
 	switch(action)
 		if("purchase")
 			var/mob/M = usr
@@ -225,10 +196,11 @@
 	return ..()
 
 /obj/machinery/bountyvend/proc/RedeemVoucher(obj/item/vanguard_voucher_class/voucher, mob/redeemer)
-	var/items = list(	"Demolition Expert" = image(icon = 'modular_bluemoon/icons/obj/guns/energy.dmi', icon_state = "flashgun"),
-						"Field Surgeon" = image(icon = 'icons/obj/stack_objects.dmi', icon_state = "cms"),
-						"Combatant" = image(icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi', icon_state = "sauer"))
-
+	var/items = list(
+		"Demolition Expert" = image(icon = 'modular_bluemoon/icons/obj/guns/energy.dmi', icon_state = "flashgun"),
+		"Field Surgeon" = image(icon = 'icons/obj/stack_objects.dmi', icon_state = "cms"),
+		"Combatant" = image(icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi', icon_state = "sauer")
+	)
 	var/selection = show_radial_menu(redeemer, src, items, require_near = TRUE, tooltips = TRUE)
 	if(!selection || !Adjacent(redeemer) || QDELETED(voucher) || voucher.loc != redeemer)
 		return
@@ -253,9 +225,10 @@
 	qdel(voucher)
 
 /obj/machinery/bountyvend/proc/RedeemSVoucher(obj/item/vanguard_voucher_suit/voucher, mob/redeemer)
-	var/items = list(	"EVA" = image(icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi', icon_state = "vanguard_eva"),
-						"Combined suit" = image(icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi', icon_state = "combined"))
-
+	var/items = list(
+		"EVA" = image(icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi', icon_state = "hardsuit0-explorer"),
+		"Combined suit" = image(icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi', icon_state = "combined")
+	)
 	var/selection = show_radial_menu(redeemer, src, items, require_near = TRUE, tooltips = TRUE)
 	if(!selection || !Adjacent(redeemer) || QDELETED(voucher) || voucher.loc != redeemer)
 		return
