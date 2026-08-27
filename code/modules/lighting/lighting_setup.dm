@@ -78,6 +78,70 @@
 		return FALSE
 	return level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_AWAY]
 
+/**
+ * Сколько времени пустующий отложенный уровень держит свет, прежде чем его разберут.
+ *
+ * Чистая функция от двух входов - её и проверяет юнит-тест: вызвать снос на настоящем
+ * мире в тесте нельзя, а ошибиться порогом здесь стоит либо раунда (не разобрали), либо
+ * вспышки белого в глаза каждому вошедшему (разобрали слишком рано).
+ *
+ * Квота ЖЁСТЧЕ давления и проверяется первой: она про пик одновременно зажжённых уровней,
+ * то есть про ту самую цифру, которой раунд и платит (см. LIGHTING_MAX_LIT_DEFERRED_Z).
+ * Давление - вторая линия, для раундов, которые доезжают до потолка на двух уровнях.
+ *
+ * Аргументы:
+ * * pressure - доля потолка адресного пространства, 0 = не замерено (Windows, ранний старт)
+ * * lit_deferred_count - сколько отложенных уровней сейчас горит, включая занятые
+ */
+/proc/lighting_teardown_idle_time(pressure, lit_deferred_count)
+	if(lit_deferred_count > LIGHTING_MAX_LIT_DEFERRED_Z)
+		return 0
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_HIGH)
+		return LIGHTING_TEARDOWN_IDLE_TIME_HIGH
+	return LIGHTING_TEARDOWN_IDLE_TIME
+
+/**
+ * Кого из пустующих уровней разбирать первым при этом сроке простоя.
+ *
+ * Вторая чистая половина решения (первая - lighting_teardown_idle_time). Разделены они
+ * не ради красоты: scan_teardown_candidates() умеет только собирать данные о живом мире,
+ * и всё, что в ней можно сломать молча, лежит здесь.
+ *
+ * Аргументы:
+ * * idle_since_by_z - "[z]" -> world.time, когда уровень увидели пустым
+ * * idle_time - выбранный срок простоя в тиках; ноль означает "отдавать немедленно"
+ * * now - world.time замера
+ */
+/proc/pick_lighting_teardown_zlevel(list/idle_since_by_z, idle_time, now)
+	var/best_z = 0
+	var/best_since = INFINITY
+	for(var/key in idle_since_by_z)
+		var/since = idle_since_by_z[key]
+		if(now - since < idle_time)
+			continue
+		// Пустует дольше всех - его и разбираем первым.
+		if(since < best_since)
+			best_since = since
+			best_z = text2num(key)
+	return best_z
+
+/**
+ * Почему снос света начался именно сейчас - в человеческом виде, для строки лога.
+ *
+ * Отдельным проком, потому что разбор прод-логов читает эту строку как улику: до квоты у
+ * неё был один-единственный текст про четверть часа, и по нему нельзя было отличить
+ * "уровень честно простоял свой срок" от "его выбили сверх кванта". А это разные выводы
+ * о раунде: во втором случае пик одновременно зажжённых уровней был выше кванта, и цифра
+ * из перф-CSV (light_lit_deferred_z) должна это подтверждать.
+ */
+/proc/zlevel_teardown_reason_line(idle_time, lit_deferred, pressure)
+	var/pressure_note = pressure > 0 ? " при [round(pressure * 100)]% потолка" : ""
+	if(lit_deferred > LIGHTING_MAX_LIT_DEFERRED_Z)
+		return "сверх кванта: горело [lit_deferred] отложенных уровней при квоте [LIGHTING_MAX_LIT_DEFERRED_Z][pressure_note]"
+	return "пусто дольше [round(idle_time / (1 MINUTES), 0.1)] мин[pressure_note]"
+
 /proc/create_all_lighting_objects()
 	SSlighting.begin_lighting_build()
 

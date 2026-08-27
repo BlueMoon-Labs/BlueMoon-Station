@@ -147,6 +147,11 @@ SUBSYSTEM_DEF(time_track)
 	var/list/memory_sample_vsz = list()
 	/// Скорость роста VmSize, МБ/мин по окну. Ноль - окно ещё короче MEMORY_RATE_MIN_SPAN.
 	var/memory_growth_mb_per_minute = 0
+	/// VmSize последнего замера в МБ. Ноль - память не меряется (Windows) либо замеров ещё
+	/// не было. Отдельным варом, а не хвостом memory_sample_vsz: окно скорости чистится по
+	/// времени и на длинной паузе МК пустеет целиком, а давление спрашивают из чужих
+	/// подсистем, которым пустое окно ничего не должно говорить. См. memory_pressure_fraction().
+	var/memory_last_vsz_mb = 0
 	/// Прошлая перепись инстансов: тип -> количество. Нужна ради разницы, а не итога.
 	var/list/memory_census_previous
 	/// world.time последней переписи.
@@ -341,6 +346,7 @@ SUBSYSTEM_DEF(time_track)
 	var/vsz = memory["vsz"]
 	if(!memory_first_sample_at)
 		memory_first_sample_at = world.time
+	memory_last_vsz_mb = vsz
 
 	memory_sample_times += world.time
 	memory_sample_vsz += vsz
@@ -1492,6 +1498,7 @@ SUBSYSTEM_DEF(time_track)
 	"light_queue_sources",
 	"light_queue_corners",
 	"light_queue_objects",
+	"light_lit_deferred_z",
 	)
 
 /// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
@@ -1574,5 +1581,6 @@ SUBSYSTEM_DEF(time_track)
 	SSlighting.worst_fire_cost,
 	length(GLOB.lighting_update_lights),
 	length(GLOB.lighting_update_corners),
-	length(GLOB.lighting_update_objects)
+	length(GLOB.lighting_update_objects),
+	SSlighting.lit_deferred_zlevel_count()
 	)

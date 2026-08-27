@@ -657,8 +657,11 @@ SUBSYSTEM_DEF(lighting)
 /datum/controller/subsystem/lighting/proc/scan_teardown_candidates()
 	if(!SSmapping?.initialized || teardown_zlevel)
 		return
-	var/best_z = 0
-	var/best_since = INFINITY
+	// Проход собирает две вещи разом: сколько отложенных уровней сейчас горит ВСЕГО
+	// (включая занятые - квота считает пик, а не свободные места) и кто из них пустует.
+	// Срок простоя выбирается ПОСЛЕ прохода, потому что зависит от первой цифры.
+	var/lit_deferred = 0
+	var/list/idle_since_by_z = list()
 	for(var/datum/space_level/level as anything in SSmapping.z_list)
 		var/z = level.z_value
 		var/key = "[z]"
@@ -667,24 +670,25 @@ SUBSYSTEM_DEF(lighting)
 		if(!level.lighting_initialized || !zlevel_lighting_teardownable(level))
 			zlevel_empty_since -= key
 			continue
+		lit_deferred++
 		if(zlevel_has_occupant(z))
 			zlevel_empty_since -= key
 			continue
 		var/since = zlevel_empty_since[key]
 		if(isnull(since))
-			zlevel_empty_since[key] = world.time
-			continue
-		if(world.time - since < LIGHTING_TEARDOWN_IDLE_TIME)
-			continue
-		// Пустует дольше всех - его и разбираем первым.
-		if(since < best_since)
-			best_since = since
-			best_z = z
+			since = world.time
+			zlevel_empty_since[key] = since
+		idle_since_by_z[key] = since
+	if(!length(idle_since_by_z))
+		return
+	var/pressure = memory_pressure_fraction()
+	var/idle_time = lighting_teardown_idle_time(pressure, lit_deferred)
+	var/best_z = pick_lighting_teardown_zlevel(idle_since_by_z, idle_time, world.time)
 	if(!best_z)
 		return
-	begin_zlevel_lighting_teardown(best_z)
+	begin_zlevel_lighting_teardown(best_z, idle_time, lit_deferred)
 
-/datum/controller/subsystem/lighting/proc/begin_zlevel_lighting_teardown(z)
+/datum/controller/subsystem/lighting/proc/begin_zlevel_lighting_teardown(z, idle_time = LIGHTING_TEARDOWN_IDLE_TIME, lit_deferred = 0)
 	var/datum/space_level/level = SSmapping.get_level(z)
 	if(!level)
 		return
@@ -702,7 +706,7 @@ SUBSYSTEM_DEF(lighting)
 	// Флаг снимается ДО работы: с этой секунды вошедший игрок штатно поднимет уровень
 	// обратно через should_ondemand_init_zlevel(), а сейфнет увидит запаркованные атомы.
 	level.lighting_initialized = FALSE
-	log_world("## LIGHTING: Снос света z-уровня [z] ([level.name]) - пусто дольше [LIGHTING_TEARDOWN_IDLE_TIME / 600] мин")
+	log_world("## LIGHTING: Снос света z-уровня [z] ([level.name]) - [zlevel_teardown_reason_line(idle_time, lit_deferred, memory_pressure_fraction())]")
 
 /// Открыть проход постройки света. Счётчик, а не флаг: параллельные подъёмы двух z-уровней
 /// иначе гасят состояние друг другу.
@@ -863,6 +867,25 @@ SUBSYSTEM_DEF(lighting)
  * и фоновая сборка света (строила бы уровень, на котором никого нет), и снос (не сносил бы
  * уровень, на котором никого нет).
  */
+/**
+ * Сколько отложенных z-уровней сейчас держат свет.
+ *
+ * Это ровно та величина, которой раунд платит: снос памяти не возвращает, а постройка
+ * после сноса почти бесплатна, значит цена раунда - пик одновременно зажжённых уровней,
+ * а не число построек. До этой цифры её приходилось восстанавливать вручную по ступенькам
+ * instances в перф-CSV (разборы 10119, 10121, 10124, 10125), поэтому она уходит в CSV.
+ *
+ * Уровней в мире меньше двух десятков, обход дешевле любого кэша.
+ */
+/datum/controller/subsystem/lighting/proc/lit_deferred_zlevel_count()
+	if(!SSmapping?.initialized)
+		return 0
+	var/count = 0
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		if(level.lighting_initialized && zlevel_lighting_teardownable(level))
+			count++
+	return count
+
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
 	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
 		if(!QDELETED(occupant))
