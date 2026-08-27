@@ -882,8 +882,17 @@ SUBSYSTEM_DEF(lighting)
 		return 0
 	var/count = 0
 	for(var/datum/space_level/level as anything in SSmapping.z_list)
-		if(level.lighting_initialized && zlevel_lighting_teardownable(level))
-			count++
+		// Уровень под сносом продолжает держать память до самого конца работы: флаг
+		// lighting_initialized снимается ПЕРВЫМ действием (begin_zlevel_lighting_teardown),
+		// а объекты и углы освобождаются фазами 1-2, то есть десятки тиков спустя. Без этой
+		// ветки цифра проседала бы на всё время сноса - в CSV это читалось бы как освобождение,
+		// которого ещё не произошло. teardown_zlevel обнуляется ровно тогда, когда фаза 3
+		// закрывает работу (abort_zlevel_lighting_teardown).
+		if(!level.lighting_initialized && level.z_value != teardown_zlevel)
+			continue
+		if(!zlevel_lighting_teardownable(level))
+			continue
+		count++
 	return count
 
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
