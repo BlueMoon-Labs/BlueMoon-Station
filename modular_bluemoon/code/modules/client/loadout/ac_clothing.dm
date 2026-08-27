@@ -100,7 +100,7 @@
 		item_state = "jacket_transparent"
 		current_mode = "jacket_transparent"
 		update_icon()
-	user.update_inv_w_uniform()
+	user.update_inv_wear_suit()
 	user.update_body()
 
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
@@ -120,5 +120,5 @@
 		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 		var/breast_size = clamp(round(B?.size || 0), 0, 7)
 		icon_state = "concord_armored_coat_[breast_size]"
-	H.update_inv_w_uniform()
+	H.update_inv_wear_suit()
 	H.update_body()
