@@ -166,6 +166,36 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 
 */
 
+/// Пара "[envdry]|[envwet]" -> готовый список эха. Глобалкой, а не статиком внутри прока:
+/// статик из теста не снять и не вернуть, а тест обязан проверять именно предел роста -
+/// то есть заполнять кэш мусором и убирать за собой.
+GLOBAL_LIST_EMPTY(sound_echo_cache)
+
+/**
+ * Список из восемнадцати слотов для sound.echo.
+ *
+ * Меняются в нём ровно два: первый (envdry) и третий (envwet). Оба приходят АРГУМЕНТАМИ
+ * вызова, то есть у всех слушателей одного playsound() одинаковые - а список строился
+ * заново на КАЖДОГО слушателя. По переписи раунда 10125 это двадцать пять звуков в
+ * секунду, при восьми слушателях на звук - около двухсот восемнадцатислотовых списков в
+ * секунду, которых не видит ни одна строка переписи: список не датум, /datum/New() на нём
+ * не срабатывает, и в глобальных списках его нет.
+ *
+ * Отдавать один и тот же список всем безопасно: после присваивания S.echo его никто не
+ * мутирует. Единственные записи в S.echo[3]/S.echo[4] лежат в закомментированном
+ * tg-блоке реверба ниже по playsound_local(), и S.environment = 7 его в любом случае
+ * обесточивает. Если блок вернут - писать он обязан в личную копию, а не в общий список.
+ */
+/proc/sound_echo_for(envdry, envwet)
+	var/key = "[envdry]|[envwet]"
+	var/list/cached = GLOB.sound_echo_cache[key]
+	if(cached)
+		return cached
+	var/list/built = list(envdry, null, envwet, null, null, null, null, null, null, null, null, null, null, 1, 1, 1, null, null)
+	if(length(GLOB.sound_echo_cache) < SOUND_ECHO_CACHE_MAX)
+		GLOB.sound_echo_cache[key] = built
+	return built
+
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance,
 	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer)
 	if(QDELETED(src))
@@ -234,7 +264,7 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 			//End Atmosphere affecting sound
 
 			/// Citadel edit - Citadel reverb
-			S.echo = list(envdry, null, envwet, null, null, null, null, null, null, null, null, null, null, 1, 1, 1, null, null)
+			S.echo = sound_echo_for(envdry, envwet)
 			/// End
 
 		if(S.volume <= 0)

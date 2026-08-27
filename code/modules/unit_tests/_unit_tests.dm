@@ -295,6 +295,7 @@
 #include "perf_pass_non_atmos.dm"
 #include "ping_measurement.dm"
 #include "playsound_no_listeners.dm"
+#include "sound_echo_cache.dm"
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
