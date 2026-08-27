@@ -23,7 +23,6 @@
 	var/empty_pumpsound_back = null //Звук, что проигрывается когда дробовик имеет патрон только в чембере
 	var/empty_pumpsound_forward = null //Звук, что проигрывается после зарядки патрона в чембер, при пустом магазине. (Пустой магазин, но патрон в чембере)
 	var/empty_loadshell_sound = null // Звук заряжания патрона, когда патрона нет в чембере
-
 	var/empty_reload_pending = FALSE //Технический параметр.
 
 	var/jammed = FALSE //Имеет ли осечку
@@ -38,12 +37,10 @@
 	var/stress_spread_mult = 0
 
 	var/suppressed_spread_mult = 0.75 //Глушитель = меньший разброс и отдача
-	var/suppressed_recoil_mult = 0.7
 	var/base_spread = null //Кэширование базового значения обоих параметров
 	var/base_recoil = null
 
 	weapon_weight = WEAPON_HEAVY
-	sawn_icon_state = "sawnshotgun"
 
 /obj/item/gun/ballistic/shotgun/Initialize(mapload)
     . = ..()
@@ -180,6 +177,7 @@
 	if(jammed)
 		to_chat(user, "<span class='warning'>Оружие заклинило!</span>")
 		user.playsound_local(user, 'sound/weapons/Shotguns_reheated/shared/jam_warning.ogg', 60, TRUE)
+		balloon_alert(user, "Оружие заклинило!")
 		update_jam_stress()
 		return FALSE
 
@@ -190,6 +188,7 @@
 		jammed = TRUE
 		playsound(user, 'sound/weapons/Shotguns_reheated/shared/misfire.ogg', 60, TRUE)
 		balloon_alert(user, "??!")
+		shake_camera(user, 1.2, 1.2)
 		return TRUE
 
 	return FALSE
@@ -311,13 +310,11 @@
     . = ..()
 
     spread = round(base_spread * suppressed_spread_mult)
-    recoil = base_recoil * suppressed_recoil_mult
 
 /obj/item/gun/ballistic/shotgun/on_suppressor_removed(obj/item/suppressor/S)
     . = ..()
 
     spread = base_spread
-    recoil = base_recoil
 
 /obj/item/gun/ballistic/shotgun/lethal
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
@@ -420,7 +417,7 @@
 	item_state = "bastion-wielded"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
 	w_class = WEIGHT_CLASS_BULKY
-	can_suppress = TRUE //У него один ствол, duh. А вот штык-нож поставить будет тяжело
+	can_suppress = TRUE //У него один ствол, duh.
 	can_bayonet = FALSE
 	uses_jam = TRUE
 	fire_delay = 7
@@ -1709,121 +1706,6 @@
     update_icon()
     return TRUE
 
-
-/obj/item/gun/ballistic/shotgun/automatic/combat
-	name = "Combat Shotgun"
-	desc = "Современная модификация полуавтоматиеского дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Для близких знакомств."
-	sawn_desc = " 'Чем больше шкаф, чем громче падает.' Эта мысль всегда помогала мне, когда я шёл сжигать станции Трейзен под знаменем киберсана... -Две крепости. Часть 2."
-	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
-	icon_state = "Combat"
-	sawn_icon_state = "Combat-sawn"
-	item_state = "combat-wielded"
-	fire_delay = 5
-	fire_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semifire.ogg'
-	pumpsound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semichamber.ogg'
-	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinsert2.ogg'
-	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_forward.ogg"
-	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_back.ogg"
-	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
-	mag_type = /obj/item/ammo_box/magazine/internal/shot/com
-	empty_reload = TRUE
-	uses_jam = TRUE
-	can_bayonet = TRUE
-	can_suppress = FALSE //Высокий шанс что будут ошибки определения веса с механикой приклада.
-	jam_multiplier = 0.6
-	w_class = WEIGHT_CLASS_NORMAL
-	var/stock = FALSE
-	var/stock_removed = FALSE
-	var/extend_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Stockunfold.ogg'
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/AltClick(mob/living/user)
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)
-		return
-	toggle_stock(user)
-	update_item_state()
-	. = ..()
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/examine(mob/user)
-	. = ..()
-	. += "<span class='notice'>Alt-click чтобы разложить приклад.</span>"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/attackby(obj/item/A, mob/user, params)
-	..()
-	if(A.tool_behaviour == TOOL_SAW || istype(A, /obj/item/gun/energy/plasmacutter))
-		sawoff(user)
-		update_item_state()
-	if(istype(A, /obj/item/melee/transforming/energy))
-		var/obj/item/melee/transforming/energy/W = A
-		if(W.active)
-			sawoff(user)
-			update_item_state()
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/proc/toggle_stock(mob/living/user)
-	if(stock_removed)
-		return
-	stock = !stock
-	if(stock)
-		w_class = WEIGHT_CLASS_HUGE
-		to_chat(user, "Вы раскладываете приклад.")
-		recoil = 1
-		spread = 0
-		shake_camera (user, 0.5, 0.5)
-	else
-		w_class = WEIGHT_CLASS_NORMAL
-		to_chat(user, "Вы складываете приклад.")
-		recoil = 5
-		spread = 2
-	playsound(src.loc, extend_sound, 50, 1)
-	update_icon()
-	update_item_state()
-	shake_camera (user, 0.5, 0.5)
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/proc/update_item_state()
-	var/state = initial(item_state)
-	if(!stock && !stock_removed)
-		sawn_item_state += "-folded"
-	item_state = state
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/afterattack(atom/target, mob/living/user, flag, params)
-    if(!stock_removed && !stock)
-        shoot_with_empty_chamber(user)
-        to_chat(user, "<span class='warning'>[src] не выстрелит со сложенным прикладом!</span>")
-        return
-
-    . = ..()
-    update_icon()
-    update_item_state()
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/on_sawoff(mob/user)
-    . = ..()
-
-    stock_removed = TRUE
-    stock = TRUE
-    recoil += 2
-    spread += 1
-    update_icon()
-    update_item_state()
-/obj/item/gun/ballistic/shotgun/automatic/combat/update_icon()
-	. = ..()
-
-	var/state = initial(icon_state)
-	if(sawn_off)
-		state += "-sawn"
-	if(!stock && !stock_removed)
-		state += "-folded"
-	if(!chambered)
-		state += "-e"
-	icon_state = state
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
-	pin = /obj/item/firing_pin/implant/pindicate
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/warden
-	name = "Warden's Combat Shotgun"
-	desc = "Модифицированная версия полуавтоматического боевого дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Предназначен для ближнего боя."
-	fire_delay = 3
-	spread = 2
-
 /obj/item/gun/ballistic/shotgun/automatic/traitor
 	name = "HC-X 'Aspis'"
 	desc = "Дешёвый полуавтоматический дробовик, созданный для быстрых устранений целей. Лёгкий, компактный и брезгливый. Имеет резьбу для установки дульных устройств."
@@ -1854,6 +1736,134 @@
 	if(!chambered)
 		state += "-e"
 	icon_state = state
+
+/obj/item/gun/ballistic/shotgun/automatic/combat
+	name = "Combat Shotgun"
+	desc = "Современная модификация полуавтоматиеского дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Для близких знакомств."
+	sawn_desc = "'Чем больше шкаф, чем громче падает.' Эта мысль всегда помогала мне, когда я шёл сжигать станции Трейзен под знаменем киберсана... -Две крепости. Часть 2."
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Combat"
+	sawn_icon_state = "Combat-sawn"
+	item_state = "combat-wielded"
+	fire_delay = 4
+	fire_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semifire.ogg'
+	pumpsound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semichamber.ogg'
+	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinsert2.ogg'
+	empty_pumpsound_forward = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_forward.ogg"
+	empty_pumpsound_back = "sound/weapons/Shotguns_reheated/Semi-auto/Semiempty_back.ogg"
+	empty_loadshell_sound = "sound/weapons/Shotguns_reheated/shared/chambershell.ogg"
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/com
+	empty_reload = TRUE
+	uses_jam = TRUE
+	can_bayonet = TRUE
+	knife_x_offset = 30
+	knife_y_offset = 12
+	can_suppress = FALSE //Высокий шанс что будут ошибки определения веса с механикой приклада.
+	jam_multiplier = 0.7
+	w_class = WEIGHT_CLASS_NORMAL
+	var/stock = FALSE
+	var/stock_removed = FALSE
+	var/extend_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Stockunfold.ogg'
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/Initialize(mapload)
+	. = ..()
+	update_item_state()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/AltClick(mob/living/user)
+	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)
+		return
+	toggle_stock(user)
+	. = ..()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Alt-click чтобы разложить приклад.</span>"
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/attackby(obj/item/A, mob/user, params)
+	..()
+	if(A.tool_behaviour == TOOL_SAW || istype(A, /obj/item/gun/energy/plasmacutter))
+		sawoff(user)
+		update_item_state()
+	if(istype(A, /obj/item/melee/transforming/energy))
+		var/obj/item/melee/transforming/energy/W = A
+		if(W.active)
+			sawoff(user)
+			update_item_state()
+			update_appearance()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/proc/toggle_stock(mob/living/user)
+	if(stock_removed)
+		return
+	stock = !stock
+	if(stock)
+		w_class = WEIGHT_CLASS_HUGE
+		to_chat(user, "<span class='info'>Вы раскладываете приклад.</span>")
+		recoil = 1
+		spread = 0
+		shake_camera (user, 0.5, 0.5)
+	else
+		w_class = WEIGHT_CLASS_NORMAL
+		to_chat(user, "<span class='info'>Вы складываете приклад.</span>")
+		recoil = 5
+		spread = 2
+	playsound(src.loc, extend_sound, 50, 1)
+	update_icon()
+	update_item_state()
+	update_appearance()
+	shake_camera (user, 0.5, 0.5)
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/proc/update_item_state()
+	if(!stock && !stock_removed)
+		item_state = "combat-wielded-folded"
+	else
+		item_state = "combat-wielded"
+	if(stock_removed)
+		item_state = "combat-wielded-folded"
+	if(ismob(loc))
+		var/mob/living/user = loc
+		user.update_inv_hands()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/afterattack(atom/target, mob/living/user, flag, params)
+    if(!stock_removed && !stock)
+        shoot_with_empty_chamber(user)
+        to_chat(user, "<span class='warning'>[src] не выстрелит со сложенным прикладом!</span>")
+        return
+
+    . = ..()
+    update_icon()
+    update_item_state()
+    update_appearance()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/on_sawoff(mob/user)
+    . = ..()
+
+    stock_removed = TRUE
+    stock = TRUE
+    recoil += 2
+    spread += 1
+    update_icon()
+    update_item_state()
+    update_appearance()
+/obj/item/gun/ballistic/shotgun/automatic/combat/update_icon()
+	. = ..()
+
+	var/state = initial(icon_state)
+	if(sawn_off)
+		state += "-sawn"
+	if(!stock && !stock_removed)
+		state += "-folded"
+	if(!chambered)
+		state += "-e"
+	icon_state = state
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
+	pin = /obj/item/firing_pin/implant/pindicate
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/warden
+	name = "Warden's Combat Shotgun"
+	desc = "Модифицированная версия полуавтоматического боевого дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Предназначен для ближнего боя."
+	fire_delay = 3
+	spread = 2
 
 /obj/item/gun/ballistic/shotgun/doublebarrel/hook
 	name = "Hook Modified Sawn-Off Shotgun"

@@ -126,8 +126,41 @@
 			Сказать, что они полностью нелетальные - было бы враньём."
 	item = /obj/item/ammo_box/magazine/m12g/stun
 
+/datum/uplink_item/ammo/shotgun/box
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
+
+/datum/uplink_item/ammo/shotgun/box/beanbag
+	name = "12g Beanbag box"
+	desc = "Коробка с 6 резиновыми пулями 12 калибра."
+	cost = 2
+	item = /obj/item/storage/box/beanbag
+
+/datum/uplink_item/ammo/shotgun/box/buckshot
+	name = "12g Buckshot box"
+	desc = "Коробка с 7 картечными патронами 12 калибра."
+	cost = 2
+	item = /obj/item/storage/box/lethalshot
+
+/datum/uplink_item/ammo/shotgun/box/stunslug
+	name = "12g Stun Slug box"
+	desc = "Коробка с 7 шоковыми пулями 12 калибра."
+	cost = 2
+	item = /obj/item/storage/box/stunslug
+
+/datum/uplink_item/ammo/shotgun/box/slug
+	name = "12g Slug box"
+	desc = "Коробка с 7 цельнометаллическими пулями 12 калибра."
+	cost = 2
+	item = /obj/item/storage/box/lethalslugs
+
+/datum/uplink_item/ammo/shotgun/box/fireslug
+	name = "12g Fire shot box"
+	desc = "Коробка с 7 зажигательными пулями 12 калибра."
+	cost = 2
+	item = /obj/item/storage/box/fireshot
+
 /datum/uplink_item/ammo/shotgun/ammo_box
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/ammo/shotgun/ammo_box/buckshot
 	name = "12g Buckshot Clip"

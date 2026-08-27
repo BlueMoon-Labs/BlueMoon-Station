@@ -11,7 +11,7 @@
 	var/casing_ejector = TRUE //whether the gun ejects the chambered casing
 	var/magazine_wording = "magazine"
 	var/sawn_icon_state = null
-	var/sawn_item_state = "gun" //смена модельки оружия от третьего лица при обрезании ствола. ПОНЯТИЯ ИНВЕРТИРОВАНЫ, РАНЬШЕ БЫЛ ТОЛЬКО SAWN_ITEM_STATE, ЧТО МЕНЯЛ ИКОНКУ -RaizlenW
+	var/sawn_item_state = null //смена модельки оружия от третьего лица при обрезании ствола. ПОНЯТИЯ ИНВЕРТИРОВАНЫ, РАНЬШЕ БЫЛ ТОЛЬКО SAWN_ITEM_STATE, ЧТО МЕНЯЛ ИКОНКУ -RaizlenW
 	/// Можно ли сменить магазин, пока внутри есть другой
 	var/tactical_reload = FALSE
 	var/load_sound = SFX_GUN_INSERT_FULL_MAGAZINE
@@ -105,6 +105,7 @@
 				return
 			else if(suppressed)
 				to_chat(user, span_warning("[src] уже имеет установленный глушитель!"))
+				return
 			else if(bayonet && !can_mount_both)
 				to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
 			else
@@ -116,6 +117,7 @@
 		if(user.transferItemToLoc(A, src))
 			to_chat(user, span_notice("Вы накручиваете глушитель [S] на [src]."))
 			install_suppressor(S)
+			playsound (user, "sound/weapons/Shotguns_reheated/shared/suppressor_on.ogg", 100, FALSE)
 			return TRUE
 	return FALSE
 
@@ -156,29 +158,29 @@
 
 /obj/item/gun/ballistic/proc/on_suppressor_removed(obj/item/suppressor/S)
     w_class = base_w_class
+    suppressor_recoil_multiplier = 1
 
 /obj/item/gun/ballistic/proc/install_suppressor(obj/item/suppressor/S)
 	// this proc assumes that the suppressor is already inside src
     suppressed = S
     fire_sound = suppressed_fire_sound
+    suppressor_recoil_multiplier = S.recoil_multiplier
     on_suppressor_installed(S)
     update_icon()
 
 /obj/item/gun/ballistic/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-    if(loc == user)
-        if(suppressed && can_unsuppress)
-            var/obj/item/suppressor/S = suppressed
-            if(!user.is_holding(src))
-                return ..()
-            to_chat(user, "<span class='notice'>Вы откручиваете [suppressed] от [src].</span>")
-            user.put_in_hands(suppressed)
-            fire_sound = default_fire_sound //Кэширование оригинального звука выстрела для исключения багов в будущем -RaizlenW
-            on_suppressor_removed(S)
-            suppressed = null
-            update_icon()
-            return
-
-    return ..()
+	if(loc == user && suppressed && can_unsuppress && act_intent == INTENT_GRAB)
+		if(!user.is_holding(src))
+			return ..()
+		var/obj/item/suppressor/S = suppressed
+		to_chat(user, "<span class='notice'>Вы откручиваете [S] от [src].</span>")
+		suppressed = null
+		fire_sound = default_fire_sound // Кэширование оригинального звука выстрела
+		update_icon()
+		playsound(user, 'sound/weapons/empty.ogg', 100, TRUE)
+		user.put_in_hands(S)
+		return
+	return ..()
 
 /obj/item/gun/ballistic/attack_self(mob/living/user)
 	var/obj/item/ammo_casing/AC = chambered //Find chambered round
@@ -215,7 +217,7 @@
 	else if(can_suppress)
 		. += "Видно крепление для <b>глушителя</b>."
 	if(sawn_icon_state)
-		. += "<span class='info'>[sawn_icon_state] [sawn_off ? "" : "Если найти пилу, то [src] можно будет <b>укоротить ствол</b>."]</span>"
+		. += "<span class='info'>[sawn_off ? "" : "Если найти пилу, то [src] можно будет <b>укоротить ствол</b>."]</span>"
 		if(sawn_off)
 			. += "<span class='info'>Похоже, что [src] <b>уже укорочен</b>.</span>"
 
@@ -315,8 +317,9 @@
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "suppressor"
 	w_class = WEIGHT_CLASS_TINY
-
+	var/recoil_multiplier = 0.8
 
 /obj/item/suppressor/specialoffer
 	name = "cheap suppressor"
 	desc = "Подделка кустарного производства, выглящая хлипкой, дешевой и ломкой. Но на некоторые виды оружия всё же подходит."
+	recoil_multiplier = 1.5

@@ -29,6 +29,7 @@
 	var/can_suppress = FALSE
 	var/can_unsuppress = TRUE
 	var/makeshift_threading = FALSE // Возможность установки глушителя на оружие с самодельной резьбой - RaizlenW
+	var/suppressor_recoil_multiplier = 1 // Возможность задавать глушителям определённого типа свою отдачу отражая хлипкость / надёжность - RaizlenW
 	var/recoil = 0						//boom boom shake the room
 	var/clumsy_check = TRUE
 	var/obj/item/ammo_casing/chambered = null
@@ -36,7 +37,7 @@
 	var/sawn_desc = null				//description change if weapon is sawn-off
 	var/sawn_off = FALSE
 	var/firing_burst = 0 //Prevent the weapon from firing again while already firing
-	var/ignore_twohand_requirement = FALSE //Игнрирует ли оружие проверку на наличие двух рук если HEAVY и выше. (Сделано для shotgun.dm, но var универсальный) - RaizlenW
+	var/ignore_twohand_requirement = FALSE //Игнрирует ли оружие проверку на наличие двух рук если HEAVY и выше. (Если игрок стреляет одной рукой, то отдача повышена) - RaizlenW
 
 	/// can we be put into a turret
 	var/can_turret = TRUE
@@ -214,6 +215,9 @@
 		else
 			. += "Внутри нет бойка-пина, из-за чего стрельба невозможна."
 
+	if(ignore_twohand_requirement)
+		. += "<span class='info'>Рукоять выглядит достаточно удобной, чтобы стрелять <b>одной рукой</b></span>"
+
 	if(gun_light)
 		. += "Фонарик \a [gun_light] [can_flashlight ? "" : "намертво"] прицеплен."
 		if(can_flashlight)
@@ -286,19 +290,19 @@
 	balloon_alert(user, "Щёлк!")
 
 /obj/item/gun/proc/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	if(recoil && !zoomed)
-		directional_recoil(user, recoil*dir_recoil_amp, Get_Angle(user, pbtarget))
-
-	if(stam_cost) //CIT CHANGE - makes gun recoil cause staminaloss
-		var/safe_cost = clamp(stam_cost, 0, user.stamina_buffer)*(firing && burst_size >= 2 ? 1/burst_size : 1)
-		user.UseStaminaBuffer(safe_cost)
-
+	var/recoil_multiplier = 1
+	if(weapon_weight == WEAPON_HEAVY && ignore_twohand_requirement && user.get_inactive_held_item())
+		recoil_multiplier = 2
 	if(suppressed)
-		playsound(user, fire_sound, 10, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
+		playsound(user, fire_sound, 25, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
+		recoil_multiplier *= suppressor_recoil_multiplier
 	else
 		playsound(user, fire_sound, 50, 1)
-		//громкий выстрел игрока поднимает AI-мобов поблизости на разведку точки;
-		//глушитель честно скрывает, пальба самих мобов шум не рассылает
+	if(recoil && !zoomed)
+		directional_recoil(user, recoil * recoil_multiplier * dir_recoil_amp, Get_Angle(user, pbtarget))
+	if(stam_cost)//CIT CHANGE - makes gun recoil cause staminaloss
+		var/safe_cost = clamp(stam_cost, 0, user.stamina_buffer)*(firing && burst_size >= 2 ? 1/burst_size : 1)
+		user.UseStaminaBuffer(safe_cost)
 		if(user?.client)
 			ai_broadcast_noise(get_turf(user), AI_NOISE_GUNSHOT_RANGE, user)
 		if(message)
@@ -670,6 +674,7 @@
 		if(!can_attach_bayonet(K, user))
 			if(bayonet)
 				to_chat(user, span_warning("[src] уже имеет штык-нож!"))
+				return TRUE
 		if(sawn_off && !makeshift_bayonet_attachment)
 			to_chat(user, span_warning("На [src] отсутствует крепление для штык-ножа!"))
 			return TRUE
@@ -683,6 +688,7 @@
 			return FALSE
 		to_chat(user, span_notice("Вы примкнули штык-нож на штыковой наконечник [src]."))
 		bayonet = K
+		playsound (user, "sound/weapons/Shotguns_reheated/shared/bayonet_on.ogg", 65, FALSE)
 		update_icon()
 		return TRUE
 /obj/item/gun/screwdriver_act(mob/living/user, obj/item/I)
