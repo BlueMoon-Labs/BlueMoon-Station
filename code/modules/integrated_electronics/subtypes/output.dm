@@ -634,6 +634,8 @@
 		overlay_image.color = color_overlay
 		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
 	else
+		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+		overlay_image.color = color_overlay
 		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, FALSE, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
 
 	if(!result)

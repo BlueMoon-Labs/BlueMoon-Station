@@ -242,7 +242,7 @@ proc/string_repeat(string, count)
 	arguments.Remove(2, 3)
 	if(!force && isatom(source) && get_dist(get_turf(source), get_turf(host_mob)) > 15)
 		return FALSE
-	return SEND_SIGNAL(src, signal, arglist(arguments))
+	return SEND_SIGNAL(src, signal, arguments)
 
 /datum/component/neural_interface/proc/write_log(text, key="LOG", color="#4ad1fa86", size=12, speed=0)
 	var/datum/neural_interface_module/logs/module = modules["log"]
