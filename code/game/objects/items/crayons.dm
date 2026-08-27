@@ -433,7 +433,7 @@
 		playsound(user.loc, pre_noise_sound, 5, 1, 5) // BLUEMOON EDIT || MODULARIZE
 
 	if(gang_mode || !instant)
-		if(!do_after(user, 3 SECONDS, target = target))
+		if(!do_after(user, 2 SECONDS, target = target))
 			return
 
 	if(length(text_buffer))
