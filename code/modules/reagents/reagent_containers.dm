@@ -296,8 +296,10 @@
 		desired_transfer = free_space
 
 	var/datum/reagents/tempr = liquids.take_reagents_flat(desired_transfer)
-	tempr.trans_to(reagents, tempr.total_volume)
-	to_chat(user, span_notice("You scoop up around [amount_per_transfer_from_this] units of liquids with [src]."))
+	var/transfered_amount = tempr.trans_to(reagents, tempr.total_volume)
 	qdel(tempr)
+	if(!transfered_amount)
+		return
+	to_chat(user, span_notice("You scoop up around [transfered_amount] units of liquids with [src]."))
 	user.changeNext_move(CLICK_CD_MELEE)
 	return TRUE
