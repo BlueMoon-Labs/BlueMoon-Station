@@ -29563,6 +29563,13 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/obj/machinery/button/door{
+	id = "gatewindow";
+	name = "Gateway Access Shutter Control";
+	req_access_txt = "62";
+	pixel_x = -22;
+	pixel_y = 6
+	},
 /turf/open/floor/engine,
 /area/command/gateway)
 "bJv" = (
@@ -60584,6 +60591,14 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison)
+"nGd" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/obj/machinery/door/poddoor{
+	id = "gatewindow";
+	name = "Gateway Windows Door"
+	},
+/turf/open/floor/plating,
+/area/command/gateway)
 "nGg" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -103437,9 +103452,9 @@ bCs
 bCs
 bFe
 bCs
-htr
-htr
-htr
+nGd
+nGd
+nGd
 kLd
 urH
 wql

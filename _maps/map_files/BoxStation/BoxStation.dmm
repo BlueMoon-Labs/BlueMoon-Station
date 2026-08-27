@@ -4692,7 +4692,7 @@
 /area/ai_monitored/turret_protected/ai_upload)
 "aDs" = (
 /obj/machinery/button/door{
-	id = "stationawaygate";
+	id = "gateshutter";
 	name = "Gateway Access Shutter Control";
 	pixel_x = 22;
 	pixel_y = 9;
@@ -18407,7 +18407,6 @@
 /obj/item/stock_parts/subspace/filter,
 /obj/item/stock_parts/subspace/filter,
 /obj/effect/turf_decal/tile/yellow/full,
-/obj/structure/closet/crate,
 /obj/machinery/light/small{
 	dir = 1
 	},
@@ -19384,7 +19383,7 @@
 "bHh" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor{
-	id = s;
+	id = "gatewindow";
 	name = "Gateway Windows Door"
 	},
 /turf/open/floor/plating,
@@ -21265,15 +21264,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/misc_lab)
-"bOl" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/closed/wall/r_wall,
-/area/tcommsat/computer)
 "bOo" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
+	},
+/obj/machinery/button/door{
+	id = "gatewindow";
+	name = "Gateway Access Shutter Control";
+	req_access_txt = "62";
+	pixel_x = -22;
+	pixel_y = 6
 	},
 /turf/open/floor/engine,
 /area/command/gateway)
@@ -22202,7 +22202,7 @@
 	dir = 8
 	},
 /obj/machinery/button/door{
-	id = "stationawaygate";
+	id = "gateshutter";
 	name = "Gateway Access Shutter Control";
 	pixel_x = -22;
 	pixel_y = 9;
@@ -114299,7 +114299,7 @@ bSv
 bSx
 wql
 rvF
-bOl
+bVJ
 bdP
 bPQ
 bQK
