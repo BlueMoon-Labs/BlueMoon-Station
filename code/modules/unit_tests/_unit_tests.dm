@@ -111,6 +111,7 @@
 #include "roundstart_handoff_probe.dm"
 #include "title_splash_icon.dm"
 #include "memory_jump_detector.dm"
+#include "nondatum_ledger.dm"
 #include "bank_transaction_history.dm"
 // #include "combat.dm"
 #include "component_tests.dm"

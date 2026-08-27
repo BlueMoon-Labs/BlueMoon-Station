@@ -981,6 +981,28 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	#undef BLANK
 	#undef SET_SELF
 
+	// Книга недатумных аллокаций: сборка плоской иконки - крупнейший известный аллокатор,
+	// который не создаёт ни одного датума и потому невидим переписи. Считается ТОЛЬКО
+	// внешний вызов (start): рекурсия по вложенным оверлеям - это та же одна иконка.
+	if(start)
+		note_flat_icon_built(.)
+
+/**
+ * Записать собранную плоскую иконку в книгу недатумных аллокаций.
+ *
+ * Размер спрашивается у самой иконки: одна иконка манекена во весь рост стоит сотни
+ * маленьких, и число вызовов без пикселей врёт.
+ *
+ * Учёт стоит в хвосте getFlatIcon, а не у каждого return: мимо него проходит ровно один
+ * путь - ранний выход на невидимом атоме (alpha <= 0), отдающий пустую заготовку 32x32.
+ * Недосчёт назван здесь намеренно: молчаливый он был бы неотличим от честного нуля.
+ */
+/proc/note_flat_icon_built(icon/built)
+	note_nondatum_alloc(NONDATUM_LEDGER_ICONS)
+	if(!isicon(built))
+		return
+	note_nondatum_alloc(NONDATUM_LEDGER_ICON_PIXELS, built.Width() * built.Height())
+
 /proc/getIconMask(atom/A)//By yours truly. Creates a dynamic mask for a mob/whatever. /N
 	var/icon/alpha_mask = new(A.icon,A.icon_state)//So we want the default icon and icon state of A.
 	for(var/V in A.overlays)//For every image in overlays. var/image/I will not work, don't try it.
@@ -1559,6 +1581,9 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 			icon_state = ""
 
 	icon2collapse = icon(icon2collapse, icon_state, dir, frame, moving)
+	// Книга недатумных аллокаций: сюда доезжает только ХОЛОДНЫЙ промах кэша - попадание
+	// вернулось выше, ещё до всей этой цепочки. Именно промахи и стоят памяти.
+	note_flat_icon_built(icon2collapse)
 
 	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
 	// md5 pass. A non-null dmi_file_path selects the cheap md5(rsc_ref) path.

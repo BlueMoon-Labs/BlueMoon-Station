@@ -263,6 +263,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/last_vsz_mb = 0
 	var/last_vsz_world = 0
 	var/last_vsz_instances = 0
+	/// Снимок книги недатумных аллокаций на прошлом замере памяти. Разность с текущим и
+	/// есть то, что известные недатумные аллокаторы успели сделать за окно скачка.
+	var/list/last_ledger_snapshot
 	/// FALSE после первого промаха get_process_memory_mb(): на Windows /proc нет, и
 	/// дёргать его каждые полсекунды весь раунд незачем
 	var/memory_probe_available = TRUE
@@ -430,6 +433,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	last_vsz_mb = 0
 	last_vsz_world = 0
 	last_vsz_instances = 0
+	last_ledger_snapshot = null
 	memory_probe_available = TRUE
 	memory_jump_count = 0
 	memory_jump_total_mb = 0
@@ -549,6 +553,10 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/previous_vsz = last_vsz_mb
 	var/previous_world = last_vsz_world
 	var/previous_instances = last_vsz_instances
+	// Снимок книги недатумных аллокаций берётся КАЖДЫЙ раз, а не только на скачке: дельта
+	// нужна за окно ДО скачка, а к моменту, когда скачок виден, окно уже закрыто.
+	var/list/previous_ledger = last_ledger_snapshot
+	last_ledger_snapshot = nondatum_ledger_snapshot()
 	last_vsz_mb = vsz
 	last_vsz_world = world.time
 	last_vsz_instances = instances
@@ -557,7 +565,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/jump = vsz - previous_vsz
 	if(jump < memory_jump_threshold_mb)
 		return
-	register_memory_jump(jump, vsz, instances - previous_instances, world.time - previous_world)
+	register_memory_jump(jump, vsz, instances - previous_instances, world.time - previous_world, previous_ledger)
 
 /**
  * Кто заплатил за скачок: датумы или что-то ещё.
@@ -588,7 +596,7 @@ SUBSYSTEM_DEF(tick_spikes)
  * остановился на семнадцати безымянных ступенях именно потому, что рядом с "сколько" не
  * было "кто".
  */
-/datum/controller/subsystem/tick_spikes/proc/register_memory_jump(jump_mb, vsz_mb, instances_delta, window_ds)
+/datum/controller/subsystem/tick_spikes/proc/register_memory_jump(jump_mb, vsz_mb, instances_delta, window_ds, list/previous_ledger)
 	memory_jump_count++
 	memory_jump_total_mb += jump_mb
 	if(jump_mb > biggest_memory_jump_mb)
@@ -603,6 +611,10 @@ SUBSYSTEM_DEF(tick_spikes)
 	event += memory_jump_headline(jump_mb, vsz_mb, instances_delta, window_ds)
 	event += "клиентов: [length(GLOB.clients)], итого за сессию [memory_jump_count] скачков на [round(memory_jump_total_mb)] МБ"
 	event += build_size_metrics_line()
+	// Вердикт выше говорит "платили НЕ датумами" и на этом останавливается - книга
+	// продолжает фразу. Пустая книга при большой ступени тоже ответ: ни один известный
+	// недатумный аллокатор в это окно не работал, ищите новый.
+	event += nondatum_ledger_delta_line(previous_ledger, last_ledger_snapshot)
 
 	var/list/heavy_lines = collect_heavy_runs(world.time - TICK_SPIKES_HEAVY_WINDOW)
 	if(length(heavy_lines))
