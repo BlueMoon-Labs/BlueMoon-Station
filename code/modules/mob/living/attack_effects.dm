@@ -61,8 +61,6 @@
 /mob/living/proc/attack_effects(damage_done, hit_zone, obj/item/attacking_item, mob/living/attacker)
 	if(damage_done <= 0 || attacking_item.damtype != BRUTE)
 		return FALSE
-	if(!prob(min(100, 25 + damage_done * 2)))
-		return FALSE
 	if(!get_blood_dna_list())
 		return FALSE
 	attacking_item.add_mob_blood(src)
