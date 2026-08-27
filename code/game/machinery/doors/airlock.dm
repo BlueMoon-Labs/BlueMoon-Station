@@ -368,7 +368,23 @@
 				H.apply_damage(1, BRUTE, BODY_ZONE_HEAD)
 			else
 				visible_message("<span class='danger'>[user] headbutts the airlock. Good thing [user.ru_who()] wearing a helmet.</span>")
+	if(iscarbon(user) && density && !operating && !welded && !locked && !hasPower())
+		try_bump_open(user)
+		return
 	..()
+
+/obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
+	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
+		return FALSE
+	balloon_alert(user, "forcing open...")
+	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
+						"<span class='notice'>You start forcing [src] open...</span>")
+	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src))
+		if(!density || operating || welded || locked)
+			return FALSE
+		open(2)
+		return TRUE
+	return FALSE
 
 /obj/machinery/door/airlock/proc/isElectrified()
 	if(src.secondsElectrified != NOT_ELECTRIFIED)
@@ -750,6 +766,9 @@
 		. += "<span class='notice'>Ctrl-click [src] to [ locked ? "raise" : "drop"] its bolts.</span>"
 		. += "<span class='notice'>Alt-click [src] to [ secondsElectrified ? "un-electrify" : "permanently electrify"] it.</span>"
 		. += "<span class='notice'>Ctrl-Shift-click [src] to [ emergency ? "disable" : "enable"] emergency access.</span>"
+
+	if(!hasPower() && density && !welded && !locked)
+		. += "<span class='notice'>Упершись в обесточенную дверь, можно попробовать открыть её вручную.</span>"
 
 /obj/machinery/door/airlock/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
