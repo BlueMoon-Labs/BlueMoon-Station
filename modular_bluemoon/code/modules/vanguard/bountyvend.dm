@@ -71,7 +71,7 @@
 		list("name" = "Fulton pack", "path" = /obj/item/extraction_pack, "cost" = 500, "category" = "Tools"),
 		list("name" = "Auto surgeon", "path" = /obj/item/autosurgeon, "cost" = 750, "category" = "Tools"),
 		list("name" = "Illegal technology disk", "path" = /obj/item/disk/tech_disk/illegal, "cost" = 5000, "category" = "Tools"),
-		list("name" = "Fulton beacon", "path", = /obj/item/fulton_core, "cost" = 200, "category" = "Tools" ),
+		list("name" = "Fulton beacon", "path" = /obj/item/fulton_core, "cost" = 200, "category" = "Tools"),
 		list("name" = "Whiskey", "path" = /obj/item/reagent_containers/food/drinks/bottle/whiskey, "cost" = 50, "category" = "Recreational"),
 		list("name" = "Cigar", "path" = /obj/item/clothing/mask/cigarette/cigar/havana, "cost" = 75, "category" = "Recreational"),
 		list("name" = "High quality Soap", "path" = /obj/item/soap/syndie, "cost" = 150, "category" = "Recreational"),
