@@ -25,9 +25,20 @@
 	// в пол - оба пути гейтятся по IS_DYNAMIC_LIGHTING(зона). Оборудование заводим сами, как и
 	// остальные тесты света: уборка идёт через allocated_force_qdel, потому что обычный qdel
 	// объект освещения игнорирует.
+	//
+	// Порядок здесь не косметический. lighting_corner/New() зовёт update_active(), а тот ставит
+	// active только если объект освещения УЖЕ есть хоть у одного из четырёх соседних турфов.
+	// Угол, созданный раньше объекта, остаётся неактивным навсегда: источники света пишут такому
+	// углу effect_str = 0 и APPLY_CORNER пропускают, то есть турф резервации больше НИКОМУ не
+	// светится до конца прогона - и следующий тест света падает на пустой освещённости.
+	var/atom/movable/lighting_object/lit = ensure_lighting_object(tile)
 	if(!(tile.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
 		tile.generate_missing_corners()
-	var/atom/movable/lighting_object/lit = ensure_lighting_object(tile)
+	// Углы могли достаться нам от прошлого теста, созданные без объекта - поднимаем явно.
+	tile.lc_topright?.update_active()
+	tile.lc_topleft?.update_active()
+	tile.lc_bottomright?.update_active()
+	tile.lc_bottomleft?.update_active()
 	TEST_ASSERT_NOTNULL(lit, "у тестового турфа обязан быть объект освещения")
 
 	var/area/tile_area = tile.loc
