@@ -46214,20 +46214,17 @@
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
 "cfs" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cft" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfu" = (
 /obj/structure/pool/ladder{
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfv" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -46411,11 +46408,10 @@
 /obj/structure/pool/ladder{
 	pixel_x = -4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfW" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfX" = (
 /obj/machinery/door/window/eastleft{
@@ -46457,7 +46453,7 @@
 /area/service/theater)
 "cgb" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "cgc" = (
 /obj/structure/pool/Rboard,
@@ -59435,7 +59431,6 @@
 /area/security/office)
 "nho" = (
 /obj/effect/turf_decal/siding/yellow,
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
 "nij" = (

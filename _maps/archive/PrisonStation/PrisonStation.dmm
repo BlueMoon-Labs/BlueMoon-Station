@@ -1711,9 +1711,6 @@
 /turf/open/floor/carpet/royalblack,
 /area/command/heads_quarters/captain)
 "aFg" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
@@ -6248,7 +6245,6 @@
 /turf/open/floor/carpet/orange,
 /area/security/prison/cells)
 "cmN" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/hilbertshotel)
 "cmZ" = (
@@ -13012,7 +13008,6 @@
 /turf/open/floor/padded,
 /area/security/execution/transfer)
 "eHX" = (
-/obj/machinery/pool/controller,
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/open/floor/plating/beach/sand,
 /area/hilbertshotel)
@@ -17142,7 +17137,6 @@
 /turf/open/floor/plasteel/dark,
 /area/security/processing)
 "glR" = (
-/obj/machinery/pool/controller,
 /turf/open/indestructible/cobble/side,
 /area/commons/fitness/pool)
 "glZ" = (
@@ -49681,7 +49675,6 @@
 /turf/open/floor/plating/rust,
 /area/awaymission)
 "rSY" = (
-/obj/machinery/pool/drain,
 /obj/effect/landmark/event_spawn,
 /turf/open/pool,
 /area/commons/fitness/pool)
@@ -57803,9 +57796,6 @@
 /turf/open/floor/plasteel/dark,
 /area/security/office)
 "uKL" = (
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /turf/open/indestructible/cobble/side,
 /area/commons/fitness/pool)
 "uLk" = (

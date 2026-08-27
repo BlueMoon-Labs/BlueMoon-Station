@@ -65,7 +65,11 @@
 			environment_temperature = T.return_temperature()
 		else
 			var/turf/open/OT = T
-			environment_temperature = OT.GetTemperature()
+			//LIQUIDS ADD - use liquids temperature as the environment when submerged in liquids
+			if(OT.liquids?.liquid_state >= LIQUID_STATE_FOR_HEAT_EXCHANGERS)
+				environment_temperature = OT.liquids.temp
+			else
+				environment_temperature = OT.GetTemperature()
 	else if(T)
 		environment_temperature = T.return_temperature()
 

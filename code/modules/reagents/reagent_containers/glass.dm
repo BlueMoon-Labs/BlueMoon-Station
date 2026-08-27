@@ -121,6 +121,11 @@
 		if(user.a_intent == INTENT_HARM)
 			user.visible_message("<span class='danger'>[user] разливает содержимое [src] на [target]!</span>", \
 								"<span class='notice'>Вы вылили содержимое [src] на [target].</span>")
+			// LIQUIDS ADD - pouring (not throwing) also forms a puddle
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					target_turf.add_liquid_from_reagents(reagents)
 			reagents.reaction(target, TOUCH)
 			reagents.clear_reagents()
 
@@ -341,13 +346,30 @@
 	container_flags = APTFT_ALTCLICK|APTFT_VERB
 	container_HP = 1
 
+/obj/item/reagent_containers/glass/bucket/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить швабру")
+
 /obj/item/reagent_containers/glass/bucket/attackby(obj/O, mob/user, params)
 	if(istype(O, /obj/item/mop))
-		var/obj/item/mop/MOP = O
-		if(reagents.total_volume < 1)
-			to_chat(user, "<span class='warning'>[src] не имеет воды!</span>")
+		var/list/modifiers = params2list(params)
+		if(is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM)) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the bucket
+			if(O.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			if(reagents.total_volume >= reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[src] is full!</span>")
+				return
+			O.reagents.remove_all(O.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			O.reagents.trans_to(src, O.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [O] out into [src].</span>")
+			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
+		else if(reagents.total_volume < 1)
+			to_chat(user, "<span class='warning'>[src] не имеет воды!!</span>")
 		else
-			reagents.trans_to(O, MOP.mopcap, log = "reagentcontainer-bucket fill mop")
+			reagents.trans_to(O, O.reagents.maximum_volume, log = "reagentcontainer-bucket fill mop")
 			to_chat(user, "<span class='notice'>Вы смочили [O] в [src].</span>")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
 	else if(isprox(O))

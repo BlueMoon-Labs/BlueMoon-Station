@@ -52,10 +52,10 @@
 	if(istype(mover, /obj/structure/blob))
 		return TRUE
 
-/mob/living/simple_animal/hostile/blob/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/mob/living/simple_animal/hostile/blob/Process_Spacemove(movement_dir = 0)
 	for(var/obj/structure/blob/B in range(1, src))
 		return TRUE
-	return ..(movement_dir, continuous_move)
+	return ..(movement_dir)
 
 /mob/living/simple_animal/hostile/blob/proc/blob_chat(msg)
 	var/spanned_message = say_quote(msg)

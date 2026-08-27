@@ -12705,7 +12705,6 @@
 /turf/open/floor/plating,
 /area/service/lawoffice)
 "dYL" = (
-/obj/machinery/pool/drain,
 /turf/open/pool,
 /area/commons/fitness/pool)
 "dYS" = (
@@ -12968,7 +12967,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "eei" = (
-/obj/machinery/pool/controller,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
@@ -30353,9 +30351,6 @@
 /turf/closed/wall/mineral/wood,
 /area/maintenance/bar)
 "lHe" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
 /turf/open/pool,
 /area/commons/fitness/pool)
 "lHl" = (
@@ -44704,7 +44699,6 @@
 /turf/open/floor/plating,
 /area/construction)
 "rNp" = (
-/obj/machinery/pool/drain,
 /obj/item/fuel_rod/material,
 /turf/open/pool,
 /area/engineering/main/reactor_core)
@@ -49428,9 +49422,6 @@
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "tRf" = (
-/obj/machinery/pool/filter{
-	pixel_y = -18
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
@@ -58505,7 +58496,6 @@
 /turf/open/floor/plating,
 /area/maintenance/disposal/incinerator)
 "xJb" = (
-/obj/machinery/pool/controller,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},

@@ -961,9 +961,6 @@
 	casingtype = null
 	projectilesound = 'sound/weapons/laser3.ogg'
 
-/mob/living/simple_animal/hostile/zombie
-	var/no_corpse = FALSE
-
 /mob/living/simple_animal/hostile/zombie/nocorpse
 	no_corpse = TRUE
 
@@ -973,6 +970,10 @@
 	icon = 'modular_bluemoon/icons/mob/newmobs.dmi'
 	icon_state = "cheesezomb"
 	icon_living = "cheesezomb"
+	//свой спрайт и свой loot: генератор внешности затёр бы иконку обычным
+	//зомби из аутфита профессии, а труп медика лёг бы поверх гибов
+	generate_appearance = FALSE
+	no_corpse = TRUE
 	maxHealth = 250
 	health = 250
 	del_on_death = 1

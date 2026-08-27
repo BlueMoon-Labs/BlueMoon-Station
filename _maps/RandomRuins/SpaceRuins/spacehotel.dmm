@@ -85,7 +85,7 @@
 /area/ruin/space)
 "hh" = (
 /obj/item/pool/pool_noodle/blue,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "ip" = (
 /obj/structure/cable/yellow{
@@ -506,9 +506,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/pool/filter{
-	pixel_y = -17
-	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "pn" = (
@@ -617,8 +614,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "pZ" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "qg" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -1079,7 +1075,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "tK" = (
 /obj/effect/light_emitter,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "tQ" = (
 /obj/machinery/power/solar_control{
@@ -2078,7 +2074,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom/room_6)
 "BN" = (
 /obj/item/pool/pool_noodle/yellow,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "BS" = (
 /obj/structure/table,
@@ -2422,7 +2418,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/dock)
 "EQ" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "EX" = (
 /obj/machinery/power/terminal,
@@ -3291,7 +3287,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/dock)
 "Li" = (
 /obj/item/bikehorn/rubberducky,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "Ll" = (
 /obj/structure/chair{
@@ -3371,7 +3367,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "LQ" = (
 /obj/item/pool/pool_noodle/red,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "LX" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -3731,7 +3727,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "OV" = (
 /obj/machinery/vending/coffee,
@@ -3918,7 +3914,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom/room_3)
 "Qt" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "Qw" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -4768,7 +4764,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "WT" = (
 /obj/machinery/door/airlock/grunge{
@@ -5021,7 +5017,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/pool)
 "YA" = (

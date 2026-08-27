@@ -22,10 +22,6 @@
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the ammo is fired.
 	var/heavy_metal = TRUE
 	var/harmful = TRUE //pacifism check for boolet, set to FALSE if bullet is non-lethal
-	/// Zero-G recoil strength (added to existing drift via newtonian_impulse)
-	var/newtonian_force = 1
-	var/stress_added = 0 // Дополнительный стресс, добавляемый оружию при выстреле (Механика дробовиков) -RaizlenW
-	var/recoil_added = 0 // Дополнительная отдача, добавляемая оружию при выстреле -RaizlenW
 	var/can_be_printed = TRUE
 	/// If it can be printed, does this casing require an advanced ammunition datadisk? Mainly for specialized ammo.
 	/// Rubbers aren't advanced. Standard ammo (or FMJ if you're particularly pedantic) isn't advanced.
