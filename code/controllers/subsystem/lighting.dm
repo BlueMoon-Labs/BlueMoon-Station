@@ -147,6 +147,15 @@ SUBSYSTEM_DEF(lighting)
 	/// "[z]" -> world.time, когда уровень впервые увидели пустым. Ключ пропадает, как только
 	/// на уровне снова кто-то есть, поэтому таймер отсчитывается с нуля на каждое опустение.
 	var/list/zlevel_empty_since = list()
+	/// "[z]" -> world.time подъёма света уровня. Ключ пропадает на сносе. Именно от него
+	/// считается кулдаун LIGHTING_TEARDOWN_MIN_LIT_TIME: zlevel_empty_since обнуляет любой
+	/// пролетевший гост, и одним им частоту качания сверху не ограничить.
+	var/list/zlevel_lit_since = list()
+	/// Сколько раз за раунд свет отложенного уровня поднимали и сносили. Уходят в перф-CSV
+	/// (light_z_builds / light_z_teardowns): качание раунда 10126 пришлось восстанавливать
+	/// подсчётом строк dd.log вручную, а обе цифры кумулятивны и стоят одного сложения.
+	var/zlevel_builds_total = 0
+	var/zlevel_teardowns_total = 0
 	/// Z-уровень, свет которого сейчас сносится (0 = никакой).
 	var/teardown_zlevel = 0
 	/// Фаза сноса: 0 = парковка источников, 1 = объекты и старлайт, 2 = углы, 3 = финал.
@@ -633,7 +642,7 @@ SUBSYSTEM_DEF(lighting)
 			continue
 		// Спасение флашит атомы этого z и само инвалидирует кэш (Phase 1); гард self-heal внутри
 		// create_lighting_for_zlevel отсеивает ложное срабатывание протухшего кэша авторитетным проходом.
-		create_lighting_for_zlevel(z)
+		create_lighting_for_zlevel(z, LIGHTING_INIT_REASON_SAFETY_NET)
 	stuck_scan_busy_until = 0
 
 /**
@@ -657,8 +666,12 @@ SUBSYSTEM_DEF(lighting)
 /datum/controller/subsystem/lighting/proc/scan_teardown_candidates()
 	if(!SSmapping?.initialized || teardown_zlevel)
 		return
-	var/best_z = 0
-	var/best_since = INFINITY
+	// Проход собирает две вещи разом: сколько отложенных уровней сейчас горит ВСЕГО
+	// (включая занятые - квота считает пик, а не свободные места) и кто из них пустует.
+	// Срок простоя выбирается ПОСЛЕ прохода, потому что зависит от первой цифры.
+	var/lit_deferred = 0
+	var/list/idle_since_by_z = list()
+	var/pressure = memory_pressure_fraction()
 	for(var/datum/space_level/level as anything in SSmapping.z_list)
 		var/z = level.z_value
 		var/key = "[z]"
@@ -667,24 +680,28 @@ SUBSYSTEM_DEF(lighting)
 		if(!level.lighting_initialized || !zlevel_lighting_teardownable(level))
 			zlevel_empty_since -= key
 			continue
+		lit_deferred++
 		if(zlevel_has_occupant(z))
 			zlevel_empty_since -= key
 			continue
 		var/since = zlevel_empty_since[key]
 		if(isnull(since))
-			zlevel_empty_since[key] = world.time
+			since = world.time
+			zlevel_empty_since[key] = since
+		// Кулдаун проверяется ПОСЛЕ счётчика: только что поднятый уровень всё равно горит и
+		// в квоте участвует - иначе она перестала бы видеть собственный пик.
+		if(zlevel_teardown_cooldown_active(zlevel_lit_since[key], world.time, pressure))
 			continue
-		if(world.time - since < LIGHTING_TEARDOWN_IDLE_TIME)
-			continue
-		// Пустует дольше всех - его и разбираем первым.
-		if(since < best_since)
-			best_since = since
-			best_z = z
+		idle_since_by_z[key] = since
+	if(!length(idle_since_by_z))
+		return
+	var/idle_time = lighting_teardown_idle_time(pressure, lit_deferred)
+	var/best_z = pick_lighting_teardown_zlevel(idle_since_by_z, idle_time, world.time)
 	if(!best_z)
 		return
-	begin_zlevel_lighting_teardown(best_z)
+	begin_zlevel_lighting_teardown(best_z, idle_time, lit_deferred)
 
-/datum/controller/subsystem/lighting/proc/begin_zlevel_lighting_teardown(z)
+/datum/controller/subsystem/lighting/proc/begin_zlevel_lighting_teardown(z, idle_time = LIGHTING_TEARDOWN_IDLE_TIME, lit_deferred = 0)
 	var/datum/space_level/level = SSmapping.get_level(z)
 	if(!level)
 		return
@@ -699,10 +716,23 @@ SUBSYSTEM_DEF(lighting)
 	teardown_corners = 0
 	teardown_abort_reason = null
 	zlevel_empty_since -= "[z]"
+	zlevel_lit_since -= "[z]"
+	zlevel_teardowns_total++
 	// Флаг снимается ДО работы: с этой секунды вошедший игрок штатно поднимет уровень
 	// обратно через should_ondemand_init_zlevel(), а сейфнет увидит запаркованные атомы.
 	level.lighting_initialized = FALSE
-	log_world("## LIGHTING: Снос света z-уровня [z] ([level.name]) - пусто дольше [LIGHTING_TEARDOWN_IDLE_TIME / 600] мин")
+	log_world("## LIGHTING: Снос света z-уровня [z] ([level.name]) - [zlevel_teardown_reason_line(idle_time, lit_deferred, memory_pressure_fraction())]")
+
+/**
+ * Отметить, что свет уровня подняли ПРЯМО СЕЙЧАС.
+ *
+ * Единственная точка записи zlevel_lit_since: от неё считается кулдаун перед сносом, и две
+ * копии этой отметки разъехались бы молча. Зовётся из обоих путей подъёма отложенного уровня -
+ * синхронного create_lighting_for_zlevel() и фонового краула.
+ */
+/datum/controller/subsystem/lighting/proc/mark_zlevel_lit(z)
+	zlevel_lit_since["[z]"] = world.time
+	zlevel_builds_total++
 
 /// Открыть проход постройки света. Счётчик, а не флаг: параллельные подъёмы двух z-уровней
 /// иначе гасят состояние друг другу.
@@ -863,6 +893,34 @@ SUBSYSTEM_DEF(lighting)
  * и фоновая сборка света (строила бы уровень, на котором никого нет), и снос (не сносил бы
  * уровень, на котором никого нет).
  */
+/**
+ * Сколько отложенных z-уровней сейчас держат свет.
+ *
+ * Это ровно та величина, которой раунд платит: снос памяти не возвращает, а постройка
+ * после сноса почти бесплатна, значит цена раунда - пик одновременно зажжённых уровней,
+ * а не число построек. До этой цифры её приходилось восстанавливать вручную по ступенькам
+ * instances в перф-CSV (разборы 10119, 10121, 10124, 10125), поэтому она уходит в CSV.
+ *
+ * Уровней в мире меньше двух десятков, обход дешевле любого кэша.
+ */
+/datum/controller/subsystem/lighting/proc/lit_deferred_zlevel_count()
+	if(!SSmapping?.initialized)
+		return 0
+	var/count = 0
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		// Уровень под сносом продолжает держать память до самого конца работы: флаг
+		// lighting_initialized снимается ПЕРВЫМ действием (begin_zlevel_lighting_teardown),
+		// а объекты и углы освобождаются фазами 1-2, то есть десятки тиков спустя. Без этой
+		// ветки цифра проседала бы на всё время сноса - в CSV это читалось бы как освобождение,
+		// которого ещё не произошло. teardown_zlevel обнуляется ровно тогда, когда фаза 3
+		// закрывает работу (abort_zlevel_lighting_teardown).
+		if(!level.lighting_initialized && level.z_value != teardown_zlevel)
+			continue
+		if(!zlevel_lighting_teardownable(level))
+			continue
+		count++
+	return count
+
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
 	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
 		if(!QDELETED(occupant))
@@ -935,6 +993,7 @@ SUBSYSTEM_DEF(lighting)
 		bg_turfs = null
 		var/datum/space_level/level = SSmapping.get_level(z)
 		level.lighting_initialized = TRUE
+		mark_zlevel_lit(z)
 		bg_phase = 1
 		if(MC_TICK_CHECK)
 			return

@@ -90,9 +90,15 @@
  * реальных постройках: обе формулировки читались одинаково, и разбор ушёл в ложную улику.
  */
 /datum/unit_test/lighting_pass_line_names_self_heal/Run()
-	var/real_build = zlevel_lighting_pass_line(7, "Lavaland", self_heal = FALSE)
-	var/flush_pass = zlevel_lighting_pass_line(1, "CentCom", self_heal = TRUE)
+	var/real_build = zlevel_lighting_pass_line(7, "Lavaland", self_heal = FALSE, reason = LIGHTING_INIT_REASON_GHOST)
+	var/flush_pass = zlevel_lighting_pass_line(1, "CentCom", self_heal = TRUE, reason = LIGHTING_INIT_REASON_LIVING)
 
 	TEST_ASSERT(findtext(real_build, "On-demand init"), "Настоящая постройка обязана остаться прежней строкой: [real_build]")
 	TEST_ASSERT(!findtext(flush_pass, "On-demand init"), "Флаш отложенных атомов не должен называться постройкой уровня: [flush_pass]")
 	TEST_ASSERT(findtext(flush_pass, "Self-heal"), "Флаш обязан называть себя своим именем: [flush_pass]")
+
+	// Повод обязан попадать в ОБЕ строки: раунд 10126 дал 42 подъёма, и без повода нельзя
+	// было сказать, кто их запускает - гост, живой, стыковка или сейфнет.
+	TEST_ASSERT(findtext(real_build, LIGHTING_INIT_REASON_GHOST), "Постройка обязана называть повод: [real_build]")
+	TEST_ASSERT(findtext(flush_pass, LIGHTING_INIT_REASON_LIVING), "Флаш обязан называть повод: [flush_pass]")
+	TEST_ASSERT(findtext(zlevel_lighting_pass_line(7, "Lavaland", self_heal = FALSE), LIGHTING_INIT_REASON_UNKNOWN), "Неназванный повод обязан печататься явно, а не пустотой")

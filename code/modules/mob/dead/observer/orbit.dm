@@ -66,6 +66,7 @@
 	var/list/misc = list()
 	var/list/npcs = list()
 	var/list/ghost_roles = list()
+	var/list/swarmer_shells = list() // BLUEMOON ADD - оболочки деактивированных свармеров
 
 	var/list/pois = getpois(mobs_only = compact_mode, skip_mindless = !compact_mode, specify_dead_role = FALSE)
 	for (var/name in pois)
@@ -155,7 +156,21 @@
 				if (!was_special)
 					alive += list(serialized)
 		else if(!compact_mode)
+			if(istype(poi, /obj/item/deactivated_swarmer))
+				continue
 			misc += list(serialized)
+
+	for (var/atom/A as anything in GLOB.poi_list)
+		if(!istype(A, /obj/item/deactivated_swarmer))
+			continue
+		if(!A.loc)
+			continue
+		var/list/serialized = list()
+		var/area/area = get_area(A)
+		serialized["name"] = area ? "[A.name] \[[area.name]\]" : A.name
+		serialized["ref"] = REF(A)
+		serialized["assignment"] = "swarmer"
+		swarmer_shells += list(serialized)
 
 	data["alive"] = alive
 	data["antagonists"] = antagonists
@@ -165,6 +180,7 @@
 	data["misc"] = misc
 	data["npcs"] = npcs
 	data["ghost_roles"] = ghost_roles
+	data["swarmer_shells"] = swarmer_shells // BLUEMOON ADD
 
 	return data
 // BLUEMOON EDIT END

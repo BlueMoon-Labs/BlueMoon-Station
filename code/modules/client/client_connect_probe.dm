@@ -70,6 +70,35 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 /proc/probe_stage_background_mb(attributed_delta)
 	return max(attributed_delta, 0)
 
+/**
+ * Шёл ли мир ещё инициализацией, когда открылось это окно замера.
+ *
+ * Master.current_runlevel остаётся null до первого SetRunLevel() в конце Master.Initialize(),
+ * и это единственный доступный признак "мир ещё грузится". Флага "инициализация закончена"
+ * в кодовой базе нет: initializations_finished_with_no_players_logged_in отвечает на другой
+ * вопрос (был ли кто-то подключён в последнюю секунду инициализации) и null не только во
+ * время инициализации, но и после неё, если игроки были.
+ */
+/proc/probe_started_during_world_init()
+	return !Master?.current_runlevel
+
+/**
+ * Приписка к строке входа, открывшегося до конца инициализации мира.
+ *
+ * ЗАЧЕМ. Раунд 10126 начался волной реконнекта: 89 входов за 120 секунд, ровно поверх
+ * 91 секунды инициализации мира. Прибор записал им 2057.5 МБ - и эта цифра дважды уводила
+ * разбор в поиск утечки на логине. Контрольный замер после замера базы раунда закрывает
+ * вопрос: 85 ПЕРВЫХ входов после базы стоят суммарно МИНУС мегабайт, то есть вход клиента
+ * рычагом по памяти не является вовсе.
+ *
+ * Вычесть эти мегабайты нечем: GLOB.memory_attributed_elsewhere_mb умеет вычитать только
+ * названную фоновую работу (свет z-уровня, раздача тел), а инициализация мира на свой счёт
+ * ничего не пишет и писать не будет - она идёт до того, как приборы вообще заведены. Значит
+ * строка обязана честно сказать, что её дельта принадлежит не входу.
+ */
+/proc/probe_init_window_note(during_init)
+	return during_init ? " - ОКНО ИНИЦИАЛИЗАЦИИ МИРА, эти цифры принадлежат не входу" : ""
+
 /datum/client_connect_probe
 	/// ckey клиента - строкой, потому что к контрольному замеру клиент может уже уйти
 	var/ckey
@@ -87,6 +116,10 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 	/// GLOB.memory_attributed_elsewhere_mb на последней отметке - разница с текущим и есть
 	/// фон, который в это окно сделал не этот клиент
 	var/last_mark_attributed = 0
+	/// Шла ли ещё инициализация мира, когда открылось окно. Снимается на входе, а не в
+	/// summary_line(): вход длится секунды, и к концу New() мир уже может быть готов, а
+	/// мегабайты окна всё равно принадлежат инициализации.
+	var/started_during_init = FALSE
 	/// Тот же счётчик на входе в New(): из ИТОГОВОЙ дельты вычитается он
 	var/start_attributed = 0
 	/// Готовые куски строки по этапам: "prefs 0.1с +0.2 МБ"
@@ -103,6 +136,7 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 	last_mark_at = started_at
 	start_attributed = GLOB.memory_attributed_elsewhere_mb
 	last_mark_attributed = start_attributed
+	started_during_init = probe_started_during_world_init()
 	var/list/memory = get_process_memory_mb()
 	if(memory)
 		start_vsz = memory["vsz"]
@@ -140,6 +174,10 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 			line += ", VmSize [start_vsz] -> [finished_vsz] МБ ([format_mb_delta(finished_vsz - start_vsz - background)]"
 			line += background > 0 ? ", мимо [format_mb_delta(background)] фоновой работы), " : "), "
 			line += "RSS [format_mb_delta(memory["rss"] - start_rss)]"
+	// Приписка ВНЕ ветки удачного замера: секунды New() печатаются всегда, и в окне
+	// инициализации они раздуты ровно тем же, чем дельта. На Windows и при осечке
+	// get_process_memory_mb() строка остаётся единственным объяснением четырёх секунд входа.
+	line += probe_init_window_note(started_during_init)
 	if(length(stages))
 		line += "; этапы: [stages.Join(", ")]"
 	return line
@@ -156,7 +194,7 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 /// успело войти - при нуле дельта принадлежит этому подключению целиком.
 /datum/client_connect_probe/proc/followup_line(current_vsz, current_serial)
 	var/others = max(current_serial - serial, 0)
-	return "## MEMORY: подключение [ckey] через [round(CONNECT_PROBE_FOLLOWUP_DELAY / 10)]с: VmSize [format_mb_delta(current_vsz - finished_vsz)] с конца New()[others ? ", за это время вошли ещё [others]" : ", других входов не было - дельта его"]"
+	return "## MEMORY: подключение [ckey] через [round(CONNECT_PROBE_FOLLOWUP_DELAY / 10)]с: VmSize [format_mb_delta(current_vsz - finished_vsz)] с конца New()[others ? ", за это время вошли ещё [others]" : ", других входов не было - дельта его"][probe_init_window_note(started_during_init)]"
 
 /datum/client_connect_probe/proc/followup()
 	var/list/memory = get_process_memory_mb()

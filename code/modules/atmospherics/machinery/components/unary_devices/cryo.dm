@@ -220,14 +220,16 @@
 				treating_wounds = FALSE
 
 		if((!treating_wounds) && (!treating_organs))
-			on = FALSE
-			update_icon()
-			playsound(src, 'sound/machines/cryo_warning.ogg', volume) // Bug the doctors.
-			var/msg = "Пациент полностью восстановился."
-			if(autoeject) // Eject if configured.
+			if(autoeject) // Only wind the cell down when auto-eject is on, booting the healed patient out.
+				on = FALSE
+				update_icon()
+				playsound(src, 'sound/machines/cryo_warning.ogg', volume) // Bug the doctors.
+				var/msg = "Пациент полностью восстановился."
 				msg += " Протокол извлечения пациента."
 				open_machine()
-			radio.talk_into(src, msg, radio_channel)
+				radio.talk_into(src, msg, radio_channel)
+				return
+			// With auto-eject off the patient stays inside, keep the cell running so treatment continues.
 			return
 
 	var/datum/gas_mixture/air1 = airs[1]

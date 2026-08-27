@@ -14,6 +14,32 @@
  * делает return, и код после упавшего ассерта не выполнится.
  */
 
+/**
+ * Оставляет зажжёнными ровно перечисленные z-уровни, гася флаг у всех остальных.
+ *
+ * Нужен всем тестам выбора кандидата: срок простоя зависит от того, сколько отложенных
+ * уровней горит ВСЕГО (см. LIGHTING_MAX_LIT_DEFERRED_Z), а это цифра живого мира - на
+ * разных картах и в разном порядке тестов она разная. Без изоляции проверка "свежий
+ * уровень не берут" проходила бы на одной карте и падала на другой.
+ *
+ * Возвращает снимок для restore_lit_deferred_zlevels(). Восстанавливать ОБЯЗАТЕЛЬНО до
+ * ассертов: TEST_ASSERT делает return.
+ */
+/datum/unit_test/proc/isolate_lit_deferred_zlevels(list/keep_z)
+	var/list/snapshot = list()
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		snapshot["[level.z_value]"] = level.lighting_initialized
+		if(!(level.z_value in keep_z))
+			level.lighting_initialized = FALSE
+	return snapshot
+
+/// Возвращает флаги поднятости, снятые isolate_lit_deferred_zlevels().
+/datum/unit_test/proc/restore_lit_deferred_zlevels(list/snapshot)
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		var/saved = snapshot["[level.z_value]"]
+		if(!isnull(saved))
+			level.lighting_initialized = saved
+
 /// Прокручивает снос до конца (или до заявленного лимита срезов), удерживая подсистему
 /// в состоянии SS_RUNNING. Возвращает число потраченных срезов.
 /datum/unit_test/proc/drive_lighting_teardown(max_slices = 4000)
@@ -73,6 +99,12 @@
 	var/old_init = level.lighting_initialized
 	var/old_teardown = SSlighting.teardown_zlevel
 	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
+	// Отметки подъёма гасим на время проверки: свет тестового z поднимает сам харнес
+	// (unit_test.dm зовёт create_lighting_for_zlevel перед каждым тестом), и кулдаун
+	// LIGHTING_TEARDOWN_MIN_LIT_TIME иначе снимает уровень с кандидатов законно, а
+	// проверка таймера простоя падала бы как поломка. Кулдаун проверяется ниже отдельно.
+	var/list/saved_lit_since = SSlighting.zlevel_lit_since.Copy()
+	SSlighting.zlevel_lit_since = list()
 	var/list/saved_traits = level.traits
 	var/key = "[test_z]"
 
@@ -80,6 +112,10 @@
 	// см. zlevel_lighting_teardownable). На время проверки выдаём уровню шахтёрский трейт:
 	// именно такие уровни механизм и разбирает.
 	level.traits = list(ZTRAIT_MINING = TRUE)
+	// Проверка про ТАЙМЕР, а таймер работает, только пока зажжённых отложенных уровней не
+	// больше кванта. Гасим остальные, иначе на карте с тремя такими уровнями свежий
+	// кандидат забирался бы по кванту и первый ассерт падал бы без всякой поломки.
+	var/list/saved_lit = isolate_lit_deferred_zlevels(list(test_z))
 
 	// 1. Свежеопустевший уровень не берут: сначала засекается время.
 	SSlighting.teardown_zlevel = 0
@@ -99,7 +135,18 @@
 	var/dropped_timer = isnull(SSlighting.zlevel_empty_since[key])
 	SSlighting.abort_zlevel_lighting_teardown()
 
-	// 3. Поднятый, но НЕ отложенный уровень не кандидат никогда: поднять его обратно нечем.
+	// 3. Только что поднятый уровень не кандидат, даже если пустует дольше порога: иначе
+	//    пролетевший гост заводит цикл "поднял - снесли - поднял" (раунд 10126, 42 подъёма).
+	level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_empty_since[key] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SSlighting.zlevel_lit_since[key] = world.time
+	SSlighting.scan_teardown_candidates()
+	var/picked_during_cooldown = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+	SSlighting.zlevel_lit_since = list()
+
+	// 4. Поднятый, но НЕ отложенный уровень не кандидат никогда: поднять его обратно нечем.
 	level.lighting_initialized = TRUE
 	level.traits = list()
 	SSlighting.teardown_zlevel = 0
@@ -108,7 +155,7 @@
 	var/picked_non_deferred = SSlighting.teardown_zlevel
 	var/forgot_non_deferred = isnull(SSlighting.zlevel_empty_since[key])
 
-	// 4. Резервацию не сносим никогда, хотя откладывать её на старте и правильно.
+	// 5. Резервацию не сносим никогда, хотя откладывать её на старте и правильно.
 	level.lighting_initialized = TRUE
 	level.traits = list(ZTRAIT_RESERVED = TRUE)
 	SSlighting.teardown_zlevel = 0
@@ -120,6 +167,8 @@
 	SSlighting.abort_zlevel_lighting_teardown()
 	SSlighting.teardown_zlevel = old_teardown
 	SSlighting.zlevel_empty_since = saved_empty
+	SSlighting.zlevel_lit_since = saved_lit_since
+	restore_lit_deferred_zlevels(saved_lit)
 	level.lighting_initialized = old_init
 
 	TEST_ASSERT(!picked_too_early, "уровень взяли на снос в ту же секунду, как он опустел (выбран z[picked_too_early])")
@@ -127,6 +176,7 @@
 	TEST_ASSERT_EQUAL(picked_when_stale, test_z, "уровень, пустующий дольше порога, не взяли на снос")
 	TEST_ASSERT(cleared_init_flag, "снос не снял lighting_initialized - вошедший игрок остался бы в темноте без пути наверх")
 	TEST_ASSERT(dropped_timer, "таймер простоя не сброшен при старте сноса")
+	TEST_ASSERT(!picked_during_cooldown, "на снос взяли уровень, поднятый секунду назад (z[picked_during_cooldown]) - кулдаун не работает")
 	TEST_ASSERT(!picked_non_deferred, "на снос взяли уровень, который не умеем поднимать обратно (z[picked_non_deferred])")
 	TEST_ASSERT(forgot_non_deferred, "неотложенный уровень остался с записью в таймере простоя")
 	TEST_ASSERT(!picked_reservation, "на снос взяли резервацию - её перерабатывают шаттлы, снос гонялся бы со стыковкой")
@@ -332,3 +382,261 @@
 	TEST_ASSERT_NULL(SSmobs.clients_on_zlevel(0), "нулевой z не индексируется")
 	TEST_ASSERT_NULL(SSmobs.clients_on_zlevel(-1), "отрицательный z не индексируется")
 	TEST_ASSERT_NOTNULL(SSmobs.clients_on_zlevel(run_loc_floor_bottom_left.z), "существующий z обязан отдавать список")
+
+/**
+ * Срок простоя перед сносом: квота жёстче давления, неизмеренное давление ничего не меняет.
+ *
+ * Раунды 10124 и 10125 (27.08.2026) разложены по ступенькам VmSize: снос не возвращает ОС
+ * ни байта, но постройка ПОСЛЕ сноса стоит 2-11 МБ вместо 41-107 - куча переиспользуется.
+ * Значит раунд платит за ПИК одновременно зажжённых отложенных уровней, и именно его режет
+ * квота. В 10125 три таких уровня горели все 65 минут, потому что таймер в четверть часа не
+ * истёк ни разу; половина всего роста раунда (236 из 479 МБ) - это их постройка.
+ */
+/datum/unit_test/lighting_teardown_idle_time_tiers
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_idle_time_tiers/Run()
+	// Давление не замерено (Windows, ранний старт) - механизм обязан вести себя как раньше.
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(0, 1), LIGHTING_TEARDOWN_IDLE_TIME, "без замера памяти срок простоя обязан остаться прежним")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(0.5, LIGHTING_MAX_LIT_DEFERRED_Z), LIGHTING_TEARDOWN_IDLE_TIME, "на половине потолка и в пределах кванта срок не сокращается")
+
+	// Давление: две ступени, обе на границе включительно.
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_HIGH, 1), LIGHTING_TEARDOWN_IDLE_TIME_HIGH, "на границе высокого давления срок обязан сократиться")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_HIGH - 0.01, 1), LIGHTING_TEARDOWN_IDLE_TIME, "под границей высокого давления срок обязан остаться прежним")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_CRITICAL, 1), LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL, "на границе критического давления срок обязан стать минутным")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(0.99, 1), LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL, "почти у потолка срок обязан быть минутным")
+
+	// Квота режет срок, но НЕ до нуля. Ноль означал "забрать уровень первым же сканом после
+	// ухода последнего госта", и раунд 10126 отработал этим 42 подъёма и 41 снос, ни один из
+	// которых памяти не сэкономил: квота своё уже взяла на пике, а внутри пика снос и подъём
+	// бесплатны (куча переиспользуется) и стоят только тика и вспышки белого.
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(0, LIGHTING_MAX_LIT_DEFERRED_Z + 1), LIGHTING_TEARDOWN_IDLE_TIME_QUOTA, "сверх кванта срок режется до минимального простоя, а не до нуля")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(0.05, LIGHTING_MAX_LIT_DEFERRED_Z + 5), LIGHTING_TEARDOWN_IDLE_TIME_QUOTA, "квота обязана работать и на пустом мире с огромным запасом")
+	TEST_ASSERT(LIGHTING_TEARDOWN_IDLE_TIME_QUOTA < LIGHTING_TEARDOWN_IDLE_TIME_HIGH, "квотный срок обязан быть короче срока под давлением, иначе квота ничего не ускоряет")
+
+	// Ноль остаётся ровно там, где он оправдан: у критического давления вспышка дешевле
+	// смерти процесса, и там уровень отдаётся немедленно.
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_CRITICAL, LIGHTING_MAX_LIT_DEFERRED_Z + 1), 0, "сверх кванта у самого потолка уровень отдаётся немедленно")
+	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_HIGH, LIGHTING_MAX_LIT_DEFERRED_Z + 1), LIGHTING_TEARDOWN_IDLE_TIME_QUOTA, "под высоким давлением сверх кванта берётся меньший из двух сроков")
+
+/**
+ * Кулдаун от ПОДЪЁМА: только что зажжённый уровень не сносится, кто бы его ни зажёг.
+ *
+ * Простой (zlevel_empty_since) отсчитывается с момента, когда уровень увидели пустым, и
+ * пролетевший гост обнуляет его каждый раз заново - одним сроком простоя частоту качания
+ * сверху не ограничить. В раунде 10126 z15 Academy подняли и снесли по девятнадцать раз.
+ */
+/datum/unit_test/lighting_teardown_cooldown_after_build
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_cooldown_after_build/Run()
+	var/now = 100 MINUTES
+
+	TEST_ASSERT(zlevel_teardown_cooldown_active(now, now, 0), "уровень, поднятый прямо сейчас, сносить рано")
+	TEST_ASSERT(zlevel_teardown_cooldown_active(now - LIGHTING_TEARDOWN_MIN_LIT_TIME + 1, now, 0), "за тик до конца кулдауна сносить всё ещё рано")
+	TEST_ASSERT(!zlevel_teardown_cooldown_active(now - LIGHTING_TEARDOWN_MIN_LIT_TIME, now, 0), "ровно на границе кулдаун кончился")
+	TEST_ASSERT(!zlevel_teardown_cooldown_active(now - (30 MINUTES), now, 0), "давно поднятый уровень кулдаун не защищает")
+
+	// Момент подъёма неизвестен - защищать нечего: уровень поднят до появления отметки.
+	TEST_ASSERT(!zlevel_teardown_cooldown_active(null, now, 0), "неизвестный момент подъёма не должен запирать снос навсегда")
+
+	// У самого потолка кулдаун снимается: там вспышка дешевле смерти процесса.
+	TEST_ASSERT(!zlevel_teardown_cooldown_active(now, now, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "под критическим давлением кулдаун не действует")
+	TEST_ASSERT(zlevel_teardown_cooldown_active(now, now, LIGHTING_TEARDOWN_PRESSURE_HIGH), "высокое давление кулдаун не снимает - оно и так режет срок простоя")
+
+	// Кулдаун обязан быть длиннее квотного срока: иначе он ничего не добавляет.
+	TEST_ASSERT(LIGHTING_TEARDOWN_MIN_LIT_TIME > LIGHTING_TEARDOWN_IDLE_TIME_QUOTA, "кулдаун короче квотного срока простоя не ограничивает частоту качания")
+
+	// Ступени обязаны идти по убыванию - перепутанные местами дают срок ДЛИННЕЕ под давлением.
+	TEST_ASSERT(LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL < LIGHTING_TEARDOWN_IDLE_TIME_HIGH, "критический срок обязан быть короче высокого")
+	TEST_ASSERT(LIGHTING_TEARDOWN_IDLE_TIME_HIGH < LIGHTING_TEARDOWN_IDLE_TIME, "срок под давлением обязан быть короче обычного")
+	TEST_ASSERT(LIGHTING_TEARDOWN_PRESSURE_HIGH < LIGHTING_TEARDOWN_PRESSURE_CRITICAL, "порог высокого давления обязан быть ниже критического")
+
+/// Выбор жертвы среди пустующих: разбирается тот, кто пустует дольше всех, и только по сроку.
+/datum/unit_test/lighting_teardown_picks_longest_idle
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_picks_longest_idle/Run()
+	var/now = 100 MINUTES
+	var/list/candidates = list(
+		"7" = now - (2 MINUTES),
+		"8" = now - (40 MINUTES),
+		"15" = now - (20 MINUTES),
+	)
+
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(candidates, 0, now), 8, "при нулевом сроке обязан браться самый давно пустующий")
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(candidates, 30 MINUTES, now), 8, "порог в 30 мин проходит только z8")
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(candidates, 10 MINUTES, now), 8, "из двух прошедших порог берётся тот, кто пустует дольше")
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(candidates, 60 MINUTES, now), 0, "никто не прошёл порог - жертвы нет")
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(list(), 0, now), 0, "пустой список кандидатов не должен давать жертву")
+	// Ровно на границе уровень уже берётся: иначе при нулевом сроке (квота) не взялся бы никто.
+	TEST_ASSERT_EQUAL(pick_lighting_teardown_zlevel(list("9" = now), 0, now), 9, "уровень, опустевший прямо сейчас, при нулевом сроке обязан браться")
+
+/// Строка лога обязана отличать снос по кванту от сноса по таймеру - на ней держится разбор прода.
+/datum/unit_test/lighting_teardown_reason_line_names_the_rule
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_reason_line_names_the_rule/Run()
+	var/quota_line = zlevel_teardown_reason_line(0, LIGHTING_MAX_LIT_DEFERRED_Z + 1, 0.64)
+	TEST_ASSERT(findtext(quota_line, "сверх кванта"), "снос по кванту обязан называть себя квантом: [quota_line]")
+	TEST_ASSERT(findtext(quota_line, "64%"), "строка обязана называть давление, когда оно замерено: [quota_line]")
+
+	// Ожидаемая подстрока считается из дефайна, а не пишется цифрой: с литералом правка
+	// LIGHTING_TEARDOWN_IDLE_TIME роняла бы этот тест по несвязанной причине, а совпади
+	// новая цифра со старой где-нибудь ещё в строке - тест прошёл бы, ничего не проверив.
+	var/expected_idle = "[round(LIGHTING_TEARDOWN_IDLE_TIME / (1 MINUTES), 0.1)] мин"
+	var/timer_line = zlevel_teardown_reason_line(LIGHTING_TEARDOWN_IDLE_TIME, LIGHTING_MAX_LIT_DEFERRED_Z, 0)
+	TEST_ASSERT(!findtext(timer_line, "сверх кванта"), "снос по таймеру не должен выдавать себя за квант: [timer_line]")
+	TEST_ASSERT(findtext(timer_line, expected_idle), "строка обязана называть фактический срок простоя [expected_idle]: [timer_line]")
+	TEST_ASSERT(!findtext(timer_line, "%"), "неизмеренное давление не должно печататься процентами: [timer_line]")
+
+	// Сокращённый срок обязан попадать в строку как есть: цифра из дефайна тут врала бы.
+	var/expected_critical = "[round(LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL / (1 MINUTES), 0.1)] мин"
+	var/pressed_line = zlevel_teardown_reason_line(LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL, 1, 0.9)
+	TEST_ASSERT(findtext(pressed_line, expected_critical), "строка обязана печатать фактический сокращённый срок [expected_critical]: [pressed_line]")
+
+/**
+ * Доля потолка читается с последнего замера и молчит, когда мерить нечем.
+ *
+ * Ноль - это "неизвестно", и все, кто ужесточается под давлением, обязаны читать его как
+ * "веди себя как раньше". Спутать его с честным нулевым давлением нельзя: на Windows
+ * /proc нет вовсе, и там ноль стоит весь раунд.
+ */
+/datum/unit_test/memory_pressure_fraction_reads_last_sample
+	requires_full_map = FALSE
+
+/datum/unit_test/memory_pressure_fraction_reads_last_sample/Run()
+	var/saved_ceiling = SStime_track.process_address_ceiling_mb
+	var/saved_vsz = SStime_track.memory_last_vsz_mb
+
+	SStime_track.process_address_ceiling_mb = 4000
+	SStime_track.memory_last_vsz_mb = 2000
+	var/half = memory_pressure_fraction()
+
+	SStime_track.memory_last_vsz_mb = 0
+	var/no_sample = memory_pressure_fraction()
+
+	SStime_track.memory_last_vsz_mb = 2000
+	SStime_track.process_address_ceiling_mb = 0
+	var/no_ceiling = memory_pressure_fraction()
+
+	SStime_track.process_address_ceiling_mb = saved_ceiling
+	SStime_track.memory_last_vsz_mb = saved_vsz
+
+	TEST_ASSERT_EQUAL(half, 0.5, "половина потолка обязана читаться как 0.5")
+	TEST_ASSERT_EQUAL(no_sample, 0, "без замера VmSize давление обязано быть нулём-неизвестностью")
+	TEST_ASSERT_EQUAL(no_ceiling, 0, "без замеренного потолка давление обязано быть нулём-неизвестностью")
+
+/**
+ * Квота РЕЖЕТ срок простоя пустующего уровня, а в пределах кванта таймер работает как был.
+ *
+ * Раньше сверх кванта срок был ноль, и уровень забирался первым же сканом после ухода
+ * последнего госта. Раунд 10126 отработал этим 42 подъёма и 41 снос, не сэкономив ни байта:
+ * квота своё берёт на ПИКЕ, а снос и подъём внутри достигнутого пика бесплатны по памяти и
+ * стоят только тика и вспышки белого. Теперь сверх кванта срок - LIGHTING_TEARDOWN_IDLE_TIME_QUOTA.
+ *
+ * Это единственный кусок механизма, который нельзя проверить чистым проком: цифру
+ * "сколько отложенных уровней горит" собирает сам scan_teardown_candidates(), и ошибка в
+ * ней (посчитать только пустые, посчитать неотложенные) прошла бы мимо всех остальных
+ * тестов. В раунде 10125 три уровня горели 65 минут подряд именно потому, что считать эту
+ * цифру было некому.
+ */
+/datum/unit_test/lighting_teardown_quota_shortens_idle_timer
+
+/datum/unit_test/lighting_teardown_quota_shortens_idle_timer/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/list/probe_levels = list()
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		probe_levels += level
+		if(length(probe_levels) > LIGHTING_MAX_LIT_DEFERRED_Z)
+			break
+	TEST_ASSERT(length(probe_levels) > LIGHTING_MAX_LIT_DEFERRED_Z, "предпосылка: в мире обязано быть больше [LIGHTING_MAX_LIT_DEFERRED_Z] z-уровней, иначе квоту не превысить")
+
+	var/old_teardown = SSlighting.teardown_zlevel
+	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
+	// Кулдаун от подъёма проверяется отдельным тестом; здесь он только мешал бы - свет
+	// уровней поднимает сам харнес перед каждым тестом.
+	var/list/saved_lit_since = SSlighting.zlevel_lit_since.Copy()
+	SSlighting.zlevel_lit_since = list()
+	var/list/saved_traits = list()
+	var/list/probe_z = list()
+	var/list/saved_clients = list()
+	var/list/saved_dead = list()
+	for(var/datum/space_level/level as anything in probe_levels)
+		var/z = level.z_value
+		probe_z += z
+		saved_traits["[z]"] = level.traits
+		// Уровни-пробники должны быть пусты: соседние тесты оставляют в реестрах своих мобов,
+		// а жилец снимает уровень с кандидатов раньше любой квоты.
+		if(z <= length(SSmobs.clients_by_zlevel))
+			saved_clients["[z]"] = SSmobs.clients_by_zlevel[z]
+			SSmobs.clients_by_zlevel[z] = list()
+		if(z <= length(SSmobs.dead_players_by_zlevel))
+			saved_dead["[z]"] = SSmobs.dead_players_by_zlevel[z]
+			SSmobs.dead_players_by_zlevel[z] = list()
+		level.traits = list(ZTRAIT_MINING = TRUE)
+	var/list/saved_lit = isolate_lit_deferred_zlevels(probe_z)
+
+	// 1. Сверх кванта, но уровни только что опустели - жертву НЕ берут: минимальный простой
+	//    сверх кванта и есть гистерезис, без которого механизм качает свет туда-сюда.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_empty_since = list()
+	SSlighting.scan_teardown_candidates()
+	var/quota_picked_fresh = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 2. Сверх кванта и пустует дольше квотного срока - берут, хотя обычные четверть часа
+	//    ещё не истекли. Это и есть весь выигрыш квоты.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = world.time - LIGHTING_TEARDOWN_IDLE_TIME_QUOTA - 1
+	SSlighting.scan_teardown_candidates()
+	var/quota_picked = SSlighting.teardown_zlevel
+	var/quota_picked_probe = (quota_picked in probe_z)
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 3. В пределах кванта тот же свежеопустевший уровень не трогают: таймер снова главный.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = FALSE
+	var/datum/space_level/lone = probe_levels[1]
+	lone.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_empty_since = list()
+	SSlighting.scan_teardown_candidates()
+	var/within_quota_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 4. Счёт ведётся по ЗАЖЖЁННЫМ отложенным, а не по всем подряд: неотложенные уровни
+	//    квоту наполнять не должны, иначе она выбивала бы жертву на любой карте.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+		level.traits = list(ZTRAIT_STATION = TRUE)
+	lone.traits = list(ZTRAIT_MINING = TRUE)
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_empty_since = list()
+	SSlighting.scan_teardown_candidates()
+	var/non_deferred_filled_quota = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	for(var/datum/space_level/level as anything in probe_levels)
+		var/z = level.z_value
+		level.traits = saved_traits["[z]"]
+		if(!isnull(saved_clients["[z]"]))
+			SSmobs.clients_by_zlevel[z] = saved_clients["[z]"]
+		if(!isnull(saved_dead["[z]"]))
+			SSmobs.dead_players_by_zlevel[z] = saved_dead["[z]"]
+	restore_lit_deferred_zlevels(saved_lit)
+	SSlighting.teardown_zlevel = old_teardown
+	SSlighting.zlevel_empty_since = saved_empty
+	SSlighting.zlevel_lit_since = saved_lit_since
+
+	TEST_ASSERT(!quota_picked_fresh, "сверх кванта забрали уровень, опустевший секунду назад (z[quota_picked_fresh]) - гистерезиса нет, механизм будет качать свет")
+	TEST_ASSERT(quota_picked, "сверх кванта уровень, пустующий дольше квотного срока, не взяли на снос - квота не работает")
+	TEST_ASSERT(quota_picked_probe, "квота взяла уровень z[quota_picked], которого нет среди пробников")
+	TEST_ASSERT(!within_quota_picked, "в пределах кванта свежеопустевший уровень взяли на снос (z[within_quota_picked]) - таймер перестал защищать")
+	TEST_ASSERT(!non_deferred_filled_quota, "квоту наполнили НЕотложенные уровни: взят z[non_deferred_filled_quota]")
