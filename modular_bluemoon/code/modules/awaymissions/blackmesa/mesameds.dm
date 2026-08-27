@@ -119,19 +119,11 @@
 		return FALSE
 
 	var/healed_something = FALSE
-	for(var/datum/wound/blunt/moderate/dislocation in affecting.wounds)
-		if(dislocation)
-			qdel(dislocation)
+	for(var/datum/wound/W as anything in affecting.wounds)
+		if(istype(W, /datum/wound/blunt))
+			qdel(W)
 			healed_something = TRUE
-	for(var/datum/wound/blunt/severe/fracture in affecting.wounds)
-		if(fracture)
-			qdel(fracture)
-			healed_something = TRUE
-	for(var/datum/wound/blunt/critical/compound in affecting.wounds)
-		if(compound)
-			qdel(compound)
-			healed_something = TRUE
-	for(var/datum/wound/W in affecting.wounds)
+	for(var/datum/wound/W as anything in affecting.wounds)
 		if(istype(W, /datum/wound/slash) || istype(W, /datum/wound/pierce))
 			W.blood_flow = 0
 			healed_something = TRUE
@@ -193,15 +185,12 @@
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 
-	for(var/obj/item/bodypart/BP in C.bodyparts)
+	for(var/obj/item/bodypart/BP as anything in C.bodyparts)
 		if(!BP)
 			continue
-		for(var/datum/wound/blunt/moderate/dislocation in BP.wounds)
-			if(dislocation)
-				qdel(dislocation)
-		for(var/datum/wound/blunt/severe/fracture in BP.wounds)
-			if(fracture)
-				qdel(fracture)
+		for(var/datum/wound/W as anything in BP.wounds)
+			if(istype(W, /datum/wound/blunt/moderate))
+				qdel(W)
 	..()
 
 	if(user == C)

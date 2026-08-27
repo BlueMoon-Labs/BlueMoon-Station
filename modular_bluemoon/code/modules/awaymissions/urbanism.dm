@@ -458,6 +458,16 @@
 
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/madsci/microwaveboom.ogg', 100, FALSE)
 
+	for(var/obj/structure/mad_scientist/scientist in range(5, src))
+		playsound(scientist, 'modular_bluemoon/sound/creatures/mesa/madsci/microwavefuck.ogg', 150, FALSE)
+
+	explosion(src, 0, 0, 1, 1, flame_range = 1)
+
+	new /obj/effect/hotspot(get_turf(src))
+
+	icon_state = "mwbloodyo"
+	new /obj/structure/urbanismeffect(get_turf(src))
+
 // =============================================================================
 // REINFORCED BARRICADES
 // Barricades that can only be destroyed by bombardment
@@ -516,17 +526,6 @@
 		..()
 	else
 		return 0
-
-
-	for(var/obj/structure/mad_scientist/scientist in range(5, src))
-		playsound(scientist, 'modular_bluemoon/sound/creatures/mesa/madsci/microwavefuck.ogg', 150, FALSE)
-
-	explosion(src, 0, 0, 1, 1, flame_range =1)
-
-	new /obj/effect/hotspot(get_turf(src))
-
-	icon_state = "mwbloodyo"
-	new /obj/structure/urbanismeffect(get_turf(src))
 
 /obj/structure/mad_scientist
 	name = "mad scientist"
@@ -955,6 +954,15 @@
 	mob_spawn_interval = 10 SECONDS
 	max_mobs_per_wave = 3
 
+/obj/structure/urbanism_generator/button/safe
+	name = "safe door generator"
+	desc = "A generator that opens a blastdoor when activated, without spawning any mobs."
+	blastdoor_id = "urbanism_door_1"
+	reward_type = null
+	spawn_mobs = FALSE
+	mob_types = list()
+	active_duration = 30 SECONDS
+
 /obj/structure/urbanism_generator/continuous
 	name = "hive generator"
 	desc = "A generator that continuously spawns infected while active."
@@ -1128,3 +1136,200 @@
 	desc = "A mysterious plant growing in the urban landscape."
 	icon = 'modular_bluemoon/icons/obj/urbanism/xensheet.dmi'
 	icon_state = "xentree"
+
+// =============================================================================
+// TRUCK LANDMARKS
+// Invisible landmarks for truck start and end positions
+// =============================================================================
+
+/obj/effect/landmark/truck_start
+	name = "truck start position"
+	icon_state = "x"
+	alpha = 0
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/landmark/truck_end
+	name = "truck end position"
+	icon_state = "x"
+	alpha = 0
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+// =============================================================================
+// TRUCK GENERATOR
+// Generator that activates truck movement
+// =============================================================================
+
+/obj/structure/urbanism_generator/truck
+	name = "truck generator"
+	desc = "A generator that powers the truck fueling system."
+	var/obj/structure/urbanismcars/truck/linked_truck = null
+	var/obj/effect/landmark/truck_start/start_landmark = null
+	var/obj/effect/landmark/truck_end/end_landmark = null
+
+/obj/structure/urbanism_generator/truck/Initialize(mapload)
+	. = ..()
+	find_landmarks()
+	spawn_truck()
+
+/obj/structure/urbanism_generator/truck/proc/find_landmarks()
+	if(!src)
+		return
+
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+
+	for(var/obj/effect/landmark/truck_start/L in GLOB.landmarks_list)
+		if(L && L.z == T.z)
+			start_landmark = L
+			break
+
+	for(var/obj/effect/landmark/truck_end/L in GLOB.landmarks_list)
+		if(L && L.z == T.z)
+			end_landmark = L
+			break
+
+	if(!start_landmark)
+		log_world("truck_generator: start_landmark not found")
+	if(!end_landmark)
+		log_world("truck_generator: end_landmark not found")
+
+/obj/structure/urbanism_generator/truck/proc/spawn_truck()
+	if(!src || !start_landmark)
+		return
+
+	var/turf/start_turf = get_turf(start_landmark)
+	if(!start_turf)
+		return
+
+	linked_truck = new /obj/structure/urbanismcars/truck(start_turf)
+	if(!linked_truck)
+		log_world("truck_generator: failed to spawn truck")
+		return
+
+	linked_truck.anchored = TRUE
+	linked_truck.density = TRUE
+
+/obj/structure/urbanism_generator/truck/begin_active_phase()
+	if(!src)
+		return
+
+	. = ..()
+
+	if(linked_truck && end_landmark)
+		var/turf/end_turf = get_turf(end_landmark)
+		if(end_turf)
+			linked_truck.charge_to_destination(end_turf)
+
+// =============================================================================
+// MOVABLE TRUCK
+// Truck with charge movement system based on bubblegum
+// =============================================================================
+
+/obj/structure/urbanismcars/truck
+	name = "truck"
+	desc = "A heavy military truck."
+	icon = 'modular_bluemoon/icons/obj/urbanism/vehicles140x140.dmi'
+	icon_state = "car_wreck"
+	anchored = TRUE
+	density = TRUE
+	var/charging = FALSE
+	var/turf/target_turf = null
+
+/obj/structure/urbanismcars/truck/proc/charge_to_destination(turf/destination)
+	if(!src || !destination)
+		return
+
+	if(charging)
+		return
+
+	target_turf = destination
+	var/turf/T = get_turf(src)
+	if(!T || T == target_turf)
+		return
+
+	new /obj/effect/temp_visual/dragon_swoop(target_turf)
+	charging = TRUE
+	DestroySurroundings()
+	setDir(get_dir(src, target_turf))
+	var/obj/effect/temp_visual/decoy/D = new /obj/effect/temp_visual/decoy(loc, src)
+	if(D)
+		animate(D, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 5)
+
+	addtimer(CALLBACK(src, PROC_REF(start_charge), target_turf), 5)
+
+/obj/structure/urbanismcars/truck/proc/start_charge(turf/destination)
+	if(!src || !destination)
+		charging = FALSE
+		return
+
+	throw_at(destination, get_dist(src, destination), 1, src, 0)
+
+/obj/structure/urbanismcars/truck/Move()
+	if(charging)
+		playsound(src.loc, 'sound/effects/meteorimpact.ogg', 200, 1, 2, 1)
+		new /obj/effect/temp_visual/decoy/fading(loc, src)
+		DestroySurroundings()
+	. = ..()
+	if(charging)
+		DestroySurroundings()
+
+/obj/structure/urbanismcars/truck/Bump(atom/A)
+	if(!src || !A)
+		return ..()
+
+	if(charging)
+		if(isturf(A) || isobj(A) && A.density)
+			// Принудительно разрушаем объект
+			A.ex_act(EXPLODE_HEAVY)
+			// Если объект всё ещё существует, удаляем принудительно
+			if(!QDELETED(A))
+				qdel(A)
+		DestroySurroundings()
+	..()
+
+/obj/structure/urbanismcars/truck/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(!src)
+		return
+
+	if(!charging)
+		return ..()
+
+	if(isliving(hit_atom))
+		var/mob/living/L = hit_atom
+		if(!L)
+			return
+
+		L.visible_message("<span class='danger'>[src] slams into [L]!</span>", "<span class='userdanger'>[src] slams into you!</span>")
+		L.apply_damage(55, BRUTE)
+		playsound(get_turf(L), 'sound/effects/meteorimpact.ogg', 100, 1)
+		shake_camera(L, 4, 3)
+		shake_camera(src, 2, 3)
+		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
+		L.throw_at(throwtarget, 3)
+
+	charging = FALSE
+	anchored = TRUE
+	density = TRUE
+	visible_message(span_notice("The truck comes to a halt."))
+
+/obj/structure/urbanismcars/truck/proc/DestroySurroundings()
+	if(!src)
+		return
+
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+
+	for(var/dir in GLOB.cardinals)
+		for(var/atom/movable/AM in get_step(T, dir))
+			if(!AM || AM == src)
+				continue
+			if(isturf(AM))
+				continue
+			if(AM.density)
+				// Принудительно разрушаем объект
+				AM.ex_act(EXPLODE_HEAVY)
+				// Если объект всё ещё существует, удаляем принудительно
+				if(!QDELETED(AM))
+					qdel(AM)

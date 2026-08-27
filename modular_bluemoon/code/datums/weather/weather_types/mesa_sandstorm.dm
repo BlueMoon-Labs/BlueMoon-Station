@@ -126,65 +126,9 @@
 	color = "#b89560"
 	alpha = 200
 
-/datum/weather/ash_storm/mesa_rain
-	name = "rain"
-	desc = "A rare rain shower in the sector."
-
-	telegraph_message = "<span class='notice'>Небо затягивают тучи, в воздухе пахнет озоном.</span>"
-	weather_message = "<span class='notice'>Начинается дождь, омывая пустынную землю.</span>"
-	end_message = "<span class='notice'>Дождь прекращается, оставляя за собой лишь лужи и туман.</span>"
-
-	weather_overlay = "rain_high"
-	telegraph_overlay = "rain_high"
-	end_overlay = "rain_high"
-
-	overlay_plane = -5
-
-	aesthetic = TRUE
-	probability = 0
-
-	area_type = /area/awaymission/ihategordon/outsideofmesa
-	protect_indoors = TRUE
-	protected_areas = list(/area/awaymission/ihategordon/rocks)
-
-/datum/weather/ash_storm/mesa_rain/start()
-	. = ..()
-	for(var/z_level in impacted_z_levels)
-		for(var/mob/player as anything in SSmobs.clients_by_zlevel[z_level])
-			player.overlay_fullscreen("rain_mist", /atom/movable/screen/fullscreen/tiled/rain_mist)
-
-/datum/weather/ash_storm/mesa_rain/process()
-	if(stage != MAIN_STAGE)
-		return
-	for(var/mob/living/L in GLOB.mob_living_list)
-		var/turf/mob_turf = get_turf(L)
-		var/area/mob_area = get_area(L)
-		if(!mob_turf || !(mob_turf.z in impacted_z_levels) || !mob_area || !(mob_area in impacted_areas))
-			L.clear_fullscreen("rain_mist")
-		else
-			L.overlay_fullscreen("rain_mist", /atom/movable/screen/fullscreen/tiled/rain_mist)
-
-/datum/weather/ash_storm/mesa_rain/wind_down()
-	for(var/mob/living/L in GLOB.mob_living_list)
-		L.clear_fullscreen("rain_mist")
-	return ..()
-
-/datum/weather/ash_storm/mesa_rain/end()
-	for(var/mob/player in GLOB.player_list)
-		player.clear_fullscreen("rain_mist")
-	return ..()
-
-
 /atom/movable/screen/fullscreen/tiled/mesa_sandstorm
 	icon = 'icons/mob/screen_gen.dmi'
 	screen_loc = "WEST,SOUTH to EAST,NORTH"
 	icon_state = "cloudy"
 	color = "#d2b48c"
 	alpha = 150
-
-/atom/movable/screen/fullscreen/tiled/rain_mist
-	icon = 'icons/mob/screen_gen.dmi'
-	screen_loc = "WEST,SOUTH to EAST,NORTH"
-	icon_state = "cloudy"
-	color = "#87ceeb"
-	alpha = 120

@@ -333,28 +333,6 @@
 
 	SSweather.run_weather(/datum/weather/ash_storm/mesa_sandstorm, list(T.z))
 
-// Event 10: Rain (Rare/Cosmetic)
-/datum/round_event_control/blackmesa/rain
-	name = "Black Mesa: Rain"
-	typepath = /datum/round_event/blackmesa/rain
-	weight = 2
-	max_occurrences = 1
-	category = EVENT_CATEGORY_INVASION
-	min_difficulty_level = 0
-
-/datum/round_event/blackmesa/rain
-
-/datum/round_event/blackmesa/rain/start()
-	var/turf/T = get_random_mesa_turf()
-	if(!T)
-		return
-
-	SSweather.run_weather(/datum/weather/ash_storm/mesa_rain, list(T.z))
-
-/datum/round_event/blackmesa/rain/end()
-	return ..()
-
-
 /datum/round_event_control/blackmesa/blackops_incursion
 	name = "Black Mesa: Black Ops Incursion (Light)"
 	typepath = /datum/round_event/blackmesa/blackops_incursion/light

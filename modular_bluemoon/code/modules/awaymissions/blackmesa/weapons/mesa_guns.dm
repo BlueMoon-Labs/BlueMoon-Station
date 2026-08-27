@@ -4,10 +4,9 @@
 // ПРИМЕЧАНИЕ: Данный файл содержит mesa guns с поддержкой динамической системы звуков.
 // Система описана в: modular_bluemoon/code/modules/awaymissions/blackmesa/weapons/dynamic_gun_sounds.dm
 //
-// Для внедрения системы в другое оружие:
-// 1. Добавьте has_dynamic_sounds = TRUE в определение оружия
-// 2. Инициализируйте dynamic_sound_datum в Initialize() с путями к звукам
-// 3. Система автоматически обработает воспроизведение dry (циклический) и tail (финальный) звуков
+// Для внедрения системы в другое оружие укажите dynamic_sound_dry и
+// dynamic_sound_tail. Остальные параметры громкости можно переопределить
+// при необходимости; датум создаётся автоматически в общем Initialize().
 
 /obj/item/gun/ballistic/automatic/pistol/hl9mm
 	name = "9mm pistol"
@@ -23,6 +22,7 @@
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
 	automatic_burst_overlay = FALSE
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/9mm.ogg'
+	mesa_muzzle_flash = TRUE
 	gunlight_state = "mini-light"
 	can_flashlight = 0
 
@@ -110,6 +110,7 @@
 	icon_state = "m4oa1"
 	item_state = "m4oa1"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/sniper_fire.ogg'
+	mesa_muzzle_flash = TRUE
 	recoil = 1
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/sniper_rounds/m4oa1
@@ -157,8 +158,12 @@
 	icon_state = "mp5"
 	item_state = "mp5"
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/mp5
 	load_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magin.ogg'
+	load_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
+	eject_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
+	eject_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
 	can_suppress = FALSE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
@@ -168,38 +173,16 @@
 	fire_delay = 0.5 ///Это пиздец!
 	can_bayonet = FALSE
 	automatic_burst_overlay = FALSE
-	has_dynamic_sounds = TRUE	// Включаем динамическую систему звуков
-	var/weapon_loop_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/dry1.ogg'
-	var/weapon_full_tail_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
-	var/dynamic_sound_volume = 50	// Громкость звуков
-	var/dynamic_sound_suppressed_volume = 10	// Громкость с глушителем
-	var/improved_muzzle_lighting = TRUE
-	var/muzzle_light_range = 4
-	var/muzzle_light_power = 5
-	var/muzzle_light_duration = 1
+	dynamic_sound_dry = 'modular_bluemoon/sound/weapons/mesa/mp5/dry1.ogg'
+	dynamic_sound_tail = 'modular_bluemoon/sound/weapons/mesa/mp5/mpshot.ogg'
+	dynamic_sound_volume = 50
+	dynamic_sound_suppressed_volume = 10
 	var/progressive_spread_enabled = TRUE
 	var/progressive_spread_step = 1.5
 	var/progressive_spread_max = 36
 	var/progressive_spread_reset_delay = 3
 	var/progressive_spread_current = 0
 	var/progressive_spread_last_shot = 0
-
-/obj/item/gun/ballistic/automatic/mp5/Initialize(mapload)
-	. = ..()
-	// Инициализируем динамическую систему звуков
-	if(!dynamic_sound_datum)
-		dynamic_sound_datum = new /datum/dynamic_gun_sound(
-			weapon_loop_sound,
-			weapon_full_tail_sound,
-			dynamic_sound_volume,
-			TRUE,
-			dynamic_sound_suppressed_volume
-		)
-
-/obj/item/gun/ballistic/automatic/mp5/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	. = ..()
-	if(improved_muzzle_lighting && user)
-		user.flash_lighting_fx(muzzle_light_range, muzzle_light_power, LIGHT_COLOR_ORANGE, muzzle_light_duration)
 
 /obj/item/gun/ballistic/automatic/mp5/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(!progressive_spread_enabled || on_cooldown() || !can_shoot())
@@ -267,7 +250,8 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "spas"
 	item_state = "spas"
-	fire_sound = 'modular_bluemoon/sound/weapons/mesa/shotgun.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/spas.ogg'
+	mesa_muzzle_flash = TRUE
 	w_class = WEIGHT_CLASS_BULKY
 	recoil = 3
 	force = 10
@@ -342,6 +326,7 @@
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/halflife
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/underbarrel.ogg'
+	mesa_muzzle_flash = TRUE
 	pin = /obj/item/firing_pin
 
 // TIER 3
@@ -354,6 +339,7 @@
 	fire_delay = 1 //ATATATATATATATATA!!!
 	spread = 11
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m16.ogg'
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m16/mesa
 	obj_flags = UNIQUE_RENAME
 	unique_reskin = list(
@@ -430,6 +416,7 @@
 	fire_delay = 1 //ATATATATATATATATA!!!
 	spread = 8
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mp7.ogg'
+	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_LIGHT
 	mag_type = /obj/item/ammo_box/magazine/mp7
 
@@ -503,6 +490,7 @@
 	spread = 10
 	burst_size = 3
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/scar.ogg'
+	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/scar
@@ -512,7 +500,7 @@
 	if(magazine)
 		icon_state = "scarh"
 	else
-		icon_state = "scar-e"
+		icon_state = "scarh-e"
 
 /obj/item/ammo_box/magazine/scar
 	name = " HC SCAR magazine"
@@ -558,6 +546,7 @@
 	fire_delay = 1.5 //FUUUUUUUUCK!!!!!
 	spread = 17
 	fire_sound = 'sound/weapons/gunshot_smg_alt.ogg'
+	mesa_muzzle_flash = TRUE
 	weapon_weight = WEAPON_HEAVY
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/p90
@@ -595,7 +584,7 @@
 
 /obj/item/projectile/bullet/mm57
 	name = "5.7mm bullet"
-	damage = 25
+	damage = 20
 	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 4 → BR1 (5.7мм аналог FN57)
 	wound_bonus = -4
 	bare_wound_bonus = 2
@@ -606,6 +595,7 @@
 	desc = "Тaurus Model 85 является компактным револьвером, который был разработан бразильской компанией Taurus International. Он предназначен для скрытого ношения и самообороны, и является популярным выбором среди гражданских лиц и правоохранительных органов. Данный экземпляр может похвастаться модифицированным барабаном на 4 выстрела калибром .357"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "taurus"
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
 	fire_delay = 3
 
@@ -820,8 +810,6 @@
 	new /obj/item/ammo_box/a357(src)
 	new /obj/item/ammo_box/a357(src)
 
-//skihell
-
 /obj/item/shield/police
 	name = "special police shield"
 	desc = "A gigantic shield made of robust materials"
@@ -861,103 +849,6 @@
 	playsound(owner, pick(shield_sounds), 50, 1)
 	return ..()
 
-
-/obj/item/gun/ballistic/automatic/pistol/ski9mm
-	name = "SKI-SPIRIT 9mm pistol"
-	desc = "Модифицированная версия beretta 92 FS получившая своё название после утери около сотни экземпляров прямо в комплексе Skistation"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
-	icon_state = "ski9mm"
-	w_class = WEIGHT_CLASS_NORMAL
-	mag_type = /obj/item/ammo_box/magazine/pistolm9mm
-	can_suppress = FALSE
-	burst_size = 3
-	spread = 5
-	fire_delay = 0.5
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
-	fire_sound = 'modular_bluemoon/sound/weapons/ski9mm.ogg'
-
-
-/obj/item/gun/ballistic/automatic/pistol/ski9mm/update_icon_state()
-	icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
-
-/obj/item/gun/ballistic/automatic/pistol/ski9mm/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	..()
-	playsound(user, fire_sound, 80, 0, 0)
-
-/obj/item/gun/ballistic/automatic/ak47/skiak
-	name = "\improper AK-54-BOREAS rifle"
-	desc = "Одного магазина АК-54-БОРЕЙ хватит на убийство РОВНО трёх сибирских медведей. Думайте - Плакат `во все оружии`"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
-	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
-	icon_state = "skiak"
-	item_state = "saiga"
-	fire_sound = 'modular_bluemoon/sound/weapons/skiak.ogg'
-
-/obj/item/gun/ballistic/automatic/ak47/skiak/update_icon_state()
-	if(magazine)
-		icon_state = "skiak"
-	else
-		icon_state = "skiak_mag"
-
-/obj/item/gun/ballistic/automatic/ak47/skiak/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	..()
-	playsound(user, fire_sound, 80, 0, 0)
-
-/obj/item/gun/ballistic/automatic/shotgun/aa12/saiga
-	name = "\improper Saiga-SNOWGRAVE"
-	desc = "Продвинутая версия оригинальной Сайги со сломанным исскуственным интелектом на борту... Вы слышали этот крик?"
-	icon_state = "saiga"
-	item_state = "saiga"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
-	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
-	recoil = 3
-	spread = 10
-	fire_delay = 4
-	mag_type = /obj/item/ammo_box/magazine/aa12/saiga
-	fire_sound = 'modular_bluemoon/sound/weapons/saiga.ogg'
-
-/obj/item/gun/ballistic/automatic/shotgun/aa12/saiga/update_icon_state()
-	if(magazine)
-		icon_state = "saiga"
-	else
-		icon_state = "saiga_mag"
-
-/obj/item/gun/ballistic/automatic/shotgun/aa12/saiga/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	..()
-	playsound(user, fire_sound, 80, 0, 0)
-
-
-/obj/item/ammo_box/magazine/aa12/saiga
-	name = "saiga drum magazine (12g buckshot)"
-	icon_state = "saiga"
-	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
-	w_class = WEIGHT_CLASS_NORMAL
-	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
-	caliber = "shotgun"
-	max_ammo = 20
-
-/obj/item/ammo_box/magazine/aa12/saiga/update_icon()
-	. = ..()
-	if(ammo_count())
-		icon_state = "[initial(icon_state)]-ammo"
-	else
-		icon_state = "[initial(icon_state)]"
-
-
-/obj/item/gun/ballistic/automatic/shotgun/aa12/saiga/empty_alarm()
-	if(!chambered && !get_ammo() && !alarmed)
-		var/list/sounds = list(
-			'modular_bluemoon/sound/creatures/skihell/cover.ogg',
-			'modular_bluemoon/sound/creatures/skihell/fuck.ogg',
-			'modular_bluemoon/sound/creatures/skihell/shit.ogg'
-		)
-		playsound(src, pick(sounds), 70, 0)
-		update_icon()
-		alarmed = 1
-	return
-
 // TIER 4
 /obj/item/gun/ballistic/revolver/hlrsh12
 	name = "RSH-12 revolver"
@@ -965,6 +856,7 @@
 	icon_state = "rs12"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	fire_sound = 'modular_bluemoon/sound/weapons/rsh.ogg'
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/hlrsh12
 	recoil = 6
 	fire_delay = 4
@@ -1016,6 +908,7 @@
 	desc = "Карманная артиллерия прямо у вас в руках. пустынный орёл способен пробивать бронежилеты большинства стандартных образцов, что делает его идеальным выбором для лидеров отрядов HECU"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "hldeagle"
+	mesa_muzzle_flash = TRUE
 	w_class = WEIGHT_CLASS_NORMAL
 	can_suppress = FALSE
 	burst_size = 1
@@ -1038,6 +931,7 @@
 	desc = "Достаточно неплохого калибра револьвер, специально выбранный для быстрого устранения... Крупной дичи"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "hl357"
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357
 /obj/item/ammo_box/magazine/internal/cylinder/rev357
 	name = "revolver cylinder (.357)"
@@ -1056,6 +950,7 @@
 	icon_state = "m249"
 	item_state = "m249"
 	fire_sound = 'modular_bluemoon/sound/weapons/m249.ogg'
+	mesa_muzzle_flash = TRUE
 	mag_type = /obj/item/ammo_box/magazine/m249
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY

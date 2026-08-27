@@ -319,6 +319,8 @@
 		return
 
 	bombardment_active = TRUE
+	if(linked_console)
+		linked_console.balloon_alert_to_viewers("Начало бомбардировки", null)
 
 	say("Вижу цель. ОТОЙДИТЕ ОТ ВЗРЫВА!")
 	icon_state = "radiohecu_talking"
@@ -342,16 +344,7 @@
 	if(!src || !target_turf)
 		return
 
-	var/bomb_count = rand(1, 2)
-	var/list/target_turfs = list()
-	for(var/turf/T in range(1, target_turf))
-		target_turfs |= T
-
-	for(var/i in 1 to bomb_count)
-		if(target_turfs.len > 0)
-			var/turf/drop_turf = pick(target_turfs)
-			target_turfs -= drop_turf
-			addtimer(CALLBACK(src, .proc/drop_single_bomb, drop_turf), (i - 1) * 2 SECONDS)
+	drop_single_bomb(target_turf)
 
 /obj/machinery/negotiations_radio/bombardment/proc/drop_single_bomb(turf/drop_turf)
 	if(!src || !drop_turf)
@@ -359,23 +352,14 @@
 
 	playsound(drop_turf, 'sound/weapons/mortar_long_whistle.ogg', 80, TRUE)
 
-	addtimer(CALLBACK(src, .proc/explode_bomb, drop_turf), 2 SECONDS)
-
-/obj/machinery/negotiations_radio/bombardment/proc/explode_bomb(turf/drop_turf)
-	if(!src || !drop_turf)
-		return
-
-	playsound(drop_turf, 'sound/effects/explosionfar.ogg', 100, TRUE)
-
-	explosion(drop_turf, 0, 1, 2, 3)
-
-	for(var/turf/T in range(2, drop_turf))
-		for(var/obj/structure/barricade/wooden/W in T)
-			if(W)
-				W.take_damage(1000)
-		for(var/obj/structure/barricade/wooden/crude/C in T)
-			if(C)
-				C.take_damage(1000)
+	var/obj/structure/closet/supplypod/centcompod/pod = new(null, STYLE_MISSILE)
+	pod.name = "tactical bombardment pod"
+	pod.desc = "A high-explosive tactical bombardment pod."
+	pod.explosionSize = list(0, 3, 3, 5)
+	pod.effectMissile = TRUE
+	pod.damage = 100
+	pod.effectGib = TRUE
+	new /obj/effect/pod_landingzone(drop_turf, pod)
 
 	bombardment_active = FALSE
 
@@ -432,9 +416,9 @@
 	var/enabled = FALSE
 	var/area/restricted_area = /area/awaymission/ihategordon/outsideofmesa/bombardment
 	var/next_mark_time = 0
-	var/mark_cooldown = 30 SECONDS
+	var/mark_cooldown = 10 SECONDS
 	var/datum/action/innate/bombardment_mark/mark_action = /datum/action/innate/bombardment_mark
-	var/charges_remaining = 4
+	var/charges_remaining = 10
 	var/obj/machinery/negotiations_radio/bombardment/linked_radio = null
 	jump_action = null // Disable jump to camera
 	networks = list("bombardment") // Use bombardment camera network
@@ -465,16 +449,7 @@
 		z_lock = list(myturf.z)
 
 /obj/machinery/computer/camera_advanced/bombardment/GrantActions(mob/living/user)
-	..(user)  // Grant parent actions first
-	if(mark_action && enabled && eyeobj && eyeobj.eye_initialized)
-		mark_action.target = src
-		mark_action.Grant(user)
-		actions += mark_action
-
-/obj/machinery/computer/camera_advanced/bombardment/remove_eye_control(mob/living/user)
-	. = ..()
-	if(mark_action)
-		mark_action.Remove(user)
+	..(user)
 
 /obj/machinery/computer/camera_advanced/bombardment/can_use(mob/user)
 	if(!enabled)
@@ -483,11 +458,13 @@
 	return ..()
 
 /obj/machinery/computer/camera_advanced/bombardment/CreateEye()
-	eyeobj = new /mob/camera/aiEye/remote/bombardment(get_turf(src))
-	eyeobj.origin = src
-	eyeobj.visible_icon = TRUE
-	eyeobj.icon = 'icons/mob/cameramob.dmi'
-	eyeobj.icon_state = "generic_camera"
+	var/mob/camera/aiEye/remote/bombardment/bombardment_eye = new(get_turf(src))
+	eyeobj = bombardment_eye
+	bombardment_eye.origin = src
+	bombardment_eye.console_origin = src
+	bombardment_eye.visible_icon = TRUE
+	bombardment_eye.icon = 'icons/mob/cameramob.dmi'
+	bombardment_eye.icon_state = "generic_camera"
 
 /obj/machinery/computer/camera_advanced/bombardment/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(!enabled)
@@ -501,23 +478,14 @@
 	icon = 'icons/mob/cameramob.dmi'
 	icon_state = "generic_camera"
 	var/obj/machinery/computer/camera_advanced/bombardment/console_origin
-	var/allowed_area = null
-
-/mob/camera/aiEye/remote/bombardment/Initialize(mapload)
-	var/area/A = get_area(loc)
-	if(A)
-		allowed_area = A.name  // Store area name for comparison like xenobio
-	. = ..()
 
 /mob/camera/aiEye/remote/bombardment/setLoc(turf/destination)
 	if(!console_origin || !console_origin.enabled)
 		return
 	var/area/new_area = get_area(destination)
-	// Restrict movement to only the bombardment zone by name (like xenobio)
-	if(new_area && (new_area.name == allowed_area || istype(new_area, /area/awaymission/ihategordon/outsideofmesa/bombardment)))
+	if(new_area && istype(new_area, console_origin.restricted_area))
 		return ..()
-	else
-		return
+	return
 
 /datum/action/innate/bombardment_mark
 	name = "Mark Target"
@@ -583,3 +551,28 @@
 	icon_state = "explosion"
 	duration = 10 SECONDS
 	color = COLOR_RED
+
+// =============================================================================
+// TRUCK RADIO
+// Radio for truck event with distress calls and dialogue
+// =============================================================================
+
+/obj/machinery/negotiations_radio/truck
+	name = "truck radio"
+	desc = "A military radio for emergency communications."
+	icon_state = "radiohecu"
+	var/list/truck_alert_phrases = list(
+		"Приём? У меня тут огромные проблемы.. Помогите!",
+		"Эй!? Чарли тут? Срочно ответьте!",
+		"Они уже ломятся! Ответьте скорее!"
+	)
+	var/list/truck_dialogue_lines = list(
+		"ПАРНИ! Кто бы там ни был!",
+		"Мне нужно СРОЧНО активировать генератор. Без него я не смогу заправить тачку",
+		"Просто продержитесь и дайте мне немного времени! Я вас заберу!"
+	)
+
+/obj/machinery/negotiations_radio/truck/Initialize()
+	. = ..()
+	dialogue_lines = truck_dialogue_lines
+	alert_phrases = truck_alert_phrases

@@ -98,6 +98,12 @@
 	name = "restrooms"
 	icon_state = "awaycontent6"
 
+/area/awaymission/ihategordon/dorm_rooms/stillalive
+	name = "Still Alive Room"
+	icon_state = "awaycontent6"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/stillalive.ogg'
+	ambientsounds = list()
+
 /area/awaymission/ihategordon/secret_rooms
 	name = "secret"
 	icon_state = "awaycontent28"

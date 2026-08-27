@@ -277,9 +277,7 @@
 /datum/outfit/hecu_breacher
 	name = "HECU breacher"
 	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
-	mask = /obj/item/clothing/mask/balaclava
-	head = /obj/item/clothing/head/helmet/hecu
-	glasses = /obj/item/clothing/glasses/hud/security/hecu_ski
+	head = /obj/item/clothing/head/helmet/balaclava
 	suit = /obj/item/clothing/suit/armor/hecu
 	gloves = /obj/item/clothing/gloves/combat
 	belt = /obj/item/storage/belt/bandolier
@@ -330,7 +328,7 @@
 	shoes = /obj/item/clothing/shoes/combat
 	l_pocket = /obj/item/grenade/smokebomb
 	r_pocket = /obj/item/binoculars
-	r_hand = /obj/item/gun/ballistic/automatic/mp5
+	r_hand = /obj/item/gun/ballistic/automatic/m16a4/mesa
 	back = /obj/item/storage/backpack/rucksack/green
 	backpack_contents = list(
 		/obj/item/storage/box/survival/radio,
