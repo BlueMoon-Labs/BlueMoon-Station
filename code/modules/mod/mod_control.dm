@@ -90,6 +90,11 @@
 /obj/item/mod/control/proc/get_boots()
 	return mod_parts[MOD_PART_FEET]
 
+//Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
+/obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
+	var/obj/item/clothing/mod_part/part = get_mod_part_by_index(mod_index)
+	return part?.check_module_ready()
+
 /obj/item/mod/control/proc/all_parts_deployed()
 	if(!wearer)
 		return FALSE
@@ -219,7 +224,8 @@
 	return ..()
 
 /obj/item/mod/control/MouseDrop(atom/over_object)
-	if(src != wearer?.back || !istype(over_object, /atom/movable/screen/inventory/hand))
+	var/obj/item/target_object = wearer?.get_item_by_slot(src.slot_flags)
+	if(src != target_object || !istype(over_object, /atom/movable/screen/inventory/hand))
 		return ..()
 	if(is_active())
 		balloon_alert(wearer, "Отключите МОД!")
@@ -430,7 +436,7 @@
 	var/list/display_names = list()
 	var/list/items = list()
 	for(var/obj/item/mod/module/module as anything in modules)
-		if(module.module_type == MODULE_PASSIVE)
+		if(module.module_type == MODULE_PASSIVE || module.module_type == MODULE_ARMOR)
 			continue
 		display_names[module.name] = REF(module)
 		var/image/module_image = image(icon = module.icon, icon_state = module.icon_state)
@@ -447,10 +453,15 @@
 	selected_module.on_select()
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
-	var/list/all_parts = mod_parts + src
-	for(var/obj/item/part as anything in all_parts)
+	var/list/all_parts = mod_parts
+	for(var/index in all_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/part = all_parts[index]
 		part.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 		part.add_atom_colour(new_color, FIXED_COLOUR_PRIORITY)
+	src.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+	src.add_atom_colour(new_color, FIXED_COLOUR_PRIORITY)
 	wearer?.regenerate_icons()
 
 /obj/item/mod/control/proc/set_mod_skin(new_skin)

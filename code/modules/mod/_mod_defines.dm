@@ -5,10 +5,8 @@
 // #define MOD_PART_CORE		5
 #define MOD_PART_CELL 		5
 
-#define MOD_STATE_RETRACTED  1
-#define MOD_STATE_DEPLOYING  2
-#define MOD_STATE_DEPLOYED   3
-#define MOD_STATE_RETRACTING 4
+#define MODPART_DEPLOYED  "deployed"
+#define MODPART_CONSEALED "consealed"
 
 #define MOD_HELMET mod_parts[MOD_PART_HEAD]
 #define MOD_CHESTPLATE mod_parts[MOD_PART_CHEST]

@@ -18,6 +18,7 @@
 		/obj/item/clothing/head/helmet,
 		//Сюда вписываем то, поверх чего должно быть невозможно развернуть элемент МОДа!
 	)
+	var/obj/item/mod/module/linked_modules = list()
 	var/theme_category
 
 /obj/item/clothing/mod_part/equipped(mob/user, slot)
@@ -34,6 +35,30 @@
 	mod.conceal(null, item)
 	mod.remove_hardlight()
 
+/obj/item/clothing/mod_part/proc/link_modpart_with_module(module)
+	if(istype(module, /obj/item/mod/module) && (module in linked_modules))
+		return FALSE
+	linked_modules += module
+	return TRUE
+
+/obj/item/clothing/mod_part/proc/toggle_all_linked_modules(state)
+	if(!linked_modules)
+		return FALSE
+
+	if(state == MODPART_CONSEALED)
+		for(var/obj/item/mod/module/module in linked_modules)
+			module.saved_state = module.active
+			module.on_deactivation()
+		return TRUE
+	else
+		for(var/obj/item/mod/module/module in linked_modules)
+			if(!module.saved_state)
+				continue
+			module.on_activation()
+
+/obj/item/clothing/mod_part/proc/check_module_ready()
+	return mod.is_active() && mod.wearer.get_item_by_slot(src.slot_flags) == src
+
 /obj/item/clothing/mod_part/proc/update_flags(list/used_skin)
 	var/list/category = used_skin[theme_category]
 	clothing_flags = category[UNSEALED_CLOTHING] || NONE
@@ -48,8 +73,11 @@
 	if(!item)
 		return TRUE
 	overslot = item
-	if(item.type in overslot_blacklist)
-		return FALSE
+
+	for(var/type in overslot_blacklist)
+		if(istype(item, type))
+			return FALSE
+
 	return mod.wearer.transferItemToLoc(overslot, item, force = TRUE)
 
 /obj/item/clothing/mod_part/proc/seal_part(seal)
