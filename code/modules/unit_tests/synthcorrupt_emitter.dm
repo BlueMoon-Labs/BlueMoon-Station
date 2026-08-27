@@ -27,9 +27,11 @@
 
 	overlay.SetSeverity(5)
 	var/after_change = length(overlay.vis_contents)
+	var/contents_after_change = length(overlay.contents)
 
 	overlay.SetSeverity(0)
 	var/after_zero = length(overlay.vis_contents)
+	var/contents_after_zero = length(overlay.contents)
 
 	qdel(overlay)
 
@@ -37,4 +39,9 @@
 	TEST_ASSERT_EQUAL(after_repeats, 1, "двадцать вызовов с той же тяжестью дали [after_repeats] эмиттеров вместо одного - холдер снова копится в vis_contents")
 	TEST_ASSERT_EQUAL(contents_after_repeats, 1, "осиротевшие холдеры остались в contents: [contents_after_repeats] вместо одного")
 	TEST_ASSERT_EQUAL(after_change, 1, "смена тяжести обязана заменять эмиттер, а не добавлять второй")
+	// contents проверяется отдельно от vis_contents: loc холдера - сам экранный объект,
+	// и прежняя версия роняла ссылку, не вынимая холдер НИ ОТКУДА. Чистый vis_contents при
+	// забитом contents - это ровно та утечка, из-за которой клиент и рисовал эмиттеры.
+	TEST_ASSERT_EQUAL(contents_after_change, 1, "смена тяжести оставила старый холдер в contents: [contents_after_change] вместо одного")
 	TEST_ASSERT_EQUAL(after_zero, 0, "нулевая тяжесть обязана снимать эмиттер")
+	TEST_ASSERT_EQUAL(contents_after_zero, 0, "нулевая тяжесть оставила холдер в contents: [contents_after_zero] вместо нуля")

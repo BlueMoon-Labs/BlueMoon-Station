@@ -20,7 +20,14 @@
  */
 /datum/unit_test/lighting_matrix_stays_on_grid/Run()
 	var/turf/tile = run_loc_floor_bottom_left
-	var/atom/movable/lighting_object/lit = tile.lighting_object
+	// Резервация юнит-теста лежит в world.area, а это /area/space с DYNAMIC_LIGHTING_DISABLED: у такого
+	// турфа объекта освещения нет ни после create_lighting_for_zlevel() в Setup(), ни после ChangeTurf()
+	// в пол - оба пути гейтятся по IS_DYNAMIC_LIGHTING(зона). Оборудование заводим сами, как и
+	// остальные тесты света: уборка идёт через allocated_force_qdel, потому что обычный qdel
+	// объект освещения игнорирует.
+	if(!(tile.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
+		tile.generate_missing_corners()
+	var/atom/movable/lighting_object/lit = ensure_lighting_object(tile)
 	TEST_ASSERT_NOTNULL(lit, "у тестового турфа обязан быть объект освещения")
 
 	var/area/tile_area = tile.loc
@@ -44,13 +51,18 @@
 		corner.cache_g = 17 / 32
 		corner.cache_b = 23 / 32
 		corner.cache_mx = 23 / 32
-	TEST_ASSERT(length(restore_corners), "у тестового турфа обязан быть хотя бы один угол освещения")
+
+	// У объекта НА ГРАНИЦЕ зон профиль усреднён с соседями и лежит на нём самом
+	// (blend_is_local), и update() читает кэш, а не свежие значения зоны. Без пересборки
+	// такой тест мерил бы дефолтный профиль и проходил вхолостую. У тайла внутри одной
+	// зоны это быстрый путь и стоит ноль, поэтому зовём безусловно.
+	lit.calculate_area_blend()
 
 	lit.prev_was_dark = FALSE
 	lit.update(use_animate = FALSE)
 
 	var/list/applied = lit.color
-	TEST_ASSERT(islist(applied), "цвет объекта освещения обязан быть матрицей, а не строкой")
+	var/applied_is_matrix = islist(applied)
 
 	// Проверяем двенадцать цветовых каналов; хвост матрицы (смещения и единица альфы)
 	// в update() не пишется и к сетке отношения не имеет.
@@ -58,24 +70,34 @@
 	var/off_grid = 0
 	var/sample_index = 0
 	var/sample_value = 0
-	for(var/index in channels)
-		var/value = applied[index]
-		var/steps = value / LIGHTING_MATRIX_ROUND_VALUE
-		if(abs(steps - round(steps)) > 1e-9)
-			off_grid++
-			if(!sample_index)
-				sample_index = index
-				sample_value = value
+	if(applied_is_matrix)
+		for(var/index in channels)
+			var/value = applied[index]
+			var/steps = value / LIGHTING_MATRIX_ROUND_VALUE
+			if(abs(steps - round(steps)) > 1e-9)
+				off_grid++
+				if(!sample_index)
+					sample_index = index
+					sample_value = value
 
+	// Уборка идёт ДО всех проверок и без единого условия. Зона тут - world.area, общая на
+	// весь космос мира, а углы - настоящие углы резервации: тест, упавший на середине,
+	// оставил бы контраст 1.15 и чужие кэши следующим тестам. TEST_ASSERT возвращается из
+	// прока сразу, finally в DM нет, поэтому единственный надёжный порядок - такой.
 	tile_area.light_contrast = restore_contrast
 	tile_area.light_temperature = restore_temperature
-	lit.prev_was_dark = restore_was_dark
 	for(var/datum/lighting_corner/corner as anything in restore_corners)
 		var/list/saved = restore_corners[corner]
 		corner.cache_r = saved[1]
 		corner.cache_g = saved[2]
 		corner.cache_b = saved[3]
 		corner.cache_mx = saved[4]
+	// Порядок важен: calculate_area_blend() сам сбрасывает prev_was_dark, поэтому
+	// сохранённое значение возвращаем ПОСЛЕ него.
+	lit.calculate_area_blend()
+	lit.prev_was_dark = restore_was_dark
 	lit.update(use_animate = FALSE)
 
+	TEST_ASSERT(length(restore_corners), "у тестового турфа обязан быть хотя бы один угол освещения")
+	TEST_ASSERT(applied_is_matrix, "цвет объекта освещения обязан быть матрицей, а не строкой")
 	TEST_ASSERT_EQUAL(off_grid, 0, "каналов вне сетки LIGHTING_MATRIX_ROUND_VALUE: [off_grid], первый - канал [sample_index] = [sample_value]. Значит, в update() появился множитель ПОСЛЕ округления, и каждый апдейт тайла снова плодит уникальный appearance у клиента.")
