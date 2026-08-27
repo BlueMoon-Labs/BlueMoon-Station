@@ -316,4 +316,30 @@
 		/obj/item/mod/module/infiltrator,
 	)
 
+/obj/item/mod/control/pre_equipped/traitor/inteq
+	equip_cell = /obj/item/stock_parts/cell/bluespace
+	theme = /datum/mod_theme/inteq/traitor
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended/syndicate,
+		/obj/item/mod/module/welding,
+		/obj/item/mod/module/visor/night,
+		/obj/item/mod/module/holster,
+		/obj/item/mod/module/jetpack/advanced,
+	)
+
+/obj/item/mod/control/pre_equipped/blueshied
+	equip_cell = /obj/item/stock_parts/cell/hyper
+	theme = /datum/mod_theme/blueshied
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended,
+		/obj/item/mod/module/jetpack/advanced,
+	)
+
+/obj/item/mod/control/pre_equipped/expeditor
+	theme = /datum/mod_theme/security/expeditor
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended,
+		/obj/item/mod/module/jetpack/advanced,
+	)
+
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)
