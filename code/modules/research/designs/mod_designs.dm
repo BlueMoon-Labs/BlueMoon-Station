@@ -240,6 +240,13 @@
 	build_path = /obj/item/mod/module/jetpack
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
+/datum/design/module/advanced_mod_jetpack
+	name = "Advanced Ion Jetpack Module"
+	id = "adv_mod_jet"
+	materials = list(/datum/material/iron = 5000, /datum/material/plasma = 3500, /datum/material/plastic = 1000)
+	build_path = /obj/item/mod/module/jetpack/advanced
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/module/mod_magboot
 	name = "Magnetic Stabilizator Module"
 	id = "mod_magboot"

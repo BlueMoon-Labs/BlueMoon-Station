@@ -524,7 +524,8 @@
 	name = "Vanguard"
 	desc = "Армированный МОД, в котором не страшно ступить даже в самые опасные заброшенные станции и обломки кораблей."
 	default_skin = "vanguard"
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 2
+	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
+	hardlight_color = "#800080"
 	skins = list(
 		"vanguard" = list(
 			HELMET_LAYER = null,

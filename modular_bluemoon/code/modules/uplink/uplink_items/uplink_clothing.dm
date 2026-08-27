@@ -16,6 +16,15 @@
 	cost = 8
 	purchasable_from = UPLINK_TRAITORS
 
+/datum/uplink_item/mod/core/traitor
+	name = "Agent InteQ MOD"
+	desc = "Модный и современный боевой костюм, предназначенный для солдат ЧВК Интекью, не предпочитающих скрываться.\
+	Неплохая броня и улучшенный джетпак позволяют вести уверенный бой в условиях космоса и разгерметизаций, а \
+	встроенная кобура - прятать оружие, когда то не помещается в рюкзак. "
+	item = /obj/item/mod/control/pre_equipped/traitor/inteq
+	cost = 6
+	purchasable_from = UPLINK_TRAITORS
+
 /datum/uplink_item/mod/syndie
 	name = "Syndicate MOD"
 	desc = "Базовая версия модулярного костюма, используемая синдикатом. Имеет предустановленный джетпак, рюкзак и ДНК-замок."

@@ -376,6 +376,13 @@
 			mod.set_light_range(clamp(value, min_range, max_range))
 			light_range = clamp(value, min_range, max_range)
 
+/obj/item/mod/module/flashlight/vanguard
+	name = "Advanced Flaslight Module"
+	desc = "Особый улучшенный модуль фонарика эксклюзивно для экспедиционного корпуса Нанотрейзен"
+	complexity = 0
+	light_range = 8
+	light_power = 2
+
 ///Dispenser - Dispenses an item after a time passes.
 /obj/item/mod/module/dispenser
 	name = "MOD burger dispenser module"
