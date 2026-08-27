@@ -349,6 +349,11 @@
 		get_asset_datum(/datum/asset/simple/inventory),
 	)
 
+/// Потолок кэша base64-иконок стрип-меню. Ключи файловые, так что запись живёт весь раунд.
+#define STRIP_ICON_CACHE_MAX 1024
+/// Сколько записей вытесняется при переполнении - четверть кэша, самые старые.
+#define STRIP_ICON_CACHE_EVICT (STRIP_ICON_CACHE_MAX / 4)
+
 /datum/strip_menu/ui_data(mob/user)
 	var/list/data = list()
 
@@ -400,8 +405,8 @@
 			if(isnull(cached_b64))
 				cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
 				strip_icon_cache[cache_key] = cached_b64
-				if(length(strip_icon_cache) > 1024)
-					strip_icon_cache.Cut(1, 257) // Evict oldest 25%
+				if(length(strip_icon_cache) > STRIP_ICON_CACHE_MAX)
+					strip_icon_cache.Cut(1, STRIP_ICON_CACHE_EVICT + 1)
 		else
 			cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
 
@@ -425,6 +430,9 @@
 	data["long_strip_menu"] = user.client.prefs.long_strip_menu
 
 	return data
+
+#undef STRIP_ICON_CACHE_MAX
+#undef STRIP_ICON_CACHE_EVICT
 
 /datum/strip_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

@@ -148,6 +148,12 @@
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
 
+/// Кривая непрозрачности оверлея: alpha = коэффициент * тяжесть^2. При потолке тяжести 6
+/// даёт 360, то есть максимум упирается в потолок альфы, а не в саму кривую.
+#define SYNTHCORRUPT_ALPHA_PER_SEVERITY_SQUARED 10
+/// Потолок альфы BYOND.
+#define SYNTHCORRUPT_ALPHA_MAX 255
+
 /atom/movable/screen/fullscreen/scaled/synthcorrupt
 	icon_state = "synthcorrupt"
 	layer = UI_DAMAGE_LAYER
@@ -182,7 +188,7 @@
  */
 /atom/movable/screen/fullscreen/scaled/synthcorrupt/SetSeverity(severity)
 	var/new_severity = clamp(severity, severity_min, severity_max)
-	src.alpha = clamp(10 * new_severity ** 2, 0, 255)
+	src.alpha = clamp(SYNTHCORRUPT_ALPHA_PER_SEVERITY_SQUARED * new_severity ** 2, 0, SYNTHCORRUPT_ALPHA_MAX)
 	// Тот же уровень при живом холдере - работы нет. Именно этот путь и был горячим:
 	// урон стоит на месте, а хендлер здоровья дёргается каждый тик.
 	if(src.severity == new_severity && !QDELETED(holder))
@@ -198,6 +204,9 @@
 	// выше severity_max раздул бы эмиттер мимо потолка.
 	holder = new(src, new_severity)
 	LAZYADD(vis_contents, holder)
+
+#undef SYNTHCORRUPT_ALPHA_PER_SEVERITY_SQUARED
+#undef SYNTHCORRUPT_ALPHA_MAX
 
 /atom/movable/screen/fullscreen/scaled/synthcorrupt/Destroy()
 	if(holder)
