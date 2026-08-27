@@ -72,7 +72,7 @@
 	var/mob/living/carbon/human/wearer
 	var/can_install_pai = FALSE
 	var/current_armor_module_installed = 0
-	var/max_armor_module_count = 3
+	var/max_armor_module_count = 2
 	var/allowed_genital_overlays = FALSE
 
 /obj/item/mod/control/proc/get_mod_part_by_index(index)
@@ -497,17 +497,21 @@
 				balloon_alert(user, "[new_module] несовместим с [old_module]!")
 				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return
-		// if(new_module.module_type == MODULE_ARMOR)
-		// 	var/obj/item/mod/module/armor/armor_module = module
-		// 	var/armor_by_type_num = 0
-		// 	for(var/obj/item/mod/module/armor/also_module in modules)
-		// 		if(armor_module.armor_type != also_module.armor_type)
-		// 			continue
-		// 		armor_by_type_num += 1
-		// 	if(armor_by_type_num >= max_armor_module_count)
-		// 		balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
-		// 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		// 		return
+		if(new_module.module_type == MODULE_ARMOR)
+			var/obj/item/mod/module/armor/armor_module = module
+			if(!armor_module.armor_type)
+				balloon_alert(user, "Модуль не завершен!")
+				to_chat(user, span_alertwarning("Для завершения модуля брони вам нужно добавить в него материал. Для просмотра рецепта осмотрите сам модуль дважды"))
+				return
+			var/armor_by_type_num = 0
+			for(var/obj/item/mod/module/armor/also_module in modules)
+				if(armor_module.armor_type != also_module.armor_type)
+					continue
+				armor_by_type_num += 1
+			if(armor_by_type_num >= max_armor_module_count)
+				balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
+				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+				return
 	if(is_type_in_list(module, theme.module_blacklist))
 		if(user)
 			balloon_alert(user, "[src] не принимает [new_module]!")

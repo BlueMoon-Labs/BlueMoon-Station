@@ -93,6 +93,8 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 /obj/item/mod/control/pre_equipped/safeguard
@@ -104,6 +106,8 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 /obj/item/mod/control/pre_equipped/magnate
@@ -114,6 +118,8 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/holster,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 /obj/item/mod/control/pre_equipped/traitor
@@ -172,6 +178,8 @@
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 	var/insignia_type = /obj/item/mod/module/insignia
 	var/additional_module
@@ -288,6 +296,8 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 //these exist for the prefs menu
