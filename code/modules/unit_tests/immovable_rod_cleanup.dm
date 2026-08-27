@@ -18,7 +18,7 @@
 	TEST_ASSERT(!GLOB.poi_list.Find(rod), "Destroy стержня не снял его с poi_list")
 	TEST_ASSERT_NULL(SSaugury.doombringers[rod], "Destroy стержня не снял его с учёта SSaugury")
 	TEST_ASSERT_NULL(rod.special_target, "Destroy стержня не отпустил цель наведения")
-	TEST_ASSERT_NULL(rod.destination, "Destroy стержня не отпустил точку назначения")
+	TEST_ASSERT_NULL(rod.destination_turf, "Destroy стержня не отпустил точку назначения")
 
 /// Форма стержня из спелла визарда возвращает мага в мир и перестаёт его держать.
 /datum/unit_test/immovable_rod_wizard_form_releases_caster

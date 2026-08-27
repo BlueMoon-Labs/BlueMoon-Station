@@ -50,6 +50,10 @@
 	var/my_retract_sound = 'sound/mecha/mechmove03.ogg'
 	///Быстрая ссылка на компонент втягиваемости
 	var/datum/component/mod_retractable/my_retract_component
+	var/obj/item/clothing/mod_part/required_modpart
+	var/required_modpart_index
+	var/startup_with_suit = FALSE
+	var/saved_state
 
 /obj/item/mod/module/Initialize(mapload)
 	. = ..()
@@ -73,17 +77,30 @@
 	if(user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
 		. += span_notice("Использовано места: [complexity]")
 
+/obj/item/mod/module/proc/check_required_modpart()
+	if(!mod || !mod?.wearer)
+		return FALSE
+	if(!required_modpart)
+		return TRUE
+	return required_modpart.check_module_ready()
+
 /// Called from MODsuit's install() proc, so when the module is installed.
 /obj/item/mod/module/proc/on_install()
-	return
+	if(required_modpart_index)
+		required_modpart = mod.get_mod_part_by_index(required_modpart_index)
+		required_modpart?.link_modpart_with_module(src)
+		return
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
 /obj/item/mod/module/proc/on_uninstall()
+	if(required_modpart)
+		required_modpart.linked_modules -= src
+		required_modpart = null
 	return
 
 /// Called when the MODsuit is activated
 /obj/item/mod/module/proc/on_suit_activation()
-	return
+	return startup_with_suit ? on_activation() : FALSE
 
 /// Called when the MODsuit is deactivated
 /obj/item/mod/module/proc/on_suit_deactivation()
@@ -101,8 +118,11 @@
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
-	if(((!mod.active || mod.activating) && !allowed_inactive))
+	if(((!mod.is_active() || mod.is_activating()) && !allowed_inactive))
 		mod.balloon_alert(mod.wearer, "Сначала активируйте костюм!")
+		return
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
 		return
 	if(module_type != MODULE_USABLE)
 		if(active)
@@ -115,16 +135,20 @@
 
 /// Called when the module is activated
 /obj/item/mod/module/proc/on_activation()
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE
-	if(!mod.active || mod.activating || !mod.cell?.charge)
+	if(!mod.is_active() || !cell?.charge)
 		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
 		//specifically a to_chat because the user is phased out.
 		to_chat(mod.wearer, span_warning("Вы не можете активировать это сейчас!"))
 		return FALSE
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
+		return
 	if(module_type == MODULE_ACTIVE)
 		if(mod.selected_module && !mod.selected_module.on_deactivation())
 			return
@@ -206,13 +230,15 @@
 
 /// Drains power from the suit cell
 /obj/item/mod/module/proc/drain_power(amount)
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!check_power(amount))
 		return FALSE
-	mod.cell.charge = max(0, mod.cell.charge - amount)
+	cell.charge = max(0, cell.charge - amount)
 	return TRUE
 
 /obj/item/mod/module/proc/check_power(amount)
-	if(!mod.cell || (mod.cell.charge < amount))
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
+	if(!cell || (cell.charge < amount))
 		return FALSE
 	return TRUE
 
@@ -256,7 +282,7 @@
 /// Generates an icon to be used for the suit's worn overlays
 /obj/item/mod/module/proc/generate_worn_overlay()
 	. = list()
-	if(!mod.active)
+	if(!mod.is_active())
 		return
 	var/used_overlay
 	if(overlay_state_use && !COOLDOWN_FINISHED(src, cooldown_timer))

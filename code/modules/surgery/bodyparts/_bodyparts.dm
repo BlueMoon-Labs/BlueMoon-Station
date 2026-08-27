@@ -1179,6 +1179,8 @@
 	if(wounds)
 		listclearnulls(wounds)
 	for(var/datum/wound/W as anything in wounds)
+		if(W.is_bleed_suppressed()) // BLUEMOON EDIT - свежая повязка глушит истечение крови из раны
+			continue
 		bleed_rate += W.blood_flow
 	if(owner.mobility_flags & ~MOBILITY_STAND)
 		bleed_rate *= 1.2
@@ -1268,8 +1270,14 @@
 		return
 	var/old_capacity = current_gauze.absorption_capacity
 	current_gauze.absorption_capacity = max(0, current_gauze.absorption_capacity - seep_amt)
-	if(old_capacity > 0 && !current_gauze.absorption_capacity && owner)
-		owner.balloon_alert(owner, "[current_gauze] пропитался кровью, его пора снимать")
+	// BLUEMOON EDIT - пропитавшийся бинт больше не сдерживает кровотечение.
+	// Если под ним ещё жива рана - кровь пойдёт снова, а если рана успела
+	// свернуться под повязкой - лишь сообщаем, что бинт отработал своё.
+	if(old_capacity > 0 && !current_gauze.absorption_capacity && owner && owner.stat != DEAD)
+		if(get_bleed_rate() > 0)
+			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение возобновилось!")
+		else
+			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение остановилось.")
 
 /**
   * remove_gauze() removes the gauze wrapping from this bodypart and returns it to the user.
@@ -1288,4 +1296,8 @@
 	if(to_hands && user)
 		user.put_in_hands(removed)
 	gauze_owner.update_bandage_overlays()
+	// BLUEMOON ADD START - сняв повязку, игрок должен узнать, что рана никуда не делась
+	if(gauze_owner.stat != DEAD && gauze_owner.get_total_bleed_rate() > 0)
+		gauze_owner.balloon_alert(gauze_owner, "кровотечение возобновилось!")
+	// BLUEMOON ADD END
 	return TRUE

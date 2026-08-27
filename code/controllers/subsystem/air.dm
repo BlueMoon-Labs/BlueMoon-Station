@@ -361,6 +361,44 @@ SUBSYSTEM_DEF(air)
 	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]|AO:[round(cost_atmos_atoms,1)]} TC:{AT:[round(cost_turfs,1)]|DC:[round(cost_decompression,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|RBQ:[pipenets_needing_rebuilt.len]/[expansion_queue.len]|AO:[atom_process.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|DA:[num_decompression_areas]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
 	return ..()
 
+/// Имя текущей фазы прохода: currentpart - число, а в чёрном ящике МК от числа толку мало.
+/datum/controller/subsystem/air/proc/currentpart_name()
+	switch(currentpart)
+		if(SSAIR_PIPENETS)
+			return "пайпнеты"
+		if(SSAIR_ATMOSMACHINERY)
+			return "атмос-машинерия"
+		if(SSAIR_EXCITEDGROUPS)
+			return "возбуждённые группы"
+		if(SSAIR_HIGHPRESSURE)
+			return "перепады давления"
+		if(SSAIR_HOTSPOTS)
+			return "очаги огня"
+		if(SSAIR_TURF_CONDUCTION)
+			return "теплопроводность турфов"
+		if(SSAIR_REBUILD_PIPENETS)
+			return "перестройка пайпнетов"
+		if(SSAIR_EQUALIZE)
+			return "эквалайзер"
+		if(SSAIR_ACTIVETURFS)
+			return "активные турфы"
+		if(SSAIR_TURF_POST_PROCESS)
+			return "постобработка турфов"
+		if(SSAIR_FINALIZE_TURFS)
+			return "финализация турфов"
+		if(SSAIR_ATMOSMACHINERY_AIR)
+			return "атмос-машинерия (воздух)"
+		if(SSAIR_DEFERRED_AIRS)
+			return "отложенные смеси"
+		if(SSAIR_DECOMPRESSION)
+			return "разгерметизация"
+		if(SSAIR_ATOMS)
+			return "атомы в атмосфере"
+	return "фаза [currentpart]"
+
+/datum/controller/subsystem/air/last_task()
+	return "[currentpart_name()], активных турфов [length(active_turfs)], групп [length(excited_groups)], сетей [length(networks)], очередь ребилда [length(pipenets_needing_rebuilt)]"
+
 /datum/controller/subsystem/air/Initialize(timeofday)
 	map_loading = FALSE
 	setup_allturfs()

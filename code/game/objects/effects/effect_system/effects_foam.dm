@@ -181,7 +181,7 @@
 				continue
 			if(isturf(O.loc))
 				var/turf/T = O.loc
-				if(T.intact && O.level == 1) //hidden under the floor
+				if((T.turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
 					continue
 			reagents.reaction(O, TOUCH, fraction)
 	var/hit = 0
@@ -250,9 +250,19 @@
 //FOAM EFFECT DATUM
 /datum/effect_system/foam_spread
 	var/amount = 25		// the size of the foam spread.
+	/// Носитель химии до момента рождения пены. Голый /obj, у которого reagents.my_atom
+	/// смотрит обратно на него же - ссылочный цикл, а рефкаунт BYOND циклы не разбирает
+	/// никогда. Разорвать его может только Destroy(), то есть qdel самой системы.
 	var/obj/chemholder
 	effect_type = /obj/effect/particle_effect/foam
 	var/metal = 0
+	// Система одноразовая и убирает себя сама в конце start() - ровно та же болезнь и то же
+	// лечение, что у /datum/effect_system/smoke_spread/chem, подробный разбор там. Коротко:
+	// ни одно место создания пены qdel не звало, поэтому каждый разлив оставлял в мире
+	// навсегда голый /obj + /datum/reagents(1000); перепись прода 10050/10052/10054 видела
+	// это как непрерывный рост числа голых /obj. Цена - экземпляр не переиспользуем; ни
+	// одного foam_spread в переменной объекта в дереве нет, все места создания локальные.
+	autocleanup = TRUE
 
 /datum/effect_system/foam_spread/watertype                      //Для ситуаций, когда требуется якобы потоп
 	effect_type = /obj/effect/particle_effect/foam/watertype
@@ -296,12 +306,20 @@
 	metal = metaltype
 
 /datum/effect_system/foam_spread/start()
+	// Система себя уже убрала (см. autocleanup у типа) - chemholder отпущен, дальше идти
+	// некуда. Гард такой же, как у /datum/effect_system/start().
+	if(QDELETED(src))
+		return
 	var/obj/effect/particle_effect/foam/F = new effect_type(location)
 	var/foamcolor = mix_color_from_reagents(chemholder.reagents.reagent_list)
 	chemholder.reagents.copy_to(F, chemholder.reagents.total_volume/amount)
 	F.add_atom_colour(foamcolor, FIXED_COLOUR_PRIORITY)
 	F.amount = amount
 	F.metal = metal
+
+	// Химия отдана рождённой пене, chemholder больше не нужен ни на что.
+	if(autocleanup)
+		qdel(src)
 
 
 //////////////////////////////////////////////////////////

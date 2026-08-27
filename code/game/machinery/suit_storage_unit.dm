@@ -68,7 +68,7 @@
 	suit_type = /obj/item/clothing/suit/space/hardsuit/captain
 	mask_type = /obj/item/clothing/mask/gas/atmos/captain
 	storage_type = /obj/item/tank/jetpack/oxygen/captain
-	//mod_type = /obj/item/mod/control/pre_equipped/magnate
+	mod_type = /obj/item/mod/control/pre_equipped/magnate
 
 /obj/machinery/suit_storage_unit/corporate
 	mask_type = /obj/item/clothing/mask/gas/atmos/captain/corporate
@@ -78,7 +78,7 @@
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine
 	mask_type = /obj/item/clothing/mask/gas/glass/alt
 	shoes_type = /obj/item/clothing/shoes/magboots
-	//mod_type = /obj/item/mod/control/pre_equipped/engineering
+	mod_type = /obj/item/mod/control/pre_equipped/engineering
 
 /obj/machinery/suit_storage_unit/industrial/ancient
 	suit_type = /obj/item/clothing/suit/space/hardsuit/ancient
@@ -94,30 +94,31 @@
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine/atmos
 	mask_type = /obj/item/clothing/mask/gas/atmos
 	storage_type = /obj/item/watertank/atmos
-	//mod_type = /obj/item/mod/control/pre_equipped/atmospheric
+	mod_type = /obj/item/mod/control/pre_equipped/atmospheric
 
 /obj/machinery/suit_storage_unit/industrial/ce
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine/elite
 	mask_type = /obj/item/clothing/mask/gas/glass/alt
 	shoes_type = /obj/item/clothing/shoes/magboots/advance
+	mod_type = /obj/item/mod/control/pre_equipped/advanced
 
 /obj/machinery/suit_storage_unit/atmos
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine/atmos
 	mask_type = /obj/item/clothing/mask/breath
 	storage_type = /obj/item/watertank/atmos
-	//mod_type = /obj/item/mod/control/pre_equipped/advanced
+	mod_type = /obj/item/mod/control/pre_equipped/advanced
 
 /obj/machinery/suit_storage_unit/security
 	suit_type = /obj/item/clothing/suit/space/hardsuit/security
 	mask_type = /obj/item/clothing/mask/gas/sechailer
 	storage_type = /obj/item/tank/jetpack/oxygen/security
-	//mod_type = /obj/item/mod/control/pre_equipped/security
+	mod_type = /obj/item/mod/control/pre_equipped/security
 
 /obj/machinery/suit_storage_unit/hos
 	suit_type = /obj/item/clothing/suit/space/hardsuit/security/hos
 	mask_type = /obj/item/clothing/mask/gas/sechailer
 	storage_type = /obj/item/tank/internals/oxygen
-	//mod_type = /obj/item/mod/control/pre_equipped/safeguard
+	mod_type = /obj/item/mod/control/pre_equipped/safeguard
 
 /obj/machinery/suit_storage_unit/atmos
 	suit_type = /obj/item/clothing/suit/space/hardsuit/engine/atmos
@@ -131,30 +132,30 @@
 /obj/machinery/suit_storage_unit/mining/eva
 	suit_type = /obj/item/clothing/suit/space/hardsuit/mining
 	mask_type = /obj/item/clothing/mask/breath
-	//mod_type = /obj/item/mod/control/pre_equipped/mining
+	mod_type = /obj/item/mod/control/pre_equipped/mining
 
 /obj/machinery/suit_storage_unit/cmo
 	suit_type = /obj/item/clothing/suit/space/hardsuit/medical
 	mask_type = /obj/item/clothing/mask/breath
-	//mod_type = /obj/item/mod/control/pre_equipped/rescue
+	mod_type = /obj/item/mod/control/pre_equipped/rescue
 
 /obj/machinery/suit_storage_unit/paramedic
 	name = "Paramedic Suit Storage Unit"
 	suit_type = /obj/item/clothing/suit/space/eva/paramedic
 	helmet_type = /obj/item/clothing/head/helmet/space/eva/paramedic
 	mask_type = /obj/item/clothing/mask/breath
-	//mod_type = /obj/item/mod/control/pre_equipped/medical
+	mod_type = /obj/item/mod/control/pre_equipped/medical
 
 /obj/machinery/suit_storage_unit/rd
 	suit_type = /obj/item/clothing/suit/space/hardsuit/rd
 	mask_type = /obj/item/clothing/mask/breath
-	//mod_type = /obj/item/mod/control/pre_equipped/research
+	mod_type = /obj/item/mod/control/pre_equipped/research
 
 /obj/machinery/suit_storage_unit/syndicate
 	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi
 	mask_type = /obj/item/clothing/mask/gas/sechailer
 	storage_type = /obj/item/tank/jetpack/oxygen/harness
-	//mod_type = /obj/item/mod/control/pre_equipped/nuclear
+	mod_type = /obj/item/mod/control/pre_equipped/nuclear
 
 /obj/machinery/suit_storage_unit/winter_syndicate
 	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi/elite/winter
@@ -231,6 +232,11 @@
 		storage = new storage_type(src)
 	update_icon()
 
+/obj/machinery/suit_storage_unit/LateInitialize()
+	. = ..()
+	if(state_open)
+		take_mapload_contents()
+
 /obj/machinery/suit_storage_unit/Destroy()
 	QDEL_NULL(suit)
 	QDEL_NULL(helmet)
@@ -289,6 +295,48 @@
 	mod = null
 	storage = null
 	occupant = null
+
+///При mapload забирает предметы с той же клетки, что и шкаф (как closet/take_contents).
+/obj/machinery/suit_storage_unit/proc/take_mapload_contents()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	for(var/atom/movable/AM in T)
+		if(AM == src || !isitem(AM))
+			continue
+		store_mapload_item(AM)
+	update_icon()
+
+///Кладёт предмет в первый подходящий свободный слот. TRUE — внутри, FALSE — не влез.
+/obj/machinery/suit_storage_unit/proc/store_mapload_item(obj/item/I)
+	if(istype(I, /obj/item/clothing/suit))
+		if(suit)
+			return FALSE
+		suit = I
+	else if(istype(I, /obj/item/clothing/head))
+		if(helmet)
+			return FALSE
+		helmet = I
+	else if(istype(I, /obj/item/clothing/mask))
+		if(mask)
+			return FALSE
+		mask = I
+	else if(istype(I, /obj/item/clothing/shoes))
+		if(shoes)
+			return FALSE
+		shoes = I
+	else if(istype(I, /obj/item/mod/control))
+		if(mod)
+			return FALSE
+		mod = I
+	else
+		if(storage)
+			return FALSE
+		storage = I
+	I.forceMove(src)
+	if(mod == I)
+		machine_wake()
+	return TRUE
 
 /obj/machinery/suit_storage_unit/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -529,9 +577,9 @@
 	if(mod)
 		if(!istype(mod))
 			return machine_sleep()
-		if(!mod.cell)
+		cell = mod.get_cell()
+		if(!cell)
 			return machine_sleep()
-		cell = mod.cell
 	else
 		return machine_sleep()
 

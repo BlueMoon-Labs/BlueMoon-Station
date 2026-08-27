@@ -20,6 +20,7 @@ type GraphicsData = {
   chat_on_map_looc: boolean;
   see_chat_non_mob: boolean;
   see_chat_emotes: boolean;
+  runechat_anim: number;
   hud_button_flashes: boolean;
   hud_toggle_color: string;
   view_pixelshift: boolean;
@@ -61,6 +62,12 @@ const LIGHTING_BLUR_OPTIONS = [
   { value: 4, label: '4' },
 ];
 
+const RUNECHAT_ANIM_OPTIONS = [
+  { value: 0, label: 'Без анимации' },
+  { value: 1, label: 'Снизу вверх' },
+  { value: 2, label: 'Печать текста' },
+];
+
 const UI_STYLE_OPTIONS = ['Midnight', 'Retro', 'Plasmafire', 'Slimecore', 'Operative', 'Glass', 'Clockwork', 'Trasen-Knox', 'Detective', 'Liteweb', 'Corru'];
 
 const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [
@@ -90,6 +97,9 @@ export const GraphicsSection = (props) => {
   const fpsValue = Number(data.clientfps ?? 120);
   const selectedFps = FPS_OPTIONS.find(o => o.value === fpsValue)?.label || '120';
   const selectedBlur = LIGHTING_BLUR_OPTIONS.find(o => o.value === Number(data.lighting_blur ?? 4));
+  const selectedRunechatAnim = RUNECHAT_ANIM_OPTIONS.find(
+    o => o.value === Number(data.runechat_anim ?? 1),
+  )?.label || RUNECHAT_ANIM_OPTIONS[1].label;
   const selectedUiStyle = UI_STYLE_OPTIONS.includes(data.UI_style) ? data.UI_style : 'Operative';
 
   const mid = Math.ceil(GFX_TOGGLES.length / 2);
@@ -213,6 +223,25 @@ export const GraphicsSection = (props) => {
               onSelected={value => {
                 const opt = LIGHTING_BLUR_OPTIONS.find(o => o.label === value);
                 if (opt) act('set_gfx_val', { flag: 'lighting_blur', value: opt.value });
+              }}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+      <Stack.Item>
+        <Stack align="center" fill className="GamePreferences__row">
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">Анимация руначата</div>
+            <div className="GamePreferences__hint">Как появляются сообщения над головами персонажей</div>
+          </Stack.Item>
+          <Stack.Item>
+            <Dropdown
+              width="160px"
+              options={RUNECHAT_ANIM_OPTIONS.map(o => o.label)}
+              selected={selectedRunechatAnim}
+              onSelected={value => {
+                const opt = RUNECHAT_ANIM_OPTIONS.find(o => o.label === value);
+                if (opt) act('set_runechat_anim', { value: opt.value });
               }}
             />
           </Stack.Item>

@@ -449,7 +449,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp.ogg'
 	slowdown = 0.1
-	jetpack = /obj/item/tank/jetpack/suit/fast
+	jetpack = /obj/item/tank/jetpack/suit
 	unique_reskin = list()
 
 ///Инженерный риг

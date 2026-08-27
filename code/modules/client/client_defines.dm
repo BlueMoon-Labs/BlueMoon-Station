@@ -275,6 +275,9 @@
 	///Are we locking our movement input?
 	var/movement_locked = FALSE
 
+	// null - Not used at this moment
+	var/show_popup_menus_before_disable
+
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)
 	COOLDOWN_DECLARE(next_mousedrag)

@@ -40,6 +40,7 @@
 		/obj/item/stock_parts/capacitor = 2)
 	needs_anchored = FALSE
 
+
 // ============================================
 // CIRCUIT BOARDS ДЛЯ СИСТЕМЫ VANGUARD
 // ============================================
@@ -71,3 +72,13 @@
 	req_components = list(
 		/obj/item/stock_parts/matter_bin = 3
 	)
+
+/obj/item/circuitboard/machine/big_manipulator
+	name = "Big Manipulator (Machine Board)"
+	icon_state = "engineering"
+	build_path = /obj/machinery/big_manipulator
+	req_components = list(
+		/obj/item/stock_parts/manipulator = 1,
+		/obj/item/stack/sheet/glass = 1)
+	needs_anchored = FALSE
+

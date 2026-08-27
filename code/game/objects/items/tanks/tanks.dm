@@ -315,6 +315,8 @@
 	var/temperature = air_contents.return_temperature()
 
 	if(pressure > TANK_FRAGMENT_PRESSURE)
+		if(src.loc && istype(src.loc, /obj/item/transfer_valve) && SSmapping.level_trait(src.loc.z, ZTRAIT_PACT_SIEGE))
+			return
 		if(!istype(src.loc, /obj/item/transfer_valve))
 			message_admins("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")
 			log_game("Explosive tank rupture! Last key to touch the tank was [src.fingerprintslast].")

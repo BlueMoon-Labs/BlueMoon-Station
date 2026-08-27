@@ -39,13 +39,60 @@
 
 	if(drop_items)
 		unequip_everything()
+		dust_spill_everything() // BLUEMOON ADD - drop_items теперь означает "выбросить вообще всё"
 
 	if(buckled)
 		buckled.unbuckle_mob(src, force = TRUE)
 
 	dust_animation()
-	spawn_dust(just_ash)
+	var/datum/onelife_death/form = onelife_get_death_form(src) // BLUEMOON ADD - «Одна Жизнь»
+	if(form) // BLUEMOON ADD - рассыпаемся в выбранную форму вместо пепла
+		form.crumble(src)
+	else
+		spawn_dust(just_ash)
 	QDEL_IN(src,5) // since this is sometimes called in the middle of movement, allow half a second for movement to finish, ghosting to happen and animation to play. Looks much nicer and doesn't cause multiple runtimes.
+
+/// BLUEMOON ADD START
+/// Выбрасывает всё то, что при обычном dust() оставалось внутри тела и исчезало
+/// вместе с ним через 5 тиков: застрявшие в конечностях предметы, сами импланты,
+/// их содержимое (например, имплант-хранилище) и проглоченные предметы.
+/mob/living/proc/dust_spill_everything()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+
+	if(!iscarbon(src))
+		return
+
+	var/mob/living/carbon/C = src
+
+	//Застрявшие в конечностях предметы
+	for(var/obj/item/bodypart/LB as anything in C.bodyparts)
+		if(!LB.embedded_objects.len)
+			continue
+		for(var/obj/item/I as anything in LB.embedded_objects)
+			LB.embedded_objects -= I
+			I.unembedded()
+			I.forceMove(T)
+		LB.embedded_objects.Cut()
+
+	if(!C.has_embedded_objects())
+		C.clear_alert("embeddedobject")
+		SEND_SIGNAL(C, COMSIG_CLEAR_MOOD_EVENT, "embedded")
+
+	//Импланты: сначала выпускаем их содержимое, потом выбрасываем сам имплант.
+	var/list/implants_copy = C.implants.Copy()
+	for(var/obj/item/implant/IM as anything in implants_copy)
+		for(var/obj/item/IT in IM.contents)
+			IT.forceMove(T)
+		C.implants -= IM
+		IM.forceMove(T)
+
+	//Проглоченное (содержимое органов, например желудка)
+	for(var/obj/item/organ/O as anything in C.internal_organs)
+		for(var/obj/item/IT in O.contents)
+			IT.forceMove(T)
+/// BLUEMOON ADD END
 
 /mob/living/proc/dust_animation()
 	return

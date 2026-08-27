@@ -146,10 +146,9 @@
 			continue
 		if(istype(M, /obj/machinery/power/grounding_rod))
 			continue // стержень сам переваривает энергию шара, это его работа
-		//intact есть только у пола: у голого /turf его чтение не компилируется
 		if(M.level == 1 && istype(T, /turf/open/floor))
-			var/turf/open/floor/floor_tile = T
-			if(floor_tile.intact)
+			var/turf/open/floor/floor_turf = T
+			if(floor_turf.has_tile())
 				continue // техника под целым полом шару недоступна
 		short_out(M)
 
@@ -216,6 +215,18 @@
 		//PROC_REF ищет проц в текущем типе (шар), а end_forced_arcing живёт на АПЦ -
 		//новый компилятор за это падает "undefined type path"
 		forced_arc_timers[APC] = addtimer(CALLBACK(APC, TYPE_PROC_REF(/obj/machinery/power/apc, end_forced_arcing)), TESLA_BALL_ARC_DURATION)
+	// BLUEMOON ADD - провод не выдерживает вброса: энергия успевает уйти в сеть,
+	// затем кабель выгорает (deconstruct роняет моток кабеля на пол)
+	addtimer(CALLBACK(src, PROC_REF(burn_out_cable), C), 1 SECONDS)
+
+/// Выгорание провода, через который шар сбрасывал энергию в сеть
+/obj/singularity/energy_ball/proc/burn_out_cable(obj/structure/cable/C)
+	if(QDELETED(C))
+		return
+	investigate_log("energy ball burned out a power cable at [AREACOORD(C)].", INVESTIGATE_WIRES)
+	do_sparks(rand(4, 8), FALSE, C)
+	playsound(get_turf(C), "sparks", 70, TRUE, extrarange = SHORT_RANGE_SOUND_EXTRARANGE)
+	C.deconstruct()
 
 /obj/machinery/power/apc/proc/end_forced_arcing()
 	force_arcing = FALSE

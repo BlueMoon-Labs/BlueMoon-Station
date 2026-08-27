@@ -29,10 +29,15 @@
 #define MAX_SHEET_WIDTH 16384
 /// Сколько ненайденных DMI перечислять в сообщениях лога.
 #define MISSING_DMI_REPORTED 5
-/// Сколько раз лист возвращается в очередь, если rust не прочитал часть DMI.
-#define UNREAD_DMI_RETRIES 2
-/// Пауза перед пересборкой: даём деплою докопировать дерево иконок на диск.
+/// Сколько раз лист возвращается в очередь, если rust не смог прочитать часть DMI.
+/// Двух попыток с шагом 15 с не хватало: в раунде 10114 дерево иконок докопировалось
+/// только к 35-й секунде, лист панели спавна ушёл в пересборку с дырой и записал
+/// кэш, который потом не сходился.
+#define UNREAD_DMI_RETRIES 5
+/// Базовая пауза перед повтором: даём деплою докопировать дерево иконок на диск.
 #define UNREAD_DMI_RETRY_DELAY (15 SECONDS)
+/// Потолок паузы. Удвоение без потолка увело бы последнюю попытку за пределы лобби.
+#define UNREAD_DMI_RETRY_MAX_DELAY (2 MINUTES)
 
 /datum/asset/spritesheet_batched
 	_abstract = /datum/asset/spritesheet_batched
@@ -79,6 +84,9 @@
 	var/list/cache_shards_data
 	/// Результат проверки кэша, чтобы не гонять её по кругу при повторных заходах.
 	var/cache_result
+	/// Причина последнего промаха кэша строкой от rust. По ней отличаем настоящее
+	/// изменение контента от файла, который в этот момент просто не читался.
+	var/cache_mismatch_reason
 	/// Гард одного пишущего: результат задачи rust-g одноразовый, второй опрашивающий
 	/// его потеряет.
 	var/generation_in_progress = FALSE
@@ -213,6 +221,20 @@
 		SSasset_loading.dequeue_asset(src)
 		finish_generation()
 		return
+
+	// Кэш промахнулся, потому что rust не смог ОТКРЫТЬ один из DMI - это не изменение
+	// контента, а гонка деплоя, и пересобирать лист из-за неё нельзя. Цена ошибки
+	// измерена на проде: лист панели спавна стоит 400-670 МБ адресного пространства,
+	// которые аллокатор не отдаёт обратно, и раунды 10114 и 10115 (единственные два из
+	// шести, где он пересобирался) умерли по памяти. Ждём и перепроверяем.
+	if(cache_result == CACHE_INVALID && looks_like_deploy_race(cache_mismatch_reason))
+		if(can_retry_unread(yield))
+			schedule_cache_recheck()
+			return
+		// Попытки кончились (или мы на синхронном пути, где ждать нельзя) - собираем
+		// как есть, но в логе должно остаться, что причина была не в контенте.
+		log_asset("Кэш spritesheet_[name] сброшен: [cache_mismatch_reason] - ждать больше нечего, собираем лист заново.")
+
 	// Досюда дошли - кэш невалиден, нечего его хранить.
 	fdel(cache_meta_path())
 	// Число шардов между версиями меняется: сносим png только этого листа, чтобы
@@ -251,7 +273,7 @@
 	if(!length(sizes) || !length(sprites) || !length(sheet_files))
 		CRASH("Спрайтшит [name]: rust-g вернул пустой результат")
 	if(length(unread_dmi_paths))
-		log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - их спрайты пропали с листа, а кросс-раундовый кэш не сойдётся, пока файлы не станут читаемыми. [describe_unread_dmis()]")
+		log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - их спрайты пропали с листа, и кэш этого листа мы не пишем. [describe_unread_dmis()]")
 
 	var/list/png_hashes = list()
 	for(var/png_name in sheet_files)
@@ -268,7 +290,14 @@
 			CHECK_TICK
 
 	register_css()
-	write_cache_meta(generated_cache_shards, png_hashes)
+	if(length(unread_dmi_paths))
+		// Кэш с неполными dmi_hashes не сойдётся НИКОГДА: rust отвечает на него
+		// "more DMIs exist than DMI hashes provided", и лист пересобирается каждый
+		// следующий раунд. Записать его хуже, чем не записать вовсе - без него
+		// следующий раунд хотя бы соберёт лист начисто и сохранит полный кэш.
+		fdel(cache_meta_path())
+	else
+		write_cache_meta(generated_cache_shards, png_hashes)
 	SSasset_loading.dequeue_asset(src)
 	finish_generation()
 
@@ -356,7 +385,64 @@
 /// Непрочитанные DMI лечатся пересборкой только на отложенном пути: синхронный
 /// потребитель ждать не может и получает лист как есть, с предупреждением в логе.
 /datum/asset/spritesheet_batched/proc/needs_unread_retry(yield)
-	return yield && length(unread_dmi_paths) && unread_retries_left > 0
+	return can_retry_unread(yield) && length(unread_dmi_paths)
+
+/// Есть ли ещё право на повтор. Бюджет один на обе причины ждать (промах кэша от
+/// нечитаемого файла и дыра в собранном листе): и то и другое - одна и та же гонка
+/// деплоя, и растягивать её вдвое незачем.
+/datum/asset/spritesheet_batched/proc/can_retry_unread(yield)
+	return yield && unread_retries_left > 0
+
+/**
+ * Пауза перед следующей попыткой, вдвое больше предыдущей.
+ *
+ * Первая проверка почти всегда попадает в самое начало копирования дерева иконок, а
+ * хвост его едет минутами (раунд 10114: попытка на 16-й секунде видела 18 непрочитанных
+ * DMI против одного на старте - деплой в этот момент шёл полным ходом). Ровный шаг в
+ * 15 с тратил бюджет попыток до того, как копирование заканчивалось.
+ */
+/datum/asset/spritesheet_batched/proc/retry_delay()
+	var/attempt = max(1, UNREAD_DMI_RETRIES - unread_retries_left)
+	return min(UNREAD_DMI_RETRY_DELAY * (2 ** (attempt - 1)), UNREAD_DMI_RETRY_MAX_DELAY)
+
+/**
+ * Откладывает ПЕРЕПРОВЕРКУ кэша, ничего не пересобирая.
+ *
+ * Сюда приходит промах вида "Error while hashing dmi_path 'X': No such file or directory":
+ * кэш валиден, просто в момент проверки файла ещё не было на диске. Сбрасываем
+ * разобранные метаданные, чтобы следующий заход перечитал их с нуля - за паузу деплой
+ * мог доложить и сам json, и png.
+ */
+/datum/asset/spritesheet_batched/proc/schedule_cache_recheck()
+	unread_retries_left--
+	var/delay = retry_delay()
+	log_asset("Кэш spritesheet_[name]: [cache_mismatch_reason] - файл не читается, похоже на гонку деплоя. Пересборку откладываем, перепроверка через [delay / 10] с, осталось попыток: [unread_retries_left].")
+	cache_result = null
+	cache_data = null
+	cache_shards_data = null
+	cache_sizes_data = null
+	cache_sprites_data = null
+	cache_sheet_files_data = null
+	cache_png_hashes_data = null
+	cache_mismatch_reason = null
+	retry_timer_id = addtimer(CALLBACK(SSasset_loading, TYPE_PROC_REF(/datum/controller/subsystem/asset_loading, queue_asset), src), delay, TIMER_STOPPABLE)
+
+/**
+ * Отличает "файл не открылся" от "контент изменился".
+ *
+ * rust отдаёт причину промаха строкой, и у неё два принципиально разных класса.
+ * Несовпавший хэш или другой набор спрайтов - настоящая инвалидация, лист обязан
+ * пересобраться сейчас же. А ошибка чтения ("No such file or directory", нехватка
+ * хэшей на шард) - это состояние диска в конкретную секунду, и пересборка по ней
+ * стоит сотни мегабайт зря. По логам прода 25.08 промахи этого класса были в пяти
+ * раундах из шести, в том числе на листах vending и pipes каждый раунд подряд.
+ */
+/datum/asset/spritesheet_batched/proc/looks_like_deploy_race(reason)
+	if(!istext(reason))
+		return FALSE
+	return findtext(reason, "Error while hashing") \
+		|| findtext(reason, "No such file or directory") \
+		|| findtext(reason, "more DMIs exist than DMI hashes provided")
 
 /**
  * Возвращает лист в очередь сборки с паузой на докопирование иконок.
@@ -368,12 +454,13 @@
  */
 /datum/asset/spritesheet_batched/proc/schedule_unread_retry()
 	unread_retries_left--
-	log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - похоже, деплой ещё копирует дерево иконок. Пересборка через [UNREAD_DMI_RETRY_DELAY / 10] с, осталось попыток: [unread_retries_left]. [describe_unread_dmis()]")
+	var/delay = retry_delay()
+	log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - похоже, деплой ещё копирует дерево иконок. Пересборка через [delay / 10] с, осталось попыток: [unread_retries_left]. [describe_unread_dmis()]")
 	sizes = list()
 	sprites = list()
 	oversized_classes = null
 	sheet_files = list()
-	retry_timer_id = addtimer(CALLBACK(SSasset_loading, TYPE_PROC_REF(/datum/controller/subsystem/asset_loading, queue_asset), src), UNREAD_DMI_RETRY_DELAY, TIMER_STOPPABLE)
+	retry_timer_id = addtimer(CALLBACK(SSasset_loading, TYPE_PROC_REF(/datum/controller/subsystem/asset_loading, queue_asset), src), delay, TIMER_STOPPABLE)
 
 /// Первые MISSING_DMI_REPORTED непрочитанных путей с пометкой, виден ли файл BYOND-у.
 /// fexists прощает регистр, поэтому "есть" означает гонку деплоя либо регистр пути,
@@ -434,6 +521,7 @@
  * DMI и описания спрайтов) - в rust, отдельно по каждому шарду.
  */
 /datum/asset/spritesheet_batched/proc/should_refresh(yield)
+	cache_mismatch_reason = null
 	var/meta_path = cache_meta_path()
 	if(!fexists(meta_path))
 		return CACHE_INVALID
@@ -460,8 +548,13 @@
 	// пересобирается каждый раунд, и понять, почему это происходит, нельзя.
 	var/mismatch_reason = cache_shards_mismatch_reason(yield)
 	if(mismatch_reason)
-		log_asset("Кэш spritesheet_[name] сброшен: [mismatch_reason]")
+		cache_mismatch_reason = mismatch_reason
+		// Промах от нечитаемого файла разбирает вызывающий: он не пересобирает лист,
+		// а ждёт и проверяет заново, поэтому "сброшен" тут писать рано.
+		if(!looks_like_deploy_race(mismatch_reason))
+			log_asset("Кэш spritesheet_[name] сброшен: [mismatch_reason]")
 		return CACHE_INVALID
+	cache_mismatch_reason = null
 	sizes = cache_sizes_data
 	sprites = cache_sprites_data
 	sheet_files = cache_sheet_files_data
@@ -590,6 +683,7 @@
 	cache_sizes_data = null
 	cache_sprites_data = null
 	cache_sheet_files_data = null
+	cache_mismatch_reason = null
 	fully_generated = TRUE
 
 /datum/asset/spritesheet_batched/queued_generation()
@@ -737,3 +831,4 @@
 #undef MISSING_DMI_REPORTED
 #undef UNREAD_DMI_RETRIES
 #undef UNREAD_DMI_RETRY_DELAY
+#undef UNREAD_DMI_RETRY_MAX_DELAY

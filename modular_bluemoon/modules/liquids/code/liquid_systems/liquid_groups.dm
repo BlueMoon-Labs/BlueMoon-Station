@@ -199,7 +199,7 @@ GLOBAL_VAR_INIT(liquid_debug_colors, FALSE)
 		cached_liquids.has_cached_share = TRUE
 		cached_liquids.attrition = 0
 
-		cached_liquids.color = mixed_color
+		cached_liquids.set_reagent_color_for_liquid(mixed_color)
 		cached_liquids.set_height(height)
 
 		if(determined_new_state != cached_liquids.liquid_state)

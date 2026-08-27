@@ -136,5 +136,12 @@
 	hasShocked = TRUE
 	do_sparks(5, TRUE, AM.loc)
 	var/atom/target = get_edge_target_turf(AM, get_dir(src, get_step_away(AM, src)))
+	// BLUEMOON CHANGE - shock() перед броском сбивает карбона с ног, и в полёт он уходил
+	// лежачим: без density тело пролетало сквозь людей, не оказывая эффекта удара, -
+	// в отличие от брошенного руками стоячего тела. Поднимаем: полёт и столкновения
+	// работают как у обычного брошенного тела.
+	if(isliving(AM))
+		var/mob/living/L = AM
+		L.SetKnockdown(0)
 	AM.throw_at(target, 200, 4)
 	addtimer(CALLBACK(src, PROC_REF(clear_shock)), 5)

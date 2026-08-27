@@ -1238,7 +1238,7 @@
 	cost = 30
 	surplus = 1
 	cant_discount = TRUE
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
 	hijack_only = TRUE
 
 /datum/movespeed_modifier/nanospeed

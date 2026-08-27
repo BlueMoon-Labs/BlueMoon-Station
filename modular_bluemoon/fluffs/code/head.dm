@@ -650,3 +650,4 @@
 		"Khaki" = list("icon_state" = "commando_beret_khaki", "item_state" = "commando_beret_khaki"),
 		"Olive" = list("icon_state" = "commando_beret_olive", "item_state" = "commando_beret_olive")
 	)
+

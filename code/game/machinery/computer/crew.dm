@@ -41,6 +41,7 @@
 GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 GLOBAL_DATUM_INIT(crewmonitor_security, /datum/crewmonitor/security, new)
 GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
+GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
 /datum/crewmonitor
 	var/list/ui_sources = list() //List of user -> ui source
@@ -222,7 +223,8 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				if (nanite_sensors || U.sensor_mode >= SENSOR_COORDS)
 					if (!pos)
 						pos = get_turf(H)
-					if(is_hilbert_hotel_zlevel(H.z))
+					var/turf/mob_turf = get_turf(H)
+					if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 						area = "Hilbert Hotel"
 					else
 						area = get_area_name(H, TRUE)
@@ -311,6 +313,89 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	jobs["Blueshield"] = 69
 
 	src.jobs = jobs
+
+/datum/crewmonitor/siege
+	selected_jobs = -1
+
+/datum/crewmonitor/siege/update_data(z)
+	if(data_by_z["[z]"] && last_update["[z]"] && world.time <= last_update["[z]"] + SENSORS_UPDATE_PERIOD)
+		return data_by_z["[z]"]
+
+	var/list/results_damaged = list()
+	var/list/results_undamaged = list()
+
+	var/obj/item/clothing/under/U
+	var/turf/pos
+	var/name
+	var/oxydam
+	var/toxdam
+	var/burndam
+	var/brutedam
+	var/totaldam
+	var/area
+	var/pos_x
+	var/pos_y
+	var/life_status
+
+	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
+		if(!HAS_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER))
+			continue
+		if(H.z != 0 && H.z != z)
+			continue
+		if(!istype(H.w_uniform, /obj/item/clothing/under))
+			continue
+		U = H.w_uniform
+		if(U.has_sensor <= 0 || !U.sensor_mode)
+			continue
+
+		pos = U.sensor_mode == SENSOR_COORDS ? get_turf(H) : null
+		if(H.z == 0 && (!pos || pos.z != z))
+			continue
+
+		name = H.name || "Unknown"
+
+		if(U.sensor_mode >= SENSOR_LIVING)
+			life_status = H.stat != DEAD
+		else
+			life_status = null
+
+		if(U.sensor_mode >= SENSOR_VITALS)
+			oxydam = round(H.getOxyLoss(), 1)
+			toxdam = round(H.getToxLoss(), 1)
+			burndam = round(H.getFireLoss(), 1)
+			brutedam = round(H.getBruteLoss(), 1)
+			totaldam = oxydam + toxdam + burndam + brutedam
+		else
+			oxydam = null
+			toxdam = null
+			burndam = null
+			brutedam = null
+			totaldam = 0
+
+		if(U.sensor_mode >= SENSOR_COORDS)
+			if(!pos)
+				pos = get_turf(H)
+			area = get_area_name(H, TRUE)
+			pos_x = pos.x
+			pos_y = pos.y
+		else
+			area = null
+			pos_x = null
+			pos_y = null
+
+		var/total_list = list("name" = name, "assignment" = "Defender", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "can_track" = H.can_track(null))
+
+		if(totaldam)
+			results_damaged[++results_damaged.len] = total_list
+		else
+			results_undamaged[++results_undamaged.len] = total_list
+
+	var/list/returning = sortTim(results_damaged, GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged, GLOBAL_PROC_REF(ijob_compare))
+
+	data_by_z["[z]"] = returning
+	last_update["[z]"] = world.time
+
+	return returning
 
 GLOBAL_LIST_EMPTY(crew_sensor_monitors)
 

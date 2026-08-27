@@ -455,6 +455,8 @@
 						old_comp.InheritComponent(arglist(arguments))
 					else
 						old_comp.InheritComponent(new_comp, TRUE)
+						qdel(new_comp)
+						new_comp = null
 				if(COMPONENT_DUPE_SELECTIVE)
 					var/list/arguments = raw_args.Copy()
 					arguments[1] = new_comp

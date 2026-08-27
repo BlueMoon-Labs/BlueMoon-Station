@@ -12,12 +12,12 @@
 
 /obj/item/mod/module/backpack_harness/on_install()
 	. = ..()
-	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	chestplate.allowed += /obj/item/storage/backpack
 
 /obj/item/mod/module/backpack_harness/on_uninstall()
 	. = ..()
-	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	var/mob/living/carbon/human/wearer = mod.wearer
 	var/obj/item/item_to_drop
 	if(/obj/item/storage/backpack in chestplate.allowed)
@@ -69,6 +69,7 @@
 		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
 	icon_state = "storage_syndi"
 	complexity = 2 //на 1 меньше, чем обычная версия.
+	max_volume = DEFAULT_VOLUME_NORMAL * 8
 
 /obj/item/mod/module/storage/extended/syndicate
 	name = "MOD Blood-red Extended storage module"
@@ -163,10 +164,7 @@
 		return
 	ion_trail.start()
 	RegisterSignal(mod.wearer, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death), override = TRUE)
-	if(full_speed)
-		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	else
-		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_movespeed()
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
@@ -176,8 +174,7 @@
 	if(!mod?.wearer)
 		return
 	UnregisterSignal(mod.wearer, COMSIG_LIVING_DEATH)
-	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_movespeed()
 
 /**
  * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только
@@ -262,16 +259,18 @@
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
 
 /obj/item/mod/module/mouthhole/on_install()
-	former_flags = mod.helmet.flags_cover
-	former_visor_flags = mod.helmet.visor_flags_cover
-	mod.helmet.flags_cover &= ~HEADCOVERSMOUTH
-	mod.helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	former_flags = helmet.flags_cover
+	former_visor_flags = helmet.visor_flags_cover
+	helmet.flags_cover &= ~HEADCOVERSMOUTH
+	helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
 
 /obj/item/mod/module/mouthhole/on_uninstall(deleting = FALSE)
 	if(deleting)
 		return
-	mod.helmet.flags_cover |= former_flags
-	mod.helmet.visor_flags_cover |= former_visor_flags
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flags_cover |= former_flags
+	helmet.visor_flags_cover |= former_visor_flags
 
 ///EMP Shield - Protects the suit from EMPs.
 /obj/item/mod/module/emp_shield
@@ -327,6 +326,7 @@
 	/// Maximum range we can set.
 	var/max_range = 5
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/flashlight/on_activation()
 	. = ..()
@@ -394,6 +394,7 @@
 	/// Time it takes for us to dispense.
 	var/dispense_time = 0 SECONDS
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	required_modpart_index = MOD_PART_GLOVES
 
 /obj/item/mod/module/dispenser/on_use()
 	. = ..()

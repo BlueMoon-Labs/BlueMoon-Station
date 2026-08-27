@@ -75,22 +75,28 @@
 		//Recent as opposed to all because rounds tend to have a LOT of text.
 		var/list/recent_speech = list()
 
-		var/list/say_log = target.logging[LOG_SAY]
-
-		if(LAZYLEN(say_log) > LING_ABSORB_RECENT_SPEECH)
-			recent_speech = say_log.Copy(say_log.len-LING_ABSORB_RECENT_SPEECH+1,0) //0 so len-LING_ARS+1 to end of list
-		else
-			for(var/spoken_memory in say_log)
-				if(recent_speech.len >= LING_ABSORB_RECENT_SPEECH)
-					break
-				recent_speech[spoken_memory] = say_log[spoken_memory]
+		// Ключ - ТЕКСТ, а не число: log_message() кладёт записи под num2text(тип), и
+		// logging[LOG_SAY] на ассоциативном списке со строковыми ключами - это обращение
+		// по ПОЗИЦИИ, то есть второй ключ вместо лога речи. Дальше строка выдавалась за
+		// список, и речь жертвы генокрад не получал вообще ни разу.
+		var/list/say_log = target.logging[num2text(LOG_SAY)]
+		var/entries = LAZYLEN(say_log)
+		// Запись - ассоциативный список полей (см. /mob/log_message), сама фраза лежит
+		// в "what". До переработки лог-вьювера здесь лежали строки, отсюда и старый обход.
+		for(var/index = max(1, entries - LING_ABSORB_RECENT_SPEECH + 1) to entries)
+			var/list/entry = say_log[index]
+			if(!islist(entry))
+				continue
+			var/spoken = entry["what"]
+			if(spoken)
+				recent_speech += spoken
 
 		if(recent_speech.len)
 			changeling.antag_memory += "<B>Some of [target]'s speech patterns, we should study these to better impersonate [target.ru_na()]!</B><br>"
 			to_chat(user, "<span class='boldnotice'>Some of [target]'s speech patterns, we should study these to better impersonate [target.ru_na()]!</span>")
 			for(var/spoken_memory in recent_speech)
-				changeling.antag_memory += "\"[recent_speech[spoken_memory]]\"<br>"
-				to_chat(user, "<span class='notice'>\"[recent_speech[spoken_memory]]\"</span>")
+				changeling.antag_memory += "\"[spoken_memory]\"<br>"
+				to_chat(user, "<span class='notice'>\"[spoken_memory]\"</span>")
 			changeling.antag_memory += "<B>We have no more knowledge of [target]'s speech patterns.</B><br>"
 			to_chat(user, "<span class='boldnotice'>We have no more knowledge of [target]'s speech patterns.</span>")
 

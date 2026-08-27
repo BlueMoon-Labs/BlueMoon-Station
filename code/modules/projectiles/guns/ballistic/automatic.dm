@@ -125,7 +125,7 @@
 
 /obj/item/gun/ballistic/automatic/m90
 	name = "\improper M-90gl Carbine"
-	desc = "A three-round burst 5.56 toploading carbine, designated 'M-90gl'. Has an attached underbarrel grenade launcher which can be toggled on and off."
+	desc = "A three-round burst 5.56 toploading carbine, designated 'M-90gl'. Has an attached underbarrel grenade launcher. Right-click to fire the grenade launcher."
 	icon_state = "m90"
 	item_state = "m90"
 	mag_type = /obj/item/ammo_box/magazine/m556
@@ -137,32 +137,35 @@
 	burst_shot_delay = 2
 	pin = /obj/item/firing_pin/implant/pindicate
 
+/obj/item/gun/ballistic/automatic/m90/unrestricted
+	pin = /obj/item/firing_pin
+
 /obj/item/gun/ballistic/automatic/m90/Initialize(mapload)
 	. = ..()
 	underbarrel = new /obj/item/gun/ballistic/revolver/grenadelauncher(src)
 	update_icon()
 
-/obj/item/gun/ballistic/automatic/m90/unrestricted
-	pin = /obj/item/firing_pin
+/obj/item/gun/ballistic/automatic/m90/Destroy()
+	QDEL_NULL(underbarrel)
+	return ..()
 
 /obj/item/gun/ballistic/automatic/m90/unrestricted/Initialize(mapload)
 	. = ..()
+	QDEL_NULL(underbarrel)
 	underbarrel = new /obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted(src)
 	update_icon()
 
-/obj/item/gun/ballistic/automatic/m90/afterattack(atom/target, mob/living/user, flag, params)
-	if(select == 2)
-		underbarrel.afterattack(target, user, flag, params)
-	else
-		. = ..()
-		return
+/obj/item/gun/ballistic/automatic/m90/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
 /obj/item/gun/ballistic/automatic/m90/attackby(obj/item/A, mob/user, params)
-	if(istype(A, /obj/item/ammo_casing))
-		if(istype(A, underbarrel.magazine.ammo_type))
-			underbarrel.attack_self()
-			underbarrel.attackby(A, user, params)
-	else
-		..()
+	if(istype(A, /obj/item/ammo_casing) && underbarrel?.magazine && istype(A, underbarrel.magazine.ammo_type))
+		return underbarrel.attackby(A, user, params)
+	return ..()
+
 /obj/item/gun/ballistic/automatic/m90/update_overlays()
 	. = ..()
 	switch(select)
@@ -170,8 +173,6 @@
 			. += "[initial(icon_state)]semi"
 		if(1)
 			. += "[initial(icon_state)]burst"
-		if(2)
-			. += "[initial(icon_state)]gren"
 
 /obj/item/gun/ballistic/automatic/m90/update_icon_state()
 	icon_state = "[initial(icon_state)][magazine ? "" : "-e"]"
@@ -182,14 +183,11 @@
 		if(0)
 			select = 1
 			burst_size = initial(burst_size)
-			to_chat(user, "<span class='notice'>You switch to [burst_size]-rnd burst.</span>")
+			to_chat(user, span_notice("You switch to [burst_size]-rnd burst."))
 		if(1)
-			select = 2
-			to_chat(user, "<span class='notice'>You switch to grenades.</span>")
-		if(2)
 			select = 0
 			burst_size = 1
-			to_chat(user, "<span class='notice'>You switch to semi-auto.</span>")
+			to_chat(user, span_notice("You switch to semi-auto."))
 	playsound(user, 'sound/weapons/empty.ogg', 100, 1)
 	update_icon()
 	return
@@ -388,6 +386,9 @@
 	name = "syndicate sniper rifle"
 	desc = "An illegally modified .50 cal sniper rifle with suppression compatibility. Quickscoping still doesn't work."
 	pin = /obj/item/firing_pin/implant/pindicate
+
+/obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted
+	pin = /obj/item/firing_pin
 
 // Old Semi-Auto Rifle //
 

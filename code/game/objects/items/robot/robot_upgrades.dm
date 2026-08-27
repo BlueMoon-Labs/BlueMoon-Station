@@ -79,6 +79,14 @@
 	require_module = 1
 	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC
 
+#define VTEC_BOOST_DURATION 30 SECONDS
+/// Расход заряда за тик жизни (2 сек) в крейсерском режиме (режим 2, без лимита времени)
+#define VTEC_CRUISE_DRAIN 50
+/// Расход заряда за тик жизни (2 сек) в режиме форсажа
+#define VTEC_OVERCLOCK_DRAIN 200
+/// Перезарядка VTEC после окончания форсажа
+#define VTEC_COOLDOWN 1 MINUTES
+
 /obj/item/borg/upgrade/vtec/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if(!.)
@@ -106,7 +114,7 @@
 	. = ..()
 	if (.)
 		R.RemoveAbility(VC)
-		R.vtec = initial(R.vtec)
+		R.disable_vtec()
 		R.cansprint = 1
 		var/datum/hud/robot/robohud = R.hud_used
 		if(istype(robohud))
@@ -910,7 +918,7 @@
 // Citadel's Vtech Controller
 /obj/effect/proc_holder/silicon/cyborg/vtecControl
 	name = "vTec Control"
-	desc = "Позволяет более тонко контролировать ускорение vTec."
+	desc = "Позволяет более тонко контролировать ускорение vTec. Второй режим выравнивает скорость до человеческой и работает бесконечно, третий разгоняет быстрее человека на 30 секунд, после чего система возвращается во второй режим, а форсаж остывает минуту."
 	action_icon = 'icons/mob/actions.dmi'
 	action_icon_state = "Chevron_State_0"
 
@@ -920,23 +928,35 @@
 /obj/effect/proc_holder/silicon/cyborg/vtecControl/Trigger(mob/living/silicon/robot/user)
 	if(!(user.cell?.charge) || (!user.cell?.self_recharge && (user.cell?.charge <= 500)) || (user.cell?.self_recharge && (user.cell?.charge <= max(user.cell?.chargerate, 500))))
 		to_chat(user, "<span class='warning'>Critical cell charge! VTEC is temporarily disabled.</span>")
-		currentState = 0
-	else
-		currentState = (currentState + 1) % 3
+		applyState(user, 0)
+		return TRUE
 
+	var/newState = (currentState + 1) % 3
+	if(newState == 2 && world.time < user.vtec_cooldown_until)
+		//на перезарядке только форсаж - нажатие проскальзывает мимо него в выключенное состояние
+		to_chat(user, "<span class='warning'>Режим форсажа остывает: ещё [round((user.vtec_cooldown_until - world.time) / 10, 1)] сек.</span>")
+		newState = 0
+	applyState(user, newState)
+
+	return TRUE
+
+/// Применяет состояние VTEC целиком: переменные робота и иконка кнопки способности
+/obj/effect/proc_holder/silicon/cyborg/vtecControl/proc/applyState(mob/living/silicon/robot/user, newstate)
+	currentState = newstate
 	if(istype(user))
-		switch(currentState)
-			if (0) //default speed
-				user.vtec = initial(user.vtec) //"vtec" value is negative and the lesser it is the faster we move.
-			if (1) //slightly faster than runnung
-				user.vtec = initial(user.vtec) - 0.75 //cyborg sprinting is roughly -2. don't forget we can't sprint with vtec.  //BLUEMOON EDIT Снижение модификатора скорости со стандартных -1,25 до -0,75 для второго режима VTEC
-			if (2) //overclocking module
-				user.vtec = initial(user.vtec) - 1 //while changing this value check /mob/living/silicon/robot/proc/use_power() to maintain proper power drain //BLUEMOON EDIT Снижение модификатора скорости со стандартных -1,75 до -1 для третьего режима VTEC
+		switch(newstate)
+			if (0) //выключен
+				user.disable_vtec()
+			if (1) //крейсерский режим - скорость обычного человека, без лимита времени
+				user.activate_vtec_cruise()
+			if (2) //форсаж - быстрее человека, 30 секунд, потом возврат в крейсерский режим и перезарядка
+				user.clear_vtec_boost()
+				user.vtec = initial(user.vtec) - 1 //while changing this value check /mob/living/silicon/robot/proc/use_power() to maintain proper power drain
+				user.vtec_expire = world.time + VTEC_BOOST_DURATION
+				user.vtec_drain = VTEC_OVERCLOCK_DRAIN
 
 	action.button_icon_state = "Chevron_State_[currentState]"
 	action.UpdateButtons()
-
-	return TRUE
 
 /obj/item/borg/upgrade/jukebox
 	name = "cyborg jukebox module"

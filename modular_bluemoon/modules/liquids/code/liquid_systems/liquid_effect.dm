@@ -7,7 +7,6 @@
 	plane = FLOOR_PLANE
 	layer = ABOVE_OPEN_TURF_LAYER
 	appearance_flags = TILE_BOUND
-	color = "#DDF"
 
 	//For being on fire
 	light_range = 0
@@ -41,9 +40,8 @@
 	/// Whether we're currently overriding the turf's footstep vars to water
 	var/footsteps_overridden = FALSE
 
-	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = SMOOTH_GROUP_WATER
-	canSmoothWith = list(SMOOTH_GROUP_WATER, SMOOTH_GROUP_WINDOW_FULLTILE, SMOOTH_GROUP_WALLS)
+	//Битмасочного сглаживания в форке нет: соседей считает calculate_smoothing() сам.
+	//canSmoothWith тут - список ТИПОВ углового сглаживания, а не групп, и при smooth = SMOOTH_FALSE никто его не читает.
 
 	/// Cached icon states of the liquid icon file, checked against when setting icon_state
 	var/static/list/cached_water_states = null
@@ -69,6 +67,7 @@
 		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
 		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
 		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
+		RegisterSignal(my_turf, COMSIG_TURF_MAKE_DRY, PROC_REF(dry))
 		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
 		SSliquids.add_active_turf(my_turf)
 
@@ -86,7 +85,7 @@
 		restore_liquid_footsteps()
 		lose_cleanbot_targetable()
 		var/turf/old_turf = my_turf
-		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
+		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE, COMSIG_TURF_MAKE_DRY))
 		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
 		if(my_turf.lgroup)
 			my_turf.lgroup.remove_from_group(my_turf)
@@ -111,6 +110,12 @@
 
 /obj/effect/abstract/liquid_turf/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	return
+
+/obj/effect/abstract/liquid_turf/proc/dry()
+	SIGNAL_HANDLER
+	if(immutable)
+		return
+	qdel(src, TRUE)
 
 /obj/effect/abstract/liquid_turf/proc/check_fire(hotspotted = FALSE)
 	var/my_burn_power = get_burn_power(hotspotted)
@@ -460,11 +465,11 @@
 	set_smoothed_icon_state(new_junction)
 
 /obj/effect/abstract/liquid_turf/proc/set_smoothed_icon_state(new_junction)
+	//Переменной smoothing_junction в форке нет: битовое сглаживание сюда не доехало,
+	//см. code/game/atoms.dm. Из апстрима берём только сброс иконки на глубокой воде.
 	if(isnull(new_junction))
 		icon_state = null
-		smoothing_junction = null
 		return
-	smoothing_junction = new_junction
 	if(cached_water_states == null)
 		cached_water_states = icon_states(icon)
 	var/candidate_state = "[base_icon_state]-[new_junction]"
@@ -563,8 +568,10 @@
 		if(check_fire(TRUE))
 			SSliquids.processing_fire[my_turf] = TRUE
 
-/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid()
-	color = mix_color_from_reagent_list(reagent_list)
+/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid(color_to_set)
+	if(!color_to_set)
+		color_to_set = mix_color_from_reagent_list(reagent_list)
+	add_atom_colour(color_to_set, FIXED_COLOUR_PRIORITY)
 
 /obj/effect/abstract/liquid_turf/proc/calculate_height()
 	var/new_height = ceil(total_reagents)/LIQUID_HEIGHT_DIVISOR
@@ -619,7 +626,7 @@
 				))
 			playsound(my_turf, sound_to_play, 60, 0)
 		var/obj/splashy = new /obj/effect/temp_visual/liquid_splash(my_turf)
-		splashy.color = color
+		splashy.add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 		if(height >= LIQUID_WAIST_LEVEL_HEIGHT)
 			//Push things into some direction, like space wind
 			var/turf/dest_turf

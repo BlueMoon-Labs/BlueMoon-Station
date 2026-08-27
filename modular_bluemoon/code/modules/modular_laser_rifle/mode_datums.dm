@@ -37,7 +37,6 @@
 	applied_gun.item_state = new_icon_state
 	applied_gun.update_appearance()
 	applied_gun.chat_color = gun_runetext_color
-	applied_gun.chat_color_darkened = gun_runetext_color
 
 /// Stuff applied to the passed gun when the weapon mode is given to the gun
 /datum/laser_weapon_mode/proc/apply_to_weapon(obj/item/gun/energy/applied_gun)

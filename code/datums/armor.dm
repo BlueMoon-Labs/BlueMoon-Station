@@ -123,18 +123,21 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 /datum/armor/proc/generate_new_with_modifiers(list/modifiers)
 	var/datum/armor/new_armor = new
 
-	var/all_keys = ARMOR_LIST_ALL()
+	var/list/all_keys = ARMOR_LIST_ALL()
 	if(ARMOR_ALL in modifiers)
 		var/modifier_all = modifiers[ARMOR_ALL]
 		if(!modifier_all)
 			return src
 		for(var/mod in all_keys)
 			new_armor.vars[mod] = vars[mod] + modifier_all
+		new_armor.tag = null // Don't put custom armor into locate() cache
 		return new_armor
 
+	for(var/mod in all_keys)
+		new_armor.vars[mod] = vars[mod]
 	for(var/modifier in modifiers)
 		if(modifier in all_keys)
-			new_armor.vars[modifier] = vars[modifier] + modifiers[modifier]
+			new_armor.vars[modifier] += modifiers[modifier]
 		else
 			stack_trace("Attempt to call generate_new_with_modifiers with illegal modifier '[modifier]'! Ignoring it")
 	new_armor.tag = null // Don't put custom armor into locate() cache

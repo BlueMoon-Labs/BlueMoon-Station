@@ -58,7 +58,7 @@
 
 /obj/machinery/atmospherics/pipe/atmosinit()
 	var/turf/T = loc			// hide if turf is not intact
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 	..()
 
 /obj/machinery/atmospherics/pipe/hide(i)

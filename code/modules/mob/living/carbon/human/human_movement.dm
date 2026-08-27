@@ -110,7 +110,7 @@
 	if(!shoes || !(shoes.body_parts_covered & FEET))
 		return	// barefoot advantage
 	var/turf/open/T = loc
-	if(!istype(T) || !T.dirt_buildup_allowed)
+	if(!istype(T) || !(T.turf_flags & TURF_DIRT_BUILDUP_ALLOWED))
 		return
 	var/area/A = T.loc
 	if(!A.dirt_buildup_allowed)
@@ -122,7 +122,11 @@
 		D.dirty(strength)
 	else
 		T.dirtyness += strength
-		if(T.dirtyness >= (isnull(T.dirt_spawn_threshold)? CONFIG_GET(number/turf_dirt_threshold) : T.dirt_spawn_threshold))
+		if(T.dirtyness >= CONFIG_GET(number/turf_dirt_threshold))
 			D = new /obj/effect/decal/cleanable/dirt(T)
-			D.dirty(T.dirt_spawn_threshold - T.dirtyness)
+			// dirt_spawn_threshold была объявлена на /turf/open, но её никто никогда не выставлял,
+			// поэтому здесь всегда считалось null - dirtyness, то есть отрицательная величина.
+			// Поведение сохранено как было; по смыслу свежий декаль должен получать накопленную
+			// грязь, а не терять альфу - это отдельный баг, чинить его надо отдельным коммитом.
+			D.dirty(-T.dirtyness)
 			T.dirtyness = 0		// reset.

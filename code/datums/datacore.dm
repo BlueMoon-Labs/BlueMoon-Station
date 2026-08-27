@@ -1,3 +1,11 @@
+/// Пауза между двумя фотографиями манифеста.
+///
+/// Величина выбрана из числа членов экипажа: сотня фотографий на роундстарте
+/// раскладывается примерно на три минуты. Меньше - и пик иконочных аллокаций снова
+/// попадает в окно массового входа, ради ухода из которого ритм и заведён; больше -
+/// и записи персонала слишком долго стоят с плейсхолдером.
+#define MANIFEST_PHOTO_QUEUE_INTERVAL (2 SECONDS)
+
 //TODO: someone please get rid of this shit
 /datum/datacore
 	var/list/medical = list()
@@ -20,7 +28,7 @@
 	/// Очередь отложенной генерации фото манифеста: list(weakref моба, prefs, роль, general-запись, locked-запись).
 	/// Фото - второй полный билд персонажа + два getFlatIcon, ему не место в синхронном тике латеджойна.
 	var/list/pending_photo_jobs = list()
-	/// TRUE, пока дренаж очереди фото уже запущен (один воркер, дренаж с CHECK_TICK)
+	/// TRUE, пока дренаж очереди фото уже заряжен таймером (один воркер, одна работа за срабатывание)
 	var/photo_queue_running = FALSE
 
 /// Ставит генерацию фото манифеста в очередь и будит воркера. Сама генерация - это
@@ -31,22 +39,45 @@
 	if(photo_queue_running)
 		return
 	photo_queue_running = TRUE
-	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), 0)
+	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
 
-/// Дренаж очереди фото: по одной работе с CHECK_TICK между ними. Воркер один -
-/// манекен манифеста общий, параллельные генерации всё равно сериализовались бы на in_use.
+/**
+ * Дренаж очереди фото: РОВНО ОДНА работа за срабатывание, следующая - через интервал.
+ *
+ * Раньше дренаж был циклом с CHECK_TICK, и это не то же самое. CHECK_TICK отдаёт тик,
+ * когда переполнен бюджет ТИКА, но памяти он не отдаёт ничего: сотня фотографий всё
+ * равно строилась подряд за считанные секунды. А строятся они ровно в шторме логинов,
+ * когда роундстарт разом заводит весь экипаж, - и это буквально стек падения раунда
+ * 10088 (23.08): `process_manifest_photo_queue` -> `generate_manifest_photo` ->
+ * `build_flat_multidir_icon` -> `getFlatIcon` -> рантайм в `/icon/New()`, после которого
+ * мир не написал больше ни строки. Умер он при 2923 МБ - в полутора гигабайтах от
+ * потолка адресного пространства, то есть не от исчерпания памяти, а от того, что
+ * крупная НЕПРЕРЫВНАЯ иконочная аллокация не нашла места в разодранной куче.
+ *
+ * Отсюда ритм: сотня фотографий растягивается на пару-тройку минут вместо секунд, пик
+ * иконочных аллокаций расходится по времени и уезжает из окна массового входа. Цена -
+ * запись персонала первые минуты стоит с плейсхолдером, чего никто не видит.
+ */
 /datum/datacore/proc/process_manifest_photo_queue()
+	// Флаг держится взведённым на всё время работы, а не снимается на входе: генерация
+	// фото уступает тик внутри себя, и на этом сне латеджойн успевает встать в очередь.
+	// Со снятым флагом он завёл бы ВТОРОГО воркера на ту же очередь.
 	photo_queue_running = TRUE
 	while(length(pending_photo_jobs))
 		var/list/job = pending_photo_jobs[1]
 		pending_photo_jobs.Cut(1, 2)
 		var/datum/weakref/mob_ref = job[1]
 		var/mob/living/carbon/human/H = mob_ref?.resolve()
+		// Работа по удалённому мобу не стоит ничего и интервала не заслуживает: снявшийся
+		// с роли игрок иначе держал бы очередь на секунду за каждую пустую запись.
 		if(QDELETED(H))
 			continue
 		generate_manifest_photo(H, job[2], job[3], job[4], job[5])
-		CHECK_TICK
-	photo_queue_running = FALSE
+		break
+	if(!length(pending_photo_jobs))
+		photo_queue_running = FALSE
+		return
+	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
 
 /// Снимает кадр для записей персонала. К моменту вызова настоящий моб уже полностью
 /// экипирован: и на роундстарте (equip_characters отрабатывает до manifest()), и на
@@ -657,3 +688,5 @@
 	if(!C)
 		C = H.client
 	return capture_record_photo(H, H.mind.assigned_role, C?.prefs, show_directions)
+
+#undef MANIFEST_PHOTO_QUEUE_INTERVAL

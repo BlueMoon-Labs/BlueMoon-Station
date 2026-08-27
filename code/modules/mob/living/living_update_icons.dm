@@ -35,7 +35,6 @@
 		else
 			transform = ntransform
 			pixel_y = final_pixel_y
-		floating_need_update = TRUE
 
 	update_small_sprite()
 

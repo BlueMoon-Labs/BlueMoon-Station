@@ -1,5 +1,5 @@
 /turf/open/floor/holofloor
-	holodeck_compatible = TRUE
+	turf_flags = TURF_FLAGS_HOLOFLOOR
 	icon_state = "floor"
 	thermal_conductivity = 0
 	flags_1 = NONE
@@ -29,7 +29,7 @@
 	name = "lush grass"
 	icon_state = "grass"
 	bullet_bounce_sound = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/beach
 	gender = PLURAL
@@ -37,7 +37,7 @@
 	icon = 'modular_bluemoon/icons/turf/floors/sand.dmi'
 	icon_state = "sand"
 	bullet_bounce_sound = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/beach/coast_t
 	gender = NEUTER
@@ -55,12 +55,12 @@
 	name = "water"
 	icon_state = "water"
 	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi'
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 
 /turf/open/floor/holofloor/asteroid
 	name = "asteroid"
 	icon_state = "asteroid0"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/asteroid/Initialize(mapload)
 	icon_state = "asteroid[rand(0, 12)]"
@@ -70,7 +70,7 @@
 	gender = PLURAL
 	name = "basalt"
 	icon_state = "basalt0"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/basalt/Initialize(mapload)
 	. = ..()
@@ -92,7 +92,7 @@
 	icon = 'icons/turf/space.dmi'
 	icon_state = "speedspace_ns_1"
 	bullet_bounce_sound = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/hyperspace/Initialize(mapload)
 	icon_state = "speedspace_ns_[(x + 5*y + (y%2+1)*7)%15+1]"
@@ -111,7 +111,7 @@
 	smooth = SMOOTH_TRUE
 	canSmoothWith = null
 	bullet_bounce_sound = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/carpet/Initialize(mapload)
 	. = ..()
@@ -119,12 +119,12 @@
 
 /turf/open/floor/holofloor/carpet/update_icon()
 	. = ..()
-	if(intact)
+	if(turf_flags & TURF_INTACT)
 		queue_smooth(src)
 
 /turf/open/floor/holofloor/wood
 	icon_state = "wood"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/snow
 	gender = PLURAL
@@ -133,9 +133,8 @@
 	icon = 'icons/turf/snow.dmi'
 	icon_state = "snow"
 	slowdown = 2
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null
-	tiled_dirt = FALSE
 	baseturfs = /turf/open/floor/holofloor/snow
 
 /turf/open/floor/holofloor/snow/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
@@ -154,7 +153,7 @@
 	name = "asteroid sand"
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "asteroid"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_HOLOFLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/holofloor/chess_white
 	icon_state = "floor_large"

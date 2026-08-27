@@ -26,7 +26,8 @@
 
 
 /mob/living/proc/phaseout(obj/effect/decal/cleanable/B)
-	if(is_hilbert_hotel_zlevel(z))
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		to_chat(src, span_danger("Барьеры Отеля Гилберта мешают вам."))
 		return FALSE
 	if(iscarbon(src))
