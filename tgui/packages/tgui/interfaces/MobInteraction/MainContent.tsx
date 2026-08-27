@@ -67,24 +67,25 @@ export const MainContent = (props) => {
             </Tabs.Tab>
           </Tabs>
         </Stack.Item>
-        <Stack.Item>
-          <Stack align="baseline" fill>
-            <Stack.Item>
-              <Icon name="search" />
-            </Stack.Item>
-            <Stack.Item grow>
-              <Input
-                fluid
-                placeholder={
-                  tabIndex === 0 ? "Search for an interaction"
-                    : tabIndex === 1 ? "Search for a genital"
-                      : "Searching is unavailable for this tab"
-                }
-                onInput={(e, value) => setSearchText(value)}
-              />
-            </Stack.Item>
+        {tabIndex === 0 || tabIndex === 1 ? (
+          <Stack.Item>
+            <Stack align="baseline" fill>
+              <Stack.Item>
+                <Icon name="search" />
+              </Stack.Item>
+              <Stack.Item grow>
+                <Input
+                  fluid
+                  placeholder={
+                    tabIndex === 0 ? "Search for an interaction"
+                      : tabIndex === 1 ? "Search for a genital"
+                        : "Searching is unavailable for this tab"
+                  }
+                  onInput={(e, value) => setSearchText(value)}
+                />
+              </Stack.Item>
           </Stack>
-        </Stack.Item>
+        </Stack.Item> ) : null}
         <Stack.Item grow basis={0} mb={tabIndex === 0 ? -1 : -2.3}>
           <Section scrollable fill>
             {(() => {
