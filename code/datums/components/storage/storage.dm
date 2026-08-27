@@ -310,7 +310,7 @@
 			return FALSE
 		if(remove_from_storage(I, target))
 			if(target_isturf)
-				I.randomize_pixel_position(usr)
+				I.randomize_pixel_position(user)
 		if(TICK_CHECK)
 			progress.update(progress.goal - length(things))
 			return TRUE

@@ -310,8 +310,9 @@
 
 /obj/item/toy/crayon/afterattack(atom/target, mob/user, proximity, params)
 	. = ..()
-	if(!proximity || !check_allowed_items(target) || !user.CheckActionCooldown(CLICK_CD_MELEE))
+	if(!proximity || !check_allowed_items(target))
 		return
+	var/need_delay = TRUE
 	// SPLURT EDIT START
 	// Check if we should only change the light color
 	if(toggle_change_light_color && can_change_light_color && !istype(target, /turf))
@@ -326,13 +327,12 @@
 
 		// Decrease the charges by 2
 		use_charges(user, 2)
+	else
+		//Continue with normal drawing behavior if toggle_change_light_color is not true
+		//SPLURT EDIT END
+		need_delay = !!draw_on(target, user, proximity, params)
+	if(need_delay)
 		user.DelayNextAction(CLICK_CD_MELEE)
-		return // Skip the normal drawing behavior
-
-	//Continue with normal drawing behavior if toggle_change_light_color is not true
-	//SPLURT EDIT END
-	draw_on(target, user, proximity, params)
-	user.DelayNextAction(CLICK_CD_MELEE)
 
 /obj/item/toy/crayon/proc/draw_on(atom/target, mob/user, proximity, params)
 	var/static/list/punctuation = list("!","?",".",",","/","+","-","=","%","#","&")
