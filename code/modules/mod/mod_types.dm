@@ -345,6 +345,8 @@
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/holster,
 		/obj/item/mod/module/magnetic_harness,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 /obj/item/choice_beacon/blueshied_suit
