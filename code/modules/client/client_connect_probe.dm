@@ -97,7 +97,7 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
  * строка обязана честно сказать, что её дельта принадлежит не входу.
  */
 /proc/probe_init_window_note(during_init)
-	return during_init ? " - ОКНО ИНИЦИАЛИЗАЦИИ МИРА, дельта принадлежит не входу" : ""
+	return during_init ? " - ОКНО ИНИЦИАЛИЗАЦИИ МИРА, эти цифры принадлежат не входу" : ""
 
 /datum/client_connect_probe
 	/// ckey клиента - строкой, потому что к контрольному замеру клиент может уже уйти
@@ -174,7 +174,10 @@ GLOBAL_VAR_INIT(memory_attributed_elsewhere_mb, 0)
 			line += ", VmSize [start_vsz] -> [finished_vsz] МБ ([format_mb_delta(finished_vsz - start_vsz - background)]"
 			line += background > 0 ? ", мимо [format_mb_delta(background)] фоновой работы), " : "), "
 			line += "RSS [format_mb_delta(memory["rss"] - start_rss)]"
-			line += probe_init_window_note(started_during_init)
+	// Приписка ВНЕ ветки удачного замера: секунды New() печатаются всегда, и в окне
+	// инициализации они раздуты ровно тем же, чем дельта. На Windows и при осечке
+	// get_process_memory_mb() строка остаётся единственным объяснением четырёх секунд входа.
+	line += probe_init_window_note(started_during_init)
 	if(length(stages))
 		line += "; этапы: [stages.Join(", ")]"
 	return line

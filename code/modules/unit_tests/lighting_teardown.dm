@@ -481,14 +481,19 @@
 	TEST_ASSERT(findtext(quota_line, "сверх кванта"), "снос по кванту обязан называть себя квантом: [quota_line]")
 	TEST_ASSERT(findtext(quota_line, "64%"), "строка обязана называть давление, когда оно замерено: [quota_line]")
 
+	// Ожидаемая подстрока считается из дефайна, а не пишется цифрой: с литералом правка
+	// LIGHTING_TEARDOWN_IDLE_TIME роняла бы этот тест по несвязанной причине, а совпади
+	// новая цифра со старой где-нибудь ещё в строке - тест прошёл бы, ничего не проверив.
+	var/expected_idle = "[round(LIGHTING_TEARDOWN_IDLE_TIME / (1 MINUTES), 0.1)] мин"
 	var/timer_line = zlevel_teardown_reason_line(LIGHTING_TEARDOWN_IDLE_TIME, LIGHTING_MAX_LIT_DEFERRED_Z, 0)
 	TEST_ASSERT(!findtext(timer_line, "сверх кванта"), "снос по таймеру не должен выдавать себя за квант: [timer_line]")
-	TEST_ASSERT(findtext(timer_line, "15"), "строка обязана называть фактический срок простоя: [timer_line]")
+	TEST_ASSERT(findtext(timer_line, expected_idle), "строка обязана называть фактический срок простоя [expected_idle]: [timer_line]")
 	TEST_ASSERT(!findtext(timer_line, "%"), "неизмеренное давление не должно печататься процентами: [timer_line]")
 
 	// Сокращённый срок обязан попадать в строку как есть: цифра из дефайна тут врала бы.
+	var/expected_critical = "[round(LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL / (1 MINUTES), 0.1)] мин"
 	var/pressed_line = zlevel_teardown_reason_line(LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL, 1, 0.9)
-	TEST_ASSERT(findtext(pressed_line, "1 мин"), "строка обязана печатать фактический сокращённый срок: [pressed_line]")
+	TEST_ASSERT(findtext(pressed_line, expected_critical), "строка обязана печатать фактический сокращённый срок [expected_critical]: [pressed_line]")
 
 /**
  * Доля потолка читается с последнего замера и молчит, когда мерить нечем.

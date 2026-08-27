@@ -54,3 +54,37 @@
 	// встали бы в ноль, а строка скачка читалась бы как "аллокаторы не работали".
 	var/resource_bytes = length(file('icons/effects/effects.dmi'))
 	TEST_ASSERT(resource_bytes > 100, "length() на файле-ресурсе обязан отдавать его вес в байтах, получено [resource_bytes]")
+
+/**
+ * Выход getFlatIcon по оверлею ниже -1000 обязан попадать в книгу.
+ *
+ * Сборка плоской иконки - крупнейший известный недатумный аллокатор, и учёт стоит в хвосте
+ * прока. Но оверлей с layer <= -1000 отдаёт собранную заготовку прямо из середины цикла, и
+ * этот путь проходил мимо учёта молча. Недосчитанная иконка неотличима от честного нуля -
+ * ровно то различие, ради которого книга и заведена, поэтому путь закрыт тестом.
+ *
+ * Иконка и стейт подобраны произвольно: несуществующий стейт лишь поднимает noIcon, а до
+ * ветки оверлеев поток доходит в любом случае - её открывает непустой overlays.
+ */
+/datum/unit_test/nondatum_ledger_counts_early_return_icon
+	requires_full_map = FALSE
+
+/datum/unit_test/nondatum_ledger_counts_early_return_icon/Run()
+	var/image/subject = image('icons/effects/effects.dmi')
+	var/image/deep_overlay = image('icons/effects/effects.dmi')
+	deep_overlay.layer = -1001
+	// Смещение - это ДЕТЕКТОР ветки, а не украшение. Пройди поток мимо раннего выхода,
+	// оверлей вклеился бы со сдвигом и заготовка расширилась бы; ранний выход отдаёт её
+	// нетронутой. Без этой проверки тест засчитал бы учёт из хвоста прока и прошёл бы
+	// вхолостую даже с откаченной правкой.
+	deep_overlay.pixel_x = 64
+	subject.overlays += deep_overlay
+	TEST_ASSERT(length(subject.overlays), "оверлей не лёг на подопытного - тест не дошёл бы до проверяемой ветки")
+
+	var/icon/template = icon('icons/effects/effects.dmi', "nothing")
+	var/list/before = nondatum_ledger_snapshot()
+	var/icon/flat = getFlatIcon(subject, no_anim = TRUE)
+	var/list/after = nondatum_ledger_snapshot()
+
+	TEST_ASSERT_EQUAL(flat.Width(), template.Width(), "заготовка расширилась - значит ранний выход по оверлею ниже -1000 не сработал и проверка ниже ничего не значит")
+	TEST_ASSERT_EQUAL(after[NONDATUM_LEDGER_ICONS] - before[NONDATUM_LEDGER_ICONS], 1, "ранний выход по оверлею ниже -1000 обязан считаться книгой ровно один раз")
