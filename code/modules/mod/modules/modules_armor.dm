@@ -76,6 +76,7 @@
 	mod.current_armor_module_installed -= 1
 	remove_armor_bonus()
 
+
 /obj/item/mod/module/armor/attackby(obj/item/I, mob/living/user, params)
 //Чекает в списке какую броню ставить, если это материал и меняет icon_state с названием
 	. = ..()

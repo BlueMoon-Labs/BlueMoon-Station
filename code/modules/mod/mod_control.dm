@@ -488,6 +488,10 @@
 			return
 		if(new_module.module_type == MODULE_ARMOR)
 			var/obj/item/mod/module/armor/armor_module = module
+			if(!armor_module.armor_type)
+				balloon_alert(user, "Модуль не завершен!")
+				to_chat(user, span_alertwarning("Для завершения модуля брони вам нужно добавить в него материал. Для просмотра рецепта осмотрите сам модуль дважды"))
+				return
 			var/armor_by_type_num = 0
 			for(var/obj/item/mod/module/armor/also_module in modules)
 				if(armor_module.armor_type != also_module.armor_type)
