@@ -476,7 +476,12 @@
 	if(icon_changed)
 		update_icon()
 	else if(overlay_changed)
-		update_overlays()
+		// update_overlays() только СОБИРАЕТ список и возвращает его - применяет собранное
+		// update_appearance(). Прямой вызов строил два mutable_appearance и выбрасывал их
+		// вместе со списком: смена альфа-бакета или цвета зоны (найтшифт, тревога) до
+		// спрайта лампы не доезжала, а аллокации платились. Ветка icon_changed выше этим
+		// не болела - update_icon() применяет.
+		update_appearance(UPDATE_OVERLAYS)
 
 /obj/machinery/light/proc/interpolate_light_value(start_value, end_value, t)
 	return round(start_value + (end_value - start_value) * t, 0.01)

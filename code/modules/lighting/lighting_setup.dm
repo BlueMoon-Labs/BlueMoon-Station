@@ -78,6 +78,101 @@
 		return FALSE
 	return level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_AWAY]
 
+/**
+ * Сколько времени пустующий отложенный уровень держит свет, прежде чем его разберут.
+ *
+ * Чистая функция от двух входов - её и проверяет юнит-тест: вызвать снос на настоящем
+ * мире в тесте нельзя, а ошибиться порогом здесь стоит либо раунда (не разобрали), либо
+ * вспышки белого в глаза каждому вошедшему (разобрали слишком рано).
+ *
+ * Квота ЖЁСТЧЕ давления: она про пик одновременно зажжённых уровней, то есть про ту самую
+ * цифру, которой раунд и платит (см. LIGHTING_MAX_LIT_DEFERRED_Z). Давление - вторая линия,
+ * для раундов, которые доезжают до потолка на двух уровнях.
+ *
+ * Но сверх кванта срок больше не ноль. Ноль означал "забрать уровень первым же сканом после
+ * ухода последнего госта", и на проде это вышло качанием: раунд 10126 сделал 42 подъёма и
+ * 41 снос, ни один из которых памяти не сэкономил (см. LIGHTING_TEARDOWN_IDLE_TIME_QUOTA).
+ * Ноль остаётся ровно там, где он и был оправдан, - у критического давления: раунд, доехавший
+ * до 88% потолка, иначе умирает молча, и там вспышка дешевле смерти процесса.
+ *
+ * Аргументы:
+ * * pressure - доля потолка адресного пространства, 0 = не замерено (Windows, ранний старт)
+ * * lit_deferred_count - сколько отложенных уровней сейчас горит, включая занятые
+ */
+/proc/lighting_teardown_idle_time(pressure, lit_deferred_count)
+	var/idle_time = LIGHTING_TEARDOWN_IDLE_TIME
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		idle_time = LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL
+	else if(pressure >= LIGHTING_TEARDOWN_PRESSURE_HIGH)
+		idle_time = LIGHTING_TEARDOWN_IDLE_TIME_HIGH
+	if(lit_deferred_count <= LIGHTING_MAX_LIT_DEFERRED_Z)
+		return idle_time
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return 0
+	return min(idle_time, LIGHTING_TEARDOWN_IDLE_TIME_QUOTA)
+
+/**
+ * Рано ли сносить уровень, поднятый совсем недавно.
+ *
+ * Третья чистая функция решения о сносе, и единственная, которая смотрит на подъём, а не на
+ * опустение. Простой отсчитывается с момента, когда уровень увидели пустым, поэтому пролетевший
+ * гост обнуляет его каждый раз заново - сколько бы ни стоял срок простоя, частота качания им
+ * сверху не ограничена. Кулдаун от подъёма ограничивает.
+ *
+ * Аргументы:
+ * * lit_since - world.time подъёма уровня; null - момент подъёма неизвестен (уровень поднят
+ *   до появления отметки, например на инициализации мира), кулдаун не действует
+ * * now - world.time замера
+ * * pressure - доля потолка; с критического давления кулдаун снимается
+ */
+/proc/zlevel_teardown_cooldown_active(lit_since, now, pressure)
+	if(isnull(lit_since))
+		return FALSE
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return FALSE
+	return (now - lit_since) < LIGHTING_TEARDOWN_MIN_LIT_TIME
+
+/**
+ * Кого из пустующих уровней разбирать первым при этом сроке простоя.
+ *
+ * Вторая чистая половина решения (первая - lighting_teardown_idle_time). Разделены они
+ * не ради красоты: scan_teardown_candidates() умеет только собирать данные о живом мире,
+ * и всё, что в ней можно сломать молча, лежит здесь.
+ *
+ * Аргументы:
+ * * idle_since_by_z - "[z]" -> world.time, когда уровень увидели пустым
+ * * idle_time - выбранный срок простоя в тиках; ноль означает "отдавать немедленно"
+ * * now - world.time замера
+ */
+/proc/pick_lighting_teardown_zlevel(list/idle_since_by_z, idle_time, now)
+	var/best_z = 0
+	var/best_since = INFINITY
+	for(var/key in idle_since_by_z)
+		var/since = idle_since_by_z[key]
+		if(now - since < idle_time)
+			continue
+		// Пустует дольше всех - его и разбираем первым.
+		if(since < best_since)
+			best_since = since
+			best_z = text2num(key)
+	return best_z
+
+/**
+ * Почему снос света начался именно сейчас - в человеческом виде, для строки лога.
+ *
+ * Отдельным проком, потому что разбор прод-логов читает эту строку как улику: до квоты у
+ * неё был один-единственный текст про четверть часа, и по нему нельзя было отличить
+ * "уровень честно простоял свой срок" от "его выбили сверх кванта". А это разные выводы
+ * о раунде: во втором случае пик одновременно зажжённых уровней был выше кванта, и цифра
+ * из перф-CSV (light_lit_deferred_z) должна это подтверждать.
+ */
+/proc/zlevel_teardown_reason_line(idle_time, lit_deferred, pressure)
+	var/pressure_note = pressure > 0 ? " при [round(pressure * 100)]% потолка" : ""
+	var/idle_note = "пусто дольше [round(idle_time / (1 MINUTES), 0.1)] мин"
+	if(lit_deferred > LIGHTING_MAX_LIT_DEFERRED_Z)
+		return "сверх кванта: горело [lit_deferred] отложенных уровней при квоте [LIGHTING_MAX_LIT_DEFERRED_Z], [idle_note][pressure_note]"
+	return "[idle_note][pressure_note]"
+
 /proc/create_all_lighting_objects()
 	SSlighting.begin_lighting_build()
 
@@ -146,9 +241,15 @@
 	var/datum/space_level/level = SSmapping.z_list.len >= new_z ? SSmapping.z_list[new_z] : null
 	return level && !level.lighting_initialized
 
-/// Creates lighting infrastructure for a single z-level on demand (synchronous fallback).
-/// Called when a player enters a z-level before background init reaches it.
-/proc/create_lighting_for_zlevel(z_level)
+/**
+ * Creates lighting infrastructure for a single z-level on demand (synchronous fallback).
+ * Called when a player enters a z-level before background init reaches it.
+ *
+ * Аргумент reason уходит В ЛОГ и больше никуда: в раунде 10126 подъёмов было 42, и по строке
+ * "On-demand init for z-level 15 (background preempted)" нельзя было сказать, кто их
+ * запускает - гост, живой игрок, стыковка шаттла или сейфнет-скан. Разбор упёрся ровно в это.
+ */
+/proc/create_lighting_for_zlevel(z_level, reason = LIGHTING_INIT_REASON_UNKNOWN)
 	var/datum/space_level/level = SSmapping.get_level(z_level)
 	// Self-heal: also re-run when a prior (possibly interrupted) init left deferred light atoms for
 	// this z unflushed — otherwise the level stays flagged "initialized" yet permanently black.
@@ -169,6 +270,8 @@
 	if(SSlighting.teardown_zlevel == z_level)
 		SSlighting.abort_zlevel_lighting_teardown()
 	SSlighting.zlevel_empty_since -= "[z_level]"
+	if(!self_heal)
+		SSlighting.mark_zlevel_lit(z_level)
 	// Cancel background init if it was working on this z-level
 	if(SSlighting.bg_current_zlevel == z_level)
 		SSlighting.bg_current_zlevel = 0
@@ -177,7 +280,7 @@
 		SSlighting.bg_turf_index = 0
 	else if(SSlighting.bg_queued_zlevels)
 		SSlighting.bg_queued_zlevels -= z_level
-	log_world(zlevel_lighting_pass_line(z_level, level.name, self_heal))
+	log_world(zlevel_lighting_pass_line(z_level, level.name, self_heal, reason))
 
 	// Свет целого z-уровня - самая крупная разовая аллокация идущего раунда: в 10119 три
 	// таких постройки стоили 466 МБ из 4094 потолка, и восстанавливать эту цифру пришлось
@@ -269,10 +372,10 @@
  * ошибался: обе строки читались как "поднят целый z-уровень". Настоящих построек за
  * раунд 10121 было две, строк - одиннадцать.
  */
-/proc/zlevel_lighting_pass_line(z_level, level_name, self_heal)
+/proc/zlevel_lighting_pass_line(z_level, level_name, self_heal, reason = LIGHTING_INIT_REASON_UNKNOWN)
 	if(self_heal)
-		return "## LIGHTING: Self-heal pass for z-level [z_level] ([level_name]) - флаш отложенных атомов, уровень уже поднят"
-	return "## LIGHTING: On-demand init for z-level [z_level] ([level_name]) (background preempted)"
+		return "## LIGHTING: Self-heal pass for z-level [z_level] ([level_name]) - флаш отложенных атомов, уровень уже поднят (повод: [reason])"
+	return "## LIGHTING: On-demand init for z-level [z_level] ([level_name]) (background preempted, повод: [reason])"
 
 /// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
 /// проком, потому что вызывать его придётся и из фонового краула, и из сноса.

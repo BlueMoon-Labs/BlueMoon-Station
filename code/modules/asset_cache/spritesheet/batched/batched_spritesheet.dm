@@ -305,6 +305,10 @@
 /datum/asset/spritesheet_batched/proc/generate_shard(shard_index, list/shard_entries, list/generated_cache_shards, yield)
 	var/shard_name = "[name]_part[shard_index]"
 	var/shard_json = json_encode(shard_entries)
+	// Книга недатумных аллокаций: шард уезжает в rust-g строкой JSON и возвращается строкой
+	// JSON, и обе живут в куче DreamDaemon. Сборка идёт только на холодном кэше спрайтшитов,
+	// то есть первым раундом после деплоя - в книге это видно ровно там, где и должно.
+	note_nondatum_alloc(NONDATUM_LEDGER_SPRITESHEETS)
 	var/data_out
 	if(yield || !isnull(job_id))
 		if(isnull(job_id))

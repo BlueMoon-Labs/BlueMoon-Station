@@ -33,16 +33,27 @@
 	if(try_forge_assassinate_objective(T, mode))
 		return TRUE
 	else
-		if(prob(14))
+		if(prob(14) && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого, пусть предатель занимается чем-то другим
 			var/datum/objective/protect/protect_objective = new
 			protect_objective.owner = T.owner
-			protect_objective.find_target()
-			T.add_objective(protect_objective)
+			// BLUEMOON CHANGE - протект даётся только если цель уже является чьей-то целью на убийство
+			if(protect_objective.find_kill_target())
+				T.add_objective(protect_objective)
+			else
+				qdel(protect_objective)
+				return FALSE
 		else if(prob(15) && !(locate(/datum/objective/download) in T.objectives) && !(T.owner.assigned_role in list("Research Director", "Scientist", "Roboticist")))
 			var/datum/objective/download/download_objective = new
 			download_objective.owner = T.owner
 			download_objective.gen_amount_goal()
 			T.add_objective(download_objective)
+		else if(prob(20))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг
+			var/datum/objective/frame/frame_objective = new
+			frame_objective.owner = T.owner
+			if(!frame_objective.find_target())
+				qdel(frame_objective)
+				return FALSE
+			T.add_objective(frame_objective)
 		else if(prob(30) && GLOB.roundstart_prisoners.len)
 			var/datum/objective/rescue_prisoner/rescue = new
 			rescue.owner = T.owner

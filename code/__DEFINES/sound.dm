@@ -861,3 +861,9 @@ GLOBAL_LIST_EMPTY(sfx_datum_by_key)
 #define SFX_REMOTE_MODE_SWITCH "remote_mode_switch"
 #define SFX_REMOTE_ACTION "remote_action"
 #define SFX_WRITING_PEN "writing_pen"
+
+/// Сколько разных пар (envdry, envwet) держит кэш эха sound_echo_for(). Пар в коде ровно
+/// две: дефолтная и та, что подставляет audiovisual_redirect. Запас - на звук с ручным
+/// ревербом; всё сверх запаса строится как раньше, и это оставляет кэш ограниченным при
+/// любом вызывающем.
+#define SOUND_ECHO_CACHE_MAX 16

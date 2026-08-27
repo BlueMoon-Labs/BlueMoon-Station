@@ -36,3 +36,35 @@
 
 	TEST_ASSERT_EQUAL(format_mb_delta(0), "0 МБ", "Нулевая дельта без знака")
 	TEST_ASSERT_EQUAL(format_mb_delta(12.04), "+12 МБ", "Округление до десятых и плюс у роста")
+
+/**
+ * Окно входа, открывшееся до конца инициализации мира, обязано называть себя вслух.
+ *
+ * Раунд 10126: 89 входов за 120 секунд поверх 91 секунды инициализации, и прибор записал
+ * им 2057.5 МБ. Реальная цена входа - минус мегабайт на 85 первых входов после замера базы
+ * раунда. Вычесть эти мегабайты нечем (инициализация на счёт фона ничего не пишет), значит
+ * строка обязана предупредить читателя вместо того, чтобы врать числом.
+ */
+/datum/unit_test/connect_probe_names_the_init_window
+	requires_full_map = FALSE
+
+/datum/unit_test/connect_probe_names_the_init_window/Run()
+	var/marked = probe_init_window_note(TRUE)
+	var/quiet = probe_init_window_note(FALSE)
+
+	TEST_ASSERT(findtext(marked, "ИНИЦИАЛИЗАЦИИ"), "Окно инициализации обязано быть названо в строке: [marked]")
+	TEST_ASSERT_EQUAL(quiet, "", "Штатное окно не должно получать приписку: [quiet]")
+
+	// Тест идёт на живом мире, где инициализация давно закончена: признак обязан молчать.
+	// Если он врёт здесь, он врёт и на проде - и пометит ВСЕ входы раунда.
+	TEST_ASSERT_NOTNULL(Master.current_runlevel, "Тест обязан идти на проинициализированном мире, иначе проверка ниже ничего не значит")
+	TEST_ASSERT(!probe_started_during_world_init(), "На готовом мире признак окна инициализации обязан быть ложным")
+
+	var/datum/client_connect_probe/probe = new("unit_test_init_window")
+	TEST_ASSERT(!probe.started_during_init, "Пробник, заведённый на готовом мире, не должен считать себя окном инициализации")
+	probe.finished_vsz = 3000
+	TEST_ASSERT(!findtext(probe.followup_line(3010, probe.serial), "ИНИЦИАЛИЗАЦИИ"), "Контрольный замер штатного входа не должен нести приписку")
+
+	// Обратный случай проверяем подстановкой: гонять тест до конца Master.Initialize() нельзя.
+	probe.started_during_init = TRUE
+	TEST_ASSERT(findtext(probe.followup_line(3010, probe.serial), "ИНИЦИАЛИЗАЦИИ"), "Контрольный замер входа из окна инициализации обязан нести приписку")

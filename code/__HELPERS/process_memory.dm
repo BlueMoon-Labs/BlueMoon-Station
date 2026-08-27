@@ -347,6 +347,26 @@
 		return null
 	return round(max(0, ceiling_mb - vsz_mb) / growth_mb_per_minute, 0.1)
 
+/**
+ * Доля потолка адресного пространства, занятая на ПОСЛЕДНЕМ замере SStime_track.
+ *
+ * Ноль означает "неизвестно" и обязан читаться именно так: на Windows /proc нет и
+ * get_process_memory_mb() возвращает null, потолок там тоже не замерен. Механизмы,
+ * которые ужесточаются под давлением, при нуле должны вести себя как раньше, а не как
+ * под нулевым давлением на пустом мире - разницы между этими двумя случаями в цифре нет.
+ *
+ * Читается замер, а не свежий вызов get_process_memory_mb(): чтение /proc/self/status
+ * стоит миллисекунды, а спрашивать давление будут из горячих проков.
+ */
+/proc/memory_pressure_fraction()
+	if(!SStime_track)
+		return 0
+	var/ceiling = SStime_track.process_address_ceiling_mb
+	var/vsz = SStime_track.memory_last_vsz_mb
+	if(ceiling <= 0 || vsz <= 0)
+		return 0
+	return vsz / ceiling
+
 #undef PROC_KB_PER_MB
 #undef PROC_BYTES_PER_MB
 #undef ASCII_DIGIT_ZERO

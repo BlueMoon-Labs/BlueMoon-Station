@@ -1782,6 +1782,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			if(QDELETED(src))
 				return
 			var/file = GLOB.vox_types[type][word]
+			// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
+			// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
+			if(isfile(file))
+				note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, length(file))
 			Export("##action=load_rsc", file)
 			stoplag()
 	#endif

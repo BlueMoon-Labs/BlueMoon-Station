@@ -147,6 +147,11 @@ SUBSYSTEM_DEF(time_track)
 	var/list/memory_sample_vsz = list()
 	/// Скорость роста VmSize, МБ/мин по окну. Ноль - окно ещё короче MEMORY_RATE_MIN_SPAN.
 	var/memory_growth_mb_per_minute = 0
+	/// VmSize последнего замера в МБ. Ноль - память не меряется (Windows) либо замеров ещё
+	/// не было. Отдельным варом, а не хвостом memory_sample_vsz: окно скорости чистится по
+	/// времени и на длинной паузе МК пустеет целиком, а давление спрашивают из чужих
+	/// подсистем, которым пустое окно ничего не должно говорить. См. memory_pressure_fraction().
+	var/memory_last_vsz_mb = 0
 	/// Прошлая перепись инстансов: тип -> количество. Нужна ради разницы, а не итога.
 	var/list/memory_census_previous
 	/// world.time последней переписи.
@@ -248,6 +253,26 @@ SUBSYSTEM_DEF(time_track)
 		(это НЕ старт раунда, пороги ставятся по установившемуся уровню), \
 		хост [host_memory ? "[host_memory["available"]] из [host_memory["total"]] МБ свободно" : "не опрошен"], \
 		объектов [num2text(world.contents.len, 12)] на [world.maxz] z-уровнях")
+	log_world(world_new_entry_memory_line(GLOB.world_new_entry_vsz_mb, memory["vsz"]))
+
+/**
+ * Сколько адресного пространства мир занял ДО первой строки DM.
+ *
+ * Это .dmb, типовые таблицы и инициализация глобальных переменных DM - всё, что происходит
+ * до /world/New(). По внешнему стенду раунда 10108 - 696 МБ, около четверти базы, и это
+ * самый крупный неразобранный кусок памяти: поставить метку раньше /world/New() в DM негде,
+ * поэтому цифра до сих пор существовала только как замер стенда на Windows и ни разу не
+ * снималась на проде.
+ *
+ * Отдельным проком, потому что без живого процесса иначе не проверить, что деление на две
+ * половины сходится: сумма "до DM" и "инициализация" обязана давать середину инициализации.
+ */
+/proc/world_new_entry_memory_line(entry_vsz_mb, current_vsz_mb)
+	if(isnull(entry_vsz_mb))
+		return "## MEMORY: VmSize на входе в /world/New() не замерен - разложить базу на \".dmb и глобалки\" и \"инициализацию\" нечем"
+	var/init_spent = round(current_vsz_mb - entry_vsz_mb, 0.1)
+	return "## MEMORY: до первой строки DM (.dmb, типовые таблицы, глобалки) [entry_vsz_mb] МБ; \
+		инициализация к этой отметке добавила [init_spent] МБ"
 
 /**
  * Пора ли снимать базовый уровень раунда.
@@ -341,6 +366,7 @@ SUBSYSTEM_DEF(time_track)
 	var/vsz = memory["vsz"]
 	if(!memory_first_sample_at)
 		memory_first_sample_at = world.time
+	memory_last_vsz_mb = vsz
 
 	memory_sample_times += world.time
 	memory_sample_vsz += vsz
@@ -1492,6 +1518,22 @@ SUBSYSTEM_DEF(time_track)
 	"light_queue_sources",
 	"light_queue_corners",
 	"light_queue_objects",
+	"light_lit_deferred_z",
+	// Качание сноса/подъёма отложенных уровней. Кумулятивные счётчики: в раунде 10126 их
+	// пришлось восстанавливать подсчётом строк dd.log вручную, а разность соседних строк
+	// CSV сразу показывает частоту. Ноль у обоих - отсрочка работает и никого не трясёт.
+	"light_z_builds",
+	"light_z_teardowns",
+	// Книга недатумных аллокаций (code/__HELPERS/nondatum_ledger.dm). Кумулятив за раунд:
+	// разность соседних строк отвечает на вопрос, который перепись инстансов не берёт -
+	// чем платили ступени VmSize, в которых объектов не прибавилось.
+	"ledger_icons",
+	"ledger_icon_pixels",
+	"ledger_asset_bytes",
+	"ledger_rsc_bytes",
+	"ledger_tgui_bytes",
+	"ledger_statpanel_bytes",
+	"ledger_spritesheets",
 	)
 
 /// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
@@ -1574,5 +1616,18 @@ SUBSYSTEM_DEF(time_track)
 	SSlighting.worst_fire_cost,
 	length(GLOB.lighting_update_lights),
 	length(GLOB.lighting_update_corners),
-	length(GLOB.lighting_update_objects)
+	length(GLOB.lighting_update_objects),
+	SSlighting.lit_deferred_zlevel_count(),
+	SSlighting.zlevel_builds_total,
+	SSlighting.zlevel_teardowns_total,
+	// num2text: счётчики байтов переваливают за миллион уже в первые минуты, а
+	// интерполяция берёт шесть значащих цифр и превращает разность соседних строк
+	// в шум округления (см. комментарий выше у instances).
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ICONS], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ICON_PIXELS], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ASSET_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_RSC_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_TGUI_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_STATPANEL_BYTES], 12),
+	GLOB.nondatum_ledger[NONDATUM_LEDGER_SPRITESHEETS]
 	)
