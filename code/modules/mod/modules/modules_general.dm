@@ -448,6 +448,7 @@
 	UnregisterSignal(mod, COMSIG_MOD_MODULE_REMOVAL)
 	UnregisterSignal(mod, COMSIG_ATOM_EMP_ACT)
 	UnregisterSignal(mod, COMSIG_ATOM_EMAG_ACT)
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/on_use()
 	. = ..()
@@ -456,6 +457,7 @@
 	dna = mod.wearer.dna.unique_enzymes
 	mod.balloon_alert(mod.wearer, "данные ДНК обновлены")
 	drain_power(use_power_cost)
+	ENABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/emp_act(severity)
 	. = ..()

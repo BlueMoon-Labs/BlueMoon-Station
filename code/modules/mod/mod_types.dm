@@ -345,11 +345,29 @@
 		/obj/item/mod/module/jetpack/advanced,
 	)
 
+/obj/item/choice_beacon/blueshied_suit
+	name = "blueshied Suit Beacon"
+	desc = "MOD или хардсьют"
+
+/obj/item/choice_beacon/blueshied_suit/generate_display_names()
+	var/static/list/suit_list
+	if(!suit_list)
+		suit_list = list()
+		var/list/templist = list(
+		/obj/item/mod/control/pre_equipped/blueshied,
+		/obj/item/storage/box/blue_shield_hs,
+		)
+		for(var/V in templist)
+			var/atom/A = V
+			suit_list[initial(A.name)] = A
+	return suit_list
+
 /obj/item/mod/control/pre_equipped/expeditor
 	theme = /datum/mod_theme/security/expeditor
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/flashlight/vanguard,
 	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)
