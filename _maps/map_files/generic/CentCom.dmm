@@ -11643,7 +11643,7 @@
 /area/centcom/ferry)
 "cLY" = (
 /obj/effect/turf_decal/siding/wood,
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "cNp" = (
 /obj/machinery/computer/camera_advanced/syndie{
@@ -15432,7 +15432,7 @@
 /obj/machinery/photocopier{
 	pixel_y = 12
 	},
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "gyD" = (
 /obj/structure/closet/crate/freezer/blood,
@@ -18819,7 +18819,7 @@
 	color = "#596479";
 	dir = 8
 	},
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "jJZ" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -20501,7 +20501,7 @@
 	dir = 1
 	},
 /obj/machinery/computer/camera_advanced/syndie,
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "lmU" = (
 /obj/machinery/light{
@@ -21396,7 +21396,7 @@
 	},
 /obj/item/stamp/syndicate,
 /obj/item/hand_labeler,
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "mfZ" = (
 /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares{
@@ -21612,9 +21612,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
-"msc" = (
-/turf/open/indestructible/cobble/side,
-/area/centcom/holding)
 "mtt" = (
 /obj/structure/rack/shelf,
 /obj/effect/spawner/lootdrop/maintenance,
@@ -22704,7 +22701,7 @@
 	dir = 8
 	},
 /obj/item/binoculars,
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "nCY" = (
 /obj/structure/rack/shelf,
@@ -25348,11 +25345,6 @@
 /obj/machinery/light/directional/south,
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
-"qkn" = (
-/turf/open/indestructible/necropolis{
-	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
-	},
-/area/centcom/arena)
 "qkA" = (
 /obj/machinery/vending/cola/blue{
 	shut_up = 1
@@ -27301,12 +27293,6 @@
 /obj/structure/railing/corner,
 /turf/open/indestructible/cobble/corner,
 /area/centcom/holding)
-"rTv" = (
-/obj/machinery/light/floor,
-/turf/open/indestructible/necropolis{
-	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
-	},
-/area/centcom/arena)
 "rTV" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
@@ -28578,9 +28564,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
-"tbC" = (
-/turf/open/indestructible/cobble/side,
-/area/centcom/holding)
 "tbR" = (
 /obj/structure/lattice,
 /turf/open/space/basic,
@@ -29384,7 +29367,7 @@
 	pixel_y = 2;
 	pixel_x = 4
 	},
-/turf/open/floor/carpet/blackred/airless,
+/turf/open/floor/carpet/blackred,
 /area/centcom/control)
 "tSl" = (
 /obj/machinery/vending/wardrobe/law_wardrobe{
@@ -29607,7 +29590,7 @@
 /area/centcom/control)
 "ubE" = (
 /obj/structure/table/wood,
-/obj/item/gun/ballistic/revolver/russian,
+/obj/item/gun/ballistic/revolver/russian/lewd,
 /turf/open/floor/carpet/red,
 /area/centcom/control)
 "ucH" = (
@@ -30825,9 +30808,6 @@
 	},
 /turf/open/floor/carpet/red,
 /area/centcom/control)
-"viE" = (
-/turf/open/pool/water,
-/area/centcom/holding)
 "vjd" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/blood/footprints,
@@ -30895,13 +30875,6 @@
 /obj/item/reagent_containers/food/snacks/chips,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
-"vkH" = (
-/obj/structure/fans/tiny,
-/obj/machinery/door/airlock/centcom,
-/turf/open/indestructible/necropolis{
-	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
-	},
-/area/centcom/arena)
 "vkL" = (
 /obj/structure/chair/comfy/black{
 	dir = 8
@@ -33328,9 +33301,6 @@
 /obj/structure/table/plasmaglass,
 /turf/open/floor/glass/reinforced,
 /area/centcom/evac)
-"xEb" = (
-/turf/open/floor/carpet/blackred/airless,
-/area/centcom/control)
 "xEz" = (
 /turf/open/floor/plating/beach/water{
 	footstep = "water";
@@ -47888,7 +47858,7 @@ bQT
 bQT
 bQT
 iGk
-tbC
+gMA
 fON
 iPB
 sxn
@@ -48136,16 +48106,16 @@ qZx
 gYx
 aFe
 pKy
-tbC
-viE
-viE
-viE
-viE
-viE
-viE
-viE
+gMA
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 fyT
 kxp
@@ -48393,16 +48363,16 @@ pNK
 wkF
 aFe
 pKy
-tbC
-viE
-viE
-viE
-viE
-viE
-viE
-viE
+gMA
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 iPB
 gGA
@@ -48650,16 +48620,16 @@ vVD
 xCf
 gUl
 pKy
-msc
-viE
-viE
-viE
-viE
-viE
-viE
-viE
+gMA
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 iPB
 fBo
@@ -48908,15 +48878,15 @@ oom
 aFe
 woL
 gMA
-viE
-viE
-viE
 sDh
-viE
-viE
-viE
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 iPB
 iPB
@@ -49164,16 +49134,16 @@ oom
 eMB
 aFe
 pKy
-tbC
+gMA
 bXN
-viE
-viE
-viE
-viE
-viE
+sDh
+sDh
+sDh
+sDh
+sDh
 mmB
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -49421,16 +49391,16 @@ oom
 mtK
 ryB
 pKy
-tbC
-viE
-viE
-viE
-viE
-viE
-viE
-viE
+gMA
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -49455,7 +49425,7 @@ ncJ
 fON
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 xwL
@@ -49678,16 +49648,16 @@ oom
 oom
 xqr
 pKy
-tbC
-viE
-viE
-viE
+gMA
+sDh
+sDh
+sDh
 utX
-viE
-viE
-viE
+sDh
+sDh
+sDh
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -49712,7 +49682,7 @@ ncJ
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 ubf
 lFP
@@ -49944,7 +49914,7 @@ tmb
 tmb
 tmb
 sIU
-tbC
+gMA
 fON
 fON
 oDP
@@ -49969,7 +49939,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 xwL
@@ -50226,7 +50196,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 xwL
@@ -50483,7 +50453,7 @@ noJ
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 eZG
@@ -50740,7 +50710,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 eZG
@@ -50997,7 +50967,7 @@ fKZ
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 aFe
 aFe
@@ -51254,7 +51224,7 @@ lgU
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -51511,7 +51481,7 @@ lgU
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -51768,7 +51738,7 @@ lgU
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -52025,7 +51995,7 @@ lgU
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -52282,7 +52252,7 @@ jDc
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -52539,7 +52509,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 oDP
 ncJ
 nTv
@@ -52796,7 +52766,7 @@ qjU
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 oVp
@@ -53053,7 +53023,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 lvA
 fON
 nTv
@@ -53310,7 +53280,7 @@ oom
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 nTv
@@ -53567,7 +53537,7 @@ ncJ
 ncJ
 fON
 pKy
-tbC
+gMA
 fON
 fON
 oVp
@@ -53793,7 +53763,7 @@ xVP
 qoi
 fON
 pKy
-tbC
+gMA
 fON
 fON
 aFe
@@ -53824,7 +53794,7 @@ ncJ
 fON
 fON
 pKy
-tbC
+gMA
 oDP
 ncJ
 nTv
@@ -54050,7 +54020,7 @@ fON
 jfw
 fON
 pKy
-tbC
+gMA
 fON
 fON
 aFe
@@ -54081,7 +54051,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 keA
@@ -54307,7 +54277,7 @@ aFe
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 hiS
 fON
@@ -54338,7 +54308,7 @@ tmb
 tmb
 tmb
 sIU
-tbC
+gMA
 fON
 fON
 keA
@@ -54564,7 +54534,7 @@ fON
 ibg
 fON
 pKy
-tbC
+gMA
 usS
 iKx
 qLI
@@ -54821,7 +54791,7 @@ fON
 fON
 npl
 pKy
-tbC
+gMA
 usS
 jQd
 qLI
@@ -54839,7 +54809,7 @@ fON
 fON
 oDP
 pKy
-tbC
+gMA
 oDP
 fON
 fON
@@ -55078,7 +55048,7 @@ fON
 fON
 oDP
 pKy
-tbC
+gMA
 fON
 jee
 fON
@@ -55096,7 +55066,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -55353,7 +55323,7 @@ aFe
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 dby
@@ -55610,7 +55580,7 @@ sps
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -55867,7 +55837,7 @@ iqo
 fmk
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -56124,7 +56094,7 @@ aFe
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -56370,7 +56340,7 @@ fON
 fON
 fON
 pDh
-tbC
+gMA
 aFe
 aFe
 qaM
@@ -56381,7 +56351,7 @@ oom
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -56638,7 +56608,7 @@ jMs
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 pbN
@@ -56895,7 +56865,7 @@ umz
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -57141,7 +57111,7 @@ kCR
 kCR
 kCR
 qIk
-tbC
+gMA
 aFe
 aFe
 aFe
@@ -57152,7 +57122,7 @@ aFe
 aFe
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -57409,7 +57379,7 @@ oOC
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -57648,7 +57618,7 @@ aAf
 wJH
 ubq
 iGk
-tbC
+gMA
 fON
 fON
 fON
@@ -57666,7 +57636,7 @@ fON
 pbN
 fON
 pKy
-tbC
+gMA
 dby
 fON
 hmY
@@ -57905,7 +57875,7 @@ eSj
 wJH
 fON
 pKy
-tbC
+gMA
 aFe
 uLC
 uLC
@@ -57923,7 +57893,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 hmY
@@ -58162,7 +58132,7 @@ gDo
 wJH
 dby
 pKy
-tbC
+gMA
 aFe
 bcu
 gaR
@@ -58180,7 +58150,7 @@ fON
 dhC
 fON
 pKy
-tbC
+gMA
 fON
 fON
 dbo
@@ -58419,7 +58389,7 @@ hnW
 wJH
 fON
 pKy
-tbC
+gMA
 reY
 tGh
 puP
@@ -58437,7 +58407,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 tYG
@@ -58676,7 +58646,7 @@ wJH
 wJH
 fON
 pKy
-tbC
+gMA
 aFe
 mAW
 dcj
@@ -58694,7 +58664,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 tYG
@@ -58933,7 +58903,7 @@ fON
 oOC
 fON
 pKy
-tbC
+gMA
 aFe
 aFe
 aFe
@@ -58951,7 +58921,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 tYG
@@ -59190,7 +59160,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 aFe
 dRs
 ueZ
@@ -59208,7 +59178,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 dbo
@@ -59447,7 +59417,7 @@ fON
 dby
 fON
 pKy
-tbC
+gMA
 aFe
 pNQ
 aFe
@@ -59465,7 +59435,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 hmY
@@ -59704,7 +59674,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 aFe
 aFe
 aFe
@@ -59722,7 +59692,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 hmY
@@ -59961,7 +59931,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -59979,7 +59949,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -60218,7 +60188,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -60236,7 +60206,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -60493,7 +60463,7 @@ kqj
 fON
 oDP
 pKy
-tbC
+gMA
 oDP
 fON
 fON
@@ -60750,7 +60720,7 @@ tmb
 tmb
 tmb
 sIU
-tbC
+gMA
 fON
 oiE
 fON
@@ -61503,7 +61473,7 @@ tmb
 tmb
 tmb
 sIU
-tbC
+gMA
 fON
 fON
 fON
@@ -61760,7 +61730,7 @@ bQT
 bQT
 bQT
 iGk
-tbC
+gMA
 fON
 fON
 fON
@@ -62017,7 +61987,7 @@ fON
 fON
 oDP
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -62274,7 +62244,7 @@ fON
 fON
 fON
 pKy
-tbC
+gMA
 fON
 fON
 fON
@@ -65874,8 +65844,8 @@ vzo
 aFe
 hQW
 qUn
-viE
-viE
+sDh
+sDh
 sFf
 reY
 fON
@@ -66130,9 +66100,9 @@ gHu
 uDO
 aFe
 hQW
-viE
-viE
-viE
+sDh
+sDh
+sDh
 sFf
 aFe
 aFe
@@ -84792,7 +84762,7 @@ aaa
 aaa
 alI
 unK
-qkn
+dXW
 dXW
 dXW
 dXW
@@ -85330,8 +85300,8 @@ unK
 aaa
 unK
 unK
-qkn
-qkn
+dXW
+dXW
 ljP
 unK
 alI
@@ -85578,7 +85548,7 @@ bVi
 qhf
 leO
 qhf
-rTv
+bVi
 dXW
 vIX
 dXW
@@ -86353,7 +86323,7 @@ bVi
 ibl
 ljP
 ibl
-qkn
+dXW
 unK
 aaa
 aaa
@@ -87372,13 +87342,13 @@ mRB
 ibl
 ljP
 ibl
-qkn
-qkn
+dXW
+dXW
 ibl
 ibl
 ibl
-qkn
-qkn
+dXW
+dXW
 ibl
 ljP
 ibl
@@ -87817,7 +87787,7 @@ alI
 aio
 lmK
 jJM
-xEb
+iWw
 cLY
 dbT
 aio
@@ -88414,7 +88384,7 @@ dXW
 dXW
 dXW
 ibl
-qkn
+dXW
 dXW
 dXW
 unK
@@ -92268,7 +92238,7 @@ dXW
 dXW
 dXW
 dXW
-vkH
+lBI
 dXW
 dXW
 dXW

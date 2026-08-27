@@ -195,7 +195,7 @@
 
 /datum/reagent/drug/genital_stimulator/on_mob_end_metabolize(mob/living/carbon/C)
 	var/obj/item/organ/genital/G = C.getorganslot(genital)
-	if(!genital)
+	if(!G)
 		return
 
 	if(G == "anus" && !C.dna.features["has_anus"])

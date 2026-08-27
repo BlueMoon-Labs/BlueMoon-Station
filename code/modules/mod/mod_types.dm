@@ -1,9 +1,10 @@
 /obj/item/mod/control/pre_equipped
-	cell = /obj/item/stock_parts/cell/high
+	var/equip_cell = /obj/item/stock_parts/cell/high
 	var/applied_skin
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
 	new_skin = applied_skin
+	MOD_CELL = equip_cell
 	return ..()
 
 /obj/item/mod/control/pre_equipped/standard
@@ -35,9 +36,9 @@
 
 /obj/item/mod/control/pre_equipped/advanced
 	theme = /datum/mod_theme/advanced
-	cell = /obj/item/stock_parts/cell/super
+	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/rad_protection,
 		/obj/item/mod/module/flashlight,
@@ -46,7 +47,7 @@
 
 /obj/item/mod/control/pre_equipped/mining
 	theme = /datum/mod_theme/mining
-	cell = /obj/item/stock_parts/cell/high/plus
+	equip_cell = /obj/item/stock_parts/cell/high/plus
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -67,7 +68,7 @@
 
 /obj/item/mod/control/pre_equipped/rescue
 	theme = /datum/mod_theme/rescue
-	cell = /obj/item/stock_parts/cell/super
+	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/flashlight,
@@ -77,7 +78,7 @@
 
 /obj/item/mod/control/pre_equipped/research
 	theme = /datum/mod_theme/research
-	cell = /obj/item/stock_parts/cell/super
+	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -96,9 +97,9 @@
 
 /obj/item/mod/control/pre_equipped/safeguard
 	theme = /datum/mod_theme/safeguard
-	cell = /obj/item/stock_parts/cell/super
+	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack,
@@ -107,9 +108,9 @@
 
 /obj/item/mod/control/pre_equipped/magnate
 	theme = /datum/mod_theme/magnate
-	cell = /obj/item/stock_parts/cell/hyper
+	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/holster,
 		/obj/item/mod/module/jetpack/advanced,
@@ -117,20 +118,20 @@
 
 /obj/item/mod/control/pre_equipped/traitor
 	theme = /datum/mod_theme/syndicate
-	cell = /obj/item/stock_parts/cell/super
+	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/syndicate,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/dna_lock,
-		/obj/item/mod/module/jetpack,
+		/obj/item/mod/module/jetpack/advanced,
 	)
 
 /obj/item/mod/control/pre_equipped/nuclear
 	theme = /datum/mod_theme/syndicate
-	cell = /obj/item/stock_parts/cell/hyper
+	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/visor/thermal,
 		/obj/item/mod/module/flashlight,
@@ -140,9 +141,9 @@
 
 /obj/item/mod/control/pre_equipped/elite
 	theme = /datum/mod_theme/elite
-	cell = /obj/item/stock_parts/cell/bluespace
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/visor/thermal,
@@ -153,7 +154,7 @@
 
 /obj/item/mod/control/pre_equipped/prototype
 	theme = /datum/mod_theme/prototype
-	cell = /obj/item/stock_parts/cell/high/plus
+	equip_cell = /obj/item/stock_parts/cell/high/plus
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -164,9 +165,9 @@
 
 /obj/item/mod/control/pre_equipped/responsory
 	theme = /datum/mod_theme/responsory
-	cell = /obj/item/stock_parts/cell/hyper
+	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/flashlight,
@@ -238,7 +239,7 @@
 
 /obj/item/mod/control/pre_equipped/apocryphal
 	theme = /datum/mod_theme/apocryphal
-	cell = /obj/item/stock_parts/cell/bluespace
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -249,7 +250,7 @@
 
 /obj/item/mod/control/pre_equipped/corporate
 	theme = /datum/mod_theme/corporate
-	cell = /obj/item/stock_parts/cell/bluespace
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/holster,
@@ -257,9 +258,9 @@
 
 /obj/item/mod/control/pre_equipped/debug
 	theme = /datum/mod_theme/debug
-	cell = /obj/item/stock_parts/cell/bluespace
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/bikehorn,
@@ -270,12 +271,22 @@
 
 /obj/item/mod/control/pre_equipped/administrative
 	theme = /datum/mod_theme/administrative
-	cell = /obj/item/stock_parts/cell/infinite/abductor
+	equip_cell = /obj/item/stock_parts/cell/infinite/abductor
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/quick_carry/advanced,
 		/obj/item/mod/module/magboot/advanced,
+		/obj/item/mod/module/jetpack/advanced,
+	)
+
+/obj/item/mod/control/pre_equipped/inteq
+	theme = /datum/mod_theme/inteq
+	equip_cell = /obj/item/stock_parts/cell/bluespace
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended/syndicate,
+		/obj/item/mod/module/welding,
+		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
 	)
 
@@ -285,5 +296,24 @@
 
 /obj/item/mod/control/pre_equipped/syndicate_empty/elite
 	theme = /datum/mod_theme/elite
+
+/obj/item/mod/control/pre_equipped/lustwish
+	theme = /datum/mod_theme/lustwish
+
+/obj/item/mod/control/pre_equipped/infiltrator_inteq
+	slot_flags = ITEM_SLOT_BELT
+	equip_cell = /obj/item/stock_parts/cell/bluespace
+	theme = /datum/mod_theme/inteq/infiltrator
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended/syndicate,
+		/obj/item/mod/module/welding,
+		/obj/item/mod/module/noslip,
+		/obj/item/mod/module/stealth,
+		/obj/item/mod/module/visor/night,
+		/obj/item/mod/module/holster,
+		/obj/item/mod/module/magnetic_harness,
+		/obj/item/mod/module/springlock/advanced/antagonist, //нерушима
+		/obj/item/mod/module/infiltrator,
+	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)

@@ -24,10 +24,11 @@
 	wanted_objects = list()
 	search_objects = 0
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
-	faction = list("neutral", ROLE_SYNDICATE)
+	faction = list(ROLE_SYNDICATE)
 
 	var/spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded
 	var/obj/vehicle/sealed/mecha/mecha //Ref to pilot's mecha instance
+	var/obj/vehicle/sealed/mecha/movement_hooked_mecha
 	var/required_mecha_charge = 7500 //If the pilot doesn't have a mecha, what charge does a potential Grand Theft Mecha need? (Defaults to half a battery)
 	var/mecha_charge_evacuate = 50 //Amount of charge at which the pilot tries to abandon the mecha
 
@@ -50,7 +51,7 @@
 	desc = "Death to the Syndicate. This variant comes in MECHA DEATH flavour."
 	icon_living = "nanotrasen"
 	icon_state = "nanotrasen"
-	faction = list("nanotrasen")
+	faction = list(ROLE_DEATHSQUAD)
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/loaded
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq
@@ -87,8 +88,11 @@
 	else
 		target = null //Target was our mecha, so null it out
 	M.aimob_enter_mech(src)
+	if(!mecha)
+		return FALSE
 	targets_from = M
 	allow_movement_on_non_turfs = TRUE //duh
+	set_mecha_movement_hook(M)
 	var/do_ranged = 0
 	for(var/equip in mecha.equipment)
 		var/obj/item/mecha_parts/mecha_equipment/ME = equip
@@ -106,12 +110,43 @@
 	if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_defense_mode) && !mecha.defense_mode)
 		var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
 		action.Trigger(TRUE)
+	if(ai_controller)
+		ai_controller.update_grid()
+		ai_controller.reset_ai_status()
+
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/set_mecha_movement_hook(obj/vehicle/sealed/mecha/M)
+	if(movement_hooked_mecha && !QDELETED(movement_hooked_mecha))
+		UnregisterSignal(movement_hooked_mecha, COMSIG_MOVABLE_MOVED)
+		movement_hooked_mecha = null
+	if(M && !QDELETED(M))
+		RegisterSignal(M, COMSIG_MOVABLE_MOVED, PROC_REF(on_mounted_mecha_moved))
+		movement_hooked_mecha = M
+
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/on_mounted_mecha_moved(datum/source)
+	SIGNAL_HANDLER
+	ai_controller?.update_grid()
+
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/inside_piloted_mecha()
+	return mecha && loc == mecha
+
+/// Sealed mech cabin: ignore outside vacuum/heat. use_internal_tank breaks simple_animal
+/// atmos checks because cabin_air volume is tiny vs turf (min_oxy compares raw moles).
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/environment_is_safe(datum/gas_mixture/environment, check_temp = FALSE)
+	if(inside_piloted_mecha())
+		return TRUE
+	return ..()
+
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/handle_environment(datum/gas_mixture/environment)
+	if(inside_piloted_mecha())
+		return
+	return ..()
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/exit_mecha(obj/vehicle/sealed/mecha/M)
 	if(!M)
 		return FALSE
 
 	mecha.aimob_exit_mech(src)
+	set_mecha_movement_hook(null)
 	allow_movement_on_non_turfs = FALSE
 	targets_from = src
 
@@ -278,11 +313,13 @@
 	return TRUE
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/death(gibbed)
+	set_mecha_movement_hook(null)
 	if(mecha)
 		mecha.aimob_exit_mech(src)
 	..()
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/gib()
+	set_mecha_movement_hook(null)
 	if(mecha)
 		mecha.aimob_exit_mech(src)
 	..()
@@ -303,6 +340,13 @@
 				if(CanAttack(occupant))
 					return TRUE
 			return FALSE
+	//В мехе search_objects не должен глушить атаку по живым (режим угона только пешком)
+	if(mecha && isliving(the_target) && search_objects >= 2)
+		var/prior_search = search_objects
+		search_objects = 0
+		. = ..()
+		search_objects = prior_search
+		return .
 
 	. = ..()
 

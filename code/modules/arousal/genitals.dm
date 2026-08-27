@@ -385,6 +385,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 	for(var/L in relevant_layers) //Less hardcode
 		remove_overlay(layers_num[L])
 	remove_overlay(GENITALS_EXPOSED_LAYER)
+	remove_overlay(GENITAL_EFFECT_LAYER)
 	if(!LAZYLEN(internal_organs) || ((NOGENITALS in dna.species.species_traits) && !genital_override) || HAS_TRAIT(src, TRAIT_HUSK))
 		return
 
@@ -425,9 +426,12 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				// dirty fix to render the dildo above the strap
 				if(strapon.is_exposed())
 					genital_overlay.layer = -GENITALS_EXPOSED_LAYER
+					var/mutant_string = S.mutant_part_string
+					dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 					LAZYADD(fully_exposed, genital_overlay)
 				else
 					genital_overlay.layer = -layers_num[layer]
+
 					standing += genital_overlay
 				continue
 
@@ -515,6 +519,8 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			// While still keeping the option to render them underneath the clothing when needed
 			if(layers_num[layer] == GENITALS_FRONT_LAYER && should_promote)
 				genital_overlay.layer = -GENITALS_EXPOSED_LAYER
+				var/mutant_string = S.mutant_part_string
+				dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 				LAZYADD(fully_exposed, genital_overlay)
 				if(has_emissive_part(dna.features, G.slot))
 					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay)
@@ -532,10 +538,10 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 	if(LAZYLEN(fully_exposed))
 		overlays_standing[GENITALS_EXPOSED_LAYER] = fully_exposed
 		apply_overlay(GENITALS_EXPOSED_LAYER)
+		apply_overlay(GENITAL_EFFECT_LAYER)
 
 	for(var/L in relevant_layers)
 		apply_overlay(layers_num[L])
-
 
 //Checks to see if organs are new on the mob, and changes their colours so that they don't get crazy colours.
 /mob/living/carbon/human/proc/emergent_genital_call()

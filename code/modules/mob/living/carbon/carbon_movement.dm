@@ -5,6 +5,37 @@
 		log_combat(src, (O ? O : get_turf(src)), "slipped on the", null, ((lube & SLIDE) ? "(LUBE)" : null))
 	return loc.handle_slip(src, knockdown_amount, O, lube)
 
+/// Скорость полёта на джетпаке берётся из конфига:
+/// full_speed → RUN_DELAY, иначе → WALK_DELAY.
+/// Не зависит от настроения, препаратов, экипировки или прочих модификаторов.
+/// В критическом состоянии или лёжа замедляется вдвое.
+/mob/living/carbon/movement_delay()
+	if(movement_type & FLOATING)
+		var/obj/item/I = get_jetpack()
+		if(istype(I, /obj/item/tank/jetpack))
+			var/obj/item/tank/jetpack/J = I
+			if(J.on)
+				. = J.full_speed ? CONFIG_GET(number/movedelay/run_delay) : CONFIG_GET(number/movedelay/walk_delay)
+				if(stat != CONSCIOUS || body_position == LYING_DOWN)
+					. *= 2
+				return
+		else if(istype(I, /obj/item/mod/module/jetpack))
+			// Модуль МОД-костюма
+			var/obj/item/mod/module/jetpack/J = I
+			if(J.active)
+				. = J.full_speed ? CONFIG_GET(number/movedelay/run_delay) : CONFIG_GET(number/movedelay/walk_delay)
+				if(stat != CONSCIOUS || body_position == LYING_DOWN)
+					. *= 2
+				return
+		// Кибернетический имплант трастеров
+		var/obj/item/organ/cyberimp/chest/thrusters/T = getorganslot(ORGAN_SLOT_THRUSTERS)
+		if(istype(T) && T.on)
+			. = T.full_speed ? CONFIG_GET(number/movedelay/run_delay) : CONFIG_GET(number/movedelay/walk_delay)
+			if(stat != CONSCIOUS || body_position == LYING_DOWN)
+				. *= 2
+			return
+	return ..()
+
 /mob/living/carbon/Process_Spacemove(movement_dir = 0)
 	if(..())
 		return TRUE

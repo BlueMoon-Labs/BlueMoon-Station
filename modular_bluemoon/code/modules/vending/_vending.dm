@@ -414,7 +414,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 		R.custom_price = round(initial(temp.custom_price) * SSeconomy.inflation_value())
 		R.custom_premium_price = round(initial(temp.custom_premium_price) * SSeconomy.inflation_value())
 		//R.age_restricted = initial(temp.age_restricted)
-		//R.colorable = !!(initial(temp.greyscale_config) && initial(temp.greyscale_colors) && (initial(temp.flags_1) & IS_PLAYER_COLORABLE_1))
+		//R.colorable = !!(initial(temp.greyscale_config) && initial(temp.greyscale_colors) && (initial(temp.flags_1))
 		R.category = product_to_category[typepath]
 		recordlist += R
 
@@ -1374,8 +1374,13 @@ GLOBAL_LIST_EMPTY(vending_products)
 	to_chat(user, span_warning("[src] сопротивляется вашей ментальной хватке!"))
 
 ///Crush the mob that the vending machine got thrown at
+// /obj/machinery/vending/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+// 	if(isliving(hit_atom) && !tilted) //  BLUEMOON EDIT вендор не падает когда он уже упал.
+// 		tilt(fatty=hit_atom)
+// 	return ..()
+
 /obj/machinery/vending/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(isliving(hit_atom) && !tilted) //  BLUEMOON EDIT вендор не падает когда он уже упал.
+	if(isliving(hit_atom))
 		tilt(fatty=hit_atom)
 	return ..()
 

@@ -74,10 +74,7 @@
 	icon_state = "[initial(icon_state)]-on"
 	ion_trail.start()
 	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_user_death), override = TRUE)
-	if(full_speed)
-		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	else
-		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	user.update_movespeed()
 
 /obj/item/tank/jetpack/proc/turn_off(mob/user)
 	on = FALSE
@@ -86,8 +83,7 @@
 	if(!user)
 		return
 	UnregisterSignal(user, COMSIG_LIVING_DEATH)
-	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	user.update_movespeed()
 
 /// Мёртвый не тянет рычаги. Дрейф при этом остаётся - тело летит по инерции, как и положено.
 /obj/item/tank/jetpack/proc/on_user_death(mob/living/source)
@@ -204,7 +200,7 @@
 	desc = "A tank of compressed oxygen for use as propulsion in zero-gravity areas by security forces."
 	icon_state = "jetpack-sec"
 	item_state = "jetpack-sec"
-	full_speed = FALSE
+	full_speed = TRUE
 
 /obj/item/tank/jetpack/carbondioxide
 	name = "jetpack (carbon dioxide)"
@@ -229,7 +225,7 @@
 	volume = 1
 	slot_flags = null
 	gas_type = null
-	full_speed = FALSE
+	full_speed = TRUE
 	var/datum/gas_mixture/temp_air_contents
 	var/obj/item/tank/internals/tank = null
 	var/mob/living/carbon/human/cur_user

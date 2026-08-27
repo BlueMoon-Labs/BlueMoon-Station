@@ -28,6 +28,7 @@
 	alt_aroused = TRUE
 	feat_taur = "cock_taur"
 	var/ru_name = "человеческий"
+	mutant_part_string = "penis"
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
@@ -164,6 +165,7 @@
 	icon_state = "testicle"
 	name = "testicle"		//the preview name of the accessory
 	color_src = "balls_color"
+	mutant_part_string = "testicles"
 
 /datum/sprite_accessory/testicles/single
 	icon_state = "single"
@@ -193,6 +195,7 @@
 	name = "vagina"
 	color_src = "vag_color"
 	alt_aroused = TRUE
+	mutant_part_string = "vagina"
 
 /datum/sprite_accessory/vagina/human
 	icon_state = "human"
@@ -260,6 +263,7 @@
 	icon = 'icons/obj/genitals/breasts_onmob.dmi'
 	name = "breasts"
 	color_src = "breasts_color"
+	mutant_part_string = "breasts"
 
 /datum/sprite_accessory/breasts/pair
 	icon_state = "pair"
@@ -279,6 +283,7 @@
 	icon_state = "butt"
 	name = "butt"
 	color_src = "butt_color"
+	mutant_part_string = "butt"
 
 /datum/sprite_accessory/butt
 	icon = 'modular_splurt/icons/obj/genitals/butt_onmob.dmi'
@@ -293,6 +298,7 @@
 	icon_state = "belly"
 	name = "belly"
 	color_src = "belly_color"
+	mutant_part_string = "belly"
 
 //there literally shouldn't be any other ass types besides one because that'd be weird, this is just here to keep things consistent for the genital system.
 /datum/sprite_accessory/belly/pair

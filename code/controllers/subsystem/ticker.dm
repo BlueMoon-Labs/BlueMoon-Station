@@ -185,7 +185,10 @@ SUBSYSTEM_DEF(ticker)
 				window_flash(C, ignorepref = TRUE) //let them know lobby has opened up.
 			to_chat(world, "<span class='boldnotice'>Добро пожаловать на [station_name()]!</span>")
 			if(!SSpersistence.CheckGracefulEnding())
-				send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/chat_reboot_role)]> | Производится реролл карты в связи с крашем сервера..."), CONFIG_GET(string/chat_announce_new_game))
+				// Чёрный ящик МК прошлого запуска, если он остался: пометка о крахе без него
+				// говорит только то, что мир умер, а не то, на чём именно.
+				var/crash_note = GLOB.mc_state_previous_summary ? "\n```\n[GLOB.mc_state_previous_summary]\n```" : ""
+				send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/chat_reboot_role)]> | Производится реролл карты в связи с крашем сервера...[crash_note]"), CONFIG_GET(string/chat_announce_new_game))
 			else
 				send2chat(new /datum/tgs_message_content("Новый раунд начинается на [SSmapping.config.map_name], голосование за режим полным ходом!"), CONFIG_GET(string/chat_announce_new_game))
 			current_state = GAME_STATE_PREGAME
@@ -342,17 +345,29 @@ SUBSYSTEM_DEF(ticker)
 	// Порядок стадий менять нельзя: экипировка ждёт созданных персонажей, манифест -
 	// экипированных, перенос ключей - записанных в манифест. Уступать тик между
 	// стадиями и внутри них - можно, каждая стадия сама по себе атомарной не является.
-	create_characters() //Create player characters
+	// Цена раздачи тел по стадиям - см. ticker_handoff_probe.dm. Прибор подключения меряет
+	// лобби, а поклиентская машинерия карты BYOND аллоцируется здесь, на переносе ключа.
+	var/datum/roundstart_handoff_probe/handoff_probe = new
+	var/created = create_characters() //Create player characters
+	handoff_probe.mark("create", created)
 	CHECK_TICK
-	collect_minds()
+	var/collected = collect_minds()
+	handoff_probe.mark("collect", collected)
 	CHECK_TICK
-	equip_characters()
+	var/equipped = equip_characters()
+	handoff_probe.mark("equip", equipped)
 	CHECK_TICK
 
 	GLOB.data_core.manifest()
+	handoff_probe.mark("manifest")
 	CHECK_TICK
 
-	transfer_characters()	//transfer keys to the new mobs
+	var/list/transferred = transfer_characters()	//transfer keys to the new mobs
+	handoff_probe.mark("transfer", length(transferred))
+	CHECK_TICK
+	show_roundstart_splashes(transferred)
+	handoff_probe.mark("splash", length(transferred))
+	handoff_probe.finish(length(transferred))
 
 	for(var/I in round_start_events)
 		var/datum/callback/cb = I
@@ -464,7 +479,11 @@ SUBSYSTEM_DEF(ticker)
 // Обратная сторона та же: за время сна игрок успевает отключиться, а его моб - уйти
 // в qdel, поэтому валидность проверяется заново на каждой итерации. Один рантайм на
 // мёртвой ссылке обрывает стадию для всех, кто стоит в списке дальше.
+/// Возвращает число игроков, которым стадия реально сделала работу - знаменатель цены
+/// стадии в приборе раздачи тел (ticker_handoff_probe.dm). Считать по GLOB.player_list
+/// снаружи нельзя: каждая стадия отсеивает своих (не готов, без разума, без клиента).
 /datum/controller/subsystem/ticker/proc/create_characters()
+	. = 0
 	for(var/mob/dead/new_player/player in GLOB.player_list)
 		CHECK_TICK
 		if(QDELETED(player) || player.ready != PLAYER_READY_TO_PLAY || !player.mind)
@@ -475,12 +494,15 @@ SUBSYSTEM_DEF(ticker)
 		GLOB.joined_player_list += player.ckey
 		player.create_character(FALSE)
 		if(player.new_character && player.client && player.client.prefs) // we cannot afford a runtime, ever
+			.++
 			LAZYOR(player.client.prefs.slots_joined_as, player.client.prefs.default_slot)
 			LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
 		else
 			stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
 
+/// Возвращает число собранных разумов - см. create_characters().
 /datum/controller/subsystem/ticker/proc/collect_minds()
+	. = 0
 	for(var/mob/dead/new_player/P in GLOB.player_list)
 		CHECK_TICK
 		if(QDELETED(P))
@@ -489,9 +511,12 @@ SUBSYSTEM_DEF(ticker)
 		if(QDELETED(character) || !character.mind)
 			continue
 		SSticker.minds += character.mind
+		.++
 
 
+/// Возвращает число экипированных персонажей - см. create_characters().
 /datum/controller/subsystem/ticker/proc/equip_characters()
+	. = 0
 	var/captainless=1
 	for(var/mob/dead/new_player/N in GLOB.player_list)
 		CHECK_TICK
@@ -516,6 +541,7 @@ SUBSYSTEM_DEF(ticker)
 		// Экипировка отвязана от клиента, а вот post_copy_to без префов не имеет смысла:
 		// отвалившийся игрок доедет до конца стадии, но уже без обращения к пустоте
 		N.client?.prefs?.post_copy_to(player)
+		.++
 	if(captainless)
 		for(var/mob/dead/new_player/N in GLOB.player_list)
 			CHECK_TICK
@@ -523,12 +549,15 @@ SUBSYSTEM_DEF(ticker)
 				continue
 			to_chat(N, "Captainship not forced on anyone.")
 
+/// Возвращает СПИСОК тел, чьи ключи доехали: его же берёт следующим проходом заставка, а
+/// его длина идёт знаменателем в прибор раздачи тел (см. create_characters()).
 /datum/controller/subsystem/ticker/proc/transfer_characters()
 	var/list/livings = list()
 	// Единственная стадия старта раунда, которая шла вообще без уступки тика: перенос
 	// ключа, qdel лобби-моба, сплеш-экран и init_verbs на каждого из девяноста игроков
 	// уходили одним неразрывным куском. Снапшот обхода делает qdel по ходу цикла
 	// безопасным, но после сна лобби-моб может быть удалён уже без нашего участия.
+	// Сплеш с тех пор уехал отдельным проходом в show_roundstart_splashes().
 	for(var/mob/dead/new_player/player in GLOB.mob_list)
 		CHECK_TICK
 		if(QDELETED(player))
@@ -542,12 +571,32 @@ SUBSYSTEM_DEF(ticker)
 			if (living.client.prefs && living.client.prefs.auto_ooc)
 				if (living.client.prefs.chat_toggles & CHAT_OOC)
 					living.client.prefs.chat_toggles ^= CHAT_OOC
-			var/atom/movable/screen/splash/S = new(null, living.client, TRUE)
-			S.Fade(TRUE)
 			living.client.init_verbs()
 		livings += living
 	if(livings.len)
 		addtimer(CALLBACK(src, PROC_REF(release_characters), livings), 30, TIMER_CLIENT_TIME)
+	return livings
+
+/**
+ * Заставка поверх экрана на время разморозки тела.
+ *
+ * Вынесена из transfer_characters() отдельным проходом, чтобы прибор раздачи тел мерил её
+ * сам по себе. Она ставит каждому клиенту на экран SStitle.icon - ту самую заставку,
+ * которая в раунде 10108 разворачивалась в непрерывный блок на 500 МБ, - и делает это всем
+ * ста с лишним игрокам разом, ровно в то окно, где VmSize раунда 10121 прыгнул на 666 МБ
+ * без единого нового инстанса.
+ *
+ * Для игрока порядок не меняется: тело он уже получил, а разморозка (release_characters)
+ * всё равно ждёт таймера на три секунды - сплеш успевает и появиться, и погаснуть внутри
+ * прежнего окна.
+ */
+/datum/controller/subsystem/ticker/proc/show_roundstart_splashes(list/livings)
+	for(var/mob/living/character as anything in livings)
+		CHECK_TICK
+		if(QDELETED(character) || !character.client)
+			continue
+		var/atom/movable/screen/splash/splash = new(null, character.client, TRUE)
+		splash.Fade(TRUE)
 
 /datum/controller/subsystem/ticker/proc/release_characters(list/livings)
 	for(var/I in livings)

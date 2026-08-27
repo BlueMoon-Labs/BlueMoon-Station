@@ -380,6 +380,16 @@ proc/string_repeat(string, count)
 	if(!is_client_attached || attached_client == null)
 		if(host_mob.client)
 			attach_client()
+		else
+			//Мониторы крутятся на SSfastprocess сами по себе, а on_mob_ghostize
+			//только рвёт ссылку на клиента и их не выключает. После гостинга
+			//владельца health_scan продолжал каждую секунду подменять запись
+			//"HEALTH_SCAN", складывая старую в очередь на уборку, - а уборку
+			//делает только UpdateVision, до которого выход по этой ветке не
+			//доходил. Каждая такая секунда оставляла бессмертный экранный
+			//объект типа /atom/movable/screen/text - перепись прода в раунде
+			//10054 дала +2140 за интервал, это ровно 1.4 в секунду.
+			update_vision_modules()
 		return
 
 	if(!visible)

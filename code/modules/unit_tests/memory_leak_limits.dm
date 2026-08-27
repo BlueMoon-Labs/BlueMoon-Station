@@ -174,3 +174,34 @@
 	TEST_ASSERT(length(console.messages) > 0, "Console should have messages before Destroy")
 	// Call real Destroy() via qdel - if cleanup is broken, it will runtime
 	qdel(console)
+
+// ===== Индивидуальный лог моба: кап на записи =====
+
+/**
+ * Лог одного моба не должен расти до конца раунда.
+ *
+ * Запись тут не строка, а ассоциативный список из тринадцати полей (у /tg/ на этом месте
+ * одна строка - тринадцать полей завёл наш лог-вьювер), и держится она дважды: у моба и у
+ * player_details, который живёт весь раунд по ckey. Перепись памяти такой накопитель не
+ * видит вовсе: прироста ИНСТАНСОВ от него нет ни одного, растут только длины списков на
+ * уже живых объектах.
+ */
+/datum/unit_test/mob_individual_log_limit/Run()
+	var/mob/living/carbon/human/talker = allocate(/mob/living/carbon/human)
+	var/say_key = num2text(LOG_SAY)
+
+	for(var/i in 1 to MOB_INDIVIDUAL_LOG_MAX * 2)
+		talker.log_message("фраза [i]", LOG_SAY, log_globally = FALSE)
+
+	var/list/say_log = talker.logging[say_key]
+	TEST_ASSERT_NOTNULL(say_log, "Лог речи не завёлся вовсе")
+	TEST_ASSERT(length(say_log) <= MOB_INDIVIDUAL_LOG_MAX, "Лог речи перерос кап: [length(say_log)] записей при пределе [MOB_INDIVIDUAL_LOG_MAX]")
+	TEST_ASSERT(length(say_log) > 0, "Кап выкосил лог целиком")
+
+	// Вытесняются СТАРЫЕ: админ смотрит недавнее, а полная история и так в файлах раунда.
+	var/list/newest = say_log[length(say_log)]
+	TEST_ASSERT(findtext(newest["what"], "фраза [MOB_INDIVIDUAL_LOG_MAX * 2]"), "После вытеснения последней записью осталась не самая свежая: [newest["what"]]")
+
+	// Лог одного типа не должен утаскивать за собой соседний.
+	talker.log_message("удар", LOG_ATTACK, log_globally = FALSE)
+	TEST_ASSERT_EQUAL(length(talker.logging[num2text(LOG_ATTACK)]), 1, "Кап одного типа задел соседний тип сообщений")

@@ -35,7 +35,7 @@
 			START_PROCESSING(SSobj, src)
 	return ..()
 
-/obj/item/seeds/replicapod/proc/check_mind_orbiting(atom/A)
+/obj/item/seeds/replicapod/proc/check_mind_orbiting(atom/movable/A)
 	for(var/mob/M in A.orbiters?.orbiters)
 		if(mind && M.mind && ckey(M.mind.key) == ckey(mind.key) && M.ckey && M.client && M.stat == DEAD && !M.suiciding && isobserver(M))
 			return TRUE

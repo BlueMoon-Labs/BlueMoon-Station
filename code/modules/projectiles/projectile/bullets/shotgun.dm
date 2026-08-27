@@ -18,19 +18,18 @@
 	sharpness = SHARP_NONE
 	wound_bonus = 80
 
-#define NONLETHAL_HEAD_BRAIN_DAMAGE 50
 #define NONLETHAL_HEAD_EFFECT_CHANCE 25
 
 // Beanbag — BR0
 /obj/item/projectile/bullet/shotgun_beanbag
 	name = "beanbag slug"
+	icon_state = "pellet"
 	damage = 5
 	stamina = 80                      // BLUEMOON EDIT: было 70 → 80
 	armour_penetration = BULLET_BR1
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
-	nonlethal_headshot_brain_damage = NONLETHAL_HEAD_BRAIN_DAMAGE
 	nonlethal_headshot_chance = NONLETHAL_HEAD_EFFECT_CHANCE
 
 /obj/item/projectile/bullet/incendiary/shotgun
@@ -121,6 +120,7 @@
 // Резиновая дробь 12g — BR0
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
+	icon_state = "pellet"
 	damage = 2
 	stamina = 20                      // BLUEMOON EDIT: было 15 → 20. -RaizlenW
 	armour_penetration = BULLET_BR1
@@ -169,11 +169,11 @@
 
 /obj/item/projectile/bullet/pellet/shotgun_incapacitate
 	name = "incapacitating pellet"
+	icon_state = "pellet"
 	damage = 1
 	stamina = 6
 	armour_penetration = BULLET_BR0
 
-#undef NONLETHAL_HEAD_BRAIN_DAMAGE
 #undef NONLETHAL_HEAD_EFFECT_CHANCE
 
 /obj/item/projectile/bullet/breach_slug

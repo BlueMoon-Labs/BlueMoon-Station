@@ -78,6 +78,17 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 
 /datum/asset/json/spawnpanel
 	name = "spawnpanel_atom_data"
+	/// Сколько типов получили id спрайта на последней генерации. Снимается ради проверки
+	/// в startup_bootstrap: после register() карта иконок освобождается, и пересчитать
+	/// покрытие уже нечем.
+	var/sprites_registered = 0
+
+/datum/asset/json/spawnpanel/register()
+	. = ..()
+	// Карту иконок читает только generate(), и только один раз - из register() выше.
+	// Дальше это двадцать четыре тысячи ключей ассоциативного списка, висящих до конца
+	// раунда без единого читателя.
+	GLOB.spawnpanel_icon_map.Cut()
 
 /datum/asset/json/spawnpanel/generate()
 	// Порядок сборки ассетов в SSassets - это порядок typesof(), то есть порядок
@@ -99,6 +110,7 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 		/mob = "Mobs",
 	)
 
+	sprites_registered = 0
 	for(var/root_type in category_by_root)
 		var/category = category_by_root[root_type]
 		for(var/atom_type in typesof(root_type))
@@ -106,10 +118,13 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 				continue
 			var/atom/reference = atom_type
 			var/type_key = "[atom_type]"
+			var/iconid = GLOB.spawnpanel_icon_map[type_key]
+			if(iconid)
+				sprites_registered++
 			atoms[type_key] = list(
 				"name" = "[initial(reference.name)]",
 				"type" = category,
-				"iconid" = GLOB.spawnpanel_icon_map[type_key]
+				"iconid" = iconid
 			)
 
 	data["atoms"] = atoms

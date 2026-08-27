@@ -21,6 +21,13 @@
 /// The number of z-layer 'slices' usable by the chat message layering
 #define CHAT_LAYER_MAX_Z			(CHAT_LAYER_MAX - CHAT_LAYER) / CHAT_LAYER_Z_STEP
 
+#define RUNECHAT_ANIM_NONE			0
+#define RUNECHAT_ANIM_RISE			1
+#define RUNECHAT_ANIM_TYPEWRITER	2
+#define CHAT_MESSAGE_RISE_OFFSET	8
+#define CHAT_MESSAGE_RISE_TIME		0.4 SECONDS
+#define CHAT_MESSAGE_TYPING_TIME	2 SECONDS
+
 /**
   * # Chat Message Overlay
   *
@@ -47,12 +54,18 @@
 	var/in_runechat_queue = FALSE
 	/// TRUE if SSrunechat currently stores this message in second_queue instead of buckets
 	var/in_runechat_second_queue = FALSE
+	/// Индекс бакета SSrunechat, в который сообщение положили при вставке. BUCKET_POS_NONE, если оно не в колесе.
+	/// Пересчитать по scheduled_destruction нельзя: head_offset прыгает вперёд на целое колесо,
+	/// а сообщение остаётся лежать в своём слоте. См. тот же var/bucket_pos у /datum/timedevent.
+	var/runechat_bucket_pos = BUCKET_POS_NONE
 	/// TRUE once we have inserted into owned_by.seen_messages
 	var/in_seen_messages = FALSE
 	/// TRUE once we have inserted the image into owned_by.images
 	var/in_client_images = FALSE
 	/// The current index used for adjusting the layer of each sequential chat message such that recent messages will overlay older ones
 	var/static/current_z_idx = 0
+	/// Current logical integer pixel_y of the message, kept whole to avoid subpixel text rendering
+	var/current_y = 0
 
 /**
   * Constructs a chat message overlay
@@ -129,20 +142,28 @@
 		text = copytext_char(text, 1, maxlen + 1) + "..." // BYOND index moment
 
 	//SKYRAT CHANGES BEGIND
-	// Calculate target color if not already present
-	if (!target.chat_color || target.chat_color_name != target.name)
-		var/mob/M = target
-		if(GLOB.runechat_color_names[target.name])
-			target.chat_color = GLOB.runechat_color_names[target.name]
-		else if (ismob(target) && M.client?.prefs?.enable_personal_chat_color && M.name == M.real_name && M.name == M.client.prefs.real_name)
-			var/per_color = M.client.prefs.personal_chat_color
-			GLOB.runechat_color_names[target.name] = per_color
-			target.chat_color = per_color
+	// Цвет по умолчанию выводится из имени и лежит в общем кэше: одинаковые имена дают
+	// одинаковый цвет, и держать его копию на каждом атоме мира незачем. Личный цвет,
+	// назначенный вручную (режимы модульной лазерной винтовки), перебивает кэш и живёт
+	// на самом атоме - но только на движимом, турфы своим цветом не говорят.
+	var/target_color
+	var/manual_color = FALSE
+	if(ismovable(target))
+		var/atom/movable/movable_target = target
+		target_color = movable_target.chat_color
+		// Именно непустота, а не !isnull: chat_color = "" - легальный вареедит, и цвет для
+		// такого атома всё равно берётся из общего кэша. Считать его ручным значило бы
+		// платить color_shift() на каждое курсивное сообщение и никогда не наполнять кэш.
+		manual_color = !!target_color
+	if(!target_color)
+		target_color = GLOB.runechat_color_names[target.name]
+	if(!target_color)
+		var/mob/speaker = target
+		if (ismob(target) && speaker.client?.prefs?.enable_personal_chat_color && speaker.name == speaker.real_name && speaker.name == speaker.client.prefs.real_name)
+			target_color = speaker.client.prefs.personal_chat_color
+			GLOB.runechat_color_names[target.name] = target_color
 		else
-			target.chat_color = colorize_string(target.name)
-
-		target.chat_color_darkened = color_shift(target.chat_color, 0.85, 0.85)
-		target.chat_color_name = target.name
+			target_color = colorize_string(target.name)
 	//SKYRAT CHANGES END
 
 	// Get rid of any URL schemes that might cause BYOND to automatically wrap something in an anchor tag
@@ -191,8 +212,20 @@
 
 	text = "[prefixes?.Join("&nbsp;")][text]"
 
-	// We dim italicized text to make it more distinguishable from regular text
-	var/tgt_color = extra_classes.Find("italics") ? target.chat_color_darkened : target.chat_color
+	// We dim italicized text to make it more distinguishable from regular text.
+	// Затемнение кэшируется тем же ключом - именем; вручную назначенный цвет в общий кэш
+	// не пишется, иначе он утёк бы на всех однофамильцев.
+	var/tgt_color = target_color
+	if(extra_classes.Find("italics"))
+		// Ключ кэша разный, а кэш один. Выведенный из имени цвет кэшируется по ИМЕНИ:
+		// одинаковые имена дают одинаковый цвет по построению. Назначенный вручную - по
+		// самому ЦВЕТУ: по имени он утёк бы на однофамильцев, а по цвету не утекает никуда
+		// и при этом перестаёт считать rgb2hsl на каждое курсивное сообщение.
+		var/darkened_key = manual_color ? target_color : target.name
+		tgt_color = GLOB.runechat_color_names_darkened[darkened_key]
+		if(!tgt_color)
+			tgt_color = color_shift(target_color, 0.85, 0.85)
+			GLOB.runechat_color_names_darkened[darkened_key] = tgt_color
 
 	// Approximate text height
 	var/complete_text = "<span class='center maptext [extra_classes.Join(" ")]' style='color: [tgt_color]'>[owner.say_emphasis(text)]</span>"
@@ -222,7 +255,8 @@
 		var/combined_height = approx_lines
 		for(var/msg in owned_by.seen_messages[message_loc])
 			var/datum/chatmessage/m = msg
-			animate(m.message, pixel_y = m.message.pixel_y + mheight, time = CHAT_MESSAGE_SPAWN_TIME)
+			m.current_y += round(mheight)
+			animate(m.message, pixel_y = m.current_y, time = CHAT_MESSAGE_SPAWN_TIME)
 			combined_height += m.approx_lines
 
 			// When choosing to update the remaining time we have to be careful not to update the
@@ -237,22 +271,37 @@
 		current_z_idx = 0
 
 	// Build message image
+	var/anim_mode = owned_by.prefs ? owned_by.prefs.runechat_anim : RUNECHAT_ANIM_NONE
+	var/final_pixel_y = round(owner.bound_height * 0.95)
+
 	message = image(loc = message_loc, layer = CHAT_LAYER + CHAT_LAYER_Z_STEP * current_z_idx++)
 	message.plane = CHAT_PLANE
 	message.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART
 	message.alpha = 0
-	message.pixel_y = owner.bound_height * 0.95
+	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y
+	current_y = final_pixel_y
 	message.maptext_width = CHAT_MESSAGE_WIDTH
 	message.maptext_height = mheight
-	message.maptext_x = (CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5
-	message.maptext = MAPTEXT(complete_text)
+	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5)
+	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
 	// View the message
 	LAZYADDASSOC(owned_by.seen_messages, message_loc, src)
 	in_seen_messages = TRUE
 	owned_by.images |= message
 	in_client_images = TRUE
-	animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
+	switch(anim_mode)
+		if(RUNECHAT_ANIM_RISE)
+			animate(message, alpha = 255, pixel_y = final_pixel_y, time = CHAT_MESSAGE_RISE_TIME, easing = SINE_EASING | EASE_OUT)
+		if(RUNECHAT_ANIM_TYPEWRITER)
+			animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
+			var/list/steps = typewriter_build_steps(complete_text)
+			if(length(steps) < 2)
+				message.maptext = MAPTEXT(complete_text)
+			else
+				INVOKE_ASYNC(src, PROC_REF(typewriter_reveal), steps)
+		else
+			animate(message, alpha = 255, time = CHAT_MESSAGE_SPAWN_TIME)
 
 	// Register with the runechat SS to handle EOL and destruction
 	scheduled_destruction = world.time + (lifespan - CHAT_MESSAGE_EOL_FADE)
@@ -268,6 +317,47 @@
 	eol_complete = scheduled_destruction + fadetime
 	animate(message, alpha = 0, time = fadetime, flags = ANIMATION_PARALLEL)
 	enter_subsystem(eol_complete) // re-enter the runechat SS with the EOL completion time to QDEL self
+
+/datum/chatmessage/proc/typewriter_reveal(list/steps)
+	var/total_ticks = max(1, CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1))
+	var/per_tick = max(1, CEILING(length(steps) / total_ticks, 1))
+	var/index = 1
+	while(index < length(steps))
+		if(!owned_by || QDELETED(src) || !message || eol_complete)
+			return
+		index = min(index + per_tick, length(steps))
+		message.maptext = MAPTEXT(steps[index])
+		sleep(world.tick_lag)
+
+/datum/chatmessage/proc/typewriter_build_steps(complete_text)
+	var/list/tokens = list()
+	var/total_chars = length_char(complete_text)
+	var/i = 1
+	while(i <= total_chars)
+		var/char = copytext_char(complete_text, i, i + 1)
+		var/token_end = i
+		if(char == "<")
+			token_end = typewriter_scan_until(complete_text, i, ">")
+		else if(char == "&")
+			token_end = typewriter_scan_until(complete_text, i, ";")
+		else if(char == "\\")
+			token_end = typewriter_scan_until(complete_text, i, "]")
+		tokens += copytext_char(complete_text, i, token_end + 1)
+		i = token_end + 1
+
+	var/list/steps = list()
+	var/built = ""
+	for(var/token in tokens)
+		built += token
+		steps += built
+	return steps
+
+/datum/chatmessage/proc/typewriter_scan_until(text, start, stop, max_chars = 64)
+	var/limit = min(start + max_chars, length_char(text))
+	for(var/j in start + 1 to limit)
+		if(copytext_char(text, j, j + 1) == stop)
+			return j
+	return start
 
 /**
   * Creates a message overlay at a defined location for a given speaker

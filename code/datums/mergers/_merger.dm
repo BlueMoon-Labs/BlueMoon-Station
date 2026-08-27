@@ -1,13 +1,22 @@
+/// Gets the merger datum representing this movable's connected cluster.
+/atom/movable/proc/GetMergeGroup(id, list/allowed_types)
+	RETURN_TYPE(/datum/merger)
+	var/datum/merger/candidate = mergers?[id]
+	if(!candidate)
+		new /datum/merger(id, allowed_types, src)
+		candidate = mergers?[id]
+	return candidate
+
 /// Tracks one contiguous cluster of atoms of a supplied type set.
 /datum/merger
 	var/id
 	var/list/merged_typecache
 	var/attempt_merge_proc
-	var/atom/origin
+	var/atom/movable/origin
 	///Assoc member -> connected cardinal directions.
 	var/list/members = list()
 
-/datum/merger/New(id, list/merged_typecache, atom/origin, attempt_merge_proc)
+/datum/merger/New(id, list/merged_typecache, atom/movable/origin, attempt_merge_proc)
 	src.id = id
 	src.merged_typecache = merged_typecache
 	src.origin = origin
@@ -15,11 +24,11 @@
 	Refresh()
 
 /datum/merger/Destroy(force)
-	for(var/atom/thing as anything in members.Copy())
+	for(var/atom/movable/thing as anything in members.Copy())
 		RemoveMember(thing)
 	return ..()
 
-/datum/merger/proc/RemoveMember(atom/thing, clean = TRUE)
+/datum/merger/proc/RemoveMember(atom/movable/thing, clean = TRUE)
 	SEND_SIGNAL(thing, COMSIG_MERGER_REMOVING, src)
 	UnregisterSignal(thing, COMSIG_MOVABLE_MOVED)
 	UnregisterSignal(thing, COMSIG_PARENT_QDELETING)
@@ -31,7 +40,7 @@
 	if(origin == thing)
 		origin = length(members) ? pick(members) : null
 
-/datum/merger/proc/AddMember(atom/thing, connected_dir)
+/datum/merger/proc/AddMember(atom/movable/thing, connected_dir)
 	SEND_SIGNAL(thing, COMSIG_MERGER_ADDING, src)
 	RegisterSignal(thing, COMSIG_MOVABLE_MOVED, PROC_REF(QueueRefresh))
 	RegisterSignal(thing, COMSIG_PARENT_QDELETING, PROC_REF(HandleMemberDel))
@@ -47,7 +56,7 @@
 	if(!origin)
 		origin = thing
 
-/datum/merger/proc/HandleMemberDel(atom/source)
+/datum/merger/proc/HandleMemberDel(atom/movable/source)
 	SIGNAL_HANDLER
 	RemoveMember(source)
 	QueueRefresh()
@@ -82,15 +91,15 @@
 	for(var/turf/location as anything in found_turfs)
 		var/list/turf_packet = found_turfs[location]
 		var/connected_dirs = turf_packet[MERGE_TURF_PACKET_DIR]
-		for(var/atom/member as anything in turf_packet[MERGE_TURF_PACKET_ATOMS])
+		for(var/atom/movable/member as anything in turf_packet[MERGE_TURF_PACKET_ATOMS])
 			fresh_members[member] = connected_dirs
 	var/list/leaving_members = members - fresh_members
-	for(var/atom/thing as anything in leaving_members)
+	for(var/atom/movable/thing as anything in leaving_members)
 		RemoveMember(thing)
 	var/list/joining_members = fresh_members - members
-	for(var/atom/thing as anything in joining_members)
+	for(var/atom/movable/thing as anything in joining_members)
 		AddMember(thing, fresh_members[thing])
-	for(var/atom/thing as anything in fresh_members)
+	for(var/atom/movable/thing as anything in fresh_members)
 		members[thing] = fresh_members[thing]
 	SEND_SIGNAL(src, COMSIG_MERGER_REFRESH_COMPLETE, leaving_members, joining_members)
 	if(!length(members))

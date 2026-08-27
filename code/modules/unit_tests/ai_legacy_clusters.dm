@@ -244,7 +244,7 @@
 	//прикрытый пол и обесточенный кабель неинтересны
 	var/turf/open/floor/floor = run_loc_floor_bottom_left
 	TEST_ASSERT(istype(floor), "Sanity: the test room floor must be a real floor")
-	floor.intact = FALSE
+	floor.turf_flags &= ~TURF_INTACT
 	var/obj/structure/cable/dead_wire = allocate(/obj/structure/cable, floor)
 	TEST_ASSERT(!vermin.try_chew_cables(FALSE), "An unpowered cable must not be chewed")
 	TEST_ASSERT(!QDELETED(dead_wire), "An unpowered cable must survive the gnawing")

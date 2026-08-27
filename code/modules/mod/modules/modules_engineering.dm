@@ -13,12 +13,14 @@
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
 /obj/item/mod/module/welding/on_suit_activation()
-	mod.helmet.flash_protect = 2
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flash_protect = 2
 
 /obj/item/mod/module/welding/on_suit_deactivation(deleting = FALSE)
 	if(deleting)
 		return
-	mod.helmet.flash_protect = initial(mod.helmet.flash_protect)
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flash_protect = initial(helmet.flash_protect)
 
 ///T-Ray Scan - Scans the terrain for undertile objects.
 /obj/item/mod/module/t_ray
@@ -60,7 +62,8 @@
 	. = ..()
 	if(!.)
 		return
-	mod.boots.clothing_flags |= NOSLIP
+	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
+	boots.clothing_flags |= NOSLIP
 	ADD_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown += slowdown_active
 	mod.wearer.refresh_gravity()
@@ -70,7 +73,8 @@
 	. = ..()
 	if(!.)
 		return
-	mod.boots.clothing_flags &= ~NOSLIP
+	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
+	boots.clothing_flags &= ~NOSLIP
 	REMOVE_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown -= slowdown_active
 	mod.wearer.refresh_gravity()

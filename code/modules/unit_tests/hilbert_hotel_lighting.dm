@@ -27,7 +27,7 @@
 				ghost_objects++
 				if(bad_desc.len < 12)
 					bad_desc += "ghost:[T.type] ([T.x],[T.y],[T.z])"
-		if(!IS_DYNAMIC_LIGHTING(T))
+		if(!TURF_IS_DYNAMIC_LIGHTING(T))
 			continue
 		total_dynamic++
 		if(!T.lighting_object)
@@ -42,13 +42,13 @@
 		// Шаринг корнеров: стык двух соседних динамических турфов обязан быть ОДНИМ датумом.
 		// Приватные дубликаты дают плоскую позонную заливку с резкими швами ("секционный" свет).
 		var/turf/east_neighbor = get_step(T, EAST)
-		if(east_neighbor?.lighting_object && IS_DYNAMIC_LIGHTING(east_neighbor) && east_neighbor.loc == room_area)
+		if(east_neighbor?.lighting_object && TURF_IS_DYNAMIC_LIGHTING(east_neighbor) && east_neighbor.loc == room_area)
 			if(T.lc_topright != east_neighbor.lc_topleft || T.lc_bottomright != east_neighbor.lc_bottomleft)
 				shared_corner_breaks++
 				if(bad_desc.len < 12)
 					bad_desc += "seam_E:[T.type] ([T.x],[T.y],[T.z])"
 		var/turf/north_neighbor = get_step(T, NORTH)
-		if(north_neighbor?.lighting_object && IS_DYNAMIC_LIGHTING(north_neighbor) && north_neighbor.loc == room_area)
+		if(north_neighbor?.lighting_object && TURF_IS_DYNAMIC_LIGHTING(north_neighbor) && north_neighbor.loc == room_area)
 			if(T.lc_topright != north_neighbor.lc_bottomright || T.lc_topleft != north_neighbor.lc_bottomleft)
 				shared_corner_breaks++
 				if(bad_desc.len < 12)

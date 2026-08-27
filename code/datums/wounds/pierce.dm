@@ -8,6 +8,8 @@
 	wound_type = WOUND_PIERCE
 	treatable_by = list(/obj/item/stack/medical/suture)
 	treatable_tool = TOOL_CAUTERY
+	// BLUEMOON ADD - проколы можно зажимать гемостатом
+	also_treatable_tools = list(TOOL_HEMOSTAT)
 	base_treat_time = 3 SECONDS
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE)
 
@@ -111,12 +113,26 @@
 	if(victim.reagents?.has_reagent(/datum/reagent/toxin/heparin))
 		blood_flow += 0.5 // old herapin used to just add +2 bleed stacks per tick, this adds 0.5 bleed flow to all open cuts which is probably even stronger as long as you can cut them first
 
+	// BLUEMOON EDIT START - повязка глушит кровопотерю, а не лечит рану в фоне.
+	// Кровь не течёт, пока у бинта есть ресурс, но рана никуда не девается и
+	// возобновляется, когда бинт пропитается или его снимут. Под повязкой рана
+	// продолжает медленно сворачиваться (gauzed_clot_rate), поэтому лёгкие проколы
+	// успевают затянуться до конца ресурса, а тяжёлые - нет.
 	if(limb.current_gauze)
-		blood_flow -= limb.current_gauze.absorption_rate * gauzed_clot_rate
 		limb.seep_gauze(limb.current_gauze.absorption_rate)
+		if(limb.current_gauze.absorption_capacity > 0)
+			blood_flow -= limb.current_gauze.absorption_rate * gauzed_clot_rate
+	// BLUEMOON EDIT END
 
 	if(blood_flow <= 0)
+		// BLUEMOON ADD - проколы исчезали молча (в т.ч. под повязкой), сообщаем о заживлении
+		to_chat(victim, "<span class='green'>Ваша [limb.ru_name] перестала истекать [HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкость" : "кровью"] из-за проколов!</span>")
 		qdel(src)
+
+// BLUEMOON ADD START - свежая повязка глушит истечение крови из проколов
+/datum/wound/pierce/is_bleed_suppressed()
+	return limb && limb.current_gauze && limb.current_gauze.absorption_capacity > 0
+// BLUEMOON ADD END
 
 /datum/wound/pierce/on_stasis()
 	. = ..()
@@ -128,6 +144,8 @@
 		return
 	if(istype(I, /obj/item/stack/medical/suture))
 		suture(I, user)
+	else if(I.tool_behaviour == TOOL_HEMOSTAT) // BLUEMOON ADD - зажим сосудов
+		clamp_bleeder(I, user)
 	else if(I.tool_behaviour == TOOL_CAUTERY || I.get_temperature() > 300)
 		tool_cauterize(I, user)
 
@@ -172,11 +190,38 @@
 		limb.receive_damage(burn = 2 + severity, wound_bonus = CANT_WOUND)
 		if(prob(30))
 			victim.emote("scream")
-	var/blood_cauterized = (0.6 / self_penalty_mult) * 0.5
+	// BLUEMOON EDIT - убран множитель *0.5: раньше прокол лечился только при потоке <= 0,
+	// и критический прокол (3.35) требовал дюжины успешных подходов подряд
+	var/blood_cauterized = (0.6 / self_penalty_mult)
 	blood_flow -= blood_cauterized
 
 	if(blood_flow > 0)
 		try_treating(I, user)
+
+// BLUEMOON ADD START - зажим кровоточащего сосуда гемостатом
+/// Если кто-то пережимает сосуд в проколе гемостатом. Сильнее прижигания за подход,
+/// вместо ожога давит ткани, но требует хирургического инструмента и времени.
+/datum/wound/pierce/proc/clamp_bleeder(obj/item/I, mob/user)
+	if(HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+		to_chat(user, "Это не поможет, это же робот!")
+		return
+
+	var/self_penalty_mult = (user == victim ? 1.4 : 1)
+	user.visible_message("<span class='notice'>[user] пытается зажать сосуды на [limb.ru_name_v] персонажа [victim] с помощью [I]...</span>", "<span class='notice'>Вы пытаетесь зажать сосуды [user == victim ? "на своей [limb.ru_name_v]" : "на [limb.ru_name_v] персонажа [victim]"] с помощью [I]...</span>")
+
+	if(!do_after(user, base_treat_time * 1.5 * self_penalty_mult, target=victim, extra_checks = CALLBACK(src, PROC_REF(still_exists))))
+		return
+
+	user.visible_message("<span class='green'>[user] зажимает сосуды в ране персонажа [victim].</span>", "<span class='green'>Вы зажимаете сосуды [user == victim ? "в своей конечности" : "в конечности персонажа [victim]"].</span>")
+	limb.receive_damage(brute = 1 + severity, wound_bonus = CANT_WOUND) // бранши давят ткани
+	var/blood_clamped = (1 / self_penalty_mult)
+	blood_flow -= blood_clamped
+
+	if(blood_flow > 0)
+		try_treating(I, user)
+	else
+		to_chat(user, "<span class='green'>Вы успешно пережимаете кровотечение [user == victim ? "в своей конечности" : "в конечности персонажа [victim]"].</span>")
+// BLUEMOON ADD END
 
 /datum/wound/pierce/moderate
 	name = "Minor Breakage"

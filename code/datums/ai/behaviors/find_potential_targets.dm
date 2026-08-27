@@ -15,6 +15,7 @@
 
 /datum/ai_behavior/find_potential_targets/perform(delta_time, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
 	var/mob/living/living_mob = controller.pawn
+	var/atom/perception = get_perception_atom(living_mob)
 	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
 	if(!targeting_strategy)
 		CRASH("No targeting strategy was supplied in the blackboard for [controller.pawn]")
@@ -34,7 +35,7 @@
 	//всё равно гейтится собственным can_see, а движение к мигнувшей цели -
 	//ровно то, что делает пик наказуемым. После грейса - контакт, SEARCH, и
 	//живой атом возвращается в цели исключительно через собственный LOS ниже.
-	if(current_target_eligible && !candidate_is_visible(living_mob, current_target, targeting_strategy, aggro_range))
+	if(current_target_eligible && !candidate_is_visible(perception, living_mob, current_target, targeting_strategy, aggro_range))
 		var/los_lost_at = controller.blackboard[BB_AI_LOS_LOST_AT]
 		if(isnull(los_lost_at))
 			controller.blackboard[BB_AI_LOS_LOST_AT] = world.time
@@ -69,7 +70,7 @@
 	//using the profile's complete acquisition radius.
 	var/target_scan_range = current_target_congested ? min(aggro_range, AI_MOB_CONGESTION_RETARGET_RANGE) : aggro_range
 	//грубый пул: ячейки грида (возвращают больше радиуса - фильтруем точно ниже)
-	var/list/potential_targets = SSspatial_grid.orthogonal_range_search(living_mob, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, target_scan_range)
+	var/list/potential_targets = SSspatial_grid.orthogonal_range_search(perception, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, target_scan_range)
 	potential_targets -= living_mob
 	if(current_target_valid)
 		potential_targets |= current_target
@@ -87,13 +88,13 @@
 		potential_targets |= typecache_filter_list(oview(target_scan_range, hostile_mob.targets_from), hostile_mob.wanted_objects)
 
 	//враждебные машины: сразу только текущий z-бакет вместо глобального скана
-	var/turf/mob_turf = get_turf(living_mob)
-	if(mob_turf && mob_turf.z <= length(GLOB.hostile_machines_by_zlevel))
-		for(var/atom/hostile_machine as anything in GLOB.hostile_machines_by_zlevel[mob_turf.z])
+	var/turf/perception_turf = get_turf(perception)
+	if(perception_turf && perception_turf.z <= length(GLOB.hostile_machines_by_zlevel))
+		for(var/atom/hostile_machine as anything in GLOB.hostile_machines_by_zlevel[perception_turf.z])
 			var/turf/machine_turf = get_turf(hostile_machine)
 			if(!machine_turf)
 				continue
-			if(get_dist(living_mob, hostile_machine) > target_scan_range)
+			if(get_dist(perception, hostile_machine) > target_scan_range)
 				continue
 			potential_targets += hostile_machine
 
@@ -132,7 +133,7 @@
 			filtered_targets = local_alternatives
 
 	var/datum/target_scorer/scorer = GET_TARGET_SCORER(controller.blackboard[BB_AI_TARGET_SCORER] || /datum/target_scorer)
-	var/atom/target = select_visible_target(controller, scorer, filtered_targets, current_target, current_target_valid, living_mob, targeting_strategy, aggro_range)
+	var/atom/target = select_visible_target(controller, scorer, filtered_targets, current_target, current_target_valid, living_mob, perception, targeting_strategy, aggro_range)
 	if(!target)
 		schedule_target_refresh(controller, controller.is_combat_alert())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -212,7 +213,7 @@
 /// instead of the old O(N^2) rescoring, while the common open-arena case keeps
 /// the single-pass price. A hidden target still never wins, and the
 /// already-validated current target reuses its LOS.
-/datum/ai_behavior/find_potential_targets/proc/select_visible_target(datum/ai_controller/controller, datum/target_scorer/scorer, list/candidates, atom/current_target, current_target_valid, mob/living/living_mob, datum/targeting_strategy/targeting_strategy, aggro_range)
+/datum/ai_behavior/find_potential_targets/proc/select_visible_target(datum/ai_controller/controller, datum/target_scorer/scorer, list/candidates, atom/current_target, current_target_valid, mob/living/living_mob, atom/perception, datum/targeting_strategy/targeting_strategy, aggro_range)
 	if(targeting_strategy.ignores_sight(living_mob))
 		return scorer.select(controller, candidates, current_target)
 
@@ -221,7 +222,7 @@
 		return null
 	if(leader == current_target && current_target_valid)
 		return leader
-	if(candidate_is_visible(living_mob, leader, targeting_strategy, aggro_range))
+	if(candidate_is_visible(perception, living_mob, leader, targeting_strategy, aggro_range))
 		return leader
 
 	for(var/atom/candidate as anything in scorer.rank(controller, candidates, current_target))
@@ -229,7 +230,7 @@
 			continue //лидер уже проверен и скрыт
 		if(candidate == current_target && current_target_valid)
 			return candidate
-		if(candidate_is_visible(living_mob, candidate, targeting_strategy, aggro_range))
+		if(candidate_is_visible(perception, living_mob, candidate, targeting_strategy, aggro_range))
 			return candidate
 	return null
 
@@ -240,10 +241,18 @@
 		return
 	controller.blackboard[BB_AI_TARGET_REFRESH_AT] = world.time + AI_TARGET_REFRESH_COOLDOWN + rand(0, AI_TARGET_REFRESH_JITTER)
 
+///Точка восприятия hostile: targets_from (мех, турель) или сам паун.
+/datum/ai_behavior/find_potential_targets/proc/get_perception_atom(mob/living/living_mob)
+	if(istype(living_mob, /mob/living/simple_animal/hostile))
+		var/mob/living/simple_animal/hostile/hostile_mob = living_mob
+		return hostile_mob.targets_from || hostile_mob
+	return living_mob
+
 ///Полная проверка кандидата: дистанция -> стратегия -> LOS (последним, он дорогой)
 /datum/ai_behavior/find_potential_targets/proc/candidate_passes(mob/living/living_mob, atom/candidate, datum/targeting_strategy/targeting_strategy, aggro_range, check_sight = TRUE)
 	if(QDELETED(candidate))
 		return FALSE
+	var/atom/perception = get_perception_atom(living_mob)
 	//Пилот в закрытой технике недосягаем как прямая цель (Adjacent через не-турф
 	//loc всегда FALSE - милишка стояла бы столбом), его представляет сам мех из
 	//реестра машин. Грид, в отличие от легаси view(), потроха техники видит,
@@ -252,24 +261,25 @@
 	//гейтом - севший в мех пилот разжалуется первым же кадансом финдера.
 	if(ismob(candidate) && istype(candidate.loc, /obj/vehicle/sealed))
 		return FALSE
-	if(get_dist(living_mob, candidate) > aggro_range)
+	if(get_dist(perception, candidate) > aggro_range)
 		return FALSE
 	var/turf/candidate_turf = get_turf(candidate)
-	if(!candidate_turf || candidate_turf.z != living_mob.z)
+	var/turf/perception_turf = get_turf(perception)
+	if(!candidate_turf || !perception_turf || candidate_turf.z != perception_turf.z)
 		return FALSE
 	if(!targeting_strategy.can_attack(living_mob, candidate, aggro_range))
 		return FALSE
-	if(check_sight && !candidate_is_visible(living_mob, candidate, targeting_strategy, aggro_range))
+	if(check_sight && !candidate_is_visible(perception, living_mob, candidate, targeting_strategy, aggro_range))
 		return FALSE
 	return TRUE
 
 /// LOS is kept separate from eligibility so the scorer can prune candidates
 /// before paying for a raycast.
-/datum/ai_behavior/find_potential_targets/proc/candidate_is_visible(mob/living/living_mob, atom/candidate, datum/targeting_strategy/targeting_strategy, aggro_range)
+/datum/ai_behavior/find_potential_targets/proc/candidate_is_visible(atom/perception, mob/living/living_mob, atom/candidate, datum/targeting_strategy/targeting_strategy, aggro_range)
 	if(targeting_strategy.ignores_sight(living_mob))
 		return TRUE
 	AI_METRIC_INC(los_checks)
-	return can_see(living_mob, candidate, aggro_range)
+	return can_see(perception, candidate, aggro_range)
 
 ///Обновить память о ПОДТВЕРЖДЁННОЙ позиции цели (зовётся только пока цель видима)
 /datum/ai_behavior/find_potential_targets/proc/remember_target_position(datum/ai_controller/controller, atom/target)

@@ -247,8 +247,10 @@
 		chameleon_item.desc = initial(picked_item.desc)
 	chameleon_item.icon_state = initial(picked_item.icon_state)
 	chameleon_item.item_state = initial(picked_item.item_state)
-
-	if(istype(chameleon_item, /obj/item/clothing) && ispath(picked_item, /obj/item/clothing))
+	chameleon_item.icon = initial(picked_item.icon)
+	// Always copy variation flags — needed for digi/taur/muzzle worn sprites (also covers non-clothing slots).
+	chameleon_item.mutantrace_variation = initial(picked_item.mutantrace_variation)
+	if(ispath(picked_item, /obj/item/clothing) && istype(chameleon_item, /obj/item/clothing))
 		var/obj/item/clothing/CL = chameleon_item
 		var/obj/item/clothing/PCL = new picked_item
 		CL.flags_cover = PCL.flags_cover
@@ -274,7 +276,6 @@
 				CL_suit.taur_mob_worn_overlay = PCL_suit.taur_mob_worn_overlay
 
 		qdel(PCL)
-	chameleon_item.icon = initial(picked_item.icon)
 	chameleon_item.update_icon()
 	on_change?.Invoke(picked_item)
 

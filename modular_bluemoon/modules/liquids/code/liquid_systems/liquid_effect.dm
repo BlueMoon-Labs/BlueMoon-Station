@@ -41,9 +41,8 @@
 	/// Whether we're currently overriding the turf's footstep vars to water
 	var/footsteps_overridden = FALSE
 
-	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = SMOOTH_GROUP_WATER
-	canSmoothWith = list(SMOOTH_GROUP_WATER, SMOOTH_GROUP_WINDOW_FULLTILE, SMOOTH_GROUP_WALLS)
+	//Битмасочного сглаживания в форке нет: соседей считает calculate_smoothing() сам.
+	//canSmoothWith тут - список ТИПОВ углового сглаживания, а не групп, и при smooth = SMOOTH_FALSE никто его не читает.
 
 	/// Cached icon states of the liquid icon file, checked against when setting icon_state
 	var/static/list/cached_water_states = null
@@ -460,11 +459,11 @@
 	set_smoothed_icon_state(new_junction)
 
 /obj/effect/abstract/liquid_turf/proc/set_smoothed_icon_state(new_junction)
+	//Переменной smoothing_junction в форке нет: битовое сглаживание сюда не доехало,
+	//см. code/game/atoms.dm. Из апстрима берём только сброс иконки на глубокой воде.
 	if(isnull(new_junction))
 		icon_state = null
-		smoothing_junction = null
 		return
-	smoothing_junction = new_junction
 	if(cached_water_states == null)
 		cached_water_states = icon_states(icon)
 	var/candidate_state = "[base_icon_state]-[new_junction]"

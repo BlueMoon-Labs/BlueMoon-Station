@@ -85,145 +85,29 @@
 	var/mob/living/carbon/human/H = usr
 	H.quick_equip()
 
-/atom/movable/screen/devil
-	invisibility = INVISIBILITY_ABSTRACT
-
-/atom/movable/screen/devil/soul_counter
-	icon = 'icons/mob/screen_gen.dmi'
-	name = "souls owned"
-	icon_state = "Devil-6"
-	screen_loc = ui_devilsouldisplay
-
-/atom/movable/screen/devil/soul_counter/proc/update_counter(souls = 0)
-	invisibility = 0
-	maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#FF0000'>[souls]</font></div>")
-	switch(souls)
-		if(0,null)
-			icon_state = "Devil-1"
-		if(1,2)
-			icon_state = "Devil-2"
-		if(3 to 5)
-			icon_state = "Devil-3"
-		if(6 to 8)
-			icon_state = "Devil-4"
-		if(9 to INFINITY)
-			icon_state = "Devil-5"
-		else
-			icon_state = "Devil-6"
-
-/atom/movable/screen/devil/soul_counter/proc/clear()
-	invisibility = INVISIBILITY_ABSTRACT
-
-/atom/movable/screen/ling
-	invisibility = INVISIBILITY_ABSTRACT
-
-/atom/movable/screen/ling/sting
-	name = "current sting"
-	screen_loc = ui_lingstingdisplay
-	mouse_over_pointer = MOUSE_HAND_POINTER
-
-/atom/movable/screen/ling/sting/Click()
-	if(isobserver(usr))
-		return
-	var/mob/living/carbon/U = usr
-	U.unset_sting()
-
-/atom/movable/screen/ling/chems
-	name = "chemical storage"
-	icon_state = "power_display"
-	screen_loc = ui_lingchemdisplay
-
-#define ui_coolant_display "EAST,SOUTH+3:15"
-
-/atom/movable/screen/synth
-	invisibility = INVISIBILITY_ABSTRACT
-
-
-/atom/movable/screen/synth/proc/clear()
-	invisibility = INVISIBILITY_ABSTRACT
-
-/atom/movable/screen/synth/proc/update_counter(mob/living/carbon/human/owner)
-	invisibility = 0
-
-/atom/movable/screen/synth/coolant_counter
-	icon = 'icons/mob/screen_synth.dmi'
-	name = "Hydraulic Fluid System Readout" // BLUEMOON EDIT - написал "гидравлическая жидкость"
-	icon_state = "coolant-3-1"
-	screen_loc = ui_coolant_display
-	var/jammed = 0
-
-/atom/movable/screen/synth/coolant_counter/update_counter(mob/living/carbon/owner)
-	..()
-	var/valuecolor = "#ff2525"
-	if(owner.stat == DEAD)
-		maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='[valuecolor]'>ERR-0F</font></div>")
-		icon_state = "coolant-3-1"
-		return
-	var/coolant_efficiency
-	var/coolant
-	if(!jammed)
-		coolant_efficiency = owner.get_cooling_efficiency()
-		coolant = owner.blood_volume
-	else
-		coolant_efficiency = rand(1, 15) / 10
-		coolant = rand(1, 600)
-		jammed--
-	if(coolant > BLOOD_VOLUME_SAFE * owner.blood_ratio)	//I unfortunately have to use this else-if stack because switch doesn't support variables.
-		valuecolor =  "#4bbd34"
-	else if(coolant > BLOOD_VOLUME_OKAY * owner.blood_ratio)
-		valuecolor = "#dabb0d"
-	else if(coolant > BLOOD_VOLUME_BAD * owner.blood_ratio)
-		valuecolor =  "#dd8109"
-	else if(coolant > BLOOD_VOLUME_SURVIVE * owner.blood_ratio)
-		valuecolor = "#e7520d"
-	maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='[valuecolor]'>[round((coolant / (BLOOD_VOLUME_NORMAL * owner.blood_ratio)) * 100, 1)]</font></div>")
-
-	var/efficiency_suffix
-	var/state_suffix
-	switch(coolant_efficiency)
-		if(-INFINITY to 0.4)
-			efficiency_suffix = "1"
-		if(0.4 to 0.75)
-			efficiency_suffix = "2"
-		if(0.75 to 0.95)
-			efficiency_suffix = "3"
-		if(0.95 to 1.3)
-			efficiency_suffix = "4"
-		else
-			efficiency_suffix = "5"
-	var/obj/item/organ/lungs/ipc/L = owner.getorganslot(ORGAN_SLOT_LUNGS)
-	if(istype(L) && L.is_cooling)
-		state_suffix = "2"
-	else
-		state_suffix = "1"
-	icon_state = "coolant-[efficiency_suffix]-[state_suffix]"
-
-/atom/movable/screen/synth/coolant_counter/examine(mob/user)
+/mob/living/carbon/human/set_hud_used(datum/hud/new_hud)
 	. = ..()
-	var/mob/living/carbon/human/owner = hud.mymob
-	if(owner.stat == DEAD)
-		return
-	var/coolant
-	var/total_efficiency
-	var/environ_efficiency
-	var/suitlink_efficiency
-	if(!jammed)
-		coolant = owner.blood_volume
-		total_efficiency = owner.get_cooling_efficiency()
-		environ_efficiency = owner.get_environment_cooling_efficiency()
-		suitlink_efficiency = owner.check_suitlinking() // BLUEMOON TODO REDO - suitlink больше нет у синтетиков
-	else
-		coolant = rand(1, 600)
-		total_efficiency = rand(1, 15) / 10
-		environ_efficiency = rand(1, 20) / 10
-	. += "<span class='notice'>Performing internal cooling system diagnostics:</span>"
-	. += "<span class='notice'>Hydraulic fluid level: [coolant] units, [round((coolant / (BLOOD_VOLUME_NORMAL * owner.blood_ratio)) * 100, 0.1)] percent</span>" // BLUEMOON EDIT - написал "гидравлическая жидкость"
-	. += "<span class='notice'>Current Cooling Efficiency: [round(total_efficiency * 100, 0.1)] percent, [suitlink_efficiency ? "<font color='green'>active suitlink detected</font>, guaranteeing <font color='green'>[suitlink_efficiency * 100]%</font> environmental cooling efficiency." : "environment viability: [round(environ_efficiency * 100, 0.1)] percent."]</span>"
+	update_robotic_screenhud()
+	update_hunger_and_thirst_hud(TRUE, TRUE)
 
-/atom/movable/screen/synth/coolant_counter/proc/jam(amount, cap = 20)
-	if(jammed > cap)	//Preserve previous more impactful event.
+/mob/living/carbon/human/proc/update_robotic_screenhud()
+	if(!istype(hud_used, /datum/hud/human))
 		return
-	jammed = min(jammed + amount, cap)
+	var/datum/hud/human/H = hud_used
+	H.set_robotic_screenhud(src)
+
+/// В этот прок нужно вписывать регенерацию и скрытие HUD, если мы имеем дело с human-синтетами
+/datum/hud/human/proc/set_robotic_screenhud(mob/living/carbon/human/H)
+	var/robotic = isrobotic(H)
+	// Проверяем или юзер синтет - если да, то скрываем HUD органиков
+	hunger.invisibility = robotic ? INVISIBILITY_ABSTRACT : 0
+	thirst.invisibility = robotic ? INVISIBILITY_ABSTRACT : 0
+	healths.invisibility = robotic ? INVISIBILITY_ABSTRACT : 0
+
+	// Аналогичная проверка в отношении HUD синтетов
+	coolant_display.invisibility = robotic ? 0 : INVISIBILITY_ABSTRACT
+	charge.invisibility = robotic ? 0 : INVISIBILITY_ABSTRACT
+	healths_synth.invisibility = robotic ? 0 : INVISIBILITY_ABSTRACT
 
 /datum/hud/human/New(mob/living/carbon/human/owner)
 	..()
@@ -502,6 +386,9 @@
 	throw_icon.screen_loc = ui_drop_throw
 	hotkeybuttons += throw_icon
 
+	charge = new /atom/movable/screen/hunger/robotic(null, src)
+	infodisplay += charge
+
 	hunger = new /atom/movable/screen/hunger(null, src)
 	infodisplay += hunger
 
@@ -511,6 +398,9 @@
 	healths = new /atom/movable/screen/healths(null, src)
 	healths.icon = ui_style_modular(ui_style, "health")
 	infodisplay += healths
+
+	healths_synth = new /atom/movable/screen/healths/robot(null, src)
+	infodisplay += healths_synth
 
 	staminas = new /atom/movable/screen/staminas(null, src)
 	staminas.icon = ui_style_modular(ui_style, "stamina")

@@ -169,7 +169,7 @@
 	sheet_type = /obj/item/stack/sheet/mineral/snow
 	canSmoothWith = null
 	girder_type = null
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 	override_shell_bounce_sound = FALSE
 
 /turf/closed/wall/mineral/abductor

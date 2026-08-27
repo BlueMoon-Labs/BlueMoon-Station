@@ -110,6 +110,25 @@
 /// Бюджет периодических дампов за раунд - СВОЙ, лимит спайковых он не тратит.
 /// 240 шагов по минуте = четыре часа покрытия, дольше типового раунда.
 #define TICK_SPIKES_MAX_PERIODIC_DUMPS 240
+/// Каждые сколько фаеров детектора проверять VmSize. Чтение /proc/self/status стоит
+/// десятки микросекунд, но каждый тик оно всё равно лишнее: ступени, ради которых всё
+/// затевалось, в раунде 10121 были по 8-53 МБ, и полусекундной сетки хватает, чтобы
+/// каждая легла в свой сэмпл целиком, а кольца контекста (5 секунд) её накрыли.
+#define TICK_SPIKES_MEMORY_SAMPLE_TICKS 5
+/// Порог скачка VmSize (МБ), с которого пишется блок. В раунде 10121 семнадцать ступеней
+/// >= 8 МБ дали 81% всего роста раунда, а 184 сэмпла из 290 не росли вообще: порог 8
+/// ловит весь вклад и молчит на фоне.
+#define TICK_SPIKES_MEMORY_JUMP_MB 8
+/// Бюджет блоков о скачках памяти за раунд. Семнадцать ступеней в 10121 - типовой
+/// масштаб; шестьдесят покрывают даже раунд, который течёт вчетверо охотнее.
+#define TICK_SPIKES_MAX_MEMORY_EVENTS 60
+/// Сколько байт на один новый объект - это ещё "заплатили датумами". /atom с записанными
+/// варами стоит 200-600 Б, самый жирный - около килобайта. Всё, что выше двух килобайт на
+/// объект, датумами не объясняется, и искать надо среди аппирансов, иконок, RSC и
+/// поклиентской машинерии карты. Раунд 10121: 666 МБ пришли при УМЕНЬШИВШЕМСЯ на 941
+/// числе инстансов, и ни перепись инстансов, ни перепись датумов их не увидели.
+#define TICK_SPIKES_MEMORY_BYTES_PER_INSTANCE_CEILING 2048
+
 /// Дрифт (мс), с которого полный блок пишется ВСЕГДА, в обход рейт-лимита. В раунде
 /// 9847 три крупных спайка (849, 484 и 431мс) остались краткими однострочниками
 /// только потому, что попали в трёхсекундное окно после предыдущего блока, и
@@ -227,6 +246,34 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// world.time следующей периодической выгрузки итога по блокирующим вызовам
 	var/next_blocking_summary_world = 0
 
+	// --- Скачки памяти ---
+	// Дрифт тика и рост памяти - разные болезни с общим контекстом. Кольца тиков, тяжёлых
+	// прогонов, медленных единиц работы и хардделов уже собраны здесь и отвечают на вопрос
+	// "что происходило в эти секунды" одинаково хорошо для обеих. Разбору раунда 10121 не
+	// хватало ровно этого: рост оказался не фоном, а семнадцатью ступенями по 8-53 МБ (81%
+	// роста за раунд), а ближайший прибор - перф-CSV - сэмплирует раз в десять секунд и
+	// называет только "сколько", но не "кто".
+	/// Порог скачка VmSize (МБ) за один сэмпл
+	var/memory_jump_threshold_mb = TICK_SPIKES_MEMORY_JUMP_MB
+	/// Через сколько фаеров снимать следующий замер памяти
+	var/memory_sample_ticks = TICK_SPIKES_MEMORY_SAMPLE_TICKS
+	/// Обратный отсчёт до следующего замера
+	var/memory_sample_countdown = 0
+	/// VmSize, world.time и world.contents.len на прошлом замере
+	var/last_vsz_mb = 0
+	var/last_vsz_world = 0
+	var/last_vsz_instances = 0
+	/// FALSE после первого промаха get_process_memory_mb(): на Windows /proc нет, и
+	/// дёргать его каждые полсекунды весь раунд незачем
+	var/memory_probe_available = TRUE
+	/// Статистика скачков за сессию
+	var/memory_jump_count = 0
+	var/memory_jump_total_mb = 0
+	var/biggest_memory_jump_mb = 0
+	var/biggest_memory_jump_at = 0
+	/// Сколько блоков уже написано - бюджет TICK_SPIKES_MAX_MEMORY_EVENTS
+	var/memory_events_written = 0
+
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
 	var/last_ms = 0
@@ -343,6 +390,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	suppress_side_effects = SStick_spikes.suppress_side_effects
 	ignore_empty_server = SStick_spikes.ignore_empty_server
 	slow_work_threshold_ms = SStick_spikes.slow_work_threshold_ms
+	memory_jump_threshold_mb = SStick_spikes.memory_jump_threshold_mb
+	memory_sample_ticks = SStick_spikes.memory_sample_ticks
+	memory_probe_available = SStick_spikes.memory_probe_available
 
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
@@ -376,6 +426,16 @@ SUBSYSTEM_DEF(tick_spikes)
 	last_blocking_kind = null
 	last_blocking_desc = null
 	next_blocking_summary_world = 0
+	memory_sample_countdown = 0
+	last_vsz_mb = 0
+	last_vsz_world = 0
+	last_vsz_instances = 0
+	memory_probe_available = TRUE
+	memory_jump_count = 0
+	memory_jump_total_mb = 0
+	biggest_memory_jump_mb = 0
+	biggest_memory_jump_at = 0
+	memory_events_written = 0
 	has_baseline = FALSE
 	last_ms = 0
 	last_world = 0
@@ -393,11 +453,12 @@ SUBSYSTEM_DEF(tick_spikes)
 	suppressed_event_count = 0
 
 /datum/controller/subsystem/tick_spikes/stat_entry(msg)
-	msg = "спайков:[session_spike_count] худший:[round(worst_drift_ms)]мс[capture_until ? " ЗАХВАТ" : ""]"
+	msg = "спайков:[session_spike_count] худший:[round(worst_drift_ms)]мс[memory_jump_count ? " память:[memory_jump_count]/[round(memory_jump_total_mb)]МБ" : ""][capture_until ? " ЗАХВАТ" : ""]"
 	return ..()
 
 /datum/controller/subsystem/tick_spikes/fire()
 	sample_tick(rustg_time_milliseconds(TICK_SPIKES_CLOCK), world.time, TICK_USAGE, world.cpu, MAPTICK_LAST_INTERNAL_TICK_USAGE)
+	sample_memory()
 	if(capture_until && world.time > capture_until)
 		stop_capture(automatic = TRUE)
 	maybe_dump_periodic_profile()
@@ -461,6 +522,109 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	register_spike(drift, now_ms, now_world)
 	return drift
+
+/**
+ * Замер VmSize по своей сетке и блок на скачок.
+ *
+ * Отдельный от sample_tick() отсчёт: дрифт меряется каждый тик, память - раз в
+ * memory_sample_ticks фаеров. Пустой сервер НЕ исключается, в отличие от дрифта:
+ * растянутый тик на сервере без клиентов - артефакт sleep_offline, а выросшая на
+ * пустом сервере память - это настоящая память (в раунде 10121 свет z-уровня строился
+ * именно так).
+ */
+/datum/controller/subsystem/tick_spikes/proc/sample_memory()
+	if(!memory_probe_available)
+		return
+	if(--memory_sample_countdown > 0)
+		return
+	memory_sample_countdown = memory_sample_ticks
+	var/list/memory = get_process_memory_mb()
+	if(!memory)
+		// На Windows /proc нет, и промах здесь окончательный: сам get_process_memory_mb()
+		// гасит себя после трёх подряд, так что повторять его каждые полсекунды незачем.
+		memory_probe_available = FALSE
+		return
+	var/vsz = memory["vsz"]
+	var/instances = world.contents.len
+	var/previous_vsz = last_vsz_mb
+	var/previous_world = last_vsz_world
+	var/previous_instances = last_vsz_instances
+	last_vsz_mb = vsz
+	last_vsz_world = world.time
+	last_vsz_instances = instances
+	if(!previous_vsz)
+		return
+	var/jump = vsz - previous_vsz
+	if(jump < memory_jump_threshold_mb)
+		return
+	register_memory_jump(jump, vsz, instances - previous_instances, world.time - previous_world)
+
+/**
+ * Кто заплатил за скачок: датумы или что-то ещё.
+ *
+ * Это единственный вопрос, на который перф-CSV раунда 10121 ответить не мог, и весь
+ * прибор затевался ради него. Отдельным проком, потому что арифметику "байт на объект"
+ * без живого раунда иначе не проверить.
+ */
+/proc/memory_jump_verdict(jump_mb, instances_delta)
+	if(instances_delta <= 0)
+		return "объектов не прибавилось - платили НЕ датумами"
+	var/bytes_each = round(jump_mb * 1048576 / instances_delta)
+	if(bytes_each > TICK_SPIKES_MEMORY_BYTES_PER_INSTANCE_CEILING)
+		return "[bytes_each] Б на объект - датумами это не объясняется"
+	return "[bytes_each] Б на объект - похоже на честную аллокацию объектов"
+
+/// Заголовок блока о скачке памяти. Вынесен, чтобы юнит-тест проверял формулировку
+/// вердикта на синтетических числах, не поднимая раунд.
+/datum/controller/subsystem/tick_spikes/proc/memory_jump_headline(jump_mb, vsz_mb, instances_delta, window_ds)
+	return "скачок: [format_mb_delta(jump_mb)] VmSize за [round(window_ds / 10, 0.1)]с (стало [round(vsz_mb)] МБ), объектов [instances_delta >= 0 ? "+" : ""][instances_delta] - [memory_jump_verdict(jump_mb, instances_delta)]"
+
+/**
+ * Блок о скачке VmSize с тем же контекстом, что и у тик-спайка.
+ *
+ * Смысл ровно в переиспользовании контекста: кольца тяжёлых прогонов подсистем,
+ * медленных единиц работы (таймер-колбеки, вербы, Topic, блокирующие вызовы) и недавних
+ * хардделов уже отвечают на вопрос "что происходило в эти секунды". Разбор раунда 10121
+ * остановился на семнадцати безымянных ступенях именно потому, что рядом с "сколько" не
+ * было "кто".
+ */
+/datum/controller/subsystem/tick_spikes/proc/register_memory_jump(jump_mb, vsz_mb, instances_delta, window_ds)
+	memory_jump_count++
+	memory_jump_total_mb += jump_mb
+	if(jump_mb > biggest_memory_jump_mb)
+		biggest_memory_jump_mb = jump_mb
+		biggest_memory_jump_at = world.time
+	if(memory_events_written >= TICK_SPIKES_MAX_MEMORY_EVENTS)
+		return
+	memory_events_written++
+
+	var/list/event = list()
+	event += "=== СКАЧОК ПАМЯТИ #[memory_jump_count] [time_stamp_from_world(world.time)] (wt [world.time]) ==="
+	event += memory_jump_headline(jump_mb, vsz_mb, instances_delta, window_ds)
+	event += "клиентов: [length(GLOB.clients)], итого за сессию [memory_jump_count] скачков на [round(memory_jump_total_mb)] МБ"
+	event += build_size_metrics_line()
+
+	var/list/heavy_lines = collect_heavy_runs(world.time - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(heavy_lines))
+		event += "тяжёлые прогоны подсистем за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек:"
+		event += heavy_lines
+
+	var/list/slow_work_lines = collect_slow_work(world.time - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(slow_work_lines))
+		event += "медленные единицы работы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (таймер-колбеки/вербы/Topic - именно здесь чаще всего стоит виновник разовой аллокации):"
+		event += slow_work_lines
+
+	var/list/harddel_lines = collect_recent_harddels(world.time - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(harddel_lines))
+		event += "хардделы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек:"
+		event += harddel_lines
+
+	var/event_text = event.Join("\n")
+	spike_events += event_text
+	if(length(spike_events) > TICK_SPIKES_MAX_EVENTS)
+		spike_events.Cut(1, 2)
+	if(!suppress_side_effects)
+		write_to_log("\n[event_text]\n")
 
 /// Пишется из Master/RunQueue: сырой (неусреднённый) прогон подсистемы, съевший заметную долю тика
 /datum/controller/subsystem/tick_spikes/proc/record_heavy_run(datum/controller/subsystem/heavy_subsystem, usage)
@@ -1153,6 +1317,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	out += "спайков: [session_spike_count] (из них кратко в логе: [suppressed_event_count]), худший [round(worst_drift_ms)]мс в [worst_drift_at ? time_stamp_from_world(worst_drift_at) : "-"], суммарно потеряно в спайках ~[round(total_spike_drift_ms)]мс"
 	out += "гистограмма дрифтов (мс): [TICK_SPIKES_HISTOGRAM_FLOOR]-[TICK_SPIKES_HISTOGRAM_BUCKET_1]: [drift_histogram[1]] | [TICK_SPIKES_HISTOGRAM_BUCKET_1]-[TICK_SPIKES_HISTOGRAM_BUCKET_2]: [drift_histogram[2]] | [TICK_SPIKES_HISTOGRAM_BUCKET_2]-[TICK_SPIKES_HISTOGRAM_BUCKET_3]: [drift_histogram[3]] | [TICK_SPIKES_HISTOGRAM_BUCKET_3]-[TICK_SPIKES_HISTOGRAM_BUCKET_4]: [drift_histogram[4]] | [TICK_SPIKES_HISTOGRAM_BUCKET_4]+: [drift_histogram[5]]"
 	out += build_blocking_summary_lines()
+	out += memory_probe_available \
+		? "скачки памяти (порог [memory_jump_threshold_mb] МБ за [round(memory_sample_ticks * world.tick_lag * 100)]мс): [memory_jump_count] на [round(memory_jump_total_mb)] МБ, крупнейший [round(biggest_memory_jump_mb, 0.1)] МБ в [biggest_memory_jump_at ? time_stamp_from_world(biggest_memory_jump_at) : "-"], VmSize сейчас [round(last_vsz_mb)] МБ" \
+		: "скачки памяти: не меряются (нет /proc/self/status - Windows или урезанный контейнер)"
 	out += "лог событий: [log_path ? log_path : "ещё не создан"]"
 	if(length(spike_events))
 		out += ""
@@ -1242,6 +1409,10 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_PERIODIC_DUMP_INTERVAL
 #undef TICK_SPIKES_MAX_PERIODIC_DUMPS
 #undef TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR
+#undef TICK_SPIKES_MEMORY_SAMPLE_TICKS
+#undef TICK_SPIKES_MEMORY_JUMP_MB
+#undef TICK_SPIKES_MAX_MEMORY_EVENTS
+#undef TICK_SPIKES_MEMORY_BYTES_PER_INSTANCE_CEILING
 #undef TICK_SPIKE_CLASS_MC
 #undef TICK_SPIKE_CLASS_DM
 #undef TICK_SPIKE_CLASS_SENDMAPS

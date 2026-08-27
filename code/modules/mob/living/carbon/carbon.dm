@@ -404,7 +404,7 @@
 	if(!cuff_break)
 		visible_message("<span class='warning'>[src] пытается сбросить [I]!</span>")
 		to_chat(src, "<span class='notice'>Ты пытаешься сбросить [I]... (Это займёт около [DisplayTimeText(breakouttime)]. Тебе не стоит делать лишних движений.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сбросить [I]!</span>")
@@ -413,7 +413,7 @@
 		breakouttime = 50
 		visible_message("<span class='warning'>[src] is trying to break [I]!</span>")
 		to_chat(src, "<span class='notice'>You attempt to break [I]... (This will take around 5 seconds and you need to stand still.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сломать [I]!</span>")
@@ -542,6 +542,98 @@
 	if(!has_hand_for_held_index(active_hand_index))
 		return FALSE
 	return ..()
+
+///////////////////////////////////////////////////////////////////////////
+// РАССЧЁТ ИЗМЕНЕНИЯ ГОЛОДА И ЖАЖДЫ, И ИЗМЕНЕНИЯ HUD ИЗ-ЗА ЭТОГО
+// Цепочка проков сначала сравнивает старое значение
+
+// Голод
+/mob/living/carbon/adjust_nutrition(change, max = INFINITY)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/set_nutrition(change)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/proc/get_nutrition_hud_level(value)
+	if(!hud_used)
+		return
+	switch(value)
+		if(NUTRITION_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+			return 1
+		if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_WELL_FED)
+			return 2
+		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+			return 3
+		if(-INFINITY to NUTRITION_LEVEL_STARVING)
+			return 4
+
+// Жажда
+/mob/living/carbon/adjust_thirst(change, max = INFINITY)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/set_thirst(change)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/proc/get_thirst_hud_level(value)
+	if(!hud_used)
+		return
+	if(HAS_TRAIT(src, TRAIT_NOTHIRST)) // Персонажи, которые не имеют жажды, вечно полные
+		return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+	switch(value)
+		if(THIRST_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+			return 1
+		if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_QUENCHED)
+			return 2
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			return 3
+		if(0 to THIRST_LEVEL_PARCHED)
+			return 4
+
+/// Уже переписанный Sandstorm прок обновления HUD, отвечающих за индикацию голода
+/mob/living/carbon/proc/update_hunger_and_thirst_hud(update_hunger, update_thirst, nutrition_level, thirst_level)
+	if(!client || !hud_used)
+		return
+
+	var/robotic_user = isrobotic(src)
+	if(update_hunger && (hud_used.hunger || hud_used.charge))
+		var/nutrition_prefix = robotic_user ? "charge" : "nutrition" // Тип стейта
+		var/nutrition_status = isnull(nutrition_level) ? get_nutrition_hud_level(nutrition) : nutrition_level
+		var/nutrition_state = "[nutrition_prefix][nutrition_status]"
+
+		if(robotic_user)
+			if(hud_used.charge.icon_state != nutrition_state)
+				hud_used.charge.icon_state = nutrition_state
+		else
+			if(hud_used.hunger.icon_state != nutrition_state)
+				hud_used.hunger.icon_state = nutrition_state
+
+	if(!robotic_user && update_thirst && hud_used.thirst)
+		var/thirst_status = isnull(thirst_level) ? get_thirst_hud_level(thirst) : thirst_level
+		var/thirst_state = "hydration[thirst_status]"
+		if(hud_used.thirst.icon_state != thirst_state)
+			hud_used.thirst.icon_state = thirst_state
+
+///////////////////////////////////////////////////////////////////////////
 
 /mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = FALSE, purge_ratio = 0.1)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER) && !force)
@@ -709,7 +801,7 @@
 			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
 		if(length(G.color_cutoffs))
 			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
-	if(head && istype(head, /obj/item/clothing/head))
+	if(head && istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
 		see_in_dark = max(H.darkness_view, see_in_dark)
@@ -753,7 +845,8 @@
 
 	if(see_override)
 		see_invisible = see_override
-	if(is_hilbert_hotel_zlevel(z))
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		sight = initial(sight)
 
 	. = ..()
@@ -775,7 +868,7 @@
 
 /mob/living/carbon/proc/get_total_tint()
 	. = 0
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
 	if(istype(wear_mask, /obj/item/clothing))
@@ -963,7 +1056,6 @@
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
-	update_hunger_and_thirst_hud()
 	med_hud_set_status()
 	..()
 

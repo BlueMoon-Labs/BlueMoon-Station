@@ -11,12 +11,8 @@
 
 	/// Dirtyness system, cit specific.
 
-	/// Does dirt buildup happen on us?
-	var/dirt_buildup_allowed = FALSE
 	/// Dirt level.
 	var/dirtyness = 0
-	/// Dirt level to spawn dirt. Null to use config.
-	var/dirt_spawn_threshold
 
 	/// How much fuel this open turf provides to turf fires
 	var/flammability = 0.2
@@ -97,7 +93,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_TILED_DIRT
 
 /turf/open/indestructible/Melt()
 	to_be_destroyed = FALSE
@@ -138,7 +134,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis
 	name = "necropolis floor"
@@ -151,7 +147,7 @@
 	barefootstep = FOOTSTEP_LAVA
 	clawfootstep = FOOTSTEP_LAVA
 	heavyfootstep = FOOTSTEP_LAVA
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis/Initialize(mapload)
 	. = ..()
@@ -179,7 +175,7 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	baseturfs = /turf/open/indestructible/hierophant
 	smooth = SMOOTH_TRUE
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/hierophant/two
 
@@ -194,7 +190,7 @@
 	barefootstep = null
 	clawfootstep = null
 	heavyfootstep = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/binary
 	name = "tear in the fabric of reality"
@@ -336,11 +332,16 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		// Цепное качение: слайд длится через всю смазанную дорожку, а после её конца
-		// персонаж по инерции ещё пролетает пару-тройку клеток и не встаёт сразу.
-		// Одиночная смазанная клетка - прежний разлёт на 4.
+		// BLUEMOON CHANGE - цепное качение: слайд идёт через всю смазанную дорожку плюс инерция,
+		// одиночная смазанная клетка - прежний разлёт на 4. Суперлубрикант (SLIDE_INTO_SPACE)
+		// при покидании гравитации передаёт тело ньютоновскому дрейфу: полёт без лимита,
+		// траекторию игрок меняет сам (бросок предмета, джетпак).
 		var/slide_run = lube_slide_run(olddir)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_run ? slide_run + 1 + rand(2, 3) : 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		var/slide_range = slide_run ? slide_run + 1 + rand(2, 3) : ((lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4)
+		var/datum/callback/on_step = CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1)
+		if(lube & SLIDE_INTO_SPACE)
+			on_step = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(slide_into_space_step), C, olddir)
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_range), 1, FALSE, on_step)
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE

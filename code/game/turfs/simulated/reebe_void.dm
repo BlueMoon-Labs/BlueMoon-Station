@@ -5,8 +5,7 @@
 	baseturfs = /turf/open/indestructible/reebe_void
 	planetary_atmos = TRUE
 	override_shell_bounce_sound = FALSE //forever falling
-	tiled_dirt = FALSE
-	dirt_buildup_allowed = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/reebe_void/Initialize(mapload)
 	// Same hazard as cogplate: outside a Reebe z-level the planetary template

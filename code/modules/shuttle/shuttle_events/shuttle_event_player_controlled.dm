@@ -169,7 +169,7 @@
 	if(!length(bounding_coords))
 		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
 		return
-	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_MISS_SHUTTLE, port.preferred_direction)
+	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_HIT_SHUTTLE, port.preferred_direction)
 	spawning_turfs_pod = spawning_turfs_miss?.Copy() || list()
 	if(!length(spawning_turfs_pod))
 		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)

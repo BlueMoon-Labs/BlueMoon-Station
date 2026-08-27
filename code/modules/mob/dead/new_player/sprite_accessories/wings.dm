@@ -384,6 +384,7 @@
 	icon = 'icons/mob/wings.dmi'
 	color_src = WINGCOLOR
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+	mutant_part_string = "insect_wings"
 	var/list/upgrade_to = list()
 
 /datum/sprite_accessory/insect_wings/is_not_visible(var/mob/living/carbon/human/H, var/tauric)

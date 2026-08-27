@@ -524,8 +524,11 @@
 		upgrade_reagents4 = sort_list(upgrade_reagents4, GLOBAL_PROC_REF(cmp_reagents_asc))
 	create_reagents(CHEM_DISPENSER_BASE_STORAGE, NO_REACT)
 	update_icon()
-	build_game_recipes_cache()
-	build_dispenser_recipes_cache()
+	// Книги рецептов здесь НЕ строятся: это делает ensure_recipes_asset() при первом
+	// открытии интерфейса, как и написано в его же комментарии. Эагерная сборка на
+	// инициализации машины сводила ту ленивость на нет и держала книгу (747 рецептов,
+	// в каждом вложенные списки) на каждый уникальный набор реагентов с первой секунды
+	// раунда, даже если диспенсер за раунд никто не открыл.
 
 /obj/machinery/chem_dispenser/Destroy()
 	QDEL_NULL(beaker)
