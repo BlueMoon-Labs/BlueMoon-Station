@@ -326,6 +326,7 @@
 	/// Maximum range we can set.
 	var/max_range = 5
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/flashlight/on_activation()
 	. = ..()
@@ -393,6 +394,7 @@
 	/// Time it takes for us to dispense.
 	var/dispense_time = 0 SECONDS
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	required_modpart_index = MOD_PART_GLOVES
 
 /obj/item/mod/module/dispenser/on_use()
 	. = ..()

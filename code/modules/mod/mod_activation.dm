@@ -56,6 +56,7 @@
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		ADD_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 		if(!user)
+			piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 			return TRUE
 		wearer.visible_message(span_notice("[wearer]'s [piece] deploy[piece.p_s()] with a mechanical hiss."),
 			span_notice("[piece] разворачивается[piece.p_s()] с механическим шипением."),
@@ -65,6 +66,7 @@
 			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
 		if(need_to_conseal && is_active() && all_parts_deployed())
 			update_hardlight()
+		piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 		return TRUE
 	else if(piece.loc != src)
 		if(!user)
@@ -88,6 +90,7 @@
 		span_notice("[piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
 		span_hear("You hear a mechanical hiss."))
 	remove_hardlight()
+	piece.toggle_all_linked_modules(MODPART_CONSEALED)
 	playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)

@@ -19,6 +19,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/balloon)
 	cooldown_time = 15 SECONDS
+	required_modpart_index = MOD_PART_GLOVES
 
 /obj/item/mod/module/balloon/on_use()
 	. = ..()
@@ -45,6 +46,7 @@
 	cooldown_time = 5 SECONDS
 	/// The total number of sheets created by this MOD. The more sheets, them more likely they set on fire.
 	var/num_sheets_dispensed = 0
+	required_modpart_index = MOD_PART_GLOVES
 
 /obj/item/mod/module/paper_dispenser/on_use()
 	. = ..()
@@ -88,6 +90,7 @@
 	device = /obj/item/stamp/mod
 	incompatible_modules = list(/obj/item/mod/module/stamp)
 	cooldown_time = 0.5 SECONDS
+	required_modpart_index = MOD_PART_GLOVES
 
 /obj/item/stamp/mod
 	name = "MOD electronic stamp"

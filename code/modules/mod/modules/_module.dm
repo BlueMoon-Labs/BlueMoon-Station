@@ -50,6 +50,10 @@
 	var/my_retract_sound = 'sound/mecha/mechmove03.ogg'
 	///Быстрая ссылка на компонент втягиваемости
 	var/datum/component/mod_retractable/my_retract_component
+	var/obj/item/clothing/mod_part/required_modpart
+	var/required_modpart_index
+	var/startup_with_suit = FALSE
+	var/saved_state
 
 /obj/item/mod/module/Initialize(mapload)
 	. = ..()
@@ -73,17 +77,30 @@
 	if(user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
 		. += span_notice("Использовано места: [complexity]")
 
+/obj/item/mod/module/proc/check_required_modpart()
+	if(!mod || !mod?.wearer)
+		return FALSE
+	if(!required_modpart)
+		return TRUE
+	return required_modpart.check_module_ready()
+
 /// Called from MODsuit's install() proc, so when the module is installed.
 /obj/item/mod/module/proc/on_install()
-	return
+	if(required_modpart_index)
+		required_modpart = mod.get_mod_part_by_index(required_modpart_index)
+		required_modpart?.link_modpart_with_module(src)
+		return
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
 /obj/item/mod/module/proc/on_uninstall()
+	if(required_modpart)
+		required_modpart.linked_modules -= src
+		required_modpart = null
 	return
 
 /// Called when the MODsuit is activated
 /obj/item/mod/module/proc/on_suit_activation()
-	return
+	return startup_with_suit ? on_activation() : FALSE
 
 /// Called when the MODsuit is deactivated
 /obj/item/mod/module/proc/on_suit_deactivation()
@@ -104,6 +121,9 @@
 	if(((!mod.is_active() || mod.is_activating()) && !allowed_inactive))
 		mod.balloon_alert(mod.wearer, "Сначала активируйте костюм!")
 		return
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
+		return
 	if(module_type != MODULE_USABLE)
 		if(active)
 			on_deactivation()
@@ -119,13 +139,16 @@
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE
-	if(!mod.is_active() || mod.is_activating() || !cell?.charge)
+	if(!mod.is_active() || !cell?.charge)
 		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
 		//specifically a to_chat because the user is phased out.
 		to_chat(mod.wearer, span_warning("Вы не можете активировать это сейчас!"))
 		return FALSE
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
+		return
 	if(module_type == MODULE_ACTIVE)
 		if(mod.selected_module && !mod.selected_module.on_deactivation())
 			return
