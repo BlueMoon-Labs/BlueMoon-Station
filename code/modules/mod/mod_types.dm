@@ -343,6 +343,8 @@
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/holster,
+		/obj/item/mod/module/magnetic_harness,
 	)
 
 /obj/item/choice_beacon/blueshied_suit
