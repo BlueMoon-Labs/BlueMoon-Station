@@ -1,3 +1,13 @@
+/// Разделитель REF и токена идентичности в строке меню орбиты. В REF-е двоеточия не
+/// бывает, поэтому разбор однозначен, а tgui таскает строку как непрозрачный идентификатор.
+#define ORBIT_REF_TOKEN_SEPARATOR ":"
+
+/// Идентификатор POI для окна орбиты: ссылка плюс токен, доказывающий, что за ней тот же атом.
+/proc/orbit_poi_ref(atom/movable/poi)
+	if(!istype(poi))
+		return REF(poi)
+	return "[REF(poi)][ORBIT_REF_TOKEN_SEPARATOR][poi.get_follow_token()]"
+
 /datum/orbit_menu
 	var/mob/dead/observer/owner
 	var/auto_observe = FALSE
@@ -23,8 +33,17 @@
 
 	switch(action)
 		if ("orbit")
-			var/ref = params["ref"]
+			// Строка меню несёт REF и токен идентичности через двоеточие: REF - это индекс в
+			// таблице BYOND, и он переиспользуется, как только атом удалён, а список уехал
+			// клиенту снимком минуты назад. Без токена locate() честно отдаёт ТО, ЧТО заняло
+			// слот, и "in GLOB.mob_list" такую подмену пропускает - оба ведь мобы.
+			var/raw_ref = params["ref"]
+			var/list/ref_parts = raw_ref ? splittext(raw_ref, ORBIT_REF_TOKEN_SEPARATOR) : list()
+			var/ref = length(ref_parts) ? ref_parts[1] : null
+			var/expected_token = length(ref_parts) > 1 ? text2num(ref_parts[2]) : 0
 			var/atom/movable/poi = (locate(ref) in GLOB.mob_list) || (locate(ref) in GLOB.poi_list)
+			if (poi && expected_token && poi.follow_token != expected_token)
+				poi = null
 			if (poi == null)
 				// Список POI лежит в ui_static_data, то есть уезжает клиенту СНИМКОМ при
 				// открытии окна и сам по себе больше не обновляется. Через пару минут
@@ -84,7 +103,7 @@
 
 		var/poi = pois[name]
 
-		serialized["ref"] = REF(poi)
+		serialized["ref"] = orbit_poi_ref(poi)
 
 		var/mob/M = poi
 		if (istype(M))
@@ -177,7 +196,7 @@
 		var/list/serialized = list()
 		var/area/area = get_area(A)
 		serialized["name"] = area ? "[A.name] \[[area.name]\]" : A.name
-		serialized["ref"] = REF(A)
+		serialized["ref"] = orbit_poi_ref(A)
 		serialized["assignment"] = "swarmer"
 		swarmer_shells += list(serialized)
 
@@ -198,3 +217,5 @@
 	. = ..() || list()
 	. += get_asset_datum(/datum/asset/simple/orbit)
 	. += get_asset_datum(/datum/asset/spritesheet_batched/jobs)
+
+#undef ORBIT_REF_TOKEN_SEPARATOR
