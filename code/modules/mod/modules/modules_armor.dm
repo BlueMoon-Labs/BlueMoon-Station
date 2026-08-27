@@ -29,6 +29,11 @@
 		new /obj/item/stack/sheet/mineral/abductor		= WOUND,
 	)
 
+/obj/item/mod/module/armor/Destroy()
+	. = ..()
+	for(var/obj/item/stack/sheet/element in material_to_armor_list)
+		qdel(element)
+
 /obj/item/mod/module/armor/examine_more(mob/user)
 	. = ..()
 	if(armor_type)
@@ -88,7 +93,7 @@
 	var/obj/item/stack/sheet/material = I
 	armor_type = get_armor_by_material(material)
 	if(material.amount < need_sheets || !armor_type)
-		var/ballon_message = armor_type ? "Нужно 10 листов" : "Не подходящий материал!"
+		var/ballon_message = armor_type ? "Нужно [need_sheets] листов" : "Не подходящий материал!"
 		C.balloon_alert(C, ballon_message)
 		armor_type = null
 		return
