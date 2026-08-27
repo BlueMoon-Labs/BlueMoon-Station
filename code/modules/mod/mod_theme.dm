@@ -49,7 +49,7 @@
 	var/list/module_blacklist = list()
 	var/hardlight_color = MOD_STANDART_COLOR
 	var/datum/overlay_effect/hardlight_effect = /datum/overlay_effect/mod_effect
-	var/max_armor_module_count = 3
+	var/max_armor_module_count = 2
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = list(
@@ -148,7 +148,6 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	slowdown_inactive = 1.1
 	skins = list(
 		"engineering" = list(
 			HELMET_LAYER = NECK_LAYER,
@@ -188,7 +187,6 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	slowdown_inactive = 1.1
 	skins = list(
 		"atmospheric" = list(
 			HELMET_LAYER = NECK_LAYER,
@@ -276,7 +274,6 @@
 	complexity_max = DEFAULT_MAX_COMPLEXITY + 5
 	inbuilt_modules = list(/obj/item/mod/module/orebag)
 	hardlight_color = MOD_CARGO_COLOR
-	slowdown_inactive = 1.2
 	skins = list(
 		"mining" = list(
 			HELMET_LAYER = null,
@@ -425,7 +422,6 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	inbuilt_modules = list(/obj/item/mod/module/reagent_scanner/advanced)
 	hardlight_color = MOD_RESEARCH_COLOR
-	slowdown_inactive = 1.1
 	skins = list(
 		"research" = list(
 			HELMET_LAYER = null,
@@ -468,7 +464,6 @@
 	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
 	inbuilt_modules = list(/obj/item/mod/module/magnetic_harness)
 	hardlight_color = MOD_SEC_COLOR
-	slowdown_inactive = 1.0
 	skins = list(
 		"security" = list(
 			HELMET_LAYER = null,
@@ -556,7 +551,6 @@
 	siemens_coefficient = 0
 	complexity_max = DEFAULT_MAX_COMPLEXITY + 5
 	hardlight_color = MOD_COMMAND_COLOR
-	slowdown_inactive = 1.1
 	skins = list(
 		"magnate" = list(
 			HELMET_LAYER = NECK_LAYER,
@@ -594,7 +588,6 @@
 	default_skin = "cosmohonk"
 	armor = list(MELEE = 5, BULLET = 5, LASER = 20, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 60, ACID = 30, WOUND = 5, RAD = 0)
 	cell_drain = DEFAULT_CHARGE_DRAIN * 0.25
-	slowdown_active = 1.25
 	hardlight_color = MOD_SYNDICATE_COLOR
 	/*inbuilt_modules = list(/obj/item/mod/module/waddle)*/ // Waddling element not ported, commented for now as it is a prerequisite.
 	skins = list(
@@ -765,7 +758,6 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	slowdown_inactive = 0.5
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
 		"responsory" = list(
