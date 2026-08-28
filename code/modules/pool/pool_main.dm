@@ -101,22 +101,9 @@
 			if(iscarbon(AM))		//FUN TIME!
 				var/mob/living/carbon/H = victim
 				if(vulnerable_robo)
-					H.visible_message("<span class='danger'>[H] sparks and shorts out as the water hits [H.ru_ego()] circuits!</span>",
-										"<span class='userdanger'>The water shorts out your circuits!</span>")
-					do_sparks(4, TRUE, H)
 					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
 					playsound(src, 'sound/machines/hiss.ogg', 40, FALSE)
-					if(H.stat == CONSCIOUS)
-						H.apply_damage(25, BURN)
-						H.AdjustConfused(30 SECONDS)
-						H.Jitter(15)
-						H.DefaultCombatKnockdown(40)
-				else if(isrobotic(H))
-					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
-										"<span class='userdanger'>You fall in the water!</span>")
-					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
-					H.adjustBruteLoss(5)
-					H.DefaultCombatKnockdown(60)
+					synth_water_damage_start(H)
 				else if (H.wear_mask && H.wear_mask.flags_cover & MASKCOVERSMOUTH)
 					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
 										"<span class='userdanger'>You fall in the water!</span>")

@@ -452,6 +452,7 @@
 						do_sparks(2, TRUE, H)
 						H.AdjustConfused(30 SECONDS)
 						H.Jitter(20)
+						H.emote("shiver")
 						H.apply_damage(10, BURN)
 					else
 						H.visible_message(span_warning("[H] сильно искрит, падая на землю!"), span_boldwarning("ПЛАВАТЬ БЫЛО ПЛОХОЙ ИДЕ..."))
@@ -462,6 +463,7 @@
 						H.AdjustUnconscious(20)
 						H.AdjustConfused(40 SECONDS)
 						H.Jitter(30)
+						H.emote("real_agony")
 
 			if(H.wear_suit)
 				washgloves = !(H.wear_suit.flags_inv & HIDEGLOVES)
