@@ -45,6 +45,8 @@
 
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	var/obj/item/item_in_slot
 	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
@@ -80,7 +82,9 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
-/obj/item/mod/control/proc/conceal(mob/user, part)
+/obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
+	if(is_welded() && !force)
+		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	wearer.transferItemToLoc(piece, null, TRUE)
 	piece.equip_item_from_overslot()

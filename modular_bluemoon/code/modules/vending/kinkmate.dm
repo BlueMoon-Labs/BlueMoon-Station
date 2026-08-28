@@ -195,7 +195,7 @@
 			"name" = "MOD parts",
 			"icon" = "question",
 			"products" = list(
-				/obj/item/mod/construction/armor/lustwish = 3,
+				/obj/item/mod/control/pre_equipped/lustwish = 3,
 			),
 		),
 	)
