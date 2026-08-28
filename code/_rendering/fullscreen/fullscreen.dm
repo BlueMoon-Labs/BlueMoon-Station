@@ -189,6 +189,7 @@
 #define SYNTHCORRUPT_ALPHA_MAX 255
 
 /atom/movable/screen/fullscreen/scaled/synthcorrupt
+	icon = 'icons/screen/fullscreen/synthcorrupt.dmi'
 	icon_state = "synthcorrupt"
 	layer = UI_DAMAGE_LAYER
 	plane = GRAVITY_PULSE_PLANE
@@ -310,11 +311,13 @@
 	layer = BLIND_LAYER
 
 /atom/movable/screen/fullscreen/scaled/blind
+	icon = 'icons/screen/fullscreen/blind.dmi'
 	icon_state = "blackimageoverlay"
 	layer = BLIND_LAYER
 	plane = FULLSCREEN_PLANE
 
 /atom/movable/screen/fullscreen/scaled/curse
+	icon = 'icons/screen/fullscreen/curse.dmi'
 	icon_state = "curse"
 	layer = CURSE_LAYER
 	plane = FULLSCREEN_PLANE
@@ -323,6 +326,7 @@
 	icon_state = "impairedoverlay"
 
 /atom/movable/screen/fullscreen/scaled/emergency_meeting
+	icon = 'icons/screen/fullscreen/emergency_meeting.dmi'
 	icon_state = "emergency_meeting"
 	show_when_dead = TRUE
 	layer = CURSE_LAYER
@@ -423,6 +427,7 @@
 	show_when_dead = TRUE
 
 /atom/movable/screen/fullscreen/scaled/depression
+	icon = 'icons/screen/fullscreen/depression.dmi'
 	icon_state = "depression"
 	layer = FLASH_LAYER
 	plane = FULLSCREEN_PLANE
