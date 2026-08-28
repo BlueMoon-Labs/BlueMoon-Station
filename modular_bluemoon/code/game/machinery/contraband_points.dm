@@ -296,7 +296,7 @@
 	to_chat(user, "<span class='notice'>You link [src] with [pad] using [I].</span>")
 	return TRUE
 
-/obj/machinery/computer/vanguard_control/contraband/proc/get_contraband_value(obj/item/I)
+/obj/machinery/computer/vanguard_control/contraband/proc/get_contraband_value(atom/movable/AM)
     var/best_value = 0
     var/best_depth = -1
     for(var/typepath in contraband_values)
@@ -326,10 +326,8 @@
 		for(var/atom/movable/AM in get_turf(pad))
 			if(AM == pad)
 				continue
-			if(isitem(AM))
-				var/obj/item/I = AM
-				var/base_value = get_contraband_value(I)
-				if(base_value > 0)
+			var/base_value = get_contraband_value(AM)
+			if(base_value > 0)
 					total_value += pad.get_adjusted_value(I, base_value)
 
 	if(total_value > 0)
@@ -389,14 +387,12 @@
 	for(var/atom/movable/AM in get_turf(pad))
 		if(AM == pad)
 			continue
-		if(isitem(AM))
-			var/obj/item/I = AM
-			var/base_value = get_contraband_value(I)
-			if(base_value > 0)
-				var/adjusted_value = pad.get_adjusted_value(I, base_value)
-				total_value += adjusted_value
-				items_sent++
-				qdel(AM)
+		var/base_value = get_contraband_value(AM)
+		if(base_value > 0)
+			var/adjusted_value = pad.get_adjusted_value(I, base_value)
+			total_value += adjusted_value
+			items_sent++
+			qdel(AM)
 
 	if(items_sent > 0)
 		user_id.contraband_points += total_value
@@ -448,17 +444,15 @@
 		for(var/atom/movable/AM in get_turf(pad))
 			if(AM == pad)
 				continue
-			if(isitem(AM))
-				var/obj/item/I = AM
-				var/base_value = get_contraband_value(I)
-				if(base_value > 0)
-					var/adjusted_value = pad.get_adjusted_value(I, base_value)
-					total_value += adjusted_value
-					items_on_pad += list(list(
-						"name" = I.name,
-						"base_value" = base_value,
-						"adjusted_value" = adjusted_value
-					))
+			var/base_value = get_contraband_value(AM)
+			if(base_value > 0)
+				var/adjusted_value = pad.get_adjusted_value(I, base_value)
+				total_value += adjusted_value
+				items_on_pad += list(list(
+					"name" = I.name,
+					"base_value" = base_value,
+					"adjusted_value" = adjusted_value
+				))
 
 	data["total_value"] = total_value
 	data["items_on_pad"] = items_on_pad
