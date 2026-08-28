@@ -902,6 +902,8 @@
 
 /// Потолок кэша пятен крови: (иконка, стейт, цвет). Множество замкнутое, потолок - страховка.
 #define BLOOD_SPLATTER_ICON_CACHE_MAX 1024
+/// Сколько записей снимается с головы кэша при переполнении - четверть потолка.
+#define BLOOD_SPLATTER_ICON_CACHE_EVICT 256
 
 /**
  * Пятно крови на предмете, склеенное из иконки предмета и маски крови.
@@ -940,7 +942,7 @@
 				return
 			blood_splatter_icons[blood_key] = cached_splatter
 			if(length(blood_splatter_icons) > BLOOD_SPLATTER_ICON_CACHE_MAX)
-				blood_splatter_icons.Cut(1, (BLOOD_SPLATTER_ICON_CACHE_MAX / 4) + 1)
+				blood_splatter_icons.Cut(1, BLOOD_SPLATTER_ICON_CACHE_EVICT + 1)
 		// Тот же слепок - работы нет вовсе: снимать оверлей и вешать его обратно значило бы
 		// пересобрать аппиранс предмета впустую на каждой капле.
 		if(blood_splatter_icon == cached_splatter)
@@ -1849,3 +1851,4 @@
 	return null
 
 #undef BLOOD_SPLATTER_ICON_CACHE_MAX
+#undef BLOOD_SPLATTER_ICON_CACHE_EVICT

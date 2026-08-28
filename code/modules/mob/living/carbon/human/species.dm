@@ -679,6 +679,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /// Потолок кэша склеенных иконок градиента волос. Ключ - стиль градиента и стиль волос,
 /// то есть множество замкнутое и небольшое; потолок стоит на случай кастомных стилей.
 #define HAIR_GRADIENT_ICON_CACHE_MAX 512
+/// Сколько записей снимается с головы кэша при переполнении - четверть потолка.
+#define HAIR_GRADIENT_ICON_CACHE_EVICT 128
 
 /datum/species/proc/handle_hair(mob/living/carbon/human/H, forced_colour)
 	H.remove_overlay(HAIR_LAYER)
@@ -844,7 +846,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 									temp = fcopy_rsc(blended)
 									hair_gradient_icons[gradient_key] = temp
 									if(length(hair_gradient_icons) > HAIR_GRADIENT_ICON_CACHE_MAX)
-										hair_gradient_icons.Cut(1, (HAIR_GRADIENT_ICON_CACHE_MAX / 4) + 1)
+										hair_gradient_icons.Cut(1, HAIR_GRADIENT_ICON_CACHE_EVICT + 1)
 								catch(var/exception/icon_error)
 									temp = note_icon_alloc_failure("градиент волос [gradient.icon_state] поверх [hair_state]", icon_error)
 							gradient_overlay.icon = temp
@@ -2969,3 +2971,4 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			H.set_resting(FALSE, TRUE)
 
 #undef HAIR_GRADIENT_ICON_CACHE_MAX
+#undef HAIR_GRADIENT_ICON_CACHE_EVICT
