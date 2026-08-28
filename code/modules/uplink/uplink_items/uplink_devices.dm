@@ -194,8 +194,10 @@
 /datum/uplink_item/device_tools/medgun
 	name = "Medbeam Gun"
 	desc = "Чудо инженерии Syndicate. Медпушка позволяет медику держать союзников \
-			в строю даже под огнём. Не скрещивайте лучи!"
-	item = /obj/item/gun/medbeam
+			в строю даже под огнём, а модуль Уберзаряда дарит медику и пациенту десять секунд \
+			неуязвимости под алым сиянием - зарядите его лечением и активируйте кнопкой \
+			использования предмета. Не скрещивайте лучи!"
+	item = /obj/item/gun/medbeam/syndicate
 	cost = 15
 	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 

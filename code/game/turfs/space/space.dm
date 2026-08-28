@@ -2,8 +2,7 @@
 	icon = 'icons/turf/space.dmi'
 	icon_state = "0"
 	name = "\proper space"
-	intact = 0
-	dirt_buildup_allowed = FALSE
+	turf_flags = NONE
 
 	initial_temperature = TCMB
 	// Собственная температура турфа тоже обязана быть космической. Обычным турфам
@@ -29,7 +28,6 @@
 	light_power = STARLIGHT_POWER_NIGHT
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
-	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	bullet_bounce_sound = null
 
 	vis_flags = VIS_INHERIT_ID	//when this be added to vis_contents of something it be associated with something on clicking, important for visualisation of turf in openspace and interraction with openspace that show you turf.
@@ -72,14 +70,14 @@
 	// 	SET_BITFLAG_LIST(canSmoothWith)
 
 	var/area/A = loc
-	if(!IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
 	if (light_power && light_range)
 		update_light()
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)
@@ -109,6 +107,9 @@
 /turf/open/space/AfterChange()
 	..()
 	atmos_overlay_types = null
+	// Оверлей снят в обход update_visuals(), значит и его ключ мемо больше не
+	// описывает состояние турфа - иначе гейт вернёт "уже посчитано" на пустоте.
+	atmos_visual_rev = -1
 
 /turf/open/space/Assimilate_Air()
 	return
@@ -236,11 +237,7 @@
 
 		//now we're on the new z_level, proceed the space drifting
 		stoplag()//Let a diagonal move finish, if necessary
-		// Плавный дрейф переживает смену z сам: smooth_move берёт z из самого движимого.
-		// Голый вызов доливал по единице силы на каждом переходе, и путешествие через
-		// несколько уровней само по себе разгоняло. Он нужен только легаси-пути без обработчика.
-		if(!A.drift_handler)
-			A.newtonian_move(A.inertia_dir)
+		A.newtonian_move(A.inertia_dir)
 
 
 /turf/open/space/Exited(atom/movable/AM, atom/OldLoc)
@@ -311,7 +308,6 @@
 
 /turf/open/space/transparent
 	baseturfs = /turf/open/space/transparent/openspace
-	intact = FALSE //this means wires go on top
 
 /turf/open/space/transparent/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	..()

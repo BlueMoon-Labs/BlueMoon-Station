@@ -44,6 +44,8 @@
 	/// This is the icon state for the icon that appears on the button
 	var/button_icon_state = "default"
 	var/button_overlay_state
+	/// При наведении на кнопу, блокирует открытие контестного меню ПКМ
+	var/button_block_right_click_context_menu = FALSE
 
 /datum/action/New(Target)
 	link_to(Target)
@@ -86,9 +88,13 @@
 	if(grant_to == owner)
 		return // We already have it
 	var/mob/previous_owner = owner
-	owner = grant_to
+	// Сначала снимаем всё с прежнего владельца и только потом перезаписываем owner:
+	// Remove() отписывает сигналы по owner, и при обратном порядке она отписывала
+	// уже нового владельца, а подписки старого утекали - следующий Grant на того же
+	// моба ловил "mob_statchange overridden. Use override = TRUE..." (маска в руки).
 	if(!isnull(previous_owner))
 		Remove(previous_owner)
+	owner = grant_to
 	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(clear_ref), override = TRUE)
 
 	// Register some signals based on our check_flags
@@ -134,7 +140,7 @@
 
 /// Actually triggers the effects of the action.
 /// Called when the on-screen button is clicked, for example.
-/datum/action/proc/Trigger()
+/datum/action/proc/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
 	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target, owner) & COMPONENT_ACTION_BLOCK_TRIGGER)
@@ -284,6 +290,8 @@
 	button.actiontooltipstyle = buttontooltipstyle
 	if(desc)
 		button.desc = desc
+	if(button_block_right_click_context_menu)
+		TOGGLE_BITFIELD(button.flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1)
 	return button
 
 /datum/action/proc/SetId(atom/movable/screen/movable/action_button/our_button, mob/owner)
@@ -618,18 +626,10 @@
 /datum/action/item_action/change
 	name = "Change"
 
+// Само действие обрабатывает /obj/item/picket_sign/ui_action_click - собственный Trigger()
+// здесь только уводил бы нас мимо IsAvailable() и держал вторую ссылку на плакат.
 /datum/action/item_action/nano_picket_sign
 	name = "Retext Nano Picket Sign"
-	var/obj/item/picket_sign/S
-
-/datum/action/item_action/nano_picket_sign/New(Target)
-	..()
-	if(istype(Target, /obj/item/picket_sign))
-		S = Target
-
-/datum/action/item_action/nano_picket_sign/Trigger()
-	if(istype(S))
-		S.retext(owner)
 
 /datum/action/item_action/adjust // Требует чтобы в .dmi было в конце нужной вам модельки окончание _up (Пример sechailer_up)
 

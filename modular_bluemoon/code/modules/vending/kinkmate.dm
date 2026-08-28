@@ -191,6 +191,13 @@
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_anal_bandaid = 3,
 			),
 		),
+		list(
+			"name" = "MOD parts",
+			"icon" = "question",
+			"products" = list(
+				/obj/item/mod/construction/armor/lustwish = 3,
+			),
+		),
 	)
 	contraband = list(
 		/obj/item/clothing/under/misc/keyholesweater = 2,

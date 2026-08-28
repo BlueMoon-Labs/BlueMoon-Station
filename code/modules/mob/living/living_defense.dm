@@ -699,7 +699,6 @@
 	if(!used_item)
 		used_item = get_active_held_item()
 	..()
-	floating_need_update = TRUE
 
 
 /mob/living/proc/getBruteLoss_nonProsthetic()

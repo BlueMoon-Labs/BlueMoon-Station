@@ -124,20 +124,25 @@
 /datum/component/proc/_RemoveFromParent()
 	var/datum/P = parent
 	var/list/dc = P.datum_components
-	for(var/I in _GetInverseTypeList())
-		var/list/components_of_type = dc[I]
-		if(length(components_of_type))	//
-			var/list/subtracted = components_of_type - src
-			if(!subtracted.len)
+	// datum_components бывает уже пуст: турф сменился/умер раньше нас, а компонент
+	// доезжает сюда позже (wet_floor из очереди SSwet_floors). Без гарда "bad index"
+	// ронял Destroy посреди пути: UnregisterFromParent не отрабатывал, и сигналы
+	// COMSIG_TURF_* оставались вешаться на удалённый компонент.
+	if(dc)
+		for(var/I in _GetInverseTypeList())
+			var/list/components_of_type = dc[I]
+			if(length(components_of_type))	//
+				var/list/subtracted = components_of_type - src
+				if(!subtracted.len)
+					dc -= I
+				else if(subtracted.len == 1)	//only 1 guy left
+					dc[I] = subtracted[1]	//make him special
+				else
+					dc[I] = subtracted
+			else	//just us
 				dc -= I
-			else if(subtracted.len == 1)	//only 1 guy left
-				dc[I] = subtracted[1]	//make him special
-			else
-				dc[I] = subtracted
-		else	//just us
-			dc -= I
-	if(!dc.len)
-		P.datum_components = null
+		if(!dc.len)
+			P.datum_components = null
 
 	UnregisterFromParent()
 
@@ -450,6 +455,8 @@
 						old_comp.InheritComponent(arglist(arguments))
 					else
 						old_comp.InheritComponent(new_comp, TRUE)
+						qdel(new_comp)
+						new_comp = null
 				if(COMPONENT_DUPE_SELECTIVE)
 					var/list/arguments = raw_args.Copy()
 					arguments[1] = new_comp

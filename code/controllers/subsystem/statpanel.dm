@@ -249,6 +249,11 @@ SUBSYSTEM_DEF(statpanels)
 			var/last_status = target.statpanel_last_sent[STATPANEL_CHANNEL_STATUS]
 			var/status_changed = (raw_status != last_status)
 			var/other_str = status_changed ? url_encode(raw_status) : null
+			// Книга недатумных аллокаций: статус-таб собирается json + url_encode, то есть
+			// двумя копиями строки на клиента, и уходит каждый стат-тик. Считаем ТОЛЬКО
+			// реально отправленное - грязевой гейт выше гасит большую часть тиков.
+			if(status_changed)
+				note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(raw_status))
 			var/slow_str = encoded_global_slow ? encoded_global_slow : ""
 			// Always send the fast/slow payload (timer/round-time tick every second). Mob other_str is
 			// suppressed when unchanged; JS retains its last decoded value.
@@ -408,7 +413,11 @@ SUBSYSTEM_DEF(statpanels)
 			if(MC_TICK_CHECK)
 				break
 		if(length(batch))
-			C << output("[url_encode(json_encode(batch))];", "statbrowser:update_turf_icons")
+			var/batch_payload = json_encode(batch)
+			// Книга недатумных аллокаций: пачка иконок осмотренного турфа - самая толстая
+			// разовая нагрузка статбраузера, и в ней сидят base64 самих иконок.
+			note_nondatum_alloc(NONDATUM_LEDGER_STATPANEL_BYTES, length(batch_payload))
+			C << output("[url_encode(batch_payload)];", "statbrowser:update_turf_icons")
 		if(!length(pending))
 			icon_queue -= C
 		if(MC_TICK_CHECK)

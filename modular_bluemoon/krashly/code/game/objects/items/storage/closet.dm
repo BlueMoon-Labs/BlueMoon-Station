@@ -34,6 +34,7 @@
 	new /obj/item/clothing/glasses/hud/security/sunglasses/inteq(src)
 
 /obj/machinery/suit_storage_unit/syndicate/inteq
+	mod_type = /obj/item/mod/control/pre_equipped/inteq
 	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi/inteq
 	mask_type = /obj/item/clothing/mask/gas/sechailer
 	storage_type = /obj/item/tank/jetpack/oxygen/harness

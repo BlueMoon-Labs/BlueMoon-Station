@@ -161,6 +161,22 @@ SUBSYSTEM_DEF(air)
 	// переключать на живом мире - кэши инвалидируются ревизиями сами. FALSE
 	// здесь - только до чтения конфига в Initialize.
 	var/sleeping_edges_enabled = FALSE
+	/// Сколько тихих фаеров подряд турф обязан отстоять, прежде чем его пары
+	/// начнут писаться в кэш осевших рёбер.
+	///
+	/// Порог существует потому, что кэш платит лукап и запись на КАЖДОЙ подходящей
+	/// паре, а окупается только повторным чтением. Замер на sustained-leak при
+	/// пороге 2: 0.0638 записи против 0.0195 попадания на турф - три с лишним
+	/// записи на одно сэкономленное сравнение. В бурлящей зоне счётчик тишины
+	/// сбрасывается каждым значимым шером, так что осесть пара не успевает, а
+	/// платит за попытку каждый проход.
+	var/edge_sleep_min_quiet_fires = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
+	/// Сколько тихих фаеров подряд член живой группы отстаивает, прежде чем уйти
+	/// на одиночный отдых (sleep_active_turf). Вар, а не константа, потому что
+	/// это единственный рычаг, напрямую двигающий ЧИСЛО активных турфов, - а
+	/// стоимость фазы есть произведение их числа на цену одного, и правая
+	/// половина произведения к микрооптимизации оказалась невосприимчива.
+	var/individual_rest_cycles = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
 	// go through set_heat_enabled() so the pass list cannot outlive the flag.
@@ -344,6 +360,44 @@ SUBSYSTEM_DEF(air)
 	msg += "SAT:[round(saturation_ratio, 0.01)]x/[saturation_scale]/[pass_fire_slices_last]сл/[round(pass_wall_ds, 0.1)]дс "
 	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]|AO:[round(cost_atmos_atoms,1)]} TC:{AT:[round(cost_turfs,1)]|DC:[round(cost_decompression,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|RBQ:[pipenets_needing_rebuilt.len]/[expansion_queue.len]|AO:[atom_process.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|DA:[num_decompression_areas]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
 	return ..()
+
+/// Имя текущей фазы прохода: currentpart - число, а в чёрном ящике МК от числа толку мало.
+/datum/controller/subsystem/air/proc/currentpart_name()
+	switch(currentpart)
+		if(SSAIR_PIPENETS)
+			return "пайпнеты"
+		if(SSAIR_ATMOSMACHINERY)
+			return "атмос-машинерия"
+		if(SSAIR_EXCITEDGROUPS)
+			return "возбуждённые группы"
+		if(SSAIR_HIGHPRESSURE)
+			return "перепады давления"
+		if(SSAIR_HOTSPOTS)
+			return "очаги огня"
+		if(SSAIR_TURF_CONDUCTION)
+			return "теплопроводность турфов"
+		if(SSAIR_REBUILD_PIPENETS)
+			return "перестройка пайпнетов"
+		if(SSAIR_EQUALIZE)
+			return "эквалайзер"
+		if(SSAIR_ACTIVETURFS)
+			return "активные турфы"
+		if(SSAIR_TURF_POST_PROCESS)
+			return "постобработка турфов"
+		if(SSAIR_FINALIZE_TURFS)
+			return "финализация турфов"
+		if(SSAIR_ATMOSMACHINERY_AIR)
+			return "атмос-машинерия (воздух)"
+		if(SSAIR_DEFERRED_AIRS)
+			return "отложенные смеси"
+		if(SSAIR_DECOMPRESSION)
+			return "разгерметизация"
+		if(SSAIR_ATOMS)
+			return "атомы в атмосфере"
+	return "фаза [currentpart]"
+
+/datum/controller/subsystem/air/last_task()
+	return "[currentpart_name()], активных турфов [length(active_turfs)], групп [length(excited_groups)], сетей [length(networks)], очередь ребилда [length(pipenets_needing_rebuilt)]"
 
 /datum/controller/subsystem/air/Initialize(timeofday)
 	map_loading = FALSE
@@ -1176,6 +1230,18 @@ SUBSYSTEM_DEF(air)
 			continue
 		for(var/turf/open/neighbor as anything in planetary_turf.atmos_adjacent_turfs)
 			if(neighbor.initial_gas_mix == planetary_turf.initial_gas_mix)
+				continue
+			// Небо к небу и небо к космосу process_cell пропускает БЕЗУСЛОВНО
+			// (LINDA_turf_tile: пара двух шаблонов вечно регенерировала бы градиент,
+			// а вакуум планетарка просто игнорирует). Будить турф ради такой пары
+			// значит гонять его через фазу турфов ровно один раз, чтобы он там
+			// ничего не сделал и уснул: в раунде 10003 это 460 из 1366 записей
+			// стартового снимка, то есть треть списка, который лог называет
+			// "чинится на карте". Чинится он тут.
+			if(neighbor.planetary_atmos)
+				continue
+			var/datum/gas_mixture/neighbor_air = neighbor.air
+			if(!neighbor_air || neighbor_air.gc_share)
 				continue
 			// Смена ссылки газ не двигала: цикл на сверку нужен, окно отдыха - нет.
 			add_to_active(planetary_turf, FALSE, reset_stall = FALSE)

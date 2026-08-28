@@ -13,8 +13,9 @@ multiple modular subtrees with behaviors
 */
 
 /datum/ai_controller
-	///The atom this controller is controlling
-	var/atom/pawn
+	///Движимый атом, которым управляет контроллер. Не /atom: пешкой бывает моб или предмет,
+	///но никогда турф - а ai_controller живёт на /atom/movable, чтобы не стоять в каждом турфе мира.
+	var/atom/movable/pawn
 	/**
 	 * This is a list of variables the AI uses and can be mutated by actions.
 	 *
@@ -235,7 +236,7 @@ multiple modular subtrees with behaviors
 	return clears_obstacles_cached
 
 ///Proc to move from one pawn to another, this will destroy the target's existing controller.
-/datum/ai_controller/proc/PossessPawn(atom/new_pawn)
+/datum/ai_controller/proc/PossessPawn(atom/movable/new_pawn)
 	SHOULD_CALL_PARENT(TRUE)
 	if(pawn) //Reset any old signals
 		UnpossessPawn(FALSE)
@@ -490,6 +491,14 @@ multiple modular subtrees with behaviors
 		return AI_UNABLE_TO_RUN
 	if(world.time < paused_until)
 		return AI_UNABLE_TO_RUN
+	//Труп не бегает. Без этого гарда любой форс статуса (легаси toggle_ai(AI_ON),
+	//которым таймстоп и прочие паузы снимают заморозку) поднимает мёртвого пауна
+	//обратно в бакет ON в обход проверки stat в get_expected_ai_status(); stat у
+	//трупа больше не меняется, так что планировщик гоняет его до конца раунда.
+	if(!(ai_traits & CAN_ACT_WHILE_DEAD) && isliving(pawn))
+		var/mob/living/living_pawn = pawn
+		if(living_pawn.stat == DEAD)
+			return AI_UNABLE_TO_RUN
 	return NONE
 
 ///Runs any actions that are currently running
@@ -850,8 +859,11 @@ multiple modular subtrees with behaviors
 ///Смена stat пауна: пересчитать статус и работоспособность
 /datum/ai_controller/proc/on_stat_changed(mob/living/source, new_stat)
 	SIGNAL_HANDLER
-	reset_ai_status()
+	//able_to_run пересчитываем ПЕРВЫМ: get_expected_ai_status() читает его как
+	//готовый флаг, и со старым значением воскрешённый паун сначала уходил в OFF
+	//лишним переходом, а свежий труп - наоборот, оставался able_to_run.
 	update_able_to_run()
+	reset_ai_status()
 
 /datum/ai_controller/proc/on_sentience_gained()
 	SIGNAL_HANDLER

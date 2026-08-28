@@ -33,6 +33,10 @@
 	user.visible_message("<span class='suicide'>[user] пытается съесть [src] целиком! Похоже, [user.ru_who()] забыл[user.ru_a()] как правильно есть!</span>")
 	return OXYLOSS
 
+/obj/item/reagent_containers/food/condiment/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/food/condiment/attack(mob/M, mob/user, def_zone)
 
 	if(!reagents || !reagents.total_volume)

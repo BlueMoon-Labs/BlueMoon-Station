@@ -49,6 +49,7 @@ Burning extracts:
 	var/datum/effect_system/smoke_spread/chem/smoke = new
 	smoke.set_up(R, 7, get_turf(user))
 	smoke.start()
+	qdel(R)
 	..()
 
 /obj/item/slimecross/burning/purple
@@ -118,6 +119,7 @@ Burning extracts:
 	var/datum/effect_system/smoke_spread/chem/smoke = new
 	smoke.set_up(R, 7, get_turf(user))
 	smoke.start()
+	qdel(R)
 	..()
 
 /obj/item/slimecross/burning/silver

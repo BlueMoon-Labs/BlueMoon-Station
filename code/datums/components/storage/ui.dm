@@ -1,3 +1,16 @@
+/// Общие пулы экранных объектов хранилищ: холдеры предметов и объёмные коробки.
+///
+/// Пул был свой у КАЖДОГО компонента storage и умирал только вместе с ним, поэтому каждый
+/// рюкзак, который кто-то за раунд открыл, держал свои холдеры до конца раунда. В раунде
+/// 10028 их накопилось 18 487 штук - около 15 МБ адресного пространства при том, что
+/// одновременно открытых хранилищ на станции десятки.
+///
+/// Общий пул тут возможен потому, что объект при выдаче переинициализируется целиком:
+/// set_new_hud(), master, set_item(). Нужно их столько, сколько хранилищ открыто РАЗОМ,
+/// а не сколько их открывали за раунд.
+GLOBAL_LIST_EMPTY(storage_item_holder_pool)
+GLOBAL_LIST_EMPTY(storage_volumetric_box_pool)
+
 /**
   * Generates a list of numbered_display datums for the numerical display system.
   */
@@ -15,9 +28,16 @@
 
 /datum/component/storage/proc/_acquire_item_holder(datum/hud/hud, obj/item/I)
 	var/atom/movable/screen/storage/item_holder/D
-	if(length(pooled_item_holders))
-		D = pooled_item_holders[pooled_item_holders.len]
-		pooled_item_holders.len--
+	// Пул общий и переживает любого своего клиента, поэтому мёртвые записи из него
+	// вычёрпываются молча: холдер мог уйти в qdel уже лёжа в пуле.
+	while(length(GLOB.storage_item_holder_pool))
+		var/atom/movable/screen/storage/item_holder/pooled = GLOB.storage_item_holder_pool[GLOB.storage_item_holder_pool.len]
+		GLOB.storage_item_holder_pool.len--
+		if(QDELETED(pooled))
+			continue
+		D = pooled
+		break
+	if(D)
 		D.set_new_hud(hud)
 		D.master = src
 		D.set_item(I)
@@ -27,9 +47,14 @@
 
 /datum/component/storage/proc/_acquire_volumetric_box(datum/hud/hud, obj/item/I)
 	var/atom/movable/screen/storage/volumetric_box/center/B
-	if(length(pooled_volumetric_boxes))
-		B = pooled_volumetric_boxes[pooled_volumetric_boxes.len]
-		pooled_volumetric_boxes.len--
+	while(length(GLOB.storage_volumetric_box_pool))
+		var/atom/movable/screen/storage/volumetric_box/center/pooled = GLOB.storage_volumetric_box_pool[GLOB.storage_volumetric_box_pool.len]
+		GLOB.storage_volumetric_box_pool.len--
+		if(QDELETED(pooled))
+			continue
+		B = pooled
+		break
+	if(B)
 		B.set_new_hud(hud)
 		B.master = src
 		B.set_item(I)
@@ -53,20 +78,39 @@
 			B.maptext = null
 			B.screen_loc = initial(B.screen_loc)
 			B.set_new_hud(null)
+			// master обнуляется обязательно: пул общий и переживает компонент, а ссылка
+			// на компонент из отложенного объекта - это его hard delete до конца раунда
+			B.master = null
 			if(B.holder)
 				//у центральной коробки своё содержимое лежит ещё и во вложенном
 				//holder'е: без сброса он уносил предмет в пул до конца раунда
 				B.holder.set_item(null)
 				B.holder.set_new_hud(null)
-			pooled_volumetric_boxes += B
+			if(length(GLOB.storage_volumetric_box_pool) < STORAGE_UI_POOL_MAX)
+				GLOB.storage_volumetric_box_pool += B
+			else
+				qdel(B)
 			continue
 		if(istype(S, /atom/movable/screen/storage/item_holder))
 			var/atom/movable/screen/storage/item_holder/D = S
 			D.set_item(null)
 			D.maptext = null
 			D.screen_loc = initial(D.screen_loc)
+			// Слой, плоскость и прозрачность для мыши возвращаются к дефолтам типа: числовая
+			// укладка (orient2hud_legacy, ветка display_numerical_stacking) поднимает холдер
+			// на ABOVE_HUD_LAYER/ABOVE_HUD_PLANE, а поштучная их не трогает вовсе. Пока пул
+			// был свой у каждой сумки, поднятый холдер возвращался в ту же сумку с той же
+			// укладкой; в общем пуле он уезжает в обычное хранилище и рисуется поверх всего
+			// остального интерфейса.
+			D.layer = initial(D.layer)
+			D.plane = initial(D.plane)
+			D.mouse_opacity = initial(D.mouse_opacity)
 			D.set_new_hud(null)
-			pooled_item_holders += D
+			D.master = null
+			if(length(GLOB.storage_item_holder_pool) < STORAGE_UI_POOL_MAX)
+				GLOB.storage_item_holder_pool += D
+			else
+				qdel(D)
 			continue
 		qdel(S)
 
@@ -101,6 +145,7 @@
 	var/cx = screen_start_x
 	var/cy = screen_start_y
 	if(islist(numbered_contents))
+		var/list/shown_samples = list()
 		for(var/type in numbered_contents)
 			var/datum/numbered_display/ND = numbered_contents[type]
 			ND.sample_object.mouse_opacity = MOUSE_OPACITY_OPAQUE
@@ -109,12 +154,23 @@
 			ND.sample_object.layer = ABOVE_HUD_LAYER
 			ND.sample_object.plane = ABOVE_HUD_PLANE
 			. += ND.sample_object
+			shown_samples[ND.sample_object] = TRUE
 			cx++
 			if(cx - screen_start_x >= columns)
 				cx = screen_start_x
 				cy++
 				if(cy - screen_start_y >= rows)
 					break
+		for(var/type in numbered_contents)
+			var/datum/numbered_display/ND = numbered_contents[type]
+			//Экраны, до которых сетка не дошла (вышли за rows), в возвращаемый
+			//список не попали, а значит ui_hide их не переработает - возвращаем
+			//в пул сами, иначе они уходят из пула навсегда.
+			if(!isnull(ND?.sample_object) && !shown_samples[ND.sample_object])
+				_recycle_ui_objects(list(ND.sample_object))
+			//Сам датум витрины нужен только на время сборки: раньше его не
+			//удалял никто, и каждая перерисовка оставляла по одному на тип.
+			qdel(ND)
 	else
 		for(var/obj/O in accessible_items())
 			if(QDELETED(O))
@@ -251,8 +307,8 @@
 	// in tiles
 	var/maxallowedscreensize = cview[1]-8
 	// we got screen size, register signal
-	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_logout), override = TRUE)
-	RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(on_logout), override = TRUE)
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_client_logout), override = TRUE)
+	RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_qdel), override = TRUE)
 	if(M.active_storage != src)
 		if(M.active_storage)
 			M.active_storage.ui_hide(M)
@@ -287,17 +343,35 @@
 /**
   * Proc triggered by signal to ensure logging out clients don't linger.
   */
-/datum/component/storage/proc/on_logout(datum/source, client/C)
+/datum/component/storage/proc/on_client_logout(datum/source, client/leaving_client)
+	SIGNAL_HANDLER
+	// Клиент передаётся дальше не для красоты: /mob/Logout() зовётся уже ПОСЛЕ того, как
+	// mob.client опустел, и без этого аргумента экраны хранилища остались бы в screen
+	// уходящего клиента. Раньше это было мелочью - объект возвращался в пул своей же сумки;
+	// с общим пулом он уезжает чужому игроку, продолжая рисоваться у прежнего.
+	ui_hide(source, leaving_client)
+
+/**
+  * Тот же уход экранов, но по удалению владельца.
+  *
+  * Отдельный прок, а не общий с логаутом: вторым аргументом COMSIG_PARENT_QDELETING несёт
+  * булев force, а COMSIG_MOB_CLIENT_LOGOUT - клиента. Один обработчик на оба сигнала клал бы
+  * в client-аргумент число, и на qdel(mob, force = TRUE) без клиента ui_hide() падала бы
+  * посреди уборки, оставляя компонент с жёсткой ссылкой на удалённого моба.
+  */
+/datum/component/storage/proc/on_owner_qdel(datum/source, force)
+	SIGNAL_HANDLER
 	ui_hide(source)
 
 /**
   * Hides our UI from a mob
   */
-/datum/component/storage/proc/ui_hide(mob/M)
+/datum/component/storage/proc/ui_hide(mob/M, client/leaving_client)
 	var/list/objects = ui_by_mob[M]
 	UnregisterSignal(M, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_CLIENT_LOGOUT))
-	if(M.client)
-		M.client.screen -= objects
+	var/client/screen_owner = M.client || leaving_client
+	if(screen_owner)
+		screen_owner.screen -= objects
 	_recycle_ui_objects(objects)
 	ui_by_mob -= M
 	if(M.active_storage == src)

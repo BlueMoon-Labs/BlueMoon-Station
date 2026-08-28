@@ -53,6 +53,15 @@ All ShuttleMove procs go here
 	if(!shuttle_boundary)
 		CRASH("A turf queued to move via shuttle somehow had no skipover in baseturfs. [src]([type]):[loc]")
 	var/depth = baseturfs.len - shuttle_boundary + 1
+	//LIQUIDS ADD - clear destination liquids, move ours along
+	if(newT.liquids)
+		if(newT.liquids.immutable)
+			newT.liquids.remove_turf(newT)
+		else
+			qdel(newT.liquids, TRUE)
+	if(liquids)
+		liquids.ChangeToNewTurf(newT)
+		newT.reasses_liquids()
 	newT.CopyOnTop(src, 1, depth, TRUE)
 	//Air stuff
 	newT.blocks_air = TRUE
@@ -307,7 +316,7 @@ All ShuttleMove procs go here
 /obj/machinery/atmospherics/pipe/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	var/turf/T = loc
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 
 /obj/machinery/navbeacon/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
@@ -317,7 +326,7 @@ All ShuttleMove procs go here
 /obj/machinery/navbeacon/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	var/turf/T = loc
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 	if(codes["patrol"])
 		if(!GLOB.navbeacons["[z]"])
 			GLOB.navbeacons["[z]"] = list()
@@ -330,7 +339,7 @@ All ShuttleMove procs go here
 	. = ..()
 	var/turf/T = src.loc
 	if(level==1)
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 
 /************************************Item move procs************************************/
 
@@ -412,7 +421,7 @@ All ShuttleMove procs go here
 	. = ..()
 	var/turf/T = loc
 	if(level==1)
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 
 /obj/structure/shuttle/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()

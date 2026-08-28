@@ -65,7 +65,10 @@
 	clicker.DelayNextAction(1)
 	if(!linked_action)
 		return
-	linked_action.Trigger()
+	var/trigger_flags = NONE
+	if(LAZYACCESS(modifiers, RIGHT_CLICK))
+		TOGGLE_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK)
+	linked_action.Trigger(trigger_flags)
 	return TRUE
 
 /atom/movable/screen/movable/action_button/proc/begin_creating_bind(mob/user)

@@ -134,6 +134,9 @@ SUBSYSTEM_DEF(machines)
 	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|SLP:[sleeping_machines]|PN:[length(powernets)]"
 	return ..()
 
+/datum/controller/subsystem/machines/last_task()
+	return "машин в проходе [length(currentrun)] из [length(processing)], спит [sleeping_machines]"
+
 /datum/controller/subsystem/machines/proc/setup_template_powernets(list/cables)
 	var/obj/structure/cable/PC
 	for(var/A in 1 to cables.len)

@@ -107,6 +107,10 @@
 /obj/item/mod/construction/armor/magnate
 	theme = /datum/mod_theme/magnate
 
+/obj/item/mod/construction/armor/lustwish
+	name = "LustWish MOD plating"
+	theme = /datum/mod_theme/lustwish
+
 #define START_STEP "start"
 #define CORE_STEP "core"
 #define SCREWED_CORE_STEP "screwed_core"

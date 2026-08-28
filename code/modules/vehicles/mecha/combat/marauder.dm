@@ -23,6 +23,7 @@
 
 /obj/vehicle/sealed/mecha/combat/marauder/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/pulse(src)
@@ -91,6 +92,7 @@
 
 /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot(src)

@@ -109,13 +109,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		return skipped_turf
 
 	var/old_opacity = opacity
-	var/old_dynamic_lighting = dynamic_lighting
+	var/old_dynamic_lighting = turf_flags & TURF_DYNAMIC_LIGHTING
 	var/old_lighting_object = lighting_object
 	var/old_lc_topright = lc_topright
 	var/old_lc_topleft = lc_topleft
 	var/old_lc_bottomright = lc_bottomright
 	var/old_lc_bottomleft = lc_bottomleft
-	var/old_has_opaque = has_opaque_atom
+	var/old_has_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
 	var/old_shadow_weight = shadow_weight_sum
 	var/old_dynamic_lumcount = dynamic_lumcount
 
@@ -124,9 +124,11 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_bp = blueprint_data
 	blueprint_data = null
 
-	// Exposure listeners survive turf replacement: qdel below cleanly severs
+// Exposure listeners survive turf replacement: qdel below cleanly severs
 	// every signal registration, so each listener re-registers on the new datum.
 	var/list/old_exposure_listeners = atmos_exposure_listeners
+	//LIQUIDS ADD - cache liquids so we can move them to the new turf
+	var/obj/effect/abstract/liquid_turf/old_liquids = liquids
 
 	var/list/old_baseturfs = baseturfs
 
@@ -136,11 +138,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/datum/component/comp = i
 		comp.RemoveComponent()
 
-	changing_turf = TRUE
+	turf_flags |= TURF_CHANGING
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
-
 	for(var/i in transferring_comps)
 		W.TakeComponent(i)
 
@@ -172,6 +173,30 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	W.blueprint_data = old_bp
 
+	//LIQUIDS ADD - move liquids to the new turf
+	if(old_liquids)
+		if(W.liquids)
+			var/liquid_cache = W.liquids //Need to cache and re-set some vars due to the cleaning on Destroy(), and turf references
+			if(old_liquids.immutable)
+				old_liquids.remove_turf(src)
+			else
+				qdel(old_liquids, TRUE)
+			W.liquids = liquid_cache
+			W.liquids.my_turf = W
+		else
+			if(flags & CHANGETURF_INHERIT_AIR)
+				W.liquids = old_liquids
+				old_liquids.my_turf = W
+				if(old_liquids.immutable)
+					W.convert_immutable_liquids()
+				else
+					W.reasses_liquids()
+			else
+				if(old_liquids.immutable)
+					old_liquids.remove_turf(src)
+				else
+					qdel(old_liquids, TRUE)
+
 	// dynamic_lumcount переносится безусловно (не только при SSlighting.initialized):
 	// оверлейный свет живёт поверх корнер-системы и может гореть до её инициализации.
 	dynamic_lumcount = old_dynamic_lumcount
@@ -187,17 +212,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		lc_bottomleft = old_lc_bottomleft
 
 		// Restore cached opacity state — contents are unchanged, only turf type changed
-		has_opaque_atom = old_has_opaque
+		if(old_has_opaque)
+			lighting_flags |= TURF_HAS_OPAQUE_ATOM
+		else
+			lighting_flags &= ~TURF_HAS_OPAQUE_ATOM
 		shadow_weight_sum = old_shadow_weight
 		// Only full rescan if the turf's own opacity changed (rare: wall↔floor)
 		if(opacity != old_opacity)
 			recalc_atom_opacity()
 			reconsider_lights()
-		else if(dynamic_lighting != old_dynamic_lighting)
+		else if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
 			reconsider_lights()
 
-		if(dynamic_lighting != old_dynamic_lighting)
-			if(IS_DYNAMIC_LIGHTING(src))
+		if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
+			if(TURF_IS_DYNAMIC_LIGHTING(src))
 				lighting_build_overlay()
 			else
 				lighting_clear_overlay()

@@ -373,7 +373,7 @@
 	for(var/atom/A as anything in atoms)
 		hudatoms += A
 
-/datum/atom_hud/test_real/proc/remove_from_test_target(atom/A)
+/datum/atom_hud/test_real/proc/remove_from_test_target(atom/movable/A)
 	if(!A || !A.hud_list)
 		return
 	for(var/i in hud_icons)
@@ -546,7 +546,7 @@
 
 	var/list/serial_target = list()
 	var/start = REALTIMEOFDAY
-	for(var/atom/A as anything in hud_serial.hudatoms)
+	for(var/atom/movable/A as anything in hud_serial.hudatoms)
 		var/list/atom_hud_list = A.hud_list
 		if(!atom_hud_list)
 			continue

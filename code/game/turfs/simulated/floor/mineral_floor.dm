@@ -13,7 +13,7 @@
 	name = "mineral floor"
 	icon_state = ""
 	var/list/icons
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 
 
 /turf/open/floor/mineral/Initialize(mapload)

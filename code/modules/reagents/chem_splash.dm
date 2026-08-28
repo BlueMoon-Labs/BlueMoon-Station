@@ -65,12 +65,20 @@
 			if(extra_heat >= 300)
 				T.hotspot_expose(extra_heat*2, 5)
 		if(!reactable.len) //Nothing to react with. Probably means we're in nullspace.
+			// reagent.holder смотрит обратно на этот датум - без qdel держатель с химией
+			// внутри не собирается никогда, а этот выход единственный обходил qdel ниже.
+			qdel(splash_holder)
 			return
 		for(var/thing in reactable)
 			var/atom/A = thing
 			var/distance = max(1,get_dist(A, epicenter))
 			var/fraction = 0.5/(2 ** distance) //50/25/12/6... for a 200u splash, 25/12/6/3... for a 100u, 12/6/3/1 for a 50u
 			splash_holder.reaction(A, TOUCH, fraction)
+
+	//LIQUIDS ADD - splash liquids on the epicenter turf
+	if(isturf(epicenter))
+		var/turf/center_of_mess = epicenter
+		center_of_mess.add_liquid_from_reagents(splash_holder)
 
 	qdel(splash_holder)
 	return TRUE

@@ -87,6 +87,7 @@
 	.["chat_on_map_looc"] = chat_on_map_looc
 	.["see_chat_non_mob"] = see_chat_non_mob
 	.["see_chat_emotes"] = see_chat_emotes
+	.["runechat_anim"] = runechat_anim
 	.["hud_button_flashes"] = hud_toggle_flash
 
 	// Chat toggles
@@ -365,6 +366,10 @@
 
 		if("set_clientfps")
 			clientfps = sanitize_clientfps(text2num(params["value"]))
+			save_preferences()
+
+		if("set_runechat_anim")
+			runechat_anim = sanitize_integer(text2num(params["value"]), RUNECHAT_ANIM_NONE, RUNECHAT_ANIM_TYPEWRITER, initial(runechat_anim))
 			save_preferences()
 
 		// Chat toggles

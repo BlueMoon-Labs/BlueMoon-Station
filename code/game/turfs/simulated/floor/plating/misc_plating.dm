@@ -9,7 +9,7 @@
 	name = "alien floor"
 	icon_state = "alienpod1"
 	base_icon_state = "alienpod1"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/abductor/Initialize(mapload)
 	. = ..()
@@ -20,7 +20,7 @@
 	name = "alien plating"
 	icon_state = "alienplating"
 	base_icon_state = "alienplating"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/abductor2/break_tile()
 	return //unbreakable
@@ -56,7 +56,7 @@
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/ashplanet/Initialize(mapload)
 	if(smooth)
@@ -203,11 +203,12 @@
 	base_icon_state = "unsmooth"
 	initial_gas_mix = FROZEN_ATMOS
 	initial_temperature = 180
+	temperature = 180
 	planetary_atmos = TRUE
 	baseturfs = /turf/open/floor/plating/ice
 	slowdown = 1
 	attachment_holes = FALSE
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_INTACT) | TURF_BULLET_SIZZLE
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
@@ -228,9 +229,11 @@
 
 /turf/open/floor/plating/ice/colder
 	initial_temperature = 140
+	temperature = 140
 
 /turf/open/floor/plating/ice/temperate
 	initial_temperature = 255.37
+	temperature = 255.37
 
 /turf/open/floor/plating/ice/break_tile()
 	return
@@ -249,6 +252,7 @@
 	base_icon_state = "snowplating"
 	initial_gas_mix = FROZEN_ATMOS
 	initial_temperature = 180
+	temperature = 180
 	attachment_holes = FALSE
 	planetary_atmos = TRUE
 	footstep = FOOTSTEP_SAND
@@ -269,9 +273,11 @@
 
 /turf/open/floor/plating/snowed/colder
 	initial_temperature = 140
+	temperature = 140
 
 /turf/open/floor/plating/snowed/temperatre
 	initial_temperature = 255.37
+	temperature = 255.37
 
 /turf/open/floor/plating/snowed/smoothed/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS

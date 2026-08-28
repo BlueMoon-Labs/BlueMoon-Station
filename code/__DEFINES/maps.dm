@@ -34,6 +34,7 @@ require only minor tweaks.
 #define ZTRAIT_SPACE_RUINS "Space Ruins"
 #define ZTRAIT_LAVA_RUINS "Lava Ruins"
 #define ZTRAIT_LAVA_JUNGLE_RUINS "Lava Jungle Ruins" //Skyrat change
+#define ZTRAIT_PACT_SIEGE "PACT Siege"
 
 #define ZTRAIT_ICE_RUINS "Ice Ruins"
 #define ZTRAIT_ICE_RUINS_UNDERGROUND "Ice Ruins Underground"
@@ -113,17 +114,24 @@ require only minor tweaks.
 	ZTRAIT_BASETURF = /turf/open/lava/smooth/lava_land_surface)
 #define ZTRAITS_REEBE list(ZTRAIT_REEBE = TRUE, ZTRAIT_BOMBCAP_MULTIPLIER = 0.5)
 #define ZTRAITS_VR list(ZTRAIT_VIRTUAL_REALITY = TRUE, ZTRAIT_AWAY = TRUE)
+#define ZTRAITS_PACT_SIEGE list(ZTRAIT_PACT_SIEGE = TRUE)
 
 #define DL_NAME "name"
 #define DL_TRAITS "traits"
 #define DECLARE_LEVEL(NAME, TRAITS) list(DL_NAME = NAME, DL_TRAITS = TRAITS)
 
 // must correspond to _basemap.dm for things to work correctly
+#ifdef ABSOLUTE_MINIMUM_MODE
+#define DEFAULT_MAP_TRAITS list(\
+	DECLARE_LEVEL("CentCom", ZTRAITS_CENTCOM))
+#else
 #define DEFAULT_MAP_TRAITS list(\
 	DECLARE_LEVEL("CentCom", ZTRAITS_CENTCOM),\
 	DECLARE_LEVEL("CentComEvent1", ZTRAITS_CENTCOM_EVENT1),\
 	DECLARE_LEVEL("CentComEvent2", ZTRAITS_CENTCOM_EVENT2),\
-	DECLARE_LEVEL("CentComEvent3", ZTRAITS_CENTCOM_EVENT3))
+	DECLARE_LEVEL("CentComEvent3", ZTRAITS_CENTCOM_EVENT3),\
+	DECLARE_LEVEL("InteQ Siege Base", ZTRAITS_PACT_SIEGE))
+#endif
 
 // Camera lock flags
 #define CAMERA_LOCK_STATION 1

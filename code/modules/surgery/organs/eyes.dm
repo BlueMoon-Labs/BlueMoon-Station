@@ -457,7 +457,7 @@
 		scanning = get_step(scanning, scandir)
 		if(!scanning)
 			break
-		if(scanning.opacity || scanning.has_opaque_atom)
+		if(scanning.opacity || (scanning.lighting_flags & TURF_HAS_OPAQUE_ATOM))
 			stop = TRUE
 		var/obj/effect/abstract/eye_lighting/L = LAZYACCESS(eye_lighting, i)
 		if(!L)

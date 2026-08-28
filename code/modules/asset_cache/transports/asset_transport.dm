@@ -137,6 +137,11 @@
 			if (!keep_local_name)
 				new_asset_name = "asset.[ACI.hash][ACI.ext]"
 			log_asset("Sending asset `[asset_name]` to client `[client]` as `[new_asset_name]`")
+			// Книга недатумных аллокаций: очередь browse() держит полезную нагрузку в памяти
+			// до доставки, и при волне реконнекта эти байты умножаются на число клиентов.
+			// Считаем ТОЛЬКО реально отправленное: попадания в client.sent_assets отсеяны выше.
+			if(isfile(ACI.resource))
+				note_nondatum_alloc(NONDATUM_LEDGER_ASSET_BYTES, length(ACI.resource))
 			client << browse_rsc(ACI.resource, new_asset_name)
 
 			client.sent_assets[new_asset_name] = ACI.hash

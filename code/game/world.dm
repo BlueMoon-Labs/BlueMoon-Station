@@ -2,6 +2,10 @@
 
 GLOBAL_VAR(restart_counter)
 
+/// VmSize на входе в /world/New(), в мегабайтах; null - замер недоступен (Windows, /proc).
+/// Всё, что было потрачено до этой отметки, - это .dmb, типовые таблицы и глобалки DM.
+GLOBAL_VAR(world_new_entry_vsz_mb)
+
 GLOBAL_VAR(topic_status_lastcache)
 GLOBAL_LIST(topic_status_cache)
 
@@ -9,6 +13,14 @@ GLOBAL_LIST(topic_status_cache)
 //So subsystems globals exist, but are not initialised
 
 /world/New()
+	// Первая строка DM во всём раунде. Замер ЗДЕСЬ отрезает то, что уже потрачено до неё -
+	// загрузку .dmb, типовые таблицы и инициализацию глобальных переменных DM, - от всего,
+	// что делает мир дальше. По внешнему стенду (раунд 10108) это 696 МБ, около четверти
+	// базы, и внутрь этой цифры никто ни разу не заглядывал: до /world/New() поставить метку
+	// в DM негде в принципе. Логировать сразу нельзя (GLOB.world_runtime_log ещё null, а
+	// world.log до SetupLogs() смотрит не в раунд), поэтому число едет в глобалку, а печатает
+	// его SStime_track.log_process_memory_environment().
+	GLOB.world_new_entry_vsz_mb = get_process_memory_mb()?["vsz"]
 	var/dll = GetConfig("env", "AUXTOOLS_DEBUG_DLL")
 	if (dll)
 		LIBCALL(dll, "auxtools_init")()
@@ -66,6 +78,10 @@ GLOBAL_LIST(topic_status_cache)
 	LoadBans()
 	initialize_global_loadout_items()
 	reload_custom_roundstart_items_list()//Cit change - loads donator items. Remind me to remove when I port over bay's loadout system
+
+	// Читается до Master.Initialize(): инициализация подсистем сама начинает переписывать
+	// чёрный ящик, и улика прошлого запуска пропала бы, не попав в лог.
+	mc_state_report_previous()
 
 	Master.Initialize(10, FALSE, TRUE)
 
@@ -305,7 +321,18 @@ GLOBAL_LIST(topic_status_cache)
 	else
 		to_chat(world, "<span class='boldannounce'>Rebooting world...</span>")
 		Master.Shutdown()	//run SS shutdowns
-	SSpersistence.RecordGracefulEnding() // BLUEMOON ADD - система запоминает, успешно ли завершился прошлый раунд, или крашнулся
+	// Ребут по чужой воле (BYOND "Out of resources!") - это краш, а не завершение раунда:
+	// ни пометки в GracefulEnding.json, ни метки в чёрном ящике, иначе улику некому будет
+	// предъявить. Админский Hardest Restart и клиентский дебаг-рестарт сюда не попадают:
+	// причину обрыва взводит только обработчик ошибки.
+	if(!GLOB?.mc_state_death_cause)
+		SSpersistence.RecordGracefulEnding() // BLUEMOON ADD - система запоминает, успешно ли завершился прошлый раунд, или крашнулся
+	// Петля МК на пути reason/fast_track остаётся живой (Master.Shutdown() не звался) и
+	// продолжает писать сводку, пока TgsReboot() спит на world.Export. Замораживаем запись,
+	// иначе метка штатного завершения будет затёрта снимком и старт отчитается ложным крахом.
+	if(Master)
+		Master.state_snapshot_frozen = TRUE
+	mc_state_mark_clean("world.Reboot(reason = [reason], fast_track = [fast_track])")
 
 	TgsReboot()
 
@@ -347,6 +374,9 @@ GLOBAL_LIST(topic_status_cache)
 	..()
 
 /world/Del()
+	if(Master)
+		Master.state_snapshot_frozen = TRUE
+	mc_state_mark_clean("world.Del")
 	shutdown_logging() // makes sure the thread is closed before end, else we terminate
 	var/debug_server = world.GetConfig("env", "AUXTOOLS_DEBUG_DLL")
 	if (debug_server)

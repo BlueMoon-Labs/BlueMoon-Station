@@ -107,6 +107,7 @@ export const Orbit = (props) => {
     misc,
     npcs,
     ghost_roles,
+    swarmer_shells,
   } = data;
 
   const [searchText, setSearchText] = useState("");
@@ -146,6 +147,7 @@ export const Orbit = (props) => {
       dead_players,
       npcs,
       misc,
+      swarmer_shells,
       sortedGhostRoles.flatMap(([_, ghostRoles]) => ghostRoles),
     ];
     for (const source of sources) {
@@ -286,6 +288,12 @@ export const Orbit = (props) => {
         <BasicSection
           title="Dead Players"
           source={dead_players}
+          searchText={searchText}
+        />
+
+        <BasicSection
+          title="Swarmer Shells"
+          source={swarmer_shells}
           searchText={searchText}
         />
 
