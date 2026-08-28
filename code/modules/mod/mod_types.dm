@@ -308,6 +308,7 @@
 	theme = /datum/mod_theme/elite
 
 /obj/item/mod/control/pre_equipped/lustwish
+	slot_flags = ITEM_SLOT_BELT
 	theme = /datum/mod_theme/lustwish
 
 /obj/item/mod/control/pre_equipped/infiltrator_inteq
@@ -324,6 +325,7 @@
 		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/springlock/advanced/antagonist, //нерушима
 		/obj/item/mod/module/infiltrator,
+		/obj/item/mod/module/dna_lock/antag,
 	)
 
 /obj/item/mod/control/pre_equipped/traitor/inteq
@@ -335,6 +337,7 @@
 		/obj/item/mod/module/visor/night,
 		/obj/item/mod/module/holster,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/dna_lock/antag,
 	)
 
 /obj/item/mod/control/pre_equipped/blueshied
@@ -373,6 +376,8 @@
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/flashlight/vanguard,
 		/obj/item/mod/module/gps/vanguard,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)

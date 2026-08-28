@@ -16,6 +16,7 @@
 	var/list/overslot_blacklist = list(
 		/obj/item/clothing/suit/space,
 		/obj/item/clothing/head/helmet,
+		/obj/item/clothing/mod_part,
 		//Сюда вписываем то, поверх чего должно быть невозможно развернуть элемент МОДа!
 	)
 	var/obj/item/mod/module/linked_modules = list()
@@ -48,7 +49,8 @@
 	if(state == MODPART_CONSEALED)
 		for(var/obj/item/mod/module/module in linked_modules)
 			module.saved_state = module.active
-			module.on_deactivation()
+			if(module.active)
+				module.on_deactivation()
 		return TRUE
 	else
 		for(var/obj/item/mod/module/module in linked_modules)

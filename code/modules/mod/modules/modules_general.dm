@@ -433,6 +433,12 @@
 	/// The DNA we lock with.
 	var/dna = null
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	var/individual_protect_from_emp
+
+/obj/item/mod/module/dna_lock/antag
+	name = "Advanced DNA Lock Module"
+	complexity = 1
+	individual_protect_from_emp = TRUE
 
 /obj/item/mod/module/dna_lock/on_install()
 	RegisterSignal(mod, COMSIG_MOD_ACTIVATE, PROC_REF(on_mod_activation))
@@ -458,7 +464,7 @@
 
 /obj/item/mod/module/dna_lock/emp_act(severity)
 	. = ..()
-	if(. & EMP_PROTECT_SELF)
+	if(. & EMP_PROTECT_SELF || individual_protect_from_emp)
 		return
 	on_emp(src, severity)
 

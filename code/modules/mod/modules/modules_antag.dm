@@ -66,19 +66,18 @@
 	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
 	Позволяет увеличить размер встроенного рюкзака до уровня БС сумки."
 	icon_state = "storage_updater"
-	var/obj/item/mod/module/storage/linked_storage_module
+	incompatible_modules = list(/obj/item/mod/module/storage_upgrader)
+	var/datum/component/storage/storage_module_datum
 
 /obj/item/mod/module/storage_upgrader/on_install()
 	. = ..()
-	var/datum/component/storage/storage_component = mod.GetComponent(/datum/component/storage)
-
-	for(var/obj/item/mod/module/M in mod.modules)
-		if(istype(M, /obj/item/mod/module/storage))
-			linked_storage_module = M
-	linked_storage_module.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
+	storage_module_datum = mod.GetComponent(/datum/component/storage)
+	if(!storage_module_datum)
+		return
+	storage_module_datum.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
 
 /obj/item/mod/module/storage_upgrader/on_uninstall()
 	. = ..()
-	if(!linked_storage_module)
+	if(!storage_module_datum)
 		return
-	linked_storage_module.max_volume = initial(linked_storage_module.max_volume)
+	storage_module_datum.max_volume = initial(storage_module_datum.max_volume)

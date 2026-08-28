@@ -840,8 +840,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			standing += hair_overlay
 			standing += gradient_overlay
 
-		// if("hair" in H.layers_for_apply_effect)
-		// 	standing += update_overlay_by_key("hair", H, hair_overlay)
 	if(standing.len)
 		H.overlays_standing[HAIR_LAYER] = standing
 
