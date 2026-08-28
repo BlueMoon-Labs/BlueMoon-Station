@@ -265,8 +265,8 @@
 	icon_state = "nebula_box"
 
 /obj/item/storage/box/lapkee_kit/PopulateContents() // я заебался ебаться с тем что мне лапки пишет названия предметов из сски, а не кастомных, пропишу тут в комментах
-	new /obj/item/clothing/under/donator/bm/concord(src)
-	// тут будет плащ. WIP.
+	new /obj/item/clothing/under/donator/bm/concord(src) // Форма
+	new /obj/item/clothing/neck/donator/bm/concord_cloak // плащ
 	new /obj/item/modkit/star_dust_kit(src) // противогаз
 	new /obj/item/modkit/lapkee_carrier_kit(src) // плитка
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
