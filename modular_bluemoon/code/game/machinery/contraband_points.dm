@@ -60,7 +60,7 @@
 		return ((total_rating / part_count) - 1) * CONTRABAND_PAD_EFFICIENCY_BONUS
 	return 0
 
-/obj/machinery/vanguard/contraband/proc/get_adjusted_value(obj/item/I, base_value)
+/obj/machinery/vanguard/contraband/proc/get_adjusted_value(atom/movable/AM, base_value)
 	return round(base_value * efficiency_multiplier)
 
 // ============================================
@@ -244,6 +244,8 @@
 		/obj/item/storage/box/inteq_kit = 200,
 		/obj/item/card/id/syndicate = 750,
 		/obj/item/card/id/inteq = 1250,
+		/obj/item/ammo_box/magazine/m10mm = 50,
+		/obj/item/ammo_box/magazine/pistolm9mm = 50,
 		/obj/item/mod/control/pre_equipped/inteq = 5000,
 		/obj/item/mod/control/pre_equipped/syndicate_empty = 2500,
 		/obj/item/mod/control/pre_equipped/syndicate_empty/elite = 5000,
@@ -297,16 +299,16 @@
 	return TRUE
 
 /obj/machinery/computer/vanguard_control/contraband/proc/get_contraband_value(atom/movable/AM)
-    var/best_value = 0
-    var/best_depth = -1
-    for(var/typepath in contraband_values)
-        if(istype(I, typepath))
-            // Считаем глубину наследования по количеству "/" в текстовом представлении пути
-            var/depth = length(splittext("[typepath]", "/"))
-            if(depth > best_depth)
-                best_depth = depth
-                best_value = contraband_values[typepath]
-    return best_value
+	var/best_value = 0
+	var/best_depth = -1
+	for(var/typepath in contraband_values)
+		if(istype(AM, typepath))
+			// Считаем глубину наследования по количеству "/" в текстовом представлении пути
+			var/depth = length(splittext("[typepath]", "/"))
+			if(depth > best_depth)
+				best_depth = depth
+				best_value = contraband_values[typepath]
+	return best_value
 
 /obj/machinery/vanguard/contraband/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
@@ -328,7 +330,7 @@
 				continue
 			var/base_value = get_contraband_value(AM)
 			if(base_value > 0)
-					total_value += pad.get_adjusted_value(I, base_value)
+				total_value += pad.get_adjusted_value(AM, base_value)
 
 	if(total_value > 0)
 		var/mult_text = ""
@@ -389,7 +391,7 @@
 			continue
 		var/base_value = get_contraband_value(AM)
 		if(base_value > 0)
-			var/adjusted_value = pad.get_adjusted_value(I, base_value)
+			var/adjusted_value = pad.get_adjusted_value(AM, base_value)
 			total_value += adjusted_value
 			items_sent++
 			qdel(AM)
@@ -446,10 +448,10 @@
 				continue
 			var/base_value = get_contraband_value(AM)
 			if(base_value > 0)
-				var/adjusted_value = pad.get_adjusted_value(I, base_value)
+				var/adjusted_value = pad.get_adjusted_value(AM, base_value)
 				total_value += adjusted_value
 				items_on_pad += list(list(
-					"name" = I.name,
+					"name" = AM.name,
 					"base_value" = base_value,
 					"adjusted_value" = adjusted_value
 				))
