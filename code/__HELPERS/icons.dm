@@ -1636,19 +1636,32 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
 	var/atom/A = thing
-	var/key = "[istype(A.icon, /icon) ? "[REF(A.icon)]" : A.icon]:[A.icon_state]"
+	var/atom_icon = A.icon
+	// Рантайм-иконка стрингифицируется в "/icon" одинаково для любой динамической, поэтому
+	// ключ обходил это через REF(). Но REF() - индекс в таблице BYOND, и он переиспользуется
+	// после сборки мусора: собранная иконка отдаёт слот следующей, ключ совпадает, и панель
+	// показывает картинку совсем другой вещи. Кэш глобальный и живёт весь раунд, промах не
+	// самоисправляется. Файловые иконки стрингифицируются в свой dmi-путь и стабильны -
+	// кэшируются как раньше; динамические собираются заново, их единицы.
+	var/cacheable = atom_icon && !istype(atom_icon, /icon)
+	var/key = cacheable ? "[atom_icon]:[A.icon_state]" : null
+	var/icon_base64 = cacheable ? GLOB.bicon_cache[key] : null
 
-	if (!GLOB.bicon_cache[key]) // Doesn't exist, make it.
+	if (!icon_base64) // Doesn't exist, make it.
 		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
 			I.Insert(temp, dir = SOUTH)
-		GLOB.bicon_cache[key] = icon2base64(I)
-		if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
-			GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
+		icon_base64 = icon2base64(I)
+		if(!icon_base64)
+			return
+		if(cacheable)
+			GLOB.bicon_cache[key] = icon_base64
+			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
+				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[GLOB.bicon_cache[key]]'>"
+	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)
@@ -1665,9 +1678,17 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	var/appearance_key = "\ref[A.appearance]"
 
 	// Full result cache: skip getFlatIcon + icon() + md5 pipeline on repeat calls.
-	// Caches list(asset_key, html, url) keyed on appearance ref.
+	// Caches list(asset_key, html, url, appearance) keyed on appearance ref.
+	//
+	// Четвёртый элемент - сам аппиранс, и он там не для чтения. Таблица аппирансов
+	// рефкаунтится: как только последняя ссылка ушла, слот достаётся следующему аппирансу,
+	// а ключ у нас - строка "\ref[...]", которая этого не замечает. Живая ссылка в записи
+	// держит слот занятым ровно столько, сколько живёт запись, поэтому под ключом не может
+	// оказаться чужая картинка. Вытеснение отпускает ссылку вместе с записью.
 	var/static/list/costly_result_cache = list()
 	var/list/cached = costly_result_cache[appearance_key]
+	if(cached && length(cached) < 4) // запись из билда до пиннинга - доверять ей нельзя
+		cached = null
 
 	if(!cached)
 		var/icon/I = getFlatIcon(thing)
@@ -1680,7 +1701,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			SSassets.transport.register_asset(asset_key, rsc_ref, file_hash, null)
 		var/url = SSassets.transport.get_asset_url(asset_key)
 		var/html = "<img class='icon icon-' src='[url]'>"
-		cached = list(asset_key, html, url)
+		cached = list(asset_key, html, url, A.appearance)
 		costly_result_cache[appearance_key] = cached
 		if(length(costly_result_cache) > 512)
 			costly_result_cache.Cut(1, 129) // Evict oldest 25%

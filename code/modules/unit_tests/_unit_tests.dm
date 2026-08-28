@@ -155,6 +155,7 @@
 #include "lighting_object_var_diet.dm"
 #include "lighting_teardown.dm"
 #include "maptext_surface_budget.dm"
+#include "icon_cache_ref_reuse.dm"
 #include "light_range_cap.dm"
 #include "airalarm_danger_read.dm"
 #include "area_power_signal.dm"
