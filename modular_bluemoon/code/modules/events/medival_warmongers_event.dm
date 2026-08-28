@@ -291,6 +291,23 @@
 	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 
+#define MEDIEVAL_NODROP_TRAIT "medieval_nodrop"
+
+/datum/outfit/medieval/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	..()
+	if(visualsOnly)
+		return
+	var/static/list/nodrop_slots = list(
+		ITEM_SLOT_HEAD,
+		ITEM_SLOT_OCLOTHING,
+		ITEM_SLOT_FEET,
+		ITEM_SLOT_GLOVES,
+	)
+	for(var/slot in nodrop_slots)
+		var/obj/item/I = H.get_item_by_slot(slot)
+		if(I)
+			ADD_TRAIT(I, TRAIT_NODROP, MEDIEVAL_NODROP_TRAIT)
+
 // Medieval Belts
 
 /obj/item/storage/belt/iron_tasset

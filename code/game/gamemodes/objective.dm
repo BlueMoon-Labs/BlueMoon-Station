@@ -1566,6 +1566,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			continue
 		if(possible_target.assigned_role in excluded_roles)
 			continue
+		if(possible_target.has_antag_datum(/datum/antagonist/ghost_role)) // BLUEMOON ADD - гостроли (хермит и т.п.) не берутся в оборот
+			continue
 		possible_targets += possible_target
 	if(!length(possible_targets))
 		return

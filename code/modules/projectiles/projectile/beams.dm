@@ -44,7 +44,8 @@
 	fire_hazard = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/swarmer
-	damage = 20
+	damage = 30
+	hit_prone_targets = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)
 	. = ..()
@@ -132,6 +133,7 @@
 
 /obj/item/projectile/beam/disabler/swarmer
 	damage = 45
+	hit_prone_targets = TRUE
 
 /obj/item/projectile/beam/pulse
 	name = "pulse"
