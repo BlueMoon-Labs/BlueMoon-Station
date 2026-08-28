@@ -23,7 +23,9 @@
 	monitor_atom = monitor_atom_p
 	source = source_p
 
-	owner.system_log("INITIALIZE: [source]/[name]")
+	// owner?. а не owner.: монитор переживает уход владельца (Destroy() зовёт disable(),
+	// а тот тоже пишет в лог), и голое разыменование делало из этого рантайм.
+	owner?.system_log("INITIALIZE: [source]/[name]")
 
 /datum/neural_monitor/Destroy(force, ...)
 	disable()
@@ -50,7 +52,7 @@
 	if(enabled)
 		return
 	enabled = TRUE
-	owner.system_log("[source]/[name]: ENABLED")
+	owner?.system_log("[source]/[name]: ENABLED")
 	if(processing)
 		START_PROCESSING(SSfastprocess, src)
 		next_activate = world.time + periodic
@@ -61,7 +63,7 @@
 	if(!enabled)
 		return
 	enabled = FALSE
-	owner.system_log("[source]/[name]: DISABLED")
+	owner?.system_log("[source]/[name]: DISABLED")
 	if(processing)
 		STOP_PROCESSING(SSfastprocess, src)
 	if(monitor_atom)
@@ -161,11 +163,14 @@
 	else if(health_percent < 75)
 		status_text = "<span class='notice'><b>MINOR</b></span>"
 
+	// Округление той же природы, что и в health_scan/get_data(): значение уходит в maptext,
+	// а сырой урон типа "1.79999" делает каждую запись уникальной и заставляет клиента
+	// растеризовать новую поверхность на каждый тик здоровья.
 	owner.write_data("STATUS", status_text, 30 SECONDS)
-	owner.write_data("BRUTE", "[brute_loss]", 30 SECONDS)
-	owner.write_data("TOX", "[tox_loss]", 30 SECONDS)
-	owner.write_data("BURN", "[fire_loss]", 30 SECONDS)
-	owner.write_data("OXYGEN", "[oxy_loss]", 30 SECONDS)
+	owner.write_data("BRUTE", "[round(brute_loss)]", 30 SECONDS)
+	owner.write_data("TOX", "[round(tox_loss)]", 30 SECONDS)
+	owner.write_data("BURN", "[round(fire_loss)]", 30 SECONDS)
+	owner.write_data("OXYGEN", "[round(oxy_loss)]", 30 SECONDS)
 
 	// Store last values
 	last_brute_damage = brute_loss
@@ -482,11 +487,18 @@
 		target = null
 		return FALSE
 
-	var/health_percent = target.health / target.maxHealth * 100
-	var/oxy_loss = target.getOxyLoss()
-	var/tox_loss = target.getToxLoss()
-	var/fire_loss = target.getFireLoss()
-	var/brute_loss = target.getBruteLoss()
+	// Округление ОБЯЗАТЕЛЬНОЕ. Строка уходит в maptext, а растеризованный maptext занимает у
+	// клиента поверхность maptext_width * maptext_height * 4 байта и живёт столько же, сколько
+	// appearance, - до конца сессии. Сырой health/maxHealth*100 даёт "97.5333", урон -
+	// "1.79999", то есть КАЖДЫЙ тик здоровья порождает новую уникальную строку, а панель
+	// пересобирается на SSfastprocess пять раз в секунду. Целые числа дают не больше сотни
+	// различных состояний на поле, и панель начинает переиспользовать уже готовые поверхности.
+	// Читателю доли процента здоровья не нужны: рядом, в get_status_text, они уже округлены.
+	var/health_percent = round(target.health / target.maxHealth * 100)
+	var/oxy_loss = round(target.getOxyLoss())
+	var/tox_loss = round(target.getToxLoss())
+	var/fire_loss = round(target.getFireLoss())
+	var/brute_loss = round(target.getBruteLoss())
 
 	return "HEALTH:[health_percent]\nOXY:[oxy_loss]\nTOX:[tox_loss]\nBURN:[fire_loss]\nBRUTE:[brute_loss]"
 

@@ -154,6 +154,7 @@
 #include "lighting_matrix_grid.dm"
 #include "lighting_object_var_diet.dm"
 #include "lighting_teardown.dm"
+#include "maptext_surface_budget.dm"
 #include "light_range_cap.dm"
 #include "airalarm_danger_read.dm"
 #include "area_power_signal.dm"
