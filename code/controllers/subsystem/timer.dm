@@ -71,6 +71,27 @@ SUBSYSTEM_DEF(timer)
 	var/static/last_invoke_warning = 0
 	/// Boolean operator controlling if the timer SS will automatically reset buckets if it fails to invoke callbacks for an extended period of time
 	var/static/bucket_auto_reset = TRUE
+	/// Сколько раз за раунд колесо бакетов пересобиралось с нуля.
+	///
+	/// Норма - РОВНО ОДИН, и он приходится на старт: колесо создаётся в PreInit, а fps из
+	/// конфига применяется после инициализации подсистем (master.dm), и смена fps честно
+	/// пересобирает колесо через world.on_tickrate_change(). Всё сверх этой единицы -
+	/// аварийные выходы: минуту с лишним не сработал ни один таймер, или проход наткнулся
+	/// на таймер с невозможным сроком. Каждая пересборка стоит полного прохода по бакетам
+	/// с сортировкой, и до этого счётчика событие не оставляло в логах ни следа: в
+	/// стат-панели видно население колеса, но не то, что колесо под ним уже трижды
+	/// пересобрали. Колонка timer_bucket_resets в perf-логе - отсюда.
+	///
+	/// static, как и три соседа по блоку, и по той же причине: Recover() создаёт НОВЫЙ
+	/// экземпляр подсистемы и переносит в него только списки, а сам тут же зовёт
+	/// reset_buckets(). Обычная переменная обнулилась бы ровно в тот момент, когда счётчик
+	/// нужнее всего, и раунд, переживший падение МК, отчитался бы одной пересборкой.
+	///
+	/// За границу раунда счётчик при этом НЕ переносится: world.Reboot() переинициализирует
+	/// таблицу глобальных переменных мира, а static живёт именно в ней. Доказательство лежит
+	/// в самой кодбазе - GLOB.restart_counter приходится гонять через файл
+	/// (RESTART_COUNTER_PATH, code/game/world.dm), потому что иначе он ребут не переживает.
+	var/static/bucket_reset_count = 0
 	/// Дампить ли содержимое колеса при аварийном сбросе бакетов. По умолчанию выключено:
 	/// дамп собирает список строк по всем бакетам и по всей second_queue без единого
 	/// тик-чека, то есть срабатывает ровно в тот момент, когда сервер и так плох.
@@ -83,8 +104,11 @@ SUBSYSTEM_DEF(timer)
 	bucket_resolution = world.tick_lag
 
 /datum/controller/subsystem/timer/stat_entry(msg)
-	msg = "B:[bucket_count] P:[length(second_queue)] H:[length(hashes)] C:[length(clienttime_timers)] S:[length(timer_id_dict)]"
+	msg = "B:[bucket_count] P:[length(second_queue)] H:[length(hashes)] C:[length(clienttime_timers)] S:[length(timer_id_dict)] RST:[bucket_reset_count]"
 	return ..()
+
+/datum/controller/subsystem/timer/last_task()
+	return "колесо: курсор [practical_offset] из [BUCKET_LEN], таймеров в бакетах [bucket_count], в second_queue [length(second_queue)], сбросов колеса [bucket_reset_count]"
 
 /**
  * Сбрасывает в лог мира состояние колеса таймеров.
@@ -168,9 +192,15 @@ SUBSYSTEM_DEF(timer)
 
 		var/pre_len = length(clienttime_timers)
 		if(ctime_timer.flags & TIMER_LOOP)
-			ctime_timer.spent = 0
-			ctime_timer.timeToRun = REALTIMEOFDAY + ctime_timer.wait
-			BINARY_INSERT(ctime_timer, clienttime_timers, /datum/timedevent, ctime_timer, timeToRun, COMPARE_KEY)
+			// Колбек мог удалить собственный таймер. Обычный путь этого не даёт (datum/Destroy
+			// пропускает спущенные таймеры), но TIMER_DELETE_ME снимает и спущенные - именно
+			// с ним заведён зацикленный звук, см. _looping_sound.dm. Возврат удалённого
+			// таймера в очередь означает запись без колбека, то есть "Invalid timer" на
+			// следующем проходе и пересборку всего колеса.
+			if(!QDELETED(ctime_timer))
+				ctime_timer.spent = 0
+				ctime_timer.timeToRun = REALTIMEOFDAY + ctime_timer.wait
+				BINARY_INSERT(ctime_timer, clienttime_timers, /datum/timedevent, ctime_timer, timeToRun, COMPARE_KEY)
 		else
 			qdel(ctime_timer)
 		// If list shrank (qdel removed element), stay at same index; otherwise advance
@@ -207,14 +237,34 @@ SUBSYSTEM_DEF(timer)
 		while ((timer = bucket_list[practical_offset]))
 			var/datum/callback/callBack = timer.callBack
 			if (!callBack)
-				bucket_resolution = null // force bucket recreation
-				CRASH("Invalid timer: [get_timer_debug_string(timer)] world.time: [world.time], \
+				if (!timer.spent && !QDELETED(timer))
+					// Живой таймер без колбека - колесо действительно битое, спасает только пересборка.
+					bucket_resolution = null // force bucket recreation
+					CRASH("Invalid timer: [get_timer_debug_string(timer)] world.time: [world.time], \
+						head_offset: [head_offset], practical_offset: [practical_offset]")
+				// А вот спущенный или уже удалённый таймер в голове бакета - это одна потерянная
+				// запись, а не битое колесо, и полная пересборка за неё несоразмерна: она стоит
+				// прохода по всем бакетам с сортировкой всех таймеров мира. Соседний клиентский
+				// цикл такую запись просто пропускает; здесь снимаем её обычным путём ниже.
+				// Заодно bucket_reset_count начинает считать настоящие аварии, а не чужие qdel.
+				stack_trace("Spent timer left in bucket head: [get_timer_debug_string(timer)] world.time: [world.time], \
 					head_offset: [head_offset], practical_offset: [practical_offset]")
 
+			// Голову бакета снимает сам eject по записанной позиции. Страховка на случай,
+			// если позиция всё-таки разошлась со слотом: внешний while достаёт голову заново,
+			// и неснятая голова означала бы вечный цикл внутри тика, то есть повисший мир.
+			// Дешевле одного сравнения, а стоимость промаха - весь сервер.
+			var/datum/timedevent/next_in_bucket = timer.next
 			timer.bucketEject() //pop the timer off of the bucket list.
+			if (bucket_list[practical_offset] == timer)
+				// Кольцо из самого себя тоже разрываем: иначе слот снова укажет на этот таймер.
+				bucket_list[practical_offset] = (next_in_bucket == timer) ? null : next_in_bucket
+				stack_trace("Timer bucket head survived its own eject at [practical_offset]: [get_timer_debug_string(timer)]")
 
-			// Invoke callback if possible
-			if (!timer.spent)
+			// Invoke callback if possible. Колбек в условии не для красоты: выше сюда теперь
+			// доходит и запись без колбека (спущенная или удалённая), и без этой проверки
+			// путь "spent пуст, а колбека уже нет" кончился бы обращением к null.
+			if (callBack && !timer.spent)
 				timer.spent = world.time
 				// Замер синхронной части колбека (до первого сна): дорогой таймер-колбек
 				// раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков
@@ -225,11 +275,18 @@ SUBSYSTEM_DEF(timer)
 					SStick_spikes.record_slow_work("таймер", SStick_spikes.callback_desc(callBack), invoke_cost_ms)
 				last_invoke_tick = world.time
 
-			if (timer.flags & TIMER_LOOP) // Prepare looping timers to re-enter the queue
+			// Возвращается в очередь только живой зацикленный таймер с колбеком. Удалённый
+			// внутри собственного колбека (datum/Destroy пропускает спущенные таймеры, но
+			// TIMER_DELETE_ME снимает и их - с ним заведён зацикленный звук, см.
+			// _looping_sound.dm) уже снят с колеса, и возврат положил бы в бакет запись без
+			// колбека: то самое "Invalid timer" на следующем проходе. Всё остальное уходит
+			// в qdel - в том числе спущенный безколбечный таймер, который иначе остался бы
+			// висеть в timer_id_dict до конца раунда.
+			if (timer.flags & TIMER_LOOP && timer.callBack && !QDELETED(timer)) // Prepare looping timers to re-enter the queue
 				timer.spent = 0
 				timer.timeToRun = world.time + timer.wait
 				timer.bucketJoin()
-			else
+			else if (!QDELETED(timer))
 				qdel(timer)
 
 			if (MC_TICK_CHECK)
@@ -238,6 +295,21 @@ SUBSYSTEM_DEF(timer)
 		if (!bucket_list[practical_offset])
 			// Empty the bucket, check if anything in the secondary queue should be shifted to this bucket
 			bucket_list[practical_offset++] = null
+			// Дальше пустые бакеты проматываются ПАЧКОЙ, а не по одному за прогон.
+			//
+			// Хвостовой MC_TICK_CHECK прерывает проход после первого же бакета, как только
+			// тик исчерпан, а под нагрузкой МК зовёт подсистему заметно реже раза в тик:
+			// sleep_delta растёт, и одна итерация петли приходится на десятки тиков. Колесо
+			// в этих условиях идёт медленнее реального времени и, отстав однажды, не
+			// догоняет уже никогда. Замер на multiz_debug в CI: мир прошёл 1934 дс, курсор
+			// колеса - 30 дс, полтора процента скорости. Дальше отставание только росло
+			// (659 -> 1765 -> 2564 дс), TIMER_FITS_BUCKETS переставал пускать в колесо всё
+			// новое, second_queue пухла (73 -> 115), и ни один обычный таймер за раунд уже
+			// не срабатывал: тесты, ждущие отложку, выпадали по потолку ожидания.
+			//
+			// Пустой бакет работы не несёт - чтение слота и инкремент. Уступать ради них
+			// целый прогон подсистемы незачем, а вот возможность догнать мир это возвращает.
+			practical_offset = skip_empty_buckets(bucket_list, practical_offset, min(BUCKET_LEN, round((world.time - head_offset) / world.tick_lag) + 1))
 			var/i = 0
 			for (i in 1 to length(second_queue))
 				timer = second_queue[i]
@@ -274,11 +346,31 @@ SUBSYSTEM_DEF(timer)
 			break
 
 /**
+ * Проматывает курсор через подряд идущие ПУСТЫЕ бакеты, чьё время уже наступило.
+ *
+ * Возвращает позицию первого бакета, ради которого стоит остановиться: непустого или
+ * ещё не наступившего. Отдельным проком - чтобы поведение проверялось юнит-тестом на
+ * синтетическом колесе, без правки боевого SStimer.
+ *
+ * last_due - последний наступивший бакет, уже прижатый к длине колеса вызывающим.
+ */
+/datum/controller/subsystem/timer/proc/skip_empty_buckets(list/bucket_list, position, last_due)
+	while (position <= last_due && !bucket_list[position])
+		position++
+	return position
+
+/**
  * Generates a string with details about the timed event for debugging purposes
  */
 /datum/controller/subsystem/timer/proc/get_timer_debug_string(datum/timedevent/TE)
-	. = "Timer: [TE]"
-	. += "Prev: [TE.prev ? TE.prev : "NULL"], Next: [TE.next ? TE.next : "NULL"]"
+	if(!TE)
+		return "Timer: NULL"
+	. = "Timer: [TE.id] ([REF(TE)]), TTR: [TE.timeToRun], wait:[TE.wait], flags:[TE.flags]"
+	. += ", Prev: [TE.prev ? REF(TE.prev) : "NULL"], Next: [TE.next ? REF(TE.next) : "NULL"]"
+	if(TE.callBack)
+		. += ", callBack: [TE.callBack.object == GLOBAL_PROC ? "GLOBAL_PROC" : TE.callBack.object?.type]->[TE.callBack.delegate]"
+	if(TE.source)
+		. += ", source: [TE.source]"
 	if(TE.spent)
 		. += ", SPENT([TE.spent])"
 	if(QDELETED(TE))
@@ -290,6 +382,13 @@ SUBSYSTEM_DEF(timer)
  * Destroys the existing buckets and creates new buckets from the existing timed events
  */
 /datum/controller/subsystem/timer/proc/reset_buckets()
+	// Считаем и пишем ДО работы: пересборка идёт полным проходом по колесу с сортировкой,
+	// и если сервер умрёт на ней самой, единственным следом останется эта строка.
+	bucket_reset_count++
+	WARNING("Timer buckets reset (#[bucket_reset_count]), this may cause timers to lag. \
+		world.time: [world.time], head_offset: [head_offset], practical_offset: [practical_offset], \
+		bucket_count: [bucket_count], second_queue: [length(second_queue)]")
+
 	var/list/bucket_list = src.bucket_list // Store local reference to datum var, this is faster
 	var/list/alltimers = list()
 
@@ -344,6 +443,7 @@ SUBSYSTEM_DEF(timer)
 		timer.in_timer_bucket_queue = FALSE
 		timer.in_timer_second_queue = FALSE
 		timer.in_timer_clienttime_queue = FALSE
+		timer.bucket_pos = BUCKET_POS_NONE
 		timer.next = null
 		timer.prev = null
 
@@ -364,6 +464,7 @@ SUBSYSTEM_DEF(timer)
 		new_bucket_count++
 		var/bucket_pos = BUCKET_POS(timer)
 		var/datum/timedevent/bucket_head = bucket_list[bucket_pos]
+		timer.bucket_pos = bucket_pos
 		timer.in_timer_bucket_queue = TRUE
 		if (!bucket_head)
 			bucket_list[bucket_pos] = timer
@@ -383,6 +484,7 @@ SUBSYSTEM_DEF(timer)
 		timer.in_timer_bucket_queue = FALSE
 		timer.in_timer_second_queue = TRUE
 		timer.in_timer_clienttime_queue = FALSE
+		timer.bucket_pos = BUCKET_POS_NONE
 		timer.next = null
 		timer.prev = null
 	bucket_count = new_bucket_count
@@ -420,14 +522,28 @@ SUBSYSTEM_DEF(timer)
 	var/flags
 	/// Time at which the timer was invoked or destroyed
 	var/spent = 0
-	/// An informative name generated for the timer as its representation in strings, useful for debugging
-	var/name
+	// Отладочного имени у таймера больше нет. Раньше здесь лежал var/name, который
+	// bucketJoin собирал интерполяцией с \ref на КАЖДЫЙ созданный таймер - самая горячая
+	// аллокация в игре и та самая строка, на которую в раундах 10003 и 10005 (17.08.2026)
+	// пришёлся сырой дамп BYOND при молчаливой смерти процесса. Всё, что в ней было -
+	// id, timeToRun, wait и flags - и так лежит полями рядом, поэтому описание собирает
+	// get_timer_debug_string() из живых значений и только когда оно кому-то понадобилось.
+	// Апстрим tg ушёл от этой строки по той же причине ("string generation is a bitch").
 	/// Next timed event in the bucket
 	var/datum/timedevent/next
 	/// Previous timed event in the bucket
 	var/datum/timedevent/prev
 	/// TRUE while this timer is stored in SStimer.bucket_list
 	var/in_timer_bucket_queue = FALSE
+	/// Индекс бакета, в который таймер положили при вставке. BUCKET_POS_NONE, если он не в колесе.
+	///
+	/// Пересчитать его по BUCKET_POS() нельзя: позиция считается от head_offset, а head_offset
+	/// прыгает вперёд на целое колесо каждый раз, когда курсор доходит до конца. Таймер при
+	/// этом остаётся лежать в СВОЁМ слоте, и BUCKET_POS начинает показывать на чужой. Раньше
+	/// bucketEject() расходился с этим сканом bucket_list.Find(src) по всем 1200 слотам -
+	/// скан, который для любого не-головы всегда возвращает ноль, а для головы возвращает то,
+	/// что и так записано здесь.
+	var/bucket_pos = BUCKET_POS_NONE
 	/// TRUE while this timer is stored in SStimer.second_queue
 	var/in_timer_second_queue = FALSE
 	/// TRUE while this timer is stored in SStimer.clienttime_timers
@@ -496,18 +612,18 @@ SUBSYSTEM_DEF(timer)
 		in_timer_clienttime_queue = FALSE
 		in_timer_bucket_queue = FALSE
 		in_timer_second_queue = FALSE
+		bucket_pos = BUCKET_POS_NONE
 		next = null
 		prev = null
 		return QDEL_HINT_IWILLGC
 
 	if (!spent)
 		spent = world.time
-		bucketEject()
-	else
-		if (prev && prev.next == src)
-			prev.next = next
-		if (next && next.prev == src)
-			next.prev = prev
+	// Спущенный таймер тоже проходит через bucketEject(). Раньше здесь чинились только
+	// соседи по цепочке, а слот в bucket_list оставался смотреть на удаляемый таймер -
+	// и следующий проход колеса находил в голове бакета таймер без колбека, то есть ровно
+	// "Invalid timer". Для уже выброшенного таймера eject стоит одной проверки флага.
+	bucketEject()
 	in_timer_bucket_queue = FALSE
 	in_timer_second_queue = FALSE
 	in_timer_clienttime_queue = FALSE
@@ -531,48 +647,35 @@ SUBSYSTEM_DEF(timer)
 	if (!in_timer_bucket_queue)
 		in_timer_second_queue = FALSE
 		in_timer_clienttime_queue = FALSE
+		// Соседей по цепочке чиним и здесь. Таймер вне колеса ссылок иметь не должен, но
+		// раньше эту страховку держал Destroy() отдельной веткой для спущенных таймеров,
+		// и терять её при переносе ветки сюда незачем.
+		if(prev != next)
+			prev?.next = next
+			next?.prev = prev
+		else
+			prev?.next = null
+			next?.prev = null
 		prev = null
 		next = null
 		return
 
-	// Attempt to find bucket that contains this timed event
-	var/bucketpos = BUCKET_POS(src)
-	var/removed_from_bucket = FALSE
-
-	// Store a local reference to the bucket list. This is faster than referencing the datum itself.
+	// Позиция записана при вставке, искать её не нужно: если таймер был головой бакета,
+	// голову перенимает следующий за ним (у одиночки next пуст, и слот обнуляется).
+	// Не-голова из bucket_list не видна вообще, и трогать список для неё не надо.
 	var/list/bucket_list = SStimer.bucket_list
-
-	// Attempt to get the head of the bucket
-	var/datum/timedevent/buckethead
-	if(bucketpos > 0)
-		buckethead = bucket_list[bucketpos]
-
-	if(buckethead == src)
-		bucket_list[bucketpos] = next
-		removed_from_bucket = TRUE
-	else if(prev || next)
-		var/actual_bucketpos = bucket_list.Find(src)
-		if(actual_bucketpos)
-			bucket_list[actual_bucketpos] = next
-		removed_from_bucket = TRUE
-	else
-		// Timers near bucket boundaries can be qdel'd before firing after the bucket
-		// cursor has advanced far enough that BUCKET_POS no longer points at the slot
-		// that owns this single-node timer. Find and clear that stale bucket head so
-		// SStimer does not later crash on a qdeleted timer with no callback.
-		var/actual_bucketpos = bucket_list.Find(src)
-		if(actual_bucketpos)
-			bucket_list[actual_bucketpos] = null
-			removed_from_bucket = TRUE
-
-	if(removed_from_bucket)
-		SStimer.bucket_count--
+	if(bucket_pos >= 1 && bucket_pos <= length(bucket_list) && bucket_list[bucket_pos] == src)
+		bucket_list[bucket_pos] = next
+	bucket_pos = BUCKET_POS_NONE
+	SStimer.bucket_count--
 
 	// Remove the timed event from the bucket, ensuring to maintain
-	// the integrity of the bucket's list if relevant
+	// the integrity of the bucket's list if relevant.
+	// Через ?. обе ветки: у полукольца (одна ссылка есть, вторая пуста) prev != next, и
+	// прямое обращение падало рантаймом на null.next ровно в момент, когда список уже битый.
 	if(prev != next)
-		prev.next = next
-		next.prev = prev
+		prev?.next = next
+		next?.prev = prev
 	else
 		prev?.next = null
 		next?.prev = null
@@ -590,7 +693,8 @@ SUBSYSTEM_DEF(timer)
  * If the timed event is tracking client time, it will be added to a special bucket.
  */
 /datum/timedevent/proc/bucketJoin()
-	name = "Timer: [id] (\ref[src]), TTR: [timeToRun], wait:[wait]"
+	// Здесь была сборка отладочного имени интерполяцией. Её больше нет: описание таймера
+	// строит get_timer_debug_string() по требованию, см. комментарий на месте var/name.
 
 	// Check if this timed event should be diverted to the client time bucket, or the secondary queue
 	in_timer_bucket_queue = FALSE
@@ -606,6 +710,7 @@ SUBSYSTEM_DEF(timer)
 	if(L)
 		next = null
 		prev = null
+		bucket_pos = BUCKET_POS_NONE
 		BINARY_INSERT(src, L, /datum/timedevent, src, timeToRun, COMPARE_KEY)
 		return
 
@@ -613,7 +718,7 @@ SUBSYSTEM_DEF(timer)
 	var/list/bucket_list = SStimer.bucket_list
 
 	// Find the correct bucket for this timed event
-	var/bucket_pos = BUCKET_POS(src)
+	bucket_pos = BUCKET_POS(src)
 	var/datum/timedevent/bucket_head = bucket_list[bucket_pos]
 	in_timer_bucket_queue = TRUE
 	SStimer.bucket_count++

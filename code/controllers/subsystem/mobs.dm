@@ -18,6 +18,9 @@ SUBSYSTEM_DEF(mobs)
 	msg = "P:[length(GLOB.mob_living_list)] Bkt:[skipped_last_pass]"
 	return ..()
 
+/datum/controller/subsystem/mobs/last_task()
+	return "мобов в проходе [length(currentrun)] из [length(GLOB.mob_living_list)], пропущено прошлым проходом [skipped_last_pass]"
+
 /datum/controller/subsystem/mobs/proc/MaxZChanged()
 	if (!islist(clients_by_zlevel))
 		clients_by_zlevel = new /list(world.maxz,0)
@@ -27,6 +30,25 @@ SUBSYSTEM_DEF(mobs)
 		clients_by_zlevel[clients_by_zlevel.len] = list()
 		dead_players_by_zlevel.len++
 		dead_players_by_zlevel[dead_players_by_zlevel.len] = list()
+
+/**
+ * Реестры по z-уровню, безопасные к чтению до расширения.
+ *
+ * Оба списка растут ТОЛЬКО в MaxZChanged(), а обращаются к ним раньше: z-уровень уже
+ * существует, а строки в реестре под него ещё нет. Прямое индексирование в этот момент
+ * даёт рантайм "cannot read from list", и на инициализации мира его некому погасить -
+ * GLOB.current_test ещё null, белый список тестов не работает. Один такой рантайм в
+ * playsound() делал прогон dm-test нечистым на КАЖДОЙ карте: FinishTestRun валит прогон
+ * при total_runtimes != 0, а декремент для ожидаемых рантаймов живёт только внутри теста.
+ *
+ * Возвращают null, а не пустой список: вызывающему всё равно нужен гард на пустоту, а
+ * лишний list() на каждый звук - это аллокация в самом горячем проке звука.
+ */
+/datum/controller/subsystem/mobs/proc/clients_on_zlevel(z)
+	return (z >= 1 && z <= length(clients_by_zlevel)) ? clients_by_zlevel[z] : null
+
+/datum/controller/subsystem/mobs/proc/dead_players_on_zlevel(z)
+	return (z >= 1 && z <= length(dead_players_by_zlevel)) ? dead_players_by_zlevel[z] : null
 
 /datum/controller/subsystem/mobs/fire(resumed = 0)
 	// Инструментация адаптивного профиля (см. базовый subsystem.dm): дорогие

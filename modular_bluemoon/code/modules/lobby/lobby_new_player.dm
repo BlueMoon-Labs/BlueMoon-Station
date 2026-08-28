@@ -1,3 +1,13 @@
+/client
+	/// rsc фона лобби, уже уехавший ЭТОМУ подключению, и имя файла, под которым он лежит
+	/// в кэше скина. Фон - это 1.2-2.6 МБ отдельной копией на клиента, а bm_show_lobby()
+	/// зовётся не только на входе: его дёргают ротация фона для незагрузившихся игроков,
+	/// админские верхи и show_to_all() на смену уведомления. Одна и та же картинка уезжала
+	/// заново на каждый такой вызов. Отслеживаем на клиенте, а не на мобе: кэш скина живёт
+	/// ровно столько же, сколько подключение, и на реконнекте честно начинается с нуля.
+	var/bm_lobby_bg_rsc
+	var/bm_lobby_bg_file
+
 /mob/dead/new_player
 	var/bm_lobby_ready = FALSE
 	var/bm_bg_slot = 0
@@ -40,14 +50,14 @@
 	if(!SSticker || SSticker.current_state <= GAME_STATE_STARTUP)
 		var/loading_rsc = SStitle_bm?.loading_image
 		if(loading_rsc)
-			src << browse(loading_rsc, "file=bm_stub_bg.gif;display=0")
+			_bm_send_background(loading_rsc, "bm_stub_bg.gif")
 		src << browse(_bm_build_loading_stub(), "window=bm_lobby_browser")
 		winset(client, "bm_lobby_browser", "is-visible=true")
 		return
 
 	var/img_to_send = _bm_get_current_image()
 	if(img_to_send)
-		src << browse(img_to_send, "file=loading_screen.gif;display=0")
+		_bm_send_background(img_to_send, "loading_screen.gif")
 	src << browse(_bm_build_html(), "window=bm_lobby_browser")
 	winset(client, "bm_lobby_browser", "is-visible=true")
 
@@ -75,6 +85,24 @@
 	winset(client, null, "bm_lobby_browser.is-disabled=true;bm_lobby_browser.is-visible=false;map.is-visible=true;status_bar.is-visible=true")
 	client << browse(null, "window=bm_lobby_browser")
 
+/**
+ * Отправляет фон лобби в кэш скина под заданным именем - но только если этот же rsc
+ * ещё не уехал туда под этим же именем.
+ *
+ * Возвращает имя файла, на которое можно нацеливать браузер. Сравнение идёт по самому
+ * ресурсу: get_image_for_player() отдаёт результат fcopy_rsc(), то есть стабильную
+ * ссылку, у одинаковой картинки одинаковую.
+ */
+/mob/dead/new_player/proc/_bm_send_background(img_rsc, filename)
+	if(!client || !img_rsc)
+		return filename
+	if(client.bm_lobby_bg_rsc == img_rsc && client.bm_lobby_bg_file == filename)
+		return filename
+	src << browse(img_rsc, "file=[filename];display=0")
+	client.bm_lobby_bg_rsc = img_rsc
+	client.bm_lobby_bg_file = filename
+	return filename
+
 /mob/dead/new_player/proc/bm_push_background()
 	if(!client || !bm_lobby_ready)
 		return
@@ -86,9 +114,14 @@
 	var/img_to_send = SStitle_bm?.get_image_for_player(show_nsfw, show_admin_bg)
 	if(!img_to_send)
 		return
+	// Картинка не изменилась (сменилось уведомление, зашёл новый игрок, админ дёрнул
+	// обновление) - перенацеливаем браузер на уже лежащий в кэше файл вместо повторной
+	// отправки мегабайтов. Слот при этом НЕ переключаем: браузеру нужен тот же src.
+	if(client.bm_lobby_bg_rsc == img_to_send && client.bm_lobby_bg_file)
+		client << output(client.bm_lobby_bg_file, "bm_lobby_browser:bm_set_background")
+		return
 	bm_bg_slot = bm_bg_slot ? 0 : 1
-	var/filename = "bm_bg_[bm_bg_slot].gif"
-	src << browse(img_to_send, "file=[filename];display=0")
+	var/filename = _bm_send_background(img_to_send, "bm_bg_[bm_bg_slot].gif")
 	client << output(filename, "bm_lobby_browser:bm_set_background")
 
 /mob/dead/new_player/proc/_bm_build_loading_stub()

@@ -312,6 +312,7 @@
 	. = ..()
 	if(!proximity || !check_allowed_items(target))
 		return
+	var/need_delay = TRUE
 	// SPLURT EDIT START
 	// Check if we should only change the light color
 	if(toggle_change_light_color && can_change_light_color && !istype(target, /turf))
@@ -326,11 +327,12 @@
 
 		// Decrease the charges by 2
 		use_charges(user, 2)
-		return // Skip the normal drawing behavior
-
-	//Continue with normal drawing behavior if toggle_change_light_color is not true
-	//SPLURT EDIT END
-	draw_on(target, user, proximity, params)
+	else
+		//Continue with normal drawing behavior if toggle_change_light_color is not true
+		//SPLURT EDIT END
+		need_delay = !!draw_on(target, user, proximity, params)
+	if(need_delay)
+		user.DelayNextAction(CLICK_CD_MELEE)
 
 /obj/item/toy/crayon/proc/draw_on(atom/target, mob/user, proximity, params)
 	var/static/list/punctuation = list("!","?",".",",","/","+","-","=","%","#","&")
@@ -344,10 +346,9 @@
 		var/mob/living/carbon/human/H = user
 		if (HAS_TRAIT(H, TRAIT_TAGGER))
 			cost *= 0.5
-	var/charges_used = use_charges(user, cost)
-	if(!charges_used)
+
+	if(check_empty(user, cost, TRUE))
 		return
-	. = charges_used
 
 	if(istype(target, /obj/effect/decal/cleanable))
 		target = target.loc
@@ -431,12 +432,8 @@
 		audible_message("<span class='notice'>You can hear something.</span>") // BLUEMOON EDIT
 		playsound(user.loc, pre_noise_sound, 5, 1, 5) // BLUEMOON EDIT || MODULARIZE
 
-	var/wait_time = 50
-	if(paint_mode == PAINT_LARGE_HORIZONTAL)
-		wait_time *= 3
-
 	if(gang_mode || !instant)
-		if(!do_after(user, 50, target = target))
+		if(!do_after(user, 2 SECONDS, target = target))
 			return
 
 	if(length(text_buffer))
@@ -444,7 +441,6 @@
 
 
 	var/list/turf/affected_turfs = list()
-
 
 	if(actually_paints)
 		var/obj/effect/decal/cleanable/crayon/C = new(target, paint_color, drawing, temp, graf_rot)
@@ -481,6 +477,11 @@
 			else
 				C.AddComponent(/datum/element/art, BAD_ART)
 
+	var/charges_used = use_charges(user, cost)
+	if(!charges_used)
+		return
+	. = charges_used
+
 	if(!instant)
 		to_chat(user, "<span class='notice'>You finish drawing \the [temp].</span>")
 	else
@@ -500,7 +501,6 @@
 	for(var/t in affected_turfs)
 		reagents.reaction(t, TOUCH, fraction * volume_multiplier)
 		reagents.trans_to(t, ., volume_multiplier)
-	check_empty(user)
 
 /obj/item/toy/crayon/attack(mob/M, mob/user)
 	if(edible && (M == user))
@@ -721,7 +721,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/hydroponics_righthand.dmi'
 	desc = "A metallic container containing tasty paint."
 
-	instant = FALSE
+	instant = TRUE
 	edible = FALSE
 	has_cap = TRUE
 	is_capped = TRUE
@@ -823,7 +823,6 @@
 		. = use_charges(user, 10, FALSE)
 		var/fraction = min(1, . / reagents.maximum_volume)
 		reagents.reaction(C, VAPOR, fraction * volume_multiplier)
-
 		return
 
 	if(flags_1 & HOLOGRAM_1)
@@ -846,10 +845,10 @@
 
 			target.add_atom_colour(paint_color, WASHABLE_COLOUR_PRIORITY)
 
-		. = use_charges(user, 2)
-		var/fraction = min(1, . / reagents.maximum_volume)
+		var/const/transfer_amount = 2
+		var/fraction = min(1, transfer_amount / reagents.maximum_volume)
 		reagents.reaction(target, TOUCH, fraction * volume_multiplier)
-		reagents.trans_to(target, ., volume_multiplier)
+		reagents.trans_to(target, transfer_amount, volume_multiplier)
 
 		if(pre_noise || post_noise)
 			playsound(user.loc, 'sound/effects/spray.ogg', 5, 1, 5)

@@ -427,6 +427,7 @@
 			deconstruct(TRUE) //Honestly by this point, if all checks were right and this is the cutting tool, just cut it
 			return
 		if(user.transferItemToLoc(W, drop_location())) // so we put in unlit welder too
+			W.randomize_pixel_position() // При обычном doUnEquip к предмету применяется смещение моба, что в этом случае, нам не требуется
 			return
 	else if(W.tool_behaviour == TOOL_WELDER && can_weld_shut)
 		// eigen check

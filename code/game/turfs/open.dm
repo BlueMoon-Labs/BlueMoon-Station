@@ -11,12 +11,8 @@
 
 	/// Dirtyness system, cit specific.
 
-	/// Does dirt buildup happen on us?
-	var/dirt_buildup_allowed = FALSE
 	/// Dirt level.
 	var/dirtyness = 0
-	/// Dirt level to spawn dirt. Null to use config.
-	var/dirt_spawn_threshold
 
 	/// How much fuel this open turf provides to turf fires
 	var/flammability = 0.2
@@ -97,7 +93,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_TILED_DIRT
 
 /turf/open/indestructible/Melt()
 	to_be_destroyed = FALSE
@@ -138,7 +134,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis
 	name = "necropolis floor"
@@ -151,7 +147,7 @@
 	barefootstep = FOOTSTEP_LAVA
 	clawfootstep = FOOTSTEP_LAVA
 	heavyfootstep = FOOTSTEP_LAVA
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis/Initialize(mapload)
 	. = ..()
@@ -179,7 +175,7 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	baseturfs = /turf/open/indestructible/hierophant
 	smooth = SMOOTH_TRUE
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/hierophant/two
 
@@ -194,7 +190,7 @@
 	barefootstep = null
 	clawfootstep = null
 	heavyfootstep = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/binary
 	name = "tear in the fabric of reality"

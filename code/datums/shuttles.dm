@@ -39,7 +39,10 @@
 	port_y_offset = offset[2]
 	//SPLURT EDIT END
 
-	if(!cached_map)
+	// Проверять надо force_cache, а не cached_map: выше по проку уже стоит ранний return по
+	// тому же условию, так что ветка была недостижима, и разобранная карта каждого шаблона
+	// шаттла оставалась в памяти до конца раунда. Кэш просили только ради discover_offset().
+	if(!force_cache && !keep_cached_map)
 		cached_map = null
 
 /* SPLURT EDIT - Refractored in modular
@@ -68,7 +71,12 @@
 	. = ..()
 	if(!.)
 		return
-	var/list/turfs = get_last_loaded_turf_block()
+	// Границы приезжают возвратом родительского load(). get_last_loaded_turf_block() читает их
+	// из cached_map, а шаблон шаттла отпускает разобранную карту сразу после preload_size() -
+	// и на роундстарте прок падал CRASH'ем ещё до port.register(), оставляя шаттл незаехавшим,
+	// а его зону на станции - голым космосом.
+	var/list/bounds = .
+	var/list/turfs = block(locate(bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ]), locate(bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]))
 	for(var/i in 1 to turfs.len)
 		var/turf/place = turfs[i]
 		if(istype(place, /turf/open/space)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.

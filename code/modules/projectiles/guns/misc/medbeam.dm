@@ -121,6 +121,9 @@
 					continue
 				if(blocker.CanPass(dummy, get_dir(user_turf, next_step)))
 					continue
+				// Болванка стоит на турфе, сборщик её не возьмёт: этот выход единственный
+				// обходил qdel, и каждый тик луча у перегороженной границы оставлял в мире голый /obj.
+				qdel(dummy)
 				return FALSE
 			first_step = FALSE
 

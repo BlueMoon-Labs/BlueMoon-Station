@@ -23,7 +23,6 @@
 	new /obj/item/construction/rcd/loaded/upgraded(src)
 	new /obj/item/storage/bag/construction(src)
 	new /obj/item/storage/bag/material(src)
-	new /obj/item/mod/construction/armor/advanced(src)
 	new /obj/item/mod/module/rad_protection(src)
 	new /obj/item/storage/garment_case/engineering_chief(src)
 	new /obj/item/choice_beacon/box/desk(src)

@@ -20,7 +20,7 @@
 	barefootstep = FOOTSTEP_CATWALK
 	clawfootstep = FOOTSTEP_CATWALK
 	heavyfootstep = FOOTSTEP_CATWALK
-	intact = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_INTACT
 	var/covered = TRUE
 	var/catwalk_type = "maint"
 
@@ -70,7 +70,7 @@
 	if(covered)
 		user.balloon_alert(user, "remove cover first!")
 		return FALSE
-	return (intact && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : NONE
+	return ((turf_flags & TURF_INTACT) && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : NONE
 
 //Reskins! More fitting with most of our tiles, and appear as a radial on the base type
 /turf/open/floor/catwalk_floor/iron

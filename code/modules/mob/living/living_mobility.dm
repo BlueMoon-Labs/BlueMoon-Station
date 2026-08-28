@@ -136,6 +136,11 @@
 		mobility_flags |= MOBILITY_STAND
 		lying = 0
 
+	var/new_body_position = should_be_lying ? LYING_DOWN : STANDING_UP
+	if(body_position != new_body_position)
+		body_position = new_body_position
+		SEND_SIGNAL(src, COMSIG_LIVING_SET_BODY_POSITION)
+
 	if(restrained || incapacitated())
 		mobility_flags &= ~MOBILITY_UI
 		if(should_be_lying)

@@ -113,7 +113,12 @@ GLOBAL_LIST(labor_sheet_values)
 					return TRUE
 
 /obj/machinery/mineral/labor_claim_console/proc/locate_stacking_machine()
-	stacking_machine = locate(/obj/machinery/mineral/stacking_machine, get_step(src, machinedir))
+	// The stacking machine isn't guaranteed to sit directly in `machinedir`, so scan a small
+	// radius around the console instead of a single `get_step` (the labour shuttles place the
+	// laborstacker a couple of tiles away). Avoids the console deleting itself on mapload.
+	for (var/obj/machinery/mineral/stacking_machine/laborstacker/SM in orange(2, src))
+		stacking_machine = SM
+		break
 	if(stacking_machine)
 		stacking_machine.CONSOLE = src
 	else

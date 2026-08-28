@@ -54,7 +54,7 @@
 // оставались жилетными навсегда.
 /datum/unit_test/armor_kit_refuses_mod_parts/Run()
 	var/obj/item/mod/control/mod = allocate(/obj/item/mod/control)
-	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.mod_parts[MOD_PART_CHEST]
 	TEST_ASSERT_NOTNULL(chestplate, "test premise: a MOD must build itself a chestplate")
 
 	var/covered_before = chestplate.body_parts_covered

@@ -27,6 +27,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/jitter = 0
 	var/dizzy = 0
 	var/stuttering = 0
+	/// Кэш иконки кровавого пятна: собирается один раз на предмет из его initial(icon_state)
+	/// и лежит здесь, чтобы cut_overlay() снимал ровно тот оверлей, который добавили.
+	/// Раньше стоял на /atom, то есть в каждом турфе мира, при трёх читателях - и все три тут.
+	var/icon/blood_splatter_icon
 	///icon state name for inhand overlays
 	var/item_state = null
 	//Название хвоста-картинки из tail_digi.dmi
@@ -957,7 +961,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/proc/on_mob_death(mob/living/L, gibbed)
 
-/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R) //Used to check for extra requirements for grinding an object
+/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE) //Used to check for extra requirements for grinding an object
 	return TRUE
 
  //Called BEFORE the object is ground up - use this to change grind results based on conditions

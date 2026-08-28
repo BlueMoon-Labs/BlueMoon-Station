@@ -50,7 +50,11 @@ SUBSYSTEM_DEF(title_bm)
 
 	_load_title_images()
 
-	if(fexists(loading_image))
+	var/loading_size = fexists(loading_image) ? length(file(loading_image)) : 0
+	if(loading_size > BM_LOBBY_IMAGE_MAX_BYTES)
+		log_world("## MEMORY: загрузочный фон [loading_image] весит [round(loading_size / (1024 * 1024), 0.1)] МБ и отключён (потолок [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024), 0.1)] МБ) - он уходит каждому входящему по игровому соединению")
+		loading_image = null
+	else if(loading_size)
 		loading_image = fcopy_rsc(loading_image)
 	else
 		log_game("[name]: Файл загрузочного GIF '[loading_image]' не найден. Фон лобби будет пустым до подбора картинки.")
@@ -121,6 +125,10 @@ SUBSYSTEM_DEF(title_bm)
 		if(!is_image)
 			continue
 		var/full_path = "[dir_path][filename]"
+		var/image_size = fexists(full_path) ? length(file(full_path)) : 0
+		if(image_size > BM_LOBBY_IMAGE_MAX_BYTES)
+			log_world("## MEMORY: картинка лобби [full_path] весит [round(image_size / (1024 * 1024), 0.1)] МБ и пропущена (потолок [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024), 0.1)] МБ: она уходит отдельной копией каждому клиенту)")
+			continue
 		target_list += fcopy_rsc(full_path)
 
 /datum/controller/subsystem/title_bm/proc/_load_title_images()

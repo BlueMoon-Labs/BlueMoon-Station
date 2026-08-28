@@ -108,6 +108,13 @@
 	SSair.setup_template_machinery(atmos_machines)
 
 /datum/map_template/proc/load_new_z(orientation = SOUTH, list/ztraits = src.ztraits || list(ZTRAIT_AWAY = TRUE), centered = TRUE)
+	// Пометка для чёрного ящика МК. Новый z-уровень - самое дорогое разовое выделение памяти
+	// в раунде (сам уровень плюс объекты света, 150-250 МБ), то есть первый подозреваемый,
+	// когда процесс умирает об потолок адресного пространства. Шаблоны, которые грузятся в
+	// уже существующий уровень, столько не стоят и отдельной пометки не получают.
+	var/previous_template = SSmapping.loading_template
+	SSmapping.loading_template = name
+
 	var/x = centered? max(round((world.maxx - width) / 2), 1) : 1
 	var/y = centered? max(round((world.maxy - height) / 2), 1) : 1
 
@@ -139,6 +146,7 @@
 	var/datum/parsed_map/parsed = load_map(file(mappath), x, y, first_level.z_value, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop = TRUE, orientation = orientation)
 	var/list/bounds = parsed.bounds
 	if(!bounds)
+		SSmapping.loading_template = previous_template
 		return FALSE
 
 	repopulate_sorted_areas()
@@ -149,6 +157,7 @@
 	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
 	on_map_loaded(world.maxz, parsed.bounds)
 
+	SSmapping.loading_template = previous_template
 	return first_level
 
 //Override for custom behavior

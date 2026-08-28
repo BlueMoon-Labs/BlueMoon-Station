@@ -50,7 +50,9 @@
 
 /datum/image_holder_data/Destroy()
 	if(screen_text)
-		overlay.cut_overlay(screen_text)
+		//Оверлей мог умереть раньше нас: без проверки cut_overlay рантаймил,
+		//Destroy обрывался на этой строке и экранный объект оставался жить.
+		overlay?.cut_overlay(screen_text)
 		QDEL_NULL(screen_text)
 	QDEL_NULL(overlay)
 	target_loc = null
@@ -74,6 +76,10 @@
 	for(var/datum/image_holder_data/entry in image_data_entries)
 		if(entry.overlay && owner?.host_mob?.client)
 			owner?.host_mob?.client.images -= entry.overlay
+	//Снять оверлеи с клиента было мало: у каждой живой записи свой экранный
+	//объект /atom/movable/screen/text, и удалить его умеет только её Destroy.
+	//Снятие HUD-очков оставляло по одному такому экрану на запись.
+	QDEL_LIST(image_data_entries)
 	. = ..()
 
 
@@ -156,7 +162,10 @@
 // Clear all image data entries
 // ---------------------------------------------------------------------------
 /datum/neural_interface_module/image_highlight/proc/clear_image_data_entries()
-	for(var/datum/image_holder_data/entry in image_data_entries)
+	//Обход снапшота: remove_image_data_entry режет тот же список, и по живому
+	//списку пропускался каждый второй - а следом список обнулялся целиком,
+	//так что пропущенные записи вообще не попадали в очередь на удаление.
+	for(var/datum/image_holder_data/entry in image_data_entries.Copy())
 		remove_image_data_entry(entry)
 	image_data_entries = list()
 	return TRUE
@@ -165,7 +174,9 @@
 // Cleanup expired image data entries
 // ---------------------------------------------------------------------------
 /datum/neural_interface_module/image_highlight/proc/cleanup_expired_image_data()
-	for(var/datum/image_holder_data/entry in image_data_entries)
+	//Тот же снапшот, что и в clear_image_data_entries: без него истёкшие записи
+	//снимались через одну и доживали до следующего прохода.
+	for(var/datum/image_holder_data/entry in image_data_entries.Copy())
 		if(world.time >= entry.expire_time)
 			remove_image_data_entry(entry)
 

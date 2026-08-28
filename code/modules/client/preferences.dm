@@ -74,6 +74,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
 	var/see_chat_non_mob = TRUE
+	var/runechat_anim = RUNECHAT_ANIM_RISE
 	/// Custom Keybindings
 	var/list/key_bindings = list()
 	/// List with a key string associated to a list of keybindings. Unlike key_bindings, this one operates on raw key, allowing for binding a key that triggers regardless of if a modifier is depressed as long as the raw key is sent.
@@ -219,8 +220,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "mam_snouts" = "None",
 "mam_tail" = "None",
 "mam_tail_animated" = "None",
-"xenodorsal" = "Standard",
-"xenohead" = "Standard",
+"xenodorsal" = "None",
+"xenohead" = "None",
 "xenotail" = "Xenomorph Tail",
 "taur" = "None",
 "hardsuit_with_tail" = FALSE,
@@ -1712,7 +1713,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					for(var/mutant_part in GLOB.all_mutant_parts)
 						if(mutant_part == "mam_body_markings")
 							continue
-						if(parent?.can_have_part(mutant_part))
+						var/show_mutant_part = parent?.can_have_part(mutant_part)
+						if(mutant_part in GLOB.mismatched_toggle_parts)
+							show_mutant_part = show_mutant_part && pref_species.id == SPECIES_XENOHYBRID
+						if(show_mutant_part || (show_mismatched_markings && (mutant_part in GLOB.mismatched_toggle_parts)))
 							if(!mutant_category)
 								dat += APPEARANCE_CATEGORY_COLUMN
 							var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -4034,6 +4038,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							features["mam_tail"] = "Cat"
 							features["mam_ears"] = "Cat"
 
+						if(pref_species.id == SPECIES_XENOHYBRID)
+							features["xenohead"] = "Standard"
+							features["xenodorsal"] = "Standard"
+						else
+							features["xenohead"] = "None"
+							features["xenodorsal"] = "None"
+
 						//Now that we changed our species, we must verify that the mutant colour is still allowed.
 						var/temp_hsv = RGBtoHSV(features["mcolor"])
 						if(features["mcolor"] == "#000000" || (!(MUTCOLORS_PARTSONLY in pref_species.species_traits) && ReadHSV(temp_hsv)[3] < ReadHSV("#202020")[3]))
@@ -5492,6 +5503,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					chat_on_map_looc = !chat_on_map_looc
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
+				if("runechat_anim")
+					runechat_anim = (runechat_anim + 1) % (RUNECHAT_ANIM_TYPEWRITER + 1)
 				//Sandstorm changes begin
 				if("see_chat_emotes")
 					see_chat_emotes = !see_chat_emotes

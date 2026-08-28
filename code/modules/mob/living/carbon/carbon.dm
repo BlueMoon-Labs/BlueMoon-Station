@@ -404,7 +404,7 @@
 	if(!cuff_break)
 		visible_message("<span class='warning'>[src] пытается сбросить [I]!</span>")
 		to_chat(src, "<span class='notice'>Ты пытаешься сбросить [I]... (Это займёт около [DisplayTimeText(breakouttime)]. Тебе не стоит делать лишних движений.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сбросить [I]!</span>")
@@ -413,7 +413,7 @@
 		breakouttime = 50
 		visible_message("<span class='warning'>[src] is trying to break [I]!</span>")
 		to_chat(src, "<span class='notice'>You attempt to break [I]... (This will take around 5 seconds and you need to stand still.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сломать [I]!</span>")
@@ -801,7 +801,7 @@
 			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
 		if(length(G.color_cutoffs))
 			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
-	if(head && istype(head, /obj/item/clothing/head))
+	if(head && istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
 		see_in_dark = max(H.darkness_view, see_in_dark)
@@ -845,7 +845,8 @@
 
 	if(see_override)
 		see_invisible = see_override
-	if(is_hilbert_hotel_zlevel(z))
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
 		sight = initial(sight)
 
 	. = ..()
@@ -867,7 +868,7 @@
 
 /mob/living/carbon/proc/get_total_tint()
 	. = 0
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
 	if(istype(wear_mask, /obj/item/clothing))
@@ -987,6 +988,26 @@
 		overlay_fullscreen("brute", /atom/movable/screen/fullscreen/scaled/brute, severity)
 	else
 		clear_fullscreen("brute")
+
+	var/toxdamage = getToxLoss()
+	if(toxdamage)
+		var/severity = 0
+		switch(toxdamage)
+			if(5 to 15)
+				severity = 1
+			if(15 to 30)
+				severity = 2
+			if(30 to 45)
+				severity = 3
+			if(45 to 70)
+				severity = 4
+			if(70 to 85)
+				severity = 5
+			if(85 to INFINITY)
+				severity = 6
+		overlay_fullscreen("synthcorrupt", /atom/movable/screen/fullscreen/scaled/synthcorrupt, severity)
+	else
+		clear_fullscreen("synthcorrupt")
 
 	var/blood_effect_volume = blood_volume + integrating_blood
 	var/blood_threshold_high = BLOOD_VOLUME_OKAY * blood_ratio

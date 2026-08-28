@@ -6,7 +6,7 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
 
 /proc/init_onelife_death_forms()
 	var/list/forms = list()
-	for(var/type in subtypesof(/datum/onelife_death))
+	for(var/type in typesof(/datum/onelife_death))
 		var/datum/onelife_death/form = type
 		forms[initial(form.name)] = type
 	return forms
@@ -194,6 +194,8 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
 		return null
 	var/chosen_form_name = H.client?.prefs?.onelife_death_type || "Пепел"
 	var/form_type = GLOB.onelife_death_forms[chosen_form_name] || GLOB.onelife_death_forms["Пепел"]
+	if(!form_type)
+		return null
 	return new form_type()
 
 /// Рассыпать носителя Одной Жизни в выбранную им форму смерти.

@@ -517,6 +517,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
+	// Цена этого подключения по этапам - см. client_connect_probe.dm
+	var/datum/client_connect_probe/connect_probe = new(ckey)
+
 	GLOB.clients += src
 	GLOB.directory[ckey] = src
 
@@ -545,6 +548,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	prefs.last_ip = address				//these are gonna be used for banning
 	prefs.last_id = computer_id			//these are gonna be used for banning
 	fps = sanitize_clientfps(prefs.clientfps)
+	connect_probe.mark("prefs")
 
 	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
 	if(byond_version >= 516)
@@ -629,6 +633,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 
 	. = ..()	//calls mob.Login()
+	connect_probe.mark("Login")
 	// if (length(GLOB.stickybanadminexemptions))
 	// 	GLOB.stickybanadminexemptions -= ckey
 	// 	if (!length(GLOB.stickybanadminexemptions))
@@ -661,6 +666,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
 	acquire_dpi()
+	connect_probe.mark("dpi")
 
 	if(alert_mob_dupe_login && !holder)
 		var/dupe_login_message = "Your ComputerID has already logged in with another key this round, please log out of this one NOW or risk being banned!"
@@ -831,6 +837,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
 	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
 	Master.UpdateTickRate()
+	connect_probe.mark("хвост")
+	connect_probe.finish(round_login_index)
 
 /// Отсутствие окна кэша ассетов означает кастомный скин - предупреждаем и только.
 /// Зовётся таймером после логина: winexists ждёт ответа скина, и на входе в игру
@@ -1238,6 +1246,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		view_size.chief = null
 	QDEL_NULL(tooltips)
 	QDEL_NULL(parallax_holder)
+	//Ловец кликов заводится в update_clickcatcher() на первом же Login и больше
+	//нигде не удаляется: screen.Cut() ниже снимает его с экрана, а ссылка в
+	//client.click_catcher держит его, пока жив сам клиент. В раунде 10060 с нулём
+	//игроков перепись давала +31..49 click_catcher за интервал при 40-50
+	//оборванных подключениях - по одному на соединение, которое BYOND отверг до
+	//встроенного New() и чей /client так и не дошёл до Del.
+	QDEL_NULL(click_catcher)
 	QDEL_NULL(void)
 	QDEL_NULL(void_right)
 	QDEL_NULL(void_bottom)
@@ -1767,6 +1782,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			if(QDELETED(src))
 				return
 			var/file = GLOB.vox_types[type][word]
+			// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
+			// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
+			if(isfile(file))
+				note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, length(file))
 			Export("##action=load_rsc", file)
 			stoplag()
 	#endif
@@ -1822,7 +1841,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	update_clickcatcher()
 	parallax_holder?.Reset()
 	mob?.hud_used?.screentip_text?.update_view()
-	mob.reload_fullscreen()
+	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
+	// (view.dm:86 apply -> chief.change_view) ещё внутри /client/New() - client_procs.dm:826,
+	// то есть в момент, когда моба у клиента может не быть. Локально на MetaStation это
+	// воспроизводилось каждым подключением DreamSeeker: "Cannot execute null.reload
+	// fullscreen()", следом "Cannot read null.comp_lookup", а упавший /client/New() BYOND
+	// трактует как отказ и рвёт соединение. На проде этого рантайма нет ни разу за 144 логина
+	// раунда 10048, то есть там моб к этому моменту уже назначен - но соседние строки этот же
+	// моб и так спрашивают через ?., здесь просто потерян знак вопроса.
+	mob?.reload_fullscreen()
 	if (isliving(mob))
 		var/mob/living/M = mob
 		M.update_damage_hud()
@@ -1830,7 +1857,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
 		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
 		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
-	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
+	if(mob)
+		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
 /client/proc/generate_clickcatcher()
 	if(!void)
@@ -1857,7 +1885,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(!LAZYLEN(char_render_holders))
 		for(var/plane_master_path as anything in subtypesof(/atom/movable/screen/plane_master))
 			var/atom/movable/screen/plane_master/plane_master = new plane_master_path()
-			char_render_holders["plane_master-[plane_master.plane]"] = plane_master
+			var/holder_key = "plane_master-[plane_master.plane]"
+			//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE - одно и то же число (-3),
+			//поэтому ключа по плоскости на всех не хватает: два плейн-мастера из
+			//трёх затирались в списке, но оставались в client.screen. Найти их
+			//clear_character_previews() уже не мог, и каждая пересборка превью
+			//оставляла по два бессмертных экранных объекта.
+			if(char_render_holders[holder_key])
+				holder_key = "plane_master-[plane_master.type]"
+			char_render_holders[holder_key] = plane_master
 			plane_master.backdrop(mob)
 			screen |= plane_master
 			plane_master.screen_loc = "character_preview_map:0,CENTER"

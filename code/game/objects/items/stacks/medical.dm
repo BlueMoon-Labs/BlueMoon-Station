@@ -232,7 +232,7 @@
 		var/obj/item/bodypart/BP = H.get_bodypart(healed_zone)
 		if(BP)
 			var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
-			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space))
+			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && (istype(covering, /obj/item/clothing/mod_part)))
 				if(!silent)
 					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
 				return FALSE

@@ -3,8 +3,48 @@
 	glide_size = 8
 	SET_APPEARANCE_FLAGS(TILE_BOUND | PIXEL_SCALE)
 	var/last_move = null
-	var/last_move_time = 0
 	var/anchored = FALSE
+	// Ниже - переменные, которые раньше стояли на /atom и потому лежали в каждом из полутора
+	// миллионов турфов, где не значат ничего. Ни цены в вендомате, ни ИИ-контроллера у турфа
+	// быть не может; компилятор проверяет это за нас - обращение к ним через /atom-типизированную
+	// переменную теперь просто не собирается.
+	///Price of an item in a vending machine, overriding the base vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
+	var/custom_price = 25
+	///Price of an item in a vending machine, overriding the premium vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
+	var/custom_premium_price = 100
+	///AI controller that controls this atom. type on init, then turned into an instance during runtime
+	var/datum/ai_controller/ai_controller
+	///all of this atom's HUD (med/sec, etc) images. Associative list of the form: list(hud category = hud image or images for that category).
+	///most of the time hud category is associated with a single image, sometimes its associated with a list of images.
+	///not every hud in this list is actually used.
+	var/list/image/hud_list = null
+	///HUD images that this atom can provide.
+	var/list/hud_possible
+	///Proximity monitor associated with this atom
+	var/datum/proximity_monitor/proximity_monitor
+	/// Датумы связных кластеров, в которые входит этот атом. Стоят на движимом, а не на /atom:
+	/// членами кластера бывают только движимые (Refresh() перебирает contents турфа как
+	/// /atom/movable и слушает COMSIG_MOVABLE_MOVED), а слот на каждом турфе мира стоит мегабайты.
+	var/list/datum/merger/mergers
+	/// Доля материалов, которую атом отдаёт при переплавке. Стоит на движимом: у турфа
+	/// пользовательских материалов не бывает.
+	var/material_modifier = 1
+	//List of datums orbiting this atom
+	var/datum/component/orbiter/orbiters
+	///Reference to atom being orbited
+	var/atom/movable/orbit_target
+	var/datum/wires/wires = null
+	/// Цвет рунчата, заданный вручную. Пусто у всего, кроме тех немногих, кому цвет назначают
+	/// явно (модульная лазерная винтовка красит реплики по режиму): у остальных цвет выводится
+	/// из имени и лежит в общем кэше GLOB.runechat_color_names.
+	var/chat_color
+	/// Lazylist of all images (hopefully attached to us) to update when we change z levels
+	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
+	var/list/image/update_on_z
+	/// Lazylist of all overlays attached to us to update when we change z levels
+	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
+	/// Oh and note, if order of addition is important this WILL break that. so mind yourself
+	var/list/image/update_overlays_on_z
 	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
 	/// Only border structures can actually refuse an exit, by overriding CheckExit()
 	/// or Uncross(). Anything that gains such an override, or a component listening
@@ -42,9 +82,6 @@
 	var/atom/movable/moving_from_pull		//attempt to resume grab after moving instead of before.
 	///Holds information about any movement loops currently running/waiting to run on the movable. Lazy, will be null if nothing's going on
 	var/datum/movement_packet/move_packet
-	///contains every client mob corresponding to every client eye in this container. lazily updated by SSparallax and is sparse:
-	///only the last container of a client eye has this list assuming no movement since SSparallax's last fire
-	var/list/client_mobs_in_contents
 	/// String representing the spatial grid groups we want to be held in.
 	/// acts as a key to the list of spatial grid contents types we exist in via SSspatial_grid.spatial_grid_categories.
 	/// We do it like this to prevent people trying to mutate them and to save memory on holding the lists ourselves
@@ -69,9 +106,6 @@
 	var/datum/component/orbiter/orbiting
 	/// Used for space ztransit stuff
 	var/can_be_z_moved = TRUE
-	///If we were without gravity and another animation happened, the bouncing will stop, and we need to restart it in next life().
-	var/floating_need_update = FALSE
-
 	var/zfalling = FALSE
 
 	/// Either FALSE, [EMISSIVE_BLOCK_GENERIC], or [EMISSIVE_BLOCK_UNIQUE]
@@ -137,7 +171,15 @@
 	if(spatial_grid_key)
 		SSspatial_grid.force_remove_from_grid(src)
 
+	if(alternate_appearances)
+		var/list/aa_snapshot = alternate_appearances
+		alternate_appearances = null
+		for(var/K in aa_snapshot)
+			var/datum/atom_hud/alternate_appearance/AA = aa_snapshot[K]
+			AA.remove_from_hud(src)
+
 	QDEL_NULL(proximity_monitor)
+	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
@@ -267,6 +309,15 @@
 		return FALSE
 
 	switch(var_name)
+		// Конус света стоит на движимом, а не на /atom, поэтому и правится он здесь.
+		if(NAMEOF(src, light_cone_angle))
+			set_light(l_cone_angle = var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
+		if(NAMEOF(src, light_cone_dir))
+			set_light(l_cone_dir = var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
 		if(NAMEOF(src, x))
 			var/turf/T = locate(var_value, y, z)
 			if(T)
@@ -713,7 +764,6 @@
 	else if (!on && (movement_type & FLOATING))
 		animate(src, pixel_z = initial(pixel_y), time = 10)
 		setMovetype(movement_type & ~FLOATING)
-	floating_need_update = FALSE // assume it's done
 
 /* 	Language procs
 *	Unless you are doing something very specific, these are the ones you want to use.

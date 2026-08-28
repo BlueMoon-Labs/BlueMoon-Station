@@ -17,7 +17,6 @@
 	sharpness = SHARP_NONE
 	wound_bonus = 80
 
-#define NONLETHAL_HEAD_BRAIN_DAMAGE 50
 #define NONLETHAL_HEAD_EFFECT_CHANCE 25
 
 // Beanbag — BR0
@@ -30,7 +29,6 @@
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
-	nonlethal_headshot_brain_damage = NONLETHAL_HEAD_BRAIN_DAMAGE
 	nonlethal_headshot_chance = NONLETHAL_HEAD_EFFECT_CHANCE
 
 /obj/item/projectile/bullet/incendiary/shotgun
@@ -176,5 +174,4 @@
 	stamina = 6
 	armour_penetration = BULLET_BR0
 
-#undef NONLETHAL_HEAD_BRAIN_DAMAGE
 #undef NONLETHAL_HEAD_EFFECT_CHANCE

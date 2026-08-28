@@ -1,9 +1,9 @@
 GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
-/atom
+/atom/movable
 	var/list/alternate_appearances
 
-/atom/proc/remove_alt_appearance(key)
+/atom/movable/proc/remove_alt_appearance(key)
 	if(!alternate_appearances)
 		return
 	var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[key]
@@ -17,7 +17,7 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 			AA.remove_from_hud(src)
 			return TRUE
 
-/atom/proc/add_alt_appearance(type, key, ...)
+/atom/movable/proc/add_alt_appearance(type, key, ...)
 	if(!type || !key)
 		return
 	if(alternate_appearances && alternate_appearances[key])
@@ -44,13 +44,13 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 /datum/atom_hud/alternate_appearance/proc/mobShouldSee(mob/M)
 	return FALSE
 
-/datum/atom_hud/alternate_appearance/add_to_hud(atom/A, image/I)
+/datum/atom_hud/alternate_appearance/add_to_hud(atom/movable/A, image/I)
 	. = ..()
 	if(.)
 		LAZYINITLIST(A.alternate_appearances)
 		A.alternate_appearances[appearance_key] = src
 
-/datum/atom_hud/alternate_appearance/remove_from_hud(atom/A)
+/datum/atom_hud/alternate_appearance/remove_from_hud(atom/movable/A)
 	. = ..()
 	if(.)
 		LAZYREMOVE(A.alternate_appearances, appearance_key)
@@ -58,7 +58,9 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
 //an alternate appearance that attaches a single image to a single atom
 /datum/atom_hud/alternate_appearance/basic
-	var/atom/target
+	/// Атом, к которому привязана картинка. Движимый: всё семейство альтернативных
+	/// внешностей переехало на /atom/movable вместе с hud_list, и турфа здесь быть не может.
+	var/atom/movable/target
 	var/image/theImage
 	var/add_ghost_version = FALSE
 	var/ghost_appearance
@@ -82,12 +84,12 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	if(ghost_appearance)
 		QDEL_NULL(ghost_appearance)
 
-/datum/atom_hud/alternate_appearance/basic/add_to_hud(atom/A)
+/datum/atom_hud/alternate_appearance/basic/add_to_hud(atom/movable/A)
 	LAZYINITLIST(A.hud_list)
 	A.hud_list[appearance_key] = theImage
 	. = ..()
 
-/datum/atom_hud/alternate_appearance/basic/remove_from_hud(atom/A)
+/datum/atom_hud/alternate_appearance/basic/remove_from_hud(atom/movable/A)
 	. = ..()
 	if(islist(A.hud_list))
 		A.hud_list -= appearance_key

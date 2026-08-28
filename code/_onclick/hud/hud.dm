@@ -134,7 +134,18 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 	for(var/mytype in subtypesof(/atom/movable/screen/plane_master))
 		var/atom/movable/screen/plane_master/instance = new mytype(null, src)
-		plane_masters["[instance.plane]"] = instance
+		var/plane_key = "[instance.plane]"
+		//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE объявлены одним и тем же
+		//числом (-3), так что на ключ "-3" претендуют три плейн-мастера. Кто
+		//победит - не меняем (последний из subtypesof, как и раньше), но
+		//вытесненного обязаны добить: в plane_masters его уже нет, а Destroy()
+		//чистит именно этот список. Каждый созданный HUD оставлял по два
+		//бессмертных плейн-мастера - перепись прода давала +315 wall и
+		//+315 above_wall за один интервал.
+		var/atom/movable/screen/plane_master/displaced = plane_masters[plane_key]
+		plane_masters[plane_key] = instance
+		if(displaced)
+			qdel(displaced)
 		instance.backdrop(mymob)
 
 	owner.overlay_fullscreen("see_through_darkness", /atom/movable/screen/fullscreen/special/see_through_darkness)
@@ -415,6 +426,11 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		var/atom/movable/screen/inventory/hand/H = hand_slots[h]
 		if(H)
 			static_inventory -= H
+			//Выписать из static_inventory мало: этот список - единственное, что
+			//обходит QDEL_LIST в hud/Destroy, так что каждая пересборка рук
+			//(смена числа рук, смена стиля интерфейса) оставляла старые слоты
+			//жить до конца раунда.
+			qdel(H)
 	hand_slots = list()
 	var/atom/movable/screen/inventory/hand/hand_box
 	for(var/i in 1 to mymob.held_items.len)

@@ -133,7 +133,7 @@
 			return
 
 		var/turf/T = get_turf(user)
-		if (T.intact) //is the floor plating removed ?
+		if (T.turf_flags & TURF_INTACT) //is the floor plating removed ?
 			to_chat(user, "<span class='warning'>You must first remove the floor plating!</span>")
 			return
 

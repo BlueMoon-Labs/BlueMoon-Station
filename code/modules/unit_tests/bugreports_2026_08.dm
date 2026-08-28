@@ -302,6 +302,103 @@
 /datum/unit_test/picket_sign_writing_sound_resolves/Run()
 	TEST_ASSERT(!istext(get_sfx(SFX_WRITING_PEN)), "SFX_WRITING_PEN must resolve to a sound file, not stay a bare key")
 
+// "Голодек: загрузил Beach - bad index в copy template list"
+//
+// copy_template_list ходила по списку позиционно, а source[i] для ассоциативного
+// списка отдаёт ЗНАЧЕНИЕ слота, не ключ. Элемент-список (atom_colours хранит пары
+// цвет+приоритет вложенными списками) уезжал в source[ключ] как индекс: списки
+// индексами быть не могут, и голодек падал "bad index" на каждом ковре шаблона Beach.
+// Ассоциативные пары при этом разваливались - настоящий ключ через source[i] вообще
+// не достать.
+/datum/unit_test/copy_template_list_survives_nested_lists/Run()
+
+	// Вложенные списки-элементы копируются глубоко и независимо от шаблона.
+	var/list/nested = list(list("#ff0000", 2), list("#00ff00", 2))
+	var/list/nested_copy = copy_template_list(nested)
+	TEST_ASSERT_EQUAL(length(nested_copy), 2, "вложенные списки-элементы не должны теряться")
+	TEST_ASSERT(islist(nested_copy[1]), "элемент должен остаться вложенным списком, а не рассыпаться")
+	nested_copy[1][1] = "#000000"
+	TEST_ASSERT_EQUAL(nested[1][1], "#ff0000", "копия должна быть независимой от списка шаблона")
+
+	// Тайпкэш (typecacheof) переезжает парами ключ-значение, а не кучей элементов TRUE.
+	var/list/cache_copy = copy_template_list(typecacheof(list(/mob/living/carbon/human)))
+	TEST_ASSERT(cache_copy[/mob/living/carbon/human], "тайпкэш обязан переехать ассоциацией: путь -> TRUE")
+
+	// Чужие датумы выкидываются - одиночные и как ключи пар.
+	var/datum/foreign = new()
+	TEST_ASSERT(!length(copy_template_list(list(foreign))), "ссылка на датум не должна уехать в копию шаблона")
+	TEST_ASSERT(!length(copy_template_list(list("ключ" = foreign))), "датум в значении выкидывает пару целиком")
+	qdel(foreign)
+
+	// Простые числа (bitflag-группы сглаживания) остаются на своих местах:
+	// source[число] был бы доступом по индексу со всеми вытекающими.
+	var/list/numbers_copy = copy_template_list(list(9, 20))
+	TEST_ASSERT_EQUAL(numbers_copy.len, 2, "числовые элементы не должны теряться")
+	TEST_ASSERT_EQUAL(numbers_copy[1], 9, "числа обязаны остаться элементами, а не превратиться в индексы")
+	TEST_ASSERT_EQUAL(numbers_copy[2], 20, "числа обязаны остаться элементами, а не превратиться в индексы")
+
+	// Картинка - значение внешнего вида, её копия получает по ссылке.
+	var/image/picture = image('icons/turf/floors/carpet.dmi')
+	TEST_ASSERT(picture in copy_template_list(list(picture)), "картинки копия забирает себе по ссылке")
+
+// "Энергометлой затащил предмет в ресайклер - doMove qdel-нутого ghostcafe"
+//
+// Ресайклер ест снаряд через Crossed -> eat(), и GetAllContents забирает предметы,
+// которые волна несла в себе. recycle_item удаляет их ДО того, как qdel(projectile)
+// из того же eat() вызовет drop_everything() - и тот тянул труп forceMove'ом на пол.
+/datum/unit_test/broom_wave_drop_skips_recycled_items/Run()
+	var/turf/open/floor = run_loc_floor_bottom_left
+	var/obj/item/projectile/broom/wave = allocate(/obj/item/projectile/broom, floor)
+
+	// Живой предмет из contents волны: обязан вернуться на турф под ней.
+	var/obj/item/paper/survivor = allocate(/obj/item/paper, floor)
+	survivor.forceMove(wave)
+	wave.vis_contents += survivor
+	wave.pushedstuff += survivor
+
+	// Предмет, который ресайклер успел сожрать раньше Destroy самого снаряда.
+	var/obj/item/storage/box/syndie_kit/chameleon/eaten = allocate(/obj/item/storage/box/syndie_kit/chameleon, floor)
+	wave.pushedstuff += eaten
+	allocated -= eaten //ресайклер удаляет его сам, второй раз он не наш
+	qdel(eaten)
+
+	// Седок-моб мог быть стёрт прямо посреди поездки на волне.
+	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, floor)
+	rider.forceMove(wave)
+	wave.pushedstuff += rider
+	wave.losers += rider
+	allocated -= rider
+	qdel(rider)
+
+	// Раньше здесь падал рантайм doMove qdel-нутого - юнит-тесты считают рантаймы падением.
+	wave.drop_everything()
+	TEST_ASSERT_EQUAL(survivor.loc, floor, "уцелевший предмет обязан вернуться на турф под волной")
+	TEST_ASSERT(!length(wave.vis_contents), "vis_contents волны должен очиститься после сброса")
+	TEST_ASSERT(QDELETED(eaten) && QDELETED(rider), "сожранное и стёртое должны остаться мёртвыми")
+
+// "Гибнущий носитель нанитов - Cannot read null.armor"
+//
+// human/Destroy удаляет physiology раньше содержимого, где умирает компонент нанитов,
+// а тот на прощание гасит пассивки: Dermal Hardening читал physiology.armor трупа.
+// Откат баффа при уже удалённой физиологии просто пропускается.
+/datum/unit_test/nanite_hardening_skips_dead_physiology/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/component/nanites/nanites = host.AddComponent(/datum/component/nanites, 50)
+	TEST_ASSERT_NOTNULL(nanites, "test premise: носитель должен получить наниты")
+
+	var/datum/nanite_program/hardening/program = new()
+	TEST_ASSERT_EQUAL(nanites.add_program(null, program), COMPONENT_PROGRAM_INSTALLED, "test premise: программа закалки должна установиться")
+
+	var/melee_before = host.physiology.armor.melee
+	program.activate()
+	program.enable_passive_effect() //так же включает пассивку рабочий цикл on_process
+	TEST_ASSERT(program.passive_enabled, "test premise: закалка должна быть включена")
+	TEST_ASSERT_EQUAL(host.physiology.armor.melee, melee_before + 35, "закалка обязана усилить броню живого носителя")
+
+	// Полный qdel носителя - ровно продовый путь: physiology умрёт раньше программ.
+	allocated -= host
+	qdel(host) //здесь раньше падал "Cannot read null.armor"
+
 // "Клоунский цветок не оставляет полы в суперсмазке"
 //
 // spray() делит дозу облака на дальность (trans_to(..., 1/range)), у цветка 1u за пшик,

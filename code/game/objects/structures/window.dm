@@ -886,6 +886,8 @@
 		/turf/closed/wall/rust,
 		/turf/closed/wall/r_wall/rust,
 		/turf/closed/wall/clockwork,
+		/turf/closed/wall/r_wall/syndicate,
+		/turf/closed/wall/r_wall/syndicate/nodiagonal,
 		/turf/closed/indestructible/riveted,
 		/obj/structure/window/fulltile,
 		/obj/structure/window/reinforced/fulltile,

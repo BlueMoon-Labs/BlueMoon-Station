@@ -245,6 +245,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/datum/controller/subsystem/BadBoy = Master.last_type_processed
 	var/FireHim = FALSE
 	if(istype(BadBoy))
+		var/badboy_task = BadBoy.last_task()
+		log_world("MC: последней перед перезапуском отработала подсистема [BadBoy.name][badboy_task ? ", задача: [badboy_task]" : ""]")
 		msg = null
 		LAZYINITLIST(BadBoy.failure_strikes)
 		switch(++BadBoy.failure_strikes[BadBoy.type])
@@ -291,8 +293,20 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	for (var/datum/controller/subsystem/SS in subsystems)
 		if (SS.flags & SS_NO_INIT || SS.initialized) //Don't init SSs with the correspondig flag or if they already are initialzized
 			continue
+		// Инициализация - самая тяжёлая по памяти часть раунда (карта, свет, миллион атомов),
+		// а петля МК с её ежетиковой записью чёрного ящика стартует только после неё. Пометка
+		// на каждую подсистему - единственная улика, если процесс умрёт, не дойдя до петли.
+		//
+		// Пишется в отдельную переменную, а не в last_type_processed: последнюю читает
+		// Recover(), раздавая подсистемам штрафы за перезапуски МК, и подсовывать ей
+		// подсистему, которая ещё ни разу не запускалась, нельзя.
+		initializing_subsystem = SS
+		// force: инициализация идёт вообще без бюджета тика, и гард по занятости выкинул бы
+		// ровно те пометки, ради которых запись здесь и стоит.
+		write_state_snapshot(force = TRUE)
 		SS.Initialize(REALTIMEOFDAY)
 		CHECK_TICK
+	initializing_subsystem = null
 	current_ticklimit = TICK_LIMIT_RUNNING
 	var/time = (REALTIMEOFDAY - start_timeofday) / 10
 
@@ -491,6 +505,18 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			current_ticklimit = TICK_LIMIT_RUNNING
 			sleep(10)
 			continue
+
+		// Чёрный ящик пишется ДО прогона очереди, а не после: если мир умрёт внутри RunQueue,
+		// на диске останется список подсистем, в который он в этот момент входил. Частоту
+		// подбирает сам чёрный ящик под цену записи, см. adjust_state_snapshot_interval().
+		// max(1, ...) не про адаптацию, а про варедит: интервал 0 - это деление на ноль в
+		// главной петле МК, то есть рантайм каждый тик и мёртвый мастер.
+		// Гард по занятости тика внутри записи откладывает её, а не пропускает: счётчик
+		// следующей записи двигается только на удавшейся, иначе один плотный тик стоил бы
+		// целого интервала слепоты вместо одного прохода петли.
+		if(iteration >= state_snapshot_next_iteration)
+			if(write_state_snapshot())
+				state_snapshot_next_iteration = iteration + max(1, state_snapshot_interval)
 
 		if (queue_head)
 			if (RunQueue() <= 0)

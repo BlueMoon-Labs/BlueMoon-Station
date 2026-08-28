@@ -20,7 +20,6 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/evac_ready = FALSE
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
-	var/list/datum/weakref/head_remains = list()
 	/// Visual sync: whether station gateway was already flipped to «open» overlays
 	var/gateway_visual_open = FALSE
 	/// Round report: siege was activated this round
@@ -182,6 +181,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
 		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
+	ADD_TRAIT(L, TRAIT_NODISMEMBER, PACT_SIEGE_TRAIT_SOURCE)
 	defenders |= WEAKREF(L)
 	defenders_ever_registered = TRUE
 	track_participant(L, "defender")
@@ -214,14 +214,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
 		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
+	ADD_TRAIT(L, TRAIT_NODISMEMBER, PACT_SIEGE_TRAIT_SOURCE)
 	attackers |= WEAKREF(L)
 	track_participant(L, "attacker")
-	RegisterSignal(L, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(track_attacker_head))
-
-/datum/inteq_pact_siege/proc/track_attacker_head(mob/living/carbon/source, obj/item/bodypart/limb, dismembered)
-	SIGNAL_HANDLER
-	if(istype(limb, /obj/item/bodypart/head))
-		head_remains |= WEAKREF(limb)
 
 /datum/inteq_pact_siege/proc/living_defenders_count()
 	. = 0
@@ -408,7 +403,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	suppress_auto_away_destinations()
 
 	priority_announce(
-		"Внимание, обнаружена активность в области подбитого объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: УНИЧТОЖИТЬ ВЫЖИВШИХ. АБСОЛЮТНО всем боевым подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Станционный ГЕЙТ откалиброван на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
+		"Внимание, обнаружена активность в области подбитого объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: УНИЧТОЖИТЬ ВЫЖИВШИХ. АБСОЛЮТНО всем боевым подразделениям ПАКТ в области [station_name()] приготовиться к зачистке. Награда за уничтожение - [PACT_SIEGE_REWARD_PACT_WIN] метадолларов. Станционный ГЕЙТ откалиброван на вражеский объект. Канал откроется через [DisplayTimeText(PACT_SIEGE_PREP_TIME)].",
 		"Центральное Командование",
 		'sound/misc/announce_syndi.ogg',
 		"Priority",
@@ -569,7 +564,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/recall_attackers()
 	recover_dead_attackers()
 	priority_announce(
-		"Протокол штурма завершён. Живым силам ПАКТ надлежит вернуться на станцию через ГЕЙТ. Тела и головы павших бойцов ПАКТ доставлены на станцию.",
+		"Протокол штурма завершён. Живым силам ПАКТ надлежит вернуться на станцию через ГЕЙТ. Тела павших бойцов ПАКТ доставлены на станцию.",
 		"Центральное Командование",
 		'sound/misc/announce_dig.ogg',
 		null,
@@ -591,24 +586,17 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			continue
 		if(teleport_to_station(L))
 			recovered++
-	for(var/datum/weakref/W as anything in head_remains)
-		var/obj/item/bodypart/head/H = W.resolve()
-		if(QDELETED(H))
-			continue
-		if(get(H.loc, /mob/living/carbon))
-			continue /// голову пришили обратно или кто-то несёт её при себе — не трогаем
-		if(!is_on_battlefield_turf(get_turf(H)))
-			continue
-		if(teleport_to_station(H))
-			recovered++
 	if(recovered)
-		log_game("PACT siege: recovered [recovered] attacker remains (bodies and heads) to the station.")
+		log_game("PACT siege: recovered [recovered] attacker bodies to the station.")
 
 /datum/inteq_pact_siege/proc/teleport_to_station(atom/movable/AM)
 	var/turf/from = get_turf(AM)
 	if(!from)
 		return null
-	var/turf/dest = get_safe_random_station_turf() || find_safe_turf(extended_safety_checks = TRUE)
+	var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+	if(!dropzone)
+		return null
+	var/turf/dest = get_turf(dropzone)
 	if(!dest)
 		return null
 	new /obj/effect/temp_visual/dir_setting/ninja(from, AM.dir)
@@ -767,7 +755,6 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	cleanup_gateway()
 	remove_siege_traits()
 	attackers.Cut()
-	head_remains.Cut()
 	/// defenders kept until depart_evac_shuttle() for goodbye targeting
 	defenders_ever_registered = FALSE
 	gateway_announced = FALSE
@@ -789,7 +776,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			continue
 		REMOVE_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER, PACT_SIEGE_TRAIT_SOURCE)
 		REMOVE_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
-		UnregisterSignal(L, COMSIG_CARBON_REMOVE_LIMB)
+		REMOVE_TRAIT(L, TRAIT_NODISMEMBER, PACT_SIEGE_TRAIT_SOURCE)
 
 /datum/inteq_pact_siege/proc/process_tick()
 	if(!active)

@@ -316,10 +316,10 @@
 	message_param = "отправляет воздушный поцелуй для %t."
 
 /datum/emote/sound/human/kiss/run_emote(mob/living/user, params, type_override, intentional)
-	. = ..()
-	if(!.)
+	if(!istype(user))
 		return
 	var/kiss_type = /obj/item/hand_item/kisser
+	var/need_use_kiss = FALSE
 
 	if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))
 		kiss_type = /obj/item/hand_item/kisser/death
@@ -327,35 +327,38 @@
 		kiss_type = /obj/item/hand_item/kisser/crocin
 	else if(HAS_TRAIT(user, TRAIT_KISS_SPACE_DRUGS))
 		kiss_type = /obj/item/hand_item/kisser/space_drugs
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_HONK))
 		kiss_type = /obj/item/hand_item/kisser/honk
 	else if(HAS_TRAIT(user, TRAIT_KISS_BLOODSUCKER))
 		kiss_type = /obj/item/hand_item/kisser/bloodsucker
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_MIME))
 		kiss_type = /obj/item/hand_item/kisser/mime
 	else if(HAS_TRAIT(user, TRAIT_KISS_DRAGQUEEN))
 		kiss_type = /obj/item/hand_item/kisser/dragqueen
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_HEARTBOOM))
 		kiss_type = /obj/item/hand_item/kisser/heartboom
 
 	var/obj/item/kiss_blower = new kiss_type(user)
-	if(user.put_in_hands(kiss_blower))
+	if(user.put_in_hands(kiss_blower) && !QDELETED(kiss_blower))
 		to_chat(user, span_notice("You ready your kiss-blowing hand."))
 	else
 		qdel(kiss_blower)
 		to_chat(user, span_warning("You're incapable of blowing a kiss in your current state."))
+		return
+
+	. = ..()
+	if(!.)
+		qdel(kiss_blower)
+		return
+
+	if(need_use_kiss)
+		user.nextsoundemote = world.time + 3 SECONDS
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.use_kiss()
 
 /datum/emote/sound/human/kiss2
 	key = "kiss2"

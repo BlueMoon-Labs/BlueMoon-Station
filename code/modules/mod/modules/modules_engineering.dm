@@ -13,12 +13,14 @@
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
 /obj/item/mod/module/welding/on_suit_activation()
-	mod.helmet.flash_protect = 2
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flash_protect = 2
 
 /obj/item/mod/module/welding/on_suit_deactivation(deleting = FALSE)
 	if(deleting)
 		return
-	mod.helmet.flash_protect = initial(mod.helmet.flash_protect)
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+	helmet.flash_protect = initial(helmet.flash_protect)
 
 ///T-Ray Scan - Scans the terrain for undertile objects.
 /obj/item/mod/module/t_ray
@@ -31,9 +33,10 @@
 	complexity = 1
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/t_ray)
-	cooldown_time = 0.5 SECONDS
+	cooldown_time = 0.3 SECONDS
+	required_modpart_index = MOD_PART_HEAD
 	/// T-ray scan range.
-	var/range = 4
+	var/range = 8
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
 /obj/item/mod/module/t_ray/on_active_process(delta_time)
@@ -52,6 +55,7 @@
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/magboot)
 	cooldown_time = 0.5 SECONDS
+	required_modpart_index = MOD_PART_FEET
 	/// Slowdown added onto the suit.
 	var/slowdown_active = 2
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
@@ -60,7 +64,8 @@
 	. = ..()
 	if(!.)
 		return
-	mod.boots.clothing_flags |= NOSLIP
+	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
+	boots.clothing_flags |= NOSLIP
 	ADD_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown += slowdown_active
 	mod.wearer.refresh_gravity()
@@ -70,7 +75,8 @@
 	. = ..()
 	if(!.)
 		return
-	mod.boots.clothing_flags &= ~NOSLIP
+	var/obj/item/clothing/mod_part/shoes/boots = mod.get_boots()
+	boots.clothing_flags &= ~NOSLIP
 	REMOVE_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown -= slowdown_active
 	mod.wearer.refresh_gravity()
@@ -94,6 +100,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/tether)
 	cooldown_time = 1.5 SECONDS
+	required_modpart_index = MOD_PART_GLOVES
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
 /obj/item/mod/module/tether/on_use()
@@ -155,14 +162,20 @@
 /obj/item/mod/module/rad_protection/on_suit_activation()
 	mod.armor = mod.armor.modifyRating(rad = 65)
 	mod.rad_flags = RAD_PROTECT_CONTENTS|RAD_NO_CONTAMINATE
-	for(var/obj/item/part in mod.mod_parts)
+	for(var/index in mod.mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 
 /obj/item/mod/module/rad_protection/on_suit_deactivation(deleting = FALSE)
 	mod.armor = mod.armor.modifyRating(rad = -65)
 	mod.rad_flags = NONE
-	for(var/obj/item/part in mod.mod_parts)
+	for(var/index in mod.mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 
@@ -198,6 +211,7 @@
 	device = /obj/item/reagent_containers/spray/mister
 	incompatible_modules = list(/obj/item/mod/module/mister)
 	cooldown_time = 0.5 SECONDS
+	required_modpart_index = MOD_PART_GLOVES
 	/// Volume of our reagent holder.
 	var/volume = 500
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD

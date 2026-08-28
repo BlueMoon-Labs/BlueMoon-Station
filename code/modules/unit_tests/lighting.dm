@@ -88,7 +88,7 @@
 	var/x = test_turf.x
 	var/y = test_turf.y
 	var/z = test_turf.z
-	test_turf.changing_turf = TRUE
+	test_turf.turf_flags |= TURF_CHANGING
 	qdel(test_turf, force = TRUE)
 
 	var/turf/replacement_turf = locate(x, y, z)
@@ -230,7 +230,7 @@
 	var/area/turf_area = get_area(T)
 	if(expected_area && turf_area != expected_area)
 		return FALSE
-	if(!IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
+	if(!TURF_IS_DYNAMIC_LIGHTING(T) || !IS_DYNAMIC_LIGHTING(turf_area))
 		return FALSE
 	// Exclude space/ruins areas and overlay-on-non-floor coords: random-ruin or
 	// prefab overlays placed on top of space / closed-mineral coords do not
@@ -471,6 +471,11 @@
 	new_emitter.set_light(3, 1, COLOR_WHITE)
 	TEST_ASSERT(new_emitter.light, "New emitter should have a live light source after set_light")
 
+	// Пачкаем профиль ДО починки: без этого проверка ниже проходила вхолостую - она сверяла
+	// blended_temperature с 999, которую в этом тесте никто никогда не ставил
+	test_lo.blend_is_local = TRUE
+	test_lo.blended_temperature = 999
+
 	// --- Apply the fix: rebuild lighting ---
 	test_turf.recalc_atom_opacity()
 	test_turf.reconsider_lights()
@@ -486,8 +491,9 @@
 	TEST_ASSERT(new_emitter.light, "Light source should still exist after repair cycle")
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_lo, "Lighting object should still be on the turf after repair")
 	TEST_ASSERT(test_lo in test_turf.vis_contents, "Lighting object should be in vis_contents after repair")
-	// Verify the lighting_object was queued for update (blend recalc happened)
-	TEST_ASSERT_NOTEQUAL(test_lo.blended_temperature, 999, "Blend values should have been recalculated")
+	// Verify the lighting_object was queued for update (blend recalc happened): в однородной
+	// окрестности пересчёт обязан сбросить личный профиль обратно на зонный
+	TEST_ASSERT(!test_lo.blend_is_local, "Stale local blend should have been cleared by the repair cycle recalc")
 
 /// Verifies has_opaque_atom is correctly rescanned after simulated repair.
 /datum/unit_test/repair_cycle_opacity_rescan/Run()
@@ -500,28 +506,28 @@
 	var/obj/effect/light_emitter/opaque_obj = allocate(/obj/effect/light_emitter, test_turf)
 	opaque_obj.opacity = TRUE
 	test_turf.recalc_atom_opacity()
-	TEST_ASSERT(test_turf.has_opaque_atom, "Turf should have opaque atom after adding opaque object")
+	TEST_ASSERT(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM, "Turf should have opaque atom after adding opaque object")
 
 	// Delete it — Exited handler updates opacity
 	qdel(opaque_obj)
 	allocated -= opaque_obj
-	TEST_ASSERT(!test_turf.has_opaque_atom, "Turf should not have opaque atom after removing opaque object")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "Turf should not have opaque atom after removing opaque object")
 
 	// Simulate repair ChangeTurf — preserves has_opaque_atom
 	test_turf.ChangeTurf(test_turf.type, null, CHANGETURF_FORCEOP)
 	test_turf = run_loc_floor_bottom_left
-	TEST_ASSERT(!test_turf.has_opaque_atom, "has_opaque_atom should be FALSE after ChangeTurf (no opaque contents)")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "has_opaque_atom should be FALSE after ChangeTurf (no opaque contents)")
 
 	// Simulate newly loaded opaque object (e.g., door from map)
 	var/obj/effect/light_emitter/new_opaque = allocate(/obj/effect/light_emitter, test_turf)
 	new_opaque.opacity = TRUE
 
 	// Without recalc, has_opaque_atom is stale
-	TEST_ASSERT(!test_turf.has_opaque_atom, "has_opaque_atom should still be FALSE before recalc (stale state)")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM), "has_opaque_atom should still be FALSE before recalc (stale state)")
 
 	// Apply the fix
 	test_turf.recalc_atom_opacity()
-	TEST_ASSERT(test_turf.has_opaque_atom, "has_opaque_atom should be TRUE after recalc_atom_opacity with opaque contents")
+	TEST_ASSERT(test_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM, "has_opaque_atom should be TRUE after recalc_atom_opacity with opaque contents")
 
 /// Verifies area blend is recalculated after repair by queuing to GLOB.lighting_update_blends.
 /datum/unit_test/repair_cycle_refreshes_area_blend/Run()
@@ -531,12 +537,12 @@
 	var/atom/movable/lighting_object/test_lo = ensure_lighting_object(test_turf)
 	process_nightshift_lighting_work()
 
-	// Record blend values (should match area defaults)
-	var/area/test_area = test_turf.loc
-	var/expected_temp = test_area.light_temperature
-	TEST_ASSERT_EQUAL(test_lo.blended_temperature, expected_temp, "Initial blend temperature should match area")
+	// В однородной окрестности личного профиля быть не должно - update() читает его прямо
+	// из зоны, см. lighting_object_var_diet.dm
+	TEST_ASSERT(!test_lo.blend_is_local, "Initial blend should not be local in a uniform neighbourhood")
 
-	// Corrupt blend values to simulate stale state
+	// Corrupt blend values to simulate stale state left by a boundary the turf no longer has
+	test_lo.blend_is_local = TRUE
 	test_lo.blended_temperature = 999
 
 	// Queue blend recalc (the fix)
@@ -547,8 +553,9 @@
 
 	process_nightshift_lighting_work()
 
-	// Verify blend was recalculated
-	TEST_ASSERT_EQUAL(test_lo.blended_temperature, expected_temp, "Blend temperature should be restored after recalc (got [test_lo.blended_temperature], expected [expected_temp])")
+	// Verify blend was recalculated: the stale local profile is dropped and the area's own
+	// values are back in charge
+	TEST_ASSERT(!test_lo.blend_is_local, "Stale local blend should be cleared after recalc")
 
 /// Verifies lighting_object recovers from prev_was_dark state when light is added.
 /// Tests the corner lum pipeline: light_source → update_corners → corner lum values.
@@ -808,3 +815,88 @@
 
 	TEST_ASSERT_EQUAL(skip_carried, 0.5, "CHANGETURF_SKIP должен переносить dynamic_lumcount на новый турф")
 	TEST_ASSERT_EQUAL(normal_carried, 0.25, "обычный ChangeTurf должен переносить dynamic_lumcount")
+
+/**
+ * Угол освещения без единого источника обязан сноситься, а его турфы - отпускать ссылку.
+ *
+ * До этого теста углы не сносились НИКОГДА: Destroy() на любой qdel выдавал stack_trace и
+ * оставлял датум жить. На проде это давало +364 угла в минуту, то есть 10.2 МБ в час
+ * невозвратного роста. Тест сторожит обе половины: живой угол под лампой сносить нельзя,
+ * осиротевший - обязательно, и после сноса турф должен уметь завести угол заново.
+ */
+/datum/unit_test/lighting_corner_self_destructs_when_idle/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/obj/machinery/light/test_light = allocate(/obj/machinery/light, test_turf)
+	test_light.status = LIGHT_OK
+	test_light.on = TRUE
+	test_light.switchcount = 0
+	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	var/datum/lighting_corner/lit_corner = test_turf.lc_topright
+	TEST_ASSERT_NOTNULL(lit_corner, "под лампой у турфа обязан быть угол")
+	TEST_ASSERT(LAZYLEN(lit_corner.affecting), "под лампой угол обязан держать источник")
+
+	// Половина первая: угол под живым источником трогать нельзя.
+	lit_corner.update_objects()
+	TEST_ASSERT(!QDELETED(lit_corner), "угол под живым источником снесён - плитка почернеет")
+
+	// Половина вторая: источника не стало - угол обязан уйти.
+	qdel(test_light)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	TEST_ASSERT(!LAZYLEN(lit_corner.affecting), "после сноса лампы у угла остался источник")
+	TEST_ASSERT(QDELETED(lit_corner), "угол без единого источника не снёсся")
+	TEST_ASSERT(!(test_turf.lc_topright == lit_corner), "снесённый угол остался в lc_topright турфа")
+	TEST_ASSERT(!(test_turf.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED), 		"после сноса угла с турфа не снят флаг TURF_LIGHTING_CORNERS_INITIALISED")
+
+	// Половина третья: пересоздание. Иначе снос означал бы вечно тёмную плитку.
+	var/obj/machinery/light/second_light = allocate(/obj/machinery/light, test_turf)
+	second_light.status = LIGHT_OK
+	second_light.on = TRUE
+	second_light.switchcount = 0
+	second_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	var/datum/lighting_corner/fresh_corner = test_turf.lc_topright
+	TEST_ASSERT_NOTNULL(fresh_corner, "после сноса угол не пересоздался под новой лампой")
+	TEST_ASSERT(!QDELETED(fresh_corner), "пересозданный угол оказался снесённым")
+	TEST_ASSERT(LAZYLEN(fresh_corner.affecting), "пересозданный угол не подхватил источник")
+
+/**
+ * Источник света обязан отпускать углы после полного прохода update_corners().
+ *
+ * Буфер _corners_buf держит ключами КАЖДЫЙ угол, накрытый view() последнего полного прохода -
+ * включая отсеянные порогом видимости, которых нет ни в effect_str, ни в corner.affecting.
+ * Destroy() угла ходит только по affecting и вынуть себя из буфера не может, а у неподвижной
+ * лампы следующего полного прохода может не быть до конца раунда - ссылка живёт вечно.
+ * Прод-цена (раунд 10112, Delta): 1333 hard delete угла по 80-175 мс за 88 минут.
+ */
+/datum/unit_test/lighting_source_releases_corner_buffer/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/obj/machinery/light/test_light = allocate(/obj/machinery/light, test_turf)
+	test_light.status = LIGHT_OK
+	test_light.on = TRUE
+	test_light.switchcount = 0
+	test_light.update(FALSE, TRUE)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	var/datum/light_source/source = test_light.light
+	TEST_ASSERT_NOTNULL(source, "у включённой лампы нет источника света")
+	TEST_ASSERT(LAZYLEN(source.effect_str), "источник не набрал ни одного угла - проверять нечего")
+	TEST_ASSERT_EQUAL(length(source._corners_buf), 0, "после полного прохода источник держит углы в _corners_buf: снесённый угол не соберётся сборщиком и уйдёт в hard delete")
+
+	// Смена радиуса гонит полный проход заново - буфер обязан опустеть и после него.
+	test_light.set_light(l_range = 3)
+	process_nightshift_lighting_work()
+	drain_lighting_queues_snapshot()
+
+	TEST_ASSERT_EQUAL(length(source._corners_buf), 0, "после смены радиуса источник держит углы в _corners_buf")

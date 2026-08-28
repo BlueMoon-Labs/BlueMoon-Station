@@ -18,6 +18,8 @@
 
 	if(AM.movement_type & FLYING || iseffect(AM))
 		return
+	if(HAS_TRAIT(AM, TRAIT_JUMPING))
+		return
 
 	triggermine(AM)
 

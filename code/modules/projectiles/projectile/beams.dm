@@ -43,6 +43,9 @@
 	damage = 25
 	fire_hazard = TRUE
 
+/obj/item/projectile/beam/laser/hellfire/swarmer
+	damage = 20
+
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)
 	. = ..()
 	transform *= 2
@@ -126,6 +129,9 @@
 	tracer_type = /obj/effect/projectile/tracer/disabler
 	muzzle_type = /obj/effect/projectile/muzzle/disabler
 	impact_type = /obj/effect/projectile/impact/disabler
+
+/obj/item/projectile/beam/disabler/swarmer
+	damage = 45
 
 /obj/item/projectile/beam/pulse
 	name = "pulse"

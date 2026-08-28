@@ -6,7 +6,6 @@
 	icon = 'icons/turf/floors.dmi'
 	base_icon_state = "floor"				//sandstorm change - tile floofing
 	baseturfs = /turf/open/floor/plating
-	dirt_buildup_allowed = TRUE
 
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
@@ -29,8 +28,7 @@
 
 	thermal_conductivity = 0.04
 	heat_capacity = 10000
-	intact = 1
-	tiled_dirt = TRUE							//included - tile floofing
+	turf_flags = TURF_FLAGS_FLOOR
 
 	var/broken = FALSE
 	var/burnt = FALSE
@@ -191,12 +189,12 @@
 		return TRUE
 	if(..())
 		return TRUE
-	if(intact && istype(C, /obj/item/stack/tile))
+	if((turf_flags & TURF_INTACT) && istype(C, /obj/item/stack/tile))
 		try_replace_tile(C, user, params)
 	return FALSE
 
 /turf/open/floor/crowbar_act(mob/living/user, obj/item/I)
-	return (intact && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
+	return ((turf_flags & TURF_INTACT) && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
 
 /turf/open/floor/proc/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	if(T.turf_type == type)
@@ -361,7 +359,7 @@
  * Flags argument is passed directly to ChangeTurf or PlaceOnTop
  */
 /turf/open/proc/replace_floor(turf/open/new_floor_path, flags)
-	if (!overfloor_placed && initial(new_floor_path.overfloor_placed))
+	if (!(turf_flags & TURF_OVERFLOOR_PLACED) && (initial(new_floor_path.turf_flags) & TURF_OVERFLOOR_PLACED))
 		PlaceOnTop(new_floor_path, flags = flags)
 		return
 	ChangeTurf(new_floor_path, flags = flags)

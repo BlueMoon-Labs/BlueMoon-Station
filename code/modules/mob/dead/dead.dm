@@ -100,7 +100,11 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 
 	var/client/hopper = client
 	to_chat(hopper, "<span class='notice'>Sending you to [pick].</span>")
-	new /atom/movable/screen/splash(null, src, hopper, FALSE)
+	//Заставка заводится с alpha 0 (visible = FALSE) и Fade() ей никто не зовёт,
+	//то есть удалять её было некому: каждый переход на другой сервер оставлял
+	//бессмертный экранный объект в client.screen.
+	var/atom/movable/screen/splash/hop_splash = new /atom/movable/screen/splash(null, src, hopper, FALSE)
+	QDEL_IN(hop_splash, 3 SECONDS)
 
 	mob_transforming = TRUE
 	sleep(2.9 SECONDS)	//let the animation play
@@ -124,7 +128,7 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
 				// living player arrives or background init crawls there.
 				if(should_ondemand_init_zlevel(new_z))
-					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
+					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z, LIGHTING_INIT_REASON_GHOST)
 			registered_z = new_z
 		else
 			registered_z = null
