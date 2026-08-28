@@ -22,6 +22,11 @@
 	/// отпускает тик): второй параллельный вход в тот же номер плодил комнату-двойник,
 	/// перезаписывал activeRooms/storedRooms и при следующем восстановлении удалял вещи игрока
 	var/list/rooms_in_flight = list()
+	/// Область, в которую прямо сейчас едет MobTransfer(). Пока перенос не закончен,
+	/// консервировать её нельзя: питомец на поводке, отброшенный назад собственным
+	/// Moved()-обработчиком, дёргал area/Exited() у ещё пустой комнаты, storeRoom()
+	/// сносил резервацию, и хозяина следом ставило на голый космос.
+	var/area/transfer_target
 	light_color = "#5692d6"
 	light_range = 5
 	light_power = 3
@@ -440,6 +445,12 @@
 	return TRUE
 
 /obj/item/hilbertshotel/proc/MobTransfer(mob/living/user, turf/T, depth = 0)
+	var/area/previous_target = transfer_target
+	transfer_target = get_area(T)
+	. = perform_mob_transfer(user, T, depth)
+	transfer_target = previous_target
+
+/obj/item/hilbertshotel/proc/perform_mob_transfer(mob/living/user, turf/T, depth = 0)
 	depth++
 	if(depth > 4)
 		return
@@ -821,7 +832,7 @@
 			if(L.mind)
 				stillPopulated = TRUE
 				break
-		if(!stillPopulated)
+		if(!stillPopulated && parentSphere?.transfer_target != src)
 			storeRoom()
 
 /area/hilbertshotelstorage
