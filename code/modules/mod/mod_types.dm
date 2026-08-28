@@ -97,6 +97,9 @@
 		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
+/obj/item/mod/control/pre_equipped/security/catcrin
+	theme = /datum/mod_theme/security/catcrin
+
 /obj/item/mod/control/pre_equipped/safeguard
 	theme = /datum/mod_theme/safeguard
 	equip_cell = /obj/item/stock_parts/cell/super
