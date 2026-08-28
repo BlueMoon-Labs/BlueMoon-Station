@@ -293,7 +293,10 @@
 	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y
 	current_y = final_pixel_y
 	message.maptext_width = CHAT_MESSAGE_WIDTH
-	message.maptext_height = mheight
+	// Высота по сетке строки, а не сырой замер: клиент платит за ОБЪЯВЛЕННУЮ коробку
+	// (width*height*4) и держит поверхность до конца сессии, а MeasureText отдаёт
+	// пиксельную высоту, у которой на одинаковом тексте бывают соседние значения.
+	message.maptext_height = CEILING(mheight, CHAT_MESSAGE_APPROX_LHEIGHT)
 	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5)
 	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
