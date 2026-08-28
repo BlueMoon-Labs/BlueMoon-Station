@@ -63,6 +63,7 @@
 		list("name" = "Combined headgear kit", "path" = /obj/item/armorkit/vanguard/helmet, "cost" = 750, "category" = "Armor"),
 		list("name" = "Jet harness", "path" = /obj/item/tank/jetpack/oxygen/harness, "cost" = 1500, "category" = "Armor"),
 		list("name" = "Jetpack upgrade", "path" = /obj/item/tank/jetpack/suit, "cost" = 1000, "category" = "Armor"),
+		list("name" = "Vanguard modsuit", "path" = /obj/item/mod/control/pre_equipped/expeditor, "cost" = 5000, "category" = "Armor"),
 		list("name" = "Jump boots", "path" = /obj/item/clothing/shoes/bhop, "cost" = 1250, "category" = "Armor"),
 		list("name" = "First-Aid Kit", "path" = /obj/item/storage/firstaid/regular, "cost" = 25, "category" = "Medical"),
 		list("name" = "Brute First-Aid Kit", "path" = /obj/item/storage/firstaid/brute, "cost" = 50, "category" = "Medical"),
