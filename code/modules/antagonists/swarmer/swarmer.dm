@@ -46,11 +46,25 @@
 		notify_ghosts("A swarmer shell has been created in [A.name].", 'sound/effects/bin_close.ogg', source = src, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_dnr_observers = TRUE)
 
 /obj/effect/mob_spawn/swarmer/attack_ghost(mob/user, latejoinercalling)
-	mob_type = GetSwarmerTypeToCreate()
+	mob_type = GetSwarmerTypeToCreate(user)
+	if(!mob_type || QDELETED(src)) // отмена выбора - не становимся свармером
+		return
 	. = ..()
 
-/obj/effect/mob_spawn/swarmer/proc/GetSwarmerTypeToCreate()
-	return pick(/mob/living/simple_animal/hostile/swarmer, /mob/living/simple_animal/hostile/swarmer/builder, /mob/living/simple_animal/hostile/swarmer/warrior)
+/obj/effect/mob_spawn/swarmer/proc/GetSwarmerTypeToCreate(mob/user)
+	// BLUEMOON ADD START - ТГУИ-выбор специализации свармера (универсал / инженер / воин)
+	var/static/list/display_to_type = list(
+		"Универсал" = /mob/living/simple_animal/hostile/swarmer,
+		"Инженер" = /mob/living/simple_animal/hostile/swarmer/builder,
+		"Воин" = /mob/living/simple_animal/hostile/swarmer/warrior,
+	)
+	if(!isobserver(user) || !user.client)
+		return display_to_type[pick(display_to_type)]
+	var/chosen = tgui_input_list(user, "Выберите, кем вы станете:", "Свармер", display_to_type)
+	if(!chosen)
+		return
+	return display_to_type[chosen]
+	// BLUEMOON ADD END
 
 /obj/effect/mob_spawn/swarmer/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	. = ..()

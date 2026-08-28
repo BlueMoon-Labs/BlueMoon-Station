@@ -48,3 +48,15 @@
 	tastes = list("sausage" = 1, "spicy sauce" = 1, "fries" = 1)
 	foodtype = MEAT | VEGETABLES
 	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/reagent_containers/food/snacks/shrimpwrap
+	name = "shrimp wrap"
+	desc = "A soft tortilla wrapped around fried shrimps, cheese, and shredded cabbage."
+	icon = 'modular_bluemoon/icons/obj/food/food.dmi'
+	icon_state = "shrimp_wrap"
+	bonus_reagents = list(/datum/reagent/consumable/nutriment/protein = 3, /datum/reagent/consumable/nutriment/vitamin = 2)
+	list_reagents = list(/datum/reagent/consumable/nutriment/protein = 4, /datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/vitamin = 2)
+	filling_color = "#F0D8A0"
+	tastes = list("tortilla" = 2, "shrimp" = 3, "cheese" = 1, "leaves" = 1)
+	foodtype = SEAFOOD | DAIRY | GRAIN | VEGETABLES
+	w_class = WEIGHT_CLASS_SMALL
