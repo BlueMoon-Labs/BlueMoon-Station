@@ -104,9 +104,22 @@
 			continue
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		if(part.loc != wearer)
-			return FALSE
+			return FALSE //Нафиг тут ретурн стоит... Потом поправлю.
 
 	return TRUE
+
+/obj/item/mod/control/proc/one_of_parts_deployed()
+	if(!wearer)
+		return FALSE
+
+	for(var/index in mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/part = mod_parts[index]
+		if(part.loc == wearer)
+			return TRUE
+
+	return FALSE
 
 /obj/item/mod/control/proc/is_malfunctioning()
 	return CHECK_BITFIELD(status_flags, MOD_MALFUNCTION) ? TRUE : FALSE
@@ -211,10 +224,20 @@
 	else if(wearer)
 		unset_wearer()
 
+/obj/item/mod/control/mob_can_equip(mob/living/M, mob/living/equipper, slot, disable_warning, bypass_equip_delay_self, clothing_check, list/return_warning)
+	. = ..()
+	if(slot == slot_flags && !M.get_item_by_slot(slot_flags))
+		return TRUE
+
 /obj/item/mod/control/dropped(mob/user)
 	. = ..()
 	if(wearer)
 		unset_wearer()
+	for(var/index in mod_parts)
+		var/obj/item/clothing/mod_part/part
+		if(index == MOD_PART_CELL)
+			continue
+		part.on_dropped(user, part, TRUE, drop_location())
 
 /obj/item/mod/control/item_action_slot_check(slot)
 	if(slot == slot_flags)
@@ -271,7 +294,8 @@
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()
 		return
-	return ..()
+	if(!one_of_parts_deployed() || GetComponent(/datum/component/storage))
+		return ..()
 
 /obj/item/mod/control/AltClick(mob/user)
 	var/obj/item/stock_parts/cell/cell = get_cell()
@@ -301,7 +325,6 @@
 		balloon_alert(user, "сначала отключите костюм!")
 
 		return FALSE
-	balloon_alert(user, "[is_open() ? "закрытие" : "открытие"] панели...")
 	if(screwdriver.use_tool(src, user, 0.5 SECONDS))
 		if(is_active() || is_activating())
 			balloon_alert(user, "сначала отключите костюм!")
@@ -344,7 +367,6 @@
 	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
 		if(!attacking_item.tool_start_check(user, amount=5))
 			return
-		to_chat(user, "<span class='notice'>Вы начинаете [is_welded() ? "заваривать" : "разваривать"] [src]...</span>")
 		if(attacking_item.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
 			balloon_alert(user, "Успешно")
 			toggle_state(MOD_WELDED)

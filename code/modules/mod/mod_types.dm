@@ -1,5 +1,5 @@
-/obj/item/mod/control/pre_equipped
 	var/equip_cell = /obj/item/stock_parts/cell/high
+/obj/item/mod/control/pre_equipped
 	var/applied_skin
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
@@ -313,6 +313,9 @@
 /obj/item/mod/control/pre_equipped/lustwish
 	slot_flags = ITEM_SLOT_BELT
 	theme = /datum/mod_theme/lustwish
+	initial_modules = list(
+		/obj/item/mod/module/nudity_lover,
+	)
 
 /obj/item/mod/control/pre_equipped/infiltrator_inteq
 	slot_flags = ITEM_SLOT_BELT
