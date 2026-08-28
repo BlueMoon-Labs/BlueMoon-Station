@@ -13,14 +13,32 @@
 	power_draw_per_use = 10
 	var/eol = "&lt;br&gt;"
 	var/stuff_to_display = null
+	///Что экран показал в прошлый раз. Нужен, чтобы не транслировать одно и то же по кругу.
+	var/last_broadcast = null
 
 /obj/item/integrated_circuit/output/screen/disconnect_all()
 	..()
 	stuff_to_display = null
+	last_broadcast = null
 
 /obj/item/integrated_circuit/output/screen/power_fail()
 	. = ..()
 	stuff_to_display = null
+	last_broadcast = null
+
+/**
+ * Возвращает TRUE, если показанное значение изменилось с прошлой трансляции, и запоминает его.
+ *
+ * Сборка на самопульсе дёргает do_work() по нескольку раз в секунду, и до этой проверки
+ * каждый такой пульс стоил viewers() + to_chat с icon2html и строки в circuit.html.
+ * За раунд 10137 одна такая сборка написала 1520 строк - 68% всего файла лога - с
+ * значением, которое ни разу не поменялось.
+ */
+/obj/item/integrated_circuit/output/screen/proc/display_changed()
+	if(stuff_to_display == last_broadcast)
+		return FALSE
+	last_broadcast = stuff_to_display
+	return TRUE
 
 /obj/item/integrated_circuit/output/screen/any_examine(mob/user)
 	var/shown_label = ""
@@ -46,7 +64,8 @@
 
 /obj/item/integrated_circuit/output/screen/large/do_work()
 	..()
-
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(2, host.loc))
@@ -63,6 +82,8 @@
 
 /obj/item/integrated_circuit/output/screen/extralarge/do_work()
 	..()
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(7, host.loc))
