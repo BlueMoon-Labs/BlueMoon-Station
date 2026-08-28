@@ -89,7 +89,7 @@
 
 /datum/manipulator_task/cargo/pickup
 	name = "pickup"
-	var/pickup_eagerness = PICKUP_CAN_WAIT
+	var/pickup_eagerness = PICKUP_EAGER
 
 /datum/manipulator_task/cargo/pickup/can_run(obj/machinery/big_manipulator/manipulator)
 	if(!..())
