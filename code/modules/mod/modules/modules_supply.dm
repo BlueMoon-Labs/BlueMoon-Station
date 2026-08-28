@@ -15,6 +15,10 @@
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_SUPPLY // BLUEMOON ADD
 
+/obj/item/mod/module/gps/vanguard
+	complexity = 0
+	removable = FALSE
+
 /obj/item/gps/mod
 	name = "MOD internal GPS"
 	icon_state = "gps-trac"

@@ -310,7 +310,7 @@
 /turf/open/space,
 /area/solars/starboard/fore)
 "adu" = (
-/obj/effect/landmark/barthpot,
+/obj/structure/table/wood,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
@@ -7257,30 +7257,7 @@
 /turf/open/floor/plasteel/textured/large,
 /area/hallway/primary/central)
 "aPf" = (
-/obj/structure/closet/crate,
-/obj/item/book{
-	desc = "An undeniably handy book.";
-	icon_state = "bookknock";
-	name = "A Simpleton's Guide to Safe-cracking with Stethoscopes"
-	},
-/obj/item/book/manual/wiki/grenades,
-/obj/item/book/manual/wiki/toxins,
-/obj/item/book/manual/hydroponics_pod_people,
-/obj/item/book/manual/ripley_build_and_repair,
-/obj/item/book/manual/wiki/infections,
-/obj/item/book/manual/wiki/medical_cloning,
-/obj/item/book/manual/wiki/medicine,
-/obj/item/book/manual/splurt_space_law,
-/obj/item/book/manual/wiki/robotics_cyborgs,
-/obj/item/book/manual/wiki/research_and_development,
-/obj/item/book/manual/wiki/experimentor,
-/obj/item/book/manual/wiki/engineering_singulo_tesla,
-/obj/item/book/manual/wiki/tcomms,
-/obj/item/book/manual/wiki/detective,
-/obj/item/book/manual/wiki/atmospherics,
-/obj/item/book/manual/wiki/engineering_construction,
-/obj/item/book/manual/wiki/engineering_guide,
-/obj/item/book/manual/wiki/telescience,
+/obj/structure/bookcase/random/nonfiction,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "aPg" = (
@@ -8949,7 +8926,7 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/command/gateway)
 "aVQ" = (
-/obj/structure/chair/comfy/black{
+/obj/structure/chair/comfy/plywood{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -8959,11 +8936,11 @@
 /obj/item/camera_film,
 /obj/item/camera_film,
 /obj/item/taperecorder,
-/obj/item/camera,
 /obj/structure/window/reinforced{
 	dir = 8
 	},
 /obj/structure/window/reinforced,
+/obj/item/camera,
 /turf/open/floor/wood/wood_large,
 /area/service/library)
 "aVT" = (
@@ -10028,12 +10005,12 @@
 /turf/open/floor/wood,
 /area/service/library)
 "bau" = (
-/obj/structure/chair/comfy/black{
-	dir = 4
-	},
 /obj/machinery/airalarm{
 	dir = 1;
 	pixel_y = -22
+	},
+/obj/structure/chair/comfy/plywood{
+	dir = 4
 	},
 /turf/open/floor/wood,
 /area/service/library)
@@ -19468,13 +19445,8 @@
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "bHD" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/wood/thin{
-	dir = 1
-	},
-/turf/open/floor/carpet,
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/wood_large,
 /area/service/library)
 "bHE" = (
 /turf/open/floor/plating,
@@ -34166,6 +34138,16 @@
 "cPb" = (
 /turf/open/floor/wood/wood_diagonal,
 /area/maintenance/port/fore)
+"cPB" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/landmark/barthpot,
+/turf/open/floor/carpet,
+/area/service/library)
 "cPF" = (
 /obj/structure/chair/pew/right{
 	dir = 4
@@ -47166,7 +47148,9 @@
 "hMQ" = (
 /obj/machinery/fax{
 	fax_name = "General Fax";
-	name = "General Fax"
+	name = "General Fax";
+	pixel_x = 0;
+	pixel_y = 6
 	},
 /obj/structure/table/wood,
 /turf/open/floor/wood,
@@ -56654,10 +56638,10 @@
 /turf/open/floor/plasteel/dark/textured/corner,
 /area/command/bridge)
 "lNZ" = (
-/obj/structure/chair/comfy/black{
+/obj/effect/landmark/start/assistant,
+/obj/structure/chair/comfy/plywood{
 	dir = 4
 	},
-/obj/effect/landmark/start/assistant,
 /turf/open/floor/wood,
 /area/service/library)
 "lOe" = (
@@ -64552,6 +64536,10 @@
 /obj/structure/window/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/office)
+"oXd" = (
+/obj/structure/chair/comfy/plywood,
+/turf/open/floor/wood/wood_large,
+/area/service/library)
 "oXn" = (
 /obj/machinery/atmospherics/pipe/simple/orange/visible{
 	dir = 10
@@ -65330,7 +65318,9 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/wood/thin,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
 /turf/open/floor/carpet,
 /area/service/library)
 "pqR" = (
@@ -65620,6 +65610,13 @@
 /obj/effect/turf_decal/siding/white,
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
+"pwd" = (
+/obj/structure/chair/comfy/plywood{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/wood/wood_large,
+/area/service/library)
 "pwh" = (
 /obj/structure/rack,
 /obj/effect/spawner/lootdrop/maintenance,
@@ -70926,6 +70923,14 @@
 /obj/machinery/cryopod/tele,
 /turf/open/floor/plasteel/showroomfloor,
 /area/commons/cryopod)
+"rHW" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/turf/open/floor/carpet,
+/area/service/library)
 "rIg" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -130675,10 +130680,10 @@ qfD
 pPq
 aIt
 aPd
-aIt
+aPd
 aPb
-adu
-qVd
+aPb
+cPB
 pqQ
 bat
 bbD
@@ -130931,12 +130936,12 @@ rMk
 qfD
 aRO
 aIt
-aPd
-aIt
-aPb
-aIt
 bHD
-aYY
+oXd
+adu
+pwd
+qVd
+rHW
 aVQ
 aFu
 ker

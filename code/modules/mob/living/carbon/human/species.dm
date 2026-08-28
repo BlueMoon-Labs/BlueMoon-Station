@@ -676,6 +676,12 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			L.add_quirk(q)
 
 
+/// Потолок кэша склеенных иконок градиента волос. Ключ - стиль градиента и стиль волос,
+/// то есть множество замкнутое и небольшое; потолок стоит на случай кастомных стилей.
+#define HAIR_GRADIENT_ICON_CACHE_MAX 512
+/// Сколько записей снимается с головы кэша при переполнении - четверть потолка.
+#define HAIR_GRADIENT_ICON_CACHE_EVICT 128
+
 /datum/species/proc/handle_hair(mob/living/carbon/human/H, forced_colour)
 	H.remove_overlay(HAIR_LAYER)
 	var/obj/item/bodypart/head/HD = H.get_bodypart(BODY_ZONE_HEAD)
@@ -817,9 +823,32 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 						// Битый преф (стиль, которого больше нет в списке) без гарда
 						// роняет весь handle_hair на каждом апдейте иконки моба.
 						if(gradient)
-							var/icon/temp = icon(gradient.icon, gradient.icon_state)
-							var/icon/temp_hair = icon(hair_file, hair_state)
-							temp.Blend(temp_hair, ICON_ADD)
+							// Кэш обязателен. handle_hair зовётся на каждой перерисовке моба -
+							// переодевание, шлем МОДа, расчленёнка, regenerate_icons, - и без него
+							// каждый такой вызов строил ДВЕ рантайм-иконки и склеивал третью. Иконка,
+							// попавшая в appearance, уезжает отдельным ресурсом каждому видящему
+							// клиенту и живёт у него до конца сессии; fcopy_rsc делает из неё
+							// неизменяемый слепок, который переиспользуется, а не рассылается заново.
+							// Цвет в ключ НЕ входит: он накладывается оверлеем, а не в иконку.
+							// Образец рядом - /obj/item/clothing/update_overlays().
+							var/static/list/hair_gradient_icons = list()
+							var/gradient_key = "[gradient.icon]-[gradient.icon_state]-[hair_file]-[hair_state]"
+							var/icon/temp = hair_gradient_icons[gradient_key]
+							if(!temp)
+								// Под стражем: промах кэша строит ДВЕ рантайм-иконки и склеивает их,
+								// а отказ /icon/New() обрывает handle_hair молча - и вместе с ним всю
+								// перерисовку моба. Пустышка в кэш НЕ пишется: отказ аллокации - это
+								// состояние минуты, а запомненная пустышка оставила бы носителя без
+								// градиента до конца раунда.
+								try
+									var/icon/blended = icon(gradient.icon, gradient.icon_state)
+									blended.Blend(icon(hair_file, hair_state), ICON_ADD)
+									temp = fcopy_rsc(blended)
+									hair_gradient_icons[gradient_key] = temp
+									if(length(hair_gradient_icons) > HAIR_GRADIENT_ICON_CACHE_MAX)
+										hair_gradient_icons.Cut(1, HAIR_GRADIENT_ICON_CACHE_EVICT + 1)
+								catch(var/exception/icon_error)
+									temp = note_icon_alloc_failure("градиент волос [gradient.icon_state] поверх [hair_state]", icon_error)
 							gradient_overlay.icon = temp
 							gradient_overlay.color = "#" + grad_color
 						else
@@ -836,12 +865,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					hair_overlay.pixel_y += H.dna.species.offset_features[OFFSET_HAIR][2]
 
 		if(hair_overlay.icon)
-			H.mutant_part_appearances["hair"] += list(standing) //в handle_mutant весь стэндинг стирается, так что результат обычно не сейвится между проками
 			standing += hair_overlay
 			standing += gradient_overlay
 
-		// if("hair" in H.layers_for_apply_effect)
-		// 	standing += update_overlay_by_key("hair", H, hair_overlay)
 	if(standing.len)
 		H.overlays_standing[HAIR_LAYER] = standing
 
@@ -928,7 +954,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 // MARK: handle_mutant_bodyparts
 /datum/species/proc/handle_mutant_bodyparts(mob/living/carbon/human/H, forced_colour, block_recursive_calls = FALSE)
 	var/list/bodyparts_to_add = mutant_bodyparts.Copy()
-	H.mutant_part_appearances = list()
 	H.cleanup_overlays()
 	if(!length(mutant_bodyparts))
 		return
@@ -1004,9 +1029,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				accessory_overlay.icon_state = "m_[bodypart]_[S.icon_state]_[layertext]"
 			if(S.center)
 				accessory_overlay = center_image(accessory_overlay, S.dimension_x, S.dimension_y)
-			if(!H.mutant_part_appearances[S.mutant_part_string])
-				H.mutant_part_appearances[S.mutant_part_string] = list()
-			H.mutant_part_appearances[S.mutant_part_string] += accessory_overlay
 			var/advanced_color_system = (H.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
 
 			var/mutant_string = S.mutant_part_string
@@ -2940,3 +2962,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		else
 			to_chat(H, "<span class='notice'>You beat your wings and begin to hover gently above the ground...</span>")
 			H.set_resting(FALSE, TRUE)
+
+#undef HAIR_GRADIENT_ICON_CACHE_MAX
+#undef HAIR_GRADIENT_ICON_CACHE_EVICT

@@ -19,6 +19,11 @@
 #define MOD_ACTIVATING  (1<<1)
 #define MOD_MALFUNCTION (1<<2)
 #define MOD_OPEN        (1<<3)
+#define MOD_WELDED		(1<<4)
+#define MOD_DNA_LOCKED	(1<<5)
+
+#define MOD_WELD_FUEL_COST 5
+#define MOD_WELD_TIME 5 SECONDS
 
 #define MOD_STANDART_COLOR rgb(26, 209, 255, 255)
 #define MOD_SYNDICATE_COLOR rgb(255, 60, 26, 255)

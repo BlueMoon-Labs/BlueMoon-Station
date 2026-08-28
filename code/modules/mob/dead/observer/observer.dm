@@ -837,9 +837,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	..()
 	if(usr == src)
 		if(href_list["follow"])
-			var/atom/movable/target = locate(href_list["follow"])
-			if(istype(target) && (target != src))
+			var/atom/movable/target = ghost_follow_resolve(href_list["follow"], href_list["follow_token"])
+			if(target && (target != src))
 				ManualFollow(target)
+				return
+			// Координатный запасной путь есть только у FOLLOW_OR_TURF_LINK - ему падать
+			// ниже, в ветку x/y/z. У голого FOLLOW_LINK запасного пути нет, и раньше
+			// клик по протухшей ссылке просто НИЧЕГО не делал: ни следования, ни строки
+			// в чат. Так на проде и выглядела "рандомная невозможность орбититься по
+			// ссылкам" - жалоба раунда 10127 (27.08.2026).
+			if(!href_list["x"] || !href_list["y"] || !href_list["z"])
+				to_chat(src, span_warning("Цель этой ссылки больше не существует. Актуальный список - в меню орбиты (Orbit)."))
 				return
 		if(href_list["x"] && href_list["y"] && href_list["z"])
 			var/tx = text2num(href_list["x"])
@@ -1088,3 +1096,77 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/can_admin_interact()
 	return check_rights(R_ADMIN, 0)
+
+
+/**
+ * Годится ли атом на конце ссылки (F) в качестве цели слежения.
+ *
+ * ЗАЧЕМ. Ссылка (F) уезжает в чат текстом и живёт там до конца раунда, а REF() внутри неё -
+ * это индекс в таблице BYOND, который переиспользуется, как только атом удалён. Поэтому
+ * протухшая ссылка не просто "не находит цель": locate() честно отдаёт ТО, ЧТО заняло слот,
+ * а прежняя проверка istype(target, /atom/movable) пропускала дальше что угодно - включая
+ * служебные атомы вроде объекта освещения, которых на карте сотни тысяч и которые в этом
+ * билде массово создаются и удаляются при сносе и подъёме света отложенных z-уровней
+ * (раунд 10127: 29 сносов и 32 подъёма, около 1.4 млн созданий и удалений за смену).
+ *
+ * ismob() отсекает весь служебный движимый хлам за одну проверку типа, а немобовые цели у
+ * FOLLOW_LINK единичны и все либо зарегистрированы как POI, либо являются ориентирами карты.
+ *
+ * ЭТО ЗАПАСНОЙ ПУТЬ. Основной - токен идентичности ниже: проверка типа пропускает ДРУГОГО
+ * моба, занявшего освободившийся слот, и сюда доходят только ссылки без токена.
+ */
+/proc/ghost_follow_target_valid(atom/movable/target)
+	if(QDELETED(target))
+		return FALSE
+	if(ismob(target))
+		return TRUE
+	if(target in GLOB.poi_list)
+		return TRUE
+	return istype(target, /obj/effect/landmark)
+
+/**
+ * Монотонный счётчик токенов идентичности. Значения НЕ переиспользуются - в этом весь смысл.
+ *
+ * Проверка типа выше отсекает служебный хлам, занявший переиспользованный слот, но не
+ * отличает исходную цель от ДРУГОГО моба, занявшего тот же слот: обоим ismob() говорит "да".
+ * Токен отличает, потому что счётчик никогда не выдаёт значение дважды: совпадение токена -
+ * это доказательство, что перед нами ровно тот атом, для которого ссылка была построена.
+ */
+GLOBAL_VAR_INIT(follow_token_serial, 0)
+
+/**
+ * Токен идентичности цели слежения, выдаётся лениво.
+ *
+ * Слот переменной платится только атомами, на которых ссылка (F) или строка меню орбиты
+ * реально строилась, - у остальных вар объявлен, но не записан, и места не занимает
+ * (см. модель блока переменных инстанса BYOND).
+ */
+/atom/movable/var/follow_token = 0
+
+/atom/movable/proc/get_follow_token()
+	if(!follow_token)
+		follow_token = ++GLOB.follow_token_serial
+	return follow_token
+
+/// Пара "ссылка + токен" для href слежения. Цель вычисляется РОВНО один раз: макросы
+/// FOLLOW_LINK и FOLLOW_OR_TURF_LINK подставляют сюда своё выражение-аргумент.
+/proc/follow_href_params(atom/movable/target)
+	if(!istype(target))
+		return "follow=[REF(target)]"
+	return "follow=[REF(target)];follow_token=[target.get_follow_token()]"
+
+/**
+ * Достаёт цель слежения из href-а и доказывает, что это ТА САМАЯ цель.
+ *
+ * Токен в ссылке есть - решает только он: не совпал, значит слот переиспользован, и
+ * следовать некуда. Токена нет (старая ссылка из чата, пережившая перезапуск раунда, или
+ * немовабельная цель) - остаётся прежняя проверка по типу, то есть не хуже, чем было.
+ */
+/proc/ghost_follow_resolve(target_ref, token)
+	var/atom/movable/target = locate(target_ref)
+	if(!istype(target) || QDELETED(target))
+		return null
+	var/expected_token = text2num(token)
+	if(expected_token)
+		return target.follow_token == expected_token ? target : null
+	return ghost_follow_target_valid(target) ? target : null

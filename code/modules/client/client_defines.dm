@@ -221,7 +221,8 @@
 	var/cached_turf_ref
 	/// cached encoded turf data for statpanel
 	var/cached_turf_encoded
-	/// tracks which icon REFs have been sent to this client's statbrowser (REF -> icon_url)
+	/// tracks which icon REFs have been sent to this client's statbrowser
+	/// (REF -> list(icon_url, weakref владельца); слабая ссылка отсеивает переиспользованные REF)
 	var/list/statpanel_sent_icons = list()
 	/// per-section dirty cache: last-sent encoded payload by channel name (status/spells/voting/tickets/listedturf)
 	/// Suppresses identical re-sends without re-running expensive renderers — DM-side dirty checking.

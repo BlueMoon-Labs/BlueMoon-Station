@@ -3,7 +3,12 @@
 //Measurements are in imperial units. Inches, feet, yards, miles. Tsp, tbsp, cups, quarts, gallons, etc
 
 //Filters
-#define CIT_FILTER_STAMINACRIT filter(type="drop_shadow", x=0, y=0, size=-3, color="#04080F")
+/// Тень стамина-крита. СПИСОК, а не filter(): фильтры снимаются по ИМЕНИ через
+/// add_filter/remove_filter, а filter(...) строит новый объект на каждое раскрытие
+/// макроса - и `filters -= CIT_FILTER_STAMINACRIT` не совпадал с тем, что положили,
+/// НИКОГДА. Тень копилась по одной на каждый эпизод стамкрита и жила до конца раунда,
+/// а рисовал её каждый, кто видел моба.
+#define CIT_FILTER_STAMINACRIT list(type="drop_shadow", x=0, y=0, size=-3, color="#04080F")
 
 #define BM_FILTER_HARDCRIT list(type="drop_shadow", x=0, y=0, size=-3, color="#04080F")
 

@@ -170,6 +170,13 @@ SUBSYSTEM_DEF(lighting)
 	var/teardown_parked = 0
 	var/teardown_objects = 0
 	var/teardown_corners = 0
+	/// VmSize в МБ на старте сноса; null - память не замерена (Windows, ранний старт).
+	///
+	/// Цена ПОСТРОЙКИ печаталась с самого начала (log_zlevel_lighting_cost), а цена сноса -
+	/// нет, и вывод "снос не вернул ничего" приходилось собирать руками по соседним строкам
+	/// перф-CSV. Асимметрия дорогая: снос - единственное место, где решение принимается ради
+	/// памяти, и единственное, где её не мерили.
+	var/teardown_vsz_before
 	/// Почему последний снос прекратился досрочно (null - дошёл до конца). Снос прерывается
 	/// молча и по нескольким причинам сразу, а снаружи это неотличимо от штатного завершения:
 	/// в обоих случаях teardown_zlevel обнуляется.
@@ -715,6 +722,8 @@ SUBSYSTEM_DEF(lighting)
 	teardown_objects = 0
 	teardown_corners = 0
 	teardown_abort_reason = null
+	var/list/memory_before = get_process_memory_mb()
+	teardown_vsz_before = memory_before ? memory_before["vsz"] : null
 	zlevel_empty_since -= "[z]"
 	zlevel_lit_since -= "[z]"
 	zlevel_teardowns_total++
@@ -733,6 +742,30 @@ SUBSYSTEM_DEF(lighting)
 /datum/controller/subsystem/lighting/proc/mark_zlevel_lit(z)
 	zlevel_lit_since["[z]"] = world.time
 	zlevel_builds_total++
+
+/**
+ * Отметить, что на уровне ПРЯМО СЕЙЧАС кто-то есть, и обнулить его счётчик простоя.
+ *
+ * ЗАЧЕМ. zlevel_empty_since писался и стирался ТОЛЬКО двумя способами: сканом кандидатов на
+ * снос (scan_teardown_candidates) и подъёмом уровня (create_lighting_for_zlevel). Скан ходит
+ * раз в LIGHTING_TEARDOWN_SCAN_INTERVAL фаеров, то есть с шагом в 15-30 секунд, и видит мир
+ * мгновенными снимками. Посетитель УЖЕ ПОДНЯТОГО уровня, уместившийся между двумя снимками,
+ * не оставлял следа нигде: подъёма не было, а скан его не застал - и таймер простоя тикал
+ * так, будто на уровне не было никого.
+ *
+ * Раунд 10134 (28.08.2026): z15 признали пустым, снесли (63002 объекта, снос шёл 60 секунд),
+ * и через четыре минуты подняли обратно по поводу "живой сменил z". Прибор сам напечатал,
+ * что подъём стоил 0 МБ VmSize - то есть цикл не вернул серверу НИЧЕГО, а всем, кто видел
+ * уровень, стоил двух вспышек: сначала в чёрное (гаснут источники), потом в белое (исчезают
+ * объекты освещения), и столько же на обратном подъёме.
+ *
+ * Зовётся с пути смены z, а не с пути подъёма, и потому БЕЗУСЛОВНО: посещение поднятого
+ * уровня - это ровно тот случай, который прежняя схема теряла.
+ */
+/datum/controller/subsystem/lighting/proc/note_zlevel_visit(z)
+	if(!z)
+		return
+	zlevel_empty_since -= "[z]"
 
 /// Открыть проход постройки света. Счётчик, а не флаг: параллельные подъёмы двух z-уровней
 /// иначе гасят состояние друг другу.
@@ -880,7 +913,7 @@ SUBSYSTEM_DEF(lighting)
 	bg_queued_zlevels |= z
 	if(starlight_color_index > length(GLOB.starlight))
 		starlight_color_index = 0
-	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked]")
+	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, get_process_memory_mb())]")
 	abort_zlevel_lighting_teardown()
 
 /**

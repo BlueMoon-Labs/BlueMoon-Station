@@ -134,7 +134,7 @@
 		return
 	if(locate(/obj/effect/snowcloud, T)) //Ice to see you
 		return
-	if(infinite_snow || !reagents.remove_reagent(reagents.get_master_reagent_id(), 3))
+	if(infinite_snow || reagents.remove_reagent(reagents.get_master_reagent_id(), 3))
 		new /obj/effect/snowcloud(T, src)
 		power_used_this_cycle += 1000
 		return TRUE
@@ -271,7 +271,7 @@
 	qdel(src)
 
 /obj/item/snowball
-	name = "снежок"
+	name = "snowball"
 	desc = "Приготовьтесь к снежной битве!"
 	icon = 'icons/obj/toys.dmi'
 	icon_state = "snowball"

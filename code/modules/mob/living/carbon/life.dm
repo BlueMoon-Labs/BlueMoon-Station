@@ -34,7 +34,7 @@
 		handle_liver(delta_time, times_fired)
 
 	if(stat != DEAD)
-		handle_corruption()
+		handle_corruption(delta_time)
 
 
 /mob/living/carbon/PhysicalLife(seconds, times_fired)

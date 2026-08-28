@@ -900,16 +900,56 @@
 		return
 	add_blood_overlay()
 
+/// Потолок кэша пятен крови: (иконка, стейт, цвет). Множество замкнутое, потолок - страховка.
+#define BLOOD_SPLATTER_ICON_CACHE_MAX 1024
+/// Сколько записей снимается с головы кэша при переполнении - четверть потолка.
+#define BLOOD_SPLATTER_ICON_CACHE_EVICT 256
+
+/**
+ * Пятно крови на предмете, склеенное из иконки предмета и маски крови.
+ *
+ * КЭШ ОБЯЗАТЕЛЕН. Иконка полностью определяется тройкой (исходная иконка, исходный
+ * стейт, цвет крови), а строилась заново на КАЖДОЕ добавление крови. Один кровоточащий
+ * человек раздаёт кровь восьми надетым предметам разом (см. /mob/living/carbon/human/
+ * add_blood_DNA ниже), и каждая такая иконка - отдельный ресурс, который уезжает всем
+ * видящим клиентам и живёт у них до конца сессии. Так и выглядели "случайные текстуры
+ * крови" на проде 28.08.2026.
+ *
+ * fcopy_rsc снимает неизменяемый слепок: повторная выдача той же иконки не рассылается
+ * заново. Образец рядом - /obj/item/clothing/update_overlays().
+ */
 /obj/item/proc/add_blood_overlay()
 	if(!blood_DNA.len)
 		return
 	if(initial(icon) && initial(icon_state))
+		var/static/list/blood_splatter_icons = list()
+		var/blood_key = "[initial(icon)]-[initial(icon_state)]-[blood_DNA_to_color()]"
+		var/icon/cached_splatter = blood_splatter_icons[blood_key]
+		if(!cached_splatter)
+			// Под стражем: промах кэша - это три Blend поверх свежей рантайм-иконки, а отказ
+			// /icon/New() обрывает весь стек молча и до /world/Error не доходит. Пятно крови
+			// не стоит раунда: не собралось - предмет остаётся чистым до следующей капли.
+			// В кэш при отказе не пишется НИЧЕГО: отказ аллокации - состояние минуты, а
+			// запомненная пустышка оставила бы предмет чистым до конца раунда.
+			try
+				var/icon/splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
+				splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
+				splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
+				splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
+				cached_splatter = fcopy_rsc(splatter)
+			catch(var/exception/icon_error)
+				note_icon_alloc_failure("пятно крови на [type]", icon_error)
+				return
+			blood_splatter_icons[blood_key] = cached_splatter
+			if(length(blood_splatter_icons) > BLOOD_SPLATTER_ICON_CACHE_MAX)
+				blood_splatter_icons.Cut(1, BLOOD_SPLATTER_ICON_CACHE_EVICT + 1)
+		// Тот же слепок - работы нет вовсе: снимать оверлей и вешать его обратно значило бы
+		// пересобрать аппиранс предмета впустую на каждой капле.
+		if(blood_splatter_icon == cached_splatter)
+			return
 		if(blood_splatter_icon)
 			cut_overlay(blood_splatter_icon)
-		blood_splatter_icon = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
-		blood_splatter_icon.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
-		blood_splatter_icon.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
-		blood_splatter_icon.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
+		blood_splatter_icon = cached_splatter
 		add_overlay(blood_splatter_icon)
 
 /obj/item/clothing/gloves/add_blood_DNA(list/blood_dna, list/datum/disease/diseases)
@@ -1746,6 +1786,15 @@
 						//first extra line pushes atom name line up 11px, subsequent lines push it up 8px, this offsets that and keeps the first line in the same place
 						active_hud.screentip_text.maptext_y = -1 + (extra_lines - 1) * -8
 
+	// Коробка по числу строк, а не по худшему случаю. Платится ОБЪЯВЛЕННЫЙ размер коробки на
+	// КАЖДУЮ уникальную строку maptext, а меняется она по 2-4 раза в секунду, пока игрок водит
+	// мышью. У подавляющего большинства атомов контекстных строк нет вовсе, и им хватает одной
+	// строки имени - прежние фиксированные 128 они платили впустую. См. code/__DEFINES/screentips.dm.
+	var/screentip_height = SCREENTIP_BOX_HEIGHT_BASE
+	if(extra_lines)
+		screentip_height = min(SCREENTIP_BOX_HEIGHT_BASE + extra_lines * SCREENTIP_BOX_HEIGHT_PER_LINE, SCREENTIP_BOX_MAX_HEIGHT)
+	active_hud.screentip_text.maptext_height = screentip_height
+
 	if (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY && extra_context == "")
 		active_hud.screentip_text.maptext = ""
 	else
@@ -1809,3 +1858,6 @@
 ///Return the air if we can analyze it
 /atom/proc/return_analyzable_air()
 	return null
+
+#undef BLOOD_SPLATTER_ICON_CACHE_MAX
+#undef BLOOD_SPLATTER_ICON_CACHE_EVICT
