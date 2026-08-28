@@ -193,7 +193,10 @@
 	spawning = 30
 	lifespan = 1
 	fade = 1
-	position = generator("box", vector(-480,-480), vector(480,480))
+	// Границы списком, а не vector(): в типовом дефолте SpacemanDMM считает vector()
+	// неконстантным вызовом и валит линтер, а generator("box", ...) читает список
+	// ровно так же. Остальные пять generator("box") в кодбазе тоже на списках.
+	position = generator("box", list(-480, -480), list(480, 480))
 
 /atom/movable/screen/fullscreen/scaled/synthcorrupt/ShouldShow(mob/M)
 	if(!..())

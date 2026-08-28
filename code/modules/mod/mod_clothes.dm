@@ -54,7 +54,13 @@
 		for(var/obj/item/mod/module/module in linked_modules)
 			if(!module.saved_state)
 				continue
-			module.on_activation()
+			// Отложенно, потому что сюда приходят ОБРАБОТЧИКИ СИГНАЛОВ: on_exit у контроллера
+			// и on_dropped у части МОДа помечены SIGNAL_HANDLER, а on_activation() у модуля с
+			// устройством доходит до put_in_hands() и дальше до stoplag(). Спать в обработчике
+			// сигнала нельзя, и линтер это ловит. Возвращаемое значение здесь никем не читается,
+			// а оба вызывающих (deploy и conceal) после этой строки только возвращают результат
+			// либо играют звук - порядок для них не меняется.
+			INVOKE_ASYNC(module, TYPE_PROC_REF(/obj/item/mod/module, on_activation))
 
 /obj/item/clothing/mod_part/proc/check_module_ready()
 	return mod.is_active() && mod.wearer.get_item_by_slot(src.slot_flags) == src
