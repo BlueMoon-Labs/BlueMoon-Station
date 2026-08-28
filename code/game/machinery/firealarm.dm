@@ -80,6 +80,16 @@
 	// alarm. The exposure element covers the flameless case.
 	AddElement(/datum/element/atmos_sensitive, mapload)
 
+/obj/machinery/firealarm/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	if(myarea)
+		LAZYREMOVE(myarea.firealarms, src)
+		myarea.refresh_fire_detect()
+	myarea = get_base_area(src)
+	if(myarea)
+		LAZYADD(myarea.firealarms, src)
+		myarea.refresh_fire_detect()
+
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 

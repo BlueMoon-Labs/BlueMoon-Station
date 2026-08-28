@@ -475,6 +475,16 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	if(alarm_area)
 		LAZYADD(alarm_area.airalarms, src)
 
+/obj/machinery/airalarm/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	if(alarm_area)
+		LAZYREMOVE(alarm_area.airalarms, src)
+	alarm_area = get_area(src)
+	if(alarm_area)
+		LAZYADD(alarm_area.airalarms, src)
+	if(old_area && name == "[old_area.name] Air Alarm") // имя было автогенерённым - обновляем под новую зону
+		name = "[get_area_name(src, get_base_area = TRUE)] Air Alarm"
+
 /obj/machinery/airalarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Unlock" : "Lock")
