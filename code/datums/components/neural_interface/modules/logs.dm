@@ -80,6 +80,12 @@
 	. = ..()
 	logs_view = ScreenText(null, "", screen_loc, maptext_height, maptext_width)
 
+/datum/neural_interface_module/logs/Destroy(force, ...)
+	// Парный QDEL_NULL был только у панели данных, а панель логов не удалялась никогда:
+	// её экранный объект переживал и модуль, и владельца.
+	QDEL_NULL(logs_view)
+	. = ..()
+
 /datum/neural_interface_module/logs/UpdateVision(mob/user)
 	cleanup_expired_logs()
 
