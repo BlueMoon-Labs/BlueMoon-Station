@@ -96,3 +96,24 @@
 /obj/item/clothing/neck/donator/bm/antique_cape/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#777777", "#FFFFCC", "#66FFFF"), 3)
+
+/obj/item/clothing/neck/donator/bm/concord_cloak
+	name = "Concord cloak kit"
+	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
+	icon_state = "concord-cloak"
+
+/obj/item/clothing/neck/donator/bm/concord_cloak/AltClick(mob/user)
+	. = ..()
+	var/select_type = tgui_input_list(user, "Как сложить плащ?", "Изменение плаща", list("Cloak", "Kama", "Cloak and Kama")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
+	if(!select_type)
+		return
+	switch(select_type)
+		if("Cloak")
+			icon_state = "concord-cloak"
+		if("Kama")
+			icon_state = "concord-kama"
+		if("Cloak and Kama")
+			icon_state = "concord-cloak-kama"
+	update_icon()
+	user.update_inv_neck()
+	user.update_body()

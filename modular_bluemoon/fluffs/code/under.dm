@@ -889,7 +889,7 @@
 	if(adjusted || !(DIGITIGRADE in H.dna.species.species_traits))
 		return
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(B?.size || 0), 0, 7)
+	var/breast_size = clamp(round(B?.size || 0)-1, 0, 7)
 	icon_state = "[initial(icon_state)]_[breast_size]"
 	H.update_inv_w_uniform()
 	H.update_body()

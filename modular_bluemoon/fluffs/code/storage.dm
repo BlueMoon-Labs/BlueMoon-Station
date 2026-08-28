@@ -393,7 +393,7 @@
 		return
 	var/mob/living/carbon/human/H = loc
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(B?.size || 0), 0, 7)
+	var/breast_size = clamp(round(B?.size || 0)-1, 0, 7)
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
