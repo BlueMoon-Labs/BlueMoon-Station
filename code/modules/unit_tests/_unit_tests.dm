@@ -276,6 +276,7 @@
 #include "movement_glide_math.dm"
 #include "movement_probe_math.dm"
 #include "movement_weight_slowdown.dm"
+#include "mutant_overlay_icon_cache.dm"
 #include "turf_enter_checks.dm"
 #include "turf_exit_checks.dm"
 #include "objective_completion.dm"

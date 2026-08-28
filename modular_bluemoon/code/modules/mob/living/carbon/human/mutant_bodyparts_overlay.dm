@@ -122,11 +122,21 @@ GLOBAL_LIST_INIT(mutant_overlays_cache, list())
 	var/icon/template = get_overlay_from_cache(cache_list_key)
 
 	if(!template)
-		// get_overlayed_icon() правит иконку НА МЕСТЕ (ColorTone и Blend мутируют
-		// приёмник), поэтому кормить его можно только свежесозданной копией.
-		template = get_overlayed_icon(icon(accessory_overlay.icon, accessory_overlay.icon_state), effect_datum)
-		GLOB.mutant_overlays_cache[cache_list_key] = template
-		clear_old_cache_if_it_need()
+		// Под стражем: промах кэша строит рантайм-иконку со всеми направлениями и кадрами,
+		// а отказ /icon/New() обрывает всю перерисовку носителя молча и до /world/Error не
+		// доходит. Пустышка в кэш НЕ пишется - иначе слой пропал бы до конца раунда.
+		try
+			// get_overlayed_icon() правит иконку НА МЕСТЕ (ColorTone и Blend мутируют
+			// приёмник), поэтому кормить его можно только свежесозданной копией.
+			//
+			// fcopy_rsc, как у соседних кэшей (clothing.dm, atoms.dm, species.dm): в кэше
+			// должен лежать неизменяемый слепок, который переиспользуется, а не рантайм-иконка,
+			// которую нечем защитить от правки на месте следующим вызовом.
+			template = fcopy_rsc(get_overlayed_icon(icon(accessory_overlay.icon, accessory_overlay.icon_state), effect_datum))
+			GLOB.mutant_overlays_cache[cache_list_key] = template
+			clear_old_cache_if_it_need()
+		catch(var/exception/icon_error)
+			template = note_icon_alloc_failure("оверлей мутантной части [accessory_overlay.icon_state] с эффектом [effect_datum?.name]", icon_error)
 
 	var/mutable_appearance/overlay_MA = mutable_appearance(icon = template, layer = accessory_overlay.layer, plane = accessory_overlay.plane, alpha = LIGHTING_PLANE_ALPHA_VISIBLE, appearance_flags = accessory_overlay.appearance_flags, color = effect_datum.color, pixel_x = accessory_overlay.pixel_x, pixel_y = accessory_overlay.pixel_y, blend_mode=BLEND_OVERLAY)
 	overlay_MA.name = "[layer]_[accessory_overlay.icon_state]"

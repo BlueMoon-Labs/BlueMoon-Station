@@ -833,12 +833,20 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 							var/gradient_key = "[gradient.icon]-[gradient.icon_state]-[hair_file]-[hair_state]"
 							var/icon/temp = hair_gradient_icons[gradient_key]
 							if(!temp)
-								temp = icon(gradient.icon, gradient.icon_state)
-								temp.Blend(icon(hair_file, hair_state), ICON_ADD)
-								temp = fcopy_rsc(temp)
-								hair_gradient_icons[gradient_key] = temp
-								if(length(hair_gradient_icons) > HAIR_GRADIENT_ICON_CACHE_MAX)
-									hair_gradient_icons.Cut(1, (HAIR_GRADIENT_ICON_CACHE_MAX / 4) + 1)
+								// Под стражем: промах кэша строит ДВЕ рантайм-иконки и склеивает их,
+								// а отказ /icon/New() обрывает handle_hair молча - и вместе с ним всю
+								// перерисовку моба. Пустышка в кэш НЕ пишется: отказ аллокации - это
+								// состояние минуты, а запомненная пустышка оставила бы носителя без
+								// градиента до конца раунда.
+								try
+									var/icon/blended = icon(gradient.icon, gradient.icon_state)
+									blended.Blend(icon(hair_file, hair_state), ICON_ADD)
+									temp = fcopy_rsc(blended)
+									hair_gradient_icons[gradient_key] = temp
+									if(length(hair_gradient_icons) > HAIR_GRADIENT_ICON_CACHE_MAX)
+										hair_gradient_icons.Cut(1, (HAIR_GRADIENT_ICON_CACHE_MAX / 4) + 1)
+								catch(var/exception/icon_error)
+									temp = note_icon_alloc_failure("градиент волос [gradient.icon_state] поверх [hair_state]", icon_error)
 							gradient_overlay.icon = temp
 							gradient_overlay.color = "#" + grad_color
 						else

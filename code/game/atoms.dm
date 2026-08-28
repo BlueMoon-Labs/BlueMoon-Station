@@ -924,11 +924,20 @@
 		var/blood_key = "[initial(icon)]-[initial(icon_state)]-[blood_DNA_to_color()]"
 		var/icon/cached_splatter = blood_splatter_icons[blood_key]
 		if(!cached_splatter)
-			cached_splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
-			cached_splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
-			cached_splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
-			cached_splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
-			cached_splatter = fcopy_rsc(cached_splatter)
+			// Под стражем: промах кэша - это три Blend поверх свежей рантайм-иконки, а отказ
+			// /icon/New() обрывает весь стек молча и до /world/Error не доходит. Пятно крови
+			// не стоит раунда: не собралось - предмет остаётся чистым до следующей капли.
+			// В кэш при отказе не пишется НИЧЕГО: отказ аллокации - состояние минуты, а
+			// запомненная пустышка оставила бы предмет чистым до конца раунда.
+			try
+				var/icon/splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
+				splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
+				splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
+				splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
+				cached_splatter = fcopy_rsc(splatter)
+			catch(var/exception/icon_error)
+				note_icon_alloc_failure("пятно крови на [type]", icon_error)
+				return
 			blood_splatter_icons[blood_key] = cached_splatter
 			if(length(blood_splatter_icons) > BLOOD_SPLATTER_ICON_CACHE_MAX)
 				blood_splatter_icons.Cut(1, (BLOOD_SPLATTER_ICON_CACHE_MAX / 4) + 1)
