@@ -73,8 +73,10 @@
 		var/water_level = liquids ? liquids.liquid_state : LIQUID_STATE_PUDDLE
 		if(water_level <= LIQUID_STATE_PUDDLE)
 			// BLUEMOON: drained/empty pool - falling in hits the hard bottom. The same for everyone.
-			if(iscarbon(victim) && !HAS_TRAIT(victim, TRAIT_SWIMMING) && !istype(oldloc, /turf/open/pool))
-				var/mob/living/carbon/H = victim
+		if(iscarbon(victim) && !HAS_TRAIT(victim, TRAIT_SWIMMING) && !istype(oldloc, /turf/open/pool))
+			if(locate(/obj/structure/pool/ladder) in src)
+				return
+			var/mob/living/carbon/H = victim
 				if(!H.head || !(H.head.armor.getRating(MELEE) > 20))
 					if(prob(75))
 						H.visible_message("<span class='danger'>[H] falls in the drained pool!</span>",
