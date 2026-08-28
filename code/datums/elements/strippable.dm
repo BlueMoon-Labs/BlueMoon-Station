@@ -385,8 +385,8 @@
 
 		// Strip-menu UI re-runs ui_data() on every refresh while the menu is open,
 		// so without a cache each open menu burns ~10 icon2base64 calls per tick.
-		// File-path icons stringify to их dmi-путь и стабильны между раундами и вещами -
-		// их и кэшируем.
+		// Файловые иконки стрингифицируются в свой dmi-путь и стабильны между раундами и
+		// вещами - их и кэшируем.
 		//
 		// Рантаймовая /icon В КЭШ НЕ ИДЁТ. Она стрингифицируется в "/icon" - одинаково для
 		// любой динамической иконки, - и прошлый ключ обходил это через REF(item.icon).
