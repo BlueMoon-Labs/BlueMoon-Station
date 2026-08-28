@@ -202,13 +202,13 @@
  * измеренную яркость: чем темнее шум, тем больше нужен коэффициент.
  */
 /atom/movable/screen/parallax_layer/goon
-	icon = 'icons/effects/parallax/goon/weather.dmi'
 	tile_size = 672
 
 /// Яркость 136 из 255 при полной непрозрачности: без маски этот слой добавил бы
 /// к каждому кадру ровно свою яркость, то есть залил бы экран. Коэффициент
 /// подобран так, чтобы вклад слоя в среднюю яркость сцены был около 22 из 255.
 /atom/movable/screen/parallax_layer/goon/snow_dense
+	icon = 'icons/effects/parallax/goon/weather/snow_dense.dmi'
 	icon_state = "snow_dense"
 	luminance_alpha = 0.14
 	speed = 2
@@ -217,6 +217,7 @@
 
 /// Спрайт со своей альфой - матрица не нужна.
 /atom/movable/screen/parallax_layer/goon/snow_sparse
+	icon = 'icons/effects/parallax/goon/weather/snow_sparse.dmi'
 	icon_state = "snow_sparse"
 	speed = 1.2
 	layer = 3
@@ -224,6 +225,7 @@
 
 /// Яркость 82 из 255, вклад в сцену около 20.
 /atom/movable/screen/parallax_layer/goon/dust_dense
+	icon = 'icons/effects/parallax/goon/weather/dust_dense.dmi'
 	icon_state = "dust_dense"
 	luminance_alpha = 0.25
 	speed = 1.8
@@ -231,6 +233,7 @@
 	parallax_intensity = PARALLAX_HIGH
 
 /atom/movable/screen/parallax_layer/goon/dust_sparse
+	icon = 'icons/effects/parallax/goon/weather/dust_sparse.dmi'
 	icon_state = "dust_sparse"
 	speed = 1
 	layer = 3
@@ -239,6 +242,7 @@
 /// Яркость всего 34 из 255 - тлеющие угли на почти чёрном. Коэффициент вшестеро
 /// больше снежного, иначе слой не проявится вовсе; вклад в сцену около 10.
 /atom/movable/screen/parallax_layer/goon/embers_dense
+	icon = 'icons/effects/parallax/goon/weather/embers_dense.dmi'
 	icon_state = "embers_dense"
 	luminance_alpha = 0.6
 	speed = 2.2
@@ -246,6 +250,7 @@
 	parallax_intensity = PARALLAX_HIGH
 
 /atom/movable/screen/parallax_layer/goon/embers_sparse
+	icon = 'icons/effects/parallax/goon/weather/embers_sparse.dmi'
 	icon_state = "embers_sparse"
 	speed = 1.4
 	layer = 3
@@ -264,6 +269,7 @@
  * цвет и как их масштабировать.
  */
 /atom/movable/screen/parallax_layer/goon/clouds
+	icon = 'icons/effects/parallax/goon/weather/clouds_3.dmi'
 	icon_state = "clouds_3"
 	alpha = 90
 	speed = 0.9
@@ -272,6 +278,7 @@
 
 /// Яркость 32 из 255.
 /atom/movable/screen/parallax_layer/goon/blowout_clouds
+	icon = 'icons/effects/parallax/goon/weather/blowout_clouds.dmi'
 	icon_state = "blowout_clouds"
 	luminance_alpha = 0.4
 	speed = 1.6
@@ -279,6 +286,7 @@
 	parallax_intensity = PARALLAX_HIGH
 
 /atom/movable/screen/parallax_layer/goon/meteors
+	icon = 'icons/effects/parallax/goon/weather/meteors.dmi'
 	icon_state = "meteors"
 	speed = 2.4
 	layer = 4
@@ -286,6 +294,7 @@
 
 /// Пустота: почти чёрное поле, по которому ползут два яруса разреженных облаков.
 /atom/movable/screen/parallax_layer/goon/void
+	icon = 'icons/effects/parallax/goon/weather/void.dmi'
 	icon_state = "void"
 	speed = 0.3
 	layer = 1
@@ -294,6 +303,7 @@
 /// Тёмный непрозрачный шум. Маска ему не нужна: аддитивный слой яркостью 14
 /// сам по себе даёт мягкую дымку, а матрица только съела бы её.
 /atom/movable/screen/parallax_layer/goon/void_clouds_1
+	icon = 'icons/effects/parallax/goon/weather/void_clouds_1.dmi'
 	icon_state = "void_clouds_1"
 	alpha = 150
 	speed = 0.8
@@ -302,6 +312,7 @@
 
 /// Яркость 7 из 255 - самый тёмный шум набора.
 /atom/movable/screen/parallax_layer/goon/void_clouds_2
+	icon = 'icons/effects/parallax/goon/weather/void_clouds_2.dmi'
 	icon_state = "void_clouds_2"
 	alpha = 120
 	speed = 1.4
@@ -309,18 +320,21 @@
 	parallax_intensity = PARALLAX_HIGH
 
 /atom/movable/screen/parallax_layer/goon/asteroids_far
+	icon = 'icons/effects/parallax/goon/weather/asteroids_far.dmi'
 	icon_state = "asteroids_far"
 	speed = 0.8
 	layer = 2
 	parallax_intensity = PARALLAX_MED
 
 /atom/movable/screen/parallax_layer/goon/asteroids_near
+	icon = 'icons/effects/parallax/goon/weather/asteroids_near.dmi'
 	icon_state = "asteroids_near"
 	speed = 1.9
 	layer = 3
 	parallax_intensity = PARALLAX_HIGH
 
 /atom/movable/screen/parallax_layer/goon/asteroids_sparse
+	icon = 'icons/effects/parallax/goon/weather/asteroids_sparse.dmi'
 	icon_state = "asteroids_sparse"
 	speed = 1.3
 	layer = 3
