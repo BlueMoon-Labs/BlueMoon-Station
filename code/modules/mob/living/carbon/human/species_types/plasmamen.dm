@@ -81,7 +81,12 @@
 			O = new J.plasma_outfit
 
 	H.equipOutfit(O, visualsOnly)
-	H.internal = H.get_item_for_held_index(2)
+	//в руке может оказаться не баллон: рука была занята, свой plasma_outfit профессии
+	//положил туда что-то другое. В internal пускаем только танк, иначе дыхание каждый тик
+	//падает на remove_air_volume()
+	var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
+	if(istype(plasma_tank))
+		H.internal = plasma_tank
 	return FALSE
 
 /datum/species/plasmaman/random_name(gender,unique,lastname)

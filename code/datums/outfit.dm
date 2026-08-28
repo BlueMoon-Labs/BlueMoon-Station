@@ -269,7 +269,12 @@
 	if(!visualsOnly)
 		apply_fingerprints(H)
 		if(internals_slot)
-			H.internal = H.get_item_by_slot(internals_slot)
+			//в слоте может лежать что угодно (кастомные админские аутфиты задают
+			//internals_slot вручную) - в internal пускаем только баллон, иначе дыхание
+			//каждый тик падает на remove_air_volume()
+			var/obj/item/tank/internals_tank = H.get_item_by_slot(internals_slot)
+			if(istype(internals_tank))
+				H.internal = internals_tank
 			H.update_action_buttons_icon()
 		if(implants)
 			for(var/implant_type in implants)

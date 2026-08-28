@@ -293,7 +293,10 @@ Credit where due:
 	W.registered_name = H.real_name
 	W.update_label()
 	if(plasmaman && !visualsOnly) //If we need to breathe from the plasma tank, we should probably start doing that
-		H.internal = H.get_item_for_held_index(2)
+		//в руке может оказаться не баллон, если рука была занята - в internal пускаем только танк
+		var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
+		if(istype(plasma_tank))
+			H.internal = plasma_tank
 	PDA.owner = H.real_name
 	PDA.ownjob = "Assistant"
 	PDA.update_label()

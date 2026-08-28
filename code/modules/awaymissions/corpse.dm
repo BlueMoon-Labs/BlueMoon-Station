@@ -119,8 +119,16 @@
 /obj/effect/mob_spawn/proc/equip(mob/M, load_character)
 	return
 
-/obj/effect/mob_spawn/proc/create(ckey, name, load_character)
-	var/mob/living/M = new mob_type(get_turf(src)) //living mobs only
+/**
+ * Создаёт моба спавнера.
+ *
+ * spawn_type - явный тип вместо общего mob_type. Нужен там, где выбор делает игрок в
+ * спящем диалоге (радиальное меню свармера): пока один гост выбирает, второй успевает
+ * переписать общий вар спавнера, и первый спавнил "объект типа null".
+ */
+/obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type)
+	var/mob_path = spawn_type || mob_type
+	var/mob/living/M = new mob_path(get_turf(src)) //living mobs only
 	if(!random)
 		M.real_name = mob_name ? mob_name : M.name
 		if(!mob_gender)

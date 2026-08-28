@@ -45,7 +45,8 @@
 /obj/machinery/am_shielding/proc/controllerscan(priorscan = 0)
 	//Make sure we are the only one here
 	if(!isturf(loc))
-		collapse()
+		collapse() //collapse() делает qdel(src), после него loc уже null - дальше идти некуда
+		return
 	for(var/obj/machinery/am_shielding/AMS in loc.contents)
 		if(AMS == src)
 			continue

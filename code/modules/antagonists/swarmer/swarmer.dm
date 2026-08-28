@@ -59,8 +59,10 @@
 		var/mob/dead/observer/O = user
 		if(!O.can_reenter_round())
 			return FALSE
-	mob_type = GetSwarmerTypeToCreate(user)
-	if(!mob_type || QDELETED(src)) // отмена выбора - не становимся свармером
+	// выбор держим в локальной переменной: show_radial_menu() спит, и общий mob_type
+	// успевал переписать второй гост - первый спавнил "объект типа null"
+	var/chosen_type = GetSwarmerTypeToCreate(user)
+	if(!chosen_type || QDELETED(src)) // отмена выбора - не становимся свармером
 		return
 	if(!uses)
 		to_chat(user, span_warning("This spawner is out of charges!"))
@@ -68,7 +70,7 @@
 	if(QDELETED(src) || QDELETED(user))
 		return
 	log_game("[key_name(user)] становится [mob_name]!")
-	create(ckey = user.ckey)
+	create(ckey = user.ckey, spawn_type = chosen_type)
 	return TRUE
 	// BLUEMOON EDIT END
 

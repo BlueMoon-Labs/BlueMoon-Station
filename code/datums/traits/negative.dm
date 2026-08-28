@@ -111,8 +111,11 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
 	if(!loadout_heirloom)
 		if(where == "В рюкзаке")
-			var/mob/living/carbon/human/H = quirk_holder
-			SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_SHOW, H)
+			//where посчитан ещё в add(), а post_add() приезжает отложенным таймером:
+			//к этому моменту рюкзака на носителе может уже не быть
+			var/mob/living/carbon/human/human_holder = quirk_holder
+			if(istype(human_holder) && human_holder.back)
+				SEND_SIGNAL(human_holder.back, COMSIG_TRY_STORAGE_SHOW, human_holder)
 
 		to_chat(quirk_holder, "<span class='boldnotice'>[where] находится [heirloom.name], передающаяся из поколения в поколение. Береги её!</span>")
 		var/list/family_name = splittext(quirk_holder.real_name, " ")

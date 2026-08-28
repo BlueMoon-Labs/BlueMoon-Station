@@ -32,11 +32,17 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 //light/light_sources - источники, принадлежащие атомам шаблона.
 //shadow_weight_sum/cached_lumcount/dynamic_lumcount/luminosity - производные величины,
 //их пересчитывает сам ChangeTurf.
+//overlays/underlays/filters/vis_contents/vis_locs - встроенные списки BYOND: islist() на них
+//истина, а ассоциативного чтения они не поддерживают, поэтому общий цикл копирования падал
+//на source[ключ] с "bad index" (273 рантайма за раунд 10137: ключом там сырой аппиранс).
+//Оверлеи и подложки при этом на копию не переезжали вовсе - их переносит
+//copy_template_vars() отдельно, значением.
 GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	"light", "light_sources", "lighting_object", "lighting_flags",
 	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
 	"shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
-	"luminosity"
+	"luminosity",
+	"overlays", "underlays", "filters", "vis_contents", "vis_locs"
 	))
 
 /proc/DuplicateObject(atom/original, perfectcopy = TRUE, sameloc = FALSE, atom/newloc = null, nerf = FALSE, holoitem=FALSE)
@@ -242,6 +248,12 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 		if(IS_BORROWED_TEMPLATE_REF(template_value))
 			continue
 		vars[varname] = template_value
+	//внешний вид шаблона: встроенные списки исключены из общего цикла (см.
+	//GLOB.turf_copy_forbidden_vars), поэтому оверлеи и подложки переносим значением.
+	//Аппиранс - значение, а не ссылка на хозяйство шаблона, наследовать его копия обязана,
+	//иначе с приёмника слетают решётки, трубы и прочая нарисованная обвязка турфа.
+	copy_overlays(template, TRUE)
+	underlays = template.underlays
 	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
 	//заводим/гасим собственный по свежим light_range/light_power/light_on.
 	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов

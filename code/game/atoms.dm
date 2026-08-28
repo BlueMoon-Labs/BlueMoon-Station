@@ -1410,7 +1410,9 @@
 	var/message = "[what_done] [starget][postfix]"
 	user.log_message(message, LOG_ATTACK, color="red", target = target)
 
-	if(user != target)
+	//цель может быть и null: часть предметов логирует действие "в никуда" (батарейщик,
+	//самоподрыв, срабатывание по площади). Сторона жертвы в этом случае просто не пишется
+	if(!isnull(target) && user != target)
 		var/reverse_message = "has been [what_done] by [ssource][postfix]"
 		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE, target = user)
 
