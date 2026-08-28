@@ -4455,12 +4455,12 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "qL" = (
-/obj/machinery/suit_storage_unit/syndicate/chameleon,
 /obj/machinery/airalarm/syndicate{
 	pixel_y = 0;
 	pixel_x = 27;
 	dir = 8
 	},
+/obj/machinery/suit_storage_unit/syndicate/command,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security)
 "qN" = (
@@ -5642,7 +5642,6 @@
 	dir = 8
 	},
 /obj/machinery/suit_storage_unit,
-/obj/item/mod/control/pre_equipped/elite,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/admiral)
 "vB" = (

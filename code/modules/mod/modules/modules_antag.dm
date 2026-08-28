@@ -60,3 +60,26 @@
 		return . = span_warning("Это существо одето в странный желтый МОД, но лицо и любые возможные приметы скрыты белым шумом.")
 	else
 		. = ..()
+
+/obj/item/mod/module/storage_upgrader
+	name = "MOD Storage Upgrader"
+	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
+	Позволяет увеличить размер встроенного рюкзака до уровня БС сумки."
+	icon_state = "storage_updater"
+	incompatible_modules = list(/obj/item/mod/module/storage_upgrader)
+	var/datum/component/storage/storage_module_datum
+	var/old_max_volume
+
+/obj/item/mod/module/storage_upgrader/on_install()
+	. = ..()
+	storage_module_datum = mod.GetComponent(/datum/component/storage)
+	if(!storage_module_datum)
+		return
+	old_max_volume = storage_module_datum.max_volume
+	storage_module_datum.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
+
+/obj/item/mod/module/storage_upgrader/on_uninstall()
+	. = ..()
+	if(!storage_module_datum || !old_max_volume)
+		return
+	storage_module_datum.max_volume = old_max_volume

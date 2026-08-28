@@ -865,12 +865,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					hair_overlay.pixel_y += H.dna.species.offset_features[OFFSET_HAIR][2]
 
 		if(hair_overlay.icon)
-			H.mutant_part_appearances["hair"] += list(standing) //в handle_mutant весь стэндинг стирается, так что результат обычно не сейвится между проками
 			standing += hair_overlay
 			standing += gradient_overlay
 
-		// if("hair" in H.layers_for_apply_effect)
-		// 	standing += update_overlay_by_key("hair", H, hair_overlay)
 	if(standing.len)
 		H.overlays_standing[HAIR_LAYER] = standing
 
@@ -957,7 +954,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 // MARK: handle_mutant_bodyparts
 /datum/species/proc/handle_mutant_bodyparts(mob/living/carbon/human/H, forced_colour, block_recursive_calls = FALSE)
 	var/list/bodyparts_to_add = mutant_bodyparts.Copy()
-	H.mutant_part_appearances = list()
 	H.cleanup_overlays()
 	if(!length(mutant_bodyparts))
 		return
@@ -1033,9 +1029,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				accessory_overlay.icon_state = "m_[bodypart]_[S.icon_state]_[layertext]"
 			if(S.center)
 				accessory_overlay = center_image(accessory_overlay, S.dimension_x, S.dimension_y)
-			if(!H.mutant_part_appearances[S.mutant_part_string])
-				H.mutant_part_appearances[S.mutant_part_string] = list()
-			H.mutant_part_appearances[S.mutant_part_string] += accessory_overlay
 			var/advanced_color_system = (H.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
 
 			var/mutant_string = S.mutant_part_string
