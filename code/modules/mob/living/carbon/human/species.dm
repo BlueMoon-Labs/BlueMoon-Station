@@ -676,6 +676,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			L.add_quirk(q)
 
 
+/// Потолок кэша склеенных иконок градиента волос. Ключ - стиль градиента и стиль волос,
+/// то есть множество замкнутое и небольшое; потолок стоит на случай кастомных стилей.
+#define HAIR_GRADIENT_ICON_CACHE_MAX 512
+
 /datum/species/proc/handle_hair(mob/living/carbon/human/H, forced_colour)
 	H.remove_overlay(HAIR_LAYER)
 	var/obj/item/bodypart/head/HD = H.get_bodypart(BODY_ZONE_HEAD)
@@ -817,9 +821,24 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 						// Битый преф (стиль, которого больше нет в списке) без гарда
 						// роняет весь handle_hair на каждом апдейте иконки моба.
 						if(gradient)
-							var/icon/temp = icon(gradient.icon, gradient.icon_state)
-							var/icon/temp_hair = icon(hair_file, hair_state)
-							temp.Blend(temp_hair, ICON_ADD)
+							// Кэш обязателен. handle_hair зовётся на каждой перерисовке моба -
+							// переодевание, шлем МОДа, расчленёнка, regenerate_icons, - и без него
+							// каждый такой вызов строил ДВЕ рантайм-иконки и склеивал третью. Иконка,
+							// попавшая в appearance, уезжает отдельным ресурсом каждому видящему
+							// клиенту и живёт у него до конца сессии; fcopy_rsc делает из неё
+							// неизменяемый слепок, который переиспользуется, а не рассылается заново.
+							// Цвет в ключ НЕ входит: он накладывается оверлеем, а не в иконку.
+							// Образец рядом - /obj/item/clothing/update_overlays().
+							var/static/list/hair_gradient_icons = list()
+							var/gradient_key = "[gradient.icon]-[gradient.icon_state]-[hair_file]-[hair_state]"
+							var/icon/temp = hair_gradient_icons[gradient_key]
+							if(!temp)
+								temp = icon(gradient.icon, gradient.icon_state)
+								temp.Blend(icon(hair_file, hair_state), ICON_ADD)
+								temp = fcopy_rsc(temp)
+								hair_gradient_icons[gradient_key] = temp
+								if(length(hair_gradient_icons) > HAIR_GRADIENT_ICON_CACHE_MAX)
+									hair_gradient_icons.Cut(1, (HAIR_GRADIENT_ICON_CACHE_MAX / 4) + 1)
 							gradient_overlay.icon = temp
 							gradient_overlay.color = "#" + grad_color
 						else
@@ -2940,3 +2959,5 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		else
 			to_chat(H, "<span class='notice'>You beat your wings and begin to hover gently above the ground...</span>")
 			H.set_resting(FALSE, TRUE)
+
+#undef HAIR_GRADIENT_ICON_CACHE_MAX
