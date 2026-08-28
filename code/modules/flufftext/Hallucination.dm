@@ -34,6 +34,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 	hallucination = max(hallucination-1, 0)
 
+	if(!client) // Смотреть некому - статус тает как обычно, но датум даже не создаём
+		return
+
 	if(world.time < next_hallucination)
 		return
 
@@ -57,13 +60,25 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	set waitfor = FALSE
 	target = C
 	natural = !forced
+	// Галлюцинация живёт целиком внутри клиента цели: звук идёт через playsound_local, картинки
+	// через client.images, текст через to_chat. Мобу без клиента показывать нечего, а стоит она
+	// датума, работы в New() подтипа и строки в investigate-логе - в раунде 10137 событие
+	// массовой галлюцинации так отработало сотню раз подряд по обезьянам. Оборвать конструктор
+	// подтипа из родителя нечем, поэтому помечаем датум на удаление, а подтипы сразу после ..()
+	// сверяются с QDELETED(src) и выходят.
+	if(!C?.client)
+		target = null
+		qdel(src)
 
 /datum/hallucination/proc/wake_and_restore()
 	target.set_screwyhud(SCREWYHUD_NONE)
 	target.SetSleeping(0)
 
 /datum/hallucination/Destroy()
-	target.investigate_log("was afflicted with a hallucination of type [type] by [natural?"hallucination status":"an external source"]. [feedback_details]", INVESTIGATE_HALLUCINATIONS)
+	// Логируем только то, что кто-то мог увидеть. У отменённых в New() (цель без клиента) target
+	// уже снят: писать по ним в investigate нечего, а стоит каждая такая запись открытия файла.
+	if(target)
+		target.investigate_log("was afflicted with a hallucination of type [type] by [natural?"hallucination status":"an external source"]. [feedback_details]", INVESTIGATE_HALLUCINATIONS)
 	target = null
 	return ..()
 
@@ -224,6 +239,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/fake_flood/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	for(var/obj/machinery/atmospherics/components/unary/vent_pump/U in orange(7,target))
 		if(!U.welded)
 			center = get_turf(U)
@@ -301,6 +318,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/xeno_attack/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	for(var/obj/machinery/atmospherics/components/unary/vent_pump/U in orange(7,target))
 		if(!U.welded)
 			pump = U
@@ -348,6 +367,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/oh_yeah/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	. = ..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/turf/closed/wall/wall
 	for(var/turf/closed/wall/W in range(7,target))
 		wall = W
@@ -387,7 +408,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	qdel(src)
 
 /datum/hallucination/oh_yeah/Destroy()
-	if(target.client)
+	if(target?.client)
 		target.client.images.Remove(fakebroken)
 		target.client.images.Remove(fakerune)
 	QDEL_NULL(fakebroken)
@@ -400,6 +421,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/battle/New(mob/living/carbon/C, forced = TRUE, battle_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/turf/source = random_far_turf()
 	if(!battle_type)
 		battle_type = pick("laser","disabler","esword","gun","stunprod","harmbaton","bomb")
@@ -475,6 +498,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/items_other/New(mob/living/carbon/C, forced = TRUE, item_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/item
 	if(!item_type)
 		item = pick(list("esword","taser","ebow","baton","dual_esword","clockspear","ttv","flash","armblade"))
@@ -582,6 +607,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/delusion/New(mob/living/carbon/C, forced, force_kind = null , duration = 300,skip_nearby = TRUE, custom_icon = null, custom_icon_file = null, custom_name = null)
 	set waitfor = FALSE
 	. = ..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/image/A = null
 	var/kind = force_kind ? force_kind : pick("nothing","monkey","corgi","carp","skeleton","demon","zombie")
 	feedback_details += "Type: [kind]"
@@ -627,7 +654,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 
 /datum/hallucination/delusion/Destroy()
 	for(var/image/I in delusions)
-		if(target.client)
+		if(target?.client)
 			target.client.images.Remove(I)
 	return ..()
 
@@ -637,6 +664,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/self_delusion/New(mob/living/carbon/C, forced, force_kind = null , duration = 300, custom_icon = null, custom_icon_file = null, wabbajack = TRUE) //set wabbajack to false if you want to use another fake source
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/image/A = null
 	var/kind = force_kind ? force_kind : pick("monkey","corgi","carp","skeleton","demon","zombie","robot")
 	feedback_details += "Type: [kind]"
@@ -668,7 +697,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	QDEL_IN(src, duration)
 
 /datum/hallucination/self_delusion/Destroy()
-	if(target.client)
+	if(target?.client)
 		target.client.images.Remove(delusion)
 	return ..()
 
@@ -678,6 +707,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/bolts/New(mob/living/carbon/C, forced, door_number)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	if(!door_number)
 		door_number = rand(0,4) //if 0 bolts all visible doors
 	var/count = 0
@@ -728,6 +759,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/chat/New(mob/living/carbon/C, forced = TRUE, force_radio, specific_message)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/target_name = target.first_name()
 	var/speak_messages = list("[pick_list_replacements(HAL_LINES_FILE, "suspicion")]",\
 		"[pick_list_replacements(HAL_LINES_FILE, "conversation")]",\
@@ -796,6 +829,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/message/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/list/mobpool = list()
 	var/mob/living/carbon/human/other
 	var/close_other = FALSE
@@ -850,6 +885,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/sounds/New(mob/living/carbon/C, forced = TRUE, sound_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/turf/source = random_far_turf()
 	if(!sound_type)
 		sound_type = pick("airlock","airlock pry","console","flash","explosion","far explosion","mech","glass","alarm","beepsky","mech","wall decon","door hack","seth")
@@ -911,6 +948,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/weird_sounds/New(mob/living/carbon/C, forced = TRUE, sound_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/turf/source = random_far_turf()
 	if(!sound_type)
 		sound_type = pick("phone","hallelujah","highlander","laughter","hyperspace","game over","creepy","tesla")
@@ -977,6 +1016,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/stationmessage/New(mob/living/carbon/C, forced = TRUE, message)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	if(!message)
 		message = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
 	feedback_details += "Type: [message]"
@@ -1043,6 +1084,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/hudscrew/New(mob/living/carbon/C, forced = TRUE, screwyhud_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	//Screwy HUD
 	var/chosen_screwyhud = screwyhud_type
 	if(!chosen_screwyhud)
@@ -1058,6 +1101,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/fake_alert/New(mob/living/carbon/C, forced = TRUE, specific, duration = 150)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/alert_type = pick("not_enough_oxy","not_enough_tox","not_enough_co2","too_much_oxy","too_much_co2","too_much_tox","newlaw","nutrition","charge","gravity","fire","locked","hacked","temphot","tempcold","pressure")
 	if(specific)
 		alert_type = specific
@@ -1114,6 +1159,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/items/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	//Strange items
 	if(!target.halitem)
 		target.halitem = new
@@ -1191,6 +1238,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/dangerflash/New(mob/living/carbon/C, forced = TRUE, danger_type)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	//Flashes of danger
 	if(!target.halimage)
 		var/list/possible_points = list()
@@ -1292,6 +1341,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/death/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	target.set_screwyhud(SCREWYHUD_DEAD)
 	target.Knockdown(300)
 	target.silent += 10
@@ -1323,6 +1374,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/fire/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	target.fire_stacks = max(target.fire_stacks, 0.1) //Placebo flammability
 	fire_overlay = image('icons/mob/OnFire.dmi', target, "Standing", ABOVE_MOB_LAYER)
 	if(target.client)
@@ -1373,6 +1426,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/shock/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	shock_image = image(target, target, dir = target.dir)
 	shock_image.appearance_flags |= KEEP_APART
 	shock_image.color = rgb(0,0,0)
@@ -1405,6 +1460,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/husks/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	if(!target.halbody)
 		var/list/possible_points = list()
 		for(var/turf/open/floor/F in target.fov_view(world.view))
@@ -1437,6 +1494,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/stray_bullet/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/list/turf/startlocs = list()
 	for(var/turf/open/T in target.fov_view(world.view+1)-view(world.view,target))
 		startlocs += T
@@ -1458,6 +1517,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/sleeping_carp/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	var/list/mobsyup
 	for (var/mob/living/carbon/A in orange(C,1))
 		if (get_dist(C,A) < 2)
@@ -1482,6 +1543,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /datum/hallucination/naked/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	if (C.client && C.client.prefs)
 		var/datum/preferences/prefs = C.client.prefs
 		var/mob/living/carbon/human/dummy/M = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_HALLUCINATION)
@@ -1494,7 +1557,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		QDEL_IN(src, 20 SECONDS)
 
 /datum/hallucination/naked/Destroy()
-	if(target.client)
+	if(target?.client)
 		target.client.images.Remove(image)
 	return ..()
 
