@@ -314,7 +314,7 @@
 
 /datum/borg_donator_skin/standard/servmeka
 	name = "Serv Meka"
-	module_type = /obj/item/standard/servmeka
+	module_type = /obj/item/standard
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "sfmekaserv"
 	ckey_whitelist = list("foxrtotlimda")
@@ -325,7 +325,7 @@
 
 /datum/borg_donator_skin/butler/servmeka
 	name = "Serv Meka"
-	module_type = /obj/item/butler/servmeka
+	module_type = /obj/item/butler
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "sfmekaserv"
 	ckey_whitelist = list("foxrtotlimda")
