@@ -118,7 +118,7 @@
 		icon_state = "jacket_transparent"
 	else if(current_mode == "concord_armored_coat")
 		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-		var/breast_size = clamp(round(B?.size || 0), 0, 7)
+		var/breast_size = clamp(round(B?.size || 0)-1, 0, 7)
 		icon_state = "concord_armored_coat_[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
