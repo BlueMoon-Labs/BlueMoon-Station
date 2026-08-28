@@ -885,11 +885,11 @@
 	icon_state = initial(icon_state)
 	if(!istype(loc, /mob/living/carbon/human))
 		return
-	var/mob/living/carbon/human/H = loc
-	if(adjusted || !(DIGITIGRADE in H.dna.species.species_traits))
+	var/mob/living/carbon/human/wearer = loc
+	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
 		return
-	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(B?.size || 0)-1, 0, 7)
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
 	icon_state = "[initial(icon_state)]_[breast_size]"
 	H.update_inv_w_uniform()
 	H.update_body()

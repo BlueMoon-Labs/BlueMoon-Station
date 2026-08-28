@@ -82,13 +82,13 @@
 
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible/AltClick(mob/user)
 	if(current_mode == "jacket_transparent")
-		name = "Concord Modified Armored Coat"
-		desc = "Халат для важных бумажных. Для создания таких используется вариант бронеплиты-халата службы безопасности. На подсумки же, увы, не хватило бюджета, зато тело в тепле."
 		if(!istype(loc, /mob/living/carbon/human))
 			return
-		var/mob/living/carbon/human/H = loc
-		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-		var/breast_size = clamp(round(B?.size || 0), 0, 7)
+		name = "Concord Modified Armored Coat"
+		desc = "Халат для важных бумажных. Для создания таких используется вариант бронеплиты-халата службы безопасности. На подсумки же, увы, не хватило бюджета, зато тело в тепле."
+		var/mob/living/carbon/human/wearer = loc
+		var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+		var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
 		icon_state = "concord_armored_coat_[breast_size]"
 		item_state = "concord_armored_coat_[breast_size]"
 		current_mode = "concord_armored_coat"

@@ -266,7 +266,7 @@
 
 /obj/item/storage/box/lapkee_kit/PopulateContents() // я заебался ебаться с тем что мне лапки пишет названия предметов из сски, а не кастомных, пропишу тут в комментах
 	new /obj/item/clothing/under/donator/bm/concord(src) // Форма
-	new /obj/item/clothing/neck/donator/bm/concord_cloak // плащ
+	new /obj/item/clothing/neck/donator/bm/concord_cloak(src) // плащ
 	new /obj/item/modkit/star_dust_kit(src) // противогаз
 	new /obj/item/modkit/lapkee_carrier_kit(src) // плитка
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
@@ -391,9 +391,9 @@
 	icon_state = base_state
 	if(base_state != "lapkee-carrier-coat" || !istype(loc, /mob/living/carbon/human))
 		return
-	var/mob/living/carbon/human/H = loc
-	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(B?.size || 0)-1, 0, 7)
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = H.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	H.update_inv_wear_suit()
 	H.update_body()
