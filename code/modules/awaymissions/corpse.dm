@@ -166,7 +166,11 @@
 				output_message += "<p>[flavour_text]</p>"
 			if(important_info != "")
 				output_message += "<span class='warning'>[important_info]</span>"
-			if(addition_warning)
+			// Напоминание о правилах посещения станции адресовано оффстанционным гост-ролям.
+			// Спавнер, стоящий на самой станции (свармер у гейтвея и прочие мидраундовые роли),
+			// запрещал бы игроку находиться ровно там, где он появился.
+			var/turf/spawner_turf = get_turf(src)
+			if(addition_warning && (!spawner_turf || !is_station_level(spawner_turf.z)))
 				output_message += "\n\n[addition_warning]"
 			to_chat(M, examine_block(output_message))
 		// BLUEMOON EDIT END
