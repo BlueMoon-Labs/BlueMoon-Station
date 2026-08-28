@@ -15,10 +15,24 @@
 		// needs to be recreated
 		clear_fullscreen(category, 0)
 		fullscreens[category] = screen = new type
+	// Ранний возврат, когда обновлять нечего. Он есть у апстрима и был потерян при переносе:
+	// без него update_damage_hud() гонит тело этого прока ШЕСТЬ раз за вызов (critvision,
+	// crit, oxy, brute, synthcorrupt, кровопотеря), то есть на каждом updatehealth() каждого
+	// раненого моба - а это тик Life() плюс любое применение урона и любой тик реагента.
+	// Именно это сделало SetSeverity() горячим проком: подтип synthcorrupt заводил там
+	// эмиттер /particles на 960x960, и клиент набирал сотни мегабайт за минуту.
+	//
+	// От апстримовой версии условие отличается отсутствием ветки "!severity": у нас
+	// SetSeverity() - это не присваивание, а снятие эффекта на нулевой тяжести (тот же
+	// synthcorrupt убирает там холдер), и пропускать вызов с нулём нельзя.
+	else if(severity == screen.severity && (!client || screen.screen_loc != "CENTER-7,CENTER-7" || screen.view_current == client.view))
+		return screen
 	screen.SetSeverity(severity)
 	if(client && screen.ShouldShow(src))
 		screen.SetView(client.view)
-		client.screen += screen
+		// |=, а не +=: client.screen - обычный список, и += клал бы один и тот же экранный
+		// объект повторно. Соседний reload_fullscreen() уже делает |=.
+		client.screen |= screen
 	return screen
 
 /**
