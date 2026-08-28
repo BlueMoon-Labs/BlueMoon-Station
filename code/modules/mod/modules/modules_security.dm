@@ -86,13 +86,15 @@
 		guns_typecache = typecacheof(list(/obj/item/gun/ballistic, /obj/item/gun/energy, /obj/item/gun/grenadelauncher, /obj/item/gun/chem, /obj/item/gun/syringe))
 
 /obj/item/mod/module/magnetic_harness/on_install()
-	already_allowed_guns = guns_typecache & mod.chestplate.allowed
-	mod.chestplate.allowed |= guns_typecache
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
+	already_allowed_guns = guns_typecache & chestplate.allowed
+	chestplate.allowed |= guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	if(deleting)
 		return
-	mod.chestplate.allowed -= (guns_typecache - already_allowed_guns)
+	chestplate.allowed -= (guns_typecache - already_allowed_guns)
 
 /obj/item/mod/module/magnetic_harness/on_suit_activation()
 	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(check_dropped_item))
@@ -184,6 +186,7 @@
 	cooldown_time = 0.5 SECONDS
 	/// List of spans we add to the speaker.
 	var/list/voicespan = list(SPAN_COMMAND)
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/megaphone/on_activation()
 	. = ..()

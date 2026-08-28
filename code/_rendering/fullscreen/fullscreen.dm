@@ -148,11 +148,79 @@
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
 
+/atom/movable/screen/fullscreen/scaled/synthcorrupt
+	icon_state = "synthcorrupt"
+	layer = UI_DAMAGE_LAYER
+	plane = GRAVITY_PULSE_PLANE
+	vis_flags = VIS_INHERIT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	severity_max = 6
+	severity_min = 0
+	var/obj/effect/synthcorrupt_particles_holder/holder
+
+/atom/movable/screen/fullscreen/scaled/synthcorrupt/SetSeverity(severity)
+	src.severity = clamp(severity, severity_min, severity_max)
+	src.alpha = clamp(10 * src.severity**2, 0, 255)
+
+	holder = new(src, severity)
+	LAZYADD(vis_contents, holder)
+
+/atom/movable/screen/fullscreen/scaled/synthcorrupt/Destroy()
+	LAZYREMOVE(vis_contents, holder)
+	qdel(holder)
+	. = ..()
+
+/obj/effect/synthcorrupt_particles_holder
+	alpha = 255
+	plane = FIELD_OF_VISION_LAYER
+	appearance_flags = PIXEL_SCALE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	vis_flags = VIS_INHERIT_LAYER
+
+/obj/effect/synthcorrupt_particles_holder/New(loc, severity)
+	. = ..()
+	var/particles/synthcorrupt_particles/particle = new
+	particle.spawning = severity * 10
+	particle.count = severity * 50
+	particles = particle
+
+/particles/synthcorrupt_particles
+	icon = 'icons/screen/particle.dmi'
+	icon_state = "synthcorrupt"
+	width = 960
+	height = 960
+	count = 300
+	spawning = 30
+	lifespan = 1
+	fade = 1
+	// Границы списком, а не vector(): в типовом дефолте SpacemanDMM считает vector()
+	// неконстантным вызовом и валит линтер, а generator("box", ...) читает список
+	// ровно так же. Остальные пять generator("box") в кодбазе тоже на списках.
+	position = generator("box", list(-480, -480), list(480, 480))
+
+/atom/movable/screen/fullscreen/scaled/synthcorrupt/ShouldShow(mob/M)
+	if(!..())
+		return FALSE
+
+	if(!isrobotic(M))
+		return FALSE
+
+	return TRUE
+
 /atom/movable/screen/fullscreen/scaled/bloodloss
 	icon_state = "passage"
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
 	severity_max = 10
+
+/atom/movable/screen/fullscreen/scaled/bloodloss/ShouldShow(mob/M)
+	if(!..())
+		return FALSE
+
+	if(isrobotic(M))
+		return FALSE
+
+	return TRUE
 
 /atom/movable/screen/fullscreen/scaled/crit
 	icon_state = "passage"

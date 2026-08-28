@@ -39,8 +39,14 @@
 			weights["steal"] = length(subtypesof(/datum/objective_item/steal))
 		var/datum/objective/protect/protect_objective = new
 		protect_objective.owner = T.owner
-		if(protect_objective.find_target())
+		if(protect_objective.find_kill_target() && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого
 			weights["protect"] = length(subtypesof(/datum/objective_item/steal))
+		// BLUEMOON ADD - цель «Подстава»
+		var/datum/objective/frame/frame_objective = new
+		frame_objective.owner = T.owner
+		if(frame_objective.find_target())
+			weights["frame"] = length(subtypesof(/datum/objective_item/steal))
+		// BLUEMOON ADD END
 		var/datum/objective/breakout/breakout_objective = null
 		if(has_manifest_prisoner())
 			breakout_objective = new
@@ -58,6 +64,7 @@
 				qdel(protect_objective)
 				if(breakout_objective)
 					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				return TRUE
 			if("steal")
 				T.add_objective(steal_objective)
@@ -65,11 +72,21 @@
 				qdel(protect_objective)
 				if(breakout_objective)
 					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				return TRUE
 			if("protect")
 				T.add_objective(protect_objective)
 				qdel(sabotage_objective)
 				qdel(steal_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
+				return TRUE
+			if("frame")	// BLUEMOON ADD - цель «Подстава»
+				T.add_objective(frame_objective)
+				qdel(sabotage_objective)
+				qdel(steal_objective)
+				qdel(protect_objective)
 				if(breakout_objective)
 					qdel(breakout_objective)
 				return TRUE
@@ -78,6 +95,7 @@
 				qdel(sabotage_objective)
 				qdel(steal_objective)
 				qdel(protect_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				return TRUE
 			if("download")
 				qdel(sabotage_objective)
@@ -85,6 +103,7 @@
 				qdel(protect_objective)
 				if(breakout_objective)
 					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				var/datum/objective/download/download_objective = new
 				download_objective.owner = T.owner
 				download_objective.gen_amount_goal()

@@ -4,6 +4,9 @@
 /datum/light_source
 	var/atom/top_atom        // The atom we're emitting light from (for example a mob if we're from a flashlight that's being held).
 	var/atom/source_atom     // The atom that we belong to.
+	/// Тот же source_atom, если он движимый. Конус света стоит только на /atom/movable:
+	/// у турфа конуса не бывает, а слот на каждом из 1.2 млн турфов стоит мегабайты.
+	var/atom/movable/cone_source
 
 	var/turf/source_turf     // The turf under the above.
 	var/turf/pixel_turf      // The turf the top_atom appears to over.
@@ -50,6 +53,7 @@
 
 /datum/light_source/New(var/atom/owner, var/atom/top)
 	source_atom = owner // Set our new owner.
+	cone_source = ismovable(owner) ? owner : null
 	LAZYADD(source_atom.light_sources, src)
 	GLOB.all_light_sources += src
 	top_atom = top
@@ -63,7 +67,7 @@
 	light_range = min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom))
 	light_color = source_atom.light_color
 	light_height = source_atom.light_height
-	light_cone_angle = source_atom.light_cone_angle
+	light_cone_angle = cone_source ? cone_source.light_cone_angle : 0
 
 	if(light_cone_angle > 0)
 		update_cone_cache()
@@ -76,7 +80,7 @@
 	// NOTE: When light_cone_dir is set on the source atom, the cone direction is FIXED
 	// and will NOT rotate with the holder. This is by design for wall-mounted fixtures, etc.
 	// Once registered, stays registered until top_atom changes or Destroy — handler has early return for inactive cones.
-	if(light_cone_angle > 0 && top_atom && !source_atom.light_cone_dir)
+	if(light_cone_angle > 0 && top_atom && !cone_source.light_cone_dir)
 		RegisterSignal(top_atom, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_holder_dir_change))
 		cone_signal_registered = TRUE
 
@@ -109,6 +113,7 @@
 
 	top_atom = null
 	source_atom = null
+	cone_source = null
 	source_turf = null
 	pixel_turf = null
 	_corners_buf = null
@@ -142,7 +147,7 @@
 			LAZYADD(top_atom.light_sources, src) // Add ourselves to the light sources of our new top atom.
 
 		// Re-register cone signal on new top_atom if cone is active
-		if(light_cone_angle > 0 && !source_atom.light_cone_dir)
+		if(light_cone_angle > 0 && !cone_source.light_cone_dir)
 			RegisterSignal(top_atom, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_holder_dir_change))
 			cone_signal_registered = TRUE
 			update_cone_cache()
@@ -159,7 +164,7 @@
 
 /// Recalculates cached cone direction cosines from the source atom's properties.
 /datum/light_source/proc/update_cone_cache()
-	var/effective_dir = source_atom.light_cone_dir
+	var/effective_dir = cone_source?.light_cone_dir
 	if(!effective_dir && top_atom)
 		effective_dir = top_atom.dir
 	if(!effective_dir)
@@ -378,6 +383,7 @@
 		REMOVE_CORNER(C)
 
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 
 	effect_str = null
 
@@ -439,13 +445,14 @@
 		geometry_changed = TRUE // Different falloff sheet
 		update = TRUE
 
-	if (source_atom.light_cone_angle != light_cone_angle)
-		light_cone_angle = source_atom.light_cone_angle
+	var/source_cone_angle = cone_source ? cone_source.light_cone_angle : 0
+	if (source_cone_angle != light_cone_angle)
+		light_cone_angle = source_cone_angle
 		if(light_cone_angle > 0)
 			update_cone_cache()
 			// Register signal on first cone activation — stays registered even if cone later disabled
 			// (handler has early return for inactive cones, avoiding register/unregister churn)
-			if(!cone_signal_registered && top_atom && !source_atom.light_cone_dir)
+			if(!cone_signal_registered && top_atom && !cone_source.light_cone_dir)
 				RegisterSignal(top_atom, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_holder_dir_change))
 				cone_signal_registered = TRUE
 		// No unregister when cone disabled — handler early-returns for light_cone_angle <= 0
@@ -454,7 +461,7 @@
 	else if(light_cone_angle > 0)
 		// Angle unchanged but cone active — check if resolved direction changed
 		// Resolve direction cheaply first to avoid cos() calls in update_cone_cache() when unchanged
-		var/effective_dir = source_atom.light_cone_dir
+		var/effective_dir = cone_source?.light_cone_dir
 		if(!effective_dir)
 			effective_dir = top_atom?.dir
 		if(!effective_dir)
@@ -550,6 +557,7 @@
 				C = thing
 				REMOVE_CORNER(C)
 				LAZYREMOVE(C.affecting, src)
+				C.queue_idle_check()
 			if(to_remove)
 				effect_str -= to_remove
 		else if(!geometry_changed && applied_power)
@@ -646,7 +654,7 @@
 		source_turf.luminosity = CEILING(light_range, 1)
 		var/list/_view_result = view(CEILING(light_range, 1), source_turf)
 		for(var/turf/T in _view_result)
-			if((!IS_DYNAMIC_LIGHTING(T) && !T.light_sources) || T.has_opaque_atom )
+			if((!TURF_IS_DYNAMIC_LIGHTING(T) && !T.light_sources) || (T.lighting_flags & TURF_HAS_OPAQUE_ATOM) )
 				continue
 			corner_tr = T.lc_topright
 			corner_br = T.lc_bottomright
@@ -657,7 +665,7 @@
 			// уезжала в corners ключом null, а дальше падала на C.active. Тот же
 			// расклад уже обрабатывают руками в SSlighting (см. lighting.dm),
 			// здесь его чиним - generate_missing_corners() досоздаёт недостающие.
-			if(!T.lighting_corners_initialised || !corner_tr || !corner_br || !corner_bl || !corner_tl)
+			if(!(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED) || !corner_tr || !corner_br || !corner_bl || !corner_tl)
 				T.generate_missing_corners()
 				corner_tr = T.lc_topright
 				corner_br = T.lc_bottomright
@@ -708,6 +716,7 @@
 		C = thing
 		REMOVE_CORNER(C)
 		LAZYREMOVE(C.affecting, src)
+		C.queue_idle_check()
 	effect_str -= L
 
 
@@ -717,6 +726,13 @@
 	applied_power = light_power
 
 	UNSETEMPTY(effect_str)
+
+	// Буфер держит ключами КАЖДЫЙ угол, который накрыл view() этого прохода - включая отсеянные
+	// по порогу видимости и выброшенные из effect_str. Он переживает прок, а у неподвижной лампы
+	// следующего полного прохода может не быть вовсе, так что снесённый угол остался бы висеть
+	// ключом у всех соседних источников: GC его не соберёт, и он уйдёт в hard delete на 100+ мс.
+	// Сам список не выбрасываем - его переиспользует следующий полный проход.
+	_corners_buf.Cut()
 
 #undef EFFECT_UPDATE
 #undef SETUP_CORNERS_CACHE

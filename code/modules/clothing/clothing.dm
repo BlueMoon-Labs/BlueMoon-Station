@@ -513,17 +513,25 @@ BLIND     // can't see anything
 */
 
 /proc/generate_alpha_masked_clothing(index,state,icon,female,alpha_masks)
-	var/icon/I = icon(icon, state)
-	if(female)
-		var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
-		I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
-	if(alpha_masks)
-		if(istext(alpha_masks))
-			alpha_masks = list(alpha_masks)
-		for(var/alpha_state in alpha_masks)
-			var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
-			I.Blend(alpha, ICON_MULTIPLY, -15, -15)
-	. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	// Каждая надетая шмотка с маской строит иконку через icon()+Blend, и на этом умер
+	// раунд 10086 (23.08): рантайм в /icon/New() посреди экипировки аутфита, после
+	// которого мир не написал больше ни строки. См. code/__HELPERS/icon_alloc_guard.dm.
+	// Пустышка в кэш не пишется: отказ аллокации - состояние минуты, а запомненная
+	// пустая иконка оставила бы всех в этой одежде голыми до конца раунда.
+	try
+		var/icon/I = icon(icon, state)
+		if(female)
+			var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
+			I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
+		if(alpha_masks)
+			if(istext(alpha_masks))
+				alpha_masks = list(alpha_masks)
+			for(var/alpha_state in alpha_masks)
+				var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
+				I.Blend(alpha, ICON_MULTIPLY, -15, -15)
+		. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	catch(var/exception/icon_error)
+		return note_icon_alloc_failure("одежда с альфа-маской [index]", icon_error)
 
 /obj/item/clothing/proc/weldingvisortoggle(mob/user) //proc to toggle welding visors on helmets, masks, goggles, etc.
 	if(!can_use(user))

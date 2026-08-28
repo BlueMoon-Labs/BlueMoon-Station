@@ -138,7 +138,6 @@
 	heat_protection = CHEST|ARMS
 	strip_delay = 80
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 0, RAD = 0, FIRE = 60, ACID = 60, WOUND = 15)
-	slowdown = 0.1
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	unique_reskin = list(
 		"Black" = list("icon_state" = "platecarrier"),
@@ -162,7 +161,6 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
 	strip_delay = 60
-	slowdown = 0.2
 
 /obj/item/clothing/suit/armor/vest/warden
 	name = "Warden's Jacket"

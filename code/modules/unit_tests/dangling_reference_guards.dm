@@ -86,13 +86,13 @@
 	TEST_ASSERT_NOTNULL(template, "Sanity: соседний турф резервации должен существовать")
 
 	var/obj/item/crowbar/template_prop = allocate(/obj/item/crowbar, template)
-	var/list/saved_template_appearances = template.alternate_appearances
-	var/list/saved_own_appearances = copy_target.alternate_appearances
+	var/list/saved_template_filters = template.filter_data
+	var/list/saved_own_filters = copy_target.filter_data
 	var/list/saved_template_vis = template.vis_contents.Copy()
 	var/list/saved_own_vis = copy_target.vis_contents.Copy()
 
 	//датум и в ключе, и в значении, и во вложенном списке - все три пути чистки
-	template.alternate_appearances = list(
+	template.filter_data = list(
 		"держатель" = template_prop,
 		template_prop = "датум-ключ",
 		"обычная" = "строка",
@@ -103,19 +103,19 @@
 
 	copy_target.copy_template_vars(template)
 
-	var/list/copied_appearances = copy_target.alternate_appearances
+	var/list/copied_filters = copy_target.filter_data
 	var/list/copied_vis = copy_target.vis_contents.Copy()
-	template.alternate_appearances = saved_template_appearances
+	template.filter_data = saved_template_filters
 	template.vis_contents = saved_template_vis
-	copy_target.alternate_appearances = saved_own_appearances
+	copy_target.filter_data = saved_own_filters
 	copy_target.vis_contents = saved_own_vis
 
-	TEST_ASSERT_NOTNULL(copied_appearances, "Список шаблона должен доезжать до копии, а не теряться целиком")
-	TEST_ASSERT(!(template_prop in copied_appearances), "Датум шаблона не должен остаться ключом в списке копии")
-	TEST_ASSERT(!("держатель" in copied_appearances), "Запись со значением-датумом не должна остаться в списке копии")
-	TEST_ASSERT_EQUAL(copied_appearances["обычная"], "строка", "Не-датумные записи должны переживать чистку")
-	TEST_ASSERT_NOTNULL(copied_appearances["аппиранс"], "Аппиранс - значение внешнего вида, его чистка выкидывать не должна")
-	var/list/copied_nested = copied_appearances["вложенная"]
+	TEST_ASSERT_NOTNULL(copied_filters, "Список шаблона должен доезжать до копии, а не теряться целиком")
+	TEST_ASSERT(!(template_prop in copied_filters), "Датум шаблона не должен остаться ключом в списке копии")
+	TEST_ASSERT(!("держатель" in copied_filters), "Запись со значением-датумом не должна остаться в списке копии")
+	TEST_ASSERT_EQUAL(copied_filters["обычная"], "строка", "Не-датумные записи должны переживать чистку")
+	TEST_ASSERT_NOTNULL(copied_filters["аппиранс"], "Аппиранс - значение внешнего вида, его чистка выкидывать не должна")
+	var/list/copied_nested = copied_filters["вложенная"]
 	TEST_ASSERT_NOTNULL(copied_nested, "Вложенный список должен доезжать до копии")
 	TEST_ASSERT(!(template_prop in copied_nested), "Датум шаблона не должен остаться во вложенном списке")
 	TEST_ASSERT(("уцелевшая строка" in copied_nested), "Не-датумные записи вложенного списка должны переживать чистку")

@@ -146,6 +146,11 @@
 						failed_last_breath = FALSE
 						clear_alert("not_enough_oxy")
 						return FALSE
+					var/obj/item/clothing/mouth_cover = get_item_by_slot(ITEM_SLOT_MASK)
+					if(mouth_cover && (mouth_cover.flags_cover & MASKCOVERSMOUTH))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
 					breath = null // uh oh where'd the air go
 					check_breath(breath)
 					if(oxyloss <= OXYGEN_DAMAGE_CHOKING_THRESHOLD && !(stat >= UNCONSCIOUS || stat >= SOFT_CRIT))
@@ -887,10 +892,10 @@ BLUEMOON REMOVAL END */
 	if(istype(head_item, /obj/item/clothing/head/helmet/space) && istype(suit_item, /obj/item/clothing/suit/space))
 		return TRUE
 
-	if(istype(head_item, /obj/item/clothing/head/mod) && istype(suit_item, /obj/item/clothing/suit/mod))
-		var/obj/item/clothing/suit/mod/modsuit = suit_item
+	if(istype(head_item, /obj/item/clothing/mod_part/head) && istype(suit_item, /obj/item/clothing/mod_part/suit))
+		var/obj/item/clothing/mod_part/suit/modsuit = suit_item
 		var/obj/item/mod/control/mod_control = modsuit.mod
-		if(mod_control && mod_control.active)
+		if(mod_control && mod_control.is_active())
 			return TRUE
 
 	if(T && is_mining_level(T.z) && istype(head_item, /obj/item/clothing/head/hooded/explorer) && istype(suit_item, /obj/item/clothing/suit/hooded/explorer))

@@ -7,7 +7,6 @@
 	icon = 'modular_splurt/icons/mobs/carrion.dmi'
 	icon_state = "c_idle"
 	icon_living = "c_idle"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 2

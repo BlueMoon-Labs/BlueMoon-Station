@@ -109,13 +109,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		return skipped_turf
 
 	var/old_opacity = opacity
-	var/old_dynamic_lighting = dynamic_lighting
+	var/old_dynamic_lighting = turf_flags & TURF_DYNAMIC_LIGHTING
 	var/old_lighting_object = lighting_object
 	var/old_lc_topright = lc_topright
 	var/old_lc_topleft = lc_topleft
 	var/old_lc_bottomright = lc_bottomright
 	var/old_lc_bottomleft = lc_bottomleft
-	var/old_has_opaque = has_opaque_atom
+	var/old_has_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
 	var/old_shadow_weight = shadow_weight_sum
 	var/old_dynamic_lumcount = dynamic_lumcount
 
@@ -138,7 +138,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/datum/component/comp = i
 		comp.RemoveComponent()
 
-	changing_turf = TRUE
+	turf_flags |= TURF_CHANGING
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
@@ -212,17 +212,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		lc_bottomleft = old_lc_bottomleft
 
 		// Restore cached opacity state — contents are unchanged, only turf type changed
-		has_opaque_atom = old_has_opaque
+		if(old_has_opaque)
+			lighting_flags |= TURF_HAS_OPAQUE_ATOM
+		else
+			lighting_flags &= ~TURF_HAS_OPAQUE_ATOM
 		shadow_weight_sum = old_shadow_weight
 		// Only full rescan if the turf's own opacity changed (rare: wall↔floor)
 		if(opacity != old_opacity)
 			recalc_atom_opacity()
 			reconsider_lights()
-		else if(dynamic_lighting != old_dynamic_lighting)
+		else if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
 			reconsider_lights()
 
-		if(dynamic_lighting != old_dynamic_lighting)
-			if(IS_DYNAMIC_LIGHTING(src))
+		if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
+			if(TURF_IS_DYNAMIC_LIGHTING(src))
 				lighting_build_overlay()
 			else
 				lighting_clear_overlay()

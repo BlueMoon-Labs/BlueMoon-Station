@@ -284,7 +284,7 @@
 		new_limbs += BP.get_limb_icon()
 	if(new_limbs.len)
 		overlays_standing[BODYPARTS_LAYER] = new_limbs
-		limb_icon_cache[icon_render_key] = new_limbs
+		cache_limb_icons(icon_render_key, new_limbs)
 
 	apply_overlay(BODYPARTS_LAYER)
 	update_damage_overlays()
@@ -325,6 +325,30 @@
 	if(HAS_TRAIT(src, TRAIT_HUSK))
 		. += "-husk"
 
+
+/**
+ * Положить набор конечностей в общий кэш, вытеснив самые старые записи.
+ *
+ * Кэш статический, то есть один на весь мир и на весь процесс, а пространство ключей у
+ * generate_icon_render_key() неограниченное: сырые hex-цвета, JSON боди-маркингов, JSON
+ * эмиссивных частей. Хуже того, манекен редактора персонажа (dummy.dm обнуляет
+ * icon_render_key) пишет сюда постоянную запись на каждую перерисовку превью, а превью
+ * перерисовывается на каждый клик в меню. За прод-раунд 10121 строка этого списка в
+ * переписи памяти выросла с 4013 до 16718 слотов за двадцать пять минут и не собиралась
+ * останавливаться: ни капа, ни вытеснения, ни сброса за раунд у него не было.
+ *
+ * Вытеснение FIFO, а не LRU: Cut(1, 2) снимает первую пару ключ-значение, то есть самую
+ * раннюю вставленную (DM хранит ассоциативный список в порядке вставки), и стоит копейки.
+ * LRU потребовал бы трогать список на каждом ПОПАДАНИИ, то есть в самом горячем месте.
+ *
+ * Вытесненная запись живых мобов не ломает: у моба свой список в
+ * overlays_standing[BODYPARTS_LAYER], кэш держал лишь вторую ссылку, а промах чинится
+ * обычной перегенерацией в update_body_parts().
+ */
+/mob/living/carbon/proc/cache_limb_icons(key, list/limbs)
+	limb_icon_cache[key] = limbs
+	while(length(limb_icon_cache) > LIMB_ICON_CACHE_MAX)
+		limb_icon_cache.Cut(1, 2)
 
 //change the mob's icon to the one matching its key
 /mob/living/carbon/proc/load_limb_from_cache()

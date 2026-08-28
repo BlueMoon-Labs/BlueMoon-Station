@@ -111,7 +111,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 	var/turf/T = get_turf(src)			// hide if turf is not intact
 	if(level==1)
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 	GLOB.cable_list += src //add it to the global cable list
 
 	var/list/cable_colors = GLOB.cable_colors
@@ -156,7 +156,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/structure/cable/proc/handlecable(obj/item/W, mob/user, params)
 	var/turf/T = get_turf(src)
-	if(T.intact)
+	if(T.turf_flags & TURF_INTACT)
 		return
 	if(W.tool_behaviour == TOOL_WIRECUTTER)
 		if (shock(user, 50))
@@ -685,7 +685,7 @@ By design, d1 is the smallest direction and d2 is the highest
 	if(!isturf(user.loc))
 		return
 
-	if(!isturf(T) || T.intact || !T.can_have_cabling())
+	if(!isturf(T) || (T.turf_flags & TURF_INTACT) || !T.can_have_cabling())
 		to_chat(user, "<span class='warning'>You can only lay cables on catwalks and plating!</span>")
 		return
 
@@ -747,7 +747,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 	var/turf/T = C.loc
 
-	if(!isturf(T) || T.intact)		// sanity checks, also stop use interacting with T-scanner revealed cable
+	if(!isturf(T) || (T.turf_flags & TURF_INTACT))		// sanity checks, also stop use interacting with T-scanner revealed cable
 		return
 
 	if(get_dist(C, user) > 1)		// make sure it's close enough
@@ -767,7 +767,7 @@ By design, d1 is the smallest direction and d2 is the highest
 			if (showerror)
 				to_chat(user, "<span class='warning'>You can only lay cables on catwalks and plating!</span>")
 			return
-		if(U.intact)						//can't place a cable if it's a plating with a tile on it
+		if(U.turf_flags & TURF_INTACT)						//can't place a cable if it's a plating with a tile on it
 			to_chat(user, "<span class='warning'>You can't lay cable there unless the floor tiles are removed!</span>")
 			return
 		else

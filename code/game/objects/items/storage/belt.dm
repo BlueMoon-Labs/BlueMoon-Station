@@ -222,7 +222,8 @@
 		/obj/item/implanter,
 		/obj/item/pinpointer/crew,
 		/obj/item/reagent_containers/chem_pack,
-		/obj/item/stack/sticky_tape //surgical tape
+		/obj/item/stack/sticky_tape, //surgical tape
+		/obj/item/reagent_containers/spray
 		))
 
 /obj/item/storage/belt/medical/surgery_belt_adv

@@ -748,9 +748,6 @@
 /atom/movable/screen/bloodsucker
 	invisibility = INVISIBILITY_ABSTRACT
 
-/atom/movable/screen/bloodsucker/proc/clear()
-	invisibility = INVISIBILITY_ABSTRACT
-
 /atom/movable/screen/bloodsucker/proc/update_counter(value, valuecolor)
 	invisibility = 0
 

@@ -980,6 +980,7 @@
 					remove_reagent(reagentgas.type, portion, safety = TRUE)
 			s.set_up(R, clamp(amount/10, 0, 2), T)
 			s.start()
+			qdel(R)
 			return FALSE
 
 	if(!pH)

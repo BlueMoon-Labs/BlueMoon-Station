@@ -244,10 +244,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/door/poddoor/shutters/window{
-	id = "armory";
-	name = "Armoury Shutters"
-	},
+/obj/machinery/door/poddoor/shutters/window/armory/officers,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "aaZ" = (
@@ -2158,15 +2155,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "ahF" = (
-/obj/machinery/power/apc/highcap/five_k{
-	areastring = "/area/ai_monitored/security/armory";
-	name = "Armory APC";
-	pixel_x = 1;
-	pixel_y = -23
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
 /obj/machinery/light,
 /obj/machinery/camera/motion{
 	c_tag = "Armory - Internal";
@@ -2181,6 +2169,17 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
+	},
+/obj/machinery/button/door/armory/warden{
+	pixel_y = -24;
+	pixel_x = -6
+	},
+/obj/machinery/button/door/armory/officers{
+	pixel_y = -24;
+	pixel_x = 6
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
@@ -2238,6 +2237,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "ahQ" = (
@@ -2447,6 +2447,7 @@
 "aiA" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
+/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plating,
 /area/ai_monitored/security/armory)
 "aiB" = (
@@ -2459,6 +2460,7 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/door/poddoor/shutters/window/armory/warden,
 /turf/open/floor/plating,
 /area/ai_monitored/security/armory)
 "aiJ" = (
@@ -2719,6 +2721,10 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/button/door/armory/warden{
+	pixel_x = 24;
+	pixel_y = 6
+	},
 /turf/open/floor/plasteel,
 /area/security/warden)
 "ajx" = (
@@ -2739,6 +2745,10 @@
 	},
 /obj/effect/turf_decal/tile/red{
 	dir = 8
+	},
+/obj/machinery/button/door/armory/officers{
+	pixel_x = -24;
+	pixel_y = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
@@ -31777,12 +31787,6 @@
 	req_one_access_txt = "5; 9"
 	},
 /obj/effect/mapping_helpers/airlock/unres,
-/turf/open/floor/plasteel/white,
-/area/medical/medbay/factory)
-"cul" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "cun" = (
@@ -92819,6 +92823,28 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
+"yid" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/power/apc/highcap/five_k{
+	areastring = "/area/ai_monitored/security/armory";
+	name = "Armory APC";
+	pixel_x = 1;
+	pixel_y = -23
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ai_monitored/security/armory)
 "yie" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -114691,7 +114717,7 @@ cqf
 cru
 cxT
 cts
-cul
+tNq
 gjp
 cwp
 cNm
@@ -120778,7 +120804,7 @@ aEz
 ahH
 ahF
 aeq
-ajx
+adY
 akG
 ama
 anr
@@ -121033,7 +121059,7 @@ afg
 fqu
 nrv
 lYq
-ahH
+yid
 aeq
 ajy
 akH

@@ -241,6 +241,7 @@ datum/sprite_accessory/mam_body_markings/shark/datashark // BLUEMOON CHANGE PORT
 	name = "Xeno"
 	icon_state = "xeno"
 	icon = 'modular_citadel/icons/mob/markings_notmammals.dmi'
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
 	covered_limbs = list("Head" = MATRIX_BLUE, "Chest" = MATRIX_GREEN, "Left Leg" = MATRIX_GREEN, "Right Leg" = MATRIX_GREEN, "Left Arm" = MATRIX_GREEN, "Right Arm" = MATRIX_GREEN)
 
 // sticking old lizard markings here for now

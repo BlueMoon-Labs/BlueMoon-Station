@@ -10,6 +10,10 @@
 	var/gulp_size = 5
 	var/beingChugged = FALSE
 
+/obj/item/reagent_containers/glass/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/glass/attack(mob/M, mob/user, obj/target)
 	if(!canconsume(M, user))
 		return

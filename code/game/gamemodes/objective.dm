@@ -392,6 +392,44 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 				blacklist |= obj.get_target()
 	return ..(dupe_search_range, blacklist)
 
+// BLUEMOON ADD START - цель защиты не может выпасть без соответствующей цели на
+// убийство этой же цели у другого антагониста. Собираем цели убийства чужих
+// антагонистов и выбираем из них валидную для защиты.
+/datum/objective/protect/proc/find_kill_target()
+	var/list/datum/mind/owners = get_owners()
+	var/list/datum/mind/kill_targets = list()
+	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
+		if(!antag?.owner || (antag.owner in owners))
+			continue
+		for(var/datum/objective/objective in antag.objectives)
+			if(istype(objective, /datum/objective/assassinate) && objective.get_target())
+				kill_targets |= objective.get_target()
+	if(!kill_targets.len)
+		return null
+	var/try_target_late_joiners = FALSE
+	for(var/datum/mind/O in owners)
+		if(O.late_joiner)
+			try_target_late_joiners = TRUE
+	var/list/datum/mind/possible_targets = list()
+	for(var/datum/mind/possible_target in kill_targets)
+		if((possible_target in owners) || !ishuman(possible_target.current) || (possible_target.current.stat == DEAD) || possible_target.is_ghost_role() || !is_unique_objective(possible_target))
+			continue
+		if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
+			possible_targets += possible_target
+	if(try_target_late_joiners)
+		var/list/datum/mind/all_possible_targets = possible_targets.Copy()
+		for(var/datum/mind/PT in all_possible_targets)
+			if(!PT.late_joiner)
+				possible_targets -= PT
+		if(!possible_targets.len)
+			possible_targets = all_possible_targets
+	if(!possible_targets.len)
+		return null
+	target = pick(possible_targets)
+	update_explanation_text()
+	return target
+// BLUEMOON ADD END
+
 /datum/objective/protect/check_completion()
 	return !target || considered_alive(target, enforce_human = human_check)
 
@@ -1509,6 +1547,62 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 	else
 		return FALSE
 
+
+// BLUEMOON ADD - цель «Подстава»: добиться, чтобы цель угодила за решётку (бриг / перма-бриг / гулаг)
+/datum/objective/frame
+	name = "frame"
+
+/datum/objective/frame/find_target(blacklist)
+	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain") // на силовиков и капитана подстава не выдаётся
+	var/list/possible_targets = list()
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/possible_target in SSticker.minds)
+		if(possible_target in owners)
+			continue
+		var/mob/living/H = possible_target.current
+		if(!ishuman(H) || H.stat == DEAD || H.mind != possible_target) // мертвецы, не-люди и безмозглые не в счёт
+			continue
+		if(possible_target.assigned_role == possible_target.special_role) // антагонисты не в счёт
+			continue
+		if(possible_target.assigned_role in excluded_roles)
+			continue
+		possible_targets += possible_target
+	if(!length(possible_targets))
+		return
+	target = pick(possible_targets)
+	update_explanation_text()
+	return target
+
+/datum/objective/frame/update_explanation_text()
+	if(target?.current)
+		explanation_text = "Сделай так, чтобы [target.current.real_name], [target.assigned_role], угодил(а) за решётку — в бриг, перма-бриг или на гулаг. Подбрось улики, подай ложный донос или сфабрикуй доказательства. Действуй осторожно и не спались."
+	else
+		explanation_text = "Свободная Задача"
+
+/datum/objective/frame/check_completion()
+	if(!target?.current)
+		return FALSE
+	var/mob/living/human_target = target.current
+	if(!ishuman(human_target) || human_target.stat == DEAD || human_target.mind != target)
+		return FALSE
+	var/target_name = human_target.real_name
+	// 1) В бриге: таймер ячейки тикает на имя цели
+	for(var/obj/machinery/door_timer/cell_timer in GLOB.celltimers_list)
+		if(cell_timer.timing && cell_timer.criminal == target_name)
+			return TRUE
+	// 2) Перма-бриг: шкафчик генпоп оформлен на имя цели
+	for(var/obj/structure/closet/secure_closet/genpop/genpop_locker in world)
+		if(genpop_locker.locked && genpop_locker.registered_id && genpop_locker.registered_id.registered_name == target_name)
+			return TRUE
+	// 3) Гулаг: цель отправлена через трудовой телепорт
+	for(var/obj/machinery/gulag_teleporter/gulag_teleporter_machine in GLOB.machines)
+		if(gulag_teleporter_machine.last_sent_prisoner == target)
+			return TRUE
+	return FALSE
+
+/datum/objective/frame/check_midround_completion()
+	return check_completion()
+// BLUEMOON ADD END
 
 ////////// Ограбление
 

@@ -85,6 +85,7 @@
 	if(!fire_detection)
 		. += "<span class='notice'>Детекция снята проводом на пожарной сигнализации зоны: дверь слушает только ручное управление.</span>"
 	. += span_notice("Alt-click the door to use the manual override.")
+	. += span_notice("Упершись в закрытую дверь, можно попробовать открыть её вручную.")
 
 /obj/machinery/door/firedoor/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -473,6 +474,9 @@
 /obj/machinery/door/firedoor/Bumped(atom/movable/AM)
 	if(panel_open || operating || welded)
 		return
+	if(iscarbon(AM))
+		var/mob/living/carbon/L = AM
+		try_manual_override(L, DOOR_BUMP_OVERRIDE_TIME)
 	return FALSE
 
 /obj/machinery/door/firedoor/power_change()
@@ -1123,10 +1127,10 @@
 		return
 	try_manual_override(user)
 
-/obj/machinery/door/firedoor/proc/try_manual_override(mob/user)
-	if(density && !welded && !operating)
+/obj/machinery/door/firedoor/proc/try_manual_override(mob/user, override_time = FIRELOCK_MANUAL_OVERRIDE_TIME)
+	if(density && !welded && !operating && !(src in user.do_afters))
 		balloon_alert(user, "opening...")
-		if(do_after(user, 10 SECONDS, target = src))
+		if(do_after(user, override_time, target = src))
 			try_to_crowbar(null, user)
 			return TRUE
 	return FALSE

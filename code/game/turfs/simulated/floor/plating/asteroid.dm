@@ -180,7 +180,7 @@ GLOBAL_LIST_EMPTY(dug_up_basalt)
 	flags_1 = NONE
 	planetary_atmos = TRUE
 	burnt_states = list("snow_dug")
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_INTACT) | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null
 	dig_result = /obj/item/stack/sheet/mineral/snow
 

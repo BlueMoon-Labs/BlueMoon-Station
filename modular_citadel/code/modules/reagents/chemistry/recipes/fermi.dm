@@ -88,6 +88,7 @@
 	if(R.reagent_list)
 		s.set_up(R, (volume/5), my_atom)
 		s.start()
+		qdel(R)
 
 	if (pH > 10) //if alkaline, small explosion.
 		var/datum/effect_system/reagents_explosion/e = new()
@@ -348,6 +349,7 @@
 	R.add_reagent(/datum/reagent/fermi/enthrallExplo, volume)
 	s.set_up(R, volume/2, T)
 	s.start()
+	qdel(R)
 	R0.clear_reagents()
 
 /datum/chemical_reaction/fermi/hatmium // done

@@ -436,6 +436,13 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	var/list/air_scrub_names = list()
 	var/list/air_vent_info = list()
 	var/list/air_scrub_info = list()
+	///Монотонные счётчики номеров в подписях вентиляции. Номер брался как
+	///длина реестра плюс один, а Destroy() запись из реестра удаляет - поэтому
+	///любой снятый вент освобождал свой номер следующему, и в отсеке, который
+	///хоть раз пересобирали, появлялись два и три "#20" разом. Счётчик номера
+	///не возвращает: дырка в нумерации честнее двойника.
+	var/air_vent_serial = 0
+	var/air_scrub_serial = 0
 	///Air alarms in this exact area (not the base-area group). Lazy, maintained
 	///by /obj/machinery/airalarm Initialize/Destroy so per-area consumers never
 	///have to type-scan area contents.

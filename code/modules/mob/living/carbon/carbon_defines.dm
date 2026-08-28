@@ -60,6 +60,13 @@
 	var/list/hand_bodyparts = list() //a collection of arms (or actually whatever the fug /bodyparts you monsters use to wreck my systems)
 
 	var/icon_render_key = ""
+	/// Общий на весь мир кэш наборов конечностей: ключ рендера -> список /image.
+	/// Растёт ТОЛЬКО через cache_limb_icons(), которая держит его в пределах
+	/// LIMB_ICON_CACHE_MAX - у ключа (human_update_icons.dm:generate_icon_render_key)
+	/// пространство неограниченное: в нём сырые hex-цвета, JSON боди-маркингов и JSON
+	/// эмиссивных частей, а манекен редактора персонажа пишет сюда постоянную запись на
+	/// КАЖДУЮ перерисовку превью (dummy.dm обнуляет icon_render_key). За прод-раунд 10121
+	/// строка этого списка в переписи выросла с 4013 до 16718 слотов за 25 минут.
 	var/static/list/limb_icon_cache = list()
 
 	//halucination vars

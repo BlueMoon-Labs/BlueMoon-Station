@@ -2,7 +2,7 @@
 /mob/living/carbon/get_eye_protection()
 	var/number = ..()
 
-	if(istype(src.head, /obj/item/clothing/head))			//are they wearing something on their head
+	if(istype(src.head, /obj/item/clothing/head) || istype(src.head, /obj/item/clothing/mod_part/head))			//are they wearing something on their head
 		var/obj/item/clothing/head/HFP = src.head			//if yes gets the flash protection value from that item
 		number += HFP.flash_protect
 
@@ -311,7 +311,7 @@
 						can_shake = TRUE
 					if(istype(user.back, /obj/item/mod/control)) // обычные персонажи с активированными клешнями из МОДа на спине могут поднимать
 						var/obj/item/mod/control/MOD = user.back
-						if(MOD.active || istype(MOD.selected_module, /obj/item/mod/module/clamp))
+						if(MOD.is_active() || istype(MOD.selected_module, /obj/item/mod/module/clamp))
 							can_shake = TRUE
 
 				if(!can_shake)

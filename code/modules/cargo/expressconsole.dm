@@ -33,6 +33,7 @@
 	var/access_hint = "a Quartermaster ID card" // BLUEMOON ADD
 	var/show_landing_location = TRUE
 	var/beacon_only = FALSE // если TRUE, консоль не может доставлять в станционный Cargo Bay, только через маячок
+	var/station_only = TRUE // BLUEMOON ADD - если TRUE, консоль работает только на Z-уровне станции (ZTRAIT_STATION)
 
 /obj/machinery/computer/cargo/express/Initialize(mapload)
 	. = ..()
@@ -131,6 +132,9 @@ i'd be right happy to */
 		))
 
 /obj/machinery/computer/cargo/express/ui_interact(mob/user, datum/tgui/ui)
+	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
+		to_chat(user, span_warning("[src] shows no connection to the supply network: you are outside the station's orbit."))
+		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "CargoExpress", name)
@@ -176,6 +180,8 @@ i'd be right happy to */
 	return data
 
 /obj/machinery/computer/cargo/express/ui_act(action, params, datum/tgui/ui)
+	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
+		return
 	. = ..()
 	if(.)
 		return
@@ -359,6 +365,7 @@ i'd be right happy to */
 	exclusive_pack_pool = TRUE // BLUEMOON ADD
 	access_hint = "a Tarkov Industries-issued ID card"
 	beacon_only = TRUE // BLUEMOON ADD
+	station_only = FALSE // BLUEMOON ADD - размещается в космических руинах, вне станции
 
 /obj/machinery/computer/cargo/express/ds
 	name = "express supply console (Deep Space)"
@@ -371,5 +378,6 @@ i'd be right happy to */
 	exclusive_pack_pool = TRUE // BLUEMOON ADD
 	access_hint = "a Deep Space-issued ID card"
 	beacon_only = TRUE // BLUEMOON ADD
+	station_only = FALSE // BLUEMOON ADD - размещается в космических руинах, вне станции
 
 // BLUEMOON ADD END

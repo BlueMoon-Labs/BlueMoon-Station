@@ -145,9 +145,10 @@
 	if(ispath(trash, /obj/item/grown) || ispath(trash, /obj/item/reagent_containers/food/snacks/grown))
 		. = new trash(get_turf(src), seed)
 
-/obj/item/reagent_containers/food/snacks/grown/grind_requirements()
+/obj/item/reagent_containers/food/snacks/grown/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE)
 	if(dry_grind && !HAS_TRAIT(src, TRAIT_DRIED))
-		to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
+		if(!silent)
+			to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
 		return
 	return TRUE
 

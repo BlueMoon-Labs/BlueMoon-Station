@@ -129,12 +129,3 @@
 
 // Chat
 #define EXAMINE_SECTION_BREAK "<hr>"
-
-// Smoothing - standalone port of /tg's SMOOTH_BITMASK scheme, which the liquid
-// icons (water-0..water-255) were designed for. Not present in this codebase,
-// so the flags/groups below are local to the liquids module. Values avoid the
-// legacy SMOOTH_TRUE/SMOOTH_MORE/etc. bits defined in icon_smoothing.dm.
-#define SMOOTH_BITMASK (1<<5)
-#define SMOOTH_GROUP_WATER (1<<17)
-#define SMOOTH_GROUP_WINDOW_FULLTILE (1<<18)
-#define SMOOTH_GROUP_WALLS (1<<19)

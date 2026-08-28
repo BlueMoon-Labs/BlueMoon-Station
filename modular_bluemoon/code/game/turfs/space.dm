@@ -33,7 +33,6 @@
 	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
 	suffix = "sol_ship.dmm"
 	allow_duplicates = FALSE
-	always_place = FALSE
 	cost = 10
 	id = "forgottenship_sol"
 

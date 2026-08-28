@@ -84,11 +84,13 @@
 		return
 	if(owner.client && beating)
 		failed = FALSE
-		var/sound/slowbeat = sound('sound/health/slowbeat.ogg', repeat = TRUE)
-		var/sound/fastbeat = sound('sound/health/fastbeat.ogg', repeat = TRUE)
-
+		// Датумы строятся внутри веток, а не перед ними: этот прок зовётся на каждом
+		// проходе SSmobs у каждого игрока с бьющимся сердцем, а сами звуки нужны только
+		// в момент СМЕНЫ ритма. Две аллокации на игрока раз в две секунды - это сотни
+		// тысяч /sound за раунд, из которых используется единицы.
 		if(owner.health <= owner.crit_threshold && beat != BEAT_SLOW)
 			beat = BEAT_SLOW
+			var/sound/slowbeat = sound('sound/health/slowbeat.ogg', repeat = TRUE)
 			owner.playsound_local(get_turf(owner), slowbeat,40,0, channel = CHANNEL_HEARTBEAT)
 			// BLUEMOON ADD START - кастомное описание для роботов
 			if(HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM))
@@ -102,6 +104,7 @@
 
 		if(owner.jitteriness)
 			if(owner.health > HEALTH_THRESHOLD_FULLCRIT && (!beat || beat == BEAT_SLOW))
+				var/sound/fastbeat = sound('sound/health/fastbeat.ogg', repeat = TRUE)
 				owner.playsound_local(get_turf(owner),fastbeat,40,0, channel = CHANNEL_HEARTBEAT)
 				beat = BEAT_FAST
 		else if(beat == BEAT_FAST)

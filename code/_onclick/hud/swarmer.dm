@@ -63,30 +63,49 @@
 		var/mob/living/simple_animal/hostile/swarmer/S = usr
 		S.ContactSwarmers()
 
+/atom/movable/screen/swarmer/CreateSwarmBeacon
+	icon_state = "swarmer_console"
+	name = "Create swarm beacon (Costs 100 Resources)"
+	desc = "Creates a swarm beacon that will endlessly produce AI-controlled swarmers to overwhelm this area. (Costs 100 resources)"
+
+/atom/movable/screen/swarmer/CreateSwarmBeacon/Click()
+	if(istype(usr, /mob/living/simple_animal/hostile/swarmer/builder))
+		var/mob/living/simple_animal/hostile/swarmer/builder/S = usr
+		S.CreateSwarmBeacon()
+	else if(isswarmer(usr))
+		to_chat(usr, "<span class='warning'>Our frame cannot handle such heavy fabrication. Only builders among us can.</span>")
+
 /datum/hud/swarmer/New(mob/owner)
 	..()
 	var/atom/movable/screen/using
+	if(!istype(owner, /mob/living/simple_animal/hostile/swarmer/warrior))
+		using = new /atom/movable/screen/swarmer/FabricateTrap(null, src)
+		using.screen_loc = ui_hand_position(2)
+		static_inventory += using
 
-	using = new /atom/movable/screen/swarmer/FabricateTrap(null, src)
-	using.screen_loc = ui_hand_position(2)
-	static_inventory += using
-
-	using = new /atom/movable/screen/swarmer/Barricade(null, src)
-	using.screen_loc = ui_hand_position(1)
-	static_inventory += using
+		using = new /atom/movable/screen/swarmer/Barricade(null, src)
+		using.screen_loc = ui_hand_position(1)
+		static_inventory += using
 
 	using = new /atom/movable/screen/swarmer/Replicate(null, src)
 	using.screen_loc = ui_zonesel
 	static_inventory += using
 
-	using = new /atom/movable/screen/swarmer/RepairSelf(null, src)
-	using.screen_loc = ui_storage1
-	static_inventory += using
+	if(!istype(owner, /mob/living/simple_animal/hostile/swarmer/warrior))
+		using = new /atom/movable/screen/swarmer/RepairSelf(null, src)
+		using.screen_loc = ui_storage1
+		static_inventory += using
 
-	using = new /atom/movable/screen/swarmer/ToggleLight(null, src)
-	using.screen_loc = ui_back
-	static_inventory += using
+		using = new /atom/movable/screen/swarmer/ToggleLight(null, src)
+		using.screen_loc = ui_back
+		static_inventory += using
 
-	using = new /atom/movable/screen/swarmer/ContactSwarmers(null, src)
-	using.screen_loc = ui_inventory
-	static_inventory += using
+		using = new /atom/movable/screen/swarmer/ContactSwarmers(null, src)
+		using.screen_loc = ui_inventory
+		static_inventory += using
+
+	// BLUEMOON ADD END
+	if(istype(owner, /mob/living/simple_animal/hostile/swarmer/builder))
+		using = new /atom/movable/screen/swarmer/CreateSwarmBeacon(null, src)
+		using.screen_loc = ui_hand_position(3)
+		static_inventory += using

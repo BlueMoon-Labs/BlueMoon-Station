@@ -17,7 +17,7 @@
 	barefootstep = FOOTSTEP_WOOD_BAREFOOT
 	clawfootstep = FOOTSTEP_WOOD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 	flammability = 3 // yikes, better put that out quick
 
 /turf/open/floor/wood/examine(mob/user)
@@ -72,6 +72,7 @@
 
 /turf/open/floor/wood/cold
 	initial_temperature = 255.37
+	temperature = 255.37
 
 /turf/open/floor/wood/airless
 	initial_gas_mix = AIRLESS_ATMOS
@@ -112,7 +113,7 @@
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	var/ore_type = /obj/item/stack/ore/glass
 	var/turfverb = "uproot"
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 	flammability = 2 // california simulator
 
 /turf/open/floor/grass/Initialize(mapload)
@@ -189,7 +190,7 @@
 	floor_tile = null
 	initial_gas_mix = FROZEN_ATMOS
 	slowdown = 1.5 //So digging it out paths are useful.
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
@@ -255,7 +256,7 @@
 	barefootstep = FOOTSTEP_CARPET_BAREFOOT
 	clawfootstep = FOOTSTEP_CARPET_BAREFOOT
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 	flammability = 3 // this will be abused and i am all for it
 
 /turf/open/floor/carpet/examine(mob/user)
@@ -409,7 +410,7 @@
 	icon = 'icons/turf/floors/Chasms.dmi'
 	icon_state = "smooth"
 	floor_tile = /obj/item/stack/tile/fakepit
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/fakepit/get_smooth_underlay_icon(mutable_appearance/underlay_appearance, turf/asking_turf, adjacency_dir)
 	underlay_appearance.icon = 'icons/turf/floors.dmi'
@@ -422,7 +423,7 @@
 	floor_tile = /obj/item/stack/tile/fakespace
 	broken_states = list("damaged")
 	plane = PLANE_SPACE
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/fakespace/Initialize(mapload)
 	. = ..()
@@ -477,7 +478,7 @@
 	barefootstep = FOOTSTEP_WOOD_BAREFOOT
 	clawfootstep = FOOTSTEP_WOOD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/wax/airless
 	initial_gas_mix = AIRLESS_ATMOS

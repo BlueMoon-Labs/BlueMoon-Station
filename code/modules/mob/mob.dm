@@ -87,7 +87,7 @@
 /mob/GenerateTag()
 	tag = "mob_[next_mob_id++]"
 
-/atom/proc/prepare_huds()
+/atom/movable/proc/prepare_huds()
 	hud_list = list()
 	for(var/hud in hud_possible)
 		var/hint = hud_possible[hud]

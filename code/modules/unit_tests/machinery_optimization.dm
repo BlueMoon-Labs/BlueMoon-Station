@@ -596,21 +596,25 @@
 
 	// Вставленный МОД с разряженной ячейкой заряжается.
 	var/obj/item/mod/control/suit = allocate(/obj/item/mod/control)
+	var/obj/item/stock_parts/cell/cell = suit.get_cell()
 	suit.forceMove(unit)
 	unit.mod = suit
-	if(!suit.cell)
-		suit.cell = new /obj/item/stock_parts/cell(suit)
-	suit.cell.maxcharge = 1000
-	suit.cell.charge = 100
+	if(!cell)
+		// Базовый /obj/item/mod/control приходит без ячейки: ставим её тем же путём,
+		// что и attackby, иначе mod.get_cell() внутри SSU вернёт null и заряжать будет нечего.
+		cell = new /obj/item/stock_parts/cell()
+		suit.mod_parts[MOD_PART_CELL] = cell
+	cell.maxcharge = 1000
+	cell.charge = 100
 	unit.machine_wake()
 	TEST_ASSERT(!unit.machine_sleeping, "machine_wake() must resume the SSU")
-	var/charge_before = suit.cell.charge
+	var/charge_before = cell.charge
 	unit.process(2)
-	TEST_ASSERT(suit.cell.charge > charge_before, "an awake SSU must charge the docked MOD cell")
+	TEST_ASSERT(cell.charge > charge_before, "an awake SSU must charge the docked MOD cell")
 	TEST_ASSERT(!unit.machine_sleeping, "the SSU must keep processing while the cell is below max")
 
 	// Полная ячейка - снова сон.
-	suit.cell.charge = suit.cell.maxcharge
+	cell.charge = cell.maxcharge
 	unit.process(2)
 	TEST_ASSERT(unit.machine_sleeping, "an SSU with a full MOD cell must park itself")
 	unit.mod = null

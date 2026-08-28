@@ -617,6 +617,7 @@
 	var/datum/effect_system/foam_spread/foam = new
 	foam.set_up(200, get_turf(src), R)
 	foam.start()
+	qdel(R)
 	disarm()
 
 /obj/machinery/nuclearbomb/beer/really_actually_explode()

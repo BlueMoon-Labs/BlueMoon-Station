@@ -27,9 +27,31 @@
 	icon_state = "mecha_grenadelnchr"
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/grenademulti
 	pin = /obj/item/firing_pin
+	var/recharge_accumulator = 0
 
 /obj/item/gun/ballistic/revolver/grenadelauncher/cyborg/attack_self()
 	return
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/cyborg/attackby(obj/item/A, mob/user, params)
+	if(istype(A, /obj/item/ammo_box) || istype(A, /obj/item/ammo_casing))
+		to_chat(user, span_warning("[src] can only be recharged at a cyborg recharging station."))
+		return
+	return ..()
+
+/obj/item/gun/ballistic/revolver/grenadelauncher/cyborg/proc/recharge_from_station(coeff = 1)
+	if(!magazine)
+		return
+	var/obj/item/ammo_box/magazine/internal/cylinder/grenademulti/cylinder = magazine
+	recharge_accumulator += coeff
+	while(recharge_accumulator >= 1 && cylinder.ammo_count(TRUE) < cylinder.max_ammo)
+		recharge_accumulator -= 1
+		var/obj/item/ammo_casing/C = new cylinder.ammo_type(cylinder)
+		if(!cylinder.give_round(C))
+			qdel(C)
+			break
+	if(!chambered?.BB)
+		chamber_round(FALSE)
+	update_icon()
 
 /obj/item/gun/ballistic/automatic/gyropistol
 	name = "gyrojet pistol"

@@ -156,6 +156,13 @@
 	materials = list(/datum/material/iron = 15000, /datum/material/glass = 500, /datum/material/silver = 1000, /datum/material/diamond = 100)
 	build_path = /obj/item/mod/module/storage/extended
 
+// /datum/design/module/mod_armor
+// 	name = "MOD Armor module"
+// 	id = "mod_armor"
+// 	construction_time = 5 SECONDS
+// 	materials = list(/datum/material/iron = 15000, /datum/material/glass = 500, /datum/material/titanium = 1000, /datum/material/diamond = 100)
+// 	build_path = /obj/item/mod/module/armor
+
 /datum/design/module/pai_module
 	name = "PAI module connector"
 	id = "pai_module"

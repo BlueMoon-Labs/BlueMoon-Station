@@ -43,6 +43,9 @@
 	damage = 25
 	fire_hazard = TRUE
 
+/obj/item/projectile/beam/laser/hellfire/swarmer
+	damage = 20
+
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)
 	. = ..()
 	transform *= 2
@@ -127,6 +130,9 @@
 	muzzle_type = /obj/effect/projectile/muzzle/disabler
 	impact_type = /obj/effect/projectile/impact/disabler
 
+/obj/item/projectile/beam/disabler/swarmer
+	damage = 45
+
 /obj/item/projectile/beam/pulse
 	name = "pulse"
 	icon_state = "u_laser"
@@ -152,6 +158,7 @@
 /obj/item/projectile/beam/pulse/heavy
 	name = "heavy pulse laser"
 	icon_state = "pulse1_bl"
+	pixels_per_second = TILES_TO_PIXELS(25)
 	var/life = 20
 
 /obj/item/projectile/beam/pulse/heavy/on_hit(atom/target, blocked = FALSE)

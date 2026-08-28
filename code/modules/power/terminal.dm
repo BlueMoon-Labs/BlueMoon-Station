@@ -16,7 +16,7 @@
 	. = ..()
 	var/turf/T = get_turf(src)
 	if(level == 1)
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 
 /obj/machinery/power/terminal/Destroy()
 	if(master)
@@ -50,7 +50,7 @@
 /obj/machinery/power/terminal/proc/dismantle(mob/living/user, obj/item/I)
 	if(isturf(loc))
 		var/turf/T = loc
-		if(T.intact)
+		if(T.turf_flags & TURF_INTACT)
 			to_chat(user, "<span class='warning'>You must first expose the power terminal!</span>")
 			return
 
