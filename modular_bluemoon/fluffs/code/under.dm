@@ -891,8 +891,8 @@
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
 	icon_state = "[initial(icon_state)]_[breast_size]"
-	H.update_inv_w_uniform()
-	H.update_body()
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
 
 /obj/item/clothing/under/donator/bm/concord/toggle_jumpsuit_adjust()
 	. = ..()

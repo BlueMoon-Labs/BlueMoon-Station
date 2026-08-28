@@ -107,8 +107,6 @@
 	var/select_type = tgui_input_list(user, "Как сложить плащ?", "Изменение плаща", list("Cloak", "Kama", "Cloak and Kama")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
 	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
 		return
-	if()
-		return
 	switch(select_type)
 		if("Cloak")
 			icon_state = "concord-cloak"
