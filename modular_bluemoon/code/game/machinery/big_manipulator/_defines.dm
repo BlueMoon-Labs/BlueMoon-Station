@@ -61,5 +61,3 @@
 #define TASKING_STRICT "Strict order"
 
 #define TASK_TYPE_INTERACT "interact"
-
-#define WIRE_INTERACT "Interact"

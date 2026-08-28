@@ -6,7 +6,7 @@
 	wires = list(
 		WIRE_ON,
 		WIRE_DROP,
-		WIRE_INTERACT,
+		"Interact",
 	)
 	return ..()
 
@@ -41,7 +41,7 @@
 		holder_manipulator.power_access_wire_cut = TRUE
 		if(holder_manipulator.on)
 			holder_manipulator.toggle_power_state(null)
-	if(wire == WIRE_INTERACT)
+	if(wire == "Interact")
 		if(mend)
 			holder_manipulator.interact_unlocked = FALSE
 			return
