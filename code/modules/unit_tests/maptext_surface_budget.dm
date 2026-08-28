@@ -15,10 +15,13 @@
  * не отрисованный: платится именно объявленный, независимо от того, сколько текста внутри.
  */
 
-/// Потолок площади одной коробки maptext в пикселях. 480*128 - это скринтип на широком
-/// экране после диеты; всё, что заметно больше, стоит мегабайта на строку и должно
-/// обосновываться отдельно.
-#define MAPTEXT_SURFACE_BUDGET_PX (736 * 128)
+/// Ширина коробки скринтипа на широком экране: update_view() ставит её по ширине вьюпорта.
+#define MAPTEXT_WIDE_VIEW_PX 736
+/// Байт в мебибайте - только для сообщения об ошибке.
+#define MAPTEXT_BYTES_PER_MIB (1024 * 1024)
+/// Потолок площади одной коробки maptext в пикселях. Это скринтип на широком экране после
+/// диеты; всё, что заметно больше, стоит мегабайта на строку и должно обосновываться отдельно.
+#define MAPTEXT_SURFACE_BUDGET_PX (MAPTEXT_WIDE_VIEW_PX * 128)
 
 /datum/unit_test/maptext_surface_budget
 
@@ -27,9 +30,9 @@
 	// широком экране), поэтому в бюджете считаем по широкому.
 	var/screentip_height = /atom/movable/screen/screentip::maptext_height
 	TEST_ASSERT(screentip_height > 0, "у скринтипа не объявлена высота коробки maptext")
-	TEST_ASSERT(736 * screentip_height <= MAPTEXT_SURFACE_BUDGET_PX, \
+	TEST_ASSERT(MAPTEXT_WIDE_VIEW_PX * screentip_height <= MAPTEXT_SURFACE_BUDGET_PX, \
 		"коробка скринтипа [screentip_height] px в высоту: на широком экране это \
-		[round(736 * screentip_height * 4 / (1024 * 1024), 0.01)] МБ памяти клиента на КАЖДУЮ \
+		[round(MAPTEXT_WIDE_VIEW_PX * screentip_height * 4 / MAPTEXT_BYTES_PER_MIB, 0.01)] МБ памяти клиента на КАЖДУЮ \
 		уникальную строку, а строк там тысячи и они личные у каждого игрока")
 
 	// Панели нейроинтерфейса: обновляются на SSfastprocess, то есть до пяти раз в секунду.
@@ -62,7 +65,7 @@
 
 	TEST_ASSERT_NOTNULL(line, "монитор здоровья не отдал строку по живой цели")
 	// Точка в числе означает, что в maptext уехал сырой float.
-	for(var/field in splittext(line, "\n"))
+	for(var/field as anything in splittext(line, "\n"))
 		var/list/parts = splittext(field, ":")
 		if(length(parts) < 2)
 			continue
@@ -71,3 +74,5 @@
 			поверхность у клиента, а поле обновляется пять раз в секунду")
 
 #undef MAPTEXT_SURFACE_BUDGET_PX
+#undef MAPTEXT_BYTES_PER_MIB
+#undef MAPTEXT_WIDE_VIEW_PX

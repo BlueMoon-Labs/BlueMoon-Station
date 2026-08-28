@@ -152,7 +152,7 @@
 
 	// Update status display
 	var/health_percent = user.health / user.maxHealth * 100
-	var/status_text = "<b>[round(health_percent, 0.1)]</b>"
+	var/status_text = "<b>[round(health_percent)]</b>"
 
 	if(user.stat == DEAD)
 		status_text = "<span class='alert'><b>DESTROYED</b></span>"
@@ -594,7 +594,7 @@
 	if(R.module)
 		module_type = R.module.name
 
-	return "MODULE:[module_type]\nHEALTH:[round(health_percent, 0.1)]%\nCELL:[cell_text]\nSTAT:[stat_text]\n[length(damage_text) > 0 ? "DAMAGE:[damage_text]" : ""]"
+	return "MODULE:[module_type]\nHEALTH:[round(health_percent)]%\nCELL:[cell_text]\nSTAT:[stat_text]\n[length(damage_text) > 0 ? "DAMAGE:[damage_text]" : ""]"
 
 // ---------------------------------------------------------------------------
 // Crime Monitor - Tracks criminal status and arrest articles

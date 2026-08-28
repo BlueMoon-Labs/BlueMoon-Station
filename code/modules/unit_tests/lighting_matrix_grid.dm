@@ -47,9 +47,9 @@
 	var/restore_was_dark = lit.prev_was_dark
 
 	// Штатный профиль зоны и есть то, что сбивает значения углов с их сетки: контраст
-	// 1.15 и ненулевая температура - обычные значения, а не выдуманные для теста.
-	tile_area.light_contrast = 1.15
-	tile_area.light_temperature = 0.07
+	// LIGHT_CONTRAST_DEEP и ненулевая температура - обычные значения, а не выдуманные для теста.
+	tile_area.light_contrast = LIGHT_CONTRAST_DEEP
+	tile_area.light_temperature = LIGHT_TEMP_INDUSTRIAL
 
 	// Частичная освещённость обязательна: полностью светлый и полностью тёмный тайлы
 	// уходят на готовые матрицы (LIGHTING_BASE_MATRIX / LIGHTING_DARK_MATRIX) и ветку
@@ -93,7 +93,7 @@
 
 	// Уборка идёт ДО всех проверок и без единого условия. Зона тут - world.area, общая на
 	// весь космос мира, а углы - настоящие углы резервации: тест, упавший на середине,
-	// оставил бы контраст 1.15 и чужие кэши следующим тестам. TEST_ASSERT возвращается из
+	// оставил бы чужой профиль зоны и чужие кэши следующим тестам. TEST_ASSERT возвращается из
 	// прока сразу, finally в DM нет, поэтому единственный надёжный порядок - такой.
 	tile_area.light_contrast = restore_contrast
 	tile_area.light_temperature = restore_temperature

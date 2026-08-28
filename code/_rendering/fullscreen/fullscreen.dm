@@ -25,14 +25,24 @@
 	// От апстримовой версии условие отличается отсутствием ветки "!severity": у нас
 	// SetSeverity() - это не присваивание, а снятие эффекта на нулевой тяжести (тот же
 	// synthcorrupt убирает там холдер), и пропускать вызов с нулём нельзя.
-	else if(severity == screen.severity && (!client || screen.screen_loc != "CENTER-7,CENTER-7" || screen.view_current == client.view))
+	//
+	// Флаг hidden_from_client снимает ранний возврат ровно на один вызов после
+	// hide_fullscreens(): экран снят с client.screen, но остался в fullscreens, и без этой
+	// оговорки повторный overlay_fullscreen() с той же тяжестью уходил бы возвратом, а
+	// оверлей не всплыл бы уже никогда.
+	else if(severity == screen.severity && !screen.hidden_from_client && (!client || screen.screen_loc != "CENTER-7,CENTER-7" || screen.view_current == client.view))
 		return screen
 	screen.SetSeverity(severity)
-	if(client && screen.ShouldShow(src))
-		screen.SetView(client.view)
-		// |=, а не +=: client.screen - обычный список, и += клал бы один и тот же экранный
-		// объект повторно. Соседний reload_fullscreen() уже делает |=.
-		client.screen |= screen
+	if(client)
+		if(screen.ShouldShow(src))
+			screen.SetView(client.view)
+			// |=, а не +=: client.screen - обычный список, и += клал бы один и тот же экранный
+			// объект повторно. Соседний reload_fullscreen() уже делает |=.
+			client.screen |= screen
+		// Пишем только когда флаг реально стоит: запись в переменную инстанса занимает слот
+		// у BYOND навсегда, а через этот путь проходит каждый апдейт худа урона.
+		if(screen.hidden_from_client)
+			screen.hidden_from_client = FALSE
 	return screen
 
 /**
@@ -73,9 +83,12 @@
  * Removes fullscreens from client but not the mob
  */
 /mob/proc/hide_fullscreens()
-	if(client)
-		for(var/category in fullscreens)
-			client.screen -= fullscreens[category]
+	if(!client)
+		return
+	for(var/category in fullscreens)
+		var/atom/movable/screen/fullscreen/screen = fullscreens[category]
+		client.screen -= screen
+		screen.hidden_from_client = TRUE
 
 /**
  * Ensures all fullscreens are on client.
@@ -90,6 +103,10 @@
 				client.screen |= screen
 			else
 				client.screen -= screen
+			// Состояние клиента снова согласовано с fullscreens - ранний возврат в
+			// overlay_fullscreen() опять законен.
+			if(screen.hidden_from_client)
+				screen.hidden_from_client = FALSE
 
 /atom/movable/screen/fullscreen
 	icon = 'icons/screen/fullscreen_15x15.dmi'
@@ -106,6 +123,9 @@
 	var/severity_max = INFINITY
 	/// current severity
 	var/severity = 0
+	/// Экран снят с client.screen через hide_fullscreens() и ждёт возврата. Пока флаг стоит,
+	/// overlay_fullscreen() не имеет права уходить ранним возвратом.
+	var/hidden_from_client = FALSE
 	/// show this while dead
 	var/show_when_dead = FALSE
 
