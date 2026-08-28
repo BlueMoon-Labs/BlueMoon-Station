@@ -61,7 +61,8 @@
 /datum/action/item_action/mod/hardlight_deploy/proc/get_radial_menu_choices()
 	var/list/choices = standart_overlay_choices.Copy()
 	if(mod.allowed_genital_overlays)
-		choices += genital_overlay_choices
+		for(var/key in genital_overlay_choices)
+			choices[key] = genital_overlay_choices[key]
 	return choices
 
 /datum/action/item_action/mod/hardlight_deploy/Trigger(trigger_flags)

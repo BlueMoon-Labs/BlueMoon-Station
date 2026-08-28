@@ -464,7 +464,7 @@
 
 /obj/item/mod/module/dna_lock/emp_act(severity)
 	. = ..()
-	if(. & EMP_PROTECT_SELF || individual_protect_from_emp)
+	if(. & EMP_PROTECT_SELF)
 		return
 	on_emp(src, severity)
 
@@ -484,6 +484,8 @@
 
 /obj/item/mod/module/dna_lock/proc/on_emp(datum/source, severity)
 	SIGNAL_HANDLER
+	if(individual_protect_from_emp)
+		return FALSE
 
 	dna = null
 	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
