@@ -922,6 +922,31 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		present_keybindings[bindname] = TRUE
 
 
+/// Записывает в савфайл ОДИН ключ, не переписывая весь блок префов.
+///
+/// Полный save_preferences() это ~124 WRITE_FILE подряд, и каждый - синхронный поход
+/// на диск, морозящий весь процесс. За раунд 10137 таких заморозок набралось 6230 на
+/// 32.8 секунды: детектор спайков списал на них 30-34% всего дрифта. Львиную долю
+/// давала панель tgui, сохранявшая одну JSON-строку состояния чата на каждое действие
+/// игрока. Ради одной строки переписывать сто двадцать четыре не нужно.
+///
+/// Файл должен уже существовать: у нового игрока запись одного ключа создала бы
+/// савфайл без "version", и загрузка приняла бы его за префы нулевой версии.
+/datum/preferences/proc/save_single_pref(key, value)
+	if(!path || !key)
+		return FALSE
+	if(!fexists(path))
+		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/blocking_started_ms = blocking_call_start()
+	var/savefile/single_file = new /savefile(path)
+	if(!single_file)
+		blocking_call_finish(blocking_started_ms, "savefile (запись)", "ключ [key] [parent?.ckey || "?"]")
+		return FALSE
+	single_file.cd = "/"
+	WRITE_FILE(single_file[key], value)
+	blocking_call_finish(blocking_started_ms, "savefile (запись)", "ключ [key] [parent?.ckey || "?"]")
+	return TRUE
+
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	if(!path)
 		return FALSE

@@ -90,6 +90,34 @@ describe('tgui panel serverState', () => {
     expect(state.chat.pageById['0'].acceptedTypes).toEqual(['system']);
   });
 
+  // Раунд 10137: 6230 синхронных записей савфайла на 32.8 с полной заморозки процесса,
+  // 30-34% всего дрифта тик-спайков. Серверный гард "состояние не изменилось - не пиши"
+  // не мог сработать никогда, потому что savedAt рос на каждой сборке payload'а и
+  // строка всегда отличалась.
+  test('skips the round trip when the persisted state has not changed', () => {
+    const store = createStore({
+      highlightText: 'unchanged-marker',
+    });
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    const first = JSON.parse(global.Byond.topic.mock.calls[0][0].panel_state);
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+
+    const changed = createStore({
+      highlightText: 'changed-marker',
+    });
+    flushSaveToServer(changed);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(2);
+
+    // savedAt обязан остаться монотонным по фактически отправленным состояниям:
+    // на нём стоит выбор свежей копии между сервером и браузерным хранилищем.
+    const second = JSON.parse(global.Byond.topic.mock.calls[1][0].panel_state);
+    expect(second.savedAt).toBe(first.savedAt + 1);
+  });
+
   test('chunks large panel state so long highlight lists avoid HTTP fallback', () => {
     const dispatch = jest.fn();
     const store = createStore({

@@ -16,6 +16,11 @@ import { selectSettings } from './settings/selectors';
 let saveTimer = null;
 let saveCounter = 0;
 let lastStore = null;
+// Тело последнего отправленного состояния, без savedAt. Счётчик savedAt растёт на
+// каждой сборке, поэтому серверный гард "состояние не изменилось - не пиши" не мог
+// сработать никогда: строка всегда отличалась. Сравниваем то, что реально
+// сохраняется, и молчим, когда сохранять нечего.
+let lastSentBody = null;
 const DEBOUNCE_MS = 3000;
 const DIRECT_TOPIC_URL_LIMIT = 2048;
 // Тот же бюджет, что и в tgui/backend.ts: чанк едет внутри JSON и кодируется в URL повторно,
@@ -93,6 +98,11 @@ export const getLastSavedAt = () => saveCounter;
 /**
  * Builds a JSON string of the current panel state for server persistence.
  * Excludes transient fields (theme, view, scrollTracking, unreadCount, createdAt).
+ *
+ * Returns null when the persisted body is byte-for-byte what we sent last time —
+ * the caller must then skip the round trip entirely. savedAt is bumped only for
+ * bodies that actually go out, so it stays monotonic for the freshness compare
+ * in chat/middleware.
  */
 const buildStateJson = (store) => {
   const settings = selectSettings(store.getState());
@@ -135,6 +145,16 @@ const buildStateJson = (store) => {
     }
   }
 
+  const body = JSON.stringify({
+    v: 1,
+    settings: settingsToSave,
+    chat: chatToSave,
+  });
+  if (body === lastSentBody) {
+    return null;
+  }
+  lastSentBody = body;
+
   saveCounter += 1;
   return JSON.stringify({
     v: 1,
@@ -150,6 +170,9 @@ const buildStateJson = (store) => {
 const doSaveToServer = (store) => {
   try {
     const stateJson = buildStateJson(store);
+    if (stateJson === null) {
+      return;
+    }
     // Send state as a direct href parameter to avoid double-JSON-encoding.
     // Previously: payload=JSON.stringify({state: stateJson}) caused the inner
     // JSON to be escaped (" → \") then URL-encoded (\→%5C, "→%22), tripling
