@@ -59,6 +59,9 @@
 		list("name" = "Sig Suaer extended mag", "path" = /obj/item/ammo_box/magazine/sig/sig_ext, "cost" = 500, "category" = "Weaponry"),
 		list("name" = "Vanguard armor", "path" = /obj/item/vanguard_voucher_suit, "cost" = 1500, "category" = "Armor"),
 		list("name" = "Ranger hardsuit", "path" = /obj/item/clothing/suit/space/hardsuit/exploration, "cost" = 2500, "category" = "Armor"),
+		list("name" = "Combined armor kit", "path" = /obj/item/armorkit/vanguard/vest, "cost" = 750, "category" = "Armor"),
+		list("name" = "Combined headgear kit", "path" = /obj/item/armorkit/vanguard/helmet, "cost" = 750, "category" = "Armor"),
+		list("name" = "Jet harness", "path" = /obj/item/tank/jetpack/oxygen/harness, "cost" = 1500, "category" = "Armor"),
 		list("name" = "Jetpack upgrade", "path" = /obj/item/tank/jetpack/suit, "cost" = 1000, "category" = "Armor"),
 		list("name" = "Jump boots", "path" = /obj/item/clothing/shoes/bhop, "cost" = 1250, "category" = "Armor"),
 		list("name" = "First-Aid Kit", "path" = /obj/item/storage/firstaid/regular, "cost" = 25, "category" = "Medical"),
@@ -66,12 +69,14 @@
 		list("name" = "Burn First-Aid Kit", "path" = /obj/item/storage/firstaid/fire, "cost" = 50, "category" = "Medical"),
 		list("name" = "Survival Medipen", "path" = /obj/item/reagent_containers/hypospray/medipen/survival, "cost" = 100, "category" = "Medical"),
 		list("name" = "CMS", "path" = /obj/item/stack/medical/fracture_kit/cms, "cost" = 150, "category" = "Medical"),
+		list("name" = "Budget tactical first aid", "path" = /obj/item/storage/firstaid/tactical/vanguard, "cost" = 5000, "category" = "Medical"),
 		list("name" = "Surv12", "path" = /obj/item/stack/medical/fracture_kit/surv12, "cost" = 250, "category" = "Medical"),
 		list("name" = "Lazarus injector", "path" = /obj/item/lazarus_injector, "cost" = 500, "category" = "Tools"),
 		list("name" = "Fulton pack", "path" = /obj/item/extraction_pack, "cost" = 500, "category" = "Tools"),
 		list("name" = "Auto surgeon", "path" = /obj/item/autosurgeon, "cost" = 750, "category" = "Tools"),
 		list("name" = "Illegal technology disk", "path" = /obj/item/disk/tech_disk/illegal, "cost" = 5000, "category" = "Tools"),
 		list("name" = "Fulton beacon", "path" = /obj/item/fulton_core, "cost" = 200, "category" = "Tools"),
+		list("name" = "BEPIS technology disk", "path" = /obj/item/disk/tech_disk/major, "cost" = 1000, "category" = "Tools"),
 		list("name" = "Whiskey", "path" = /obj/item/reagent_containers/food/drinks/bottle/whiskey, "cost" = 50, "category" = "Recreational"),
 		list("name" = "Cigar", "path" = /obj/item/clothing/mask/cigarette/cigar/havana, "cost" = 75, "category" = "Recreational"),
 		list("name" = "High quality Soap", "path" = /obj/item/soap/syndie, "cost" = 150, "category" = "Recreational"),
@@ -216,9 +221,10 @@
 			new /obj/item/storage/belt/military/assault/surgeon(drop_location)
 			new /obj/item/melee/tomahawk(drop_location)
 			new /obj/item/storage/box/blue/surgeon(drop_location)
+			new /obj/item/shield/riot/pointman(drop_location)
 		if("Combatant")
 			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
-			new /obj/item/shield/riot/pointman(drop_location)
+			new /obj/item/storage/belt/military/assault(drop_location)
 			new /obj/item/storage/box/orange/combatant(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "vanguard_voucher_redeemed", 1, selection)

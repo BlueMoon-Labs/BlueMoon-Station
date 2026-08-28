@@ -33,7 +33,9 @@
 		"Exploration Mercenary",
 		"Vanguard Field Medic",
 		"Vanguard recruit",
-		"Vanguard Demolition expert"
+		"Vanguard Demolition expert",
+		"Ranger",
+		"Expeditor"
 		)
 
 /datum/outfit/job/expeditor
@@ -50,7 +52,6 @@
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
-	l_pocket = /obj/item/modular_computer/pda
 	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
 	backpack_contents = list(/obj/item/storage/firstaid/regular = 1, /obj/item/vanguard_voucher_class = 1, /obj/item/vanguard_voucher_suit = 1)
 

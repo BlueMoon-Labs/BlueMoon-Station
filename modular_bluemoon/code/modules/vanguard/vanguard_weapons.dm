@@ -129,13 +129,14 @@
 		A powerful electromagnet in the grip ensures this weapon always finds its way back to the thrower's hand when activated."
 	icon = 'modular_bluemoon/icons/mob/vanguard/tomahawk.dmi'
 	icon_state = "tomahawk"
+	item_state = "tomahawk"
 	lefthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_l.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/vanguard/tomahawk_r.dmi'
 	force = 15
 	throwforce = 25
-	throw_speed = 4
+	throw_speed = 6
 	throw_range = 8
-	w_class = WEIGHT_CLASS_SMALL
+	w_class = WEIGHT_CLASS_NORMAL
 	sharpness = SHARP_EDGED
 	attack_verb_continuous = list("chops", "tears", "lacerates", "cuts")
 	attack_verb_simple = list("chop", "tear", "lacerate", "cut")
@@ -145,11 +146,11 @@
 
 	// Battery & Magnetic system
 	var/obj/item/stock_parts/cell/cell
-	var/hitcost = 0 // Base cost for charge checks
-	var/preload_cell_type = /obj/item/stock_parts/cell/high/plus // Starts with a battery
-	var/turned_on = FALSE // Magnetic return system status
-	var/throw_cost = 500 // Energy cost to throw with magnetic return
-	var/return_cost = 0 // Energy cost to return to hand
+	var/hitcost = 0
+	var/preload_cell_type = /obj/item/stock_parts/cell/high/plus
+	var/turned_on = FALSE
+	var/throw_cost = 500
+	var/return_cost = 0
 
 /obj/item/melee/tomahawk/Initialize(mapload)
 	. = ..()
@@ -248,6 +249,28 @@
 		to_chat(user, "<span class='notice'>[src] is now [turned_on ? "on" : "off"].</span>")
 	add_fingerprint(user)
 
+// --- Вспомогательная процедура отталкивания цели ---
+/obj/item/melee/tomahawk/proc/push_away(atom/movable/target, atom/source)
+	if(!istype(target) || QDELETED(target) || target == source)
+		return
+	var/direction = get_dir(source, target) // направление от источника (топора) к цели
+	if(!direction)
+		return
+	// Сдвигаем цель в направлении ОТ источника (топора) – отталкиваем
+	for(var/i in 1 to 2)
+		var/turf/new_turf = get_step(target, direction)
+		if(!new_turf || new_turf.density)
+			break
+		if(isliving(target))
+			var/mob/living/L = target
+			if(!L.Move(new_turf))
+				break
+		else if(isobj(target) || ismachinery(target))
+			if(!target.Move(new_turf))
+				break
+		else
+			break
+
 // --- Throwing & Return Mechanics ---
 
 /obj/item/melee/tomahawk/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force, quickstart = TRUE)
@@ -255,22 +278,46 @@
 		var/obj/item/stock_parts/cell/copper_top = get_cell()
 		if(!copper_top || copper_top.charge < throw_cost)
 			to_chat(thrower, "<span class='warning'>[src] doesn't have enough charge to activate the magnetic return!</span>")
-			return ..() // Throws normally without return
+			return ..()
 
 		deductcharge(throw_cost, FALSE)
 
 		if(ishuman(thrower))
 			var/mob/living/carbon/human/H = thrower
-			H.throw_mode_on() // Enable catching on return
+			H.throw_mode_on()
 
 	return ..()
 
 /obj/item/melee/tomahawk/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	. = ..() // Parent handles throwforce damage and catching logic
+	. = ..() // стандартная логика урона и ловли
 
 	var/mob/thrown_by = thrownby?.resolve()
-	// If it's turned on, we have a thrower, and we didn't just hit/get caught by the thrower
-	if(turned_on && thrown_by && !QDELETED(thrown_by) && hit_atom != thrown_by)
+	if(!thrown_by || QDELETED(thrown_by))
+		return
+
+	// Отталкиваем цель, если она не владелец и не сам топор
+	if(hit_atom != thrown_by && !QDELETED(hit_atom))
+		if(isliving(hit_atom) || istype(hit_atom, /obj/structure) || istype(hit_atom, /obj/machinery))
+			push_away(hit_atom, src)
+
+	// Проверяем, не перехватил ли топор другой моб (кроме владельца)
+	var/mob/holder = loc
+	if(isliving(holder) && holder != thrown_by)
+		// Наносим урон перехватчику
+		holder.hitby(src, throwingdatum)
+		// Вырываем топор из рук
+		holder.dropItemToGround(src, TRUE)
+		// Запускаем возврат, если есть заряд
+		if(turned_on)
+			var/obj/item/stock_parts/cell/copper_top = get_cell()
+			if(copper_top && copper_top.charge >= return_cost)
+				throw_back()
+			else
+				to_chat(thrown_by, "<span class='warning'>[src] doesn't have enough charge to return!</span>")
+		return
+
+	// Если топор не перехвачен, но попал не в владельца и включён магнит – запускаем возврат
+	if(turned_on && hit_atom != thrown_by && loc != thrown_by)
 		var/obj/item/stock_parts/cell/copper_top = get_cell()
 		if(copper_top && copper_top.charge >= return_cost)
 			throw_back()
@@ -279,7 +326,7 @@
 
 /obj/item/melee/tomahawk/proc/throw_back()
 	set waitfor = FALSE
-	sleep(0.5 SECONDS) // Small delay so it visually "bounces" off the target
+	sleep(0.5 SECONDS)
 	var/mob/thrown_by = thrownby?.resolve()
 	if(!QDELETED(src) && thrown_by && !QDELETED(thrown_by))
 		deductcharge(return_cost, FALSE)

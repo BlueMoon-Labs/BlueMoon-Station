@@ -1,4 +1,12 @@
 // ============================================
+// КОНСТАНТЫ НАСТРОЙКИ ПЛАТФОРМЫ
+// ============================================
+#define CONTRABAND_PAD_WARMUP_TIME (3 SECONDS)
+#define CONTRABAND_PAD_BEAM_DURATION (2 SECONDS)
+#define CONTRABAND_PAD_LINK_RANGE 4
+#define CONTRABAND_PAD_EFFICIENCY_BONUS 0.25
+
+// ============================================
 // ПЛАТФОРМА СДАЧИ КОНТРАБАНДЫ
 // ============================================
 /obj/machinery/vanguard/contraband
@@ -11,7 +19,7 @@
 	var/idle_state = "lpad-idle"
 	var/warmup_state = "lpad-idle"
 	var/sending_state = "lpad-beam"
-	var/warmup_time = 3 SECONDS
+	var/warmup_time = CONTRABAND_PAD_WARMUP_TIME
 	var/cargo_hold_id
 	layer = TABLE_LAYER
 	circuit = /obj/item/circuitboard/machine/contrabandpad
@@ -28,7 +36,7 @@
 			total_rating += part.rating
 			part_count++
 
-	// Формула: multiplier = 1.0 + ((average_rating - 1) * 0.25)
+	// Формула: multiplier = 1.0 + ((average_rating - 1) * CONTRABAND_PAD_EFFICIENCY_BONUS)
 	// T1 = 1.0x (без бонуса)
 	// T2 = 1.25x
 	// T3 = 1.50x
@@ -37,7 +45,7 @@
 	// T6 = 2.25x
 	if(part_count > 0)
 		var/average_rating = total_rating / part_count
-		efficiency_multiplier = 1.0 + ((average_rating - 1) * 0.25)
+		efficiency_multiplier = 1.0 + ((average_rating - 1) * CONTRABAND_PAD_EFFICIENCY_BONUS)
 	else
 		efficiency_multiplier = 1.0
 
@@ -49,7 +57,7 @@
 			total_rating += part.rating
 			part_count++
 	if(part_count > 0)
-		return ((total_rating / part_count) - 1) * 0.25
+		return ((total_rating / part_count) - 1) * CONTRABAND_PAD_EFFICIENCY_BONUS
 	return 0
 
 /obj/machinery/vanguard/contraband/proc/get_adjusted_value(obj/item/I, base_value)
@@ -80,7 +88,7 @@
 
 /obj/machinery/vanguard/contraband/proc/play_beam()
 	icon_state = sending_state
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/machinery/vanguard/contraband, reset_icon)), 2 SECONDS)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/machinery/vanguard/contraband, reset_icon)), CONTRABAND_PAD_BEAM_DURATION)
 
 /obj/machinery/vanguard/contraband/proc/reset_icon()
 	icon_state = idle_state
@@ -121,6 +129,7 @@
 		/obj/item/gun/ballistic/automatic/pistol/enforcer = 0,
 		/obj/item/gun/ballistic/automatic/pistol/m22pistol = 0,
 		/obj/item/gun/ballistic/automatic/pistol/deagle2 = 500,
+		/obj/item/gun/syringe/syndicate = 1500,
 		//revolvers
 		/obj/item/gun/ballistic/revolver = 500,
 		/obj/item/gun/ballistic/revolver/detective = 0,
@@ -165,6 +174,15 @@
 		/obj/item/gun/energy/laser/sniper = 1000,
 		/obj/item/gun/energy/laser/canceller = 3500, //bonus point for InteQ tech!
 		/obj/item/gun/energy/pulse/pistol/inteq = 5000,
+		/obj/item/gun/ballistic/automatic/c20r/toy = 0,
+		/obj/item/gun/ballistic/automatic/proto = 3000,
+		/obj/item/gun/ballistic/automatic/shotgun/aa12 = 2500,
+		/obj/item/gun/ballistic/automatic/l6_saw/toy = 0,
+		/obj/item/gun/ballistic/automatic/sniper_rifle/toy = 0,
+		/obj/item/gun/ballistic/automatic/mp5 = 2000,
+		/obj/item/gun/ballistic/automatic/mp7 = 2000,
+		/obj/item/gun/ballistic/automatic/scar = 4000,
+		/obj/item/gun/ballistic/automatic/p90 = 1500,
 		// Mele weapons
 		/obj/item/melee/rapier/karakurt = 1500,
 		/obj/item/melee/baseball_bat/ablative/inteq = 2000,
@@ -178,6 +196,8 @@
 		/obj/item/pickaxe/drill/jackhammer/angle_grinder = 5000,
 		/obj/item/melee/transforming/plasmasword = 3500,
 		/obj/item/plasmascythe = 7500,
+		/obj/item/inteq_sledgehammer = 5000,
+		/obj/item/kitchen/knife/backstabber = 3000,
 		//Suits & unders
 		/obj/item/clothing/suit/space/hardsuit/syndi = 2500,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite = 4000,
@@ -201,6 +221,18 @@
 		/obj/item/clothing/under/syndicate = 100,
 		/obj/item/clothing/mask/gas/inteq = 200,
 		/obj/item/clothing/head/helmet/swat/inteq = 300,
+		/obj/item/clothing/shoes/chameleon/noslip = 1000,
+		/obj/item/encryptionkey/inteq = 1000,
+		/obj/item/clothing/glasses/thermal/syndi = 1500,
+		/obj/item/headsetupgrader = 500,
+		/obj/item/clothing/suit/space/hardsuit/contractor = 10000,
+		/obj/item/armorkit/helmet/inteq = 750,
+		/obj/item/armorkit/inteq = 750,
+		/obj/item/clothing/suit/armor/hank = 2000,
+		/obj/item/clothing/head/helmet/hank = 2000,
+		/obj/item/storage/box/inteq_kit/conversion_kit = 250,
+		/obj/item/storage/belt/military/inteq = 500,
+		/obj/item/clothing/head/helmet/infiltrator/inteq = 750,
 		//Other stuff
 		/obj/item/storage/toolbox/syndicate = 100,
 		/obj/item/storage/toolbox/inteq = 200,
@@ -208,6 +240,8 @@
 		/obj/item/storage/backpack/satchel/flat = 300,
 		/obj/item/toy/cards/deck/syndicate = 200,
 		/obj/item/storage/box/syndie_kit/space = 150,
+		/obj/item/storage/box/syndie_kit = 100,
+		/obj/item/storage/box/inteq_kit = 200,
 		/obj/item/card/id/syndicate = 750,
 		/obj/item/card/id/inteq = 1250,
 		/obj/item/ammo_box/magazine/m10mm = 50,
@@ -218,6 +252,18 @@
 		/obj/item/mod/control/pre_equipped/elite = 5000,
 		/obj/item/mod/control/pre_equipped/nuclear = 2500,
 		/obj/item/mod/control/pre_equipped/traitor = 2500,
+		/obj/item/grenade/plastic/c4 = 300,
+		/obj/item/grenade/plastic/x4 = 600,
+		/obj/item/cartridge/virus/detomatix = 200,
+		/obj/item/camera_bug = 1000,
+		/obj/item/sbeacondrop/powersink = 5000,
+		/obj/item/card/emag = 3000,
+		/obj/item/grenade/syndieminibomb = 1500,
+		/obj/item/compressionkit = 2000,
+		/obj/item/chameleon = 1500,
+		/obj/item/doorCharge = 500,
+		/obj/item/storage/box/inteq_kit/revolver = 250,
+		/obj/item/guardiancreator = 3000,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 50000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,
@@ -234,7 +280,7 @@
 
 /obj/machinery/computer/vanguard_control/contraband/LateInitialize()
 	. = ..()
-	pad = locate() in range(4, src)
+	pad = locate() in range(CONTRABAND_PAD_LINK_RANGE, src)
 
 /obj/machinery/computer/vanguard_control/contraband/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
@@ -308,7 +354,7 @@
 		pad.icon_state = pad.warmup_state
 		addtimer(CALLBACK(pad, TYPE_PROC_REF(/obj/machinery/vanguard/contraband, play_beam)), pad.warmup_time)
 
-	addtimer(CALLBACK(src, PROC_REF(send)), pad ? pad.warmup_time : 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(send)), pad ? pad.warmup_time : CONTRABAND_PAD_WARMUP_TIME)
 
 /obj/machinery/computer/vanguard_control/contraband/proc/stop_sending()
 	sending = FALSE
@@ -322,6 +368,23 @@
 		stop_sending()
 		return
 
+	// Проверяем пользователя и его ID до удаления предметов
+	var/obj/item/card/id/user_id
+	if(last_user && !QDELETED(last_user))
+		user_id = last_user.get_idcard()
+	else
+		status_report = "User has left!"
+		last_user = null
+		stop_sending()
+		return
+
+	if(!user_id)
+		status_report = "No ID card found on user!"
+		last_user = null
+		stop_sending()
+		return
+
+	// Теперь можно безопасно удалять предметы и начислять очки
 	var/total_value = 0
 	var/items_sent = 0
 
@@ -338,21 +401,9 @@
 				qdel(AM)
 
 	if(items_sent > 0)
-		var/points_credited = 0
-		if(last_user && !QDELETED(last_user))
-			var/obj/item/card/id/user_id = last_user.get_idcard()
-			if(user_id)
-				user_id.contraband_points += total_value
-				points_credited = total_value
-				to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
-			else
-				status_report = "Contraband processed, but no ID card found on user!"
-		else
-			status_report = "Contraband processed, but user has left!"
-
-		if(points_credited > 0)
-			status_report = "Contraband processed! [points_credited] points distributed."
-
+		user_id.contraband_points += total_value
+		to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
+		status_report = "Contraband processed! [total_value] points distributed."
 		pad.visible_message("<span class='notice'>[pad] activates and beams away the contraband!</span>")
 		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	else
@@ -360,7 +411,6 @@
 
 	last_user = null
 	stop_sending()
-
 
 /obj/machinery/computer/vanguard_control/contraband/attackby(obj/item/I, mob/user, params)
 	if(default_deconstruction_screwdriver(user, "computer", "computer", I))
@@ -433,3 +483,8 @@
 			stop_sending()
 			last_user = null
 	return TRUE
+
+#undef CONTRABAND_PAD_WARMUP_TIME
+#undef CONTRABAND_PAD_BEAM_DURATION
+#undef CONTRABAND_PAD_LINK_RANGE
+#undef CONTRABAND_PAD_EFFICIENCY_BONUS

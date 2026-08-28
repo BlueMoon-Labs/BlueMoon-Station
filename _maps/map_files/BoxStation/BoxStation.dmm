@@ -19389,8 +19389,6 @@
 /obj/effect/turf_decal/trimline/yellow/filled/corner{
 	dir = 1
 	},
-/obj/structure/table,
-/obj/machinery/recharger,
 /turf/open/floor/plasteel/textured/half{
 	dir = 8
 	},

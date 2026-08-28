@@ -23,6 +23,7 @@
 		/obj/item/ammo_casing/mws_batt,
 		/obj/item/ammo_box/magazine/mws_mag,
 		/obj/item/electrostaff,
+		/obj/item/melee/tomahawk,
 		/obj/item/gun/ballistic/automatic/magrifle,
 		/obj/item/paicard))
 

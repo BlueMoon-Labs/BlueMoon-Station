@@ -26,8 +26,8 @@
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
 
 /obj/item/clothing/head/helmet/space/hardsuit/exploration
-	name = "шлем рейнджера"
-	desc = "Продвинутый шлем, который спасёт от космоса и других угроз."
+	name = "Ranger hardsuit helmet"
+	desc = "An advanced helmet that will protect you from space and other threats."
 	icon_state = "hardsuit0-exploration"
 	item_state = "hardsuit0-exploration"
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
@@ -40,8 +40,8 @@
 /obj/item/clothing/suit/space/hardsuit/exploration
 	icon_state = "hardsuit-exploration"
 	item_state = "hardsuit-exploration"
-	name = "костюм рейнджера"
-	desc = "Продвинутый костюм, который спасёт от космоса и других угроз."
+	name = "Ranger hardsuit"
+	desc = "An advanced suit that will protect you from space and other threats."
 	slowdown = 0
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
@@ -107,3 +107,17 @@
 	new /obj/item/hemostat/upgraded_t2(src)
 	new /obj/item/cautery/upgraded_t2(src)
 	new /obj/item/surgical_drapes(src)
+
+/obj/item/armorkit/vanguard/vest
+	name = "Combined armor kit"
+	desc = "Стандартизированный эскадронами Авангарда набор гибких бронепластин и тюбиков нано-клея. Данная вариация предназначена для укрепления верхней одежды."
+	parent_armor_type = /obj/item/clothing/suit/armor/vanguard
+	kit_slot_flag = ITEM_SLOT_OCLOTHING
+	kit_prefix = "combined"
+
+/obj/item/armorkit/vanguard/helmet
+	name = "Combined headgear kit"
+	desc = "Стандартизированный эскадронами Авангарда набор гибких бронепластин и тюбиков нано-клея. Данная вариация предназначена для укрепления головных уборов."
+	parent_armor_type = /obj/item/clothing/head/helmet/vanguard
+	kit_slot_flag = ITEM_SLOT_HEAD
+	kit_prefix = "combined"
