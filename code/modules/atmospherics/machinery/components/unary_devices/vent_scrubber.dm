@@ -157,11 +157,23 @@
 	atmos_wake()
 	..()
 
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	if(old_area)
+		old_area.air_scrub_names -= id_tag
+		old_area.air_scrub_info -= id_tag
+	name = initial(name)
+	broadcast_status()
+
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
 	if(atmos_idle_until > world.time)
 		return FALSE
 	if(welded || !is_operational)
 		// Woken by welder_act()/attack_alien()/power_change().
+		atmos_consider_idle()
+		return FALSE
+	if(!nodes[1] && !atmos_initialized)
+		// См. комментарий в vent_pump: до atmosinit() нод нет, гасить нельзя.
 		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] || !on)

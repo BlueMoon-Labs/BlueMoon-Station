@@ -47,6 +47,14 @@
 	radio_connection = null
 	return ..()
 
+/obj/machinery/atmospherics/components/unary/vent_pump/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	if(old_area)
+		old_area.air_vent_names -= id_tag
+		old_area.air_vent_info -= id_tag
+	name = initial(name) // имя содержит название зоны и серийник - оба выдаёт broadcast_status()
+	broadcast_status()
+
 /obj/machinery/atmospherics/components/unary/vent_pump/update_icon_nopipes()
 	cut_overlays()
 	if(showpipe)
@@ -90,6 +98,12 @@
 		atmos_consider_idle()
 		return
 	if(!nodes[1])
+		// До atmosinit() нод нет ни у одной машины, и замапленное on = TRUE нельзя
+		// терять: mid-round шаблон успевает получить фаер SSair между New() и
+		// setup_template_machinery(), потому что маплоадер спит на CHECK_TICK.
+		if(!atmos_initialized)
+			atmos_consider_idle()
+			return
 		on = FALSE
 	if(!on || welded)
 		// Woken by receive_signal()/welder_act().
