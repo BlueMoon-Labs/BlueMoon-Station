@@ -406,12 +406,24 @@
 	mob_trait = TRAIT_PARA
 	text_gain_indication = null // Handled by trauma.
 	text_lose_indication = null
+	/// Травму навесила именно мутация - значит она же её и снимет. Чужой паралич (квирк) не трогаем.
+	var/trauma_from_mutation = FALSE
 
 /datum/mutation/human/bm/paraplegic/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-	var/datum/brain_trauma/severe/paralysis/paraplegic/T = new()
+	if(..()) // мутация не легла - травму вешать нельзя, снять её потом будет нечем
+		return
+	if(owner.has_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE))
+		return
+	trauma_from_mutation = TRUE
+	owner.gain_trauma(new /datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
 
-	owner.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
+/datum/mutation/human/bm/paraplegic/on_losing(mob/living/carbon/human/owner)
+	if(..())
+		return
+	if(!trauma_from_mutation)
+		return
+	trauma_from_mutation = FALSE
+	owner.cure_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
 
 // /datum/mutation/human/bm/poor_aim
 // 	name = "Ужасный стрелок"
