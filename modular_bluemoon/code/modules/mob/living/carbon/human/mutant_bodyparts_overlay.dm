@@ -75,9 +75,21 @@ GLOBAL_LIST_INIT(mutant_overlays_cache, list())
 	if(!(layer in layers_for_apply_effect))
 		layers_for_apply_effect[layer] = list(layer, color, effect_datum)
 
+/**
+ * Потолок кэша готовых иконок оверлея и сколько вытесняется при переполнении.
+ *
+ * Прежние 30 записей с вытеснением половины были меньше, чем нужно ОДНОМУ носителю: ключ
+ * состоит из иконки, стейта, имени эффекта и цвета, а слоёв у мутантных частей до
+ * пятнадцати - хвост, морда, уши, крылья, тавр, рога, волосы плюс генитали. Двое в МОДах
+ * уже гоняли кэш по кругу, и попадания не было практически никогда.
+ */
+#define MUTANT_OVERLAY_CACHE_MAX 1024
+/// Четверть кэша, самые старые.
+#define MUTANT_OVERLAY_CACHE_EVICT (MUTANT_OVERLAY_CACHE_MAX / 4)
+
 /mob/living/carbon/human/proc/clear_old_cache_if_it_need()
-	if(GLOB.mutant_overlays_cache.len >= 30)
-		GLOB.mutant_overlays_cache.Cut(1, 15)
+	if(GLOB.mutant_overlays_cache.len > MUTANT_OVERLAY_CACHE_MAX)
+		GLOB.mutant_overlays_cache.Cut(1, MUTANT_OVERLAY_CACHE_EVICT + 1)
 
 /mob/living/carbon/human/proc/get_overlay_from_cache(key)
 	return GLOB.mutant_overlays_cache[key]
@@ -85,30 +97,44 @@ GLOBAL_LIST_INIT(mutant_overlays_cache, list())
 /mob/living/carbon/human/proc/generate_accessory_cache_key(mutable_appearance/accessory_overlay, datum/overlay_effect/effect_datum)
 	return "[accessory_overlay?.icon][accessory_overlay?.icon_state][effect_datum?.name][effect_datum?.color]"
 
+/**
+ * Собирает оверлей мутантной части с наложенным эффектом, переиспользуя готовую иконку.
+ *
+ * КЭШИРУЕТСЯ ИКОНКА, А НЕ ОВЕРЛЕЙ. Раньше в кэш клался готовый /mutable_appearance, а
+ * читался он в переменную типа /icon и подставлялся в `icon = ...` нового оверлея. Попадание
+ * поэтому не просто не экономило работу - оно записывало в поле icon датум оверлея вместо
+ * иконки, и клиент на этом месте рисовал что придётся. Ровно так на проде и выглядели
+ * "случайные спрайты на людях", пропавшие шляпы и чужие текстуры крови (28.08.2026).
+ *
+ * Промах при этом стоил дорого и был почти всегда (кэш на 30 записей при пятнадцати слоях
+ * на одного носителя): icon() на каждый вызов - это НОВАЯ рантайм-иконка со ВСЕМИ
+ * направлениями и кадрами стейта, а рантайм-иконка, попавшая в appearance, уезжает
+ * отдельным ресурсом КАЖДОМУ видящему клиенту и живёт у него до конца сессии. Прок зовётся
+ * из handle_mutant_bodyparts - самого дорогого по self прока в профиле раунда, - то есть на
+ * каждой перерисовке носителя МОДа, для каждого его мутантного слоя.
+ *
+ * Исходная иконка теперь создаётся ТОЛЬКО при промахе: на попадании она не нужна вовсе.
+ */
 /mob/living/carbon/human/proc/use_effect_by_params(mutable_appearance/accessory_overlay, list/overlay_params)
 	var/datum/overlay_effect/effect_datum = overlay_params[3]
 	var/layer = overlay_params[1]
 	var/cache_list_key = generate_accessory_cache_key(accessory_overlay, effect_datum)
-	var/icon/template = icon(accessory_overlay.icon, accessory_overlay.icon_state)
-	var/icon/cached_overlayed_icon = get_overlay_from_cache(cache_list_key)
+	var/icon/template = get_overlay_from_cache(cache_list_key)
 
-	clear_old_cache_if_it_need()
-	template = cached_overlayed_icon ? cached_overlayed_icon : get_overlayed_icon(template, effect_datum)
+	if(!template)
+		// get_overlayed_icon() правит иконку НА МЕСТЕ (ColorTone и Blend мутируют
+		// приёмник), поэтому кормить его можно только свежесозданной копией.
+		template = get_overlayed_icon(icon(accessory_overlay.icon, accessory_overlay.icon_state), effect_datum)
+		GLOB.mutant_overlays_cache[cache_list_key] = template
+		clear_old_cache_if_it_need()
 
 	var/mutable_appearance/overlay_MA = mutable_appearance(icon = template, layer = accessory_overlay.layer, plane = accessory_overlay.plane, alpha = LIGHTING_PLANE_ALPHA_VISIBLE, appearance_flags = accessory_overlay.appearance_flags, color = effect_datum.color, pixel_x = accessory_overlay.pixel_x, pixel_y = accessory_overlay.pixel_y, blend_mode=BLEND_OVERLAY)
 	overlay_MA.name = "[layer]_[accessory_overlay.icon_state]"
 
-	if(layer in OVERLAY_GENITAL_LIST)
-		if(!overlays_standing[GENITAL_EFFECT_LAYER])
-			overlays_standing[GENITAL_EFFECT_LAYER] = list()
-		overlays_standing[GENITAL_EFFECT_LAYER] += overlay_MA
-		GLOB.mutant_overlays_cache[cache_list_key] = overlay_MA
-		return overlay_MA
-
-	if(!overlays_standing[BODYPART_EFFECT_LAYER])
-		overlays_standing[BODYPART_EFFECT_LAYER] = list()
-	overlays_standing[BODYPART_EFFECT_LAYER] += overlay_MA
-	GLOB.mutant_overlays_cache[cache_list_key] = overlay_MA
+	var/target_layer = (layer in OVERLAY_GENITAL_LIST) ? GENITAL_EFFECT_LAYER : BODYPART_EFFECT_LAYER
+	if(!overlays_standing[target_layer])
+		overlays_standing[target_layer] = list()
+	overlays_standing[target_layer] += overlay_MA
 	return overlay_MA
 
 /mob/living/carbon/human/proc/apply_bodypart_overlays(list/layers, update = TRUE, datum/overlay_effect/effect_datum)
@@ -147,3 +173,6 @@ GLOBAL_LIST_INIT(mutant_overlays_cache, list())
 
 /mob/living/carbon/human/proc/get_appearance_by_layer(layer)
 	return mutant_part_appearances[layer]
+
+#undef MUTANT_OVERLAY_CACHE_MAX
+#undef MUTANT_OVERLAY_CACHE_EVICT
