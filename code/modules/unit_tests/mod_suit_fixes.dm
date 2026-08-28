@@ -74,6 +74,61 @@
 		"An armor kit must not strip the cold protection of a MOD part - sealing only restores clothing_flags")
 	TEST_ASSERT(!QDELETED(kit), "An armor kit rejected by a MOD part must not be consumed")
 
+// Регресс по раунду 10137: части МОДа составляли 44 харддела из 127 за смену -
+// половину всего бюджета заморозки от SSgarbage (15.0 с из 29.6 с).
+//
+// mod_parts это alist с числовыми ключами MOD_PART_*, а вычитание из alist идёт
+// ПО КЛЮЧУ. Destroy() костюма передавал в `mod_parts -= ...` саму часть, то есть
+// значение, и не удалял ничего: alist продолжал держать уже qdel-нутую часть, та
+// проваливала окно GC и уходила в харддел. Батарея в лог хардделов не попадала
+// только потому, что её чистил QDEL_NULL(MOD_CELL) - этот макрос разворачивается
+// в mod_parts[MOD_PART_CELL] и работает как lvalue.
+/datum/unit_test/mod_destroy_releases_its_parts/Run()
+	var/obj/item/mod/control/mod = allocate(/obj/item/mod/control)
+	var/list/parts = mod.get_mod_parts(include_cell = FALSE)
+	TEST_ASSERT(length(parts), "test premise: a MOD must build itself some parts")
+
+	qdel(mod)
+
+	for(var/obj/item/clothing/mod_part/part as anything in parts)
+		TEST_ASSERT(QDELETED(part), \
+			"Destroying a MOD must actually destroy [part.type], not just detach it")
+		TEST_ASSERT(!mod.is_mod_part(part), \
+			"A destroyed MOD must not keep holding [part.type] in mod_parts - that reference is what sent every part to hard delete")
+
+// Пин на семантику alist: именно она сломала Destroy выше. Если однажды alist
+// начнёт вычитать по значению, этот тест упадёт и правку можно будет упростить.
+/datum/unit_test/mod_parts_are_keyed_not_valued/Run()
+	var/obj/item/mod/control/mod = allocate(/obj/item/mod/control)
+	var/obj/item/clothing/mod_part/head/helmet = mod.mod_parts[MOD_PART_HEAD]
+	TEST_ASSERT_NOTNULL(helmet, "test premise: a MOD must build itself a helmet")
+
+	mod.mod_parts -= helmet
+	TEST_ASSERT(mod.is_mod_part(helmet), \
+		"Subtracting a part by value must stay a no-op on an alist - if this changed, revisit /obj/item/mod/control/Destroy")
+
+	TEST_ASSERT(mod.clear_mod_part(helmet), "clear_mod_part must report that it found the part")
+	TEST_ASSERT(!mod.is_mod_part(helmet), "clear_mod_part must actually drop the part out of mod_parts")
+	TEST_ASSERT(!mod.clear_mod_part(helmet), "clear_mod_part must report a miss the second time round")
+
+// Перебор alist отдаёт КЛЮЧИ, поэтому `for(var/obj/item/part in mod_parts)` молча
+// не исполнялся ни разу: фильтр по типу отбрасывал числа. На этом стояли проверка
+// "выдвиньте элементы МОДа", сокрытие частей при обыске и пружинная ловушка.
+/datum/unit_test/mod_part_iteration_yields_parts/Run()
+	var/obj/item/mod/control/mod = allocate(/obj/item/mod/control)
+
+	var/naive_hits = 0
+	for(var/obj/item/part in mod.mod_parts)
+		naive_hits++
+	TEST_ASSERT_EQUAL(naive_hits, 0, \
+		"test premise: iterating the alist directly must keep yielding keys, not parts")
+
+	var/list/parts = mod.get_mod_parts(include_cell = FALSE)
+	TEST_ASSERT(length(parts), "get_mod_parts must return the actual parts")
+	for(var/part in parts)
+		TEST_ASSERT(istype(part, /obj/item/clothing/mod_part), \
+			"get_mod_parts must return parts, got [part]")
+
 // Обычная одежда обязана и дальше укрепляться - фикс не должен убить сам механизм.
 /datum/unit_test/armor_kit_still_reinforces_clothing/Run()
 	var/obj/item/clothing/suit/hooded/wintercoat/coat = allocate(/obj/item/clothing/suit/hooded/wintercoat)

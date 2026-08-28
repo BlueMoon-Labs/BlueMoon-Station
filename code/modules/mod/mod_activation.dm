@@ -4,10 +4,7 @@
 /obj/item/mod/control/proc/choose_deploy(mob/user)
 	var/list/display_names = list()
 	var/list/items = list()
-	for(var/slot in mod_parts)
-		if(slot == MOD_PART_CELL)
-			continue
-		var/obj/item/piece = mod_parts[slot]
+	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
 		display_names[piece.name] = piece
 		var/image/piece_image = image(
 			icon = piece.icon,
@@ -21,23 +18,19 @@
 
 	if(!istype(part) || user.incapacitated())
 		return
-	var/parts_to_check = mod_parts - part
+	// Из alist вычитается КЛЮЧ, а не значение, поэтому прежнее `mod_parts - part`
+	// не исключало выбранную часть и она попадала в проверку остальных.
+	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
 	if(part.loc != user)
 		deploy(user, part)
-		for(var/slot in parts_to_check)
-			if(slot == MOD_PART_CELL)
-				continue
-			var/obj/item/piece = mod_parts[slot]
+		for(var/obj/item/piece as anything in parts_to_check)
 			if(piece.loc == user)
 				continue
 			choose_deploy(user)
 			break
 	else
 		conceal(user, part)
-		for(var/slot in parts_to_check)
-			if(slot == MOD_PART_CELL)
-				continue
-			var/obj/item/piece = mod_parts[slot]
+		for(var/obj/item/piece as anything in parts_to_check)
 			if(piece.loc != user)
 				continue
 			choose_deploy(user)
@@ -199,7 +192,8 @@
 	update_speed()
 	update_icon_state()
 
-	wearer.update_inv_back()
+	// Костюм деактивируют и без носителя (разбор, крио, force_deactivate).
+	wearer?.update_inv_back()
 
 /obj/item/mod/control/update_icon_state()
 	icon_state = "[skin]-control[is_active() ? "-sealed" : ""]"
@@ -207,14 +201,16 @@
 
 /obj/item/mod/control/proc/quick_activation()
 	var/seal = TRUE
-	for(var/obj/item/part as anything in mod_parts)
+	// `as anything in mod_parts` отдавал КЛЮЧИ alist (числа 1-5) и передавал их в
+	// deploy() под видом частей - развёртывание костюма из аутфита не работало.
+	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
 		if(!deploy(null, part))
 			seal = FALSE
 	if(!seal)
 		return
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
-		MOD_PART.seal_part(TRUE)
+	// Слот батареи тоже лежит в mod_parts, а seal_part() у неё нет.
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+		part.seal_part(TRUE)
 	finish_activation(on = TRUE)
 
 /obj/item/mod/control/proc/has_wearer()
