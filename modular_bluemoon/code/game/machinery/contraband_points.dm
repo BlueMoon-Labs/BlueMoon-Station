@@ -244,8 +244,6 @@
 		/obj/item/storage/box/inteq_kit = 200,
 		/obj/item/card/id/syndicate = 750,
 		/obj/item/card/id/inteq = 1250,
-		/obj/item/ammo_box/magazine/m10mm = 50,
-		/obj/item/ammo_box/magazine/pistolm9mm = 50,
 		/obj/item/mod/control/pre_equipped/inteq = 5000,
 		/obj/item/mod/control/pre_equipped/syndicate_empty = 2500,
 		/obj/item/mod/control/pre_equipped/syndicate_empty/elite = 5000,
