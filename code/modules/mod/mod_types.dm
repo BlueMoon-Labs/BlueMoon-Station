@@ -1,6 +1,6 @@
-	var/equip_cell = /obj/item/stock_parts/cell/high
 /obj/item/mod/control/pre_equipped
 	var/applied_skin
+	var/equip_cell = /obj/item/stock_parts/cell/high
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
 	new_skin = applied_skin
