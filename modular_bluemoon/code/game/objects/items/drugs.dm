@@ -226,7 +226,10 @@
 			// линзы сингулярности, ambient occlusion (см. plane_master.dm), - и
 			// обнуление списка сносило их все. Восстановить их некому: update_filters()
 			// у плейн-мастера сам по себе больше не зовётся.
-			addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 200)
+			// TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT: снятие по окончании метаболизма
+			// обязано ЗАМЕНИТЬ отложенное снятие, поставленное последней волной, а не встать
+			// рядом с ним. Хэш без wait - иначе таймеры с разной задержкой не схлопываются.
+			addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 20 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT)
 		to_chat(C, "<b><big>Неужели отпустило...</big></b>")
 
 //		if(C.client && current_cycle > 100)
@@ -337,8 +340,11 @@
 								// отдельный appearance, который клиент держит до конца сессии.
 								whole_screen.add_filter(LABEBIUM_WAVE_FILTER, LABEBIUM_WAVE_FILTER_PRIORITY, list(type="wave", x=round(20*rand() - 20, 1), y=round(20*rand() - 20, 1), size=round(rand()*0.1, 0.01), offset=round(rand()*0.5, 0.05), flags = WAVE_BOUNDED))
 								animate(whole_screen, transform = matrix()*2, time = 40, easing = BOUNCE_EASING)
-								addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 1200)
-							addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 600)
+								// Снятие ставится ТОЛЬКО сразу за add_filter и только поверх самого себя.
+								// Раньше рядом стоял ещё и безусловный таймер на 60 секунд - три штуки
+								// на каждый тик метаболизма, по одной на плейн-мастер, - и любой из них
+								// снимал фильтр, поставленный волной ПОЗЖЕ него.
+								addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 120 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT)
 					high_message = "ГОСПОДИ, НЕТ!!!"
 					create_flood(H)
 					create_ovosh(H)
