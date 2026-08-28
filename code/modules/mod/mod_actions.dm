@@ -32,7 +32,7 @@
 /datum/action/item_action/mod/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
-	if(mod.malfunctioning && prob(75))
+	if(mod.is_malfunctioning() && prob(75))
 		mod.balloon_alert(usr, "button malfunctions!")
 		return FALSE
 	return TRUE
@@ -41,10 +41,13 @@
 	name = "Deploy MODsuit"
 	desc = "Развернуть/Скрыть часть MOD-костюма."
 	button_icon_state = "deploy"
+	button_block_right_click_context_menu = TRUE
 
-/datum/action/item_action/mod/deploy/Trigger()
+/datum/action/item_action/mod/deploy/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
+	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
+		return mod.quick_toggle_parts(mod.wearer)
 	mod.choose_deploy(usr)
 	return TRUE
 

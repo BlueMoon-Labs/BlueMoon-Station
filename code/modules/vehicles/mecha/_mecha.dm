@@ -164,12 +164,6 @@
 	///Whether thruster stabilizers are engaged (cancels space drift to hold position, like a jetpack's). Needs functional, powered thrusters.
 	var/stabilizers = FALSE
 
-	// Space-drift mass model: a multi-ton exosuit should resist being nudged and should not reach human EVA drift speeds.
-	/// Higher = harder for impulses (steps, recoil, push-off) to build drift.
-	inertia_force_weight = 8
-	/// Multiplies the drift move delay, capping the mech's top drift speed well below a human's.
-	inertia_move_multiplier = 3
-
 	///Cooldown length between bumpsmashes
 	var/smashcooldown = 3
 
@@ -643,8 +637,8 @@
 ///Plays the mech step sound effect. Split from movement procs so that other mechs (HONK) can override this one specific part.
 /obj/vehicle/sealed/mecha/proc/play_stepsound()
 	SIGNAL_HANDLER
-	// step_silent is set for thrust / push-off; inertia_moving is set while the drift loop is carrying us.
-	// Neither is a footstep, so don't play the walk sound (it was firing on every space-drift tick).
+	// step_silent is set for thrust / push-off; inertia_moving is set while space drift carries us.
+	// Neither is a footstep, so don't play the walk sound.
 	if(step_silent)
 		step_silent = FALSE
 		return
@@ -662,45 +656,31 @@
 /obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
 	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
 
-/obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
-	. = ..(movement_dir, continuous_move)
+/obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0)
+	. = ..()
 	if(.)
 		return TRUE
 
-	// Jetpack-style thrusters: stabilizers = cell-by-cell movement with no drift; thrust handles voluntary moves.
-	if(has_functional_thrusters())
-		var/thruster_assist = continuous_move ? stabilizers : (movement_dir || stabilizers)
-		if(thruster_assist)
-			if(continuous_move)
-				return TRUE
-			if(active_thrusters.thrust(movement_dir))
-				step_silent = TRUE
-				return TRUE
-		if(continuous_move)
-			return FALSE
-		return FALSE
-
-	if(continuous_move)
-		return FALSE
-
-	// Mechs without a thruster package can still push off nearby objects.
-	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
+	var/atom/movable/backup = get_spacemove_backup()
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
-			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
+			if(backup.newtonian_move(turn(movement_dir, 180)))
 				step_silent = TRUE
 				if(return_drivers())
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
 		return TRUE
 
-	return FALSE
+	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
+		step_silent = TRUE
+		return TRUE
 
-// Мех НЕ переопределяет Moved(). Раньше стабилизаторы с рабочими двигателями
-// уводили нас в обход /atom/movable/Moved() ради отмены дрейфа, а вместе с
-// дрейфом терялась и перекладка спатиал-грида: пилот навсегда оставался
-// прописан в ячейке, где сел в меха, и переставал слышать всё за её пределами.
-// Отменять дрейф здесь и не нужно - newtonian_move() сам зовёт
-// Process_Spacemove(dir, TRUE), а тот при стабилизаторах возвращает TRUE.
+	// Stabilized thrusters hold the mech in place: answering TRUE here also makes
+	// newtonian_move()/SSspacedrift cancel any inertia, so no drift is built up.
+	// Kept after the thrust branch so voluntary steps still pay their charge.
+	if(stabilizers && has_functional_thrusters())
+		return TRUE
+
+	return FALSE
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
@@ -1047,6 +1027,28 @@
 	if(t_air)
 		. = t_air.return_temperature()
 	return
+
+/obj/vehicle/sealed/mecha/emag_act(mob/user, obj/item/card/emag/E)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	obj_flags |= EMAGGED
+	log_message("Emagged - DNA lock removed, one extra equipment slot installed.", LOG_MECHA)
+	log_combat(user, src, "emagged", E)
+	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
+	if(dna_lock)
+		dna_lock = null
+		desc = initial(desc)
+	max_equip++
+	user.visible_message(
+		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
+		"<span class='notice'>Свободных слотов снаряжения теперь: [max_equip].</span>"
+	)
+	do_sparks(5, TRUE, src)
+	playsound(src, 'sound/effects/sparks1.ogg', 50)
+	return TRUE
+
+/obj/vehicle/sealed/mecha/proc/is_emagged()
+	return !!(obj_flags & EMAGGED)
 
 /obj/vehicle/sealed/mecha/mob_try_enter(mob/M)
 	if(!ishuman(M)) // no silicons or drones in mechas.

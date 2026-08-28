@@ -27,6 +27,12 @@
 			var/new_file = input(user, "Выберите изображение для лобби (PNG / JPG / GIF / DMI):", "Картинка лобби") as icon|null
 			if(!new_file)
 				return
+			// Тот же потолок, что и у пула: картинка уходит отдельной копией каждому клиенту
+			// в лобби, и в 32-битном процессе это буферы вывода на сотню соединений сразу.
+			var/uploaded_size = length(new_file)
+			if(uploaded_size > BM_LOBBY_IMAGE_MAX_BYTES)
+				to_chat(user, span_warning("Файл весит [round(uploaded_size / (1024 * 1024), 0.1)] МБ, потолок - [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024), 0.1)] МБ. Картинка уходит копией каждому в лобби."))
+				return
 			SStitle_bm.change_image(new_file)
 			message_admins("[key_name_admin(user)] установил новую картинку лобби (загружен файл).")
 

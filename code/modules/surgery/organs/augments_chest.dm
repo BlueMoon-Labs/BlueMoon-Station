@@ -153,6 +153,8 @@
 	var/datum/effect_system/trail_follow/ion/ion_trail
 	/// Не больше одного списания за тик, см. одноимённое поле у баллонного джетпака.
 	var/last_thrust_time = -1
+	/// Скорость полёта берётся из конфига: TRUE → RUN_DELAY, FALSE → WALK_DELAY.
+	var/full_speed = TRUE
 
 /obj/item/organ/cyberimp/chest/thrusters/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
@@ -184,18 +186,14 @@
 		else
 			ion_trail.start()
 			RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death), override = TRUE)
-			owner.register_thrust_source(src, cap = INERTIA_THRUST_CAP_JETPACK)
-			owner.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
-			owner.update_flight_alert()
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set on.</span>")
 	else
 		ion_trail.stop()
 		if(!QDELETED(owner))
 			UnregisterSignal(owner, COMSIG_LIVING_DEATH)
-			owner.unregister_thrust_source(src)
-			owner.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
-			owner.update_flight_alert()
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set off.</span>")
 		on = FALSE

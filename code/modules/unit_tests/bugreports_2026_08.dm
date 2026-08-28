@@ -301,3 +301,352 @@
 // на нём просто молчит - опечатка в ключе не ломает ничего, кроме тишины.
 /datum/unit_test/picket_sign_writing_sound_resolves/Run()
 	TEST_ASSERT(!istext(get_sfx(SFX_WRITING_PEN)), "SFX_WRITING_PEN must resolve to a sound file, not stay a bare key")
+
+// "Голодек: загрузил Beach - bad index в copy template list"
+//
+// copy_template_list ходила по списку позиционно, а source[i] для ассоциативного
+// списка отдаёт ЗНАЧЕНИЕ слота, не ключ. Элемент-список (atom_colours хранит пары
+// цвет+приоритет вложенными списками) уезжал в source[ключ] как индекс: списки
+// индексами быть не могут, и голодек падал "bad index" на каждом ковре шаблона Beach.
+// Ассоциативные пары при этом разваливались - настоящий ключ через source[i] вообще
+// не достать.
+/datum/unit_test/copy_template_list_survives_nested_lists/Run()
+
+	// Вложенные списки-элементы копируются глубоко и независимо от шаблона.
+	var/list/nested = list(list("#ff0000", 2), list("#00ff00", 2))
+	var/list/nested_copy = copy_template_list(nested)
+	TEST_ASSERT_EQUAL(length(nested_copy), 2, "вложенные списки-элементы не должны теряться")
+	TEST_ASSERT(islist(nested_copy[1]), "элемент должен остаться вложенным списком, а не рассыпаться")
+	nested_copy[1][1] = "#000000"
+	TEST_ASSERT_EQUAL(nested[1][1], "#ff0000", "копия должна быть независимой от списка шаблона")
+
+	// Тайпкэш (typecacheof) переезжает парами ключ-значение, а не кучей элементов TRUE.
+	var/list/cache_copy = copy_template_list(typecacheof(list(/mob/living/carbon/human)))
+	TEST_ASSERT(cache_copy[/mob/living/carbon/human], "тайпкэш обязан переехать ассоциацией: путь -> TRUE")
+
+	// Чужие датумы выкидываются - одиночные и как ключи пар.
+	var/datum/foreign = new()
+	TEST_ASSERT(!length(copy_template_list(list(foreign))), "ссылка на датум не должна уехать в копию шаблона")
+	TEST_ASSERT(!length(copy_template_list(list("ключ" = foreign))), "датум в значении выкидывает пару целиком")
+	qdel(foreign)
+
+	// Простые числа (bitflag-группы сглаживания) остаются на своих местах:
+	// source[число] был бы доступом по индексу со всеми вытекающими.
+	var/list/numbers_copy = copy_template_list(list(9, 20))
+	TEST_ASSERT_EQUAL(numbers_copy.len, 2, "числовые элементы не должны теряться")
+	TEST_ASSERT_EQUAL(numbers_copy[1], 9, "числа обязаны остаться элементами, а не превратиться в индексы")
+	TEST_ASSERT_EQUAL(numbers_copy[2], 20, "числа обязаны остаться элементами, а не превратиться в индексы")
+
+	// Картинка - значение внешнего вида, её копия получает по ссылке.
+	var/image/picture = image('icons/turf/floors/carpet.dmi')
+	TEST_ASSERT(picture in copy_template_list(list(picture)), "картинки копия забирает себе по ссылке")
+
+// "Энергометлой затащил предмет в ресайклер - doMove qdel-нутого ghostcafe"
+//
+// Ресайклер ест снаряд через Crossed -> eat(), и GetAllContents забирает предметы,
+// которые волна несла в себе. recycle_item удаляет их ДО того, как qdel(projectile)
+// из того же eat() вызовет drop_everything() - и тот тянул труп forceMove'ом на пол.
+/datum/unit_test/broom_wave_drop_skips_recycled_items/Run()
+	var/turf/open/floor = run_loc_floor_bottom_left
+	var/obj/item/projectile/broom/wave = allocate(/obj/item/projectile/broom, floor)
+
+	// Живой предмет из contents волны: обязан вернуться на турф под ней.
+	var/obj/item/paper/survivor = allocate(/obj/item/paper, floor)
+	survivor.forceMove(wave)
+	wave.vis_contents += survivor
+	wave.pushedstuff += survivor
+
+	// Предмет, который ресайклер успел сожрать раньше Destroy самого снаряда.
+	var/obj/item/storage/box/syndie_kit/chameleon/eaten = allocate(/obj/item/storage/box/syndie_kit/chameleon, floor)
+	wave.pushedstuff += eaten
+	allocated -= eaten //ресайклер удаляет его сам, второй раз он не наш
+	qdel(eaten)
+
+	// Седок-моб мог быть стёрт прямо посреди поездки на волне.
+	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, floor)
+	rider.forceMove(wave)
+	wave.pushedstuff += rider
+	wave.losers += rider
+	allocated -= rider
+	qdel(rider)
+
+	// Раньше здесь падал рантайм doMove qdel-нутого - юнит-тесты считают рантаймы падением.
+	wave.drop_everything()
+	TEST_ASSERT_EQUAL(survivor.loc, floor, "уцелевший предмет обязан вернуться на турф под волной")
+	TEST_ASSERT(!length(wave.vis_contents), "vis_contents волны должен очиститься после сброса")
+	TEST_ASSERT(QDELETED(eaten) && QDELETED(rider), "сожранное и стёртое должны остаться мёртвыми")
+
+// "Гибнущий носитель нанитов - Cannot read null.armor"
+//
+// human/Destroy удаляет physiology раньше содержимого, где умирает компонент нанитов,
+// а тот на прощание гасит пассивки: Dermal Hardening читал physiology.armor трупа.
+// Откат баффа при уже удалённой физиологии просто пропускается.
+/datum/unit_test/nanite_hardening_skips_dead_physiology/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/component/nanites/nanites = host.AddComponent(/datum/component/nanites, 50)
+	TEST_ASSERT_NOTNULL(nanites, "test premise: носитель должен получить наниты")
+
+	var/datum/nanite_program/hardening/program = new()
+	TEST_ASSERT_EQUAL(nanites.add_program(null, program), COMPONENT_PROGRAM_INSTALLED, "test premise: программа закалки должна установиться")
+
+	var/melee_before = host.physiology.armor.melee
+	program.activate()
+	program.enable_passive_effect() //так же включает пассивку рабочий цикл on_process
+	TEST_ASSERT(program.passive_enabled, "test premise: закалка должна быть включена")
+	TEST_ASSERT_EQUAL(host.physiology.armor.melee, melee_before + 35, "закалка обязана усилить броню живого носителя")
+
+	// Полный qdel носителя - ровно продовый путь: physiology умрёт раньше программ.
+	allocated -= host
+	qdel(host) //здесь раньше падал "Cannot read null.armor"
+
+// "Клоунский цветок не оставляет полы в суперсмазке"
+//
+// spray() делит дозу облака на дальность (trans_to(..., 1/range)), у цветка 1u за пшик,
+// поэтому на турф доезжало 0.33u, а reaction_turf луба требовал минимум единицу - смазка
+// не появлялась нигде, кроме пшика вплотную. Суперлуб обязан мажиться от долей юнита,
+// обычный - нет.
+/datum/unit_test/superlube_wets_floor_from_diluted_puff/Run()
+	var/turf/open/floor = run_loc_floor_bottom_left
+
+	var/datum/reagent/lube/superlube/superlube = new()
+	superlube.reaction_turf(floor, 1 / 3)
+	var/datum/component/wet_floor/wet = floor.GetComponent(/datum/component/wet_floor)
+	TEST_ASSERT_NOTNULL(wet, "a diluted superlube puff must still leave a lubed floor")
+	TEST_ASSERT_EQUAL(wet.highest_strength, TURF_WET_SUPERLUBE, "the flower must leave superlube, not plain water")
+	floor.ClearWet()
+	qdel(superlube)
+
+	// Обычный луб держит старый порог: доля юнита его не мажет.
+	var/turf/open/floor_two = get_step(run_loc_floor_bottom_left, EAST)
+	var/datum/reagent/lube/plain = new()
+	plain.reaction_turf(floor_two, 1 / 3)
+	TEST_ASSERT_NULL(floor_two.GetComponent(/datum/component/wet_floor), "plain lube must keep its one-unit threshold")
+	qdel(plain)
+
+// "Ботинки нанокостюма из рук в сумку - doMove qdel-нутого"
+//
+// DROPDEL-предмет стирает себя в dropped() во время снятия с моба, а handle_item_insertion
+// после успешного temporarilyRemoveItemFromInventory всё равно тащил труп forceMove'ом в
+// хранилище (прод-раунд 9880: ботинки coldres/nano в leather satchel). Теперь вставка
+// отказывается тихо: предмет удалён, в сумке его быть не должно.
+/datum/unit_test/storage_insert_never_moves_a_dropdel_corpse/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/storage/backpack/satchel/leather/satchel = allocate(/obj/item/storage/backpack/satchel/leather, run_loc_floor_bottom_left)
+	var/obj/item/clothing/shoes/combat/coldres/nano/boots = allocate(/obj/item/clothing/shoes/combat/coldres/nano, run_loc_floor_bottom_left)
+
+	TEST_ASSERT(user.put_in_hands(boots), "test premise: the boots must fit in the test subject's hand")
+	allocated -= boots //DROPDEL уносит их в qdel сам
+
+	var/datum/component/storage/concrete/storage = satchel.GetComponent(/datum/component/storage)
+	TEST_ASSERT_NOTNULL(storage, "test premise: the satchel must have storage")
+	TEST_ASSERT(!storage.handle_item_insertion(boots, TRUE, user), "inserting a self-deleted item must fail quietly")
+	TEST_ASSERT(QDELETED(boots), "DROPDEL boots must still delete themselves on unequip")
+	TEST_ASSERT(!length(satchel.contents), "the satchel must not swallow a deleted item")
+
+// "Помпа растворилась - и в лог посыпались Incompatible nanites"
+//
+// removed() безусловно возвращал носителю обычные наниты, а помпа-то растворяется именно
+// на НЕсовместимом теле: AddComponent там пишет stack_trace и ничего не делает (раунд 9881).
+// После извлечения несовместимому носителю нанитов не заводим вовсе.
+/datum/unit_test/nanite_pump_removal_skips_incompatible_hosts/Run()
+	var/mob/living/carbon/human/immune = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	ADD_TRAIT(immune, TRAIT_NANITES_IMMUNITY, "unit test")
+	var/obj/item/implant/nanite_pump/pump = allocate(/obj/item/implant/nanite_pump, run_loc_floor_bottom_left)
+
+	// Связку имплант<->носитель собираем руками, минуя implant(): removed() вычитает
+	// себя из source.implants и без этой связи работает с пустым списком.
+	pump.imp_in = immune
+	LAZYINITLIST(immune.implants)
+	immune.implants += pump
+	pump.removed(immune)
+	TEST_ASSERT(!SEND_SIGNAL(immune, COMSIG_HAS_NANITES), "an incompatible host must not gain nanites from pump removal")
+	pump.imp_in = null
+
+	// Совместимому носителю возврат нанитов по-прежнему положен.
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	host.AddComponent(/datum/component/nanites, 50)
+	var/obj/item/implant/nanite_pump/live_pump = allocate(/obj/item/implant/nanite_pump, run_loc_floor_bottom_left)
+	live_pump.imp_in = host
+	LAZYINITLIST(host.implants)
+	host.implants += live_pump
+	live_pump.removed(host)
+	TEST_ASSERT(SEND_SIGNAL(host, COMSIG_HAS_NANITES), "a compatible host must keep his nanites after pump removal")
+	live_pump.imp_in = null
+
+// "Смазка под лежачего": пшик или брызги луба должны отправить лежащего катиться,
+// если у него нет полноценной защиты от скольжения. Стоящего прямой пшик не трогает -
+// его ловит смазанный турф под ногами.
+/datum/unit_test/lube_reacts_on_lying_human/Run()
+	//на резервационном z гравитации нет, а скольжение в невесомости отключено:
+	//включаем её арене и восстанавливаем на выходе
+	var/area/test_area = get_area(run_loc_floor_bottom_left)
+	var/saved_gravity = test_area.has_gravity
+	test_area.has_gravity = STANDARD_GRAVITY
+	var/datum/reagent/lube/lube = new()
+
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	ADD_TRAIT(victim, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
+	victim.update_mobility()
+	TEST_ASSERT(victim.body_position == LYING_DOWN, "test premise: жертва должна лежать")
+
+	lube.reaction_mob(victim, VAPOR, 5)
+	TEST_ASSERT_NOTNULL(victim.force_moving, "смазка обязана отправить лежащего в качение")
+
+	// Полная защита спасает: галоши против луба бесполезны, а вот NOSLIPALL - нет.
+	var/mob/living/carbon/human/protected = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	ADD_TRAIT(protected, TRAIT_NOSLIPALL, TRAIT_SOURCE_UNIT_TESTS)
+	ADD_TRAIT(protected, TRAIT_FLOORED, TRAIT_SOURCE_UNIT_TESTS)
+	protected.update_mobility()
+	TEST_ASSERT(protected.body_position == LYING_DOWN, "test premise: защищённая жертва тоже должна лежать")
+
+	lube.reaction_mob(protected, VAPOR, 5)
+	TEST_ASSERT_NULL(protected.force_moving, "полная защита от скольжения должна спасать лежачего от качения")
+
+	// Стоящего прямой пшик смазки не катит.
+	var/mob/living/carbon/human/standing = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	lube.reaction_mob(standing, VAPOR, 5)
+	TEST_ASSERT_NULL(standing.force_moving, "стоящий не должен катиться от прямого пшика - его ловит турф")
+
+	qdel(lube)
+	test_area.has_gravity = saved_gravity
+
+// Цепное качение по смазке: слайд через дорожку из нескольких клеток длится до конца
+// дорожки, каждая пройденная клетка со смазкой продлевает качение, а после её конца
+// катящийся по инерции пролетает ещё пару-тройку клеток сухого пола.
+/datum/unit_test/lube_slide_runs_until_dry_floor/Run()
+	//на резервационном z гравитации нет, а скольжение в невесомости отключено:
+	//включаем её арене и восстанавливаем на выходе
+	var/area/test_area = get_area(run_loc_floor_bottom_left)
+	var/saved_gravity = test_area.has_gravity
+	test_area.has_gravity = STANDARD_GRAVITY
+	var/turf/open/start = run_loc_floor_bottom_left
+	var/list/patch = list()
+	for(var/i in 1 to 4)
+		var/turf/open/T = locate(start.x + i, start.y, start.z)
+		TEST_ASSERT(istype(T), "test premise: для дорожки смазки нужен открытый турф")
+		T.MakeSlippery(TURF_WET_LUBE, 10 SECONDS, 5 SECONDS)
+		patch += T
+
+	var/mob/living/carbon/human/roller = allocate(/mob/living/carbon/human, start)
+	roller.setDir(EAST) //качение уходит по направлению взгляда - вдоль дорожки
+	TEST_ASSERT(start.handle_slip(roller, 80, null, SLIDE | GALOSHES_DONT_HELP), "test premise: смазанный турф обязан уронить бегуна")
+	var/datum/forced_movement/in_flight = roller.force_moving
+	TEST_ASSERT_NOTNULL(in_flight, "смазанная дорожка обязана запустить качение")
+	var/turf/open/dry_end = locate(start.x + 5, start.y, start.z)
+	TEST_ASSERT(in_flight.target.x >= dry_end.x + 2 && in_flight.target.x <= dry_end.x + 3, "качение не должно обрываться на первом сухом турфе - инерция уносит на пару-тройку клеток дальше")
+
+	// Середина дорожки: продление держит цель за её концом...
+	var/turf/open/mid_lubed = patch[2]
+	roller.forceMove(mid_lubed)
+	var/datum/component/slippery/mid_slippery = mid_lubed.GetComponent(/datum/component/slippery)
+	mid_slippery.Slip(mid_lubed, roller)
+	TEST_ASSERT(in_flight.target.x >= dry_end.x + 2 && in_flight.target.x <= dry_end.x + 3, "клетки со смазкой посреди дорожки продлевают качение до её конца и дальше по инерции")
+
+	// ...и последняя клетка дорожки тоже не обрывает полёт резко.
+	var/turf/open/last_lubed = patch[4]
+	roller.forceMove(last_lubed)
+	var/datum/component/slippery/last_slippery = last_lubed.GetComponent(/datum/component/slippery)
+	last_slippery.Slip(last_lubed, roller)
+	TEST_ASSERT(in_flight.target.x >= dry_end.x + 2 && in_flight.target.x <= dry_end.x + 3, "после последней клетки дорожки качение обязано пролететь ещё пару клеток инерции")
+
+	QDEL_NULL(in_flight)
+	for(var/turf/open/T as anything in patch)
+		T.ClearWet()
+	test_area.has_gravity = saved_gravity
+
+// "Голодек: загрузил Beach - bad index в copy template list"
+//
+// copy_template_list ходила по списку позиционно, а source[i] для ассоциативного
+// списка отдаёт ЗНАЧЕНИЕ слота, не ключ. Элемент-список (atom_colours хранит пары
+// цвет+приоритет вложенными списками) уезжал в source[ключ] как индекс: списки
+// индексами быть не могут, и голодек падал "bad index" на каждом ковре шаблона Beach.
+// Ассоциативные пары при этом разваливались - настоящий ключ через source[i] вообще
+// не достать.
+/datum/unit_test/copy_template_list_survives_nested_lists/Run()
+
+	// Вложенные списки-элементы копируются глубоко и независимо от шаблона.
+	var/list/nested = list(list("#ff0000", 2), list("#00ff00", 2))
+	var/list/nested_copy = copy_template_list(nested)
+	TEST_ASSERT_EQUAL(length(nested_copy), 2, "вложенные списки-элементы не должны теряться")
+	TEST_ASSERT(islist(nested_copy[1]), "элемент должен остаться вложенным списком, а не рассыпаться")
+	nested_copy[1][1] = "#000000"
+	TEST_ASSERT_EQUAL(nested[1][1], "#ff0000", "копия должна быть независимой от списка шаблона")
+
+	// Тайпкэш (typecacheof) переезжает парами ключ-значение, а не кучей элементов TRUE.
+	var/list/cache_copy = copy_template_list(typecacheof(list(/mob/living/carbon/human)))
+	TEST_ASSERT(cache_copy[/mob/living/carbon/human], "тайпкэш обязан переехать ассоциацией: путь -> TRUE")
+
+	// Чужие датумы выкидываются - одиночные и как ключи пар.
+	var/datum/foreign = new()
+	TEST_ASSERT(!length(copy_template_list(list(foreign))), "ссылка на датум не должна уехать в копию шаблона")
+	TEST_ASSERT(!length(copy_template_list(list("ключ" = foreign))), "датум в значении выкидывает пару целиком")
+	qdel(foreign)
+
+	// Простые числа (bitflag-группы сглаживания) остаются на своих местах:
+	// source[число] был бы доступом по индексу со всеми вытекающими.
+	var/list/numbers_copy = copy_template_list(list(9, 20))
+	TEST_ASSERT_EQUAL(numbers_copy.len, 2, "числовые элементы не должны теряться")
+	TEST_ASSERT_EQUAL(numbers_copy[1], 9, "числа обязаны остаться элементами, а не превратиться в индексы")
+	TEST_ASSERT_EQUAL(numbers_copy[2], 20, "числа обязаны остаться элементами, а не превратиться в индексы")
+
+	// Картинка - значение внешнего вида, её копия получает по ссылке.
+	var/image/picture = image('icons/turf/floors/carpet.dmi')
+	TEST_ASSERT(picture in copy_template_list(list(picture)), "картинки копия забирает себе по ссылке")
+
+// "Энергометлой затащил предмет в ресайклер - doMove qdel-нутого ghostcafe"
+//
+// Ресайклер ест снаряд через Crossed -> eat(), и GetAllContents забирает предметы,
+// которые волна несла в себе. recycle_item удаляет их ДО того, как qdel(projectile)
+// из того же eat() вызовет drop_everything() - и тот тянул труп forceMove'ом на пол.
+/datum/unit_test/broom_wave_drop_skips_recycled_items/Run()
+	var/turf/open/floor = run_loc_floor_bottom_left
+	var/obj/item/projectile/broom/wave = allocate(/obj/item/projectile/broom, floor)
+
+	// Живой предмет из contents волны: обязан вернуться на турф под ней.
+	var/obj/item/paper/survivor = allocate(/obj/item/paper, floor)
+	survivor.forceMove(wave)
+	wave.vis_contents += survivor
+	wave.pushedstuff += survivor
+
+	// Предмет, который ресайклер успел сожрать раньше Destroy самого снаряда.
+	var/obj/item/storage/box/syndie_kit/chameleon/eaten = allocate(/obj/item/storage/box/syndie_kit/chameleon, floor)
+	wave.pushedstuff += eaten
+	allocated -= eaten //ресайклер удаляет его сам, второй раз он не наш
+	qdel(eaten)
+
+	// Седок-моб мог быть стёрт прямо посреди поездки на волне.
+	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, floor)
+	rider.forceMove(wave)
+	wave.pushedstuff += rider
+	wave.losers += rider
+	allocated -= rider
+	qdel(rider)
+
+	// Раньше здесь падал рантайм doMove qdel-нутого - юнит-тесты считают рантаймы падением.
+	wave.drop_everything()
+	TEST_ASSERT_EQUAL(survivor.loc, floor, "уцелевший предмет обязан вернуться на турф под волной")
+	TEST_ASSERT(!length(wave.vis_contents), "vis_contents волны должен очиститься после сброса")
+	TEST_ASSERT(QDELETED(eaten) && QDELETED(rider), "сожранное и стёртое должны остаться мёртвыми")
+
+// "Гибнущий носитель нанитов - Cannot read null.armor"
+//
+// human/Destroy удаляет physiology раньше содержимого, где умирает компонент нанитов,
+// а тот на прощание гасит пассивки: Dermal Hardening читал physiology.armor трупа.
+// Откат баффа при уже удалённой физиологии просто пропускается.
+/datum/unit_test/nanite_hardening_skips_dead_physiology/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/component/nanites/nanites = host.AddComponent(/datum/component/nanites, 50)
+	TEST_ASSERT_NOTNULL(nanites, "test premise: носитель должен получить наниты")
+
+	var/datum/nanite_program/hardening/program = new()
+	TEST_ASSERT_EQUAL(nanites.add_program(null, program), COMPONENT_PROGRAM_INSTALLED, "test premise: программа закалки должна установиться")
+
+	var/melee_before = host.physiology.armor.melee
+	program.activate()
+	program.enable_passive_effect() //так же включает пассивку рабочий цикл on_process
+	TEST_ASSERT(program.passive_enabled, "test premise: закалка должна быть включена")
+	TEST_ASSERT_EQUAL(host.physiology.armor.melee, melee_before + 35, "закалка обязана усилить броню живого носителя")
+
+	// Полный qdel носителя - ровно продовый путь: physiology умрёт раньше программ.
+	allocated -= host
+	qdel(host) //здесь раньше падал "Cannot read null.armor"

@@ -497,10 +497,28 @@
 		qdel(src)
 	else
 		health = 0
-		icon_state = icon_dead
+		icon_state = corpse_icon_state()
 		density = FALSE
 		lying = 1
 		..()
+
+///Спрайт, в котором остаётся лежать труп. icon_dead по умолчанию пустая строка,
+///а icon_state = "" не рисует вообще ничего: моб без спрайта смерти пропадал с
+///экрана, оставаясь кликабельным и осязаемым. Ровно так же кончается icon_dead,
+///указывающий на несуществующий стейт - тот же невидимый труп, только молча.
+///Поэтому берём первого кандидата, который реально есть в иконке; живой спрайт
+///в этой роли честнее пустоты - труп лежит (lying = 1), не плотный и виден.
+///Мобу, который обязан исчезать, нужен del_on_death, а не пустой icon_dead.
+/mob/living/simple_animal/proc/corpse_icon_state()
+	var/list/available = icon ? icon_states(icon) : null
+	//Иконка с безымянным стейтом невидимой не бывает: BYOND рисует его всегда,
+	//когда запрошенного стейта нет (так живут сгенерированные get_flat_human_icon)
+	if(!length(available) || ("" in available))
+		return icon_dead || icon_living || icon_state
+	for(var/candidate in list(icon_dead, icon_living, icon_state, initial(icon_state)))
+		if(candidate && (candidate in available))
+			return candidate
+	return icon_state
 
 /mob/living/simple_animal/proc/CanAttack(atom/the_target)
 	if(see_invisible < the_target.invisibility)

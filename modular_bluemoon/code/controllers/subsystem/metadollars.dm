@@ -481,6 +481,8 @@ SUBSYSTEM_DEF(metadollars)
 			lines += "Цели антагониста: <b>[E["antag"]]</b> М$"
 		if(E["voucher"])
 			lines += "Получено обменом: <b>[E["voucher"]]</b> М$"
+		if(E["pact_siege"])
+			lines += "Протокол осады InteQ/ПАКТ: <b>[E["pact_siege"]]</b> М$"
 		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[balance] М$</b>.</div>"
 	var/missed_block = metadollar_roundend_missed_html(C, C.mob, E)
 	if(missed_block)

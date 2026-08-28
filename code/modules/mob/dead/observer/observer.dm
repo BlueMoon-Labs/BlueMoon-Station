@@ -191,8 +191,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	hair_overlay = null
 	facial_hair_overlay = null
 	managed_overlays = null
-	realized_overlays = null
-	realized_underlays = null
 
 	var/image/departing_default = ghostimage_default
 	var/image/departing_simple = ghostimage_simple
@@ -1061,7 +1059,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		set_light(0, 0)
 
 // Ghosts have no momentum, being massless ectoplasm
-/mob/dead/observer/Process_Spacemove(movement_dir, continuous_move = FALSE)
+/mob/dead/observer/Process_Spacemove(movement_dir)
 	return TRUE
 
 /mob/dead/observer/vv_edit_var(var_name, var_value)

@@ -122,6 +122,8 @@ SUBSYSTEM_DEF(garbage)
 	var/list/recent_hard_deletes = list()
 	/// Periodic queue depth snapshots. Each entry: list(world.time, depth1, depth2, depth3).
 	var/list/queue_depth_history = list()
+	/// Тип, который прямо сейчас удаляется через del(). Только для чёрного ящика МК, вне HardDelete всегда null.
+	var/hard_deleting_type
 
 	// --- Агрегация дешёвых хардделов для harddels.log ---
 	/// Сколько дешёвых хардделов накопилось с последней сводки.
@@ -231,6 +233,16 @@ SUBSYSTEM_DEF(garbage)
 	msg += "|F:[fail_counts.Join(",")]"
 	return ..()
 
+/datum/controller/subsystem/garbage/last_task()
+	// del() внутри HardDelete - единственное место подсистемы, где мир способен встать
+	// или умереть насовсем, поэтому тип, который сейчас в работе, важнее глубин очередей.
+	if(hard_deleting_type)
+		return "жёсткое удаление [hard_deleting_type]"
+	var/list/depths = list()
+	for(var/queue_index in 1 to GC_QUEUE_COUNT)
+		depths += GetQueueDepth(queue_index)
+	return "очереди сборки [depths.Join("/")]"
+
 /datum/controller/subsystem/garbage/Shutdown()
 	FlushHardDeleteLogSummary()
 	var/list/dellog = list()
@@ -282,6 +294,11 @@ SUBSYSTEM_DEF(garbage)
 	var/list/profiler_pass_snap = pass_counts.Copy()
 	var/list/profiler_fail_snap = fail_counts.Copy()
 	#endif
+
+	// Рантайм внутри del() уносит стек мимо строки, которая гасит hard_deleting_type, и
+	// last_task() до конца раунда рапортовал бы о жёстком удалении, которого давно нет.
+	// Снимаем метку здесь: к следующему проходу подсистема заведомо не внутри del().
+	hard_deleting_type = null
 
 	// Reset per-tick counters at the start of softcheck processing.
 	delslasttick = 0
@@ -965,7 +982,9 @@ SUBSYSTEM_DEF(garbage)
 	var/refID = "\ref[D]"
 
 	var/tick_usage = TICK_USAGE
+	hard_deleting_type = type
 	del(D)
+	hard_deleting_type = null
 	tick_usage = TICK_USAGE_TO_MS(tick_usage)
 
 	var/datum/qdel_item/I = GetOrCreateItem(type)

@@ -62,6 +62,8 @@
 	// Don't want the traps triggered by sparks, ghosts or projectiles.
 	if(is_type_in_typecache(AM, ignore_typecache))
 		return
+	if(HAS_TRAIT(AM, TRAIT_JUMPING))
+		return
 	if(ismob(AM))
 		var/mob/M = AM
 		if(M.mind in immune_minds)

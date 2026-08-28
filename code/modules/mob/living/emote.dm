@@ -316,10 +316,10 @@
 	message_param = "отправляет воздушный поцелуй для %t."
 
 /datum/emote/sound/human/kiss/run_emote(mob/living/user, params, type_override, intentional)
-	. = ..()
-	if(!.)
+	if(!istype(user))
 		return
 	var/kiss_type = /obj/item/hand_item/kisser
+	var/need_use_kiss = FALSE
 
 	if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))
 		kiss_type = /obj/item/hand_item/kisser/death
@@ -327,35 +327,38 @@
 		kiss_type = /obj/item/hand_item/kisser/crocin
 	else if(HAS_TRAIT(user, TRAIT_KISS_SPACE_DRUGS))
 		kiss_type = /obj/item/hand_item/kisser/space_drugs
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_HONK))
 		kiss_type = /obj/item/hand_item/kisser/honk
 	else if(HAS_TRAIT(user, TRAIT_KISS_BLOODSUCKER))
 		kiss_type = /obj/item/hand_item/kisser/bloodsucker
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_MIME))
 		kiss_type = /obj/item/hand_item/kisser/mime
 	else if(HAS_TRAIT(user, TRAIT_KISS_DRAGQUEEN))
 		kiss_type = /obj/item/hand_item/kisser/dragqueen
-		user.nextsoundemote = world.time + 3 SECONDS
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.use_kiss()
+		need_use_kiss = TRUE
 	else if(HAS_TRAIT(user, TRAIT_KISS_HEARTBOOM))
 		kiss_type = /obj/item/hand_item/kisser/heartboom
 
 	var/obj/item/kiss_blower = new kiss_type(user)
-	if(user.put_in_hands(kiss_blower))
+	if(user.put_in_hands(kiss_blower) && !QDELETED(kiss_blower))
 		to_chat(user, span_notice("You ready your kiss-blowing hand."))
 	else
 		qdel(kiss_blower)
 		to_chat(user, span_warning("You're incapable of blowing a kiss in your current state."))
+		return
+
+	. = ..()
+	if(!.)
+		qdel(kiss_blower)
+		return
+
+	if(need_use_kiss)
+		user.nextsoundemote = world.time + 3 SECONDS
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.use_kiss()
 
 /datum/emote/sound/human/kiss2
 	key = "kiss2"
@@ -903,3 +906,23 @@
 	message = "видит вкусняшку."
 	sound = 'sound/voice/yummers.ogg'
 	stat_allowed = SOFT_CRIT
+
+/datum/emote/sound/human/medic
+	name = "Медик!"
+	key = "medic"
+	key_third_person = "medics"
+	message = "зовёт медика!"
+	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = FALSE
+	restraint_check = FALSE
+
+/datum/emote/sound/human/medic/run_emote(mob/user, params)
+	sound = pick('sound/magic/tf2/demoman_medic01.ogg', 'sound/magic/tf2/demoman_medic02.ogg', 'sound/magic/tf2/demoman_medic03.ogg', \
+				'sound/magic/tf2/engineer_medic01.ogg', 'sound/magic/tf2/engineer_medic01.ogg', 'sound/magic/tf2/engineer_medic01.ogg', \
+				'sound/magic/tf2/heavy_medic01.ogg', 'sound/magic/tf2/heavy_medic01.ogg', 'sound/magic/tf2/heavy_medic01.ogg', \
+				'sound/magic/tf2/medic1.ogg', 'sound/magic/tf2/medic2.ogg', 'sound/magic/tf2/pyro_medic01.ogg', \
+				'sound/magic/tf2/scout_medic01.ogg', 'sound/magic/tf2/scout_medic02.ogg', 'sound/magic/tf2/scout_medic03.ogg', \
+				'sound/magic/tf2/sniper_medic01.ogg', 'sound/magic/tf2/sniper_medic01.ogg', \
+				'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', \
+				'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg')
+	. = ..()

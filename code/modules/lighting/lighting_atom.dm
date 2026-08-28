@@ -4,12 +4,8 @@
 	var/light_range = 0 // Range in tiles of the light.
 	var/light_color     // Hexadecimal RGB string representing the colour of the light.
 	var/light_height = LIGHTING_HEIGHT // Height off the ground on the pseudo-z-axis.
-	var/light_cone_angle = 0 // Full cone width in degrees. 0 = omnidirectional.
-	var/light_cone_dir = 0   // BYOND dir for the cone. 0 = follow top_atom.dir (rotates with holder). Non-zero = FIXED direction (ignores holder rotation).
-	/// Contact shadow contribution weight (0-1). 0 = no shadow, 1 = full opaque shadow.
-	/// Only used for non-opaque atoms that should still cast partial contact shadows.
-	/// Opaque atoms (opacity=TRUE) always contribute weight 1.0 implicitly.
-	var/shadow_weight = 0
+	// Конус света и вес контактной тени переехали на /atom/movable (ниже в этом файле): их
+	// ставят только светильники и мебель, а слот на каждом из 1.2 млн турфов мира стоит мегабайты.
 
 	/// Какая система света обслуживает атом: COMPLEX_LIGHT (корнер-движок) или OVERLAY_*
 	/// (компонент overlay_lighting, вешается в /atom/movable/Initialize). Менять только в определении типа.
@@ -21,6 +17,14 @@
 
 	var/tmp/datum/light_source/light // Our light source. Don't fuck with this directly unless you have a good reason!
 	var/tmp/list/light_sources       // Any light sources that are "inside" of us, for example, if src here was a mob that's carrying a flashlight, that flashlight's light source would be part of this list.
+
+/atom/movable
+	var/light_cone_angle = 0 // Full cone width in degrees. 0 = omnidirectional.
+	var/light_cone_dir = 0   // BYOND dir for the cone. 0 = follow top_atom.dir (rotates with holder). Non-zero = FIXED direction (ignores holder rotation).
+	/// Contact shadow contribution weight (0-1). 0 = no shadow, 1 = full opaque shadow.
+	/// Only used for non-opaque atoms that should still cast partial contact shadows.
+	/// Opaque atoms (opacity=TRUE) always contribute weight 1.0 implicitly.
+	var/shadow_weight = 0
 
 // The proc you should always use to set the light of this atom.
 // Nonesensical value for l_color default, so we can detect if it gets set to null.
@@ -61,11 +65,16 @@
 	if (!isnull(l_height))
 		set_light_height(l_height)
 
-	if (!isnull(l_cone_angle))
-		light_cone_angle = l_cone_angle
-
-	if (!isnull(l_cone_dir))
-		light_cone_dir = l_cone_dir
+	if (!isnull(l_cone_angle) || !isnull(l_cone_dir))
+		// Конус живёт на движимом: set_light() зовут и турфы (лава), у них конуса не бывает.
+		var/atom/movable/cone_holder = ismovable(src) ? src : null
+		if (isnull(cone_holder))
+			stack_trace("set_light() с конусом на неподвижном [type]: конусы бывают только у движимого")
+		else
+			if (!isnull(l_cone_angle))
+				cone_holder.light_cone_angle = l_cone_angle
+			if (!isnull(l_cone_dir))
+				cone_holder.light_cone_dir = l_cone_dir
 
 	if (!isnull(l_on))
 		light_on = l_on
@@ -96,14 +105,15 @@
 		if (light) // Update the light or create it if it does not exist.
 			light.update(.)
 		else
-			// Defer source creation for mining/reserved z-levels whose lighting objects don't exist yet.
+			// Defer source creation for z-levels whose lighting objects don't exist yet
+			// (see zlevel_lighting_deferred() — one predicate shared with create_all_lighting_objects).
 			// Trait check needed during early init (before SSlighting) when ALL z-levels have lighting_initialized=FALSE.
 			// The lighting_initialized check covers post-SSlighting-init period (bg init not yet complete).
 			if(SSmapping?.initialized)
 				var/turf/T = get_turf(src)
 				if(T)
 					var/datum/space_level/level = SSmapping.z_list.len >= T.z ? SSmapping.z_list[T.z] : null
-					if(level && !level.lighting_initialized && (level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_RESERVED]))
+					if(level && !level.lighting_initialized && zlevel_lighting_deferred(level))
 						GLOB.lighting_deferred_atoms |= src
 						GLOB.lighting_deferred_z_cache = null // множество отложенных z изменилось
 						return
@@ -114,9 +124,9 @@
 	var/turf/T = loc
 	. = ..()
 	if (opacity && istype(T))
-		var/old_has_opaque_atom = T.has_opaque_atom
+		var/old_has_opaque_atom = T.lighting_flags & TURF_HAS_OPAQUE_ATOM
 		T.recalc_atom_opacity()
-		if (old_has_opaque_atom != T.has_opaque_atom)
+		if (old_has_opaque_atom != (T.lighting_flags & TURF_HAS_OPAQUE_ATOM))
 			T.reconsider_lights()
 
 // Should always be used to change the opacity of an atom.
@@ -131,12 +141,12 @@
 		return
 
 	if (new_opacity == TRUE)
-		T.has_opaque_atom = TRUE
+		T.lighting_flags |= TURF_HAS_OPAQUE_ATOM
 		T.reconsider_lights()
 	else
-		var/old_has_opaque_atom = T.has_opaque_atom
+		var/old_has_opaque_atom = T.lighting_flags & TURF_HAS_OPAQUE_ATOM
 		T.recalc_atom_opacity()
-		if (old_has_opaque_atom != T.has_opaque_atom)
+		if (old_has_opaque_atom != (T.lighting_flags & TURF_HAS_OPAQUE_ATOM))
 			T.reconsider_lights()
 
 
@@ -178,16 +188,6 @@
 
 		if (NAMEOF(src, light_height))
 			set_light(l_height=var_value)
-			datum_flags |= DF_VAR_EDITED
-			return TRUE
-
-		if (NAMEOF(src, light_cone_angle))
-			set_light(l_cone_angle=var_value)
-			datum_flags |= DF_VAR_EDITED
-			return TRUE
-
-		if (NAMEOF(src, light_cone_dir))
-			set_light(l_cone_dir=var_value)
 			datum_flags |= DF_VAR_EDITED
 			return TRUE
 

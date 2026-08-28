@@ -121,7 +121,6 @@
 	new /obj/item/circuitboard/machine/techfab/department/medical(src)
 	new /obj/item/storage/photo_album/CMO(src)
 	new	/obj/item/storage/lockbox/medal/medical(src)
-	new /obj/item/mod/construction/armor/rescue(src)
 	new /obj/item/mod/module/health_analyzer(src)
 	new /obj/item/storage/garment_case/CMO(src) //BLUEMOON add
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add

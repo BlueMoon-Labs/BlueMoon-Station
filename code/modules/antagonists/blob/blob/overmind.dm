@@ -147,18 +147,20 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 		else
 			L.fully_heal()
 
-		for(var/area/A in GLOB.sortedAreas)
-			if(!(A.type in GLOB.the_station_areas))
+	var/filled_turfs = 0
+	for(var/area/A in GLOB.sortedAreas)
+		if(!(A.type in GLOB.the_station_areas))
+			continue
+		if(!(A.area_flags & BLOBS_ALLOWED))
+			continue
+		for(var/turf/T in A)
+			if(!is_station_level(T.z) || isspaceturf(T))
 				continue
-			if(!(A.area_flags & BLOBS_ALLOWED))
+			if(locate(/obj/structure/blob) in T)
 				continue
-			A.color = blobstrain.color
-			A.name = "blob"
-			A.icon = 'icons/mob/blob.dmi'
-			A.icon_state = "blob_shield"
-			A.layer = BELOW_MOB_LAYER
-			A.invisibility = 0
-			A.blend_mode = 0
+			new /obj/structure/blob/normal(T, src)
+			if(++filled_turfs % 200 == 0)
+				stoplag()
 	var/datum/antagonist/blob/B = mind.has_antag_datum(/datum/antagonist/blob)
 	if(B)
 		var/datum/objective/blob_takeover/main_objective = locate() in B.objectives

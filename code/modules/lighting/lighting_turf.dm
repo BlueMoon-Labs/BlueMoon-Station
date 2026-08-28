@@ -1,15 +1,15 @@
 /turf
-	var/dynamic_lighting = TRUE
 	luminosity           = 1
+	/// Производное состояние освещения турфа, см. TURF_HAS_OPAQUE_ATOM и
+	/// TURF_LIGHTING_CORNERS_INITIALISED в code/__DEFINES/turf_flags.dm.
+	var/tmp/lighting_flags = NONE
 
-	var/tmp/lighting_corners_initialised = FALSE
 
 	var/tmp/atom/movable/lighting_object/lighting_object // Our lighting object.
 	var/tmp/datum/lighting_corner/lc_topleft
 	var/tmp/datum/lighting_corner/lc_topright
 	var/tmp/datum/lighting_corner/lc_bottomleft
 	var/tmp/datum/lighting_corner/lc_bottomright
-	var/tmp/has_opaque_atom = FALSE // Not to be confused with opacity, this will be TRUE if there's any opaque atom on the tile.
 	var/tmp/shadow_weight_sum = 0 // Accumulated shadow weight from non-opaque atoms with shadow_weight > 0. Clamped to 1.0.
 	var/tmp/cached_lumcount // Cached normalized brightness for get_lumcount() (null = dirty)
 	/// Lumcount от оверлейного света (/datum/component/overlay_lighting), поверх корнер-системы.
@@ -55,7 +55,7 @@
 	if (!IS_DYNAMIC_LIGHTING(our_area) && !light_sources)
 		return
 
-	if (!lighting_corners_initialised)
+	if (!(lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
 		generate_missing_corners()
 
 	new /atom/movable/lighting_object(src)
@@ -106,16 +106,19 @@
 // Can't think of a good name, this proc will recalculate the has_opaque_atom variable.
 // Full contents scan — used when opacity changes (need to check all atoms for remaining opaque ones).
 /turf/proc/recalc_atom_opacity()
-	var/old_opaque = has_opaque_atom
+	var/old_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
 	var/old_weight = shadow_weight_sum
-	has_opaque_atom = opacity
 	if(opacity)
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 		shadow_weight_sum = 1
 	else
-		shadow_weight_sum = shadow_weight // turf's own weight
-		for(var/atom/A in src.contents)
+		lighting_flags &= ~TURF_HAS_OPAQUE_ATOM
+		// Собственного веса у турфа нет: shadow_weight стоит на движимом, ни один тип турфа его
+		// не задавал, а слот на каждом турфе мира стоил мегабайты.
+		shadow_weight_sum = 0
+		for(var/atom/movable/A in src.contents)
 			if(A.opacity)
-				has_opaque_atom = TRUE
+				lighting_flags |= TURF_HAS_OPAQUE_ATOM
 				shadow_weight_sum = 1
 				break
 			if(A.shadow_weight > 0)
@@ -125,7 +128,7 @@
 	if(GLOB.lighting_defer_active)
 		return
 	// If opacity state changed, update light visibility AND contact shadows
-	if(has_opaque_atom != old_opaque)
+	if((lighting_flags & TURF_HAS_OPAQUE_ATOM) != old_opaque)
 		PROC_ON_CORNERS(recalc_opaque_neighbors())
 	// If only shadow weight changed (no opacity change), still update contact shadows
 	else if(abs(shadow_weight_sum - old_weight) > 0.01)
@@ -134,7 +137,7 @@
 /// Incremental shadow weight adjustment — avoids full contents scan for non-opaque atom enter/exit.
 /// Only valid when the atom is NOT opaque (opaque changes must use recalc_atom_opacity).
 /turf/proc/adjust_shadow_weight(delta)
-	if(has_opaque_atom)
+	if(lighting_flags & TURF_HAS_OPAQUE_ATOM)
 		return // Opaque atom present = weight locked at 1.0, delta irrelevant
 	var/old_weight = shadow_weight_sum
 	shadow_weight_sum = clamp(shadow_weight_sum + delta, 0, 1)
@@ -224,7 +227,7 @@
 			GLOB.lighting_update_objects += neighbor.lighting_object
 
 /turf/proc/generate_missing_corners()
-	if (!IS_DYNAMIC_LIGHTING(src) && !light_sources)
+	if (!TURF_IS_DYNAMIC_LIGHTING(src) && !light_sources)
 		return
 	// Corners must never be qdel'd; if a ref is stale, allow recreation (avoids bad state during moves)
 	if(lc_topright && QDELETED(lc_topright))
@@ -235,7 +238,7 @@
 		lc_bottomleft = null
 	if(lc_topleft && QDELETED(lc_topleft))
 		lc_topleft = null
-	lighting_corners_initialised = TRUE
+	lighting_flags |= TURF_LIGHTING_CORNERS_INITIALISED
 	// counterclockwise from 0 to 360.
 	if(!lc_topright)
 		new /datum/lighting_corner(src, NORTHEAST)

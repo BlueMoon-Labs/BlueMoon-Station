@@ -7,7 +7,9 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	vis_flags = VIS_INHERIT_ID|VIS_INHERIT_PLANE // Important for interaction with and visualization of openspace.
 	luminosity = 1
 
-	var/intact = 1
+	/// Битовая укладка булевых свойств турфа, см. TURF_* в code/__DEFINES/turf_flags.dm.
+	/// Одиннадцать отдельных переменных стоили по 6.4 МБ адресного пространства каждая.
+	var/turf_flags = TURF_FLAGS_DEFAULT
 
 	// baseturfs can be either a list or a single turf type.
 	// In class definition like here it should always be a single type.
@@ -31,20 +33,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/explosion_level = 0	//for preventing explosion dodging
 	var/explosion_id = 0
 
-	var/requires_activation	//add to air processing after initialize?
-	var/changing_turf = FALSE
 
 	var/bullet_bounce_sound = 'sound/weapons/bulletremove.ogg' //sound played when a shell casing is ejected ontop of the turf.
-	var/bullet_sizzle = FALSE //used by ammo_casing/bounce_away() to determine if the shell casing should make a sizzle sound when it's ejected over the turf
 							//IE if the turf is supposed to be water, set TRUE.
 
-	var/tiled_dirt = FALSE // use smooth tiled dirt decal
 
 	///the holodeck can load onto this turf if TRUE
-	var/holodeck_compatible = FALSE
 
 	/// If there's a tile over a basic floor that can be ripped out
-	var/overfloor_placed = FALSE
 
 	///ухо спатиал-грида, назначенное на этот турф текущим запросом
 	///get_hearers_in_view(); живёт только внутри одного вызова
@@ -78,7 +74,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
-	temperature = initial_temperature
+	// BYOND платит за каждую ЗАПИСАННУЮ переменную инстанса независимо от того, равно ли
+	// записанное значение типовому дефолту (замерено: ~16 Б на слот, ступенями по четыре).
+	// У /turf оба дефолта - T20C, то есть на подавляющем большинстве турфов эта запись
+	// покупала слот под значение, которое там и так стояло.
+	if(temperature != initial_temperature)
+		temperature = initial_temperature
 	assemble_baseturfs()
 
 	levelupdate()
@@ -91,10 +92,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		Entered(AM)
 
 	var/area/A = loc
-	if(!IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
-	if(requires_activation)
+	if(turf_flags & TURF_REQUIRES_ACTIVATION)
 		CALCULATE_ADJACENT_TURFS(src)
 
 	if (light_power && light_range)
@@ -109,7 +110,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	// apply materials properly from the default custom_materials value
 	set_custom_materials(custom_materials)
@@ -137,10 +138,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
-	var/is_changeturf = changing_turf
+	var/is_changeturf = turf_flags & TURF_CHANGING
 	if(!is_changeturf)
 		stack_trace("Incorrect turf deletion")
-	changing_turf = FALSE
+	turf_flags &= ~TURF_CHANGING
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)
 		T.multiz_turf_del(src, DOWN)
@@ -172,7 +173,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		visibilityChanged()
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
-	requires_activation = FALSE
+	turf_flags &= ~TURF_REQUIRES_ACTIVATION
 	..()
 
 	if(!is_changeturf)
@@ -390,7 +391,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	// During bulk operations (shuttle moves), skip — batch recalc handles it after.
 	if(!GLOB.lighting_defer_active)
 		if(AM.opacity)
-			has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+			lighting_flags |= TURF_HAS_OPAQUE_ATOM // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
 			reconsider_lights()
 		// Non-opaque atoms with shadow_weight still cast partial contact shadows (incremental — no contents scan)
 		else if(AM.shadow_weight > 0)
@@ -433,14 +434,17 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		var/list/premade_baseturfs = created_baseturf_lists[current_target]
 		if(length(premade_baseturfs))
 			baseturfs = premade_baseturfs.Copy()
-		else
+		else if(baseturfs != premade_baseturfs)
 			baseturfs = premade_baseturfs
 		return baseturfs
 
 	var/turf/next_target = initial(current_target.baseturfs)
 	//Most things only have 1 baseturf so this loop won't run in most cases
 	if(current_target == next_target)
-		baseturfs = current_target
+		// та же экономия слота, что и с temperature: обычно current_target уже равен
+		// типовому дефолту baseturfs, и запись покупала слот впустую
+		if(baseturfs != current_target)
+			baseturfs = current_target
 		created_baseturf_lists[current_target] = current_target
 		return current_target
 	var/list/new_baseturfs = list(current_target)
@@ -463,7 +467,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	for(var/obj/O in src)
 		if(O.flags_1 & INITIALIZED_1)
 			// SEND_SIGNAL(O, COMSIG_OBJ_HIDE, intact)
-			O.hide(intact)
+			O.hide(turf_flags & TURF_INTACT)
 
 // override for space turfs, since they should never hide anything
 /turf/open/space/levelupdate()
@@ -523,7 +527,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 ////////////////////////////////////////////////////
 
 /turf/singularity_act()
-	if(intact)
+	if(turf_flags & TURF_INTACT)
 		for(var/obj/O in contents) //this is for deleting things like wires contained in the turf
 			if(O.level != 1)
 				continue
@@ -536,7 +540,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	return TRUE
 
 /turf/proc/can_lay_cable()
-	return can_have_cabling() & !intact
+	return can_have_cabling() & !(turf_flags & TURF_INTACT)
 
 /turf/proc/visibilityChanged()
 	GLOB.cameranet.updateVisibility(src)
@@ -556,7 +560,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		affecting_level = 1
 	else if(is_shielded())
 		affecting_level = 3
-	else if(intact)
+	else if(turf_flags & TURF_INTACT)
 		affecting_level = 2
 	else
 		affecting_level = 1
@@ -576,7 +580,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/affecting_level
 	if(is_shielded())
 		affecting_level = 3
-	else if(intact)
+	else if(turf_flags & TURF_INTACT)
 		affecting_level = 2
 	else
 		affecting_level = 1
@@ -647,7 +651,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		acid_type = /obj/effect/acid/alien
 	var/has_acid_effect = FALSE
 	for(var/obj/O in src)
-		if(intact && O.level == 1) //hidden under the floor
+		if((turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
 			continue
 		if(istype(O, acid_type))
 			var/obj/effect/acid/A = O

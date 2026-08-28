@@ -164,7 +164,7 @@
 	reagents_holder.add_reagent(condensing_reagent.type, amt)
 	. = REACTING
 	for(var/atom/movable/AM in location)
-		if(location.intact && AM.level == 1)
+		if((location.turf_flags & TURF_INTACT) && AM.level == 1)
 			continue
 		reagents_holder.reaction(AM, TOUCH)
 	reagents_holder.reaction(location, TOUCH)

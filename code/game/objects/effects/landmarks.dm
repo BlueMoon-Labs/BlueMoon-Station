@@ -690,16 +690,9 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 
 // Landmark for this gostrole station
 /obj/effect/landmark/stationroom/space/forgottenship
-	template_names = list("SCSBC-14" = 3)
+	template_names = list("SCSBC-13" = 3)
 	icon = 'icons/rooms/Lavaland/Mining.dmi'
 	late_load = TRUE
-
-/obj/effect/landmark/stationroom/space/forgottenship/load()
-	if(GLOB.master_mode == "Extended")
-		template_names = list("SCSBC-13" = 3)
-	else
-		template_names = list("SCSBC-12" = 3)
-	. = ..()
 
 /obj/effect/landmark/stationroom/maint/smexi1
 	template_names = list("Icemaint Center Boring", "Icemaint Center Danger", "Icemaint Center Frosty")

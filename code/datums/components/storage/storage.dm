@@ -51,9 +51,9 @@
 
 	/// Ui objects by person. mob = list(objects)
 	var/list/ui_by_mob = list()
-	/// Reusable UI screen objects to reduce qdel/new churn for storage displays
-	var/list/atom/movable/screen/storage/item_holder/pooled_item_holders = list()
-	var/list/atom/movable/screen/storage/volumetric_box/center/pooled_volumetric_boxes = list()
+	// Пул переиспользуемых экранных объектов у хранилищ общий на весь мир, см.
+	// GLOB.storage_item_holder_pool в ui.dm. Свой пул у каждого компонента означал, что
+	// каждый когда-либо открытый рюкзак держит свои холдеры до конца раунда.
 
 	var/allow_big_nesting = FALSE					//allow storage objects of the same or greater size.
 
@@ -134,8 +134,6 @@
 			M.client.screen -= objects
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
-	QDEL_LIST(pooled_item_holders)
-	QDEL_LIST(pooled_volumetric_boxes)
 
 /datum/component/storage/PreTransfer()
 	update_actions()
@@ -301,13 +299,16 @@
 
 /datum/component/storage/proc/mass_remove_from_storage(atom/target, list/things, datum/progressbar/progress, trigger_on_found = TRUE, mob/user)
 	var/atom/real_location = real_location()
+	var/target_isturf = isturf(target)
 	for(var/obj/item/I in things)
 		things -= I
 		if(I.loc != real_location)
 			continue
 		if(trigger_on_found && user && (user.active_storage != src) && I.on_found(user))
 			return FALSE
-		remove_from_storage(I, target)
+		if(remove_from_storage(I, target))
+			if(target_isturf)
+				I.randomize_pixel_position(user)
 		if(TICK_CHECK)
 			progress.update(progress.goal - length(things))
 			return TRUE
@@ -645,7 +646,7 @@
 	if(message && . && user)
 		to_chat(user, "<span class='warning'>[parent] seems to be locked!</span>")
 
-/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted)
+/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted, datum/callback/extra_checks)
 	if(!force)
 		if(check_adjacent)
 			if(!user || !user.CanReach(destination) || !user.CanReach(parent))
@@ -655,10 +656,12 @@
 		taking.len = amount
 	if(inserted)			//duplicated code for performance, don't bother checking retval/checking for list every item.
 		for(var/i in taking)
-			if(remove_from_storage(i, destination))
+			if((!extra_checks || extra_checks.Invoke(i)) && remove_from_storage(i, destination))
 				inserted |= i
 	else
 		for(var/i in taking)
+			if(extra_checks && !extra_checks.Invoke(i))
+				continue
 			remove_from_storage(i, destination)
 	return TRUE
 

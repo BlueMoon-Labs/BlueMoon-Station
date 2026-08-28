@@ -1450,7 +1450,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/clockremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 
@@ -1487,7 +1487,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/bloodremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 

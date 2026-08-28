@@ -32,7 +32,7 @@
 	verb_yell = "growls loudly"
 	del_on_death = TRUE
 
-/mob/living/simple_animal/bread/hostile/Initialize(mapload)
+/mob/living/simple_animal/hostile/bread/Initialize(mapload)
 	. = ..()
 	var/area/A = get_area(src)
 	if(A)

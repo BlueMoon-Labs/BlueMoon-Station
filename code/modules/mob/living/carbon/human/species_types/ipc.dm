@@ -60,6 +60,8 @@
 		if(!designation)
 			designation = new
 		designation.Grant(C)
+		var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+		interface.AddSource("SPECIES")
 	..()
 
 /datum/species/ipc/on_species_loss(mob/living/carbon/human/C)
@@ -67,6 +69,9 @@
 		screen.Remove(C)
 	if(designation)
 		designation.Remove(C)
+
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
 	..()
 
 /mob/living/carbon/human

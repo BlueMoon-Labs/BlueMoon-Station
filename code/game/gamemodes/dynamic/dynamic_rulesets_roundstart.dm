@@ -257,8 +257,8 @@
 	protected_roles = list("Expeditor", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 2
-	weight = 3  //BLUEMOON CHANGES
-	cost = 20
+	weight = 5  //BLUEMOON CHANGES
+	cost = 15
 	intensity = 45
 	//requirements = list(100,90,80,60,40,30,10,10,10,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
@@ -634,22 +634,24 @@ BLUEMOON REMOVAL END*/
 
 /datum/dynamic_ruleset/roundstart/nuclear/clown_ops
 	name = "Clown Ops"
-	antag_flag = "clown ops"
+	antag_flag = ROLE_OPERATIVE
 	antag_datum = /datum/antagonist/nukeop/clownop
 	antag_leader_datum = /datum/antagonist/nukeop/leader/clownop
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
 
 /datum/dynamic_ruleset/roundstart/nuclear/clown_ops/pre_execute()
 	. = ..()
-	if(.)
-		for(var/obj/machinery/nuclearbomb/syndicate/S in GLOB.nuke_list)
-			var/turf/T = get_turf(S)
-			if(T)
-				qdel(S)
-				new /obj/machinery/nuclearbomb/syndicate/bananium(T)
-		for(var/datum/mind/V in assigned)
-			V.assigned_role = "Clown Operative"
-			V.special_role = "Clown Operative"
+	if(!.)
+		return FALSE
+	for(var/obj/machinery/nuclearbomb/syndicate/S in GLOB.nuke_list)
+		var/turf/T = get_turf(S)
+		if(T)
+			qdel(S)
+			new /obj/machinery/nuclearbomb/syndicate/bananium(T)
+	for(var/datum/mind/V in assigned)
+		V.assigned_role = "Clown Operative"
+		V.special_role = "Clown Operative"
+	return TRUE
 
 
 //////////////////////////////////////////////
@@ -929,8 +931,8 @@ BLUEMOON REMOVAL END*/
 	required_candidates = 2
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	min_players = 30
-	weight = 4
-	cost = 15
+	weight = 6
+	cost = 12
 	scaling_cost = 0
 	intensity = 15
 	flags = LONE_RULESET

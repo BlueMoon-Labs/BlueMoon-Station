@@ -73,6 +73,7 @@
 	jumper.adjustStaminaLoss(adjusted_stamina_cost)
 	jumper.pass_flags |= jumper_allow_pass_flags
 	ADD_TRAIT(jumper, TRAIT_SILENT_FOOTSTEPS, JUMP_COMPONENT)
+	ADD_TRAIT(jumper, TRAIT_JUMPING, JUMP_COMPONENT)
 	RegisterSignal(parent, COMSIG_MOB_THROW, PROC_REF(jump_throw))
 
 	jumper.add_filter(JUMP_COMPONENT, 2, drop_shadow_filter(color = COLOR_TRANSPARENT_SHADOW, size = 0.9))
@@ -99,9 +100,18 @@
 	jumper.layer = initial(jumper.layer)
 	jumper.pass_flags = initial(jumper.pass_flags)
 	REMOVE_TRAIT(jumper, TRAIT_SILENT_FOOTSTEPS, JUMP_COMPONENT)
+	REMOVE_TRAIT(jumper, TRAIT_JUMPING, JUMP_COMPONENT)
 	SEND_SIGNAL(jumper, COMSIG_ELEMENT_JUMP_ENDED, TRUE, 1.5, 2)
 	SEND_SIGNAL(jumper.loc, COMSIG_TURF_JUMP_ENDED_HERE, jumper)
 	UnregisterSignal(parent, COMSIG_MOB_THROW)
+
+	if(!HAS_TRAIT(jumper, TRAIT_FREERUNNING) && jumper.stat == CONSCIOUS && jumper.body_position == STANDING_UP)
+		if(prob(rand(5, 10)))
+			jumper.visible_message(
+				span_warning("[jumper] спотыкается при приземлении!"),
+				span_warning("Вы спотыкаетесь при приземлении!")
+			)
+			jumper.DefaultCombatKnockdown(20)
 
 ///Jump throw bonuses
 /datum/component/jump/proc/jump_throw(mob/living/thrower, target, thrown_thing, list/throw_modifiers)

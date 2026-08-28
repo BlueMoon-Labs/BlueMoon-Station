@@ -317,6 +317,13 @@
 	contains = list(/obj/machinery/jukebox)
 	crate_name = "Jukebox"
 
+/datum/supply_pack/misc/snow_machine
+	name = "Snow Machine"
+	desc = "Просто добавь воды - и у тебя тоже будет собственная зимняя сказка! Колядники не входят в комплект."
+	cost = 5000
+	contains = list(/obj/machinery/snow_machine)
+	crate_name = "snow machine crate"
+
 /datum/supply_pack/misc/moniq // BLUEMOON FINK ADD
 	name = "Jukebox (Muz-TV)"
 	desc = "Туц туц туц туц"

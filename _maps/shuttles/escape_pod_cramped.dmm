@@ -2,10 +2,6 @@
 "B" = (
 /turf/closed/wall/mineral/titanium/survival,
 /area/shuttle/pod_1)
-"H" = (
-/obj/structure/shuttle/engine/heater,
-/turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/pod_1)
 "J" = (
 /obj/structure/shuttle/engine/propulsion/burst,
 /turf/closed/wall/mineral/titanium/survival,
@@ -14,9 +10,7 @@
 /obj/docking_port/mobile/pod{
 	port_direction = 2
 	},
-/obj/machinery/door/airlock/external/abandoned_gray{
-	name = "Escape Pod Airlock"
-	},
+/obj/machinery/door/airlock/external/glass,
 /turf/open/floor/pod/dark,
 /area/shuttle/pod_1)
 "U" = (
@@ -25,15 +19,13 @@
 	},
 /obj/machinery/light/small/directional/west,
 /obj/machinery/computer/shuttle/pod{
-	pixel_x = -32;
-	pixel_y = 32
+	pixel_x = -32
 	},
 /obj/machinery/status_display/evac{
 	pixel_y = 32
 	},
 /obj/item/radio/intercom{
-	pixel_x = 32;
-	pixel_y = 32
+	pixel_x = 32
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/pod_1)
@@ -44,7 +36,7 @@
 
 (1,1,1) = {"
 B
-H
+B
 Z
 "}
 (2,1,1) = {"
@@ -54,6 +46,6 @@ N
 "}
 (3,1,1) = {"
 B
-H
+B
 J
 "}

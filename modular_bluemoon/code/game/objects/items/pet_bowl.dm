@@ -18,6 +18,10 @@
 	. = ..()
 	register_context()
 
+/obj/item/reagent_containers/food/snacks/customizable/pet_bowl/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(iscarbon(user) && isnull(held_item))

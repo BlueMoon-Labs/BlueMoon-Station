@@ -370,3 +370,59 @@
 	name = "City of Cogs"
 	icon_state = "purple"
 	area_flags = NOTELEPORT | UNIQUE_AREA
+
+//InteQ
+/area/InteQ_ship
+	name = "InteQ Titan"
+	icon_state = "syndie-ship"
+	requires_power = FALSE
+	has_gravity = STANDARD_GRAVITY
+	area_flags = VALID_TERRITORY | UNIQUE_AREA | NOTELEPORT
+	flags_1 = NONE
+	ambientsounds = SHUTTLE_MILITARY
+	shipambience = 'sound/ambience/zone/stadium.ogg'
+	min_ambience_cooldown = 15 SECONDS
+	max_ambience_cooldown = 40 SECONDS
+
+/area/InteQ_ship/ship1
+	name = "Cargo ship"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/ship2
+	name = "Inteq Corvet"
+	icon_state = "syndie-elite"
+
+/area/InteQ_ship/ship3
+	name = "Inteq Eng ship"
+	icon_state = "syndie-elite"
+
+/area/InteQ_ship/ship4
+	name = "PACT Ship"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/ship5
+	name = "PACT Ship"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/ship6
+	name = "PACT Ship ruins"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/SOLVED
+	name = "Solved Station"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/ship7
+	name = "Pacr Ship Taran"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/evac
+	name = "InteQ Evacuation Shuttle"
+	icon_state = "syndie-elite"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED

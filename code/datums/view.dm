@@ -105,9 +105,11 @@
 	animate(chief, pixel_x = 0, pixel_y = 0, 0, FALSE, LINEAR_EASING, ANIMATION_END_NOW)
 
 /datum/view_data/proc/zoomOut(radius = 0, offset = 0, direction = FALSE)
-	if(chief.mob && is_hilbert_hotel_zlevel(chief.mob.z))
-		to_chat(chief.mob, span_warning("Отель Гилберта, запрещает смотреть за свои границы."))
-		return
+	if(chief.mob)
+		var/turf/mob_turf = get_turf(chief.mob)
+		if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+			to_chat(chief.mob, span_warning("Отель Гилберта, запрещает смотреть за свои границы."))
+			return
 	if(direction)
 		var/_x = 0
 		var/_y = 0

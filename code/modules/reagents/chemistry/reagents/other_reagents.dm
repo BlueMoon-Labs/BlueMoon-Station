@@ -653,19 +653,36 @@
 	taste_description = "cherry" // by popular demand
 	boiling_point = 330
 	var/lube_kind = TURF_WET_LUBE ///What kind of slipperiness gets added to turfs.
+	var/min_turf_volume = 1
 
 /datum/reagent/lube/reaction_turf(turf/open/T, reac_volume)
 	..()
 	if (!istype(T))
 		return
-	if(reac_volume >= 1)
-		T.MakeSlippery(lube_kind, 15 SECONDS, min(reac_volume * 2 SECONDS, 120))
+	if(reac_volume >= min_turf_volume)
+		T.MakeSlippery(lube_kind, 30 SECONDS, min(reac_volume * 2 SECONDS, 120))
+
+/datum/reagent/lube/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = TRUE, touch_protection = 0, affected_bodypart)
+	..()
+	if(method != TOUCH && method != VAPOR)
+		return
+	if(reac_volume < min_turf_volume)
+		return
+	if(!ishuman(M))
+		return
+	var/mob/living/carbon/human/victim = M
+	if(victim.body_position != LYING_DOWN || victim.buckled || victim.stat == DEAD || !(victim.status_flags & CANKNOCKDOWN))
+		return
+	if(!istype(victim.loc, /turf/open))
+		return
+	victim.slip(80, null, SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING)
 
 ///Stronger kind of lube. Applies TURF_WET_SUPERLUBE.
 /datum/reagent/lube/superlube
 	name = "Super Duper Lube"
 	description = "This \[REDACTED\] has been outlawed after the incident on \[DATA EXPUNGED\]."
 	lube_kind = TURF_WET_SUPERLUBE
+	min_turf_volume = 0.25
 
 /datum/reagent/spraytan
 	name = "Spray Tan"
@@ -1428,20 +1445,22 @@
 			O.wash_cum() //sandstorm edit
 
 /datum/reagent/space_cleaner/reaction_turf(turf/T, reac_volume)
-	..()
-	if(reac_volume >= 1)
-		if(!preserves_decor)
-			T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-		SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
-		T.clean_blood()
-		T.wash_cum() //sandstorm edit
-		for(var/obj/effect/decal/cleanable/C in T)
-			if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
-				continue
-			qdel(C)
+	. = ..()
+	if(!preserves_decor)
+		T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+	SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
+	T.clean_blood()
+	T.wash_cum() //sandstorm edit
+	for(var/obj/effect/decal/cleanable/C in T)
+		if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
+			continue
+		qdel(C)
 
-		for(var/mob/living/simple_animal/slime/M in T)
-			M.adjustToxLoss(rand(5,10))
+	for(var/mob/living/simple_animal/slime/M in T)
+		M.adjustToxLoss(rand(5,10))
+
+	if(T.liquids && !T.liquids.immutable)
+		T.liquids.liquid_simple_delete_flat(max(2, reac_volume) * 0.5 * max(LIQUID_ANKLES_LEVEL_HEIGHT * ONE_LIQUIDS_HEIGHT, T.liquids.total_reagents * 0.5))
 
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
 // покраску баров и библиотек, которую экипаж наносил целый раунд.
@@ -2934,7 +2953,7 @@
 				continue
 			if(trait == TRAIT_DUMB_CUM && !prob(15))
 				continue
-			
+
 			// Если лист = рандом
 			if(islist(phrase))
 				phrase = pick(phrase)
