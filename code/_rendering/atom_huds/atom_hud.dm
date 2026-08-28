@@ -87,8 +87,26 @@ GLOBAL_LIST_INIT(huds, alist(
 /datum/atom_hud/proc/remove_from_single_hud(mob/M, atom/movable/A) //unsafe, no sanity apart from client
 	if(!M || !M.client || !A || !A.hud_list)
 		return
-	for(var/i in hud_icons)
-		M.client.images -= A.hud_list[i]
+	// Симметрично add_to_single_hud: один `-=` на весь набор иконок вместо
+	// отдельного вычитания на каждую. У диагностического худа иконок 11, и каждое
+	// вычитание - это проход по client.images, который у госта с тремя продвинутыми
+	// худами исчисляется тысячами изображений.
+	var/client/their_client = M.client
+	var/list/atom_hud_list = A.hud_list
+	var/list/local_hud_icons = hud_icons
+	if(length(local_hud_icons) == 1)
+		var/hud_image = atom_hud_list[local_hud_icons[1]]
+		if(hud_image)
+			their_client.images -= hud_image
+		return
+	var/list/to_remove
+	for(var/i in local_hud_icons)
+		var/hud_image = atom_hud_list[i]
+		if(!hud_image)
+			continue
+		LAZYADD(to_remove, hud_image)
+	if(to_remove)
+		their_client.images -= to_remove
 
 /datum/atom_hud/proc/add_hud_to(mob/M)
 	if(!M)
