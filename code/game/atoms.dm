@@ -1786,6 +1786,15 @@
 						//first extra line pushes atom name line up 11px, subsequent lines push it up 8px, this offsets that and keeps the first line in the same place
 						active_hud.screentip_text.maptext_y = -1 + (extra_lines - 1) * -8
 
+	// Коробка по числу строк, а не по худшему случаю. Платится ОБЪЯВЛЕННЫЙ размер коробки на
+	// КАЖДУЮ уникальную строку maptext, а меняется она по 2-4 раза в секунду, пока игрок водит
+	// мышью. У подавляющего большинства атомов контекстных строк нет вовсе, и им хватает одной
+	// строки имени - прежние фиксированные 128 они платили впустую. См. code/__DEFINES/screentips.dm.
+	var/screentip_height = SCREENTIP_BOX_HEIGHT_BASE
+	if(extra_lines)
+		screentip_height = min(SCREENTIP_BOX_HEIGHT_BASE + extra_lines * SCREENTIP_BOX_HEIGHT_PER_LINE, SCREENTIP_BOX_MAX_HEIGHT)
+	active_hud.screentip_text.maptext_height = screentip_height
+
 	if (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY && extra_context == "")
 		active_hud.screentip_text.maptext = ""
 	else

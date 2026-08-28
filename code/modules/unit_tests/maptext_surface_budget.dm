@@ -15,7 +15,7 @@
  * не отрисованный: платится именно объявленный, независимо от того, сколько текста внутри.
  */
 
-/// Ширина коробки скринтипа на широком экране: update_view() ставит её по ширине вьюпорта.
+/// Ширина вьюпорта на широком экране. Historic: до диеты коробка скринтипа равнялась ей.
 #define MAPTEXT_WIDE_VIEW_PX 736
 /// Байт в мебибайте - только для сообщения об ошибке.
 #define MAPTEXT_BYTES_PER_MIB (1024 * 1024)
@@ -26,14 +26,34 @@
 /datum/unit_test/maptext_surface_budget
 
 /datum/unit_test/maptext_surface_budget/Run()
-	// Скринтип. Ширину правит update_view() под ширину вьюпорта (480 при view 7, 736 на
-	// широком экране), поэтому в бюджете считаем по широкому.
-	var/screentip_height = /atom/movable/screen/screentip::maptext_height
-	TEST_ASSERT(screentip_height > 0, "у скринтипа не объявлена высота коробки maptext")
-	TEST_ASSERT(MAPTEXT_WIDE_VIEW_PX * screentip_height <= MAPTEXT_SURFACE_BUDGET_PX, \
-		"коробка скринтипа [screentip_height] px в высоту: на широком экране это \
-		[round(MAPTEXT_WIDE_VIEW_PX * screentip_height * 4 / MAPTEXT_BYTES_PER_MIB, 0.01)] МБ памяти клиента на КАЖДУЮ \
+	// Скринтип, худший случай: потолок ширины (update_view() больше не тянет коробку на весь
+	// вьюпорт) на потолок высоты (четыре строки контекста).
+	var/screentip_worst = SCREENTIP_BOX_MAX_WIDTH * SCREENTIP_BOX_MAX_HEIGHT
+	TEST_ASSERT(screentip_worst <= MAPTEXT_SURFACE_BUDGET_PX, \
+		"худшая коробка скринтипа [SCREENTIP_BOX_MAX_WIDTH]x[SCREENTIP_BOX_MAX_HEIGHT] - это \
+		[round(screentip_worst * 4 / MAPTEXT_BYTES_PER_MIB, 0.01)] МБ памяти клиента на КАЖДУЮ \
 		уникальную строку, а строк там тысячи и они личные у каждого игрока")
+
+	// Объявленная ширина не должна превышать потолок: именно её платит клиент, и именно она
+	// раньше равнялась ширине вьюпорта, то есть 736 px на широком экране.
+	var/screentip_width = /atom/movable/screen/screentip::maptext_width
+	TEST_ASSERT(screentip_width > 0 && screentip_width <= SCREENTIP_BOX_MAX_WIDTH, \
+		"объявленная ширина коробки скринтипа [screentip_width] px мимо потолка [SCREENTIP_BOX_MAX_WIDTH]")
+
+	// И обычное наведение - без контекстных строк - обязано стоить ДЕШЕВЛЕ худшего случая.
+	// Если высота снова станет фиксированной, этот ассерт упадёт.
+	var/screentip_common = /atom/movable/screen/screentip::maptext_height
+	TEST_ASSERT(screentip_common > 0 && screentip_common < SCREENTIP_BOX_MAX_HEIGHT, \
+		"наведение без подсказок платит [screentip_common] px высоты при потолке \
+		[SCREENTIP_BOX_MAX_HEIGHT]: коробка снова считается по худшему случаю")
+
+	// Печатная машинка рунчата: каждый кадр - отдельная уникальная строка maptext, то есть
+	// отдельная поверхность. Потолок кадров обязан РЕАЛЬНО связывать при нынешнем tick_lag,
+	// иначе он стоит для красоты.
+	var/uncapped_frames = CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1)
+	TEST_ASSERT(CHAT_MESSAGE_TYPEWRITER_MAX_FRAMES < uncapped_frames, \
+		"потолок кадров печатной машинки [CHAT_MESSAGE_TYPEWRITER_MAX_FRAMES] не связывает: \
+		при tick_lag [world.tick_lag] анимация и так укладывается в [uncapped_frames] кадров")
 
 	// Панели нейроинтерфейса: обновляются на SSfastprocess, то есть до пяти раз в секунду.
 	var/data_surface = /datum/neural_interface_module/data::maptext_width * /datum/neural_interface_module/data::maptext_height
