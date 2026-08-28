@@ -26,8 +26,11 @@
 
 	var/list/datum/brain_trauma/traumas = list()
 
-/obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0,no_id_transfer = FALSE, drop_if_replaced = TRUE)
-	..()
+/obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0, no_id_transfer = FALSE, drop_if_replaced = TRUE)
+	// Аргументы родителю передаются ИМЕНОВАННО. Третий позиционный у него - drop_if_replaced,
+	// а у мозга - no_id_transfer: голый ..() отдавал ему FALSE, и старый мозг не выпадал на пол,
+	// а удалялся вместе с brainmob, унося разум владельца безвозвратно.
+	. = ..(C, special, drop_if_replaced)
 
 	name = "brain"
 
