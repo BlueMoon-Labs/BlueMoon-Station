@@ -32,7 +32,7 @@
 	UnregisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM)
 	if(new_location == null)//чтобы не путать со штатным свертыванием
 		return
-	INVOKE_ASYNC(mod, TYPE_PROC_REF(/obj/item/mod/control, conceal), null, item)
+	INVOKE_ASYNC(mod, TYPE_PROC_REF(/obj/item/mod/control, conceal), null, item, TRUE)
 	INVOKE_ASYNC(mod, TYPE_PROC_REF(/obj/item/mod/control, remove_hardlight))
 
 /obj/item/clothing/mod_part/proc/link_modpart_with_module(module)

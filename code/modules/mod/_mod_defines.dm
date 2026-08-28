@@ -22,6 +22,9 @@
 #define MOD_WELDED		(1<<4)
 #define MOD_DNA_LOCKED	(1<<5)
 
+#define MOD_WELD_FUEL_COST 5
+#define MOD_WELD_TIME 5 SECONDS
+
 #define MOD_STANDART_COLOR rgb(26, 209, 255, 255)
 #define MOD_SYNDICATE_COLOR rgb(255, 60, 26, 255)
 #define MOD_INTEQ_COLOR rgb(255, 129, 26, 255)

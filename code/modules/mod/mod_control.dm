@@ -294,8 +294,7 @@
 		for(var/obj/item/mod/module in modules)
 			if(istype(module, /obj/item/mod/module/dna_lock))
 				lock = module
-		var/mob/living/carbon/human/H = user
-		if(lock && H.dna != lock?.dna)
+		if(lock && !lock.dna_check(user))
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return balloon_alert(user, "Заблокировано на ДНК!")
 	if(is_active() || is_activating())
@@ -346,7 +345,7 @@
 		if(!attacking_item.tool_start_check(user, amount=5))
 			return
 		to_chat(user, "<span class='notice'>Вы начинаете [is_welded() ? "заваривать" : "разваривать"] [src]...</span>")
-		if(attacking_item.use_tool(src, user, 80, volume=100, amount=5))
+		if(attacking_item.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
 			balloon_alert(user, "Успешно")
 			toggle_state(MOD_WELDED)
 			return

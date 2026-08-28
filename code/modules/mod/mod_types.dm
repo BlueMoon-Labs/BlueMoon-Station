@@ -372,6 +372,7 @@
 		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/flashlight/vanguard,
+		/obj/item/mod/module/gps/vanguard,
 	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)

@@ -62,14 +62,16 @@
 		. = ..()
 
 /obj/item/mod/module/storage_upgrader
-	name = "MOD Storage Updgrader"
+	name = "MOD Storage Upgrader"
 	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
-	Позволяет увеличить размер встроенного рюкзака до уроня БС сумки."
+	Позволяет увеличить размер встроенного рюкзака до уровня БС сумки."
 	icon_state = "storage_updater"
 	var/obj/item/mod/module/storage/linked_storage_module
 
 /obj/item/mod/module/storage_upgrader/on_install()
 	. = ..()
+	var/datum/component/storage/storage_component = mod.GetComponent(/datum/component/storage)
+
 	for(var/obj/item/mod/module/M in mod.modules)
 		if(istype(M, /obj/item/mod/module/storage))
 			linked_storage_module = M

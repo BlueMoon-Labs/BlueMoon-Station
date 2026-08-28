@@ -480,11 +480,13 @@
 	SIGNAL_HANDLER
 
 	dna = null
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/proc/on_emag(datum/source, mob/user, obj/item/card/emag/emag_card)
 	SIGNAL_HANDLER
 
 	dna = null
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/proc/on_mod_activation(datum/source, mob/user)
 	SIGNAL_HANDLER
