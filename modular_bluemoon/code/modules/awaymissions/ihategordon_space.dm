@@ -7,8 +7,6 @@
 /turf/open/space/ihategordon
 	name = "Ihategordon Void"
 	desc = "Странное космическое пространство. Здесь есть воздух и нормальная температура, но гравитации нет."
-	intact = 0
-	dirt_buildup_allowed = FALSE
 
 	// Нормальная температура (20°C = 293.15K)
 	initial_temperature = T20C
@@ -23,7 +21,6 @@
 	light_power = STARLIGHT_POWER_NIGHT
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
-	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	bullet_bounce_sound = null
 	vis_flags = VIS_INHERIT_ID
 
@@ -54,11 +51,8 @@
 	light_power = STARLIGHT_POWER_NIGHT
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
-	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	bullet_bounce_sound = null
 	vis_flags = VIS_INHERIT_ID
-	intact = 0
-	dirt_buildup_allowed = FALSE
 	initial_temperature = T20C
 	thermal_conductivity = 0
 	heat_capacity = 700000
@@ -77,14 +71,14 @@
 	flags_1 |= INITIALIZED_1
 
 	var/area/A = loc
-	if(A && !IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
 	if (light_power && light_range)
 		update_light()
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)
@@ -177,14 +171,14 @@
 	flags_1 |= INITIALIZED_1
 
 	var/area/A = loc
-	if(A && !IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
 	if (light_power && light_range)
 		update_light()
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)

@@ -225,6 +225,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m870shot.ogg'
 	icon_state = "m870"
 	item_state = "m870"
 	w_class = WEIGHT_CLASS_BULKY
