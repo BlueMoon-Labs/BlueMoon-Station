@@ -688,7 +688,10 @@
 					H.Jitter(100)
 					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
 					if(tplus > tloss)
-						H.adjustOrganLoss(ORGAN_SLOT_BRAIN,  max(0, min(99, ((tlimit - tplus) / tlimit * 100))), 150)
+						// setOrganLoss, а не adjustOrganLoss: tlimit растянут до четырёх часов
+						// ради окна реанимации, поэтому выражение почти всегда даёт ровно 99,
+						// и каждый следующий разряд добивал мозг до тяжёлой травмы.
+						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(0, min(99, ((tlimit - tplus) / tlimit * 100))))
 					log_combat(user, H, "revived", defib)
 					if(req_defib)
 						if(defib.healdisk)
