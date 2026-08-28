@@ -13,6 +13,17 @@
 #define JUKE_FALLOFF 4
 #define JUKE_SOUND 5
 #define JUKE_PERSONAL 6
+/// Ассоциативный список ckey тех, кому ресурс трека уже отправлен и у кого занят канал.
+/// Ключ - именно ckey, а не клиент: переподключившийся игрок трек не догонит, но и до этой
+/// правки он его не догонял, потому что рассылка была разовой на старте.
+#define JUKE_SENT 7
+/// Ограничение зоны, посчитанное на старте трека: area либо номер комнаты отеля
+#define JUKE_AREA_LIMIT 8
+/// world.time старта трека, чтобы подошедшего позже подхватить с той же секунды
+#define JUKE_START 9
+
+/// Радиус, за пределами которого джукбокс слышно только внутри его собственной зоны
+#define JUKEBOX_HEARING_RANGE 7
 
 // Track data
 /// Name of the track
@@ -74,7 +85,8 @@ SUBSYSTEM_DEF(jukeboxes)
 	//BLUEMOON ADD END
 	var/sound/song_to_init = sound(T.song_path)
 	freejukeboxchannels -= channeltoreserve
-	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init, personal)
+	var/list/sent_to = list() // Кому ресурс уже ушёл; остальным он досылается в fire(), когда подойдут
+	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init, personal, sent_to, one_area_play, world.time)
 
 	song_to_init.status = SOUND_MUTE
 	song_to_init.environment = 7
@@ -86,6 +98,11 @@ SUBSYSTEM_DEF(jukeboxes)
 	activejukeboxes.len++
 	activejukeboxes[activejukeboxes.len] = youvegotafreejukebox
 
+	// ЦЕНА: SEND_SOUND тянет клиенту весь файл трека. У персональных шкатулок это загруженный
+	// игроком ogg на мегабайты, и раньше он уходил КАЖДОМУ клиенту сервера независимо от того,
+	// где стоит источник. Стартовую рассылку ограничиваем теми, кто уже в зоне джукбокса или в
+	// радиусе слышимости; подошедшим позже ресурс досылает fire() по факту входа в радиус.
+	var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
 	for(var/mob/M in GLOB.player_list)
 		if(!M.client)
 			continue
@@ -93,25 +110,32 @@ SUBSYSTEM_DEF(jukeboxes)
 			continue
 		if(!jukebox_sound_enabled(M, personal))
 			continue
-		//BLUEMOON ADD START
-		var/area/mob_area = get_area(M)
-		if(mob_area.jukebox_silent) // Джукбокс заглушен в зоне игрока на начало игры музыки
+		if(!jukebox_area_allows(M, jukebox, one_area_play))
 			continue
-		else if(mob_area.jukebox_privatized_by && mob_area.jukebox_privatized_by != jukebox) // Стационарные джукбоксы имеют приоритет игры в своей зоне и все кто в ней сидят не слышат иных джукбоксов
+		if(get_area(M) != juke_area && !(M in hearerscache))
 			continue
-		else if(one_area_play)
-			if(isnum(one_area_play)) // Если число, то оно обозначает номер комнаты (мы не хотим чтобы из одних инфинити слышали в других)
-				var/area/hilbertshotel/HilberH = mob_area
-				if(!istype(HilberH))
-					continue
-				if(HilberH.roomnumber != one_area_play)
-					continue
-			else if(mob_area != one_area_play)
-				continue
-		//BLUEMOON ADD END
-
 		SEND_SOUND(M, song_to_init)
+		sent_to[M.ckey] = TRUE
 	return activejukeboxes.len
+
+/// Пропускает ли зона слушателя музыку этого джукбокса: глушилки, приватизация зоны
+/// стационарным автоматом и ограничение "играет только в своей зоне".
+/datum/controller/subsystem/jukeboxes/proc/jukebox_area_allows(mob/listener, obj/jukebox, area_limit)
+	var/area/mob_area = get_area(listener)
+	if(!mob_area)
+		return FALSE
+	if(mob_area.jukebox_silent) // Джукбокс заглушен в зоне игрока
+		return FALSE
+	if(mob_area.jukebox_privatized_by && mob_area.jukebox_privatized_by != jukebox) // Стационарные джукбоксы имеют приоритет игры в своей зоне и все кто в ней сидят не слышат иных джукбоксов
+		return FALSE
+	if(!area_limit)
+		return TRUE
+	if(isnum(area_limit)) // Если число, то оно обозначает номер комнаты (мы не хотим чтобы из одних инфинити слышали в других)
+		var/area/hilbertshotel/hotel_area = mob_area
+		if(!istype(hotel_area))
+			return FALSE
+		return hotel_area.roomnumber == area_limit
+	return mob_area == area_limit
 
 
 //Updates jukebox by transferring to different object or modifying falloff.
@@ -239,7 +263,10 @@ SUBSYSTEM_DEF(jukeboxes)
 		var/sound/song_played = jukeinfo[JUKE_SOUND]
 		var/turf/currentturf = get_turf(jukebox)
 		var/area/currentarea = get_area(jukebox)
-		var/list/hearerscache = hearers(7, jukebox)
+		var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
+		var/list/sent_to = jukeinfo[JUKE_SENT]
+		var/area_limit = jukeinfo[JUKE_AREA_LIMIT]
+		var/start_time = jukeinfo[JUKE_START]
 		var/targetfalloff = jukeinfo[JUKE_FALLOFF]
 		var/mixes = ((targetfalloff*250)-750)
 		var/inrange
@@ -262,6 +289,7 @@ SUBSYSTEM_DEF(jukeboxes)
 				continue
 			if(!jukebox_sound_enabled(M, personal))
 				M.stop_sound_channel(jukeinfo[JUKE_CHANNEL])
+				sent_to -= M.ckey // Канал освобождён: если настройку вернут, ресурс придётся выслать заново
 				continue
 
 			inrange = FALSE
@@ -288,11 +316,23 @@ SUBSYSTEM_DEF(jukeboxes)
 					song_played.echo[1] = (inrange ? 0 : -10000)
 					song_played.echo[3] = (inrange ? mixes : max(mixes, 0))
 					song_played.status = SOUND_UPDATE
+			var/first_send = FALSE
+			if(!sent_to[M.ckey])
+				// Ресурса у клиента ещё нет, а SOUND_UPDATE пустой канал не поднимет. Пока игрок
+				// вне радиуса - не шлём ему ничего, иначе мы снова раздаём мегабайты всему серверу.
+				if(!inrange || !jukebox_area_allows(M, jukebox, area_limit))
+					continue
+				first_send = TRUE
+				sent_to[M.ckey] = TRUE
+				song_played.status = 0 // Обычный старт, а не обновление уже играющего канала
+				song_played.offset = (world.time - start_time) / (1 SECONDS) // Подхватываем с той же секунды, что слышат остальные
 			var/juke_vol = M.client?.prefs?.get_sound_volume(personal ? "personal_jukeboxes" : "jukeboxes")
 			var/original_volume = song_played.volume
 			song_played.volume = round(original_volume * juke_vol / 100)
 			SEND_SOUND(M, song_played)
 			song_played.volume = original_volume
+			if(first_send)
+				song_played.offset = 0 // Датум звука общий на всех, для остальных смещение должно остаться нулевым
 			CHECK_TICK
 	return
 
@@ -307,3 +347,8 @@ SUBSYSTEM_DEF(jukeboxes)
 #undef JUKE_FALLOFF
 #undef JUKE_SOUND
 #undef JUKE_PERSONAL
+#undef JUKE_SENT
+#undef JUKE_AREA_LIMIT
+#undef JUKE_START
+
+#undef JUKEBOX_HEARING_RANGE
