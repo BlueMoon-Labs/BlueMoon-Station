@@ -5127,6 +5127,7 @@
 #include "modular_bluemoon\code\modules\reagents\reagent_containers\pill.dm"
 #include "modular_bluemoon\code\modules\research\designs\big_manipulator_designs.dm"
 #include "modular_bluemoon\code\modules\research\designs\bioaegis_designs.dm"
+#include "modular_bluemoon\code\modules\research\designs\biogenerator_designs.dm"
 #include "modular_bluemoon\code\modules\research\designs\equipment_designs.dm"
 #include "modular_bluemoon\code\modules\research\designs\mechfabricator_designs.dm"
 #include "modular_bluemoon\code\modules\research\designs\misc_designs.dm"
