@@ -249,14 +249,14 @@
 		to_chat(user, "<span class='notice'>[src] is now [turned_on ? "on" : "off"].</span>")
 	add_fingerprint(user)
 
-// --- Вспомогательная процедура отталкивания цели ---
+// --- Вспомогательная процедура отталкивания цели (только для живых) ---
 /obj/item/melee/tomahawk/proc/push_away(atom/movable/target, atom/source)
 	if(!istype(target) || QDELETED(target) || target == source)
 		return
 	var/direction = get_dir(source, target) // направление от источника (топора) к цели
 	if(!direction)
 		return
-	// Сдвигаем цель в направлении ОТ источника (топора) – отталкиваем
+	// Сдвигаем цель в направлении ОТ источника – отталкиваем только мобов
 	for(var/i in 1 to 2)
 		var/turf/new_turf = get_step(target, direction)
 		if(!new_turf || new_turf.density)
@@ -265,11 +265,7 @@
 			var/mob/living/L = target
 			if(!L.Move(new_turf))
 				break
-		else if(isobj(target) || ismachinery(target))
-			if(!target.Move(new_turf))
-				break
-		else
-			break
+		// структуры и машинерии не отталкиваем
 
 // --- Throwing & Return Mechanics ---
 
@@ -295,10 +291,9 @@
 	if(!thrown_by || QDELETED(thrown_by))
 		return
 
-	// Отталкиваем цель, если она не владелец и не сам топор
-	if(hit_atom != thrown_by && !QDELETED(hit_atom))
-		if(isliving(hit_atom) || istype(hit_atom, /obj/structure) || istype(hit_atom, /obj/machinery))
-			push_away(hit_atom, src)
+	// Отталкиваем цель, если она живая и не владелец
+	if(hit_atom != thrown_by && isliving(hit_atom))
+		push_away(hit_atom, src)
 
 	// Проверяем, не перехватил ли топор другой моб (кроме владельца)
 	var/mob/holder = loc
