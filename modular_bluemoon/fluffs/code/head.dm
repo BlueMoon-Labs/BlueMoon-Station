@@ -648,7 +648,7 @@
 	unique_reskin = list(
 		"Black" = list("icon_state" = "commando_beret", "item_state" = "commando_beret"),
 		"Khaki" = list("icon_state" = "commando_beret_khaki", "item_state" = "commando_beret_khaki"),
-		"Olive" = list("icon_state" = "commando_beret_olive", "item_state" = "commando_beret_olive")
+		"Olive" = list("icon_state" = "commando_beret_olive", "item_state" = "commando_beret_olive"),
 		"red" = list("icon_state" = "commando_beret_red", "item_state" = "commando_beret_red")
 	)
 
