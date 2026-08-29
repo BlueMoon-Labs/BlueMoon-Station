@@ -98,6 +98,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "star_dust"
+	alternate_worn_layer = BACK_LAYER
 
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
