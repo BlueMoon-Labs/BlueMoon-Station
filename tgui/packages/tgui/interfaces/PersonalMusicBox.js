@@ -13,6 +13,7 @@ export const PersonalMusicBox = (props) => {
   const { act, data } = useBackend();
   const {
     playing,
+    repeat,
     has_track,
     track_name,
     volume,
@@ -35,13 +36,20 @@ export const PersonalMusicBox = (props) => {
         <Section
           title="Воспроизведение"
           buttons={(
-            <Button
-              icon={playing ? 'stop' : 'play'}
-              content={playing ? 'Стоп' : 'Играть'}
-              color={playing ? 'bad' : 'good'}
-              disabled={playing ? false : (!has_track || !play_ready)}
-              onClick={() => act('toggle')}
-            />
+            <Box>
+              <Button
+                icon={playing ? 'stop' : 'play'}
+                content={playing ? 'Стоп' : 'Играть'}
+                color={playing ? 'bad' : 'good'}
+                disabled={playing ? false : (!has_track || !play_ready)}
+                onClick={() => act('toggle')}
+              />
+              <Button
+                content={repeat ? 'Повтор' : '1 Раз'}
+                selected={repeat}
+                onClick={() => act('repeat')}
+              />
+            </Box>
           )}>
           <LabeledList>
             <LabeledList.Item label="Трек">
