@@ -47,9 +47,9 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 		return
 	if(world.time < next_smoke_flavor)
 		return
-	next_smoke_flavor = world.time + rand(50, 120)
+	next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
 	var/list/emote = pick(GLOB.smoke_flavor_emotes)
-	M.visible_message(span_notice("[M] [emote["sing"]]."), span_notice("Вы [emote["plur"]]."))
+	M.emote("me", EMOTE_VISIBLE, "[emote["sing"]].")
 
 /obj/item/match
 	name = "match"
@@ -238,7 +238,7 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 		var/turf/T = get_turf(src)
 		T.visible_message(flavor_text)
 	START_PROCESSING(SSobj, src)
-	next_smoke_flavor = world.time + rand(15, 45)
+	next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
 
 	//can't think of any other way to update the overlays :<
 	if(ismob(loc))
@@ -1030,7 +1030,7 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 			to_chat(user, "<span class='notice'>You start puffing on the vape.</span>")
 			reagents.reagents_holder_flags &= ~(NO_REACT)
 			START_PROCESSING(SSobj, src)
-			next_smoke_flavor = world.time + rand(15, 45)
+			next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
 		else //it will not start if the vape is opened.
 			to_chat(user, "<span class='warning'>You need to close the cap first!</span>")
 
