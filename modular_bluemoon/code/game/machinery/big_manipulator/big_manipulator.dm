@@ -210,6 +210,7 @@
 	if(dummy_user)
 		return
 	dummy_user = new /mob/living/simple_animal/manipulator_dummy(src)
+	ADD_TRAIT(dummy_user, TRAIT_PACIFISM, "manipulator")
 
 /// Removes an invalid task from the list.
 /obj/machinery/big_manipulator/proc/remove_invalid_task(datum/manipulator_task/task)
