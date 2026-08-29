@@ -495,6 +495,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pref_queue_deadline = 0
 	/// То же самое для записи персонажа.
 	var/char_queue_deadline = 0
+	/// Буфер склейки одиночных записей в савфайл: ключ -> значение.
+	/// Открытие савфайла стоит столько же, сколько сама запись, поэтому поток правок
+	/// одного ключа копится тут и уходит на диск одним открытием. См. save_single_pref().
+	var/list/pending_single_prefs
+	/// id таймера, который сбросит буфер одиночных записей на диск.
+	var/single_pref_queue
+	/// world.time, позже которого сброс буфера одиночных записей больше не переносят.
+	var/single_pref_queue_deadline = 0
 
 	var/silicon_lawset
 
@@ -579,6 +587,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	save_character()		//let's save this new random character so it doesn't keep generating new ones.
 	menuoptions = list()
 	return
+
+/**
+ * Датум префов обычно живёт в GLOB.preferences_datums до конца раунда, но не всегда:
+ * передача персонажа и юнит-тесты его удаляют. Отложенные записи savefile висят на
+ * таймерах, которые держат ссылку на нас, - если датум уходит, дописать их больше
+ * некому, и правки последних секунд пропадают.
+ */
+/datum/preferences/Destroy(force)
+	// Буфер одиночных записей дописываем: это одно открытие файла и только если
+	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
+	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
+	flush_single_prefs()
+	if(pref_queue)
+		deltimer(pref_queue)
+		pref_queue = null
+	if(char_queue)
+		deltimer(char_queue)
+		char_queue = null
+	return ..()
 
 #define SETUP_START_NODE(L)  		  	 		 	 		"<div class='csetup_character_node'><div class='csetup_character_label'>[L]</div><div class='csetup_character_input'>"
 

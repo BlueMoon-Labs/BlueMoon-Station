@@ -540,6 +540,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!fexists(path))
 		return FALSE
 
+	// Буфер склейки держит правки, которых на диске ещё нет. Читать поверх них - значит
+	// затереть свежее значение старым в переменной датума, а потом дописать старое же
+	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
+	flush_single_prefs()
+
 	var/savefile/S = new /savefile(path)
 	if(!S)
 		return FALSE
@@ -922,6 +927,42 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		present_keybindings[bindname] = TRUE
 
 
+/**
+ * Чистое решение: что делать с очередной отложенной записью савфайла.
+ *
+ * Общее для полной записи (pref_queue) и для сброса буфера одиночных записей
+ * (single_pref_queue): пачку правок склеиваем в одну запись, но переносить её
+ * бесконечно нельзя - игрок, который щёлкает настройки чаще окна склейки, иначе не
+ * сохраняется до самого логаута.
+ *
+ * Возвращает PREF_DEFER_ARM / PREF_DEFER_RESCHEDULE / PREF_DEFER_KEEP.
+ */
+/proc/pref_defer_decision(timer_id, deadline, now)
+	if(!timer_id)
+		return PREF_DEFER_ARM
+	// Сравниваем "deadline > 0", а не только "now >= deadline": незаряженный срок это 0
+	// или null, и в обоих случаях "срок истёк" дало бы TRUE. null в DM не равен нулю, но
+	// и "null > 0" тоже FALSE, так что одна проверка закрывает оба случая.
+	if(deadline > 0 && now >= deadline)
+		return PREF_DEFER_KEEP
+	return PREF_DEFER_RESCHEDULE
+
+/**
+ * Кладёт одиночную запись в буфер склейки.
+ *
+ * Возвращает TRUE, если ключ в буфере уже лежал - то есть эта запись схлопнулась с
+ * предыдущей и на диск уйдёт одна вместо двух.
+ */
+/proc/pref_pending_absorb(list/pending, key, value)
+	if(!islist(pending) || !key)
+		return FALSE
+	// Проверяем наличие КЛЮЧА, а не значение: в префы легально пишется и null, а
+	// pending[key] тогда неотличим от отсутствующего ключа.
+	. = (key in pending)
+	// Обычное присваивание. Индексированная левая часть с оператором вывода (то есть
+	// WRITE_FILE по такому списку) скомпилировалась бы в опкод вывода и испортила список.
+	pending[key] = value
+
 /// Записывает в савфайл ОДИН ключ, не переписывая весь блок префов.
 ///
 /// Полный save_preferences() это ~124 WRITE_FILE подряд, и каждый - синхронный поход
@@ -930,21 +971,115 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 /// давала панель tgui, сохранявшая одну JSON-строку состояния чата на каждое действие
 /// игрока. Ради одной строки переписывать сто двадцать четыре не нужно.
 ///
+/// Раунд 10146 показал, что рычаг на этом не кончился: записей стало 3712 на 21.1 с -
+/// вдвое меньше, а вот цена ОДНОЙ выросла с 5.3 до 5.7 мс. Если бы платили за
+/// WRITE_FILE, замена 124 записей на одну обвалила бы среднюю цену вызова; она не
+/// шелохнулась - значит платим за ОТКРЫТИЕ файла, а не за запись в него. Поэтому тут
+/// больше не ходят на диск сразу: ключ ложится в буфер склейки, и весь буфер уходит
+/// одним открытием (см. flush_single_prefs). Швабра дёргает прогресс на каждую отмытую
+/// плитку (mop.dm), панель tgui шлёт состояние чата раз в 3 секунды - обе пачки
+/// схлопываются в одно открытие вместо десятков.
+///
 /// Файл должен уже существовать: у нового игрока запись одного ключа создала бы
 /// савфайл без "version", и загрузка приняла бы его за префы нулевой версии.
-/datum/preferences/proc/save_single_pref(key, value)
+///
+/// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
+/// честный результат записи прямо сейчас.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
 	if(!path || !key)
 		return FALSE
 	if(!fexists(path))
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	buffer_single_pref(key, value)
+	if(immediate)
+		return flush_single_prefs()
+	return TRUE
+
+/**
+ * Кладёт ключ в буфер склейки и заряжает (или переносит) сброс буфера на диск.
+ *
+ * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
+ * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
+ */
+/datum/preferences/proc/buffer_single_pref(key, value)
+	if(!key)
+		return FALSE
+	LAZYINITLIST(pending_single_prefs)
+	pref_pending_absorb(pending_single_prefs, key, value)
+	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
+	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие савфайла
+	// на того же игрока - ровно то, от чего мы и уходим.
+	if(pref_queue)
+		return TRUE
+	switch(pref_defer_decision(single_pref_queue, single_pref_queue_deadline, world.time))
+		if(PREF_DEFER_KEEP)
+			return TRUE
+		if(PREF_DEFER_ARM)
+			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
+		if(PREF_DEFER_RESCHEDULE)
+			deltimer(single_pref_queue)
+	// Одноразовый таймер, а не TIMER_LOOP: deltimer() из колбека лупа - no-op, и перенос
+	// сброса перестал бы работать с первой же правки.
+	single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
+	return TRUE
+
+/**
+ * Дописывает буфер склейки в УЖЕ открытый савфайл и опустошает его.
+ *
+ * Вызывающий обязан держать target.cd на корне: одиночные ключи живут там же, где их
+ * пишет save_preferences. Возвращает число записанных ключей.
+ */
+/datum/preferences/proc/write_pending_single_prefs(savefile/target)
+	if(!target || !length(pending_single_prefs))
+		return 0
+	// Забираем список себе до записи: если по дороге кто-то положит ещё ключ, он обязан
+	// попасть в СЛЕДУЮЩИЙ сброс, а не потеряться в этом.
+	var/list/pending = pending_single_prefs
+	pending_single_prefs = null
+	var/written = 0
+	for(var/key in pending)
+		var/value = pending[key]
+		WRITE_FILE(target[key], value)
+		written++
+	return written
+
+/**
+ * Сбрасывает буфер склейки на диск ОДНИМ открытием савфайла.
+ *
+ * Дёргается таймером из buffer_single_pref, разлогином клиента и Destroy датума.
+ * Пустой буфер до диска не доходит вовсе.
+ */
+/datum/preferences/proc/flush_single_prefs()
+	if(single_pref_queue)
+		deltimer(single_pref_queue)
+	// Обнуляем явно: сработавший one-shot оставляет непустой id, и следующая постановка
+	// в очередь сверялась бы с протухшим крайним сроком.
+	single_pref_queue = null
+	single_pref_queue_deadline = 0
+	if(!length(pending_single_prefs))
+		return FALSE
+	if(!path)
+		pending_single_prefs = null
+		return FALSE
+	if(!fexists(path))
+		// Одиночная запись создала бы савфайл без "version". Значения уже лежат в
+		// переменных датума, так что полная запись сохранит ровно то же самое.
+		pending_single_prefs = null
+		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/keys_written = length(pending_single_prefs)
+	// Три разных kind вместо одного общего "savefile (запись)": детектор спайков ведёт
+	// разбивку по kind и печатает её в итоге раунда, а имя вызова (desc) он запоминает
+	// только тем, кто перешагнул slow_work_threshold_ms - ни одна запись савфайла до
+	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
+	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
 	var/blocking_started_ms = blocking_call_start()
 	var/savefile/single_file = new /savefile(path)
 	if(!single_file)
-		blocking_call_finish(blocking_started_ms, "savefile (запись)", "ключ [key] [parent?.ckey || "?"]")
+		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 		return FALSE
 	single_file.cd = "/"
-	WRITE_FILE(single_file[key], value)
-	blocking_call_finish(blocking_started_ms, "savefile (запись)", "ключ [key] [parent?.ckey || "?"]")
+	write_pending_single_prefs(single_file)
+	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 	return TRUE
 
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
@@ -1110,6 +1245,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
 
+	// Файл уже открыт - дописать в него буфер склейки бесплатно, а отдельный сброс
+	// открыл бы тот же савфайл второй раз.
+	if(single_pref_queue)
+		deltimer(single_pref_queue)
+	single_pref_queue = null
+	single_pref_queue_deadline = 0
+	write_pending_single_prefs(S)
+
 	if(parent)
 		if(ishuman(parent?.mob))
 			var/mob/living/carbon/human/H = parent.mob
@@ -1118,7 +1261,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved preferences!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (запись)", "префы [parent?.ckey || "?"]")
+	blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
@@ -2321,7 +2464,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved character slot!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (запись)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
+	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
