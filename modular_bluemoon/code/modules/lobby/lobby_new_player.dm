@@ -175,7 +175,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		parts += {"<img id="bm-bg" class="bg" src="loading_screen.gif" alt=\"\">"}
 		parts += {"<div id=\"bm-overlay\"></div>"}
 		parts += {"<div id=\"bm-toasts\"></div>"}
-		parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9664;</div>"}
+			parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9664;</div>"}
 
 	// динамическая часть
 	parts += {"<div id=\"bm-sidebar\">"}
@@ -229,6 +229,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/show_nsfw = client?.prefs?.bm_lobby_show_nsfw || FALSE
 	var/show_admin_bg = !client?.prefs || client.prefs.bm_lobby_show_admin_bg
 	var/notice_js = SStitle_bm?.cached_notice_js || ""
+	var/nc_count = (SSnocrash ? SSnocrash.count : 0)
 	var/admin_js = "bm_set_admin([check_rights_for(client, R_SERVER) ? 1 : 0]);"
 	var/registered_js = "bm_set_registered([(!is_guest_key(src.key) && client?.prefs) ? 1 : 0]);"
 	var/antag_js = "_bm_antag_state=[!(client?.prefs?.toggles & NO_ANTAG) ? 1 : 0];"
@@ -253,6 +254,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
     [registered_js]
     [antag_js]
     [notice_js]
+    bm_update_nocrash([nc_count]);
     if(!window.__bm_page_ready_sent){window.__bm_page_ready_sent=true;location.href='?src='+_src+';bm_lobby_action=page_ready';}
   }
   if(typeof bm_set_admin==='function'){__bm_init();}
@@ -337,6 +339,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			bm_lobby_ready = TRUE
 			bm_push_background()
 			SStitle_bm?.push_player_count_to(src)
+			SSnocrash?.push_to(src)
 			if(bm_lobby_music_path != "" || SSticker?.login_music)
 				client.bm_push_lobby_music()
 			return

@@ -195,7 +195,7 @@ html, body {
   color: #8af; font-size: clamp(8px,1.4vmin,14px);
 }
 #bm-toggle-btn:hover { background: rgba(30,50,120,0.9); color: #fff; }
-#bm-toggle-btn.collapsed { right: 0; }
+  #bm-toggle-btn.collapsed { right: 0; }
 
 /* ===== КНОПКА ДИСКЛЕЙМЕРА ===== */
 #bm-disclaimer-btn {
@@ -212,7 +212,44 @@ html, body {
   background: rgba(120,10,10,0.95);
   color: #fff; box-shadow: 0 0 10px rgba(255,60,60,0.6);
 }
-#bm-disclaimer-btn.collapsed { opacity: 0; pointer-events: none; }
+  #bm-disclaimer-btn.collapsed { opacity: 0; pointer-events: none; }
+
+  /* ===== ЩИТ "СМЕН БЕЗ КРАШЕЙ" ===== */
+  .bm-nocrash {
+    position: fixed; top: 1.6vmin; left: 1.6vmin;
+    z-index: 30;
+    width: clamp(150px,20vmin,240px);
+    background: #f3c000;
+    border: 2px solid #0a0a0a;
+    border-radius: 3px;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.55);
+    font-family: "Courier New",monospace;
+    color: #0a0a0a;
+    user-select: none;
+    overflow: hidden;
+  }
+  .bm-nocrash .bm-nc-stripe {
+    height: 0.9vmin; min-height: 6px;
+    background: repeating-linear-gradient(45deg, #0a0a0a 0 10px, #f3c000 10px 20px);
+  }
+  .bm-nocrash .bm-nc-title {
+    font-size: clamp(8px,1.3vmin,14px);
+    font-weight: 700; letter-spacing: 1px;
+    text-align: center; padding: 0.5vmin 0.4vmin 0.2vmin;
+    line-height: 1.1; text-transform: uppercase;
+  }
+  .bm-nocrash .bm-nc-count {
+    font-size: clamp(26px,5.5vmin,60px);
+    font-weight: 800; text-align: center;
+    line-height: 1; padding: 0.2vmin 0 0.4vmin;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .bm-nocrash .bm-nc-sub {
+    font-size: clamp(7px,1.0vmin,11px);
+    font-weight: 700; text-align: center;
+    padding: 0 0 0.6vmin; letter-spacing: 2px;
+  }
 
 /* ===== ЛОГОТИП / ЗАГОЛОВОК ===== */
 #bm-logo {

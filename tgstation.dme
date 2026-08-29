@@ -4963,6 +4963,7 @@
 #include "modular_bluemoon\code\modules\lobby\lobby_new_player_hooks.dm"
 #include "modular_bluemoon\code\modules\lobby\lobby_preferences.dm"
 #include "modular_bluemoon\code\modules\lobby\lobby_subsystem.dm"
+#include "modular_bluemoon\code\modules\lobby\nocrash.dm"
 #include "modular_bluemoon\code\modules\mail\mail.dm"
 #include "modular_bluemoon\code\modules\mail\mail_pattern_base.dm"
 #include "modular_bluemoon\code\modules\mail\mail_patterns\antag.dm"
