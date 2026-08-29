@@ -5302,7 +5302,6 @@
 #include "modular_bluemoon\modules\liquids\code\drains.dm"
 #include "modular_bluemoon\modules\liquids\code\height_floors.dm"
 #include "modular_bluemoon\modules\liquids\code\tools.dm"
-#include "modular_bluemoon\modules\liquids\code\emotes\turf_emote.dm"
 #include "modular_bluemoon\modules\liquids\code\liquid_systems\liquid_controller.dm"
 #include "modular_bluemoon\modules\liquids\code\liquid_systems\liquid_effect.dm"
 #include "modular_bluemoon\modules\liquids\code\liquid_systems\liquid_groups.dm"
