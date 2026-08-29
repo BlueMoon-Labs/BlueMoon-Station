@@ -605,6 +605,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(char_queue)
 		deltimer(char_queue)
 		char_queue = null
+	// Оффер персонажа лежит в GLOB.character_offers и нас не переживёт по смыслу: без qdel
+	// в глобале остаётся висячая запись с сейвфайлом. Хендлер цвета лодаута держит обратную
+	// ссылку на префы - живой хендлер превращает наш снос в харддел.
+	QDEL_NULL(offer)
+	QDEL_NULL(loadout_color_handler)
+	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
+	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
+	pref_species = null
 	return ..()
 
 #define SETUP_START_NODE(L)  		  	 		 	 		"<div class='csetup_character_node'><div class='csetup_character_label'>[L]</div><div class='csetup_character_input'>"
