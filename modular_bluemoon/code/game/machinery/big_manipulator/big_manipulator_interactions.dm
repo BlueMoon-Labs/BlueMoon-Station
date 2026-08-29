@@ -225,8 +225,8 @@
 			if(total_damage > 0)
 				obj_target.take_damage(total_damage, held_item.damtype)
 
-	var/hit_sound = held_item.hitsound || 'sound/weapons/genhit.ogg'
-	playsound(target || target_turf, hit_sound, 50, TRUE)
+	if(held_item.hitsound)
+		playsound(target || target_turf, held_item.hitsound, 50, TRUE)
 	do_attack_animation(target || target_turf)
 	manipulator_arm.do_attack_animation(target || target_turf)
 	schedule_next_cycle()
@@ -282,8 +282,8 @@
 		// Interact uses attackby (help intent behavior).
 		target.attackby(held_item, dummy_user)
 
-	var/hit_sound = held_item.hitsound || 'sound/weapons/genhit.ogg'
-	playsound(target || target_turf, hit_sound, 50, TRUE)
+	if(held_item.hitsound)
+		playsound(target || target_turf, held_item.hitsound, 50, TRUE)
 	do_attack_animation(target || target_turf)
 	manipulator_arm.do_attack_animation(target || target_turf)
 	schedule_next_cycle()
