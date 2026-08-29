@@ -1011,3 +1011,12 @@
       MODsuit'а инфильтратора снижена с 12 до 8.
   - image: Добавлены спрайты BlueShield MODsuit в стиле BlackSec и кеткринский рескин
       MODsuit'а.
+2026-08-29:
+  Herobrine998:
+  - bugfix: Optimia ossmodula дамажит слаймов, а не дает оверхил за бесплатно
+  Linda-Astereih:
+  - image: Исправлены спрайты Retractable claws. Исправлена анимация хвоста Large
+      Cat (Painted Tip)
+  RG-TRK:
+  - rscadd: Added new cargo pack for DS-2
+  - qol: price improvements for few DS-2 cargo packs.

@@ -99,7 +99,7 @@
 	icon_state = "xray"
 	damage = 15
 	irradiate = 100
-	range = 15
+	range = 30
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE | PASSCLOSEDTURF | PASSMACHINE | PASSSTRUCTURE
 	projectile_piercing = ALL
 	is_reflectable = TRUE
