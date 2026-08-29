@@ -101,6 +101,7 @@
 	name = "Concord cloak kit"
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
 	icon_state = "concord-cloak"
+	alternate_worn_layer = ABOVE_HEAD_LAYER
 
 /obj/item/clothing/neck/donator/bm/concord_cloak/AltClick(mob/user)
 	. = ..()

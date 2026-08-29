@@ -598,7 +598,8 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
 	icon_state = "lapkee-helmet"
-	flags_inv = HIDEEARS|HIDEFACE
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
 
 /obj/item/clothing/head/donator/bm/custom_helmet
     name = "Custom helmet"
