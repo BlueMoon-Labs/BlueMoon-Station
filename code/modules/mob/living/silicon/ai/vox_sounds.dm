@@ -9,8 +9,13 @@ GLOBAL_LIST_INIT(vox_types, init_vox_list())
 
 /// Через сколько файлов уступать тик при разовом промере каталога.
 #define VOX_SIZE_SCAN_YIELD_EVERY 100
+/// Сколько ждать чужой промер, прежде чем взяться за него самому.
+#define VOX_SIZE_SCAN_WAIT_TIMEOUT (10 SECONDS)
 
 GLOBAL_VAR_INIT(vox_preload_bytes, 0)
+/// TRUE, пока промер каталога идёт. Скан спит на stoplag(), и без флага второй вызывающий
+/// видел ещё нулевой vox_preload_bytes и запускал полный обход второй раз.
+GLOBAL_VAR_INIT(vox_preload_scanning, FALSE)
 
 /// Суммарный вес каталога VOX в байтах. Считается один раз за раунд.
 ///
@@ -23,6 +28,16 @@ GLOBAL_VAR_INIT(vox_preload_bytes, 0)
 /proc/get_vox_preload_bytes()
 	if(GLOB.vox_preload_bytes)
 		return GLOB.vox_preload_bytes
+	if(GLOB.vox_preload_scanning)
+		// Промер уже идёт: дожидаемся его результата вместо второго обхода каталога.
+		// Ждём с потолком: рантайм внутри скана оборвал бы прок, не сняв флаг, и голый
+		// UNTIL() повесил бы всех ждущих в stoplag() до конца раунда. По таймауту считаем сами.
+		var/deadline = world.time + VOX_SIZE_SCAN_WAIT_TIMEOUT
+		while(GLOB.vox_preload_scanning && world.time < deadline)
+			stoplag()
+		if(GLOB.vox_preload_bytes)
+			return GLOB.vox_preload_bytes
+	GLOB.vox_preload_scanning = TRUE
 	var/total_bytes = 0
 	var/counted = 0
 	for(var/vox_type in GLOB.vox_types)
@@ -39,6 +54,7 @@ GLOBAL_VAR_INIT(vox_preload_bytes, 0)
 			if(!(counted % VOX_SIZE_SCAN_YIELD_EVERY))
 				stoplag()
 	GLOB.vox_preload_bytes = total_bytes
+	GLOB.vox_preload_scanning = FALSE
 	return total_bytes
 
 /proc/init_vox_list()
@@ -1994,4 +2010,5 @@ GLOBAL_VAR_INIT(vox_preload_bytes, 0)
 	)
 )
 #undef VOX_SIZE_SCAN_YIELD_EVERY
+#undef VOX_SIZE_SCAN_WAIT_TIMEOUT
 #endif

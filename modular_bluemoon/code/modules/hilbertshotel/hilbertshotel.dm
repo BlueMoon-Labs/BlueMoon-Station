@@ -49,6 +49,7 @@
 
 /obj/item/hilbertshotel/Destroy()
 	SShilbertshotel.all_hilbert_spheres -= src
+	transfer_target = null // жёсткая ссылка на область, если сферу снесли посреди переноса
 	ejectRooms()
 	return ..()
 

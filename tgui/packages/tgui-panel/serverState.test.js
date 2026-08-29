@@ -156,4 +156,33 @@ describe('tgui panel serverState', () => {
     const state = JSON.parse(payload.state);
     expect(state.settings.highlightText).toBe('Ж'.repeat(600));
   });
+
+  // Дедупликация помечает тело отправленным ДО того, как транспорт отработал. Если отправка
+  // упала, отметку надо снять: иначе повторный вызов с тем же состоянием будет отброшен как
+  // дубликат, и на сервер не уедет ничего до следующей правки настроек.
+  test('resends the same state after a failed transport instead of skipping it as a duplicate', () => {
+    const store = createStore({
+      highlightText: 'transport-failure-marker',
+    });
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    global.Byond.topic.mockImplementationOnce(() => {
+      throw new Error('topic transport failed');
+    });
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    expect(consoleSpy).toHaveBeenCalled();
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(2);
+
+    const failed = JSON.parse(global.Byond.topic.mock.calls[0][0].panel_state);
+    const resent = JSON.parse(global.Byond.topic.mock.calls[1][0].panel_state);
+    expect(resent.settings.highlightText).toBe('transport-failure-marker');
+    // Счётчик savedAt тоже откатывается: неудачная отправка не должна его тратить.
+    expect(resent.savedAt).toBe(failed.savedAt);
+
+    consoleSpy.mockRestore();
+  });
 });

@@ -482,7 +482,10 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	alarm_area = get_area(src)
 	if(alarm_area)
 		LAZYADD(alarm_area.airalarms, src)
-	if(old_area && name == "[old_area.name] Air Alarm") // имя было автогенерённым - обновляем под новую зону
+	// Имя автогенерится от БАЗОВОЙ области (см. Initialize), с ней же и сверяем: у подобласти
+	// собственное имя другое, и переименование молча не срабатывало.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base && name == "[old_base.name] Air Alarm") // имя было автогенерённым - обновляем под новую зону
 		name = "[get_area_name(src, get_base_area = TRUE)] Air Alarm"
 
 /obj/machinery/airalarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)

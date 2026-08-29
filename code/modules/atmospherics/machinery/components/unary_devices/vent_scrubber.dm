@@ -159,9 +159,11 @@
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on_area_swap(area/old_area, area/new_area)
 	. = ..()
-	if(old_area)
-		old_area.air_scrub_names -= id_tag
-		old_area.air_scrub_info -= id_tag
+	// См. комментарий в vent_pump: регистрация живёт в базовой области.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base)
+		old_base.air_scrub_names -= id_tag
+		old_base.air_scrub_info -= id_tag
 	name = initial(name)
 	broadcast_status()
 

@@ -168,6 +168,11 @@ const buildStateJson = (store) => {
  * Sends the current panel state to the server immediately.
  */
 const doSaveToServer = (store) => {
+  // buildStateJson marks the body as sent before the transport actually runs. If the
+  // transport throws, that bookkeeping has to come back or the identical state is
+  // suppressed as a duplicate forever and never reaches the server.
+  const previousSentBody = lastSentBody;
+  const previousSaveCounter = saveCounter;
   try {
     const stateJson = buildStateJson(store);
     if (stateJson === null) {
@@ -192,6 +197,8 @@ const doSaveToServer = (store) => {
     }
   }
   catch (err) {
+    lastSentBody = previousSentBody;
+    saveCounter = previousSaveCounter;
     // eslint-disable-next-line no-console
     console.error('Failed to save panel state to server:', err);
   }

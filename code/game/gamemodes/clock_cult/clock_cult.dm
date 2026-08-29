@@ -294,6 +294,7 @@ Credit where due:
 	W.update_label()
 	if(plasmaman && !visualsOnly) //If we need to breathe from the plasma tank, we should probably start doing that
 		//в руке может оказаться не баллон, если рука была занята - в internal пускаем только танк
+		H.internal = null
 		var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
 		if(istype(plasma_tank))
 			H.internal = plasma_tank

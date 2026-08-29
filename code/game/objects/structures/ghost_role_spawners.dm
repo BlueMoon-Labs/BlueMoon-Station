@@ -1064,6 +1064,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /datum/outfit/ghostcafe/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	//баллон в руку кладёт только плазмаменская ветка pre_equip - всем остальным сюда
 	//приезжал случайный предмет, и дыхание каждый тик падало на remove_air_volume()
+	H.internal = null
 	var/obj/item/tank/held_tank = H.get_item_for_held_index(1)
 	if(istype(held_tank))
 		H.internal = held_tank

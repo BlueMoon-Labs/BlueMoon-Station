@@ -12,9 +12,9 @@
 	var/savedName
 	/// Шасси борга до маскировки: deactivate() возвращал его в дефолтный robots.dmi,
 	/// и Meka/догборг навсегда терял и спрайт, и позы отдыха (в robots.dmi их нет).
-	var/savedBaseIcon
-	var/savedIconOverride
-	var/savedPixelOffset
+	var/saved_base_icon
+	var/saved_icon_override
+	var/saved_pixel_offset
 	var/active = FALSE
 	var/activationCost = 300
 	var/activationUpkeep = 50
@@ -150,9 +150,9 @@
 	START_PROCESSING(SSobj, src)
 	src.user = user
 	savedName = user.name
-	savedBaseIcon = user.module.cyborg_base_icon
-	savedIconOverride = user.module.cyborg_icon_override
-	savedPixelOffset = user.module.cyborg_pixel_offset
+	saved_base_icon = user.module.cyborg_base_icon
+	saved_icon_override = user.module.cyborg_icon_override
+	saved_pixel_offset = user.module.cyborg_pixel_offset
 	user.name = friendlyName
 	user.module.cyborg_base_icon = disguise
 	user.module.cyborg_icon_override = disguise_icon_override
@@ -175,9 +175,9 @@
 		listeningTo = null
 	do_sparks(5, FALSE, user)
 	user.name = savedName
-	user.module.cyborg_base_icon = savedBaseIcon || initial(user.module.cyborg_base_icon)
-	user.module.cyborg_icon_override = savedIconOverride
-	user.module.cyborg_pixel_offset = savedPixelOffset
+	user.module.cyborg_base_icon = saved_base_icon || initial(user.module.cyborg_base_icon)
+	user.module.cyborg_icon_override = saved_icon_override
+	user.module.cyborg_pixel_offset = saved_pixel_offset
 	user.bubble_icon = "syndibot"
 	active = FALSE
 	user.update_icons()

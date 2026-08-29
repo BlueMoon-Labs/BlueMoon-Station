@@ -272,6 +272,9 @@
 			//в слоте может лежать что угодно (кастомные админские аутфиты задают
 			//internals_slot вручную) - в internal пускаем только баллон, иначе дыхание
 			//каждый тик падает на remove_air_volume()
+			//старый источник тоже сбрасываем: до этой проверки слот перезаписывался безусловно,
+			//и аутфит, снявший с моба баллон, оставлял бы H.internal висеть на удалённом предмете
+			H.internal = null
 			var/obj/item/tank/internals_tank = H.get_item_by_slot(internals_slot)
 			if(istype(internals_tank))
 				H.internal = internals_tank

@@ -49,9 +49,12 @@
 
 /obj/machinery/atmospherics/components/unary/vent_pump/on_area_swap(area/old_area, area/new_area)
 	. = ..()
-	if(old_area)
-		old_area.air_vent_names -= id_tag
-		old_area.air_vent_info -= id_tag
+	// broadcast_status() прописывает вент в get_base_area(src), а не в саму область турфа -
+	// снимать регистрацию надо оттуда же, иначе у подобласти запись остаётся навсегда.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base)
+		old_base.air_vent_names -= id_tag
+		old_base.air_vent_info -= id_tag
 	name = initial(name) // имя содержит название зоны и серийник - оба выдаёт broadcast_status()
 	broadcast_status()
 
