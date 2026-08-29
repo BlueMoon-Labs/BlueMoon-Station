@@ -2578,3 +2578,9 @@
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
     ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")
+
+/datum/gear/donator/bm/black_sneakers
+    name = "Black Sneakers"
+    slot = ITEM_SLOT_FEET
+    /obj/item/clothing/shoes/black_sneakers
+    ckeywhitelist = list("hartty")
