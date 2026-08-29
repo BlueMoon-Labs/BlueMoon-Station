@@ -291,6 +291,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
+#include "jukebox_catchup_offset.dm"
 #include "jukebox_import.dm"
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"

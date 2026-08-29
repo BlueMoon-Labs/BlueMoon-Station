@@ -137,6 +137,19 @@ SUBSYSTEM_DEF(jukeboxes)
 		return hotel_area.roomnumber == area_limit
 	return mob_area == area_limit
 
+/// Смещение для того, кто подключается к уже играющему треку: он должен услышать ту же секунду,
+/// что и остальные, а не начало файла.
+/datum/controller/subsystem/jukeboxes/proc/set_catchup_offset(sound/song, start_time)
+	song.offset = (world.time - start_time) / (1 SECONDS)
+
+/// Снимает смещение после досылки - именно в null, а НЕ в ноль. У /sound это разные значения:
+/// null означает "позицию не трогать", ноль - "перемотать в начало". Датум звука один на всех
+/// слушателей и живёт весь трек, поэтому оставленный ноль уезжает дальше с каждым SOUND_UPDATE,
+/// а их fire() шлёт раз в полсекунды каждому, кто слышит: канал перематывается в начало
+/// дважды в секунду, и трек играет первые полсекунды по кругу.
+/datum/controller/subsystem/jukeboxes/proc/clear_catchup_offset(sound/song)
+	song.offset = null
+
 
 //Updates jukebox by transferring to different object or modifying falloff.
 /datum/controller/subsystem/jukeboxes/proc/updatejukebox(IDtoupdate, obj/jukebox, jukefalloff)
@@ -335,14 +348,14 @@ SUBSYSTEM_DEF(jukeboxes)
 				first_send = TRUE
 				sent_to[M.ckey] = TRUE
 				song_played.status = 0 // Обычный старт, а не обновление уже играющего канала
-				song_played.offset = (world.time - start_time) / (1 SECONDS) // Подхватываем с той же секунды, что слышат остальные
+				set_catchup_offset(song_played, start_time) // Подхватываем с той же секунды, что слышат остальные
 			var/juke_vol = M.client?.prefs?.get_sound_volume(personal ? "personal_jukeboxes" : "jukeboxes")
 			var/original_volume = song_played.volume
 			song_played.volume = round(original_volume * juke_vol / 100)
 			SEND_SOUND(M, song_played)
 			song_played.volume = original_volume
 			if(first_send)
-				song_played.offset = 0 // Датум звука общий на всех, для остальных смещение должно остаться нулевым
+				clear_catchup_offset(song_played)
 			CHECK_TICK
 	return
 
