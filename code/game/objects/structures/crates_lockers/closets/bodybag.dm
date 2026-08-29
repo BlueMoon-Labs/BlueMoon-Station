@@ -25,16 +25,11 @@
 
 /obj/structure/closet/body_bag/update_icon_state()
 	. = ..()
-	// Базовый стейт мешка - это ПОЛНОСТЬЮ ЗАКРЫТЫЙ мешок, а не корпус шкафа без двери.
-	// Штатная схема шкафа кладёт "_open" оверлеем поверх него, и открытый мешок выглядел
-	// закрытым: игрок кликал ещё раз, close() всасывал тело обратно с пола, и оно "пропадало".
-	if(opened)
-		icon_state = "[initial(icon_state)]_open"
-	else
-		icon_state = "[initial(icon_state)][bag_icon_suffix()]"
-
-/obj/structure/closet/body_bag/closet_update_overlays(list/new_overlays)
-	return new_overlays
+	// Стейт "_open" в bodybag.dmi - это ТОЛЬКО расстёгнутый зев, без корпуса мешка:
+	// он кладётся оверлеем поверх закрытого мешка штатной схемой шкафа. Если подставить
+	// его прямо в icon_state, на полу остаётся одна чёрная клякса без мешка вокруг,
+	// поэтому базовый стейт всегда закрытый мешок, а открытость показывает оверлей.
+	icon_state = "[initial(icon_state)][bag_icon_suffix()]"
 
 /obj/structure/closet/body_bag/attackby(obj/item/I, mob/user, params)
 	if (istype(I, /obj/item/pen) || istype(I, /obj/item/toy/crayon))

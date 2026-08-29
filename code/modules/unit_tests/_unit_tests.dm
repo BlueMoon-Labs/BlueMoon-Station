@@ -101,6 +101,7 @@
 #include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
+#include "bodybag_open_sprite.dm"
 // #include "bloody_footprints.dm"
 // #include "breath.dm"
 // #include "card_mismatch.dm"
