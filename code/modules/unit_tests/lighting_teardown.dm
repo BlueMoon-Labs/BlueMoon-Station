@@ -196,6 +196,11 @@
 	var/old_teardown = SSlighting.teardown_zlevel
 	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
 	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	// Снос дойдёт до фазы 3 и запишет в книгу отдачи замер этого прогона. Замер честный, но
+	// он про тестовый уровень с одним эмиттером, и оставлять его в общем состоянии нельзя:
+	// книга живёт до конца раунда и запирает следующий снос уровня (см.
+	// LIGHTING_TEARDOWN_MIN_PAYOFF_MB), то есть протёк бы в соседние тесты как молчаливый отказ.
+	var/list/saved_payoff = SSlighting.zlevel_teardown_payoff.Copy()
 	var/list/saved_traits = level.traits
 	// Тестовый z - резервация, куда стыкуются шаттлы; на время проверки выдаём ему
 	// шахтёрский трейт, чтобы механизм работал ровно в тех условиях, для которых написан.
@@ -229,6 +234,9 @@
 
 	var/finished = !SSlighting.teardown_zlevel
 	var/abort_reason = SSlighting.teardown_abort_reason
+	var/payoff_recorded = !isnull(SSlighting.zlevel_teardown_payoff["[test_z]"])
+	var/list/memory_probe = get_process_memory_mb()
+	var/memory_measurable = memory_probe && !isnull(memory_probe["vsz"])
 	// Зона тестового турфа статически освещена, значит create_lighting_for_zlevel() его
 	// пропускает и объект света вернуть не сможет. Такой объект снос обязан ОСТАВИТЬ.
 	var/area/teardown_area = test_turf.loc
@@ -254,9 +262,15 @@
 		SSmobs.dead_players_by_zlevel[test_z] = saved_dead
 	GLOB.lighting_deferred_atoms = saved_deferred
 	SSlighting.zlevel_empty_since = saved_empty
+	SSlighting.zlevel_teardown_payoff = saved_payoff
 	SSlighting.teardown_zlevel = old_teardown
 	level.traits = saved_traits
 	level.lighting_initialized = old_init || level.lighting_initialized
+
+	// Замер в книгу пишется только там, где память вообще мерится: на Windows и в раннем
+	// старте get_process_memory_mb() отдаёт null, и ключа не появляется - поэтому проверяется
+	// не наличие записи, а то, что запись состоялась ИЛИ мерить было нечем.
+	TEST_ASSERT(payoff_recorded || !memory_measurable, "снос дошёл до конца, память замерена, а в книгу отдачи ничего не легло - следующий снос этого уровня снова примут вслепую")
 
 	TEST_ASSERT(precond_has_source, "предпосылка: у эмиттера на поднятом уровне обязан быть живой источник")
 	TEST_ASSERT(precond_has_object, "предпосылка: у турфа на поднятом уровне обязан быть объект света")
@@ -758,3 +772,265 @@
 	// Ровно случай раунда 10134: снос не вернул ничего.
 	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2634, list("vsz" = 2647)), ", ОС возвращено -13 МБ VmSize", "рост VmSize за время сноса прочитался не как отрицательный возврат")
 	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2600, list("vsz" = 2600)), ", ОС возвращено 0 МБ VmSize", "нулевой возврат обязан печататься, а не пропадать")
+
+/**
+ * Замеренная отдача прошлого сноса запирает следующий снос того же уровня.
+ *
+ * Четвёртая проверка решения и единственная, работающая по факту. Три предыдущие -
+ * квота, срок простоя и кулдаун - предсказывают пользу от сноса косвенно, и раунд 10146
+ * (Box Station, 48 минут, 102-128 игроков) показал, что все три вместе ошибаются трижды
+ * за 48 минут на одном уровне: z16 (Virtual Reality) перемололи три раза по 42 099
+ * объектов, вернув -1.5, -4.2 и -0.1 МБ (см. LIGHTING_TEARDOWN_MIN_PAYOFF_MB).
+ */
+/datum/unit_test/lighting_teardown_payoff_gate
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_payoff_gate/Run()
+	// Сноса ещё не было либо мерить нечем (Windows, ранний старт) - улик нет, ведём себя
+	// как раньше. Спутать это с честным нулевым возвратом нельзя: ноль - улика, null нет.
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(null, 0), "без замера отдачи уровень обязан остаться кандидатом")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(null, 0.95), "без замера отдачи давление ничего не меняет")
+
+	// Ровно цифры трёх сносов z16 из раунда 10146.
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-1.5, 0), "снос, вернувший -1.5 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, 0), "снос, вернувший -4.2 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-0.1, 0), "снос, вернувший -0.1 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(0, 0), "нулевой возврат - это улика, а не отсутствие замера")
+
+	// Настоящий снос лаваландского z возвращает 167-253 МБ - такой уровень запирать нельзя.
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(167, 0), "полезный снос обязан остаться разрешённым")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB, 0), "ровно на пороге снос ещё считается полезным")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB - 0.1, 0), "под порогом снос обязан запираться")
+
+	// У самого потолка запрет снимается: там вспышка дешевле смерти процесса, и уровень
+	// стоит отдать даже без надежды на возврат. Высокое давление запрет НЕ снимает - оно
+	// и так режет срок простоя, а бесполезный цикл под ним так же бесполезен.
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "под критическим давлением запрет обязан сниматься")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_HIGH), "высокое давление не должно снимать запрет")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL - 0.01), "под границей критического давления запрет обязан держаться")
+
+	// Порог обязан лежать между шумом и пользой: замеры прода дают -4.2 МБ у бесполезного
+	// сноса и 167 МБ у полезного, и порог вне этих границ разделять их перестанет.
+	TEST_ASSERT(LIGHTING_TEARDOWN_MIN_PAYOFF_MB > 5, "порог ниже шума замера перестанет отсекать бесполезные сносы")
+	TEST_ASSERT(LIGHTING_TEARDOWN_MIN_PAYOFF_MB < 167, "порог выше настоящей отдачи запрёт и полезные сносы тоже")
+
+/// Итог сноса обязан говорить, СДЕЛАН ли из цифры возврата вывод: в раунде 10146 три сноса
+/// подряд напечатали свою бесполезность и каждый раз начинали заново.
+/datum/unit_test/lighting_teardown_payoff_note_names_exclusion
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_payoff_note_names_exclusion/Run()
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(null), "", "без замера хвост обязан быть пустым")
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(167), "", "полезный снос не должен объявлять себя исключённым")
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(LIGHTING_TEARDOWN_MIN_PAYOFF_MB), "", "ровно на пороге снос ещё полезен и хвоста не получает")
+
+	var/excluded = zlevel_teardown_payoff_note(-4.2)
+	TEST_ASSERT(findtext(excluded, "исключён"), "бесполезный снос обязан назвать уровень исключённым: [excluded]")
+	// Порог печатается из дефайна, а не цифрой: с литералом правка порога роняла бы тест
+	// по несвязанной причине, а совпади новая цифра со старой - тест прошёл бы вхолостую.
+	TEST_ASSERT(findtext(excluded, "[LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ"), "хвост обязан называть фактический порог отдачи: [excluded]")
+
+/**
+ * В книгу отдачи попадает ровно то, что замерено, и ничего больше.
+ *
+ * Прерванный снос сюда писать нельзя: он не довёл до конца ни одну фазу освобождения, и
+ * его дельта VmSize ничего не говорит о том, сколько уровень отдал бы целиком. Запись
+ * поэтому живёт только в финале фазы 3, а не в abort_zlevel_lighting_teardown().
+ */
+/datum/unit_test/lighting_teardown_payoff_ledger_records_measurement
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_payoff_ledger_records_measurement/Run()
+	var/saved_vsz_before = SSlighting.teardown_vsz_before
+	var/list/saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
+	SSlighting.zlevel_teardown_payoff = list()
+
+	// Память не замерена ни до, ни после - улики не появляется, ключа в книге нет.
+	SSlighting.teardown_vsz_before = null
+	var/unmeasured_before = SSlighting.record_zlevel_teardown_payoff(41, list("vsz" = 2600))
+	var/unmeasured_before_key = SSlighting.zlevel_teardown_payoff["41"]
+
+	SSlighting.teardown_vsz_before = 2600
+	var/unmeasured_after = SSlighting.record_zlevel_teardown_payoff(42, null)
+	var/unmeasured_after_key = SSlighting.zlevel_teardown_payoff["42"]
+
+	var/empty_vsz = SSlighting.record_zlevel_teardown_payoff(43, list("vsz" = null))
+	var/empty_vsz_key = SSlighting.zlevel_teardown_payoff["43"]
+
+	// Замер есть: знак ОБРАТНЫЙ дельте VmSize - упавший VmSize означает возвращённую память.
+	SSlighting.teardown_vsz_before = 2647
+	var/useful = SSlighting.record_zlevel_teardown_payoff(44, list("vsz" = 2400))
+	var/useful_key = SSlighting.zlevel_teardown_payoff["44"]
+
+	// Ровно случай z16 в раунде 10146: VmSize за время сноса ВЫРОС.
+	SSlighting.teardown_vsz_before = 3216.7
+	var/useless = SSlighting.record_zlevel_teardown_payoff(16, list("vsz" = 3220.9))
+	var/useless_key = SSlighting.zlevel_teardown_payoff["16"]
+
+	SSlighting.zlevel_teardown_payoff = saved_ledger
+	SSlighting.teardown_vsz_before = saved_vsz_before
+
+	TEST_ASSERT_NULL(unmeasured_before, "без замера до сноса книга обязана вернуть null")
+	TEST_ASSERT_NULL(unmeasured_before_key, "без замера до сноса ключ в книге появляться не должен")
+	TEST_ASSERT_NULL(unmeasured_after, "без замера после сноса книга обязана вернуть null")
+	TEST_ASSERT_NULL(unmeasured_after_key, "без замера после сноса ключ в книге появляться не должен")
+	TEST_ASSERT_NULL(empty_vsz, "с пустым VmSize после сноса книга обязана вернуть null")
+	TEST_ASSERT_NULL(empty_vsz_key, "с пустым VmSize после сноса ключ в книге появляться не должен")
+	TEST_ASSERT_EQUAL(useful, 247, "полезный снос записан в книгу неверной цифрой")
+	TEST_ASSERT_EQUAL(useful_key, 247, "полезный снос не попал в книгу под своим ключом")
+	// Сравнение с допуском, а не на равенство: 3216.7 - 3220.9 даёт -4.200000000000273, и
+	// round(x, 0.1) эту ошибку не убирает - он делит и умножает обратно, заново её внося.
+	// TEST_ASSERT_EQUAL печатал бы "Expected -4.2 to be equal to -4.2" и был бы неотличим
+	// от настоящей поломки арифметики.
+	TEST_ASSERT(abs(useless - (-4.2)) < 0.01, "рост VmSize за время сноса обязан читаться как отрицательная отдача, получено [useless]")
+	TEST_ASSERT(abs(useless_key - (-4.2)) < 0.01, "бесполезный снос не попал в книгу под своим ключом, там [useless_key]")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(useless_key, 0), "записанная в книгу бесполезная отдача обязана запирать следующий снос")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(useful_key, 0), "записанная в книгу полезная отдача не должна запирать следующий снос")
+
+/**
+ * Скан кандидатов не берёт уровень, чей прошлый снос уже доказал, что возвращать нечего.
+ *
+ * Живым сканом, а не чистым проком, по той же причине, что и тест квоты: цифру
+ * "сколько отложенных уровней горит" собирает сам scan_teardown_candidates(), и порядок
+ * проверок внутри него чистыми функциями не проверяется. Ошибка тут стоит ровно того, что
+ * стоила в раунде 10146: три цикла по 42 099 объектов, 99 тяжёлых фаеров SSlighting с
+ * медианой 251 мс, очередь GC до 70 781 и дилатация до 67.4% - за ноль возвращённых МБ.
+ *
+ * Проверка исключения ОБЯЗАНА идти после счётчика зажжённых: исключённый уровень всё равно
+ * горит и в квоте участвует, иначе его исключение снимало бы давление квоты с остальных.
+ */
+/datum/unit_test/lighting_teardown_skips_proven_useless_zlevel
+
+/datum/unit_test/lighting_teardown_skips_proven_useless_zlevel/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/list/probe_levels = list()
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		probe_levels += level
+		if(length(probe_levels) > LIGHTING_MAX_LIT_DEFERRED_Z)
+			break
+	TEST_ASSERT(length(probe_levels) > LIGHTING_MAX_LIT_DEFERRED_Z, "предпосылка: в мире обязано быть больше [LIGHTING_MAX_LIT_DEFERRED_Z] z-уровней, иначе квоту не превысить")
+
+	var/old_teardown = SSlighting.teardown_zlevel
+	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
+	var/list/saved_lit_since = SSlighting.zlevel_lit_since.Copy()
+	var/list/saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
+	var/saved_ceiling = SStime_track.process_address_ceiling_mb
+	var/saved_vsz = SStime_track.memory_last_vsz_mb
+	// Кулдаун от подъёма проверяется отдельным тестом, здесь он только мешал бы.
+	SSlighting.zlevel_lit_since = list()
+	// Давление задаётся явно: в CI VmSize может быть не замерен вовсе, и тогда ветка
+	// критического давления молча решала бы исход теста за нас.
+	SStime_track.process_address_ceiling_mb = 4000
+	SStime_track.memory_last_vsz_mb = 2000
+
+	var/list/saved_traits = list()
+	var/list/probe_z = list()
+	var/list/saved_clients = list()
+	var/list/saved_dead = list()
+	for(var/datum/space_level/level as anything in probe_levels)
+		var/z = level.z_value
+		probe_z += z
+		saved_traits["[z]"] = level.traits
+		// Уровни-пробники должны быть пусты: жилец снимает уровень с кандидатов раньше
+		// любой квоты, а соседние тесты оставляют в реестрах своих мобов.
+		if(z <= length(SSmobs.clients_by_zlevel))
+			saved_clients["[z]"] = SSmobs.clients_by_zlevel[z]
+			SSmobs.clients_by_zlevel[z] = list()
+		if(z <= length(SSmobs.dead_players_by_zlevel))
+			saved_dead["[z]"] = SSmobs.dead_players_by_zlevel[z]
+			SSmobs.dead_players_by_zlevel[z] = list()
+		level.traits = list(ZTRAIT_MINING = TRUE)
+	var/list/saved_lit = isolate_lit_deferred_zlevels(probe_z)
+
+	// Все пробники горят и пустуют дольше квотного срока в каждом из пяти прогонов.
+	var/idle_since = world.time - LIGHTING_TEARDOWN_IDLE_TIME_QUOTA - 1
+
+	// 1. Книга пуста - улик нет, жертва берётся. Это базовая линия: без неё тест прошёл бы
+	//    и на механизме, который вообще перестал что-либо сносить.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = idle_since
+	SSlighting.scan_teardown_candidates()
+	var/clean_ledger_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 2. У всех пробников прошлый снос вернул мусор - не берут никого.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = idle_since
+		SSlighting.zlevel_teardown_payoff["[z]"] = -4.2
+	SSlighting.scan_teardown_candidates()
+	var/all_useless_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 3. Один пробник исключён, остальные нет - берут кого-то из остальных. Проверяет, что
+	//    исключение адресное, а не глушит скан целиком.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = idle_since
+	var/excluded_z = probe_z[1]
+	SSlighting.zlevel_teardown_payoff["[excluded_z]"] = -4.2
+	SSlighting.scan_teardown_candidates()
+	var/partial_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 4. Полезная отдача книгу не запирает: уровень, вернувший 167 МБ, остаётся кандидатом.
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = idle_since
+		SSlighting.zlevel_teardown_payoff["[z]"] = 167
+	SSlighting.scan_teardown_candidates()
+	var/useful_ledger_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// 5. У самого потолка запрет снимается: там вспышка дешевле смерти процесса.
+	SStime_track.memory_last_vsz_mb = 4000 * LIGHTING_TEARDOWN_PRESSURE_CRITICAL
+	for(var/datum/space_level/level as anything in probe_levels)
+		level.lighting_initialized = TRUE
+	SSlighting.teardown_zlevel = 0
+	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_empty_since = list()
+	for(var/z in probe_z)
+		SSlighting.zlevel_empty_since["[z]"] = idle_since
+		SSlighting.zlevel_teardown_payoff["[z]"] = -4.2
+	SSlighting.scan_teardown_candidates()
+	var/critical_picked = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	for(var/datum/space_level/level as anything in probe_levels)
+		var/z = level.z_value
+		level.traits = saved_traits["[z]"]
+		if(!isnull(saved_clients["[z]"]))
+			SSmobs.clients_by_zlevel[z] = saved_clients["[z]"]
+		if(!isnull(saved_dead["[z]"]))
+			SSmobs.dead_players_by_zlevel[z] = saved_dead["[z]"]
+	restore_lit_deferred_zlevels(saved_lit)
+	SSlighting.teardown_zlevel = old_teardown
+	SSlighting.zlevel_empty_since = saved_empty
+	SSlighting.zlevel_lit_since = saved_lit_since
+	SSlighting.zlevel_teardown_payoff = saved_ledger
+	SStime_track.process_address_ceiling_mb = saved_ceiling
+	SStime_track.memory_last_vsz_mb = saved_vsz
+
+	TEST_ASSERT(clean_ledger_picked, "с пустой книгой отдачи жертву не взяли - базовая линия теста сломана, остальные проверки ничего не значат")
+	TEST_ASSERT(!all_useless_picked, "взят z[all_useless_picked], хотя его прошлый снос вернул -4.2 МБ - механизм снова будет качать свет впустую")
+	TEST_ASSERT(partial_picked, "исключение одного уровня погасило скан целиком - оно обязано быть адресным")
+	TEST_ASSERT_NOTEQUAL(partial_picked, excluded_z, "скан взял именно исключённый уровень z[excluded_z]")
+	TEST_ASSERT(useful_ledger_picked, "уровень с полезной отдачей 167 МБ перестал быть кандидатом")
+	TEST_ASSERT(critical_picked, "под критическим давлением запрет не снялся - раунд у потолка умрёт молча вместо вспышки")

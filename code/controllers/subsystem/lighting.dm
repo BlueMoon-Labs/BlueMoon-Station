@@ -156,6 +156,18 @@ SUBSYSTEM_DEF(lighting)
 	/// подсчётом строк dd.log вручную, а обе цифры кумулятивны и стоят одного сложения.
 	var/zlevel_builds_total = 0
 	var/zlevel_teardowns_total = 0
+	/// "[z]" -> сколько МБ VmSize вернул последний ДОВЕДЁННЫЙ ДО КОНЦА снос этого уровня.
+	///
+	/// Книга замеров, а не прогнозов: цену сноса прибор печатал и раньше, но ни одна из
+	/// проверок решения её не читала, и раунд 10146 трижды перемолол z16, каждый раз
+	/// напечатав, что возврат нулевой (см. LIGHTING_TEARDOWN_MIN_PAYOFF_MB).
+	///
+	/// Прерванный снос сюда НЕ пишется: он не довёл до конца ни одну фазу освобождения, и
+	/// его дельта VmSize ничего не говорит о том, сколько уровень отдал бы целиком.
+	///
+	/// Ключ живёт до конца раунда: арена, однажды оставшаяся за процессом, обратно к ОС не
+	/// уходит, и повторный замер того же уровня дал бы тот же ответ ценой ещё одного цикла.
+	var/list/zlevel_teardown_payoff = list()
 	/// Z-уровень, свет которого сейчас сносится (0 = никакой).
 	var/teardown_zlevel = 0
 	/// Фаза сноса: 0 = парковка источников, 1 = объекты и старлайт, 2 = углы, 3 = финал.
@@ -699,6 +711,11 @@ SUBSYSTEM_DEF(lighting)
 		// в квоте участвует - иначе она перестала бы видеть собственный пик.
 		if(zlevel_teardown_cooldown_active(zlevel_lit_since[key], world.time, pressure))
 			continue
+		// Улика прошлого сноса читается ПОСЛЕ счётчика по той же причине, что и кулдаун:
+		// исключённый уровень всё равно горит и в квоте участвует. Иначе его исключение
+		// занижало бы lit_deferred и снимало давление квоты с ОСТАЛЬНЫХ уровней.
+		if(zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key], pressure))
+			continue
 		idle_since_by_z[key] = since
 	if(!length(idle_since_by_z))
 		return
@@ -913,8 +930,28 @@ SUBSYSTEM_DEF(lighting)
 	bg_queued_zlevels |= z
 	if(starlight_color_index > length(GLOB.starlight))
 		starlight_color_index = 0
-	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, get_process_memory_mb())]")
+	// Замер снимается ОДИН раз и идёт сразу в три места: в книгу отдачи, в цифру возврата и
+	// в пометку об исключении. Два вызова get_process_memory_mb() подряд дали бы строке лога
+	// и книге разные числа, и разбор прода не сошёлся бы сам с собой.
+	var/list/memory_after = get_process_memory_mb()
+	var/payoff_mb = record_zlevel_teardown_payoff(z, memory_after)
+	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, memory_after)][zlevel_teardown_payoff_note(payoff_mb)]")
 	abort_zlevel_lighting_teardown()
+
+/**
+ * Записывает в книгу, сколько МБ VmSize вернул только что завершённый снос уровня.
+ *
+ * Возвращает записанную цифру либо null, если мерить было нечем (Windows, ранний старт) -
+ * там улик против уровня не появляется, и он остаётся кандидатом на общих основаниях.
+ *
+ * Зовётся ТОЛЬКО из финала фазы 3: у прерванного сноса дельта VmSize не значит ничего.
+ */
+/datum/controller/subsystem/lighting/proc/record_zlevel_teardown_payoff(z, list/memory_after)
+	if(isnull(teardown_vsz_before) || !memory_after || isnull(memory_after["vsz"]))
+		return null
+	var/payoff_mb = teardown_vsz_before - memory_after["vsz"]
+	zlevel_teardown_payoff["[z]"] = payoff_mb
+	return payoff_mb
 
 /**
  * Есть ли на z-уровне живой клиент или наблюдатель. Мёртвые считаются наравне: именно они
