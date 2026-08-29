@@ -136,6 +136,7 @@
 /// читалось без деталей работы с SSshuttle.
 /datum/controller/subsystem/time_track/proc/call_evac_on_memory(vsz, headroom_mb, minutes_left)
 	memory_evac_called = TRUE
+	GLOB.midround_recorded = TRUE
 
 	var/reason = "процесс занял [vsz] из [process_address_ceiling_mb] МБ адресного пространства \
 		([round(vsz / process_address_ceiling_mb * 100)]% потолка, до края [round(headroom_mb)] МБ), \
