@@ -95,11 +95,20 @@
 	var/swarming = FALSE
 	var/my_creator = null
 
+///Сколько живёт отколовшийся кусок хайвлорда, если его не убили раньше.
+///Колбек держит бруда жёстко всё это время, но снимается вместе с ним:
+///datum/Destroy() убивает active_timers, поэтому таймер не переживает qdel и
+///держателем в GC-отказах не является (проверено по раунду 10146 - у отказов
+///сборки пусто в "таймеров на датуме").
+#define HIVELORD_BROOD_LIFETIME (10 SECONDS)
+
 /mob/living/simple_animal/hostile/asteroid/hivelordbrood/Initialize(mapload)
 	. = ..()
 	if(swarming)
 		AddComponent(/datum/component/swarming) //oh god not the bees
-	addtimer(CALLBACK(src, PROC_REF(death)), 100)
+	addtimer(CALLBACK(src, PROC_REF(death)), HIVELORD_BROOD_LIFETIME)
+
+#undef HIVELORD_BROOD_LIFETIME
 
 //Legion
 /mob/living/simple_animal/hostile/asteroid/hivelord/legion

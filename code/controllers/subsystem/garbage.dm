@@ -1131,9 +1131,49 @@ SUBSYSTEM_DEF(garbage)
 		if (length(leaked_mob.buckled_mobs))
 			var/mob/living/rider = leaked_mob.buckled_mobs[1]
 			notes += "на нём бакл: [rider.type]"
+		notes += collect_ai_blackboard_holders(leaked_mob)
+	// Клиентские структуры (images, screen, seen_messages, eye) - не датумы, и полный
+	// ref-скан мира их не видит в принципе.
+	//
+	// Идёт ПОСЛЕДНИМ и только когда все проверки выше промолчали. Проб не бесплатный:
+	// он обходит client.images каждого клиента вручную, а с рунечатом это сотни image
+	// на клиента при сотне с лишним клиентов - и всё это без уступки тика (yield = FALSE
+	// обязателен, проб работает внутри обхода очереди сборки). В раунде 10146 SSgarbage
+	// уже давал прогоны по 405 мс, добавлять ему такой обход на КАЖДЫЙ warnfail нельзя.
+	//
+	// Гейт ничего не теряет: улика ищется ровно там, где остальные ничего не нашли, а
+	// warnfail с уже названным держателем в ней не нуждается.
+	if (!length(notes))
+		var/list/client_hits = find_client_references(D, quiet = TRUE, yield = FALSE)
+		if (length(client_hits))
+			notes += "клиентские держатели ([length(client_hits)]): [client_hits[1]]"
 	if (!length(notes))
 		return ""
 	return "; улики: [notes.Join(", ")]"
+
+/**
+ * Ищет утёкшего моба в блэкбордах живых AI-контроллеров.
+ *
+ * Прод-раунд 10146: 25 легион-брудов и 10 clocktank/weak ушли в hard delete с
+ * "внешних ссылок: 1/2" и пустым списком улик, а по attack.log видно, что дрались
+ * они ДРУГ С ДРУГОМ - то есть первый подозреваемый в держателях это контроллер
+ * противника. Ключи блэкборда снимаются только сигналом qdel цели, так что
+ * уцелевший ключ не виден ни одной из прежних проверок.
+ *
+ * Обход идёт по бакетам статусов (GLOB.ai_controllers_by_status), а не по всем
+ * мобам мира, и останавливается на первой находке: warnfail'ов десятки за раунд,
+ * лишнего тика это стоить не должно.
+ */
+/datum/controller/subsystem/garbage/proc/collect_ai_blackboard_holders(mob/leaked_mob)
+	for (var/status in GLOB.ai_controllers_by_status)
+		for (var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_status[status])
+			if (QDELETED(controller) || controller.pawn == leaked_mob)
+				continue
+			for (var/key in controller.blackboard)
+				if (controller.blackboard[key] != leaked_mob)
+					continue
+				return list("держит блэкборд [controller.type] (паун [controller.pawn?.type || "null"]), ключ [key]")
+	return list()
 
 /// Schedules a reference scan for a GC-failed datum.
 /// references_to_clear ограничивает поиск числом реально оставшихся ссылок (ранний выход).
