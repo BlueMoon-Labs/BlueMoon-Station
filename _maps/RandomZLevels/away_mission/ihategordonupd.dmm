@@ -38100,7 +38100,7 @@
 /obj/effect/festive/street/streetlinewest,
 /obj/effect/turf_decal/stripes,
 /obj/structure/rack/shelf,
-/obj/item/gun/ballistic/shotgun/spas,
+/obj/item/gun/ballistic/shotgun/m500,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "qQj" = (

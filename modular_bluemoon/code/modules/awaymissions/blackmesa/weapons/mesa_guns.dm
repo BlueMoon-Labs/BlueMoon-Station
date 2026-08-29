@@ -235,12 +235,71 @@
 	fire_delay = 4
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/m870
 	weapon_weight = WEAPON_HEAVY
+	var/load_delay = 4
+	var/load_sound_start = null
+	var/list/load_sounds_mid = null
+	var/load_sound_end = null
+	var/last_hit_target = null
+
+/obj/item/gun/ballistic/shotgun/m870/attackby(obj/item/A, mob/user, params)
+	. = ..()
+	if(.)
+		return
+	var/num_loaded = magazine.attackby(A, user, params, 1)
+	if(num_loaded)
+		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+		playsound(user, 'sound/weapons/shotguninsert.ogg', 60, 1)
+		addtimer(CALLBACK(src, PROC_REF(update_load_icons), A, user), load_delay)
+
+/obj/item/gun/ballistic/shotgun/m870/proc/update_load_icons(obj/item/ammo_item, mob/user)
+	if(ammo_item)
+		ammo_item.update_icon()
+	update_icon()
+
+/obj/item/gun/ballistic/shotgun/m870/attack_atom(mob/user, atom/target, params)
+	. = ..()
+	if(istype(target, /mob/living))
+		var/mob/living/victim = target
+		var/knockback_dir = get_dir(src, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
+
+/obj/item/gun/ballistic/shotgun/m870/afterattack(atom/target, mob/user, flag, params)
+	. = ..()
+	if(. && target && !ismob(target))
+		var/turf/target_turf = get_turf(target)
+		if(target_turf && target_turf.density)
+			if(istype(target, /atom/movable) && !target.anchored)
+				var/atom/movable/movable_target = target
+				movable_target.safe_throw_at(get_edge_target_turf(movable_target, get_dir(src, movable_target)), 2, 1)
+				if(ismob(movable_target))
+					var/mob/living/victim = movable_target
+					victim.Knockdown(20)
+
+/obj/item/gun/ballistic/shotgun/m870/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(pointblank && pbtarget && istype(pbtarget, /mob/living))
+		var/mob/living/victim = pbtarget
+		var/knockback_dir = get_dir(user, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
+	last_hit_target = pbtarget
 
 /obj/item/ammo_box/magazine/internal/shot/m870
 	name = "shotgun internal magazine"
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = "shotgun"
 	max_ammo = 4
+
+/obj/item/ammo_casing/shotgun/buckshot/mesa
+	name = "12g buckshot shell (mesa)"
+	projectile_type = /obj/item/projectile/bullet/pellet/mesa_buckshot
 
 // TIER 2
 /obj/item/gun/ballistic/shotgun/spas
@@ -261,18 +320,150 @@
 	pumpsound = 'modular_bluemoon/sound/weapons/mesa/shotgun_rack.ogg'
 	weapon_weight = WEAPON_HEAVY
 	var/stamina_drain_per_shot = 5
+	var/load_sound_start = null
+	var/list/load_sounds_mid = null
+	var/load_sound_end = null
+	var/last_hit_target = null
 
 /obj/item/gun/ballistic/shotgun/spas/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	..()
 	if(user)
 		user.adjustStaminaLoss(stamina_drain_per_shot)
 	src.pump(user)
+	if(pointblank && pbtarget && istype(pbtarget, /mob/living))
+		var/mob/living/victim = pbtarget
+		var/knockback_dir = get_dir(user, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
+	last_hit_target = pbtarget
+
+/obj/item/gun/ballistic/shotgun/spas/afterattack(atom/target, mob/user, flag, params)
+	. = ..()
+	if(. && target && !ismob(target))
+		var/turf/target_turf = get_turf(target)
+		if(target_turf && target_turf.density)
+			if(istype(target, /atom/movable) && !target.anchored)
+				var/atom/movable/movable_target = target
+				movable_target.safe_throw_at(get_edge_target_turf(movable_target, get_dir(src, movable_target)), 2, 1)
+				if(ismob(movable_target))
+					var/mob/living/victim = movable_target
+					victim.Knockdown(20)
+
+/obj/item/gun/ballistic/shotgun/spas/attack_atom(mob/user, atom/target, params)
+	. = ..()
+	if(istype(target, /mob/living))
+		var/mob/living/victim = target
+		var/knockback_dir = get_dir(src, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
 
 /obj/item/ammo_box/magazine/internal/shot/spas
 	name = "shotgun internal magazine"
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = "shotgun"
 	max_ammo = 8
+
+
+/obj/item/gun/ballistic/shotgun/m500
+	name = "mossberg 500 shotgun"
+	desc = "«Моссберг-500» — семейство многозарядных ружей США, что сейчас выпускается в различных модификациях, предназначенных как для охоты, так и для полиции, охранников и самообороны."
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	fire_sound = 'modular_bluemoon/sound/weapons/mesa/mossberg/m500.ogg'
+	pumpsound = 'modular_bluemoon/sound/weapons/mesa/mossberg/rack.ogg'
+	icon_state = "m500"
+	item_state = "m500"
+	w_class = WEIGHT_CLASS_BULKY
+	recoil = 3
+	attack_speed = 8
+	force = 8
+	fire_delay = 3
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/m500
+	weapon_weight = WEAPON_HEAVY
+	var/load_delay = 2
+	var/load_sound_start = 'modular_bluemoon/sound/weapons/mesa/mossberg/ammostart.ogg'
+	var/list/load_sounds_mid = list(
+		'modular_bluemoon/sound/weapons/mesa/mossberg/ammomid.ogg',
+		'modular_bluemoon/sound/weapons/mesa/mossberg/ammomid1.ogg',
+		'modular_bluemoon/sound/weapons/mesa/mossberg/ammomid2.ogg'
+	)
+	var/load_sound_end = 'modular_bluemoon/sound/weapons/mesa/mossberg/ammostop.ogg'
+	var/last_hit_target = null
+
+/obj/item/gun/ballistic/shotgun/m500/attackby(obj/item/A, mob/user, params)
+	. = ..()
+	if(.)
+		return
+	var/num_loaded = magazine.attackby(A, user, params, 1)
+	if(num_loaded)
+		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src]!</span>")
+		var/sound_to_play
+		var/ammo_before = magazine.ammo_count() - num_loaded
+		var/ammo_after = magazine.ammo_count()
+
+		if(ammo_before == 0)
+			sound_to_play = load_sound_start
+		else if(ammo_after >= magazine.max_ammo)
+			sound_to_play = load_sound_end
+		else
+			sound_to_play = pick(load_sounds_mid)
+
+		playsound(user, sound_to_play, 60, 1)
+		addtimer(CALLBACK(src, PROC_REF(update_load_icons), A, user), load_delay)
+
+/obj/item/gun/ballistic/shotgun/m500/proc/update_load_icons(obj/item/ammo_item, mob/user)
+	if(ammo_item)
+		ammo_item.update_icon()
+	update_icon()
+
+/obj/item/gun/ballistic/shotgun/m500/attack_atom(mob/user, atom/target, params)
+	. = ..()
+	if(istype(target, /mob/living))
+		var/mob/living/victim = target
+		var/knockback_dir = get_dir(src, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
+
+/obj/item/gun/ballistic/shotgun/m500/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(pointblank && pbtarget && istype(pbtarget, /mob/living))
+		var/mob/living/victim = pbtarget
+		var/knockback_dir = get_dir(user, victim)
+		var/knockback_distance = rand(2, 3)
+		step(victim, knockback_dir)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.1)
+		if(knockback_distance >= 3)
+			addtimer(CALLBACK(victim, TYPE_PROC_REF(/atom/movable, step), knockback_dir), 0.2)
+	last_hit_target = pbtarget
+
+/obj/item/gun/ballistic/shotgun/m500/afterattack(atom/target, mob/user, flag, params)
+	. = ..()
+	if(. && target && !ismob(target))
+		var/turf/target_turf = get_turf(target)
+		if(target_turf && target_turf.density)
+			if(istype(target, /atom/movable) && !target.anchored)
+				var/atom/movable/movable_target = target
+				movable_target.safe_throw_at(get_edge_target_turf(movable_target, get_dir(src, movable_target)), 2, 1)
+				if(ismob(movable_target))
+					var/mob/living/victim = movable_target
+					victim.Knockdown(20)
+
+/obj/item/ammo_box/magazine/internal/shot/m500
+	name = "shotgun internal magazine"
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
+	caliber = "shotgun"
+	max_ammo = 9
+
 
 /obj/item/gun/ballistic/automatic/mp5/underbarrel
 	desc = "Версия MP5 с подствольным гранатомётом и невероятным желанием выстрелить из него"
