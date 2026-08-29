@@ -692,7 +692,9 @@
 						// ради окна реанимации, поэтому выражение почти всегда даёт ровно 99,
 						// и каждый следующий разряд добивал мозг до тяжёлой травмы. Потолок на
 						// единицу ниже BRAIN_DAMAGE_SEVERE - ровно до неё, но не в неё.
-						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(0, min(BRAIN_DAMAGE_SEVERE - 1, ((tlimit - tplus) / tlimit * 100))))
+						// revive() без full_heal органы не трогает, поэтому голая запись ещё и ЛЕЧИЛА
+						// уже накопленный урон мозга: берём максимум с текущим.
+						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(H.getOrganLoss(ORGAN_SLOT_BRAIN), max(0, min(BRAIN_DAMAGE_SEVERE - 1, ((tlimit - tplus) / tlimit * 100)))))
 					log_combat(user, H, "revived", defib)
 					if(req_defib)
 						if(defib.healdisk)

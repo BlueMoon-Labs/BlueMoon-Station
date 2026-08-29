@@ -53,6 +53,11 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/natural = TRUE
 	var/mob/living/carbon/target
 	var/feedback_details //extra info for investigate
+	/// Клиент, которому реально ушли картинки галлюцинации. Читать target.client в Destroy()
+	/// нельзя: если игрок разлогинился, ушёл в крио или сменил тело, картинка останется
+	/// висеть в images ПРЕЖНЕГО клиента навсегда. Тот же приём уже применён у
+	/// /obj/effect/hallucination/simple.
+	var/client/owner_client
 	/// Who's our next highest abstract parent type?
 	var/abstract_hallucination_parent = /datum/hallucination
 
@@ -82,6 +87,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(target)
 		target.investigate_log("was afflicted with a hallucination of type [type] by [natural?"hallucination status":"an external source"]. [feedback_details]", INVESTIGATE_HALLUCINATIONS)
 	target = null
+	owner_client = null
 	return ..()
 
 //Returns a random turf in a ring around the target mob, useful for sound hallucinations
@@ -233,10 +239,6 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	var/image_state = "plasma"
 	var/radius = 0
 	var/next_expand = 0
-	/// BLUEMOON FIX: cached client receiving flood_images. Without this, Destroy reads
-	/// target.client live — and if the target logged out before we tear down, the entire
-	/// flood (dozens to hundreds of images) stays orphaned in the previous client.images.
-	var/client/owner_client
 
 /datum/hallucination/fake_flood/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
@@ -385,8 +387,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	fakerune = image('icons/effects/96x96.dmi', landing_image_turf, "landing", layer = ABOVE_OPEN_TURF_LAYER)
 	fakebroken.override = TRUE
 	if(target.client)
-		target.client.images |= fakebroken
-		target.client.images |= fakerune
+		owner_client = target.client
+		owner_client.images |= fakebroken
+		owner_client.images |= fakerune
 	target.playsound_local(wall,'sound/effects/meteorimpact.ogg', 150, 1)
 	bubblegum = new(wall, target)
 	addtimer(CALLBACK(src, PROC_REF(bubble_attack), landing), 10)
@@ -410,9 +413,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	qdel(src)
 
 /datum/hallucination/oh_yeah/Destroy()
-	if(target?.client)
-		target.client.images.Remove(fakebroken)
-		target.client.images.Remove(fakerune)
+	if(owner_client)
+		owner_client.images.Remove(fakebroken)
+		owner_client.images.Remove(fakerune)
 	QDEL_NULL(fakebroken)
 	QDEL_NULL(fakerune)
 	QDEL_NULL(bubblegum)
@@ -649,15 +652,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				A.name = custom_name
 		A.override = 1
 		if(target.client)
+			owner_client = target.client
 			delusions |= A
-			target.client.images |= A
+			owner_client.images |= A
 	if(duration)
 		QDEL_IN(src, duration)
 
 /datum/hallucination/delusion/Destroy()
-	for(var/image/I in delusions)
-		if(target?.client)
-			target.client.images.Remove(I)
+	if(owner_client)
+		for(var/image/I as anything in delusions)
+			owner_client.images.Remove(I)
+	delusions = null
 	return ..()
 
 /datum/hallucination/self_delusion
@@ -695,12 +700,14 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			to_chat(target, "<span class='italics'>...wabbajack...wabbajack...</span>")
 			target.playsound_local(target,'sound/magic/staff_change.ogg', 50, 1)
 		delusion = A
-		target.client.images |= A
+		owner_client = target.client
+		owner_client.images |= A
 	QDEL_IN(src, duration)
 
 /datum/hallucination/self_delusion/Destroy()
-	if(target?.client)
-		target.client.images.Remove(delusion)
+	if(owner_client)
+		owner_client.images.Remove(delusion)
+	delusion = null
 	return ..()
 
 /datum/hallucination/bolts
@@ -1555,12 +1562,17 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		image = image(M,C)
 		unset_busy_human_dummy(DUMMY_HUMAN_SLOT_HALLUCINATION)
 		image.override = TRUE
-		target.client.images |= image
+		// generate_or_wait_for_human_dummy() спит, так что клиент мог уйти уже после проверки
+		// выше: без гарда тут падал рантайм, и QDEL_IN ниже не взводился - датум жил вечно.
+		owner_client = C.client
+		if(owner_client)
+			owner_client.images |= image
 		QDEL_IN(src, 20 SECONDS)
 
 /datum/hallucination/naked/Destroy()
-	if(target?.client)
-		target.client.images.Remove(image)
+	if(owner_client)
+		owner_client.images.Remove(image)
+	image = null
 	return ..()
 
 /// Helper to give the passed mob the ability to select a hallucination from the list of all hallucination subtypes.
