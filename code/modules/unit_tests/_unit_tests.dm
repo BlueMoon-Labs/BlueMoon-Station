@@ -302,6 +302,7 @@
 #include "jukebox_catchup_offset.dm"
 #include "jukebox_import.dm"
 #include "jukebox_send_range.dm"
+#include "personal_music_box.dm"
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "mecha_leg_overload.dm"
