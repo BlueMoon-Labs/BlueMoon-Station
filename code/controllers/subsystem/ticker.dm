@@ -283,16 +283,12 @@ SUBSYSTEM_DEF(ticker)
 
 			if(!roundend_check_paused && mode.check_finished(force_ending) || force_ending)
 				current_state = GAME_STATE_FINISHED
-			if(current_state == GAME_STATE_FINISHED)
-			{
-				SSnocrash?.on_round_end()
 				toggle_ooc(TRUE) // Turn it on
 				toggle_aooc(TRUE) // Turn it on
 				toggle_dooc(TRUE)
 				check_maprotate()
 				declare_completion(force_ending)
 				Master.SetRunLevel(RUNLEVEL_POSTGAME)
-			}
 
 
 /datum/controller/subsystem/ticker/proc/setup()

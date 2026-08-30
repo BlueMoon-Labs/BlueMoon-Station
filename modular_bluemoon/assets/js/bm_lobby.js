@@ -44,8 +44,6 @@ function bmToggleSidebar() {
     if (db) db.classList.add('collapsed');
     tb.innerHTML = '&#9664;'; tb.style.right = '0';
   }
-  var nc = document.getElementById('bm-nocrash');
-  if (nc) nc.style.display = _bm_sidebar_open ? 'block' : 'none';
 }
 
 // === SETTINGS ===
@@ -200,30 +198,6 @@ function bm_update_counts(p1, p2, p3, p4, p5) {
     if (_bm_countdown_iv) { clearInterval(_bm_countdown_iv); _bm_countdown_iv = null; }
   }
   _bm_countdown_render();
-}
-
-function bm_update_nocrash(val) {
-  var el = document.getElementById('bm-nc-count');
-  if (!el) {
-    // щит ещё не в DOM — создаём с инлайн-стилями (BYOND-браузер не применяет <style> из <body>)
-    var wrap = document.createElement('div');
-    wrap.id = 'bm-nocrash';
-    wrap.className = 'bm-nocrash';
-    wrap.style.cssText = 'position:fixed;top:1.6vmin;left:1.6vmin;z-index:30;width:clamp(150px,20vmin,240px);background:#f3c000;border:2px solid #0a0a0a;border-radius:3px;box-shadow:0 3px 14px rgba(0,0,0,0.55);font-family:Courier New,monospace;color:#0a0a0a;user-select:none;overflow:hidden;pointer-events:none;';
-    wrap.innerHTML = "<div style='height:0.9vmin;min-height:6px;background:repeating-linear-gradient(45deg,#0a0a0a 0 10px,#f3c000 10px 20px);'></div>" +
-      "<div style='font-size:clamp(8px,1.3vmin,14px);font-weight:700;letter-spacing:1px;text-align:center;padding:0.5vmin 0.4vmin 0.2vmin;line-height:1.1;text-transform:uppercase;'>СМЕН БЕЗ<br>КРАШЕЙ</div>" +
-      "<div id='bm-nc-count' style='font-size:clamp(26px,5.5vmin,60px);font-weight:800;text-align:center;line-height:1;padding:0.2vmin 0 0.4vmin;text-shadow:0 1px 0 rgba(255,255,255,0.35);font-variant-numeric:tabular-nums;'>0</div>" +
-      "<div style='font-size:clamp(7px,1.0vmin,11px);font-weight:700;text-align:center;padding:0 0 0.6vmin;letter-spacing:2px;'>ПОДРЯД</div>" +
-      "<div style='height:0.9vmin;min-height:6px;background:repeating-linear-gradient(45deg,#0a0a0a 0 10px,#f3c000 10px 20px);'></div>";
-    document.body.appendChild(wrap);
-    if (!_bm_sidebar_open) wrap.style.display = 'none';
-    el = document.getElementById('bm-nc-count');
-  }
-  if (el) {
-    var n = parseInt(val);
-    if (isNaN(n) || n < 0) n = 0;
-    el.textContent = n;
-  }
 }
 
 var _bm_is_admin = false;

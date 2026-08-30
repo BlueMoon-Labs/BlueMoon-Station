@@ -102,14 +102,6 @@ SUBSYSTEM_DEF(title_bm)
 	parts += {"<div id=\"bm-toasts\"></div>"}
 	parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9654;</div>"}
 	parts += {"<div id=\"bm-disclaimer-btn\" onclick=\"bmShowDisclaimer()\" title=\"Правила сервера\">&#9888;</div>"}
-	//  щит "Смен без крашей"
-	parts += {"<div id=\"bm-nocrash\" class=\"bm-nocrash\">
-  <div class=\"bm-nc-stripe\"></div>
-  <div class=\"bm-nc-title\">СМЕН БЕЗ<br>КРАШЕЙ</div>
-  <div class=\"bm-nc-count\" id=\"bm-nc-count\">0</div>
-  <div class=\"bm-nc-sub\">ПОДРЯД</div>
-  <div class=\"bm-nc-stripe\"></div>
-</div>"}
 	cached_static_html = parts.Join("")
 
 /datum/controller/subsystem/title_bm/proc/_load_images_from_dir(dir_path, list/target_list)
