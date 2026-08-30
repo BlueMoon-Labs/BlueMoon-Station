@@ -347,6 +347,119 @@
 	else
 		remove_filter("emissive_bloom")
 
+/atom/movable/screen/plane_master/lamps
+	name = "lamps plane master"
+	plane = LIGHTING_LAMPS_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_target = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps/floor
+	name = "floor lamps plane master"
+	plane = FLOOR_LIGHTING_LAMPS_PLANE
+	render_target = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/exposure
+	name = "exposure plane master"
+	plane = LIGHTING_EXPOSURE_PLANE
+	appearance_flags = PLANE_MASTER|PIXEL_SCALE
+	blend_mode = BLEND_ADD
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/atom/movable/screen/plane_master/exposure/backdrop(mob/mymob)
+	remove_filter("blur_exposure")
+	alpha = 0
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/enabled = TRUE
+	if(has_paradise_pref)
+		enabled = (mymob.client.prefs.light & LIGHT_EXPOSURE)
+	else
+		enabled = (mymob.client.prefs.lighting_blur >= 1)
+	if(enabled)
+		alpha = 255
+		add_filter("blur_exposure", 1, gauss_blur_filter(size = 20))
+
+/atom/movable/screen/plane_master/lamps_selfglow
+	name = "lamps selfglow plane master"
+	plane = LIGHTING_LAMPS_SELFGLOW
+	appearance_flags = PLANE_MASTER
+	blend_mode = BLEND_ADD
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/floor
+	name = "floor lamps selfglow plane master"
+	plane = FLOOR_LIGHTING_LAMPS_SELFGLOW
+	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
+	remove_filter("add_lamps_to_selfglow")
+	remove_filter("lamps_selfglow_bloom")
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/has_glowlevel = ("glowlevel" in mymob.client.prefs.vars)
+	var/level
+	if(has_paradise_pref && has_glowlevel)
+		if(!(mymob.client.prefs.light & LIGHT_NEW_LIGHTING))
+			return
+		level = mymob.client.prefs.glowlevel
+	else
+		var/blur = mymob.client.prefs.lighting_blur || 0
+		if(blur <= 0)
+			return
+		else if(blur == 1)
+			level = GLOW_LOW
+		else if(blur == 2)
+			level = GLOW_MED
+		else
+			level = GLOW_HIGH
+	if(isnull(level))
+		return
+	var/bloomsize = 0
+	var/bloomoffset = 0
+	switch(level)
+		if(GLOW_LOW)
+			bloomsize = 2
+			bloomoffset = 1
+		if(GLOW_MED)
+			bloomsize = 3
+			bloomoffset = 2
+		if(GLOW_HIGH)
+			bloomsize = 5
+			bloomoffset = 3
+		else
+			return
+	add_filter("add_lamps_to_selfglow", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_OVERLAY))
+	add_filter("lamps_selfglow_bloom", 1, bloom_filter(threshold = "#777777", size = bloomsize, offset = bloomoffset, alpha = 80))
+
+/atom/movable/screen/plane_master/lamps_glare
+	name = "lamps glare plane master"
+	plane = LIGHTING_LAMPS_GLARE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/floor
+	name = "floor lamps glare plane master"
+	plane = FLOOR_LIGHTING_LAMPS_GLARE
+	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
+	remove_filter("add_lamps_to_glare")
+	remove_filter("lamps_glare")
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/enabled = TRUE
+	if(has_paradise_pref)
+		enabled = (mymob.client.prefs.light & LIGHT_GLARE)
+	else
+		enabled = (mymob.client.prefs.lighting_blur >= 2)
+	if(enabled)
+		add_filter("add_lamps_to_glare", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_ADD))
+		add_filter("lamps_glare", 1, radial_blur_filter(size = 0.035))
+
 ///Contains space parallax
 /atom/movable/screen/plane_master/parallax
 	name = "parallax plane master"
