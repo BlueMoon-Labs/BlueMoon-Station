@@ -1,6 +1,6 @@
 import { backendCreatePayloadQueue, sendMessage } from 'tgui/backend';
 
-import { flushSaveToServer } from './serverState';
+import { flushSaveToServer, forgetSentState } from './serverState';
 
 jest.mock('tgui/backend', () => ({
   backendCreatePayloadQueue: jest.fn(payload => ({
@@ -160,6 +160,24 @@ describe('tgui panel serverState', () => {
   // Дедупликация помечает тело отправленным ДО того, как транспорт отработал. Если отправка
   // упала, отметку надо снять: иначе повторный вызов с тем же состоянием будет отброшен как
   // дубликат, и на сервер не уедет ничего до следующей правки настроек.
+  test('resends the same state after the server pushed its own panel/state', () => {
+    const store = createStore({
+      highlightText: 'reconnect-marker',
+    });
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+
+    // Сервер прислал состояние (реконнект): что у него на самом деле лежит, клиент не
+    // знает, поэтому следующая сборка обязана уйти даже без изменений.
+    forgetSentState();
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(2);
+
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(2);
+  });
+
   test('resends the same state after a failed transport instead of skipping it as a duplicate', () => {
     const store = createStore({
       highlightText: 'transport-failure-marker',

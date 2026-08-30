@@ -96,6 +96,16 @@ const sendStateInChunks = (store, stateJson) => {
 export const getLastSavedAt = () => saveCounter;
 
 /**
+ * Забывает, что было отправлено. Зовётся, когда сервер сам присылает panel/state
+ * (реконнект, перезагрузка панели): lastSentBody живёт в модуле и переживает
+ * перезагрузку окна, а сервер за это время мог потерять состояние - без сброса
+ * идентичное состояние глушилось бы как дубль и никогда не доехало бы обратно.
+ */
+export const forgetSentState = () => {
+  lastSentBody = null;
+};
+
+/**
  * Builds a JSON string of the current panel state for server persistence.
  * Excludes transient fields (theme, view, scrollTracking, unreadCount, createdAt).
  *

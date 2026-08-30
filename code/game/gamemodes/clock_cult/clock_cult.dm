@@ -298,6 +298,8 @@ Credit where due:
 		var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
 		if(istype(plasma_tank))
 			H.internal = plasma_tank
+		//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+		H.update_action_buttons_icon()
 	PDA.owner = H.real_name
 	PDA.ownjob = "Assistant"
 	PDA.update_label()

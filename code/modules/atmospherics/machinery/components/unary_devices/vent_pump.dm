@@ -53,9 +53,15 @@
 	// снимать регистрацию надо оттуда же, иначе у подобласти запись остаётся навсегда.
 	var/area/old_base = get_base_area(old_area)
 	if(old_base)
+		// Имя содержит название зоны и серийник (см. register_in_area). Сбрасываем его ТОЛЬКО
+		// если оно и было автогенерённым: замапленное вручную имя вент обязан сохранить.
+		if(name == old_base.air_vent_names[id_tag])
+			name = initial(name)
 		old_base.air_vent_names -= id_tag
 		old_base.air_vent_info -= id_tag
-	name = initial(name) // имя содержит название зоны и серийник - оба выдаёт broadcast_status()
+	// Регистрация в новой зоне отдельно от broadcast_status(): тот выходит сразу без
+	// радиоканала, и вент без радио оставался вообще ни в одной области.
+	register_in_area()
 	broadcast_status()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/update_icon_nopipes()
@@ -187,14 +193,25 @@
 		"sigtype" = "status"
 	))
 
-	var/area/A = get_base_area(src)
-	if(!A.air_vent_names[id_tag])
-		A.air_vent_serial++
-		name = "\improper [A.name] vent pump #[A.air_vent_serial]"
-		A.air_vent_names[id_tag] = name
-	A.air_vent_info[id_tag] = signal.data
+	var/area/A = register_in_area()
+	if(A)
+		A.air_vent_info[id_tag] = signal.data
 
 	radio_connection.post_signal(src, signal, radio_filter_out)
+
+/// Прописывает вент в реестре имён базовой области и выдаёт ему автоимя, если своего нет.
+/// Вынесено из broadcast_status(): реестр области обновлять надо и без радиоканала,
+/// иначе вент, у которого зону сменили под ногами, не числится нигде.
+/obj/machinery/atmospherics/components/unary/vent_pump/proc/register_in_area()
+	var/area/base_area = get_base_area(src)
+	if(!base_area)
+		return null
+	if(!base_area.air_vent_names[id_tag])
+		if(name == initial(name)) // своё имя с карты не затираем
+			base_area.air_vent_serial++
+			name = "\improper [base_area.name] vent pump #[base_area.air_vent_serial]"
+		base_area.air_vent_names[id_tag] = name
+	return base_area
 
 
 /obj/machinery/atmospherics/components/unary/vent_pump/atmosinit()

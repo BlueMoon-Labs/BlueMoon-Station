@@ -265,6 +265,15 @@ function stop_updates() {
 		close_stats_panel(usr)
 		return
 
+	//Тик самообновления панели. Обязан идти ДО проверки на incapacitated: JS перевзводит
+	//таймер только из byjax-колбэка schedule_update, поэтому один тик, пришедший пока
+	//пилота оглушило или ослепило, обрывал всю цепочку до переоткрытия окна.
+	if(href_list["update_content"])
+		if(!(usr in occupants))
+			return
+		update_stats_panel(usr)
+		return
+
 	if(usr.incapacitated())
 		return
 
@@ -347,10 +356,6 @@ function stop_updates() {
 	//то есть проверка всегда давала ноль и не защищала ничего. occupants - ассоциативный
 	//список моб -> биты управления, так что искать надо самого вызывающего
 	if(!(usr in occupants))
-		return
-
-	if(href_list["update_content"])
-		update_stats_panel(usr)
 		return
 
 	//Selects the mech equipment/weapon.
@@ -462,14 +467,14 @@ function stop_updates() {
  *
  * Активно сносить документ надо ровно в одном случае: пассажир на месте, а окно закрыто
  * крестиком. Скин тогда прячет окно, но JS внутри продолжает работать, и остановить его
- * может только browse(null). Узнаём об этом через onclose(), который перевешиваем на себя:
- * /datum/browser вешает туда ".windowclose null", а тот лишь сбрасывает machine и до нас
- * ничего не доносит.
+ * может только browse(null). Узнаём об этом через onclose() с ref на сам мех - он
+ * навешивается один раз при открытии окна (см. mech_view_stats/Trigger). Раньше onclose()
+ * дёргался отсюда каждый тик: лишний winset раз в секунду на каждую панель, а окно,
+ * закрытое в первую секунду, "close=1" так и не присылало.
  */
 /obj/vehicle/sealed/mecha/proc/update_stats_panel(mob/user)
 	if(!user?.client)
 		return
-	onclose(user, "exosuit", src)
 	send_byjax(user, "exosuit.browser", "content", get_stats_part(user), "schedule_update")
 
 ///Сносит документ панели статистики - только так гаснет её JS-таймер.

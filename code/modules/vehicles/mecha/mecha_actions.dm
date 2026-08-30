@@ -109,7 +109,10 @@
 /datum/action/vehicle/sealed/mecha/mech_view_stats/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
-	var/datum/browser/popup = new(owner , "exosuit")
+	// nref обязателен: без него onclose() уходит в скин с "null", и крестик по окну
+	// сбрасывает лишь machine, а до Topic() меха "close=1" не доезжает - JS-таймер
+	// панели продолжает стучаться в сервер до конца раунда.
+	var/datum/browser/popup = new(owner, "exosuit", nref = chassis)
 	popup.set_content(chassis.get_stats_html(owner))
 	popup.open()
 

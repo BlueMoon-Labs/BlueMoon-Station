@@ -1387,8 +1387,12 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		return
 	target.fire_stacks = max(target.fire_stacks, 0.1) //Placebo flammability
 	fire_overlay = image('icons/mob/OnFire.dmi', target, "Standing", ABOVE_MOB_LAYER)
+	// Между добавлением и снятием картинки лежат десятки секунд снов: читать
+	// target.client на снятии нельзя, иначе разлогинившийся/сменивший тело игрок
+	// уносит картинку в свой client.images навсегда.
 	if(target.client)
-		target.client.images += fire_overlay
+		owner_client = target.client
+		owner_client.images += fire_overlay
 	to_chat(target, "<span class='userdanger'>Вы горите!</span>")
 	target.throw_alert("fire", /atom/movable/screen/alert/fire, override = TRUE)
 	sleep(20)
@@ -1419,14 +1423,22 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		return
 	active = FALSE
 	target.clear_alert("fire", clear_override = TRUE)
-	if(target.client)
-		target.client.images -= fire_overlay
+	if(owner_client)
+		owner_client.images -= fire_overlay
 	QDEL_NULL(fire_overlay)
 	while(stage > 0)
 		stage--
 		update_temp()
 		sleep(30)
 	qdel(src)
+
+/datum/hallucination/fire/Destroy()
+	// Снос датума мимо clear_fire() (qdel от админа, удаление цели) тоже обязан
+	// снять картинку с того клиента, которому её реально выдали.
+	if(owner_client && fire_overlay)
+		owner_client.images -= fire_overlay
+	QDEL_NULL(fire_overlay)
+	return ..()
 
 /datum/hallucination/shock
 	var/image/shock_image
@@ -1444,9 +1456,12 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	electrocution_skeleton_anim = image('icons/mob/human.dmi', target, icon_state = "electrocuted_base", layer=ABOVE_MOB_LAYER)
 	electrocution_skeleton_anim.appearance_flags |= RESET_COLOR|KEEP_APART
 	to_chat(target, "<span class='userdanger'>You feel a powerful shock course through your body!</span>")
+	// Картинки снимает отложенный колбек через 4 секунды - к тому моменту target.client
+	// может быть уже чужим (логаут, крио, смена тела), поэтому запоминаем клиент.
 	if(target.client)
-		target.client.images |= shock_image
-		target.client.images |= electrocution_skeleton_anim
+		owner_client = target.client
+		owner_client.images |= shock_image
+		owner_client.images |= electrocution_skeleton_anim
 	addtimer(CALLBACK(src, PROC_REF(reset_shock_animation)), 40)
 	target.playsound_local(get_turf(src), "sparks", 100, 1)
 	target.staminaloss += 50
@@ -1456,15 +1471,26 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	addtimer(CALLBACK(src, PROC_REF(shock_drop)), 20)
 
 /datum/hallucination/shock/proc/reset_shock_animation()
-	if(target.client)
-		target.client.images.Remove(shock_image)
-		target.client.images.Remove(electrocution_skeleton_anim)
+	if(owner_client)
+		owner_client.images.Remove(shock_image)
+		owner_client.images.Remove(electrocution_skeleton_anim)
+
+/datum/hallucination/shock/Destroy()
+	if(owner_client && shock_image)
+		owner_client.images.Remove(shock_image)
+	if(owner_client && electrocution_skeleton_anim)
+		owner_client.images.Remove(electrocution_skeleton_anim)
+	QDEL_NULL(shock_image)
+	QDEL_NULL(electrocution_skeleton_anim)
+	return ..()
 
 /datum/hallucination/shock/proc/shock_drop()
 	target.jitteriness = max(target.jitteriness - 990, 10) //Still jittery, but vastly less
 	target.DefaultCombatKnockdown(60)
 
 /datum/hallucination/husks
+	/// Своя ссылка на выданную картинку - target.halbody к моменту снятия может смениться.
+	var/image/husk_image
 
 /datum/hallucination/husks/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
@@ -1489,13 +1515,23 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 				if(4)
 					target.halbody = image('icons/mob/alien.dmi',husk_point,"alienother",TURF_LAYER)
 
+			// Держим свою ссылку на картинку: за время сна цель может уйти в крио или
+			// сменить тело, и тогда ни target, ни target.client уже не те, кому её выдали.
+			husk_image = target.halbody
 			if(target.client)
-				target.client.images += target.halbody
+				owner_client = target.client
+				owner_client.images += husk_image
 			sleep(rand(30,50)) //Only seen for a brief moment.
-			if(target.client)
-				target.client.images -= target.halbody
-			QDEL_NULL(target.halbody)
 	qdel(src)
+
+/datum/hallucination/husks/Destroy()
+	if(owner_client && husk_image)
+		owner_client.images -= husk_image
+	// halbody на цели - это флаг "один труп за раз"; снимаем только свою картинку.
+	if(target && target.halbody == husk_image)
+		target.halbody = null
+	QDEL_NULL(husk_image)
+	return ..()
 
 //hallucination projectile code in code/modules/projectiles/projectile/special.dm
 /datum/hallucination/stray_bullet

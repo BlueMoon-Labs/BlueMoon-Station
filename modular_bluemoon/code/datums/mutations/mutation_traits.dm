@@ -412,10 +412,17 @@
 /datum/mutation/human/bm/paraplegic/on_acquiring(mob/living/carbon/human/owner)
 	if(..()) // мутация не легла - травму вешать нельзя, снять её потом будет нечем
 		return
-	if(owner.has_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE))
+	// has_trauma_type() сравнивает стойкость как "<= указанной", поэтому с TRAUMA_RESILIENCE_ABSOLUTE
+	// он ловит ЛЮБОЙ паралич, включая излечимый: ген тогда молча не вешал свой, а после лечения
+	// чужого носитель вставал на ноги с активной мутацией. Чужим считаем только паралич своей,
+	// неснимаемой стойкости - его ставит квирк /datum/quirk/paraplegic.
+	var/datum/brain_trauma/existing_paralysis = owner.has_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
+	if(existing_paralysis && existing_paralysis.resilience >= TRAUMA_RESILIENCE_ABSOLUTE)
 		return
-	trauma_from_mutation = TRUE
-	owner.gain_trauma(new /datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
+	// Флаг ставим по факту выдачи: gain_trauma() отказывает мёртвому носителю и дубликату,
+	// а on_losing() при взведённом флаге вылечил бы чужой паралич за компанию.
+	// Передаём путь, а не готовый экземпляр: при отказе тот остался бы висеть ничьим.
+	trauma_from_mutation = !isnull(owner.gain_trauma(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE))
 
 /datum/mutation/human/bm/paraplegic/on_losing(mob/living/carbon/human/owner)
 	if(..())

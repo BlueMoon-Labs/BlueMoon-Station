@@ -973,6 +973,13 @@ BLUEMOON REMOVAL END */
 		return
 
 	if(status)
-		heart.Stop()
-	else
-		heart.Restart()
+		return heart.Stop()
+
+	// Отказавшую помпу перезапускать нечем: ближайший on_life() снова её остановит,
+	// а заодно напечатает "Fatal error detected" - у синтетика on_life() сбрасывает
+	// failed на каждом проходе с beating, так что каждый разряд дефиба перевзводил
+	// ровно тот спам, ради которого ставили защиту. Орган надо чинить, а не заводить.
+	if(heart.organ_flags & ORGAN_FAILING)
+		return FALSE
+
+	return heart.Restart()

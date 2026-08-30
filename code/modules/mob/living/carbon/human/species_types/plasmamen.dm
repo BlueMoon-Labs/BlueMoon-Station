@@ -87,6 +87,9 @@
 	var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
 	if(istype(plasma_tank))
 		H.internal = plasma_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - без этого она остаётся
+	//выключенной, хотя дыхание уже идёт из баллона (канон - /datum/outfit/equipOutfit)
+	H.update_action_buttons_icon()
 	return FALSE
 
 /datum/species/plasmaman/random_name(gender,unique,lastname)

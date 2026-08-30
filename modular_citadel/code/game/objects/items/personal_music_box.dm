@@ -9,6 +9,12 @@
 /// Сколько треков один игрок может залить за раунд. Кулдаун сам по себе ничего не ограничивает:
 /// в раунде 10137 один человек залил шесть файлов на 13.3 МБ, просто дождавшись таймера.
 #define PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND 3
+/// Через сколько флаг "диалог выбора файла открыт" снимается принудительно.
+/// Рантайм внутри do_upload_file() или разрыв связи с открытым нативным input() не
+/// возвращают управление в upload_file(), и без страховки ckey оставался бы помеченным
+/// до конца раунда: игрок терял право на заливку молча, ни одна причина отказа об этом
+/// не говорила.
+#define PERSONAL_MUSIC_BOX_UPLOAD_LOCK_TIMEOUT (5 MINUTES)
 
 GLOBAL_VAR_INIT(personal_music_boxes_last_upload, 0)
 GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
@@ -197,14 +203,25 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 				SSjukeboxes.updatejukebox(juke_index, jukefalloff = J.volume / 35)
 			return TRUE
 
-/// Причина отказа в заливке трека, либо null если заливать можно
-/obj/item/personal_music_box/proc/get_upload_block_reason(mob/user)
+/**
+ * Причина отказа в заливке трека, либо null если заливать можно.
+ *
+ * ignore_own_lock снимает проверку флага "у этого игрока диалог уже открыт". Нужен ровно
+ * одному вызову - повторной сверке лимитов внутри do_upload_file() после того, как игрок
+ * закрыл диалог: там флаг стоит НАШ собственный, и без этого аргумента заливка отказывала
+ * бы сама себе.
+ */
+/obj/item/personal_music_box/proc/get_upload_block_reason(mob/user, ignore_own_lock = FALSE)
 	if(is_playing())
 		return "Сначала выключите шкатулку."
 	if(loc != user)
 		return "Шкатулка должна быть в руках."
 	if(!user?.ckey)
 		return "Некому загружать трек."
+	// Флаг был невидим снаружи: игрок, у которого он залип, получал отказ без причины -
+	// кнопка просто ничего не делала.
+	if(!ignore_own_lock && GLOB.personal_music_boxes_uploading[user.ckey])
+		return "У вас уже открыт диалог выбора файла."
 	var/uploads_done = GLOB.personal_music_boxes_upload_count[user.ckey]
 	if(uploads_done && uploads_done >= PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND)
 		return "Вы исчерпали лимит загрузок на раунд (максимум [PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND])."
@@ -215,8 +232,8 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		return "Кто-то уже загружает трек. Подождите немного."
 	return null
 
-/obj/item/personal_music_box/proc/can_upload(mob/user)
-	return isnull(get_upload_block_reason(user))
+/obj/item/personal_music_box/proc/can_upload(mob/user, ignore_own_lock = FALSE)
+	return isnull(get_upload_block_reason(user, ignore_own_lock))
 
 /obj/item/personal_music_box/proc/can_start_playback()
 	if(is_playing() || !curfile_path)
@@ -272,7 +289,19 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	if(!user_ckey || GLOB.personal_music_boxes_uploading[user_ckey])
 		return
 	GLOB.personal_music_boxes_uploading[user_ckey] = TRUE
+	// Страховка от залипшего флага. Рантайм в do_upload_file() или разрыв связи с открытым
+	// нативным input() обрывают прок, и строка снятия ниже просто не выполняется -
+	// в этом случае флаг снимет таймер.
+	var/lock_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(clear_personal_music_box_upload_lock), user_ckey), PERSONAL_MUSIC_BOX_UPLOAD_LOCK_TIMEOUT, TIMER_STOPPABLE)
 	do_upload_file(user)
+	deltimer(lock_timer)
+	GLOB.personal_music_boxes_uploading -= user_ckey
+
+/// Снимает флаг открытого диалога заливки. Глобальным проком: страховочный таймер обязан
+/// пережить и шкатулку, и моба, а колбек на qdel'нутый датум просто не сработал бы.
+/proc/clear_personal_music_box_upload_lock(user_ckey)
+	if(!user_ckey)
+		return
 	GLOB.personal_music_boxes_uploading -= user_ckey
 
 /obj/item/personal_music_box/proc/do_upload_file(mob/living/user)
@@ -281,7 +310,8 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		return
 	if(is_playing())
 		return
-	if(!can_upload(user))
+	// Свой собственный флаг заливки тут игнорируем - он поставлен вызывающим upload_file().
+	if(!can_upload(user, TRUE))
 		return
 
 	var/filename = "[infile]"
@@ -390,3 +420,4 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 #undef PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH
 #undef PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
 #undef PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND
+#undef PERSONAL_MUSIC_BOX_UPLOAD_LOCK_TIMEOUT

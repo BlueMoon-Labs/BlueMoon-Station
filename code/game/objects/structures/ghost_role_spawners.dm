@@ -1068,6 +1068,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	var/obj/item/tank/held_tank = H.get_item_for_held_index(1)
 	if(istype(held_tank))
 		H.internal = held_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+	H.update_action_buttons_icon()
 
 /obj/item/storage/box/syndie_kit/chameleon/ghostcafe
 	name = "ghost cafe costuming kit"

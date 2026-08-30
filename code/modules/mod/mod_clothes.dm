@@ -26,7 +26,9 @@
 	. = ..()
 	if(!mod?.wearer)
 		return
-	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_dropped))
+	// override: повторный equipped на том же носителе (смена слота, повторное
+	// развёртывание) иначе ловит stack_trace "already registered".
+	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_dropped), override = TRUE)
 
 /obj/item/clothing/mod_part/proc/on_dropped(mob/source, obj/item, force, new_location)
 	SIGNAL_HANDLER

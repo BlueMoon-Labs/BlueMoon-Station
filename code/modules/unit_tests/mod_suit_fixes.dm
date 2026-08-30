@@ -110,6 +110,10 @@
 	TEST_ASSERT(mod.clear_mod_part(helmet), "clear_mod_part must report that it found the part")
 	TEST_ASSERT(!mod.is_mod_part(helmet), "clear_mod_part must actually drop the part out of mod_parts")
 	TEST_ASSERT(!mod.clear_mod_part(helmet), "clear_mod_part must report a miss the second time round")
+	// Отцепленный шлем костюм при своём qdel уже не увидит - убираем сами, иначе тест
+	// оставляет в нулевом пространстве шлем с mod на удалённый костюм (ровно тот
+	// харддел, ради которого он написан).
+	qdel(helmet)
 
 // Перебор alist отдаёт КЛЮЧИ, поэтому `for(var/obj/item/part in mod_parts)` молча
 // не исполнялся ни разу: фильтр по типу отбрасывал числа. На этом стояли проверка

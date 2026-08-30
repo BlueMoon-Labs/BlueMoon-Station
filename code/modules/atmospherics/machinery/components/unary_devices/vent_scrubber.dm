@@ -135,16 +135,24 @@
 		"sigtype" = "status"
 	))
 
-	var/area/A = get_base_area(src)
-	if(!A.air_scrub_names[id_tag])
-		A.air_scrub_serial++
-		name = "\improper [A.name] air scrubber #[A.air_scrub_serial]"
-		A.air_scrub_names[id_tag] = name
-
-	A.air_scrub_info[id_tag] = signal.data
+	var/area/A = register_in_area()
+	if(A)
+		A.air_scrub_info[id_tag] = signal.data
 	radio_connection.post_signal(src, signal, radio_filter_out)
 
 	return TRUE
+
+/// См. vent_pump: реестр имён базовой области обновляется и без радиоканала.
+/obj/machinery/atmospherics/components/unary/vent_scrubber/proc/register_in_area()
+	var/area/base_area = get_base_area(src)
+	if(!base_area)
+		return null
+	if(!base_area.air_scrub_names[id_tag])
+		if(name == initial(name)) // своё имя с карты не затираем
+			base_area.air_scrub_serial++
+			name = "\improper [base_area.name] air scrubber #[base_area.air_scrub_serial]"
+		base_area.air_scrub_names[id_tag] = name
+	return base_area
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/atmosinit()
 	radio_filter_in = frequency==initial(frequency)?(RADIO_FROM_AIRALARM):null
@@ -162,9 +170,13 @@
 	// См. комментарий в vent_pump: регистрация живёт в базовой области.
 	var/area/old_base = get_base_area(old_area)
 	if(old_base)
+		// Сбрасываем только автоимя, замапленное вручную оставляем - см. vent_pump.
+		if(name == old_base.air_scrub_names[id_tag])
+			name = initial(name)
 		old_base.air_scrub_names -= id_tag
 		old_base.air_scrub_info -= id_tag
-	name = initial(name)
+	// Без радиоканала broadcast_status() выходит сразу, поэтому регистрируем отдельно.
+	register_in_area()
 	broadcast_status()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()

@@ -610,6 +610,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// ссылку на префы - живой хендлер превращает наш снос в харддел.
 	QDEL_NULL(offer)
 	QDEL_NULL(loadout_color_handler)
+	// GLOB.preferences_datums держит датум по ckey: удалённый, но не вычеркнутый оттуда
+	// датум ушёл бы в харддел, а следующий вход этого ckey получил бы труп.
+	for(var/registered_ckey in GLOB.preferences_datums)
+		if(GLOB.preferences_datums[registered_ckey] != src)
+			continue
+		GLOB.preferences_datums -= registered_ckey
+		break
 	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
 	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
 	pref_species = null

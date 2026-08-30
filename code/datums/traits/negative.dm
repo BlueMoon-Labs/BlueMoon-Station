@@ -109,6 +109,10 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/family_heirloom/post_add()
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
+	//post_add() приезжает отложенным таймером, а реликвию за это время могли уничтожить -
+	//on_heirloom_deleted() обнуляет вар, и обе ветки ниже падали на heirloom.name
+	if(QDELETED(heirloom))
+		return
 	if(!loadout_heirloom)
 		if(where == "В рюкзаке")
 			//where посчитан ещё в add(), а post_add() приезжает отложенным таймером:

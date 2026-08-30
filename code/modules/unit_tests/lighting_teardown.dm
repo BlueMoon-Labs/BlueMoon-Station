@@ -220,6 +220,25 @@
 	// в set_light(), а при обработке очереди источников (update_corners ->
 	// generate_missing_corners), поэтому очередь надо сдренить - иначе у турфа есть
 	// объект света, но нет ни одного угла, и сносить в фазе 2 будет нечего.
+	// Резервация лежит в /area/space, а тот динамически освещён только при включённом
+	// starlight (DYNAMIC_LIGHTING_IFSTARLIGHT) - в CI-конфиге он выключен, и подъём уровня
+	// объекта света такому турфу не даёт вовсе. Проверяемый путь - снос и возврат объекта -
+	// живёт только на динамически освещённом турфе, поэтому турф на время теста переезжает
+	// в свою зону с динамическим светом, а в конце возвращается обратно.
+	var/area/original_area = get_area(test_turf)
+	var/area/dynamic_area = new /area
+	claim_floor_into_area(test_turf, dynamic_area)
+
+	// Тестовый z общий на весь прогон: к этому моменту его мог начать сносить сам
+	// SSlighting или строить фоновый краулер. Оба гасим и поднимаем уровень заново с
+	// чистого флага - фаза 0 пропускает турфы с готовым объектом, так что повторный
+	// проход по уже поднятому уровню ничего не ломает.
+	SSlighting.abort_zlevel_lighting_teardown()
+	if(SSlighting.bg_current_zlevel == test_z)
+		SSlighting.bg_current_zlevel = 0
+		SSlighting.bg_turfs = null
+		SSlighting.bg_phase = 0
+	level.lighting_initialized = FALSE
 	create_lighting_for_zlevel(test_z)
 	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
 	emitter.set_light(3, 1, COLOR_WHITE)
@@ -266,6 +285,9 @@
 	SSlighting.teardown_zlevel = old_teardown
 	level.traits = saved_traits
 	level.lighting_initialized = old_init || level.lighting_initialized
+	// Турф обратно в резервацию до ассертов: провалившийся ассерт выходит из Run() сразу.
+	original_area.contents.Add(test_turf)
+	allocated += dynamic_area
 
 	// Замер в книгу пишется только там, где память вообще мерится: на Windows и в раннем
 	// старте get_process_memory_mb() отдаёт null, и ключа не появляется - поэтому проверяется
@@ -1034,3 +1056,188 @@
 	TEST_ASSERT_NOTEQUAL(partial_picked, excluded_z, "скан взял именно исключённый уровень z[excluded_z]")
 	TEST_ASSERT(useful_ledger_picked, "уровень с полезной отдачей 167 МБ перестал быть кандидатом")
 	TEST_ASSERT(critical_picked, "под критическим давлением запрет не снялся - раунд у потолка умрёт молча вместо вспышки")
+
+/**
+ * Книга отдачи держит ЛУЧШИЙ замер уровня, а не последний.
+ *
+ * Окно замера - это весь снос, до минуты реального времени, и всё, что мир успел выделить
+ * внутри него, садится в ту же дельту VmSize. При last-write один такой шумный сэмпл запирал
+ * уровень до конца раунда поверх честного прошлого замера, вернувшего сотню мегабайт:
+ * механизм терял самого полезного кандидата из-за чужой аллокации.
+ */
+/datum/unit_test/lighting_teardown_payoff_ledger_keeps_best
+	requires_full_map = FALSE
+	var/saved_vsz_before
+	var/list/saved_ledger
+	var/ledger_swapped = FALSE
+
+/datum/unit_test/lighting_teardown_payoff_ledger_keeps_best/Destroy()
+	// Уборка в Destroy(): провалившийся TEST_ASSERT выходит из Run() немедленно, а книга
+	// живёт до конца раунда и протекла бы в соседние тесты молчаливым отказом.
+	if(ledger_swapped)
+		SSlighting.zlevel_teardown_payoff = saved_ledger
+		SSlighting.teardown_vsz_before = saved_vsz_before
+	return ..()
+
+/datum/unit_test/lighting_teardown_payoff_ledger_keeps_best/Run()
+	saved_vsz_before = SSlighting.teardown_vsz_before
+	saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
+	ledger_swapped = TRUE
+	SSlighting.zlevel_teardown_payoff = list()
+
+	// Полезный снос: уровень вернул 247 МБ.
+	SSlighting.teardown_vsz_before = 2647
+	var/first = SSlighting.record_zlevel_teardown_payoff(51, list("vsz" = 2400))
+
+	// Следующий снос того же уровня утонул в шуме - VmSize за минуту даже подрос.
+	SSlighting.teardown_vsz_before = 3216.7
+	var/after_noise = SSlighting.record_zlevel_teardown_payoff(51, list("vsz" = 3220.9))
+	var/after_noise_key = SSlighting.zlevel_teardown_payoff["51"]
+
+	// А вот РОСТ отдачи книга обязана принимать: уровень стал отдавать больше.
+	SSlighting.teardown_vsz_before = 3000
+	var/after_better = SSlighting.record_zlevel_teardown_payoff(51, list("vsz" = 2600))
+
+	// Первый замер уровня, у которого в книге ещё ничего нет, пишется как есть - даже плохой.
+	SSlighting.teardown_vsz_before = 3216.7
+	var/first_bad = SSlighting.record_zlevel_teardown_payoff(52, list("vsz" = 3220.9))
+
+	TEST_ASSERT_EQUAL(first, 247, "первый замер записан неверно")
+	TEST_ASSERT_EQUAL(after_noise, 247, "шумный сэмпл перетёр честный прошлый замер: книга обязана держать максимум")
+	TEST_ASSERT_EQUAL(after_noise_key, 247, "под ключом уровня осталась не лучшая цифра, там [after_noise_key]")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(after_noise_key, 0), "один шумный сэмпл запер уровень, который до этого честно вернул 247 МБ")
+	TEST_ASSERT_EQUAL(after_better, 400, "выросшую отдачу книга обязана принимать")
+	// Сравнение с допуском: 3216.7 - 3220.9 даёт -4.200000000000273, см. соседний тест книги.
+	TEST_ASSERT(abs(first_bad - (-4.2)) < 0.01, "первый замер уровня пишется как есть, получено [first_bad]")
+
+/**
+ * Постройка света, взявшая у ОС свежую память, снимает с уровня улику прошлого сноса.
+ *
+ * Запрет держится на допущении "арена осталась за процессом, следующий подъём почти
+ * бесплатный" - в 10146 обратные подъёмы z16 стоили +1.2, +1.3 и 0 МБ. Подъём дороже порога
+ * отдачи это допущение опровергает: уровень занял память заново, и сносить его снова есть
+ * смысл. Без снятия ключа он оставался бы вне сносов до конца раунда, сколько бы ни занял.
+ */
+/datum/unit_test/lighting_rebuild_reopens_excluded_zlevel
+	requires_full_map = FALSE
+	var/list/saved_ledger
+	var/ledger_swapped = FALSE
+
+/datum/unit_test/lighting_rebuild_reopens_excluded_zlevel/Destroy()
+	if(ledger_swapped)
+		SSlighting.zlevel_teardown_payoff = saved_ledger
+	return ..()
+
+/datum/unit_test/lighting_rebuild_reopens_excluded_zlevel/Run()
+	// Чистая функция решения: порог тот же, что и у отдачи.
+	TEST_ASSERT(!zlevel_rebuild_commits_fresh_memory(null), "без замера постройки выводов делать не из чего")
+	TEST_ASSERT(!zlevel_rebuild_commits_fresh_memory(0), "бесплатный подъём допущение подтверждает, а не опровергает")
+	TEST_ASSERT(!zlevel_rebuild_commits_fresh_memory(1.3), "обратный подъём z16 в 10146 стоил +1.3 МБ - это шум, а не свежая память")
+	TEST_ASSERT(zlevel_rebuild_commits_fresh_memory(73.8), "первая постройка z16 стоила +73.8 МБ - это свежая память")
+	TEST_ASSERT(zlevel_rebuild_commits_fresh_memory(LIGHTING_TEARDOWN_MIN_PAYOFF_MB), "ровно на пороге постройка уже считается свежей")
+	TEST_ASSERT(!zlevel_rebuild_commits_fresh_memory(LIGHTING_TEARDOWN_MIN_PAYOFF_MB - 0.1), "под порогом постройка свежей не считается")
+
+	saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
+	ledger_swapped = TRUE
+	SSlighting.zlevel_teardown_payoff = list()
+
+	// Уровень исключён прошлым сносом, а обратный подъём оказался почти бесплатным -
+	// улика остаётся, допущение подтвердилось.
+	SSlighting.zlevel_teardown_payoff["61"] = -4.2
+	var/cheap_rebuild_cleared = SSlighting.note_zlevel_lighting_rebuild(61, 1.3)
+	var/still_excluded = zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["61"], 0)
+
+	// Тот же уровень, но подъём взял у ОС 73.8 МБ - улику снимаем.
+	var/fresh_rebuild_cleared = SSlighting.note_zlevel_lighting_rebuild(61, 73.8)
+	var/reopened = isnull(SSlighting.zlevel_teardown_payoff["61"])
+
+	// Повторный вызов на уже чистом уровне ничего не делает и не врёт в лог.
+	var/repeat_cleared = SSlighting.note_zlevel_lighting_rebuild(61, 73.8)
+
+	// Уровня в книге нет вовсе - снимать нечего.
+	var/unknown_cleared = SSlighting.note_zlevel_lighting_rebuild(62, 200)
+
+	TEST_ASSERT(!cheap_rebuild_cleared, "дешёвый подъём не должен снимать улику прошлого сноса")
+	TEST_ASSERT(still_excluded, "после дешёвого подъёма уровень обязан остаться исключённым")
+	TEST_ASSERT(fresh_rebuild_cleared, "дорогой подъём обязан снимать улику: арена не переиспользовалась")
+	TEST_ASSERT(reopened, "ключ уровня остался в книге - он не вернётся в кандидаты до конца раунда")
+	TEST_ASSERT(!repeat_cleared, "повторное снятие уже снятой улики обязано быть no-op")
+	TEST_ASSERT(!unknown_cleared, "у уровня без записи в книге снимать нечего")
+
+/**
+ * Хвост итоговой строки сноса не должен объявлять исключение там, где его нет.
+ *
+ * Гейт zlevel_teardown_payoff_exhausted() снимается на критическом давлении, а строка всё
+ * равно печатала "уровень исключён из сносов" - разбор прод-логов читал бы её как причину,
+ * по которой уровень больше не берут, хотя берут его как раз всегда.
+ */
+/datum/unit_test/lighting_teardown_payoff_note_matches_gate
+	requires_full_map = FALSE
+
+/datum/unit_test/lighting_teardown_payoff_note_matches_gate/Run()
+	// Под обычным давлением решение и строка совпадают: уровень исключён.
+	var/normal = zlevel_teardown_payoff_note(-4.2, 0)
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, 0), "предпосылка: под обычным давлением гейт обязан запирать уровень")
+	TEST_ASSERT(findtext(normal, "исключён"), "под обычным давлением бесполезный снос обязан объявить уровень исключённым: [normal]")
+
+	// У самого потолка гейт снят - строка не имеет права утверждать обратное.
+	var/critical = zlevel_teardown_payoff_note(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "предпосылка: под критическим давлением гейт обязан быть снят")
+	TEST_ASSERT(!findtext(critical, "исключён"), "под критическим давлением строка объявила уровень исключённым, хотя гейт снят: [critical]")
+	TEST_ASSERT(length(critical) > 0, "цифра ниже порога - всё ещё улика, строка обязана её назвать, а не молчать")
+	TEST_ASSERT(findtext(critical, "[LIGHTING_TEARDOWN_MIN_PAYOFF_MB]"), "строка обязана называть фактический порог отдачи: [critical]")
+
+	// Полезный снос молчит при любом давлении.
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(167, 0), "", "полезный снос не должен объявлять себя исключённым")
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(167, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "", "полезный снос молчит и под критическим давлением")
+	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(null, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "", "без замера хвост обязан быть пустым при любом давлении")
+
+/**
+ * Снос и фоновая постройка одного z не должны перемалывать друг друга.
+ *
+ * Краулер ставит lighting_initialized после фазы 0 и строит источники дальше срезами;
+ * скан кандидатов видел "поднятый пустой уровень" и начинал снос, срез сноса рвал
+ * объекты краулера, краулер добивал флаг - уровень оставался помеченным поднятым при
+ * снесённых объектах (тестовый прогон 30.08: три "Снос света z18" за 80 мс).
+ */
+/datum/unit_test/lighting_teardown_yields_to_background_init
+	var/saved_bg_zlevel
+	var/saved_teardown_zlevel
+	var/list/saved_empty_since
+
+/datum/unit_test/lighting_teardown_yields_to_background_init/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+	saved_bg_zlevel = SSlighting.bg_current_zlevel
+	saved_teardown_zlevel = SSlighting.teardown_zlevel
+	saved_empty_since = SSlighting.zlevel_empty_since.Copy()
+
+	// Снос уже идёт, краулер взялся за тот же уровень - срез сноса обязан бросить работу.
+	SSlighting.abort_zlevel_lighting_teardown()
+	SSlighting.teardown_zlevel = test_z
+	SSlighting.teardown_phase = 0
+	level.lighting_initialized = FALSE
+	SSlighting.bg_current_zlevel = test_z
+	SSlighting.process_zlevel_lighting_teardown()
+	var/slice_aborted = !SSlighting.teardown_zlevel
+	var/abort_reason = SSlighting.teardown_abort_reason
+
+	// Краулер строит уровень - скан кандидатов не должен выбирать его в снос, даже
+	// если уровень выглядит поднятым и пустым сколь угодно давно.
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since["[test_z]"] = 1
+	SSlighting.scan_teardown_candidates()
+	var/not_picked = !SSlighting.teardown_zlevel
+
+	TEST_ASSERT(slice_aborted, "срез сноса обязан бросить уровень, который строит фоновый краулер")
+	TEST_ASSERT_EQUAL(abort_reason, "фоновый краулер строит этот уровень", "причина отмены должна называть краулер")
+	TEST_ASSERT(not_picked, "скан кандидатов не должен начинать снос уровня под фоновой постройкой")
+
+/datum/unit_test/lighting_teardown_yields_to_background_init/Destroy()
+	SSlighting.abort_zlevel_lighting_teardown()
+	SSlighting.bg_current_zlevel = saved_bg_zlevel
+	SSlighting.teardown_zlevel = saved_teardown_zlevel
+	if(saved_empty_since)
+		SSlighting.zlevel_empty_since = saved_empty_since
+	return ..()

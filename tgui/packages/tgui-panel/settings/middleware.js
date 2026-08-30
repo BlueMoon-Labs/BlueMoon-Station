@@ -6,7 +6,7 @@
 
 import { storage } from 'common/storage';
 
-import { scheduleSaveToServer } from '../serverState';
+import { forgetSentState, scheduleSaveToServer } from '../serverState';
 import { setClientTheme, THEMES } from '../themes';
 import { loadSettings, updateSettings } from './actions';
 import { FONTS_DISABLED } from './constants';
@@ -86,6 +86,7 @@ export const settingsMiddleware = store => {
     }
     // Restore settings from server-side persistence (WebView2 storage is not durable)
     if (type === 'panel/state') {
+      forgetSentState();
       const stateJson = payload?.state;
       if (typeof stateJson === 'string') {
         try {

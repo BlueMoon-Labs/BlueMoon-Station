@@ -965,18 +965,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	for(var/position_key in raw_positions)
 		if(kept >= ACTION_BUTTON_SAVED_POSITIONS_MAX)
 			break
-		if(!istext(position_key))
+		if(!istext(position_key) || !length(position_key))
 			continue
-		var/safe_key = copytext(position_key, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
-		if(!length(safe_key))
+		// Ключ - это "[имя]_[id]", по которому load_position() ищет позицию ЦЕЛИКОМ:
+		// обрезанный ключ не совпадёт никогда, то есть обрезка равна молчаливой потере.
+		// Слишком длинный ключ поэтому выбрасывается, а не режется. Длина в символах,
+		// не в байтах: имена действий кириллические, и байтовый copytext резал бы
+		// UTF-8 посреди символа.
+		if(length_char(position_key) >= ACTION_BUTTON_SAVED_POSITION_LEN)
 			continue
 		var/safe_value = raw_positions[position_key]
 		if(!istext(safe_value))
 			continue
-		safe_value = copytext(safe_value, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
+		safe_value = copytext_char(safe_value, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
 		if(!length(safe_value))
 			continue
-		sanitized[safe_key] = safe_value
+		sanitized[position_key] = safe_value
 		kept++
 	return sanitized
 
@@ -1013,16 +1017,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 /// плитку (mop.dm), панель tgui шлёт состояние чата раз в 3 секунды - обе пачки
 /// схлопываются в одно открытие вместо десятков.
 ///
-/// Файл должен уже существовать: у нового игрока запись одного ключа создала бы
-/// савфайл без "version", и загрузка приняла бы его за префы нулевой версии.
+/// Существование файла проверяет сброс буфера (flush_single_prefs), а не каждый вызов:
+/// у нового игрока запись одного ключа создала бы савфайл без "version", поэтому сброс
+/// в такой файл уходит полной записью. Здесь походов на диск нет вовсе - швабра зовёт
+/// это на каждую отмытую плитку.
 ///
 /// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
 /// честный результат записи прямо сейчас.
 /datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
 	if(!path || !key)
 		return FALSE
-	if(!fexists(path))
-		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	buffer_single_pref(key, value)
 	if(immediate)
 		return flush_single_prefs()
@@ -1095,9 +1099,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		pending_single_prefs = null
 		return FALSE
 	if(!fexists(path))
-		// Одиночная запись создала бы савфайл без "version". Значения уже лежат в
-		// переменных датума, так что полная запись сохранит ровно то же самое.
-		pending_single_prefs = null
+		// Одиночная запись создала бы савфайл без "version", поэтому уходим полной
+		// записью. Буфер при этом НЕ обнуляем заранее: полная запись дописывает его
+		// сама (write_pending_single_prefs), а если файл не откроется - буфер
+		// переживёт провал и уйдёт со следующим сбросом.
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	var/keys_written = length(pending_single_prefs)
 	// Три разных kind вместо одного общего "savefile (запись)": детектор спайков ведёт
@@ -1136,6 +1141,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(path)
 	if(!S)
+		blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "не открылся [parent?.ckey || "?"]")
+		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
+		// заводил, полагаясь на неё (buffer_single_pref): без перезарядки он долежал бы
+		// до логаута. Возвращаем ему собственный сброс.
+		if(length(pending_single_prefs) && !single_pref_queue)
+			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
+			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
 	S.cd = "/"
 

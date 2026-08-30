@@ -54,17 +54,26 @@
 	var/list/capped = sanitize_action_button_positions(overflowing)
 	TEST_ASSERT_EQUAL(length(capped), ACTION_BUTTON_SAVED_POSITIONS_MAX, "число сохранённых позиций перешагнуло потолок")
 
-	// Длинные ключ и значение режутся, а не выбрасываются целиком.
+	// Длинное значение режется, длинный ключ выбрасывается целиком: обрезанный ключ
+	// load_position() не найдёт никогда, так что обрезка была бы молчаливой потерей.
 	var/long_key = ""
 	var/long_value = ""
 	for(var/i in 1 to 200)
 		long_key += "k"
 		long_value += "v"
-	var/list/trimmed = sanitize_action_button_positions(list("[long_key]" = long_value))
-	TEST_ASSERT_EQUAL(length(trimmed), 1, "длинная запись выброшена целиком вместо обрезки")
-	for(var/trimmed_key in trimmed)
-		TEST_ASSERT_EQUAL(length(trimmed_key), ACTION_BUTTON_SAVED_POSITION_LEN - 1, "ключ не обрезан до потолка")
-		TEST_ASSERT_EQUAL(length(trimmed[trimmed_key]), ACTION_BUTTON_SAVED_POSITION_LEN - 1, "значение не обрезано до потолка")
+	var/list/trimmed = sanitize_action_button_positions(list("[long_key]" = long_value, "short" = long_value))
+	TEST_ASSERT_EQUAL(length(trimmed), 1, "слишком длинный ключ должен выбрасываться, короткий - оставаться")
+	TEST_ASSERT_EQUAL(length_char(trimmed["short"]), ACTION_BUTTON_SAVED_POSITION_LEN - 1, "значение не обрезано до потолка")
+
+	// Потолки считаются в символах, не в байтах: кириллическое имя действия из 40 букв
+	// весит 80 байт и байтовым copytext резалось бы посреди символа.
+	var/cyrillic_key = ""
+	var/cyrillic_value = ""
+	for(var/i in 1 to 40)
+		cyrillic_key += "ж"
+		cyrillic_value += "ю"
+	var/list/cyrillic = sanitize_action_button_positions(list("[cyrillic_key]" = cyrillic_value))
+	TEST_ASSERT_EQUAL(cyrillic[cyrillic_key], cyrillic_value, "кириллические ключ и значение в пределах потолка должны сохраняться как есть")
 
 /**
  * Поток перестановок кнопки обязан схлопываться в ОДНО открытие савфайла.

@@ -128,6 +128,11 @@
 		examine_text = initial(examine_text)
 	if(suppress_event)
 		return
+	// Галлюцинацию видит/слышит только сам owner через свой клиент. У SSD-игрока
+	// или тела без клиента показывать её некому: датум отменит себя же в
+	// /datum/hallucination/New(), а мы каждый тик платили бы за создание и удаление.
+	if(!C.client)
+		return
 	if(prob(forced_event_chance))
 		var/picked = pick_hallucination()
 		if(picked)

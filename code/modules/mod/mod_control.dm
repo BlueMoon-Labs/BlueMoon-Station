@@ -214,7 +214,11 @@
 	//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
 	//forceMove'ом мимо dropped: костюм держал тело и две подписки на нём до конца смены
 	if(wearer)
+		// Хардлайт-оверлеи лежат в layers_for_apply_effect носителя вместе с нашим
+		// hardlight_effect (датум плюс его /icon): без снятия тело держало их до конца смены.
+		wearer.clear_bodypart_overlays()
 		unset_wearer()
+	QDEL_NULL(hardlight_effect)
 	// mod_parts это alist, и вычитание из него идёт по КЛЮЧУ, а не по значению.
 	// Прежний `mod_parts -= deleting_atom` получал на вход саму часть и потому не
 	// удалял ничего: костюм продолжал держать qdel-нутые части, те не собирались
@@ -278,15 +282,14 @@
 
 /obj/item/mod/control/dropped(mob/user)
 	. = ..()
+	// Части убираются ДО unset_wearer(): on_dropped первым делом проверяет mod.wearer и
+	// молча выходит без него, а conceal() и remove_hardlight() работают через wearer.
+	// С обратным порядком цикл не делал ничего, и снятый силой костюм (gib, крио,
+	// принудительный дроп) оставлял шлем и сапоги на теле с TRAIT_NODROP навсегда.
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+		part.on_dropped(user, part, TRUE, drop_location())
 	if(wearer)
 		unset_wearer()
-	// Часть берётся из alist по ключу: без присвоения переменная оставалась null и
-	// первый же виток ронял dropped() рантаймом, обрывая проход по остальным слотам.
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		part?.on_dropped(user, part, TRUE, drop_location())
 
 /obj/item/mod/control/item_action_slot_check(slot)
 	if(slot == slot_flags)
@@ -657,8 +660,16 @@
 		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
-/obj/item/mod/control/proc/uninstall(module, user)
+/// deleting = TRUE приходит из Destroy() самого модуля: тогда on_uninstall() не имеет
+/// права звать qdel(src) - это и был qdel-луп у /obj/item/mod/module/armor/prebuild.
+/obj/item/mod/control/proc/uninstall(module, user, deleting = FALSE)
 	var/obj/item/mod/module/old_module = module
+	if(!(old_module in modules))
+		// Повторный заход: on_uninstall() модуля сам позвал qdel(), и Destroy() пришёл
+		// сюда ещё раз. Снимать уже нечего, а второй проход портил бы complexity и
+		// дважды дёргал on_unequip().
+		old_module.mod = null
+		return
 	modules -= old_module
 	complexity -= old_module.complexity
 	if(is_active())
@@ -667,7 +678,7 @@
 			old_module.on_deactivation()
 	if(wearer)
 		old_module.on_unequip()
-	old_module.on_uninstall(FALSE, user)
+	old_module.on_uninstall(deleting, user)
 	old_module.mod = null
 
 /obj/item/mod/control/proc/update_access(mob/user, obj/item/card/id/card)
@@ -699,11 +710,14 @@
 			wearer.throw_alert("mod_charge", /atom/movable/screen/alert/emptycell)
 
 /obj/item/mod/control/proc/update_speed()
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		part.slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(mod_parts)
+	// Замедление делится между ЧАСТЯМИ ОДЕЖДЫ: батарея в alist тоже лежит, но
+	// slowdown у неё нет, а деление на полную длину alist раздавало частям лишь 4/5 номинала.
+	var/list/parts = get_mod_parts(include_cell = FALSE)
+	if(!length(parts))
+		return
+	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
+	for(var/obj/item/clothing/mod_part/part as anything in parts)
+		part.slowdown = part_slowdown
 	wearer?.update_equipment_speed_mods()
 
 /obj/item/mod/control/proc/power_off()

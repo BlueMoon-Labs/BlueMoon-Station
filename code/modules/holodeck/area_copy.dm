@@ -253,7 +253,11 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	//Аппиранс - значение, а не ссылка на хозяйство шаблона, наследовать его копия обязана,
 	//иначе с приёмника слетают решётки, трубы и прочая нарисованная обвязка турфа.
 	copy_overlays(template, TRUE)
-	underlays = template.underlays
+	//Copy() как в copy_overlays(): снимок, а не общий с шаблоном список
+	underlays = template.underlays.Copy()
+	//filters тоже исключены из общего цикла и не переезжали ни с чем: присваиваем значением,
+	//как это делает mass_apply в filterrific. filter_data (обычный список) везёт общий цикл
+	filters = template.filters
 	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
 	//заводим/гасим собственный по свежим light_range/light_power/light_on.
 	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов

@@ -17,10 +17,13 @@
 /// Ключ - именно ckey, а не клиент: переподключившийся игрок трек не догонит, но и до этой
 /// правки он его не догонял, потому что рассылка была разовой на старте.
 #define JUKE_SENT 7
-/// Ограничение зоны, посчитанное на старте трека: area либо номер комнаты отеля
+/// Ограничение зоны: area либо номер комнаты отеля. Пересчитывается каждый fire()
+/// по ТЕКУЩЕЙ зоне джукбокса - переносной автомат выносят из комнаты в руках.
 #define JUKE_AREA_LIMIT 8
-/// world.time старта трека, чтобы подошедшего позже подхватить с той же секунды
+/// world.time старта трека. Запасной отсчёт для подхвата, если реальное время не снято
 #define JUKE_START 9
+/// REALTIMEOFDAY старта трека - основной отсчёт для подхвата опоздавшего слушателя
+#define JUKE_START_REAL 10
 
 /// Радиус, за пределами которого джукбокс слышно только внутри его собственной зоны
 #define JUKEBOX_HEARING_RANGE 7
@@ -73,20 +76,12 @@ SUBSYSTEM_DEF(jukeboxes)
 	var/channeltoreserve = pick(freejukeboxchannels)
 	if(!channeltoreserve)
 		return FALSE
-	//BLUEMOON ADD START
-	var/one_area_play	// Зона в которой будет играть музыка если есть ограничения
 	var/area/juke_area = get_area(jukebox)
-	if(juke_area.jukebox_restrain) // Запрет выхода музыки из зоны
-		if(istype(juke_area, /area/hilbertshotel)) // Отель передаёт свой номер, чтобы музыка разных комнат не играла друг у друга
-			var/area/hilbertshotel/HilberH = juke_area
-			one_area_play = HilberH.roomnumber
-		else
-			one_area_play = juke_area
-	//BLUEMOON ADD END
+	var/one_area_play = get_jukebox_area_limit(juke_area) // Зона, в которой будет играть музыка, если есть ограничения
 	var/sound/song_to_init = sound(T.song_path)
 	freejukeboxchannels -= channeltoreserve
 	var/list/sent_to = list() // Кому ресурс уже ушёл; остальным он досылается в fire(), когда подойдут
-	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init, personal, sent_to, one_area_play, world.time)
+	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init, personal, sent_to, one_area_play, world.time, REALTIMEOFDAY)
 
 	song_to_init.status = SOUND_MUTE
 	song_to_init.environment = 7
@@ -118,6 +113,26 @@ SUBSYSTEM_DEF(jukeboxes)
 		sent_to[M.ckey] = TRUE
 	return activejukeboxes.len
 
+/**
+ * Ограничение зоны для джукбокса, стоящего в этой зоне: сама зона, номер комнаты отеля либо
+ * null, если зона музыку не запирает.
+ *
+ * Считается по ТЕКУЩЕЙ зоне и на старте, и на каждой досылке. Раньше значение снималось один
+ * раз в addjukebox() и после этого решало судьбу каждого нового слушателя: шкатулку, включённую
+ * в номере отеля и вынесенную в коридор, не мог услышать вообще никто - ограничение продолжало
+ * требовать той самой комнаты, в которой шкатулки уже нет. Обратный случай так же плох: автомат,
+ * занесённый в комнату, продолжал бы играть на весь коридор.
+ */
+/datum/controller/subsystem/jukeboxes/proc/get_jukebox_area_limit(area/juke_area)
+	if(!juke_area || !juke_area.jukebox_restrain) // Запрет выхода музыки из зоны
+		return null
+	// Отель передаёт номер комнаты: все инфинити - экземпляры одного типа зоны, и сравнение
+	// по самой зоне их не различает, музыка одной комнаты играла бы во всех.
+	var/area/hilbertshotel/hotel_area = juke_area
+	if(istype(hotel_area))
+		return hotel_area.roomnumber
+	return juke_area
+
 /// Пропускает ли зона слушателя музыку этого джукбокса: глушилки, приватизация зоны
 /// стационарным автоматом и ограничение "играет только в своей зоне".
 /datum/controller/subsystem/jukeboxes/proc/jukebox_area_allows(mob/listener, obj/jukebox, area_limit)
@@ -137,10 +152,37 @@ SUBSYSTEM_DEF(jukeboxes)
 		return hotel_area.roomnumber == area_limit
 	return mob_area == area_limit
 
+/**
+ * Сколько секунд трека уже проиграно к этому моменту.
+ *
+ * Считается по РЕАЛЬНОМУ времени, а не по world.time. world.time - это игровое время, и под
+ * дилатацией оно отстаёт от настенного: в раунде 10137 сервер шёл на 67%, то есть за десять
+ * настоящих минут трека world.time насчитывал около шести. Опоздавший слушатель подхватывал
+ * файл на шестой минуте, тогда как у всех остальных играла десятая - четыре минуты рассинхрона
+ * на ровном месте, и тем больше, чем дольше играет трек.
+ *
+ * REALTIMEOFDAY сам переносит счётчик через полночь (MIDNIGHT_ROLLOVER_CHECK), но отметка,
+ * снятая до первого обновления этого счётчика, всё равно может оказаться "в будущем", а
+ * отрицательное смещение /sound понимает как перемотку в начало - поэтому режем снизу нулём.
+ *
+ * Чистой функцией: дилатацию иначе не проверить, не заведя настоящий джукбокс и не поспав.
+ *
+ * Аргументы:
+ * * real_start_time - REALTIMEOFDAY на старте трека; null = отметки нет, идём в запасной отсчёт
+ * * world_start_time - world.time на старте трека, запасной отсчёт
+ * * real_now, world_now - "сейчас" в тех же шкалах; отдельными аргументами ради теста
+ */
+/proc/jukebox_catchup_seconds(real_start_time, world_start_time, real_now = REALTIMEOFDAY, world_now = world.time)
+	if(!isnull(real_start_time))
+		return max(real_now - real_start_time, 0) / (1 SECONDS)
+	if(!isnull(world_start_time))
+		return max(world_now - world_start_time, 0) / (1 SECONDS)
+	return 0
+
 /// Смещение для того, кто подключается к уже играющему треку: он должен услышать ту же секунду,
 /// что и остальные, а не начало файла.
-/datum/controller/subsystem/jukeboxes/proc/set_catchup_offset(sound/song, start_time)
-	song.offset = (world.time - start_time) / (1 SECONDS)
+/datum/controller/subsystem/jukeboxes/proc/set_catchup_offset(sound/song, real_start_time, world_start_time)
+	song.offset = jukebox_catchup_seconds(real_start_time, world_start_time)
 
 /// Снимает смещение после досылки - именно в null, а НЕ в ноль. У /sound это разные значения:
 /// null означает "позицию не трогать", ноль - "перемотать в начало". Датум звука один на всех
@@ -278,8 +320,14 @@ SUBSYSTEM_DEF(jukeboxes)
 		var/area/currentarea = get_area(jukebox)
 		var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
 		var/list/sent_to = jukeinfo[JUKE_SENT]
-		var/area_limit = jukeinfo[JUKE_AREA_LIMIT]
+		// Ограничение зоны берётся по ТЕКУЩЕЙ зоне, а не по той, где трек включили: переносную
+		// шкатулку выносят из номера отеля в руках, и застывшее ограничение навсегда запирало
+		// первую досылку любому новому слушателю. Пишем обратно, чтобы в списке не оставалось
+		// протухшей копии.
+		var/area_limit = get_jukebox_area_limit(currentarea)
+		jukeinfo[JUKE_AREA_LIMIT] = area_limit
 		var/start_time = jukeinfo[JUKE_START]
+		var/real_start_time = jukeinfo[JUKE_START_REAL]
 		var/targetfalloff = jukeinfo[JUKE_FALLOFF]
 		var/mixes = ((targetfalloff*250)-750)
 		var/inrange
@@ -348,7 +396,7 @@ SUBSYSTEM_DEF(jukeboxes)
 				first_send = TRUE
 				sent_to[M.ckey] = TRUE
 				song_played.status = 0 // Обычный старт, а не обновление уже играющего канала
-				set_catchup_offset(song_played, start_time) // Подхватываем с той же секунды, что слышат остальные
+				set_catchup_offset(song_played, real_start_time, start_time) // Подхватываем с той же секунды, что слышат остальные
 			var/juke_vol = M.client?.prefs?.get_sound_volume(personal ? "personal_jukeboxes" : "jukeboxes")
 			var/original_volume = song_played.volume
 			song_played.volume = round(original_volume * juke_vol / 100)
@@ -373,5 +421,6 @@ SUBSYSTEM_DEF(jukeboxes)
 #undef JUKE_SENT
 #undef JUKE_AREA_LIMIT
 #undef JUKE_START
+#undef JUKE_START_REAL
 
 #undef JUKEBOX_HEARING_RANGE
