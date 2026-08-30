@@ -11,6 +11,9 @@
 	var/firstpickup = TRUE
 	var/pickupsound = TRUE
 	var/datum/beepsky_fashion/beepsky_fashion //the associated datum for applying this to a secbot
+	var/face_hidden = FALSE
+	var/face_hide_capable = FALSE
+	var/face_base_flags = null
 
 /obj/item/clothing/mask/attack_self(mob/user)
 	if((clothing_flags & VOICEBOX_TOGGLABLE))
@@ -84,3 +87,58 @@
 		else
 			to_chat(usr, "<span class='notice'>You adjust [src], it will now [mask_adjusted ? "not" : ""] obscure your identity while worn.</span>")
 	return TRUE
+
+/obj/item/clothing/mask/Initialize(mapload)
+	. = ..()
+	face_base_flags = flags_inv
+	face_hide_capable = (flags_inv & HIDEFACE) ? TRUE : FALSE
+	face_hidden = face_hide_capable // по умолчанию — как задумано маской (лицо скрыто)
+	if(face_hide_capable)
+		register_context()
+
+/obj/item/clothing/mask/examine(mob/user)
+	. = ..()
+	if(face_hide_capable)
+		. += span_notice("Alt-клик по маске — [face_hidden ? "показать" : "скрыть"] лицо/описание персонажа (сейчас: [face_hidden ? "скрыто" : "видно"]).")
+
+/obj/item/clothing/mask/proc/toggle_face_hiding(mob/user)
+	if(isnull(face_base_flags))
+		face_base_flags = initial(flags_inv)
+		face_hide_capable = (face_base_flags & HIDEFACE) ? TRUE : FALSE
+	if(!face_hide_capable)
+		return
+	face_hidden = !face_hidden
+	if(face_hidden)
+		flags_inv = face_base_flags | HIDEFACE
+	else
+		flags_inv = face_base_flags & ~HIDEFACE
+	if(isliving(loc))
+		var/mob/living/L = loc
+		L.update_inv_wear_mask()
+		// BLUEMOON FIX: мгновенное обновление имени/описания без переодевания
+		if(ishuman(L))
+			var/mob/living/carbon/human/H = L
+			H.name = H.get_visible_name()
+			H.sec_hud_set_ID()
+			H.sec_hud_set_security_status()
+			if(H.profile)
+				SStgui.update_uis(H.profile)
+	if(user)
+		to_chat(user, span_notice("Маска теперь [face_hidden ? "" : "не "]будет скрывать ваше лицо и описание персонажа."))
+
+/obj/item/clothing/mask/AltClick(mob/user)
+	if(face_hide_capable)
+		if(!user.canUseTopic(src, BE_CLOSE))
+			return ..()
+		toggle_face_hiding(user)
+		return TRUE
+	return ..()
+
+/obj/item/clothing/mask/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(!face_hide_capable)
+		return
+	if(!((item_flags & IN_INVENTORY) || loc == user))
+		return
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, face_hidden ? "Показать лицо" : "Скрыть лицо")
+	return CONTEXTUAL_SCREENTIP_SET
