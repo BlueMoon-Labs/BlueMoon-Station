@@ -401,8 +401,9 @@
 		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Какой модуль вы хотите снять?", "Снять модули", removable_modules)
 		if(!module_to_remove?.mod)
 			return FALSE
-		uninstall(module_to_remove)
-		module_to_remove.forceMove(drop_location())
+		uninstall(module_to_remove, user)
+		if(!QDELETED(module_to_remove))
+			module_to_remove.forceMove(drop_location())
 		crowbar.play_tool_sound(src, 100)
 		return TRUE
 	balloon_alert(user, "нет модулей!")
@@ -654,7 +655,7 @@
 		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
-/obj/item/mod/control/proc/uninstall(module)
+/obj/item/mod/control/proc/uninstall(module, user)
 	var/obj/item/mod/module/old_module = module
 	modules -= old_module
 	complexity -= old_module.complexity
@@ -664,7 +665,7 @@
 			old_module.on_deactivation()
 	if(wearer)
 		old_module.on_unequip()
-	old_module.on_uninstall()
+	old_module.on_uninstall(FALSE, user)
 	old_module.mod = null
 
 /obj/item/mod/control/proc/update_access(mob/user, obj/item/card/id/card)
