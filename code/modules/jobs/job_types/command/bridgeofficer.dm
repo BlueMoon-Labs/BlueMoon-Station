@@ -5,8 +5,8 @@
 	department_head = list("Captain")
 	department_flag = ENGSEC
 	faction = "Station"
-	total_positions = 2
-	spawn_positions = 2
+	total_positions = 0
+	spawn_positions = 0
 	supervisors = "The captain"
 	selection_color = "#aac1ee"
 	req_admin_notify = 0

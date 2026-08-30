@@ -6,8 +6,8 @@
 	department_flag = MEDSCI
 	head_announce = list(RADIO_CHANNEL_SCIENCE)
 	faction = "Station"
-	total_positions = 1
-	spawn_positions = 1
+	total_positions = 0
+	spawn_positions = 0
 	supervisors = "the captain"
 	selection_color = "#7544cc"
 	req_admin_notify = 1
