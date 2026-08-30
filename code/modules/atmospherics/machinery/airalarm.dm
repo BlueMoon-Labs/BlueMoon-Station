@@ -475,6 +475,29 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	if(alarm_area)
 		LAZYADD(alarm_area.airalarms, src)
 
+/obj/machinery/airalarm/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	// Тревогу снимаем адресно со СТАРОЙ зоны: alarm_handler определяет область лениво,
+	// через get_area(source_atom), а турф к этому моменту уже переписан на новую. Обычный
+	// clear_alarm() посчитал бы новую зону, не нашёл бы её в sent_alarms и вышел бы с FALSE -
+	// у покинутой области ALARM_ATMOS оставался бы поднятым до конца раунда.
+	// Если воздух в новой зоне по-прежнему плох, apply_danger_level() поднимет тревогу заново.
+	alarm_manager.clear_alarm_from_area(ALARM_ATMOS, old_area)
+	if(alarm_area)
+		LAZYREMOVE(alarm_area.airalarms, src)
+	alarm_area = get_area(src)
+	if(alarm_area)
+		LAZYADD(alarm_area.airalarms, src)
+	// Имя автогенерится от БАЗОВОЙ области (см. Initialize), с ней же и сверяем: у подобласти
+	// собственное имя другое, и переименование молча не срабатывало.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base && name == "[old_base.name] Air Alarm") // имя было автогенерённым - обновляем под новую зону
+		name = "[get_area_name(src, get_base_area = TRUE)] Air Alarm"
+	// Пересчёт по новой зоне: danger_level не менялся, а значит штатный process()
+	// уже не позовёт apply_danger_level() - без этого тревога снялась бы со старой
+	// области и не поднялась бы в новой.
+	apply_danger_level()
+
 /obj/machinery/airalarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Unlock" : "Lock")

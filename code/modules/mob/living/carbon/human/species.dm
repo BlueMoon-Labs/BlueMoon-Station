@@ -2945,6 +2945,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		override_float = FALSE
 		H.pass_flags &= ~PASSTABLE
 		H.CloseWings()
+		H.update_mobility()
+		H.update_gravity()
+	update_species_slowdown(H)
 
 /datum/action/innate/flight
 	name = "Toggle Flight"

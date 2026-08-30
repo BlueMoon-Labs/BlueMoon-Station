@@ -217,6 +217,8 @@ GLOBAL_LIST_INIT(psychosis_whisper_lines, list(
 /datum/hallucination/psychosis/whisper/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/line = pick(GLOB.psychosis_whisper_lines)
 	feedback_details += "Whisper: [line]"
@@ -249,6 +251,8 @@ GLOBAL_LIST_INIT(psychosis_whisper_lines, list(
 /datum/hallucination/psychosis/heartbeat/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/beats = rand(PSYCHOSIS_HEARTBEAT_MIN, PSYCHOSIS_HEARTBEAT_MAX)
 	feedback_details += "Beats: [beats]"
@@ -284,6 +288,8 @@ GLOBAL_LIST_INIT(psychosis_whisper_lines, list(
 /datum/hallucination/psychosis/shadow/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/spawn_turf = random_far_view_turf()
 	if(!spawn_turf)
@@ -316,6 +322,8 @@ GLOBAL_LIST_INIT(psychosis_whisper_lines, list(
 /datum/hallucination/psychosis/bloodstain/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -353,6 +361,8 @@ GLOBAL_LIST_INIT(psychosis_presence_lines, list(
 /datum/hallucination/psychosis/presence/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -403,6 +413,8 @@ GLOBAL_LIST_INIT(psychosis_radio_fragments, list(
 /datum/hallucination/psychosis/distorted_radio/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/humans = list()
 	for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
@@ -440,6 +452,8 @@ GLOBAL_LIST_INIT(psychosis_laughter_lines, list(
 /datum/hallucination/psychosis/laughter/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -466,6 +480,8 @@ GLOBAL_LIST_INIT(psychosis_laughter_lines, list(
 /datum/hallucination/psychosis/name_call/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -499,6 +515,8 @@ GLOBAL_LIST_INIT(psychosis_scream_lines, list(
 /datum/hallucination/psychosis/distant_scream/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -528,6 +546,8 @@ GLOBAL_LIST_INIT(psychosis_scream_lines, list(
 /datum/hallucination/psychosis/clock_ticks/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	if(prob(35))
 		psy_play(target, target, pick(
@@ -561,6 +581,8 @@ GLOBAL_LIST_INIT(psychosis_scream_lines, list(
 /datum/hallucination/psychosis/phantom_steps/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -603,6 +625,8 @@ GLOBAL_LIST_INIT(psychosis_chains_lines, list(
 /datum/hallucination/psychosis/chains_rattle/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -631,6 +655,8 @@ GLOBAL_LIST_INIT(psychosis_alarm_lines, list(
 /datum/hallucination/psychosis/horror_alarm/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -657,6 +683,8 @@ GLOBAL_LIST_INIT(psychosis_horn_lines, list(
 /datum/hallucination/psychosis/distant_horn/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -686,6 +714,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/void_drone/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_void_drone_lines))
@@ -706,6 +736,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_door/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -735,6 +767,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_typing/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/candidates = list()
 	for(var/turf/T in orange(2, target))
@@ -770,6 +804,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_flatline/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -798,6 +834,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_gunshot/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -824,6 +862,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_bone_crack/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -851,6 +891,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_drag/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -894,6 +936,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_chant/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -923,6 +967,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_baby_cry/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/source = random_far_turf()
 	if(!source)
@@ -952,6 +998,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_marching/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -1095,6 +1143,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_corpse/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(2, target))
@@ -1123,6 +1173,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/shadow_swarm/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/count = rand(3, 5)
 	for(var/i in 1 to count)
@@ -1159,6 +1211,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/red_eyes/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/spawn_turf = random_far_view_turf()
 	if(!spawn_turf)
@@ -1186,6 +1240,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/wall_face/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/dir in GLOB.cardinals)
@@ -1220,6 +1276,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_skeleton/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1249,6 +1307,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_severed_hand/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(2, target))
@@ -1278,6 +1338,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_severed_head/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(2, target))
@@ -1307,6 +1369,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_guts/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1339,6 +1403,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/bloody_footprints/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -1377,6 +1443,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_blood_pool/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(2, target))
@@ -1420,6 +1488,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_ash_silhouette/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1451,6 +1521,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_plush/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1484,6 +1556,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_head_on_pike/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/spawn_turf = random_far_view_turf()
 	if(!spawn_turf)
@@ -1508,6 +1582,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_rune/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1541,6 +1617,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_runner/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -1585,6 +1663,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_crawler/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/target_T = get_turf(target)
 	if(!target_T)
@@ -1628,6 +1708,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_doppelganger/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(4, target))
@@ -1660,6 +1742,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_scorch/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1690,6 +1774,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_blood_drip/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(2, target))
@@ -1729,6 +1815,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_sparks/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/spawn_turf = random_far_view_turf()
 	if(!spawn_turf)
@@ -1752,6 +1840,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_xeno_silhouette/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/turf/spawn_turf = random_far_view_turf()
 	if(!spawn_turf)
@@ -1778,6 +1868,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/darken_pulse/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	if(prob(30))
@@ -1794,6 +1886,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/blur_pulse/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	if(prob(30))
@@ -1810,6 +1904,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/static_flash/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	target.overlay_fullscreen("psychosis_static", /atom/movable/screen/fullscreen/tiled/flash/static)
@@ -1825,6 +1921,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/red_vision_pulse/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	if(prob(35))
@@ -1843,6 +1941,8 @@ GLOBAL_LIST_INIT(psychosis_void_drone_lines, list(
 /datum/hallucination/psychosis/phantom_cobweb/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/turf/candidates = list()
 	for(var/turf/open/T in view(3, target))
@@ -1879,6 +1979,8 @@ GLOBAL_LIST_INIT(psychosis_crawling_lines, list(
 /datum/hallucination/psychosis/crawling_skin/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_crawling_lines))
@@ -1896,6 +1998,8 @@ GLOBAL_LIST_INIT(psychosis_smell_lines, list(
 /datum/hallucination/psychosis/phantom_smell/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_smell_lines))
@@ -1912,6 +2016,8 @@ GLOBAL_LIST_INIT(psychosis_taste_lines, list(
 /datum/hallucination/psychosis/phantom_taste/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_taste_lines))
@@ -1931,6 +2037,8 @@ GLOBAL_LIST_INIT(psychosis_touch_lines, list(
 /datum/hallucination/psychosis/cold_touch/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_touch_lines))
@@ -1954,6 +2062,8 @@ GLOBAL_LIST_INIT(psychosis_memory_lines, list(
 /datum/hallucination/psychosis/memory_flash/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	to_chat(target, pick(GLOB.psychosis_memory_lines))
@@ -1981,6 +2091,8 @@ GLOBAL_LIST_INIT(psychosis_inner_voice_lines, list(
 /datum/hallucination/psychosis/inner_voice/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/line = pick(GLOB.psychosis_inner_voice_lines)
 	feedback_details += "Voice: [line]"
@@ -1995,6 +2107,8 @@ GLOBAL_LIST_INIT(psychosis_inner_voice_lines, list(
 /datum/hallucination/psychosis/countdown/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	feedback_details += "Source: self"
 	var/list/sequence = list("...пять...", "...четыре...", "...три...", "...два...", "...один...")
@@ -2021,6 +2135,8 @@ GLOBAL_LIST_INIT(psychosis_inner_voice_lines, list(
 /datum/hallucination/psychosis/echo_self/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/datum/status_effect/psychosis/eff = target.has_status_effect(/datum/status_effect/psychosis)
 	if(eff && length(eff.last_said))
@@ -2061,6 +2177,8 @@ GLOBAL_LIST_INIT(psychosis_fake_announce_lines, list(
 /datum/hallucination/psychosis/fake_priority_announce/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/picked = pick(GLOB.psychosis_fake_announce_lines)
 	var/title = picked[1]
@@ -2088,6 +2206,8 @@ GLOBAL_LIST_INIT(psychosis_fake_health_lines, list(
 /datum/hallucination/psychosis/fake_health_alert/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/line = pick(GLOB.psychosis_fake_health_lines)
 	feedback_details += "Fake health: [line]"
@@ -2128,6 +2248,8 @@ GLOBAL_LIST_INIT(psychosis_wrong_sign_labels, list(
 /datum/hallucination/psychosis/wrong_sign/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/airlocks = list()
 	for(var/obj/machinery/door/airlock/A in view(5, target))
@@ -2170,6 +2292,8 @@ GLOBAL_LIST_INIT(psychosis_fake_pda_lines, list(
 /datum/hallucination/psychosis/fake_pda/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/humans = list()
 	for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
@@ -2228,6 +2352,8 @@ GLOBAL_LIST_INIT(psychosis_fake_pda_lines, list(
 /datum/hallucination/psychosis/bloody_other/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	blood_image = psychosis_overlay_other(target, 'icons/effects/blood.dmi', "uniformblood")
 	if(!blood_image)
@@ -2251,6 +2377,8 @@ GLOBAL_LIST_INIT(psychosis_fake_pda_lines, list(
 /datum/hallucination/psychosis/wrong_face/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	// husk_s - иконстейт лица хаска из icons/mob/human_face.dmi.
 	// Если иконстейт не совпадает визуально - подобрать альтернативу в том же файле.
@@ -2285,6 +2413,8 @@ GLOBAL_LIST_INIT(psychosis_fake_pda_lines, list(
 /datum/hallucination/psychosis/shadow_behind_other/New(mob/living/carbon/C, forced = TRUE)
 	set waitfor = FALSE
 	..()
+	if(QDELETED(src)) // Родитель отменил галлюцинацию: показывать её некому
+		return
 	psy_log("start type=[type] target=[target]")
 	var/list/candidates = list()
 	for(var/mob/living/carbon/human/H in view(6, target))

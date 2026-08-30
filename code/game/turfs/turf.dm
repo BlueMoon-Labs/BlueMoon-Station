@@ -400,6 +400,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/open/Entered(atom/movable/AM)
 	..()
+	//Вошедший мог не пережить вход: /turf/Entered добивает его ex_act()`ом, пока турф
+	//держит explosion_level (взрыв ещё идёт). Ронять труп на этаж ниже нельзя - doMove
+	//отказывает qdel-нутому и пишет стектрейс (раунд 10137: тубы, прутья, кабель,
+	//листы металла и рамки камер, разлетевшиеся взрывом над опенспейсом)
+	if(QDELETED(AM))
+		return
 	//melting
 	if(isobj(AM) && air && air.return_temperature() > T0C)
 		var/obj/O = AM

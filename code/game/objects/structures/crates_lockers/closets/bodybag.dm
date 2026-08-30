@@ -12,8 +12,24 @@
 	material_drop = /obj/item/stack/sheet/cloth
 	delivery_icon = null //unwrappable
 	anchorable = FALSE
+	// В bodybag.dmi нет ни одного стейта _door/_back/welded: у мешка нет двери,
+	// его состояние целиком живёт в icon_state.
+	has_door_icon = FALSE
+	door_anim_time = 0
 	var/foldedbag_path = /obj/item/bodybag
 	var/tagged = 0 // so closet code knows to put the tag overlay back
+
+/// Суффикс базового стейта для закрытого мешка (у транспортного - застёгнутость).
+/obj/structure/closet/body_bag/proc/bag_icon_suffix()
+	return ""
+
+/obj/structure/closet/body_bag/update_icon_state()
+	. = ..()
+	// Стейт "_open" в bodybag.dmi - это ТОЛЬКО расстёгнутый зев, без корпуса мешка:
+	// он кладётся оверлеем поверх закрытого мешка штатной схемой шкафа. Если подставить
+	// его прямо в icon_state, на полу остаётся одна чёрная клякса без мешка вокруг,
+	// поэтому базовый стейт всегда закрытый мешок, а открытость показывает оверлей.
+	icon_state = "[initial(icon_state)][bag_icon_suffix()]"
 
 /obj/structure/closet/body_bag/attackby(obj/item/I, mob/user, params)
 	if (istype(I, /obj/item/pen) || istype(I, /obj/item/toy/crayon))
@@ -85,6 +101,8 @@
 
 /obj/structure/closet/body_bag/bluespace/MouseDrop(over_object, src_location, over_location)
 	. = ..()
+	if(QDELETED(src)) // родитель уже сложил пустой мешок и удалил src - второй складывать нечего
+		return .
 	if(over_object == usr && Adjacent(usr) && (in_range(src, usr) || usr.contents.Find(src)))
 		if(!ishuman(usr))
 			return FALSE
@@ -145,12 +163,8 @@
 		to_chat(the_folder, span_warning("You wrestle with [src], but it won't fold while its straps are fastened."))
 	return ..()
 
-/obj/structure/closet/body_bag/containment/prisoner/update_icon()
-	. = ..()
-	if(sinched)
-		icon_state = initial(icon_state) + "_sinched"
-	else
-		icon_state = initial(icon_state)
+/obj/structure/closet/body_bag/containment/prisoner/bag_icon_suffix()
+	return sinched ? "_sinched" : ""
 
 /obj/structure/closet/body_bag/containment/prisoner/Entered(atom/movable/AM, atom/oldLoc)
 	. = ..()

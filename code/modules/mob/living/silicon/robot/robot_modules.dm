@@ -1249,7 +1249,9 @@
 		if("Feline") // SPLURT Addon (ChompS Port)
 			cyborg_base_icon = "vixsec"
 			sleeper_overlay = "vixsec-sleeper"
-			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
+			// vixsec* лежат в splurt-файле, как и у остальных Feline-модулей; в citadel-файле
+			// их нет вовсе - борг был невидим, а меню поз отдыха выдавало "нет ни одной позы".
+			cyborg_icon_override = 'modular_splurt/icons/mob/widerobot.dmi'
 			dogborg = TRUE
 		if("Raptor V-4") // SPLURT Addon (ChompS Port)
 			cyborg_base_icon = "secraptor"

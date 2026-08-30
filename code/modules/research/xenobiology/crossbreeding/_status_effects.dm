@@ -508,7 +508,7 @@
 	for(var/mob/living/simple_animal/slime/S in range(1, get_turf(owner)))
 		if(!(owner in S.Friends))
 			to_chat(owner, "<span class='notice'>[linked_extract] pulses gently as it communicates with [S]</span>")
-			S.Friends[owner] = 1
+			S.add_friend(owner)
 	return ..()
 
 /datum/status_effect/stabilized/orange

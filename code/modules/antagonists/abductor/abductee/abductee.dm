@@ -10,8 +10,8 @@
 	. = ..()
 
 /datum/antagonist/abductee/greet()
-	to_chat(owner, "<span class='warning'><b>Your mind snaps!</b></span>")
-	to_chat(owner, "<big><span class='warning'><b>You can't remember how you got here...</b></span></big>")
+	to_chat(owner, "<span class='warning'><b>Ваш разум захлопывается!</b></span>")
+	to_chat(owner, "<big><span class='warning'><b>Вы ничего не помните — ни о том, как вы сюда попали, ни о похитителях, ни о том, кем вы были раньше. Остались лишь смутные обрывки после эксперимента.</b></span></big>")
 	owner.announce_objectives()
 
 /datum/antagonist/abductee/proc/give_objective()

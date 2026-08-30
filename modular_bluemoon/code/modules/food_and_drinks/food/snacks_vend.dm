@@ -98,10 +98,16 @@
 	desc = "Особый бургер из линейки “Большой Укус” с трюфельным и ягодным соусом, только для истинных гурманов!"
 	icon = 'modular_bluemoon/icons/obj/food/food.dmi'
 	icon_state = "macvulpburger_box_closed"
-	icon_type = "macvulpburger_" // честно - даже думать не хочу об этом
+	icon_type = "macvulpburger"
 	spawn_type = /obj/item/reagent_containers/food/snacks/burger/macvulpburger
 	fancy_open = TRUE
 	custom_price = PRICE_ALMOST_CHEAP
+
+/obj/item/storage/fancy/macvulpburger/update_icon_state()
+	// В food.dmi есть macvulpburger_box0, macvulpburger_box1 и macvulpburger_box_closed.
+	// Базовая формула для закрытой коробки просит "macvulpburger_box", которого нет,
+	// и спрайт пропадал ровно в состоянии "бургер внутри, коробка закрыта".
+	icon_state = fancy_open ? "[icon_type]_box[contents.len]" : "[icon_type]_box_closed"
 
 /obj/item/storage/fancy/macvulpburger/ComponentInitialize()
 	. = ..()

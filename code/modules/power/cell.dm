@@ -385,6 +385,7 @@
 	custom_materials = null
 	rating = 5 //self-recharge makes these desirable
 	self_recharge = 1 // Infused slime cores self-recharge, over time
+	chargerate = 500
 
 /obj/item/stock_parts/cell/emproof
 	name = "\improper EMP-proof cell"

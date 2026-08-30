@@ -450,6 +450,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 /turf/proc/HasAdjacentSupport()
 	for(var/support_dir in GLOB.cardinals)
 		var/turf/T = get_step(src, support_dir)
-		if(istype(T, /turf/closed) || locate(/obj/structure/lattice, T))
+		if(istype(T, /turf/closed) || istype(T, /turf/open/floor) || locate(/obj/structure/lattice, T))
 			return TRUE
 	return FALSE

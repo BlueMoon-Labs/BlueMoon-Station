@@ -41,7 +41,7 @@
 	///How much energy we drain each time we mechpunch someone
 	var/melee_energy_drain = 15
 	///The minimum amount of energy charge consumed by leg overload
-	var/overload_step_energy_drain_min = 100
+	var/overload_step_energy_drain_min = 10
 	///chance to deflect the incoming projectiles, hits, or lesser the effect of ex_act.
 	var/deflect_chance = 10
 	///Modifiers for directional armor
@@ -140,8 +140,8 @@
 
 	///Bool for leg overload on/off
 	var/leg_overload_mode = FALSE
-	///Energy use modifier for leg overload
-	var/leg_overload_coeff = 100
+	///Во сколько раз шаг под форсажем ножных приводов дороже штатного
+	var/leg_overload_coeff = 10
 
 	//Bool for zoom on/off
 	var/zoom_mode = FALSE
@@ -194,6 +194,9 @@
 	add_cell()
 	add_scanmod()
 	add_capacitor()
+	//сборка с карты ставит детали мимо CheckParts(): без этого мех с карты
+	//платит за шаг типовые 10 вместо своей штатной цены
+	update_step_energy_drain()
 	START_PROCESSING(SSobj, src)
 	GLOB.poi_list |= src
 	AddComponent(/datum/component/hostile_machine_registry)
@@ -319,10 +322,9 @@
 /obj/vehicle/sealed/mecha/proc/update_part_values() ///Updates the values given by scanning module and capacitor tier, called when a part is removed or inserted.
 	if(scanmod)
 		normal_step_energy_drain = initial(normal_step_energy_drain) * (1.5 / (scanmod.rating - 0.5)) //movement power cost is 3x of default at T1, 1x at T2, 0.6x at T3 and 0.4x at T4
-		step_energy_drain = normal_step_energy_drain
 	else
 		normal_step_energy_drain = 500
-		step_energy_drain = normal_step_energy_drain
+	update_step_energy_drain()
 	if(capacitor)
 		armor = armor.modifyRating(energy = (capacitor.rating * 5)) //Each level of capacitor protects the mech against emp by 5%
 	else //because we can still be hit without a cap, even if we can't move
@@ -653,6 +655,45 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
 		log_message("Lost connection to gas port.", LOG_MECHA)
 
+///Цена шага из штатной цены и состояния форсажа. Считается от штатной, а не от
+///текущей: повторное включение форсажа раньше умножало уже умноженное.
+/obj/vehicle/sealed/mecha/proc/update_step_energy_drain()
+	if(leg_overload_mode)
+		step_energy_drain = max(overload_step_energy_drain_min, normal_step_energy_drain * leg_overload_coeff)
+	else
+		step_energy_drain = normal_step_energy_drain
+
+///Неприкосновенный остаток ячейки под форсаж: ниже него форсаж не включается и сам гаснет,
+///чтобы мех всегда мог уйти к зарядке своим ходом. От реле Теслы резерва нет.
+/obj/vehicle/sealed/mecha/proc/leg_overload_reserve()
+	return cell ? cell.maxcharge * MECHA_OVERLOAD_POWER_RESERVE : 0
+
+///Включает или выключает форсаж ножных приводов: задержка шага, цена шага, таран,
+///кнопки всех пассажиров. Возвращает TRUE, если состояние сменилось; включение
+///на резерве заряда отклоняется. Сообщения пилоту пишет вызывающий.
+/obj/vehicle/sealed/mecha/proc/set_leg_overload(new_state)
+	new_state = !!new_state
+	if(leg_overload_mode == new_state)
+		return FALSE
+	if(new_state && get_charge() < leg_overload_reserve())
+		return FALSE
+	leg_overload_mode = new_state
+	log_message("Toggled leg actuators overload: [leg_overload_mode ? "on" : "off"].", LOG_MECHA)
+	if(leg_overload_mode)
+		bumpsmash = TRUE
+		movedelay = movement_quantize_delay(initial(movedelay) * MECHA_OVERLOAD_MOVEDELAY_MULT, world.tick_lag)
+	else
+		bumpsmash = initial(bumpsmash)
+		movedelay = initial(movedelay)
+	update_step_energy_drain()
+	for(var/mob/occupant as anything in occupants)
+		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/mech_overload_mode)
+		if(!action)
+			continue
+		action.button_icon_state = "mech_overload_[leg_overload_mode ? "on" : "off"]"
+		action.UpdateButtons()
+	return TRUE
+
 /obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
 	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
 
@@ -736,6 +777,9 @@
 
 	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
 		return FALSE
+	//форсаж гаснет на резерве ДО расчёта цены шага: этот же шаг идёт по штатной цене
+	if(leg_overload_mode && get_charge() < leg_overload_reserve() && set_leg_overload(FALSE))
+		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Leg actuators overload disabled: power reserve reached.</span>")
 	// Шаг меха живёт на собственном кулдауне, мимо /client/Move(), поэтому цену
 	// выравнивать по тику приходится здесь же. Дробный movedelay набегает от
 	// сканмодулей и капаситоров, а кулдаун всё равно проверяется только на тике.

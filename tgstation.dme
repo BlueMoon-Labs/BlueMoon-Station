@@ -5648,6 +5648,7 @@
 #include "modular_sand\code\modules\mining\equipment\regenerative_core.dm"
 #include "modular_sand\code\modules\mining\lavaland\necropolis_chests.dm"
 #include "modular_sand\code\modules\mining\machine_bluespaceminer\_bsm_instability.dm"
+#include "modular_sand\code\modules\mining\machine_bluespaceminer\event_bsm_cataclysm.dm"
 #include "modular_sand\code\modules\mining\machine_bluespaceminer\high_threat.dm"
 #include "modular_sand\code\modules\mining\machine_bluespaceminer\low_threat.dm"
 #include "modular_sand\code\modules\mining\machine_bluespaceminer\machine_bluespaceminer.dm"

@@ -186,7 +186,8 @@
 				var/phantom_dmg = absorbed_damage / max(overkill_ratio, 1.0)
 				phantom_dmg = clamp(phantom_dmg, 0, WOUND_MAX_CONSIDERED_DAMAGE)
 				if(phantom_dmg >= WOUND_MINIMUM_DAMAGE)
-					hit_bodypart.painless_wound_roll(WOUND_BLUNT, phantom_dmg, 0, 0)
+					// can_dismember = FALSE: пуля осталась в броне, отрывать ей конечность нечем.
+					hit_bodypart.painless_wound_roll(WOUND_BLUNT, phantom_dmg, 0, 0, SHARP_NONE, FALSE)
 			// BLUEMOON EDIT END
 
 
@@ -215,7 +216,8 @@
 					var/bone_chip_chance = 8 + (zone_damage_fraction * 30) + (absorbed_damage * 0.4)
 					bone_chip_chance = clamp(bone_chip_chance, 0, 60)
 					if(prob(bone_chip_chance))
-						hit_bodypart.painless_wound_roll(WOUND_BLUNT, max(absorbed_damage, WOUND_MINIMUM_DAMAGE), 0, 0)
+						// can_dismember = FALSE: это скол кости от поглощённой части, не сквозное попадание.
+						hit_bodypart.painless_wound_roll(WOUND_BLUNT, max(absorbed_damage, WOUND_MINIMUM_DAMAGE), 0, 0, SHARP_NONE, FALSE)
 				// BLUEMOON ADD END
 
 			if(totaldamage >= 1.0)

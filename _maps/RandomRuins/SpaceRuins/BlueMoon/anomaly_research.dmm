@@ -858,10 +858,6 @@
 /obj/effect/turf_decal/tile/purple/opposingcorners,
 /turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
-"IC" = (
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
-/area/space)
 "IH" = (
 /obj/machinery/power/supermatter_crystal/shard,
 /obj/structure/closet/crate/radiation,
@@ -1206,9 +1202,6 @@
 /obj/machinery/door/airlock/wood/glass,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/MimicResrch)
-"ZJ" = (
-/turf/open/space/basic,
-/area/space)
 "ZM" = (
 /turf/closed/mineral/snowmountain/cavern,
 /area/space)
@@ -1394,9 +1387,9 @@ ZM
 ZM
 xE
 xE
-ZJ
-ZJ
-ZJ
+ZM
+ZM
+ZM
 xE
 xE
 xE
@@ -1415,9 +1408,9 @@ ZM
 ZM
 xS
 ZM
-ZJ
-ZJ
-ZJ
+ZM
+ZM
+ZM
 xE
 xE
 xE
@@ -1433,9 +1426,9 @@ xE
 xE
 xE
 xE
-ZJ
-ZJ
-ZJ
+ZM
+ZM
+ZM
 xE
 xE
 xE
@@ -1453,8 +1446,8 @@ ZM
 ZM
 xS
 ZM
-ZJ
-ZJ
+ZM
+ZM
 xE
 xE
 xE
@@ -1472,7 +1465,7 @@ xE
 xE
 xE
 xE
-ZJ
+ZM
 xE
 xE
 xE
@@ -1491,17 +1484,17 @@ ZM
 ZM
 xS
 ZM
-ZJ
+ZM
 xE
 xE
 xE
 xE
 ya
-IC
-IC
-IC
-IC
-IC
+yp
+yp
+yp
+yp
+yp
 ya
 ya
 ya

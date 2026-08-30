@@ -236,6 +236,11 @@ The rod will spawn at some location outside the station, and travel in a straigh
 	var/turf/collapse_turf = get_turf(stopper)
 	if(!QDELETED(stopper))
 		stopper.visible_message(span_boldwarning("[stopper] не выдерживает и схлопывается вместе со стержнем!"))
+		var/obj/singularity/wizard/tear_in_reality = new /obj/singularity/wizard(collapse_turf)
+		// SSobj тикает раз в 2 секунды, а дыре отведена секунда жизни — до первого
+		// process() дело не дойдёт, поэтому притягивающий тик дёргаем вручную.
+		tear_in_reality.eat()
+		QDEL_IN(tear_in_reality, 1 SECONDS)
 		new /obj/effect/anomaly/flux(collapse_turf)
 		explosion(collapse_turf, light_impact_range = 2, flame_range = 2)
 		qdel(stopper)

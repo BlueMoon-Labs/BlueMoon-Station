@@ -1568,6 +1568,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			continue
 		if(possible_target.has_antag_datum(/datum/antagonist/ghost_role)) // BLUEMOON ADD - гостроли (хермит и т.п.) не берутся в оборот
 			continue
+		if(!is_unique_objective(possible_target)) // на одного и того же игрока подстава не выдаётся одному и тому же владельцу дважды
+			continue
 		possible_targets += possible_target
 	if(!length(possible_targets))
 		return
