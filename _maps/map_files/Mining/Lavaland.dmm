@@ -23992,7 +23992,6 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rFM" = (
-/obj/machinery/suit_storage_unit/winter_syndicate,
 /obj/machinery/camera/xray/directional/west{
 	c_tag = "DS-1 OffComm";
 	network = list("ds1");
@@ -24000,6 +23999,7 @@
 	dir = 8;
 	pixel_y = -5
 	},
+/obj/machinery/suit_storage_unit/syndicate/command,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "rGD" = (

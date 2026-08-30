@@ -27,6 +27,18 @@
 #define CHAT_MESSAGE_RISE_OFFSET	8
 #define CHAT_MESSAGE_RISE_TIME		0.4 SECONDS
 #define CHAT_MESSAGE_TYPING_TIME	2 SECONDS
+/**
+ * Сколько КАДРОВ печатной машинки рисуется за это время.
+ *
+ * Каждое присваивание maptext - отдельная растровая поверхность у клиента размером
+ * maptext_width * maptext_height * 4 байта, и живёт она столько же, сколько appearance,
+ * в который попала. Раньше шаг равнялся world.tick_lag, то есть одна реплика давала СОРОК
+ * уникальных поверхностей вместо одной: текст-то на каждом кадре разный.
+ *
+ * Потолок в восемь кадров сохраняет и длительность анимации, и саму печатную машинку -
+ * шаг просто становится крупнее, - но режет число поверхностей впятеро.
+ */
+#define CHAT_MESSAGE_TYPEWRITER_MAX_FRAMES	8
 
 /**
   * # Chat Message Overlay
@@ -281,7 +293,10 @@
 	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y
 	current_y = final_pixel_y
 	message.maptext_width = CHAT_MESSAGE_WIDTH
-	message.maptext_height = mheight
+	// Высота по сетке строки, а не сырой замер: клиент платит за ОБЪЯВЛЕННУЮ коробку
+	// (width*height*4) и держит поверхность до конца сессии, а MeasureText отдаёт
+	// пиксельную высоту, у которой на одинаковом тексте бывают соседние значения.
+	message.maptext_height = CEILING(mheight, CHAT_MESSAGE_APPROX_LHEIGHT)
 	message.maptext_x = round((CHAT_MESSAGE_WIDTH - owner.bound_width) * -0.5)
 	message.maptext = MAPTEXT(anim_mode == RUNECHAT_ANIM_TYPEWRITER ? "" : complete_text)
 
@@ -319,7 +334,11 @@
 	enter_subsystem(eol_complete) // re-enter the runechat SS with the EOL completion time to QDEL self
 
 /datum/chatmessage/proc/typewriter_reveal(list/steps)
-	var/total_ticks = max(1, CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1))
+	// Число кадров под потолком, а шаг по времени - производный от него, чтобы анимация
+	// заняла те же две секунды. Считать кадры по world.tick_lag значило платить клиенту
+	// поверхностью за каждый: см. CHAT_MESSAGE_TYPEWRITER_MAX_FRAMES.
+	var/total_ticks = clamp(CEILING(CHAT_MESSAGE_TYPING_TIME / world.tick_lag, 1), 1, CHAT_MESSAGE_TYPEWRITER_MAX_FRAMES)
+	var/frame_time = max(world.tick_lag, CHAT_MESSAGE_TYPING_TIME / total_ticks)
 	var/per_tick = max(1, CEILING(length(steps) / total_ticks, 1))
 	var/index = 1
 	while(index < length(steps))
@@ -327,7 +346,7 @@
 			return
 		index = min(index + per_tick, length(steps))
 		message.maptext = MAPTEXT(steps[index])
-		sleep(world.tick_lag)
+		sleep(frame_time)
 
 /datum/chatmessage/proc/typewriter_build_steps(complete_text)
 	var/list/tokens = list()

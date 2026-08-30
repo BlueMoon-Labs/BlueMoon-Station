@@ -340,10 +340,25 @@
 			new_color = LIGHTING_DARK_MATRIX
 	else
 		// Normal lit — reuse shared static buffer (BYOND copies on color assignment/animate)
-		shared_color_buffer[1]  = rr; shared_color_buffer[2]  = rg; shared_color_buffer[3]  = rb
-		shared_color_buffer[5]  = gr; shared_color_buffer[6]  = gg; shared_color_buffer[7]  = gb
-		shared_color_buffer[9]  = br; shared_color_buffer[10] = bg; shared_color_buffer[11] = bb
-		shared_color_buffer[13] = ar; shared_color_buffer[14] = ag; shared_color_buffer[15] = ab
+		//
+		// ОКРУГЛЕНИЕ ОБЯЗАТЕЛЬНОЕ, а не косметическое. Углы пришли сюда на сетке
+		// LIGHTING_ROUND_VALUE, но всё, что выше в этом проке, домножает их на непрерывные
+		// дробные множители (контактная тень, контраст и температура зоны, подкраска
+		// теней) и сбивает с сетки. Без возврата на сетку каждый апдейт тайла даёт
+		// УНИКАЛЬНУЮ матрицу, то есть новый appearance, а их BYOND держит у клиента
+		// до конца сессии и не освобождает. См. LIGHTING_MATRIX_ROUND_VALUE.
+		shared_color_buffer[1]  = round(rr, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[2]  = round(rg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[3]  = round(rb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[5]  = round(gr, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[6]  = round(gg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[7]  = round(gb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[9]  = round(br, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[10] = round(bg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[11] = round(bb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[13] = round(ar, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[14] = round(ag, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[15] = round(ab, LIGHTING_MATRIX_ROUND_VALUE)
 		new_color = shared_color_buffer
 
 	if(!use_animate || animate_time <= LIGHTING_ANIMATE_TIME_FAST)

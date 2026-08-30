@@ -30,14 +30,14 @@
 	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
 		поверхности костюма, полезных для хранения различных мелочей и штучек."
 	icon_state = "storage"
-	complexity = 3
+	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/storage)
 	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON
 	var/storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
-	var/max_volume = STORAGE_VOLUME_BACKPACK
+	var/max_volume = STORAGE_VOLUME_MOD_DEFAULT
 	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 	var/component_type = /datum/component/storage/concrete
 
@@ -47,8 +47,8 @@
 	desc = "Расширенная разгрузка с расширенным отделением под крупногабаритные предметы. \
 			Является улучшенной версией, по сравнению с обычным модулем рюкзака и равноценна спортивной сумке. \
 			Может быть улучшена с помощью БС ядра, путём вставки вручную в специальное отверстие."
-	max_volume = STORAGE_VOLUME_DUFFLEBAG
-	complexity = 5
+	max_volume = STORAGE_VOLUME_MOD_EXTENDED
+	complexity = 2
 
 /obj/item/mod/module/storage/extended/attackby(obj/item/I, mob/living/user, params)
 	. = ..()
@@ -60,7 +60,7 @@
 				большого количества вещей в карманном измерении. Изолирована от воздействий телепортации."
 		max_w_class = MAX_WEIGHT_CLASS_BAG_OF_HOLDING
 		storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
-		max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
+		max_volume = STORAGE_VOLUME_MOD_BLUESPACE
 		qdel(I)
 
 /obj/item/mod/module/storage/syndicate
@@ -68,14 +68,13 @@
 	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
 		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
 	icon_state = "storage_syndi"
-	complexity = 2 //на 1 меньше, чем обычная версия.
-	max_volume = DEFAULT_VOLUME_NORMAL * 8
+	complexity = 0
 
 /obj/item/mod/module/storage/extended/syndicate
 	name = "MOD Blood-red Extended storage module"
 	desc = "Компактный расширенный модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
 	icon_state = "storage_case"
-	complexity = 2
+	complexity = 1
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
@@ -96,8 +95,6 @@
 	//снести компонент молча = запереть содержимое в МОДе навсегда
 	Storage.do_quick_empty(mod.drop_location())
 	qdel(Storage)
-
-
 
 //PAI модуль
 //функции вытаскивания и изъятия pai в файле mod_ai.dm
@@ -376,6 +373,13 @@
 			mod.set_light_range(clamp(value, min_range, max_range))
 			light_range = clamp(value, min_range, max_range)
 
+/obj/item/mod/module/flashlight/vanguard
+	name = "Advanced Flaslight Module"
+	desc = "Особый улучшенный модуль фонарика эксклюзивно для экспедиционного корпуса Нанотрейзен"
+	complexity = 0
+	light_range = 8
+	light_power = 2
+
 ///Dispenser - Dispenses an item after a time passes.
 /obj/item/mod/module/dispenser
 	name = "MOD burger dispenser module"
@@ -429,6 +433,12 @@
 	/// The DNA we lock with.
 	var/dna = null
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	var/individual_protect_from_emp
+
+/obj/item/mod/module/dna_lock/antag
+	name = "Advanced DNA Lock Module"
+	complexity = 1
+	individual_protect_from_emp = TRUE
 
 /obj/item/mod/module/dna_lock/on_install()
 	RegisterSignal(mod, COMSIG_MOD_ACTIVATE, PROC_REF(on_mod_activation))
@@ -441,6 +451,7 @@
 	UnregisterSignal(mod, COMSIG_MOD_MODULE_REMOVAL)
 	UnregisterSignal(mod, COMSIG_ATOM_EMP_ACT)
 	UnregisterSignal(mod, COMSIG_ATOM_EMAG_ACT)
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/on_use()
 	. = ..()
@@ -449,6 +460,7 @@
 	dna = mod.wearer.dna.unique_enzymes
 	mod.balloon_alert(mod.wearer, "данные ДНК обновлены")
 	drain_power(use_power_cost)
+	ENABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/emp_act(severity)
 	. = ..()
@@ -472,13 +484,17 @@
 
 /obj/item/mod/module/dna_lock/proc/on_emp(datum/source, severity)
 	SIGNAL_HANDLER
+	if(individual_protect_from_emp)
+		return FALSE
 
 	dna = null
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/proc/on_emag(datum/source, mob/user, obj/item/card/emag/emag_card)
 	SIGNAL_HANDLER
 
 	dna = null
+	DISABLE_BITFIELD(mod.status_flags, MOD_DNA_LOCKED)
 
 /obj/item/mod/module/dna_lock/proc/on_mod_activation(datum/source, mob/user)
 	SIGNAL_HANDLER

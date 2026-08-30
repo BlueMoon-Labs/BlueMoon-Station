@@ -80,6 +80,21 @@
 	. = ..()
 	logs_view = ScreenText(null, "", screen_loc, maptext_height, maptext_width)
 
+/datum/neural_interface_module/logs/Destroy(force, ...)
+	// Парный QDEL_NULL был только у панели данных, а панель логов не удалялась никогда:
+	// её экранный объект переживал и модуль, и владельца.
+	//
+	// Родительская очистка ИДЁТ ПЕРВОЙ. Снять экран с client.screen умеет только
+	// UpdateVision() из-под /datum/neural_interface_module/Destroy: у объекта от ScreenText()
+	// нет ни hud'а, ни assigned_map, и его собственный Destroy клиента не трогает. Удалённый
+	// раньше logs_view оставался в client.screen ссылкой на удалённый датум - харддел.
+	. = ..()
+	QDEL_NULL(logs_view)
+	// Остальной модуль удаляет записи явно (write_log, clear_logs, remove_log,
+	// cleanup_expired_logs) - выход через Destroy был единственным, где они просто терялись.
+	QDEL_LIST(logs)
+	logs = null
+
 /datum/neural_interface_module/logs/UpdateVision(mob/user)
 	cleanup_expired_logs()
 

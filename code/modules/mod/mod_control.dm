@@ -104,9 +104,22 @@
 			continue
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		if(part.loc != wearer)
-			return FALSE
+			return FALSE //Нафиг тут ретурн стоит... Потом поправлю.
 
 	return TRUE
+
+/obj/item/mod/control/proc/one_of_parts_deployed()
+	if(!wearer)
+		return FALSE
+
+	for(var/index in mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/part = mod_parts[index]
+		if(part.loc == wearer)
+			return TRUE
+
+	return FALSE
 
 /obj/item/mod/control/proc/is_malfunctioning()
 	return CHECK_BITFIELD(status_flags, MOD_MALFUNCTION) ? TRUE : FALSE
@@ -119,6 +132,12 @@
 
 /obj/item/mod/control/proc/is_open()
 	return CHECK_BITFIELD(status_flags, MOD_OPEN) ? TRUE : FALSE
+
+/obj/item/mod/control/proc/is_welded()
+	return CHECK_BITFIELD(status_flags, MOD_WELDED) ? TRUE : FALSE
+
+/obj/item/mod/control/proc/is_dna_locked()
+	return CHECK_BITFIELD(status_flags, MOD_DNA_LOCKED) ? TRUE : FALSE
 
 /obj/item/mod/control/proc/toggle_state(flag)
 	TOGGLE_BITFIELD(status_flags, flag)
@@ -195,6 +214,8 @@
 		if(is_malfunctioning() && module.active && DT_PROB(5, delta_time))
 			module.on_deactivation()
 		module.on_process(delta_time)
+	if(is_malfunctioning() && DT_PROB(5, delta_time)) //Случайное отключение/включение при ЕМП
+		toggle_activate()
 
 /obj/item/mod/control/equipped(mob/user, slot)
 	..()
@@ -203,10 +224,20 @@
 	else if(wearer)
 		unset_wearer()
 
+/obj/item/mod/control/mob_can_equip(mob/living/M, mob/living/equipper, slot, disable_warning, bypass_equip_delay_self, clothing_check, list/return_warning)
+	. = ..()
+	if(slot == slot_flags && !M.get_item_by_slot(slot_flags))
+		return TRUE
+
 /obj/item/mod/control/dropped(mob/user)
 	. = ..()
 	if(wearer)
 		unset_wearer()
+	for(var/index in mod_parts)
+		var/obj/item/clothing/mod_part/part
+		if(index == MOD_PART_CELL)
+			continue
+		part.on_dropped(user, part, TRUE, drop_location())
 
 /obj/item/mod/control/item_action_slot_check(slot)
 	if(slot == slot_flags)
@@ -225,6 +256,8 @@
 
 /obj/item/mod/control/MouseDrop(atom/over_object)
 	var/obj/item/target_object = wearer?.get_item_by_slot(src.slot_flags)
+	if(is_welded())
+		return balloon_alert(wearer, "Заварено!")
 	if(src != target_object || !istype(over_object, /atom/movable/screen/inventory/hand))
 		return ..()
 	if(is_active())
@@ -261,7 +294,8 @@
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()
 		return
-	return ..()
+	if(!one_of_parts_deployed() || GetComponent(/datum/component/storage))
+		return ..()
 
 /obj/item/mod/control/AltClick(mob/user)
 	var/obj/item/stock_parts/cell/cell = get_cell()
@@ -275,11 +309,22 @@
 	. = ..()
 	if(.)
 		return TRUE
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
+	if(is_dna_locked())
+		var/obj/item/mod/module/dna_lock/lock
+		if(!ishuman(user))
+			return
+		for(var/obj/item/mod/module in modules)
+			if(istype(module, /obj/item/mod/module/dna_lock))
+				lock = module
+		if(lock && !lock.dna_check(user))
+			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+			return balloon_alert(user, "Заблокировано на ДНК!")
 	if(is_active() || is_activating())
 		balloon_alert(user, "сначала отключите костюм!")
-		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+
 		return FALSE
-	balloon_alert(user, "[is_open() ? "закрытие" : "открытие"] панели...")
 	if(screwdriver.use_tool(src, user, 0.5 SECONDS))
 		if(is_active() || is_activating())
 			balloon_alert(user, "сначала отключите костюм!")
@@ -309,8 +354,9 @@
 		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Какой модуль вы хотите снять?", "Снять модули", removable_modules)
 		if(!module_to_remove?.mod)
 			return FALSE
-		uninstall(module_to_remove)
-		module_to_remove.forceMove(drop_location())
+		uninstall(module_to_remove, user)
+		if(!QDELETED(module_to_remove))
+			module_to_remove.forceMove(drop_location())
 		crowbar.play_tool_sound(src, 100)
 		return TRUE
 	balloon_alert(user, "нет модулей!")
@@ -319,6 +365,13 @@
 
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
+	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
+		if(!attacking_item.tool_start_check(user, amount=5))
+			return
+		if(attacking_item.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
+			balloon_alert(user, "Успешно")
+			toggle_state(MOD_WELDED)
+			return
 	if(istype(attacking_item, /obj/item/paicard))
 		if(!is_open()) //mod must be open
 			balloon_alert(user, "панель костюма должна быть открыта!")
@@ -377,10 +430,23 @@
 		set_wearer(outfit_wearer) //we need to set wearer manually since it doesnt call equipped
 	quick_activation()
 
-/obj/item/mod/control/doStrip(mob/stripper, mob/owner)
-	if(wearer.infiltrator_active && wearer.stat == CONSCIOUS)
-		balloon_alert(stripper, "Отказано!")
-		return
+/obj/item/mod/control/proc/check_can_item_can_unlock(obj/item/target_item)
+	var/is_pointy = target_item?.get_sharpness() == SHARP_POINTY
+	var/is_saw = target_item?.tool_behaviour == TOOL_SAW
+	var/is_welder = target_item?.tool_behaviour == TOOL_WELDER
+
+	return is_pointy || is_saw || is_welder
+
+/obj/item/mod/control/doStrip(mob/living/stripper, mob/owner)
+	var/obj/item/item_in_hand = stripper.get_active_held_item()
+
+	if(is_dna_locked() || is_welded())
+		if(!check_can_item_can_unlock(item_in_hand) || !item_in_hand)
+			return balloon_alert(stripper, "[is_dna_locked() ? "Заблокировано на ДНК!" : "Заварено!"]")
+		else
+			DISABLE_BITFIELD(status_flags, MOD_DNA_LOCKED)
+			DISABLE_BITFIELD(status_flags, MOD_WELDED)
+
 	if(!toggle_activate(stripper, force_deactivate = TRUE))
 		return
 	for(var/obj/item/part in mod_parts)
@@ -535,7 +601,7 @@
 		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
-/obj/item/mod/control/proc/uninstall(module)
+/obj/item/mod/control/proc/uninstall(module, user)
 	var/obj/item/mod/module/old_module = module
 	modules -= old_module
 	complexity -= old_module.complexity
@@ -545,7 +611,7 @@
 			old_module.on_deactivation()
 	if(wearer)
 		old_module.on_unequip()
-	old_module.on_uninstall()
+	old_module.on_uninstall(FALSE, user)
 	old_module.mod = null
 
 /obj/item/mod/control/proc/update_access(mob/user, obj/item/card/id/card)
@@ -603,7 +669,7 @@
 		uninstall(part)
 		return
 	if(mod_parts.Find(part))
-		conceal(wearer, part)
+		INVOKE_ASYNC(src, PROC_REF(conceal), wearer, part)
 		if(is_active())
 			INVOKE_ASYNC(src, PROC_REF(toggle_activate), wearer, TRUE)
 		return

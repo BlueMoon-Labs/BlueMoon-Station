@@ -2553,7 +2553,7 @@
 	name = "Commando beret"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/commando_beret
-	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak")
+	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak", "mihana964")
 
 /datum/gear/donator/bm/vp78tactic
 	name = "VP78 Tactic ModKit"
@@ -2578,3 +2578,9 @@
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
     ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")
+
+/datum/gear/donator/bm/robosleek
+	name = "Sleek roboticist's jumpsuit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/rank/rnd/roboticist/sleek
+	ckeywhitelist = list("deltarayx")

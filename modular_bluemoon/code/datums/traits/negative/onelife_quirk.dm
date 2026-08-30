@@ -207,6 +207,21 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
 		return
 	H.dust(TRUE, TRUE)
 
+/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+	if(HAS_TRAIT(src, TRAIT_ONELIFE))
+		onelife_crumble(src)
+		return
+	return ..()
+
+/obj/item/bodypart/drop_limb(special, dismembered)
+	var/destroy_limb = FALSE
+	if(!special && owner && HAS_TRAIT(owner, TRAIT_ONELIFE) && !is_pseudopart)
+		destroy_limb = TRUE
+	. = ..()
+	if(destroy_limb && !QDELETED(src))
+		qdel(src)
+	return .
+
 /// Снять с цели источник Одной Жизни: и квирк, и мутацию.
 /proc/remove_onelife_source(mob/living/target, message)
 	if(!target || !HAS_TRAIT(target, TRAIT_ONELIFE))

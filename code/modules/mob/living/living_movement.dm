@@ -174,6 +174,10 @@
 				if(first_client_on_z && GLOB.ai_controllers_by_zlevel.len >= new_z)
 					for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[new_z])
 						controller.set_ai_status(controller.get_expected_ai_status())
+				// Счётчик простоя обнуляется ВСЕГДА, а не только при подъёме: посещение уже
+				// поднятого уровня иначе не оставляет следа между сканами сноса. См.
+				// SSlighting.note_zlevel_visit().
+				SSlighting.note_zlevel_visit(new_z)
 				// Initialize deferred lighting when first client enters a z-level
 				// Skip during bulk operations (shuttle docking) — docking creates lighting for shuttle turfs,
 				// and remaining turfs will be initialized when the deferred batch completes

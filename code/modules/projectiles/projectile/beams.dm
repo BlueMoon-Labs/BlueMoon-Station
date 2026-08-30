@@ -44,7 +44,8 @@
 	fire_hazard = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/swarmer
-	damage = 20
+	damage = 30
+	hit_prone_targets = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)
 	. = ..()
@@ -98,7 +99,7 @@
 	icon_state = "xray"
 	damage = 15
 	irradiate = 100
-	range = 15
+	range = 30
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE | PASSCLOSEDTURF | PASSMACHINE | PASSSTRUCTURE
 	projectile_piercing = ALL
 	is_reflectable = TRUE
@@ -132,6 +133,7 @@
 
 /obj/item/projectile/beam/disabler/swarmer
 	damage = 45
+	hit_prone_targets = TRUE
 
 /obj/item/projectile/beam/pulse
 	name = "pulse"

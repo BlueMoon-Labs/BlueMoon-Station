@@ -640,3 +640,121 @@
 	TEST_ASSERT(quota_picked_probe, "квота взяла уровень z[quota_picked], которого нет среди пробников")
 	TEST_ASSERT(!within_quota_picked, "в пределах кванта свежеопустевший уровень взяли на снос (z[within_quota_picked]) - таймер перестал защищать")
 	TEST_ASSERT(!non_deferred_filled_quota, "квоту наполнили НЕотложенные уровни: взят z[non_deferred_filled_quota]")
+
+/**
+ * Посещение уже поднятого уровня обнуляет его счётчик простоя.
+ *
+ * Тест на конкретную дыру в сэмплировании. zlevel_empty_since писался и стирался только
+ * сканом кандидатов на снос (раз в 15-30 секунд) и подъёмом уровня. Посетитель УЖЕ
+ * поднятого уровня, уместившийся между двумя сканами, не оставлял следа нигде, и таймер
+ * простоя тикал так, будто на уровне не было никого.
+ *
+ * Раунд 10134 (28.08.2026): z15 признали пустым, снесли 63 002 объекта за 60 секунд, и
+ * через четыре минуты подняли обратно по поводу "живой сменил z". Прибор напечатал, что
+ * подъём стоил 0 МБ VmSize: серверу цикл не вернул ничего, а видевшим уровень стоил
+ * четырёх полноэкранных вспышек.
+ */
+/datum/unit_test/lighting_visit_clears_idle_timer
+
+/datum/unit_test/lighting_visit_clears_idle_timer/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/test_z = run_loc_floor_bottom_left.z
+	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
+
+	// Уровень "пустует" дольше любого срока простоя - следующий скан забрал бы его.
+	SSlighting.zlevel_empty_since["[test_z]"] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SSlighting.note_zlevel_visit(test_z)
+	var/cleared = isnull(SSlighting.zlevel_empty_since["[test_z]"])
+
+	// Выбор кандидата обязан согласиться: без отметки простоя брать нечего.
+	var/picked_after_visit = pick_lighting_teardown_zlevel(SSlighting.zlevel_empty_since, 0, world.time)
+	var/picked_is_other_z = picked_after_visit != test_z
+
+	// Нулевой z - это "моб нигде"; такой вызов не должен ни падать, ни трогать список.
+	SSlighting.zlevel_empty_since["[test_z]"] = world.time
+	SSlighting.note_zlevel_visit(0)
+	var/zero_z_left_entry = !isnull(SSlighting.zlevel_empty_since["[test_z]"])
+
+	SSlighting.zlevel_empty_since = saved_empty
+
+	TEST_ASSERT(cleared, "посещение уровня не обнулило его счётчик простоя - снос заберёт уровень, на котором стоит игрок")
+	TEST_ASSERT(picked_is_other_z, "после посещения выбор кандидата всё равно отдал z[picked_after_visit]")
+	TEST_ASSERT(zero_z_left_entry, "note_zlevel_visit(0) стёр чужую запись: моб \"нигде\" не должен трогать список")
+
+/**
+ * Гостовой дебаунс подъёма: свет целого z не строится ради пролетевшего мимо наблюдателя.
+ *
+ * Тест на цену из раунда 10133 (28.08.2026): z7 (Lavaland) подняли по поводу "гост сменил z" -
+ * 65 025 объектов освещения, +46.2 МБ VmSize, - при НУЛЕ игровых событий на этом уровне за
+ * весь раунд. Уровень потом снесли, вернув ноль.
+ *
+ * Проверяется чистая половина решения. Живой путь (living_movement.dm) выдержки не имеет
+ * намеренно и здесь не участвует.
+ */
+/datum/unit_test/lighting_ghost_init_debounce_needs_occupant
+
+/datum/unit_test/lighting_ghost_init_debounce_needs_occupant/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+	TEST_ASSERT(test_z <= length(SSmobs.clients_by_zlevel), "предпосылка: реестр клиентов обязан покрывать тестовый z")
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_clients = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_dead = (test_z <= length(SSmobs.dead_players_by_zlevel)) ? SSmobs.dead_players_by_zlevel[test_z] : null
+
+	// Уровень не поднят: без этого гейт should_ondemand_init_zlevel отсекает всё сам.
+	level.lighting_initialized = FALSE
+	SSmobs.clients_by_zlevel[test_z] = list()
+	if(saved_dead)
+		SSmobs.dead_players_by_zlevel[test_z] = list()
+
+	// Гост улетел за время выдержки - строить нечего.
+	var/empty_level_skipped = !ghost_ondemand_init_still_wanted(test_z)
+
+	// Протухшая ссылка уровень удержать не должна: иначе один исчезнувший наблюдатель
+	// заказывает постройку целого z навсегда.
+	SSmobs.dead_players_by_zlevel[test_z] = list(null)
+	var/stale_ref_skipped = !ghost_ondemand_init_still_wanted(test_z)
+
+	// Гост на месте - свет обязан строиться, иначе он останется в темноте.
+	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, test_turf)
+	SSmobs.dead_players_by_zlevel[test_z] = list(watcher)
+	var/occupied_level_wanted = ghost_ondemand_init_still_wanted(test_z)
+
+	// Уровень успели поднять за выдержку (живой игрок, шаттл, краулер) - повторять нечего.
+	level.lighting_initialized = TRUE
+	var/already_lit_skipped = !ghost_ondemand_init_still_wanted(test_z)
+
+	level.lighting_initialized = old_init
+	SSmobs.clients_by_zlevel[test_z] = saved_clients
+	if(saved_dead)
+		SSmobs.dead_players_by_zlevel[test_z] = saved_dead
+
+	TEST_ASSERT(empty_level_skipped, "свет целого z строится ради госта, которого на уровне уже нет")
+	TEST_ASSERT(stale_ref_skipped, "протухшая ссылка в реестре мёртвых заказала постройку целого z")
+	TEST_ASSERT(occupied_level_wanted, "гост остался на уровне, а свет ему не построят - он будет сидеть в темноте")
+	TEST_ASSERT(already_lit_skipped, "уровень уже поднят, а отложенный подъём всё равно сработает")
+
+/**
+ * Итоговая строка сноса называет, сколько памяти он ВЕРНУЛ операционной системе.
+ *
+ * Цена постройки печаталась с самого начала, цена сноса - нет, и вывод "снос не вернул
+ * ничего" (раунд 10134: минус 64 тыс. инстансов, VmSize 2634 -> 2647 МБ) приходилось
+ * собирать вручную по соседним строкам перф-CSV. Знак здесь обратный дельте VmSize:
+ * упавший VmSize - это возвращённая память, и читаться она обязана как плюс.
+ */
+/datum/unit_test/lighting_teardown_reports_memory_returned
+
+/datum/unit_test/lighting_teardown_reports_memory_returned/Run()
+	// Память не замерена (Windows, ранний старт) - хвоста нет вовсе, а не "0 МБ".
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(null, list("vsz" = 2600)), "", "без замера до сноса хвост обязан быть пустым")
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2600, null), "", "без замера после сноса хвост обязан быть пустым")
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2600, list("vsz" = null)), "", "с пустым VmSize после сноса хвост обязан быть пустым")
+
+	// VmSize упал - память вернули, и это плюс.
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2647, list("vsz" = 2600)), ", ОС возвращено +47 МБ VmSize", "падение VmSize прочиталось не как возврат памяти")
+	// Ровно случай раунда 10134: снос не вернул ничего.
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2634, list("vsz" = 2647)), ", ОС возвращено -13 МБ VmSize", "рост VmSize за время сноса прочитался не как отрицательный возврат")
+	TEST_ASSERT_EQUAL(zlevel_teardown_memory_note(2600, list("vsz" = 2600)), ", ОС возвращено 0 МБ VmSize", "нулевой возврат обязан печататься, а не пропадать")
