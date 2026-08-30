@@ -44,8 +44,8 @@
 /area/ruin/space/has_grav/Sidi_pidor)
 "hk" = (
 /obj/structure/table,
-/obj/item/modkit/p226_syndicate,
 /obj/structure/sign/flag/syndicate/directional/west,
+/obj/item/mod/module/anomaly_locked/antigrav,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/Sidi_pidor)
 "hn" = (
@@ -138,6 +138,10 @@
 /obj/structure/noticeboard/directional/north,
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/Sidi_pidor)
+"mn" = (
+/obj/item/mod/construction/armor/security/syndicate,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/Sidi_pidor)
 "nn" = (
 /obj/structure/frame/computer{
@@ -526,7 +530,7 @@ fJ
 Mc
 tO
 rB
-gw
+mn
 Mc
 fJ
 fJ

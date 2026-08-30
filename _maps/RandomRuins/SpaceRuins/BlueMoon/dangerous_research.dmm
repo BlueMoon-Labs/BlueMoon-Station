@@ -89,7 +89,7 @@
 /turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "cd" = (
-/turf/open/space/basic,
+/turf/template_noop,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "ce" = (
 /obj/effect/decal/cleanable/dirt,
@@ -712,7 +712,7 @@
 	name = "ASRC Electrical"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/away/science,
-/turf/open/space/basic,
+/turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "oH" = (
 /obj/effect/decal/cleanable/blood/footprints,
@@ -943,7 +943,7 @@
 	name = "Main Testing Room"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/away/science,
-/turf/open/space/basic,
+/turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "sa" = (
 /obj/effect/decal/cleanable/blood/gibs/core,
@@ -1565,10 +1565,6 @@
 /obj/effect/mapping_helpers/airlock/access/all/away/command,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/Strange_Avanpost)
-"Ep" = (
-/obj/structure/lattice,
-/turf/open/space/basic,
-/area/space)
 "Ey" = (
 /obj/structure/lattice,
 /turf/template_noop,
@@ -2036,12 +2032,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/item/gun/energy/plasmacutter/adv{
-	ricochet_damage_mod = 1;
-	desc = "Модифицированный резак. Его владельцу он не помог. Возможно поможет вам?";
-	inaccuracy_modifier = 0.75;
-	pressure_resistance = 2
-	},
+/obj/item/gun/ballistic/automatic/magrifle,
 /turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "Pn" = (
@@ -2116,7 +2107,7 @@
 /turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "QA" = (
-/turf/open/space/basic,
+/turf/template_noop,
 /area/space)
 "QE" = (
 /obj/item/restraints/handcuffs,
@@ -2381,7 +2372,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/mapping_helpers/airlock/access/all/away/science,
 /obj/effect/turf_decal/tile/yellow/fourcorners,
-/turf/open/space/basic,
+/turf/open/floor/plasteel/smooth,
 /area/ruin/space/has_grav/Strange_Avanpost)
 "Vo" = (
 /obj/machinery/iv_drip,
@@ -3054,7 +3045,7 @@ VD
 VD
 Qv
 VD
-Ep
+GZ
 VD
 Bg
 Qv
