@@ -60377,7 +60377,7 @@
 	dir = 8
 	},
 /turf/open/space,
-/area/space/nearstation)
+/area/engineering/atmospherics_engine)
 "jsq" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/white{
