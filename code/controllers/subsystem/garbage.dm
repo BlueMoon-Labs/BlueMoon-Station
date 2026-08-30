@@ -163,6 +163,8 @@ SUBSYSTEM_DEF(garbage)
 	var/reftrack_autoscans_this_round = 0
 	/// Авто-сканов по типам за раунд: type string -> count.
 	var/list/reftrack_autoscan_type_counts = list()
+	/// Кэш пробы держателей-мобов: type string -> список реально объявленных "целевых" переменных.
+	var/list/mob_target_var_cache = list()
 	// TESTING builds compile the GC failure viewer branch that reads this hook;
 	// unit tests and Spaceman also need the field even when their define sets differ.
 	#if defined(TESTING) || defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
@@ -1132,6 +1134,12 @@ SUBSYSTEM_DEF(garbage)
 			var/mob/living/rider = leaked_mob.buckled_mobs[1]
 			notes += "на нём бакл: [rider.type]"
 		notes += collect_ai_blackboard_holders(leaked_mob)
+	// Прямая ссылка из переменной ДРУГОГО моба - самый частый держатель мобов на
+	// ксенобио-ферме и самый незаметный: полный ref-скан на проде выключен, а ни
+	// одна проба выше в чужие мобы не смотрит. Дёшево (см. collect_mob_target_holders),
+	// но всё равно ищем только там, где остальные улики промолчали.
+	if (!length(notes) && ismob(D))
+		notes += collect_mob_target_holders(D)
 	// Клиентские структуры (images, screen, seen_messages, eye) - не датумы, и полный
 	// ref-скан мира их не видит в принципе.
 	//
@@ -1174,6 +1182,66 @@ SUBSYSTEM_DEF(garbage)
 					continue
 				return list("держит блэкборд [controller.type] (паун [controller.pawn?.type || "null"]), ключ [key]")
 	return list()
+
+/// "Целевые" переменные мобов - те, что держат ДРУГОГО моба и чистятся только
+/// собственным AI-тиком владельца. Список закрытый и короткий: проба обязана
+/// оставаться дешёвой, а полный обход vars - это уже ref-скан.
+GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
+	"target",           //monkey/combat.dm, hostile/simple_animal
+	"Target",           //slime
+	"Leader",           //slime
+	"movement_target",  //cat
+	"parrot_interest",  //parrot
+	"parrot_perch",     //parrot
+	"pulling",
+	"pulledby",
+	"riding_target",
+))
+
+/**
+ * Ищет утёкшего моба в "целевых" переменных других живых мобов.
+ *
+ * Прод-раунд 10151: 126 обезьян, 123 слайма, 5 мышей и 8 людей ушли в hard delete
+ * с "внешних ссылок: 1" и ПУСТЫМ списком улик. Держатель этого класса - обычная
+ * переменная соседнего моба (`monkey.target`, `slime.Target`/`Leader`,
+ * `cat.movement_target`, `parrot.parrot_interest`), которую чистит только
+ * собственный AI-тик держателя. Спящий держатель (рядом нет игрока, моб мёртв,
+ * контроллер в IDLE) не тикает вообще, и удалённая цель висит в нём до конца
+ * раунда. Ни блэкборд-проб, ни проверки loc/buckled/mind сюда не смотрят, а
+ * авто-скан ссылок на проде выключен - warnfail печатал пустую строку улик.
+ *
+ * Цена: один проход по GLOB.mob_living_list с парой чтений vars на моба
+ * (набор существующих имён кэшируется по типу), останов на первой находке.
+ *
+ * Ограничение: держатель, сам провалившийся в GC, из GLOB.mob_living_list уже
+ * выписан - взаимная пара двух удалённых мобов этой пробой не ловится.
+ */
+/datum/controller/subsystem/garbage/proc/collect_mob_target_holders(mob/leaked_mob)
+	for (var/mob/living/candidate as anything in GLOB.mob_living_list)
+		if (isnull(candidate) || candidate == leaked_mob)
+			continue
+		var/list/candidate_vars = candidate.vars
+		for (var/var_name in GetMobTargetVarNames(candidate))
+			if (candidate_vars[var_name] != leaked_mob)
+				continue
+			return list("держит [candidate.type] [text_ref(candidate)], вар [var_name]")
+	return list()
+
+/// Какие из GLOB.gc_mob_target_var_names реально объявлены у этого типа мобов.
+/// Кэш по типпасу: `"имя" in vars` - линейный поиск по трёмстам переменным, и без
+/// кэша проба стоила бы сотни тысяч сравнений строк на каждый warnfail.
+/datum/controller/subsystem/garbage/proc/GetMobTargetVarNames(mob/candidate)
+	var/type_key = "[candidate.type]"
+	var/list/cached = mob_target_var_cache[type_key]
+	if (!isnull(cached))
+		return cached
+	cached = list()
+	var/list/candidate_vars = candidate.vars
+	for (var/var_name in GLOB.gc_mob_target_var_names)
+		if (var_name in candidate_vars)
+			cached += var_name
+	mob_target_var_cache[type_key] = cached
+	return cached
 
 /// Schedules a reference scan for a GC-failed datum.
 /// references_to_clear ограничивает поиск числом реально оставшихся ссылок (ранний выход).

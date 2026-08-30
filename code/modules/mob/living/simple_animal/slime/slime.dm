@@ -61,6 +61,9 @@
 	var/target_patience = 0 // AI variable, cooloff-ish for how long it's going to follow its target
 
 	var/list/Friends = list() // A list of friends; they are not considered targets for feeding; passed down after splitting
+	/// Мобы, на удаление которых подписан слайм. Причин три - цель, лидер, дружба, -
+	/// а регистрация на пару (регистрант, цель, сигнал) может быть только одна.
+	var/list/watched_qdel_mobs = list()
 
 	var/list/speech_buffer = list() // Last phrase said near it and person who said it
 
@@ -118,8 +121,11 @@
 	deltimer(atkcool_timer_id)
 	Target = null
 	Leader = null
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
+	//подписка одна на моба, снимаем по реестру, а не по Friends: цель и лидер
+	//друзьями быть не обязаны
+	for(var/mob/living/watched_mob as anything in watched_qdel_mobs)
+		UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs = null
 	Friends = null
 	speech_buffer = null
 	for(var/datum/action/innate/slime/A in actions)
@@ -373,11 +379,7 @@
 				if(S.next_step(user,user.a_intent))
 					return TRUE
 	if(istype(W, /obj/item/stack/sheet/mineral/plasma) && !stat) //Let's you feed slimes plasma.
-		if (user in Friends)
-			++Friends[user]
-		else
-			Friends[user] = 1
-			RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(clear_friend))
+		add_friend(user)
 		to_chat(user, "<span class='notice'>You feed the slime the plasma. It chirps happily.</span>")
 		var/obj/item/stack/sheet/mineral/plasma/S = W
 		S.use(1)
@@ -441,9 +443,102 @@
 		visible_message("<span class='warning'>The mutated core shudders, and collapses into a puddle, unable to maintain its form.</span>")
 	qdel(src)
 
+/**
+ * Подписывает слайма на удаление моба.
+ *
+ * Причин следить три - цель, лидер и дружба, - а регистрация на пару
+ * (регистрант, цель, сигнал) может быть только одна: вторая перебивает первую и
+ * роняет в логи "parent_qdeleting overridden". Поэтому подписка общая, а
+ * обработчик один на все три причины.
+ */
+/mob/living/simple_animal/slime/proc/watch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || watched_mob == src || watched_qdel_mobs?[watched_mob])
+		return
+	RegisterSignal(watched_mob, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_mob_qdeleting))
+	watched_qdel_mobs[watched_mob] = TRUE
+
+/// Снимает подписку, но только если у моба не осталось ни одной причины следить.
+/mob/living/simple_animal/slime/proc/unwatch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || !watched_qdel_mobs?[watched_mob])
+		return
+	var/list/current_friends = Friends
+	if(watched_mob == Target || watched_mob == Leader || (current_friends && !isnull(current_friends[watched_mob])))
+		return
+	UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= watched_mob
+
+/// Общий обработчик удаления: снимает моба сразу со всех трёх причин.
+/mob/living/simple_animal/slime/proc/on_watched_mob_qdeleting(mob/living/gone)
+	SIGNAL_HANDLER
+
+	UnregisterSignal(gone, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= gone
+	Friends -= gone
+	if(Leader == gone)
+		Leader = null
+	// speech_buffer держит СКАЗАВШЕГО и опустошается только в handle_speech(), а тот
+	// не вызывается ни у слайма с ckey, ни у слайма не в сознании
+	if(length(speech_buffer) && speech_buffer[1] == gone)
+		speech_buffer = list()
+	if(Target != gone)
+		return
+	Target = null
+	chase_hunger = 0
+	if(ai_controller)
+		ai_controller.clear_blackboard_key(BB_SLIME_TARGET)
+
+/**
+ * Единственная точка правки `Target`.
+ *
+ * Протухшую цель чистит только начало `BiologicalLife()`, а `Life()` целиком
+ * пропускается на z-уровне без клиентов (`code/modules/mob/living/life.dm`), так
+ * что слайм в отставленном загоне держал удалённую обезьяну сколько угодно долго.
+ * Прод-раунд 10151, рефтрекер: "Найден /mob/living/carbon/monkey в
+ * /mob/living/simple_animal/slime, вар Target".
+ */
+/mob/living/simple_animal/slime/proc/set_slime_target(mob/living/new_target)
+	if(Target == new_target)
+		return
+	var/mob/living/previous_target = Target
+	Target = new_target
+	if(previous_target)
+		unwatch_mob_qdel(previous_target)
+	watch_mob_qdel(new_target)
+
+/// Единственная точка правки `Leader` - тот же класс держателя, что и Target.
+/mob/living/simple_animal/slime/proc/set_slime_leader(mob/living/new_leader)
+	if(Leader == new_leader)
+		return
+	var/mob/living/previous_leader = Leader
+	Leader = new_leader
+	if(previous_leader)
+		unwatch_mob_qdel(previous_leader)
+	watch_mob_qdel(new_leader)
+
+/**
+ * Единственная точка добавления друга.
+ *
+ * Половина писателей в `Friends` живёт вне модуля слайма (кроссбриды, стабилизаторы,
+ * железа абдукторов) и подписку на удаление не ставила - ключ держал удалённого
+ * человека до конца жизни слайма, то есть весь раунд.
+ */
+/mob/living/simple_animal/slime/proc/add_friend(mob/living/friend, amount = 1)
+	if(!friend || friend == src)
+		return
+	LAZYINITLIST(Friends)
+	Friends[friend] += amount
+	watch_mob_qdel(friend)
+
+/// Сбрасывает весь список дружбы, не оставляя висячих подписок.
+/mob/living/simple_animal/slime/proc/drop_all_friends()
+	for(var/mob/living/friend as anything in Friends)
+		Friends -= friend
+		unwatch_mob_qdel(friend)
+	Friends = list()
+
 /mob/living/simple_animal/slime/proc/clear_friend(mob/living/friend)
-	UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
 	Friends -= friend
+	unwatch_mob_qdel(friend)
 
 /mob/living/simple_animal/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
@@ -497,8 +592,7 @@
 			if(Discipline == 1)
 				attacked = 0
 
-	if(Target)
-		Target = null
+	set_slime_target(null)
 	if(buckled)
 		Feedstop(silent = TRUE) //we unbuckle the slime from the mob it latched onto.
 
