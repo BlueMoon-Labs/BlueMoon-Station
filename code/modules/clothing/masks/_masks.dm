@@ -108,10 +108,11 @@
 	if(!face_hide_capable)
 		return
 	face_hidden = !face_hidden
+	// Только HIDEFACE тогглим, остальное (HIDEEARS/HIDEHAIR/HIDEEYES) не трогаем
 	if(face_hidden)
-		flags_inv = face_base_flags | HIDEFACE
+		flags_inv |= HIDEFACE
 	else
-		flags_inv = face_base_flags & ~HIDEFACE
+		flags_inv &= ~HIDEFACE
 	if(isliving(loc))
 		var/mob/living/L = loc
 		L.update_inv_wear_mask()
