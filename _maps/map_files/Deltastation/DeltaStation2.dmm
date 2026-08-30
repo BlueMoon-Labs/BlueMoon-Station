@@ -21026,6 +21026,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "cSh" = (
