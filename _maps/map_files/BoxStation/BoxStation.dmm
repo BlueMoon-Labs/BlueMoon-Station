@@ -9617,8 +9617,8 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/maintenance/central)
 "aZz" = (
-/obj/machinery/computer/upload/borg,
-/turf/open/floor/circuit,
+/mob/living/simple_animal/hostile/vox/ranged/space,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/ai_monitored/turret_protected/ai_upload)
 "aZA" = (
 /obj/effect/turf_decal/delivery,
@@ -12573,11 +12573,8 @@
 /turf/open/floor/plasteel,
 /area/maintenance/port/aft)
 "bjx" = (
-/obj/machinery/light,
-/obj/machinery/porta_turret/ai{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark/textured/large,
+/obj/structure/lattice,
+/turf/open/floor/plating,
 /area/ai_monitored/turret_protected/ai_upload)
 "bjz" = (
 /turf/closed/wall/r_wall,
@@ -31962,9 +31959,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/effect/mob_spawn/human/inteqspace/engineer{
-	flavour_text = "Вы один из выживших рейдеров корвета Колосс, что участвовали в нападении на этот обьект. АД. Ебучий ад Пакта. Вам удалось выжить и перегрупироваться в захваченном отделе. Но вот вещей.Вещей маловато. Нужно что то думать."
-	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
 "cBw" = (
@@ -36751,8 +36745,6 @@
 	},
 /area/security/brig/brig_medical)
 "eky" = (
-/obj/item/ai_module/supplied/oxygen,
-/obj/item/ai_module/zeroth/oneHuman,
 /obj/machinery/door/window{
 	name = "High-Risk Modules";
 	req_access_txt = "20"
@@ -43712,6 +43704,7 @@
 "gWZ" = (
 /obj/effect/turf_decal/tile/neutral/full,
 /obj/effect/turf_decal/bot/white,
+/mob/living/simple_animal/hostile/vox/ranged/space/laser,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ai_monitored/turret_protected/ai_upload)
 "gXs" = (
@@ -47368,9 +47361,6 @@
 /turf/open/floor/plasteel/textured/large,
 /area/cargo/storage)
 "izg" = (
-/obj/machinery/porta_turret/ai{
-	dir = 4
-	},
 /obj/machinery/light{
 	dir = 8
 	},
@@ -51364,9 +51354,6 @@
 /turf/open/floor/plasteel/textured/large,
 /area/security/office)
 "ken" = (
-/obj/machinery/porta_turret/ai{
-	dir = 8
-	},
 /obj/machinery/light{
 	dir = 4
 	},
@@ -56654,6 +56641,10 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/security/brig/brig_medical)
+"msA" = (
+/mob/living/simple_animal/hostile/vox/ranged/space,
+/turf/open/space/basic,
+/area/maintenance/port/fore)
 "msB" = (
 /obj/machinery/door/airlock/security/glass{
 	name = "Equipment Room";
@@ -61796,8 +61787,8 @@
 /turf/open/floor/plasteel/textured/large,
 /area/cargo/office)
 "ovA" = (
-/obj/machinery/computer/upload/ai,
-/turf/open/floor/circuit,
+/mob/living/simple_animal/hostile/vox/ranged/space/laser,
+/turf/open/floor/plating,
 /area/ai_monitored/turret_protected/ai_upload)
 "ovU" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -64327,7 +64318,6 @@
 	},
 /obj/effect/spawner/lootdrop/ai_module_harmless,
 /obj/effect/spawner/lootdrop/ai_module_lewd,
-/obj/effect/spawner/lootdrop/ai_module_neutral,
 /obj/structure/window/reinforced{
 	dir = 1
 	},
@@ -65347,7 +65337,6 @@
 /area/hallway/primary/starboard)
 "pXI" = (
 /obj/structure/table,
-/obj/item/ai_module/supplied/quarantine,
 /obj/machinery/camera/motion{
 	c_tag = "AI Upload Chamber - West";
 	dir = 4;
@@ -77984,9 +77973,6 @@
 /area/science/explab)
 "vjE" = (
 /obj/machinery/light,
-/obj/machinery/porta_turret/ai{
-	dir = 8
-	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ai_monitored/turret_protected/ai_upload)
 "vjV" = (
@@ -104716,7 +104702,7 @@ nVz
 izg
 aDq
 pXI
-bjx
+vjE
 nVz
 ktS
 aKs
@@ -104968,7 +104954,7 @@ grs
 ayw
 bjd
 ktS
-nVz
+ovA
 pAN
 bNJ
 aZR
@@ -105225,10 +105211,10 @@ axw
 jIW
 bid
 gXs
-nVz
-ovA
+bjx
+aZR
 bNJ
-bNJ
+aZz
 aLP
 elZ
 nVz
@@ -105482,7 +105468,7 @@ amC
 spw
 bif
 ktS
-nVz
+bjx
 nVz
 tUT
 aDk
@@ -105739,8 +105725,8 @@ aFJ
 aFJ
 aFJ
 ktS
-nVz
-aZz
+bjx
+aZR
 bNJ
 mzB
 gWZ
@@ -105993,7 +105979,7 @@ alU
 alU
 alU
 axp
-axp
+msA
 axp
 gXs
 nVz
