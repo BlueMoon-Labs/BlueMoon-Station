@@ -124,14 +124,16 @@
 					general["photos"] = photos
 					if(istype(active1.fields["photo_front"], /obj/item/photo))
 						var/obj/item/photo/P = active1.fields["photo_front"]
-						if(P.picture?.picture_image)
-							photos[++photos.len] = icon2base64(P.picture.picture_image)
+						var/front_base64 = P.picture?.get_base64()
+						if(front_base64)
+							photos[++photos.len] = front_base64
 					else if(isicon(active1.fields["photo_front"]))
 						photos[++photos.len] = icon2base64(active1.fields["photo_front"])
 					if(istype(active1.fields["photo_side"], /obj/item/photo))
 						var/obj/item/photo/P = active1.fields["photo_side"]
-						if(P.picture?.picture_image)
-							photos[++photos.len] = icon2base64(P.picture.picture_image)
+						var/side_base64 = P.picture?.get_base64()
+						if(side_base64)
+							photos[++photos.len] = side_base64
 					else if(isicon(active1.fields["photo_side"]))
 						photos[++photos.len] = icon2base64(active1.fields["photo_side"])
 					general["has_photos"] = length(photos) > 0
