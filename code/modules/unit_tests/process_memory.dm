@@ -604,6 +604,18 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
  */
 /datum/unit_test/list_slots_deep
 
+/**
+ * Подпись списка в строке переписи обязана показывать длину верхнего уровня, когда она
+ * отличается от глубоких слотов: `cached_icon_states_by_file` с капом в 4096 ключей четыре
+ * раунда подряд читали как «77 тысяч без потолка», потому что в логе была одна цифра.
+ */
+/datum/unit_test/census_list_label
+
+/datum/unit_test/census_list_label/Run()
+	TEST_ASSERT_EQUAL(SStime_track.census_list_label("GLOB.flat", 128, 128), "GLOB.flat 128", "Плоский список получил лишнюю подпись")
+	TEST_ASSERT_EQUAL(SStime_track.census_list_label("GLOB.nested", 77579, 2400), "GLOB.nested 77579 (верхний уровень 2400)", "Вложенный список не показывает длину верхнего уровня")
+	TEST_ASSERT_EQUAL(SStime_track.census_list_label("GLOB.big", 1500000, 1500000), "GLOB.big 1500000", "Число от миллиона свёрнуто в экспоненту")
+
 /datum/unit_test/list_slots_deep/Run()
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list(1, 2, 3)), 3, "Плоский список посчитан неверно")
 	TEST_ASSERT_EQUAL(SStime_track.list_slots_deep(list()), 0, "Пустой список обязан дать ноль")
