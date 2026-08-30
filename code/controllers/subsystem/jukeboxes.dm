@@ -27,6 +27,17 @@
 
 /// Радиус, за пределами которого джукбокс слышно только внутри его собственной зоны
 #define JUKEBOX_HEARING_RANGE 7
+/// Доля громкости, ниже которой трек считаем неслышимым и ресурс слушателю не шлём.
+/// За пределами falloff BYOND гасит звук обратно расстоянию: громкость = falloff / d, где d в
+/// единицах звука (тайл = SOUND_DEFAULT_DISTANCE_MULTIPLIER). При 5% штатная громкость 70
+/// (falloff 2) даёт радиус 16 тайлов, максимум 100 - 23, взломанная колонка на 1000 - весь сектор.
+#define JUKEBOX_AUDIBLE_GAIN 0.05
+
+// Координаты звука относительно слушателя - те же, что кладутся в /sound. Одна формула на
+// рассылку и на отправку, чтобы радиус досылки не разъезжался с тем, что реально слышно.
+#define JUKEBOX_SOUND_X(source, listener) ((source.x - listener.x) * SOUND_DEFAULT_DISTANCE_MULTIPLIER)
+#define JUKEBOX_SOUND_Z(source, listener) ((source.y - listener.y) * SOUND_DEFAULT_DISTANCE_MULTIPLIER)
+#define JUKEBOX_SOUND_Y(source, listener) (((source.z - listener.z) * 10 * SOUND_DEFAULT_DISTANCE_MULTIPLIER) + ((source.z < listener.z) ? -5 : 5))
 
 // Track data
 /// Name of the track
@@ -95,8 +106,11 @@ SUBSYSTEM_DEF(jukeboxes)
 
 	// ЦЕНА: SEND_SOUND тянет клиенту весь файл трека. У персональных шкатулок это загруженный
 	// игроком ogg на мегабайты, и раньше он уходил КАЖДОМУ клиенту сервера независимо от того,
-	// где стоит источник. Стартовую рассылку ограничиваем теми, кто уже в зоне джукбокса или в
-	// радиусе слышимости; подошедшим позже ресурс досылает fire() по факту входа в радиус.
+	// где стоит источник. Стартовую рассылку ограничиваем теми, кому трек слышен: та же зона,
+	// радиус hearers либо позиционное затухание ещё не задавило громкость (JUKEBOX_AUDIBLE_GAIN).
+	// Подошедшим позже ресурс досылает fire() по факту входа в радиус.
+	var/turf/juke_turf = get_turf(jukebox)
+	var/list/audible_zlevels = juke_turf ? get_multiz_accessible_levels(juke_turf.z) : list()
 	var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
 	for(var/mob/M in GLOB.player_list)
 		if(!M.client)
@@ -107,11 +121,35 @@ SUBSYSTEM_DEF(jukeboxes)
 			continue
 		if(!jukebox_area_allows(M, jukebox, one_area_play))
 			continue
-		if(get_area(M) != juke_area && !(M in hearerscache))
+		if(get_area(M) != juke_area && !(M in hearerscache) && !jukebox_within_earshot(juke_turf, get_turf(M), jukefalloff, audible_zlevels))
 			continue
 		SEND_SOUND(M, song_to_init)
 		sent_to[M.ckey] = TRUE
 	return activejukeboxes.len
+
+/**
+ * Слышен ли трек с такой громкостью на таком удалении. Чистая функция от координат звука
+ * (единицы BYOND, как в /sound.x/y/z) - радиус досылки ресурса считается по ней же.
+ *
+ * До этой проверки ресурс досылался только тем, кто стоит в зоне джукбокса или в hearers(7).
+ * Позиционное затухание несёт звук куда дальше: слушатель в соседней комнате слышал предыдущий
+ * трек приглушённым, а следующий не получал вовсе - файл до него не доходил, пока он не
+ * подойдёт. Взломанные колонки, чей смысл в громкости на весь сектор, не работали совсем.
+ */
+/proc/jukebox_audible_at(falloff, sound_x, sound_y, sound_z)
+	if(!(falloff > 0))
+		return FALSE
+	var/distance = sqrt(sound_x * sound_x + sound_y * sound_y + sound_z * sound_z)
+	return distance * JUKEBOX_AUDIBLE_GAIN <= falloff
+
+/// Попадает ли слушатель на этом турфе в радиус, где трек ещё слышен: достижимый z и громкость
+/// после позиционного затухания не ниже JUKEBOX_AUDIBLE_GAIN.
+/datum/controller/subsystem/jukeboxes/proc/jukebox_within_earshot(turf/source, turf/listener, falloff, list/audible_zlevels)
+	if(!source || !listener)
+		return FALSE
+	if(!(listener.z in audible_zlevels))
+		return FALSE
+	return jukebox_audible_at(falloff, JUKEBOX_SOUND_X(source, listener), JUKEBOX_SOUND_Y(source, listener), JUKEBOX_SOUND_Z(source, listener))
 
 /**
  * Ограничение зоны для джукбокса, стоящего в этой зоне: сама зона, номер комнаты отеля либо
@@ -331,6 +369,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		var/targetfalloff = jukeinfo[JUKE_FALLOFF]
 		var/mixes = ((targetfalloff*250)-750)
 		var/inrange
+		var/audible
 		var/pressure_factor
 
 
@@ -364,6 +403,7 @@ SUBSYSTEM_DEF(jukeboxes)
 				continue
 
 			inrange = FALSE
+			audible = FALSE
 			song_played.status = SOUND_MUTE | SOUND_UPDATE
 
 			if(source_pressure)
@@ -377,9 +417,10 @@ SUBSYSTEM_DEF(jukeboxes)
 					else if(M in hearerscache)
 						inrange = TRUE
 
-					song_played.x = (currentturf.x - hearerturf.x) * SOUND_DEFAULT_DISTANCE_MULTIPLIER
-					song_played.z = (currentturf.y - hearerturf.y) * SOUND_DEFAULT_DISTANCE_MULTIPLIER
-					song_played.y = (((currentturf.z - hearerturf.z) * 10 * SOUND_DEFAULT_DISTANCE_MULTIPLIER) + ((currentturf.z < hearerturf.z) ? -5 : 5))
+					song_played.x = JUKEBOX_SOUND_X(currentturf, hearerturf)
+					song_played.z = JUKEBOX_SOUND_Z(currentturf, hearerturf)
+					song_played.y = JUKEBOX_SOUND_Y(currentturf, hearerturf)
+					audible = jukebox_audible_at(targetfalloff, song_played.x, song_played.y, song_played.z)
 
 					if(pressure_factor < ONE_ATMOSPHERE)
 						song_played.volume = (min((targetfalloff * 50), 100) * max((pressure_factor - SOUND_MINIMUM_PRESSURE)/(ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 1))
@@ -389,9 +430,10 @@ SUBSYSTEM_DEF(jukeboxes)
 					song_played.status = SOUND_UPDATE
 			var/first_send = FALSE
 			if(!sent_to[M.ckey])
-				// Ресурса у клиента ещё нет, а SOUND_UPDATE пустой канал не поднимет. Пока игрок
-				// вне радиуса - не шлём ему ничего, иначе мы снова раздаём мегабайты всему серверу.
-				if(!inrange || !jukebox_area_allows(M, jukebox, area_limit))
+				// Ресурса у клиента ещё нет, а SOUND_UPDATE пустой канал не поднимет. Пока трек
+				// игроку не слышен - не шлём ему ничего, иначе мы снова раздаём мегабайты всему
+				// серверу. Слышен - значит в зоне, в hearers либо затухание ещё не задавило громкость.
+				if((!inrange && !audible) || !jukebox_area_allows(M, jukebox, area_limit))
 					continue
 				first_send = TRUE
 				sent_to[M.ckey] = TRUE
@@ -424,3 +466,7 @@ SUBSYSTEM_DEF(jukeboxes)
 #undef JUKE_START_REAL
 
 #undef JUKEBOX_HEARING_RANGE
+#undef JUKEBOX_AUDIBLE_GAIN
+#undef JUKEBOX_SOUND_X
+#undef JUKEBOX_SOUND_Y
+#undef JUKEBOX_SOUND_Z

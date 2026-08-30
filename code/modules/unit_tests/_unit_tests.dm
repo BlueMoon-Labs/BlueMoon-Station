@@ -301,6 +301,7 @@
 #include "observer_reenter_race.dm"
 #include "jukebox_catchup_offset.dm"
 #include "jukebox_import.dm"
+#include "jukebox_send_range.dm"
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
