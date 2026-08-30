@@ -66,7 +66,7 @@
 		RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 
 /obj/item/mod/module/Destroy()
-	mod?.uninstall(src)
+	mod?.uninstall(src, deleting = TRUE)
 	if(device)
 		UnregisterSignal(device, COMSIG_PARENT_PREQDELETED)
 		QDEL_NULL(device)

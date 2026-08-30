@@ -79,11 +79,11 @@
 /obj/structure/closet/crate/open(mob/living/user, force = FALSE)
 	. = ..()
 	if(. && manifest)
+		var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+		set_manifest(null)
 		to_chat(user, "<span class='notice'>The manifest is torn off [src].</span>")
 		playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
-		manifest.forceMove(get_turf(src))
-		manifest = null
-		update_icon()
+		torn_manifest.forceMove(get_turf(src))
 
 // cit specific
 /obj/structure/closet/crate/handle_lock_addition()
@@ -93,12 +93,32 @@
 	return
 
 /obj/structure/closet/crate/proc/tear_manifest(mob/user)
+	if(!manifest)
+		return
+	var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+	set_manifest(null)
 	to_chat(user, "<span class='notice'>You tear the manifest off of [src].</span>")
 	playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
 
-	manifest.forceMove(loc)
+	torn_manifest.forceMove(loc)
 	if(ishuman(user))
-		user.put_in_hands(manifest)
+		user.put_in_hands(torn_manifest)
+
+/// Накладная лежит в contents ящика и умирает вместе с ним от взрыва - ссылка на неё
+/// обязана опускаться сама, иначе open()/tear_manifest() двигали qdel-нутую бумагу
+/// (прод-раунд 10150).
+/obj/structure/closet/crate/proc/set_manifest(obj/item/paper/fluff/jobs/cargo/manifest/new_manifest)
+	if(manifest == new_manifest)
+		return
+	if(manifest)
+		UnregisterSignal(manifest, COMSIG_PARENT_QDELETING)
+	manifest = new_manifest
+	if(manifest)
+		RegisterSignal(manifest, COMSIG_PARENT_QDELETING, PROC_REF(on_manifest_deleted))
+	update_icon()
+
+/obj/structure/closet/crate/proc/on_manifest_deleted(datum/source)
+	SIGNAL_HANDLER
 	manifest = null
 	update_icon()
 
