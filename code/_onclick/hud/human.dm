@@ -499,7 +499,9 @@
 	sprint_buffer.screen_loc = ui_sprintbufferloc
 	static_inventory += sprint_buffer
 	if(!on_new)
-		owner?.client?.screen += using
+		// sprint_buffer, а не using: копипаста из блока выше клала на экран кнопку спринта
+		// ВТОРОЙ раз, а сам буфер не попадал туда никогда.
+		owner?.client?.screen |= sprint_buffer
 
 /datum/hud/human/update_locked_slots()
 	if(!mymob)

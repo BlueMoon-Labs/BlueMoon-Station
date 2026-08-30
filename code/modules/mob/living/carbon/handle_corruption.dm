@@ -5,41 +5,57 @@
 //Moved into its own file for easier accessability & less cluttering of carbon/life.dm. Used in BiologicalLife()
 
 
-#define CORRUPTION_CHECK_INTERVAL 10   //Life() is called once every second, so ten seconds interval.
+//Счёт ИДЁТ В СЕКУНДАХ, а не в вызовах Life(). Старый счётчик клал по единице на вызов
+//и опирался на комментарий "Life() раз в секунду", но SSmobs стоит на wait = 20: BiologicalLife()
+//идёт раз в две секунды. delta_time заодно учитывает каденс и долг времени
+//троттлинга из living/life.dm.
+//
+//ЧИСЛА ПОДОБРАНЫ ПОД ФАКТИЧЕСКУЮ КАДЕНЦИЮ ПРОДА, а не под заявленную в старом
+//комментарии. Счётчик по вызовам давал 20/18/16/14 секунд между сбоями; честный
+//счёт в секундах с прежними числами удвоил бы частоту сбоев у игрока. Это правка
+//памяти, а не баланса, поэтому частота сбоев сохранена один в один.
+#define CORRUPTION_CHECK_INTERVAL 20   //Секунд между проверками на минимальной повреждённости.
 #define CORRUPTION_THRESHHOLD_MINOR 10 //Above: Annoyances, to remind you you should get your corruption fixed.
 #define CORRUPTION_THRESHHOLD_MAJOR 35 //Above: Very annoying stuff, go get fixed.
 #define CORRUPTION_THRESHHOLD_CRITICAL 65 //Above: Extremely annoying stuff, possibly life-threatening
 #define CORRUPTION_THRESHHOLD_CATASTROPHIC 100 //Above: Extremely annoying stuff, possibly life-threatening
 
-/mob/living/carbon/proc/handle_corruption()
+/mob/living/carbon/proc/handle_corruption(delta_time = 2)
 	if(!HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM)) //Only robot-people need to care about this
 		return
-	corruption_timer++
+	corruption_timer += delta_time
 	var/corruption = getToxLoss(toxins_type = TOX_SYSCORRUPT)
 	var/corruption_state
 	var/timer_req = CORRUPTION_CHECK_INTERVAL
+	var/error_severity = CORRUPTION_ERROR_NONE
 	switch(corruption)
 		if(0 to CORRUPTION_THRESHHOLD_MINOR)
 			timer_req = INFINITY //Below minor corruption you are fiiine
 			corruption_state = "<font color='green'>None</font>" //This should never happen, but have it anyways.
 		if(CORRUPTION_THRESHHOLD_MINOR to CORRUPTION_THRESHHOLD_MAJOR)
 			corruption_state = "<font color='blue'>Minor</font>"
-			error_handler(1)
+			error_severity = CORRUPTION_ERROR_MINOR
 		if(CORRUPTION_THRESHHOLD_MAJOR to CORRUPTION_THRESHHOLD_CRITICAL)
-			timer_req -= 1
+			timer_req -= 2 //восемнадцать секунд
 			corruption_state = "<font color='orange'>Major</font>"
-			error_handler(2)
+			error_severity = CORRUPTION_ERROR_MAJOR
 		if(CORRUPTION_THRESHHOLD_CRITICAL to CORRUPTION_THRESHHOLD_CATASTROPHIC)
-			timer_req -= 2
+			timer_req -= 4 //шестнадцать секунд
 			corruption_state = "<font color='red'>Critical</font>"
-			error_handler(3)
+			error_severity = CORRUPTION_ERROR_CRITICAL
 		if(CORRUPTION_THRESHHOLD_CATASTROPHIC to INFINITY)
-			timer_req -= 3
+			timer_req -= 6 //четырнадцать секунд
 			corruption_state = "<font color='red'>CATASTROPHIC</font>"
-			error_handler(4)
+			error_severity = CORRUPTION_ERROR_CATASTROPHIC
+	// Гейт таймера теперь накрывает и error_handler. Раньше он стоял ПЕРЕД ним, и
+	// строчка ошибки уходила в нейроинтерфейс на КАЖДОМ вызове handle_corruption,
+	// то есть раз в две секунды, а не раз в положенные 14-20. Каждая такая строка -
+	// новая растровая поверхность maptext у клиента навсегда.
 	if(corruption_timer < timer_req)
 		return
 	corruption_timer = 0
+	if(error_severity != CORRUPTION_ERROR_NONE)
+		error_handler(error_severity)
 	if(!prob(corruption)) //Lucky you beat the rng roll!
 		return
 	var/list/whatmighthappen = list()
@@ -201,22 +217,35 @@
 	SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "Preparations complete, powering down.", "SYSTEM", null, 12)
 	Sleeping(time)
 
+/**
+ * Строчка сбоя в нейроинтерфейс. Зовётся из-под гейта таймера, раз в 14-20 секунд.
+ *
+ * Ключ записи стабилен ("EXCEPTION") и таким был всегда: write_data() находит прежнюю
+ * запись и заменяет её, панель от этого не растёт, и экранный объект всё время один и тот же.
+ *
+ * Платится НЕ объект и не перерисовка, а УНИКАЛЬНАЯ СТРОКА maptext. Код ошибки собран из
+ * rand(), значение новое каждый раз, а каждая новая строка - это новый appearance со своей
+ * растеризованной поверхностью (225*96*4 байт у панели логов, 225*128*4 у панели
+ * данных), которую 32-битный клиент держит до конца сессии. Поэтому цена здесь - частота
+ * вызова, а не число объектов: до правки прок стоял ПЕРЕД гейтом таймера и уходил
+ * в панель раз в две секунды, на каждый BiologicalLife() повреждённого синта.
+ */
 /mob/living/carbon/proc/error_handler(severity)
 	var/size = rand(9, 22)
 	var/memory = rand(11111111, 99999999)
 	switch(severity)
-		if(1)
+		if(CORRUPTION_ERROR_MINOR)
 			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "EXCEPTION ENCOUNTERED: ERROR 0x[memory]", "ERROR", null, 12)
 			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "EXCEPTION", "0x[memory]", 10 SECONDS)
-		if(2)
+		if(CORRUPTION_ERROR_MAJOR)
 			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "EX4444@#PTION ENC@#RED: ER@##OR 0x[memory]", "ERROR", null, 12)
-			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "E@[rand(1, 9)]!#P[rand(1, 9)]TION[rand(1, 9)]", "0x[memory]@##@", 5 SECONDS)
-		if(3)
+			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "EXCEPTION", "0x[memory]@##@", 5 SECONDS)
+		if(CORRUPTION_ERROR_CRITICAL)
 			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "EX12@#PTION ENC@#@ED: ER@##OR 0@##x[memory]@#$ 2 3 @ # #@34#@#", "E@$E@#", "#ff0000", size)
-			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "E@[rand(1, 9)]!#P[rand(1, 9)]TION[rand(1, 9)]", "[rand(1, 9)]x[memory]@##@", 5 SECONDS)
-		if(4)
+			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "EXCEPTION", "[rand(1, 9)]x[memory]@##@", 5 SECONDS)
+		if(CORRUPTION_ERROR_CATASTROPHIC)
 			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "EXggg@#PTION ENC@#@ED C#RI@#ROITI#ICAL: ER@##OR 0@##x[memory]@#$ 2 @##@#CRIT F@#AIL 3 @ # #@34#@@#@#", "E###########SWE@#", "#ff0000", size)
-			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "@#$@#!@#$@[rand(1, 9)]!#@$$[rand(1, 9)]@$$@$[rand(1, 9)]$@@!@!$HH[rand(1, 9)]AHAHAHHAHAHAHAHAHA[rand(1, 9)]", "[rand(1, 9)]x[memory]@##HELP@##@#AHASHHAHAHAHA", 5 SECONDS)
+			SEND_SIGNAL(src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "EXCEPTION", "[rand(1, 9)]x[memory]@##HELP@##@#AHASHHAHAHAHA", 5 SECONDS)
 
 
 

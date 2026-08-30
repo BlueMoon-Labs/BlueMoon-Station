@@ -14,6 +14,9 @@
 #define STATPANEL_STAGGER_GROUPS 3
 /// LRU cap for per-client statpanel_sent_icons; older entries are evicted as new ones arrive.
 #define STATPANEL_ICON_CACHE_CAP 256
+/// Индексы записи statpanel_sent_icons: сам URL и слабая ссылка на атом, которому он принадлежит.
+#define STATPANEL_ICON_ENTRY_URL 1
+#define STATPANEL_ICON_ENTRY_OWNER 2
 /// Атомам с большим числом оверлеев иконку не флаттеним: один getFlatIcon одетого человека
 /// (30-80 оверлеев) блокирует тик на 150-250мс Blend'ов. Таким отдаётся базовая иконка.
 #define STATPANEL_MAX_FLAT_OVERLAYS 12
@@ -396,7 +399,7 @@ SUBSYSTEM_DEF(statpanels)
 			if(QDELETED(A))
 				continue
 			var/ref = REF(A)
-			if(C.statpanel_sent_icons[ref])
+			if(statpanel_icon_already_sent(C.statpanel_sent_icons, ref, A))
 				continue
 			var/icon_url
 			var/overlay_count = length(A.overlays)
@@ -405,7 +408,7 @@ SUBSYSTEM_DEF(statpanels)
 			else
 				icon_url = icon2html(A, C, sourceonly=TRUE)
 			if(icon_url)
-				cache_sent_icon(C, ref, icon_url)
+				cache_sent_icon(C, ref, icon_url, A)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
 			// Бюджет в штуках не ограничивает время: тик-чек после каждой сгенерированной иконки,
@@ -423,16 +426,32 @@ SUBSYSTEM_DEF(statpanels)
 		if(MC_TICK_CHECK)
 			return
 
+/// Иконка для атома уже отправлена этому клиенту?
+///
+/// Ключ кэша - REF(атома), а REF после сборки мусора достаётся следующему объекту: новая вещь
+/// на том же слоте засчитывалась как «уже отправленная» и оставалась в панели с иконкой
+/// удалённой. Запись поэтому держит слабую ссылку на исходный атом, а resolve() возвращает
+/// цель, только если это по-прежнему она (проверка weak_reference == src внутри resolve).
+/proc/statpanel_icon_already_sent(list/sent_icons, ref, atom/subject)
+	var/list/entry = sent_icons?[ref]
+	if(!islist(entry))
+		return FALSE
+	var/datum/weakref/sent_for = entry[STATPANEL_ICON_ENTRY_OWNER]
+	return sent_for?.resolve() == subject
+
 /// Cache an icon REF→URL on the client with a soft LRU bound. When the cap is hit, the oldest
 /// entries are evicted (BYOND assoc lists preserve insertion order). Prevents 4-hour sessions
 /// from accumulating multi-MB caches and avoids serving stale icons across REF recycling.
-/datum/controller/subsystem/statpanels/proc/cache_sent_icon(client/C, ref, icon_url)
+/datum/controller/subsystem/statpanels/proc/cache_sent_icon(client/C, ref, icon_url, atom/subject)
 	if(!C || !ref || !icon_url)
 		return
+	var/list/entry = new /list(2)
+	entry[STATPANEL_ICON_ENTRY_URL] = icon_url
+	entry[STATPANEL_ICON_ENTRY_OWNER] = WEAKREF(subject)
 	if(C.statpanel_sent_icons[ref])
-		C.statpanel_sent_icons[ref] = icon_url
+		C.statpanel_sent_icons[ref] = entry
 		return
-	C.statpanel_sent_icons[ref] = icon_url
+	C.statpanel_sent_icons[ref] = entry
 	var/overflow = length(C.statpanel_sent_icons) - STATPANEL_ICON_CACHE_CAP
 	if(overflow > 0)
 		C.statpanel_sent_icons.Cut(1, overflow + 1)
@@ -455,7 +474,7 @@ SUBSYSTEM_DEF(statpanels)
 	var/list/needs_icons = list()
 	var/listed_ref = REF(listed)
 	turfitems[++turfitems.len] = list("[listed]", listed_ref)
-	if(!sent_icons || !sent_icons[listed_ref])
+	if(!statpanel_icon_already_sent(sent_icons, listed_ref, listed))
 		needs_icons += listed
 	for(var/tc in listed)
 		var/atom/movable/turf_content = tc
@@ -471,7 +490,7 @@ SUBSYSTEM_DEF(statpanels)
 			continue
 		var/ref = REF(turf_content)
 		turfitems[++turfitems.len] = list("[turf_content.name]", ref)
-		if(!sent_icons || !sent_icons[ref])
+		if(!statpanel_icon_already_sent(sent_icons, ref, turf_content))
 			needs_icons += turf_content
 	return list(
 		"entries" = turfitems,
@@ -822,6 +841,8 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_SLOW_CYCLE_FULLS
 #undef STATPANEL_STAGGER_GROUPS
 #undef STATPANEL_ICON_CACHE_CAP
+#undef STATPANEL_ICON_ENTRY_URL
+#undef STATPANEL_ICON_ENTRY_OWNER
 #undef STATPANEL_MAX_FLAT_OVERLAYS
 #undef STATPANEL_TIDI_INTERVAL
 #undef STATBROWSER_PROTOCOL_VERSION

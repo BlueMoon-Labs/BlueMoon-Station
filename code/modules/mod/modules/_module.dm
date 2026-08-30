@@ -92,7 +92,7 @@
 		return
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
-/obj/item/mod/module/proc/on_uninstall()
+/obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
 	if(required_modpart)
 		required_modpart.linked_modules -= src
 		required_modpart = null

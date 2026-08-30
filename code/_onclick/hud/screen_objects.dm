@@ -590,7 +590,10 @@
 	plane = FULLSCREEN_PLANE
 
 /atom/movable/screen/damageoverlay
-	icon = 'icons/mob/screen_full.dmi'
+	// Свой лист screen_full.dmi повторял 33 стейта из fullscreen_15x15.dmi слово в слово,
+	// а тип никто не создаёт (screenoverlays не заполняется нигде), так что второй копии
+	// хватило бы только на то, чтобы однажды уехать клиенту целиком.
+	icon = 'icons/screen/fullscreen_15x15.dmi'
 	icon_state = "oxydamageoverlay0"
 	name = "dmg"
 	blend_mode = BLEND_MULTIPLY

@@ -166,6 +166,10 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/InteQ_ship/ship6)
+"aC" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship6)
 "aD" = (
 /obj/machinery/computer/med_data{
 	dir = 8
@@ -432,6 +436,7 @@
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
 /obj/item/card/id/syndicate/one_access_copy,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "bn" = (
@@ -620,10 +625,6 @@
 /obj/structure/frame,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
-"bN" = (
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/nanotrasen,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship/ship3)
 "bO" = (
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt,
@@ -671,6 +672,13 @@
 /obj/item/crowbar/red,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"bV" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plating{
+	heat_capacity = 1e+006;
+	icon_state = "platingdmg2"
+	},
+/area/InteQ_ship/ship6)
 "bW" = (
 /obj/structure/closet/crate/wooden/shadow,
 /obj/machinery/light,
@@ -1291,6 +1299,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
+"dQ" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plating/airless{
+	icon_state = "platingdmg3"
+	},
+/area/InteQ_ship/ship6)
 "dS" = (
 /obj/structure/sign/flag/inteq{
 	pixel_x = -32
@@ -2416,6 +2430,7 @@
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
 /obj/machinery/light/cold/dim/directional/north,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "hf" = (
@@ -4979,7 +4994,6 @@
 /obj/item/ammo_casing/spent,
 /obj/item/ammo_casing/spent,
 /obj/item/ammo_casing/spent,
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/nanotrasen,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "of" = (
@@ -6610,8 +6624,9 @@
 /area/InteQ_ship)
 "sM" = (
 /obj/machinery/vending/wallmed/directional/east,
-/obj/machinery/sleeper/syndie/fullupgrade,
 /obj/machinery/light/cold/dim/directional/east,
+/obj/item/gun/medbeam/syndicate,
+/obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "sN" = (
@@ -6987,7 +7002,7 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/SOLVED)
 "uc" = (
@@ -8247,6 +8262,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"xF" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "xG" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -8309,6 +8328,9 @@
 	pixel_y = 32
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 8
+	},
+/obj/effect/mob_spawn/human/inteqspace{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -10483,7 +10505,7 @@
 /turf/open/floor/carpet/green,
 /area/InteQ_ship)
 "DQ" = (
-/obj/item/gun/ballistic/automatic/hellgate_c77,
+/obj/item/gun/ballistic/automatic/ak12,
 /turf/open/space/basic,
 /area/InteQ_ship)
 "DR" = (
@@ -12139,9 +12161,8 @@
 "IB" = (
 /obj/structure/displaycase{
 	req_one_access_txt = "152";
-	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
+	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/gold
 	},
-/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "IC" = (
@@ -12386,6 +12407,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Jk" = (
@@ -14997,6 +15019,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Rt" = (
@@ -15198,6 +15221,7 @@
 	},
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "RS" = (
@@ -15209,6 +15233,12 @@
 	},
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
+"RU" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plating/airless{
+	icon_state = "platingdmg1"
+	},
+/area/InteQ_ship/ship6)
 "RV" = (
 /obj/effect/turf_decal{
 	dir = 4
@@ -16342,6 +16372,9 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
+/obj/effect/mob_spawn/human/inteqspace{
+	dir = 8
+	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Vh" = (
@@ -16709,6 +16742,13 @@
 /obj/item/clothing/glasses/hud/security/sunglasses/inteq,
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship2)
+"Wn" = (
+/obj/machinery/light/red/dim/directional{
+	dir = 1
+	},
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship3)
 "Wo" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/vending/coffee,
@@ -17969,6 +18009,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 
@@ -48538,7 +48579,7 @@ jd
 Lz
 Ex
 Nr
-Ox
+Wn
 zL
 sZ
 vc
@@ -48962,7 +49003,7 @@ Nr
 Nr
 cw
 Nr
-bN
+OG
 Nr
 Nr
 Nr
@@ -49386,7 +49427,7 @@ ih
 TO
 TO
 EF
-OG
+xF
 OG
 LG
 OG
@@ -49601,7 +49642,7 @@ Nr
 Nr
 Nr
 OG
-OG
+xF
 Nr
 Qg
 Hc
@@ -54479,7 +54520,7 @@ qC
 lo
 TD
 cx
-Wu
+dQ
 yD
 cx
 aN
@@ -55109,7 +55150,7 @@ vB
 eW
 dI
 Kq
-cx
+aC
 cx
 UC
 lo
@@ -55122,13 +55163,13 @@ hk
 hk
 hk
 cx
-Zr
-cx
+RU
+aC
 Nz
 ln
 lo
 lq
-cx
+aC
 cx
 Pr
 lo
@@ -55321,7 +55362,7 @@ AM
 wF
 Pr
 Kq
-cx
+aC
 cx
 wE
 lo
@@ -55962,9 +56003,9 @@ Zr
 cx
 Nw
 cx
-cx
-cx
-cx
+aC
+aC
+aC
 cx
 cx
 AA
@@ -56612,7 +56653,7 @@ cx
 cx
 lo
 lq
-cx
+aC
 cx
 Pr
 lo
@@ -56817,7 +56858,7 @@ cx
 Yk
 vo
 hk
-cx
+aC
 aN
 eY
 pd
@@ -57235,7 +57276,7 @@ XO
 lo
 Jk
 cx
-hA
+bV
 yD
 cx
 aN

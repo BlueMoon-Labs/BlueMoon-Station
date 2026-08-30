@@ -294,7 +294,7 @@
 	// Наш несчастный оказался антагом, так что man behind the slaughter always come back... наверное
 	if(!QDELETED(springtrapped) && springtrapped.mind?.has_antag_datum(/datum/antagonist, TRUE) && springtrapped.stat == DEAD)
 		to_chat(springtrapped, "<span class='boldwarning'>У меня... остались незаконченные дела... я... ещё... вернусь... </span>")
-		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 30 MINUTES) // 30 YEARS SINCE ALL THIS HAPPENED, 30 YEARS IT TOOK TO RISE
+		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 5 MINUTES) // 30 Минут реально дохерище. Будет 5.
 	failure = FALSE
 
 // Будем честны, такая штука будет случаться раз в десять лет, так что это максимум будет маленькой пасхалкой

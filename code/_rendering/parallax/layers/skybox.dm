@@ -10,7 +10,6 @@
  * на тайл, и это правильно - фон обязан читаться как "бесконечно далеко".
  */
 /atom/movable/screen/parallax_layer/skybox
-	icon = 'icons/effects/parallax/skyboxes.dmi'
 	layer_mode = PARALLAX_MODE_SKYBOX
 	tile_size = 736
 	speed = 0.06
@@ -21,38 +20,48 @@
 /// Самый насыщенный фон выборки (разброс каналов 65 из 255 против 30 у остальных):
 /// на полной альфе оранжевая заливка читается как светофильтр, а не как туманность.
 /atom/movable/screen/parallax_layer/skybox/space_0
+	icon = 'icons/effects/parallax/skyboxes/space0.dmi'
 	icon_state = "space0"
 	alpha = 165
 
 /atom/movable/screen/parallax_layer/skybox/space_1
+	icon = 'icons/effects/parallax/skyboxes/space1.dmi'
 	icon_state = "space1"
 
 /atom/movable/screen/parallax_layer/skybox/space_2
+	icon = 'icons/effects/parallax/skyboxes/space2.dmi'
 	icon_state = "space2"
 
 /atom/movable/screen/parallax_layer/skybox/space_3
+	icon = 'icons/effects/parallax/skyboxes/space3.dmi'
 	icon_state = "space3"
 
 /atom/movable/screen/parallax_layer/skybox/space_4
+	icon = 'icons/effects/parallax/skyboxes/space4.dmi'
 	icon_state = "space4"
 
 /atom/movable/screen/parallax_layer/skybox/space_5
+	icon = 'icons/effects/parallax/skyboxes/space5.dmi'
 	icon_state = "space5"
 
 /atom/movable/screen/parallax_layer/skybox/space_6
+	icon = 'icons/effects/parallax/skyboxes/space6.dmi'
 	icon_state = "space6"
 
 /atom/movable/screen/parallax_layer/skybox/nebula
+	icon = 'icons/effects/parallax/skyboxes/nebula.dmi'
 	icon_state = "nebula"
 
 /// Обесцвеченная фрактальная дымка. Один стейт даёт любой цвет сектора,
 /// поэтому он и помечен palette_tinted.
 /atom/movable/screen/parallax_layer/skybox/dyable
+	icon = 'icons/effects/parallax/skyboxes/dyable.dmi'
 	icon_state = "dyable"
 	palette_tinted = TRUE
 
 /// Чистая чернота. 3.7 КБ, нужна там, где фон обязан быть пустым, а не звёздным.
 /atom/movable/screen/parallax_layer/skybox/void
+	icon = 'icons/effects/parallax/skyboxes/void.dmi'
 	icon_state = "void"
 
 // --- Секторные фоны Aurora -------------------------------------------------
@@ -78,20 +87,25 @@
  * если найдётся событие, которому такая заливка подойдёт по смыслу.
  */
 /atom/movable/screen/parallax_layer/skybox/sector/arusha
+	icon = 'icons/effects/parallax/skyboxes/arusha.dmi'
 	icon_state = "arusha"
 
 /atom/movable/screen/parallax_layer/skybox/sector/badlands
+	icon = 'icons/effects/parallax/skyboxes/badlands.dmi'
 	icon_state = "badlands"
 
 /// Бирюзовые кольца - второй по насыщенности фон (51 из 255), приглушён сильнее прочих.
 /atom/movable/screen/parallax_layer/skybox/sector/puddle_worlds
+	icon = 'icons/effects/parallax/skyboxes/puddle_worlds.dmi'
 	icon_state = "puddle_worlds"
 	alpha = 130
 
 /atom/movable/screen/parallax_layer/skybox/sector/sparring_sea
+	icon = 'icons/effects/parallax/skyboxes/sparring_sea.dmi'
 	icon_state = "sparring_sea"
 
 /atom/movable/screen/parallax_layer/skybox/sector/crescent_expanse
+	icon = 'icons/effects/parallax/skyboxes/crescent_expanse.dmi'
 	icon_state = "crescent_expanse"
 
 /**
@@ -103,6 +117,7 @@
  * В автоподбор не входит: ставится только вручную через админский инструмент.
  */
 /atom/movable/screen/parallax_layer/skybox/diagnostic
+	icon = 'icons/effects/parallax/skyboxes/diagnostic.dmi'
 	icon_state = "diagnostic"
 
 /**
@@ -113,6 +128,7 @@
  * поверх скайбокса, а не скайбоксом.
  */
 /atom/movable/screen/parallax_layer/skybox/stars
+	icon = 'icons/effects/parallax/skyboxes/stars.dmi'
 	icon_state = "stars"
 	layer_mode = PARALLAX_MODE_TILED
 	speed = 0.8

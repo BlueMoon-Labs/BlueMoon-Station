@@ -57,8 +57,9 @@
 		/datum/language/mushroom, // BLUEMOON ADD - язык гриболюдов
 		/datum/language/terrorspiders, // BLUEMOON ADD - язык террор-пауков 
 		/datum/language/xenocommon, // BLUEMOON ADD - ксенокоммон 
-		/datum/language/drone, // BLUEMOON ADD - язык дронов 
-		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров 
+		/datum/language/drone, // BLUEMOON ADD - язык дронов
+		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров
+		/datum/language/rootsong, // BLUEMOON ADD - язык дион
 	))
 	healing_factor = STANDARD_ORGAN_HEALING*5 //Fast!!
 	decay_factor = STANDARD_ORGAN_DECAY/2

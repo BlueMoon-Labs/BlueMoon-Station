@@ -313,6 +313,12 @@
 	product = /obj/item/clothing/suit/space/hardsuit/security/mark46_sec
 	fromitem = list(/obj/item/clothing/suit/space/hardsuit/security)
 
+/obj/item/modkit/mark45_kit
+	name = "Catcrin MOD suit"
+	desc = "A modkit for making a security MODsuit into a Mark 45 MOD suit armor."
+	product = /obj/item/mod/control/pre_equipped/security/catcrin
+	fromitem = list(/obj/item/mod/control/pre_equipped/security)
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// Слот шеи.
 
 /obj/item/clothing/neck/tie/maskchalat
@@ -695,6 +701,7 @@
 	new /obj/item/modkit/ffshield(src)
 	new /obj/item/modkit/hopesh_kit(src)
 	new /obj/item/modkit/mark46_kit(src)
+	new /obj/item/modkit/mark45_kit(src)
 	new /obj/item/sign/flag/catcrin(src)
 	new /obj/item/banner/catcrin(src)
 

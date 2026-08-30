@@ -2553,7 +2553,7 @@
 	name = "Commando beret"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/commando_beret
-	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak")
+	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak", "mihana964")
 
 /datum/gear/donator/bm/vp78tactic
 	name = "VP78 Tactic ModKit"

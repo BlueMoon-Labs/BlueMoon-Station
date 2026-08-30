@@ -446,3 +446,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 /turf/proc/ReplaceWithLattice()
 	ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	new /obj/structure/lattice(locate(x, y, z))
+
+/turf/proc/HasAdjacentSupport()
+	for(var/support_dir in GLOB.cardinals)
+		var/turf/T = get_step(src, support_dir)
+		if(istype(T, /turf/closed) || locate(/obj/structure/lattice, T))
+			return TRUE
+	return FALSE

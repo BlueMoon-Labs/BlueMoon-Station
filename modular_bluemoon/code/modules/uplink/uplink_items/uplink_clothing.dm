@@ -13,7 +13,16 @@
 	name = "Infiltrator InteQ MOD"
 	desc = "Высокотехнологичный боевой костюм преспособленный для скрытных миссий для наёмников спецопераций. Конструкция представляет собой обтекаемую многослойную структуру композитной керамики и прокладок лёгкого кевлара и гибридного дюратриплетения. На бирке написано: Произведено совместно Fox и Ghost inc. НЕ ЗАЩИЩАЕТ ОТ КОСМОСА."
 	item = /obj/item/mod/control/pre_equipped/infiltrator_inteq
-	cost = 12
+	cost = 8
+	purchasable_from = UPLINK_TRAITORS
+
+/datum/uplink_item/mod/core/traitor
+	name = "Agent InteQ MOD"
+	desc = "Модный и современный боевой костюм, предназначенный для солдат ЧВК Интекью, не предпочитающих скрываться.\
+	Неплохая броня и улучшенный джетпак позволяют вести уверенный бой в условиях космоса и разгерметизаций, а \
+	встроенная кобура - прятать оружие, оно не помещается в рюкзак. "
+	item = /obj/item/mod/control/pre_equipped/traitor/inteq
+	cost = 6
 	purchasable_from = UPLINK_TRAITORS
 
 /datum/uplink_item/mod/syndie
@@ -66,3 +75,12 @@
 	item = /obj/item/mod/module/emp_shield/advanced
 	cost = 6
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+
+/datum/uplink_item/mod/storage_upgrader
+	name = "MOD Storage Upgrader"
+	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
+	Позволяет увеличить размер встроенного рюкзака до уровня БС сумки. Но не более.\
+	Покупать больше одной штуки смысла не имеет, они не складываются."
+	item = /obj/item/mod/module/storage_upgrader
+	cost = 2
+	purchasable_from = (UPLINK_SYNDICATE_PACT_CREW)

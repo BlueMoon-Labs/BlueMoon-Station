@@ -274,6 +274,12 @@
 		CRASH("Спрайтшит [name]: rust-g вернул пустой результат")
 	if(length(unread_dmi_paths))
 		log_asset("Лист spritesheet_[name]: rust не прочитал [length(unread_dmi_paths)] DMI - их спрайты пропали с листа, и кэш этого листа мы не пишем. [describe_unread_dmis()]")
+	else if(unread_retries_left < UNREAD_DMI_RETRIES)
+		// Успешный ретрай не писал в лог НИЧЕГО, и молчание после строки "осталось попыток: N"
+		// было неотличимо от оборвавшейся цепочки. Разбор раунда 10134 (28.08.2026) на этом и
+		// встал: две попытки по spritesheet_design напечатались, третья - нет, и по логу нельзя
+		// было сказать, собрался лист или клиенты доигрывают смену с дырами в протолате.
+		log_asset("Лист spritesheet_[name]: собран целиком с попытки №[UNREAD_DMI_RETRIES - unread_retries_left + 1], непрочитанных DMI не осталось.")
 
 	var/list/png_hashes = list()
 	for(var/png_name in sheet_files)
