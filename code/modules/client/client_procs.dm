@@ -900,10 +900,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
 	// Зум приходит пачкой, пока игрок тянет рамку окна, а запись savefile
-	// синхронная - она морозит весь процесс, а не только вызывающего. Откладываем
-	// на дебаунс: таймер держит ссылку на префы сам, поэтому запись переживает
-	// логаут даже если клиент ушёл раньше срабатывания.
-	prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
+	// синхронная - она морозит весь процесс, а не только вызывающего. Кладём один
+	// ключ в буфер склейки: он уйдёт на диск одним открытием савфайла, а не полным
+	// сейвом префов, и переживёт логаут - флаш висит на разлогине и на Destroy датума.
+	prefs.save_single_pref("ui_zoom_preferences", prefs.ui_zoom_preferences)
 	return TRUE
 
 /client/proc/legacy_zoom_head(window_key, base_zoom = 100)

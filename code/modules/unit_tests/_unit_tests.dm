@@ -69,6 +69,7 @@
 /// A trait source when adding traits through unit tests
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
+#include "action_button_positions.dm"
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
 #include "airalarm_mode_cutoff.dm"

@@ -590,6 +590,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["windownoise"] 			>> windownoise
 	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
+	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
 	S["be_special"] 			>> be_special
 
 	//SKYRAT CHANGES BEGIN
@@ -755,6 +756,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				sanitized_ui_zoom_preferences[safe_ui_zoom_key] = safe_ui_zoom_value
 				ui_zoom_count++
 		ui_zoom_preferences = sanitized_ui_zoom_preferences
+	action_buttons_screen_locs = sanitize_action_button_positions(action_buttons_screen_locs)
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
@@ -948,6 +950,37 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	return PREF_DEFER_RESCHEDULE
 
 /**
+ * Чистит позиции кнопок действий, приехавшие с диска.
+ *
+ * Ключ - "[имя действия]_[id]", значение - screen_loc или один из SCRN_OBJ_*. Всё это
+ * пишет клиент, перетаскивая кнопки по экрану, поэтому и длину строк, и число записей
+ * режем: кнопок у моба бывает под сотню, но набивать савфайл мусором произвольного
+ * размера нельзя. Возвращает НОВЫЙ список, исходный не трогает.
+ */
+/proc/sanitize_action_button_positions(list/raw_positions)
+	var/list/sanitized = list()
+	if(!islist(raw_positions))
+		return sanitized
+	var/kept = 0
+	for(var/position_key in raw_positions)
+		if(kept >= ACTION_BUTTON_SAVED_POSITIONS_MAX)
+			break
+		if(!istext(position_key))
+			continue
+		var/safe_key = copytext(position_key, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
+		if(!length(safe_key))
+			continue
+		var/safe_value = raw_positions[position_key]
+		if(!istext(safe_value))
+			continue
+		safe_value = copytext(safe_value, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
+		if(!length(safe_value))
+			continue
+		sanitized[safe_key] = safe_value
+		kept++
+	return sanitized
+
+/**
  * Кладёт одиночную запись в буфер склейки.
  *
  * Возвращает TRUE, если ключ в буфере уже лежал - то есть эта запись схлопнулась с
@@ -1138,6 +1171,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["windownoise"], windownoise)
 	WRITE_FILE(S["mood_vignette"], mood_vignette)
 	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
+	WRITE_FILE(S["action_buttons_screen_locs"], action_buttons_screen_locs)
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)

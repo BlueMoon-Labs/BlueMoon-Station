@@ -158,7 +158,7 @@
 			position_info = SCRN_OBJ_IN_PALETTE
 
 	user.client.prefs.action_buttons_screen_locs["[name]_[id]"] = position_info
-	user.client.prefs.queue_save_pref(1 SECONDS, TRUE)
+	user.client.prefs.save_single_pref("action_buttons_screen_locs", user.client.prefs.action_buttons_screen_locs)
 
 /atom/movable/screen/movable/action_button/proc/load_position()
 	var/mob/user = our_hud?.mymob
@@ -180,7 +180,7 @@
 	if(!user?.client)
 		return
 	user.client.prefs.action_buttons_screen_locs -= "[name]_[id]"
-	user.client.prefs.queue_save_pref(1 SECONDS, TRUE)
+	user.client.prefs.save_single_pref("action_buttons_screen_locs", user.client.prefs.action_buttons_screen_locs)
 
 /**
  * This is a silly proc used in hud code code to determine what icon and icon state we should be using

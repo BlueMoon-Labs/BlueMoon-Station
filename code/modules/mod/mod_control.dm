@@ -280,11 +280,13 @@
 	. = ..()
 	if(wearer)
 		unset_wearer()
+	// Часть берётся из alist по ключу: без присвоения переменная оставалась null и
+	// первый же виток ронял dropped() рантаймом, обрывая проход по остальным слотам.
 	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/part
 		if(index == MOD_PART_CELL)
 			continue
-		part.on_dropped(user, part, TRUE, drop_location())
+		var/obj/item/clothing/mod_part/part = mod_parts[index]
+		part?.on_dropped(user, part, TRUE, drop_location())
 
 /obj/item/mod/control/item_action_slot_check(slot)
 	if(slot == slot_flags)
