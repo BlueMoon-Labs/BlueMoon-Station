@@ -40608,7 +40608,6 @@
 	name = "test chamber blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
-/obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/engine,
 /area/maintenance/starboard/aft)
 "cAO" = (
