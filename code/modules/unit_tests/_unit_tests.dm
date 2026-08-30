@@ -304,6 +304,7 @@
 #include "jukebox_send_range.dm"
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
+#include "mecha_leg_overload.dm"
 #include "parallax_position.dm"
 #include "parallax_profiles.dm"
 #include "perf_cross_ports.dm"
