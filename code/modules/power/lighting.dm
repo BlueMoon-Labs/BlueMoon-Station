@@ -220,7 +220,7 @@
 	var/nightshift_allowed = TRUE	//Set to FALSE to never let this light get switched to night mode.
 	var/nightshift_level = 0
 	var/nightshift_brightness = 8
-	var/nightshift_light_power = 0.45
+	var/nightshift_light_power = 0.40
 	var/nightshift_light_color = LIGHT_COLOR_STATION_HALL_NIGHT
 	var/nightshift_update_queued = FALSE
 	var/last_overlay_alpha_bucket = -1
@@ -493,6 +493,10 @@
 		update_appearance(UPDATE_OVERLAYS)
 
 /obj/machinery/light/proc/interpolate_light_value(start_value, end_value, t)
+	if(t <= 0)
+		return start_value
+	if(t >= 1)
+		return end_value
 	return round(start_value + (end_value - start_value) * t, 0.01)
 
 /obj/machinery/light/proc/blend_light_color(from_color, to_color, t)
