@@ -600,6 +600,11 @@
 		.["interaction_effect"] = 			prefs.interaction_effect
 		.["block_partner_pixel_shift"] = 	prefs.block_partner_pixel_shift
 
+		.["tab_interactions_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+		.["tab_genital_options_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+		.["tab_character_prefs_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+		.["tab_sex_animations_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
 		var/list/customs_mob = list()
@@ -969,6 +974,15 @@
 				if("block_partner_pixel_shift")
 					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
 				//
+
+				if("tab_interactions_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+				if("tab_genital_options_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+				if("tab_character_prefs_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+				if("tab_sex_animations_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
 				else
 					return FALSE
 			prefs.save_preferences()

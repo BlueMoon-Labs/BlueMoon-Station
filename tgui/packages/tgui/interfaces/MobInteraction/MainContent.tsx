@@ -16,7 +16,18 @@ type MainTypes = {
   auto_interaction_pace: number;
   auto_interaction_target: string;
   is_auto_target_self: boolean;
+  tab_interactions_enabled: boolean;
+  tab_genital_options_enabled: boolean;
+  tab_character_prefs_enabled: boolean;
+  tab_sex_animations_enabled: boolean;
 }
+
+const TABS = [
+  { key: 'interactions', label: 'Interactions', enabledKey: 'tab_interactions_enabled' },
+  { key: 'genitals', label: 'Genital Options', enabledKey: 'tab_genital_options_enabled' },
+  { key: 'character_prefs', label: 'Character Prefs', enabledKey: 'tab_character_prefs_enabled' },
+  { key: 'sex_animations', label: 'Sex Animations', enabledKey: 'tab_sex_animations_enabled' },
+] as const;
 
 export const MainContent = (props) => {
   const { act, data } = useBackend<MainTypes>();
@@ -24,28 +35,40 @@ export const MainContent = (props) => {
     searchText,
     setSearchText,
   ] = useLocalState('searchText', '');
-  const [tabIndex, setTabIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<string>('interactions');
 
   const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
 
   const interaction_speeds = (data.interaction_speeds || []) as number[];
   const { auto_interaction_pace, auto_interaction_target, currently_active_interaction, is_auto_target_self } = data;
 
+  const visibleTabs = TABS.filter(t => {
+    const enabled = data[t.enabledKey];
+    return enabled === undefined || !!enabled;
+  });
+  const tab = (activeTab === 'preferences' || visibleTabs.some(t => t.key === activeTab))
+    ? activeTab
+    : (visibleTabs[0]?.key || 'preferences');
+
   return (
     <Section fill>
       <Stack vertical fill>
         <Stack.Item>
           <Tabs fluid textAlign="center">
-            <Tabs.Tab selected={tabIndex === 0} onClick={() => setTabIndex(0)}
-              rightSlot={
-                <Button
-                  icon={"star" + (inFavorites ? "" : "-o")}
-                  color="transparent"
-                  onClick={() => setInFavorites(!inFavorites)}
-                  tooltip={`Click here to ${inFavorites ? "show all" : "show favorites"}`} />
-              }>
-              Interactions
-            </Tabs.Tab>
+            {visibleTabs[0]?.key === 'interactions' && (
+              <Tabs.Tab
+                selected={tab === 'interactions'}
+                onClick={() => setActiveTab('interactions')}
+                rightSlot={
+                  <Button
+                    icon={"star" + (inFavorites ? "" : "-o")}
+                    color="transparent"
+                    onClick={() => setInFavorites(!inFavorites)}
+                    tooltip={`Click here to ${inFavorites ? "show all" : "show favorites"}`} />
+                }>
+                Interactions
+              </Tabs.Tab>
+            )}
             <Tabs.Tab
               className="Tab--custom"
               icon="sliders"
@@ -53,21 +76,20 @@ export const MainContent = (props) => {
               onClick={() => act('open_customs_window')}>
               Custom
             </Tabs.Tab>
-            <Tabs.Tab selected={tabIndex === 1} onClick={() => setTabIndex(1)}>
-              Genital Options
-            </Tabs.Tab>
-            <Tabs.Tab selected={tabIndex === 2} onClick={() => setTabIndex(2)}>
-              Character Prefs
-            </Tabs.Tab>
-            <Tabs.Tab selected={tabIndex === 3} onClick={() => setTabIndex(3)}>
-              Sex Animations
-            </Tabs.Tab>
-            <Tabs.Tab selected={tabIndex === 4} onClick={() => setTabIndex(4)}>
+            {visibleTabs.filter(t => t.key !== 'interactions').map(({ key, label }) => (
+              <Tabs.Tab
+                key={key}
+                selected={tab === key}
+                onClick={() => setActiveTab(key)}>
+                {label}
+              </Tabs.Tab>
+            ))}
+            <Tabs.Tab selected={tab === 'preferences'} onClick={() => setActiveTab('preferences')}>
               Preferences
             </Tabs.Tab>
           </Tabs>
         </Stack.Item>
-        {tabIndex === 0 || tabIndex === 1 ? (
+        {tab === 'interactions' || tab === 'genitals' ? (
           <Stack.Item>
             <Stack align="baseline" fill>
               <Stack.Item>
@@ -77,34 +99,33 @@ export const MainContent = (props) => {
                 <Input
                   fluid
                   placeholder={
-                    tabIndex === 0 ? "Search for an interaction"
-                      : tabIndex === 1 ? "Search for a genital"
-                        : "Searching is unavailable for this tab"
+                    tab === 'interactions' ? "Search for an interaction"
+                      : "Search for a genital"
                   }
                   onInput={(e, value) => setSearchText(value)}
                 />
               </Stack.Item>
           </Stack>
         </Stack.Item> ) : null}
-        <Stack.Item grow basis={0} mb={tabIndex === 0 ? -1 : -2.3}>
+        <Stack.Item grow basis={0} mb={tab === 'interactions' ? -1 : -2.3}>
           <Section scrollable fill>
             {(() => {
-              switch (tabIndex) {
+              switch (tab) {
+                case 'genitals':
+                  return <GenitalTab />;
+                case 'character_prefs':
+                  return <CharacterPrefsTab />;
+                case 'sex_animations':
+                  return <Pixelshift />;
+                case 'preferences':
+                  return <ContentPreferencesTab />;
                 default:
                   return <InteractionsTab />;
-                case 1:
-                  return <GenitalTab />;
-                case 2:
-                  return <CharacterPrefsTab />;
-                case 3:
-                  return <Pixelshift />;
-                case 4:
-                  return <ContentPreferencesTab />;
               }
             })()}
           </Section>
         </Stack.Item>
-        {tabIndex === 0 && (
+        {tab === 'interactions' && (
           <Stack.Item>
             <Stack fill>
               {!!currently_active_interaction && (

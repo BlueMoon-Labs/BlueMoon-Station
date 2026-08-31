@@ -1,7 +1,11 @@
 import { useBackend } from '../../../backend';
-import { Button, Stack } from '../../../components';
+import { Button, Section, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
+  tab_interactions_enabled: boolean,
+  tab_genital_options_enabled: boolean,
+  tab_character_prefs_enabled: boolean,
+  tab_sex_animations_enabled: boolean,
   verb_consent: boolean,
   custom_verb_consent: boolean,
   ranged_verb_pref : boolean,
@@ -36,6 +40,10 @@ type ContentPrefsInfo = {
 export const ContentPreferencesTab = (props) => {
   const { act, data } = useBackend<ContentPrefsInfo>();
   const {
+    tab_interactions_enabled,
+    tab_genital_options_enabled,
+    tab_character_prefs_enabled,
+    tab_sex_animations_enabled,
     verb_consent,
     custom_verb_consent,
     ranged_verb_pref,
@@ -68,6 +76,62 @@ export const ContentPreferencesTab = (props) => {
   } = data;
   return (
     <Stack vertical fill>
+      <Stack.Item>
+        <Stack vertical>
+          <Stack.Item>
+            <Button
+              fluid
+              mb={-0.7}
+              content="Interactions"
+              icon={tab_interactions_enabled ? "toggle-on" : "toggle-off"}
+              selected={tab_interactions_enabled}
+              tooltip="Показывать вкладку Interactions в меню взаимодействий"
+              onClick={() => act('pref', {
+                pref: 'tab_interactions_enabled',
+              })}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              fluid
+              mb={-0.7}
+              content="Genital Options"
+              icon={tab_genital_options_enabled ? "toggle-on" : "toggle-off"}
+              selected={tab_genital_options_enabled}
+              tooltip="Показывать вкладку Genital Options в меню взаимодействий"
+              onClick={() => act('pref', {
+                pref: 'tab_genital_options_enabled',
+              })}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              fluid
+              mb={-0.7}
+              content="Character Prefs"
+              icon={tab_character_prefs_enabled ? "toggle-on" : "toggle-off"}
+              selected={tab_character_prefs_enabled}
+              tooltip="Показывать вкладку Character Prefs в меню взаимодействий"
+              onClick={() => act('pref', {
+                pref: 'tab_character_prefs_enabled',
+              })}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              fluid
+              mb={-0.7}
+              content="Sex Animations"
+              icon={tab_sex_animations_enabled ? "toggle-on" : "toggle-off"}
+              selected={tab_sex_animations_enabled}
+              tooltip="Показывать вкладку Sex Animations в меню взаимодействий"
+              onClick={() => act('pref', {
+                pref: 'tab_sex_animations_enabled',
+              })}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
       <Stack.Item>
         <Button
           fluid
