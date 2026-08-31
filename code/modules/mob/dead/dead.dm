@@ -124,11 +124,23 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		if (client)
 			if (new_z)
 				SSmobs.dead_players_by_zlevel[new_z] += src
+				// Счётчик простоя обнуляется ВСЕГДА, а не только при подъёме: посещение уже
+				// поднятого уровня иначе не оставляет следа между сканами сноса. См.
+				// SSlighting.note_zlevel_visit().
+				SSlighting.note_zlevel_visit(new_z)
 				// Ghosts get on-demand lighting init too: /mob/living/update_z does this for the living;
 				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
 				// living player arrives or background init crawls there.
+				//
+				// Но с ВЫДЕРЖКОЙ, а не сразу: подъём стоит десятки мегабайт, которых снос не
+				// вернёт, и триггер здесь - сам факт записи нового z, то есть любой пролёт.
+				// TIMER_UNIQUE|TIMER_OVERRIDE: аргумент входит в ключ уникальности, поэтому
+				// заявка на КАЖДЫЙ z своя, а метания туда-обратно между двумя уровнями
+				// перевзводят одну и ту же заявку вместо того, чтобы копить очередь.
+				// См. LIGHTING_GHOST_INIT_DEBOUNCE и ghost_ondemand_init_still_wanted().
 				if(should_ondemand_init_zlevel(new_z))
-					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
+					addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ondemand_init_zlevel_for_ghost), new_z), \
+						LIGHTING_GHOST_INIT_DEBOUNCE, TIMER_UNIQUE|TIMER_OVERRIDE)
 			registered_z = new_z
 		else
 			registered_z = null

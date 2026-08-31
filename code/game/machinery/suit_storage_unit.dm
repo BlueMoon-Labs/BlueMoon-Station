@@ -165,6 +165,10 @@
 /obj/machinery/suit_storage_unit/syndicate/chameleon
 	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 
+/obj/machinery/suit_storage_unit/syndicate/command
+	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi/elite
+	mod_type = /obj/item/mod/control/pre_equipped/elite
+
 //Bluemoon add start - добовляю сьют сторейдж для скафа киберсана
 
 /obj/machinery/suit_storage_unit/syndicate/cybersun
@@ -516,18 +520,15 @@
 		if(uv_super)
 			visible_message("<span class='warning'>[src]'s door creaks open with a loud whining noise. A cloud of foul black smoke escapes from its chamber.</span>")
 			playsound(src, 'sound/machines/airlock_alien_prying.ogg', 50, 1)
-			helmet = null
-			qdel(helmet)
-			suit = null
-			qdel(suit) // Delete everything but the occupant.
-			mask = null
-			qdel(mask)
-			shoes = null
-			qdel(shoes)
-			mod = null
-			qdel(mod)
-			storage = null
-			qdel(storage)
+			// Раньше стояло `helmet = null; qdel(helmet)` - qdel(null) не удаляет ничего:
+			// сожжённое содержимое оставалось жить в contents шкафа без ссылок из его
+			// переменных, а ядерный МОД из /nuclear уходил в харддел.
+			QDEL_NULL(helmet)
+			QDEL_NULL(suit) // Delete everything but the occupant.
+			QDEL_NULL(mask)
+			QDEL_NULL(shoes)
+			QDEL_NULL(mod)
+			QDEL_NULL(storage)
 			// The wires get damaged too.
 			wires.cut_all()
 		else

@@ -7,7 +7,6 @@
 	plane = FLOOR_PLANE
 	layer = ABOVE_OPEN_TURF_LAYER
 	appearance_flags = TILE_BOUND
-	color = "#DDF"
 
 	//For being on fire
 	light_range = 0
@@ -68,6 +67,7 @@
 		RegisterSignal(my_turf, COMSIG_ATOM_ENTERED, PROC_REF(movable_entered))
 		RegisterSignal(my_turf, COMSIG_TURF_MOB_FALL, PROC_REF(mob_fall))
 		RegisterSignal(my_turf, COMSIG_PARENT_EXAMINE, PROC_REF(examine_turf))
+		RegisterSignal(my_turf, COMSIG_TURF_MAKE_DRY, PROC_REF(dry))
 		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(exposed_to_firefighting_reagents))
 		SSliquids.add_active_turf(my_turf)
 
@@ -85,7 +85,7 @@
 		restore_liquid_footsteps()
 		lose_cleanbot_targetable()
 		var/turf/old_turf = my_turf
-		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE))
+		UnregisterSignal(my_turf, list(COMSIG_ATOM_ENTERED, COMSIG_TURF_MOB_FALL, COMSIG_PARENT_EXAMINE, COMSIG_TURF_MAKE_DRY))
 		UnregisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS)
 		if(my_turf.lgroup)
 			my_turf.lgroup.remove_from_group(my_turf)
@@ -110,6 +110,12 @@
 
 /obj/effect/abstract/liquid_turf/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	return
+
+/obj/effect/abstract/liquid_turf/proc/dry()
+	SIGNAL_HANDLER
+	if(immutable)
+		return
+	qdel(src, TRUE)
 
 /obj/effect/abstract/liquid_turf/proc/check_fire(hotspotted = FALSE)
 	var/my_burn_power = get_burn_power(hotspotted)
@@ -562,8 +568,10 @@
 		if(check_fire(TRUE))
 			SSliquids.processing_fire[my_turf] = TRUE
 
-/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid()
-	color = mix_color_from_reagent_list(reagent_list)
+/obj/effect/abstract/liquid_turf/proc/set_reagent_color_for_liquid(color_to_set)
+	if(!color_to_set)
+		color_to_set = mix_color_from_reagent_list(reagent_list)
+	add_atom_colour(color_to_set, FIXED_COLOUR_PRIORITY)
 
 /obj/effect/abstract/liquid_turf/proc/calculate_height()
 	var/new_height = ceil(total_reagents)/LIQUID_HEIGHT_DIVISOR
@@ -618,7 +626,7 @@
 				))
 			playsound(my_turf, sound_to_play, 60, 0)
 		var/obj/splashy = new /obj/effect/temp_visual/liquid_splash(my_turf)
-		splashy.color = color
+		splashy.add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 		if(height >= LIQUID_WAIST_LEVEL_HEIGHT)
 			//Push things into some direction, like space wind
 			var/turf/dest_turf

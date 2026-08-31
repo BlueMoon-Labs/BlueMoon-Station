@@ -45,7 +45,8 @@
 /obj/machinery/am_shielding/proc/controllerscan(priorscan = 0)
 	//Make sure we are the only one here
 	if(!isturf(loc))
-		collapse()
+		collapse() //collapse() делает qdel(src), после него loc уже null - дальше идти некуда
+		return
 	for(var/obj/machinery/am_shielding/AMS in loc.contents)
 		if(AMS == src)
 			continue
@@ -58,7 +59,8 @@
 			break
 
 	if(!control_unit)//No other guys nearby look for a control unit
-		for(var/direction in GLOB.cardinals)
+		//cardinalrange() уже обходит все четыре стороны разом, поэтому внешний цикл по
+		//GLOB.cardinals остался без тела и просто крутился вхолостую
 		for(var/obj/machinery/power/am_control_unit/AMC in cardinalrange(src))
 			if(AMC.add_shielding(src))
 				break

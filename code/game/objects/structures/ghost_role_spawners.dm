@@ -1062,7 +1062,14 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 			uniform = suited ? /obj/item/clothing/under/color/random : /obj/item/clothing/under/color/jumpskirt/random
 
 /datum/outfit/ghostcafe/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-	H.internal = H.get_item_for_held_index(1)
+	//баллон в руку кладёт только плазмаменская ветка pre_equip - всем остальным сюда
+	//приезжал случайный предмет, и дыхание каждый тик падало на remove_air_volume()
+	H.internal = null
+	var/obj/item/tank/held_tank = H.get_item_for_held_index(1)
+	if(istype(held_tank))
+		H.internal = held_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+	H.update_action_buttons_icon()
 
 /obj/item/storage/box/syndie_kit/chameleon/ghostcafe
 	name = "ghost cafe costuming kit"

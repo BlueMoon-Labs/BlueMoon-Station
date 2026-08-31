@@ -81,7 +81,8 @@
 		SEND_SIGNAL(C, COMSIG_CLEAR_MOOD_EVENT, "embedded")
 
 	//Импланты: сначала выпускаем их содержимое, потом выбрасываем сам имплант.
-	var/list/implants_copy = C.implants.Copy()
+	//implants объявлен null и наполняется лениво - у мобов без имплантов списка нет вовсе.
+	var/list/implants_copy = LAZYCOPY(C.implants)
 	for(var/obj/item/implant/IM as anything in implants_copy)
 		for(var/obj/item/IT in IM.contents)
 			IT.forceMove(T)

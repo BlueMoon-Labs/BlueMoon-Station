@@ -248,10 +248,12 @@ GLOBAL_DATUM_INIT(shield_goal_coverage_dummy, /datum/station_goal/station_shield
 	"Метеорит расколот", "Открываю огонь", "Открытие радиаторов", "Бомбадировка продолжается", "Сканирование сектора", "Цель уничтожена")
 	// BLUEMOON ADD END
 
-// BLUEMOON ADD START - добавление спутника в глобальный список спутников
 /obj/machinery/satellite/meteor_shield/Initialize(mapload)
 	. = ..()
-	GLOB.meteor_satellites += src
+	// В GLOB.meteor_satellites спутник кладёт родительский Initialize. Второе добавление
+	// здесь оставляло в списке дубль, который Destroy (одно `-=`) не снимал: каждый
+	// сбитый или разобранный спутник уходил в харддел с одной внешней ссылкой
+	// (раунд 10150 - шесть штук по ~375 мс), а meteor_wave обходил его дважды.
 	camera.view_range = kill_range
 
 /obj/machinery/satellite/meteor_shield/examine(mob/user)

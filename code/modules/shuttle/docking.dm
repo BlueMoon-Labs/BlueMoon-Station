@@ -101,7 +101,7 @@
 		if(dest_z >= 1 && dest_z <= SSmapping.z_list.len)
 			var/datum/space_level/level = SSmapping.z_list[dest_z]
 			if(!level.lighting_initialized)
-				create_lighting_for_zlevel(dest_z)
+				create_lighting_for_zlevel(dest_z, LIGHTING_INIT_REASON_DOCKING)
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
 	// (expansion is cheap list-building; actual update_starlight() runs in SSlighting's budget)

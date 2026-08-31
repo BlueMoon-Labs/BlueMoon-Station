@@ -688,7 +688,13 @@
 					H.Jitter(100)
 					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
 					if(tplus > tloss)
-						H.adjustOrganLoss(ORGAN_SLOT_BRAIN,  max(0, min(99, ((tlimit - tplus) / tlimit * 100))), 150)
+						// setOrganLoss, а не adjustOrganLoss: tlimit растянут до четырёх часов
+						// ради окна реанимации, поэтому выражение почти всегда даёт ровно 99,
+						// и каждый следующий разряд добивал мозг до тяжёлой травмы. Потолок на
+						// единицу ниже BRAIN_DAMAGE_SEVERE - ровно до неё, но не в неё.
+						// revive() без full_heal органы не трогает, поэтому голая запись ещё и ЛЕЧИЛА
+						// уже накопленный урон мозга: берём максимум с текущим.
+						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(H.getOrganLoss(ORGAN_SLOT_BRAIN), max(0, min(BRAIN_DAMAGE_SEVERE - 1, ((tlimit - tplus) / tlimit * 100)))))
 					log_combat(user, H, "revived", defib)
 					if(req_defib)
 						if(defib.healdisk)
@@ -708,7 +714,9 @@
 				user.visible_message("<span class='warning'>[req_defib ? "[defib]" : "[src]"] buzzes: Patient's heart is missing. Operation aborted.</span>")
 				playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)
 			else if(H.undergoing_cardiac_arrest())
-				H.set_heartattack(FALSE)
+				//Безусловного перезапуска здесь быть не должно: он заводил помпу и на
+				//повреждённом сердце, после чего дефиб печатал "heart damage detected",
+				//а ближайший on_life() снова её останавливал.
 				if(!(heart.organ_flags & ORGAN_FAILING))
 					H.set_heartattack(FALSE)
 					user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] pings: Patient's heart is now beating again.</span>")

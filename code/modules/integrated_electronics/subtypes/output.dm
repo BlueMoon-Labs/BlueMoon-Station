@@ -1,3 +1,11 @@
+/// Через сколько экран имеет право повторить то же самое значение ещё раз.
+///
+/// Дедуп по значению без этого окна глушил повторяющуюся тревогу навсегда: датчик движения,
+/// написавший "INTRUDER" на первом нарушителе, на всех следующих молчал до конца раунда,
+/// потому что строка не менялась. Окно возвращает повтор, не возвращая спама: самопульс
+/// дёргает do_work() по нескольку раз в секунду, тут же он ограничен одной строкой в 10 с.
+#define SCREEN_REBROADCAST_WINDOW (10 SECONDS)
+
 /obj/item/integrated_circuit/output
 	category_text = "Output"
 
@@ -13,14 +21,42 @@
 	power_draw_per_use = 10
 	var/eol = "&lt;br&gt;"
 	var/stuff_to_display = null
+	///Что экран показал в прошлый раз. Нужен, чтобы не транслировать одно и то же по кругу.
+	var/last_broadcast = null
+	///world.time прошлой трансляции. По нему дедуп перевзводится через SCREEN_REBROADCAST_WINDOW.
+	var/last_broadcast_time = 0
 
 /obj/item/integrated_circuit/output/screen/disconnect_all()
 	..()
 	stuff_to_display = null
+	last_broadcast = null
+	last_broadcast_time = 0
 
 /obj/item/integrated_circuit/output/screen/power_fail()
 	. = ..()
 	stuff_to_display = null
+	last_broadcast = null
+	last_broadcast_time = 0
+
+/**
+ * Возвращает TRUE, если экрану есть что сказать, и запоминает сказанное.
+ *
+ * Сборка на самопульсе дёргает do_work() по нескольку раз в секунду, и до этой проверки
+ * каждый такой пульс стоил viewers() + to_chat с icon2html и строки в circuit.html.
+ * За раунд 10137 одна такая сборка написала 1520 строк - 68% всего файла лога - с
+ * значением, которое ни разу не поменялось.
+ *
+ * Дедуп по значению держится ТОЛЬКО в пределах SCREEN_REBROADCAST_WINDOW. Вечный дедуп
+ * ломал ровно тот сценарий, ради которого экран и ставят: датчик движения, подающий на него
+ * "INTRUDER", звучал один раз за раунд - вторая и все следующие тревоги давали ту же строку
+ * и молча съедались. Повторяющееся сообщение - это событие, а не шум.
+ */
+/obj/item/integrated_circuit/output/screen/proc/display_changed()
+	if(stuff_to_display == last_broadcast && world.time <= last_broadcast_time + SCREEN_REBROADCAST_WINDOW)
+		return FALSE
+	last_broadcast = stuff_to_display
+	last_broadcast_time = world.time
+	return TRUE
 
 /obj/item/integrated_circuit/output/screen/any_examine(mob/user)
 	var/shown_label = ""
@@ -46,7 +82,8 @@
 
 /obj/item/integrated_circuit/output/screen/large/do_work()
 	..()
-
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(2, host.loc))
@@ -63,6 +100,8 @@
 
 /obj/item/integrated_circuit/output/screen/extralarge/do_work()
 	..()
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(7, host.loc))
@@ -462,15 +501,19 @@
 	var/color = get_pin_data(IC_INPUT, 4)
 	var/size = get_pin_data(IC_INPUT, 5)
 
-	if(!relay_interface || !text || !key)
+	if(!text || !key)
 		activate_pin(3)
 		return
 
-	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
-		activate_pin(3)
-		return
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, text, key, color, size)
+	else
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_LOG, FALSE, 15, text, key, color, size)
 
-	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, text, key, color, size)
 	if(!result)
 		activate_pin(3)
 		return
@@ -505,18 +548,22 @@
 	var/value = get_pin_data(IC_INPUT, 3)
 	var/decay_duration = get_pin_data(IC_INPUT, 4)
 
-	if(!relay_interface || !key || !value)
-		activate_pin(3)
-		return
-
-	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+	if(!key || !value)
 		activate_pin(3)
 		return
 
 	if(!decay_duration)
 		decay_duration = 1 SECONDS
 
-	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, key, value, decay_duration)
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, key, value, decay_duration)
+	else
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_DATA, FALSE, 15, key, value, decay_duration)
 
 	if(!result)
 		activate_pin(3)
@@ -605,11 +652,7 @@
 		activate_pin(3)
 		return
 
-	if(!relay_interface || !target || !key)
-		activate_pin(3)
-		return
-
-	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+	if(!target || !key)
 		activate_pin(3)
 		return
 
@@ -620,9 +663,19 @@
 	if(!decay_duration)
 		decay_duration = 1 SECONDS
 
-	var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
-	overlay_image.color = color_overlay
-	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+
+		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+		overlay_image.color = color_overlay
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+	else
+		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+		overlay_image.color = color_overlay
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, FALSE, 15, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
 
 	if(!result)
 		activate_pin(3)

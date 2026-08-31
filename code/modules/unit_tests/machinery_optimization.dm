@@ -600,7 +600,10 @@
 	suit.forceMove(unit)
 	unit.mod = suit
 	if(!cell)
+		// Базовый /obj/item/mod/control приходит без ячейки: ставим её тем же путём,
+		// что и attackby, иначе mod.get_cell() внутри SSU вернёт null и заряжать будет нечего.
 		cell = new /obj/item/stock_parts/cell()
+		suit.mod_parts[MOD_PART_CELL] = cell
 	cell.maxcharge = 1000
 	cell.charge = 100
 	unit.machine_wake()

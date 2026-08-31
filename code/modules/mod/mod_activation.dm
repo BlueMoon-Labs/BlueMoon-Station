@@ -4,10 +4,7 @@
 /obj/item/mod/control/proc/choose_deploy(mob/user)
 	var/list/display_names = list()
 	var/list/items = list()
-	for(var/slot in mod_parts)
-		if(slot == MOD_PART_CELL)
-			continue
-		var/obj/item/piece = mod_parts[slot]
+	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
 		display_names[piece.name] = piece
 		var/image/piece_image = image(
 			icon = piece.icon,
@@ -21,23 +18,19 @@
 
 	if(!istype(part) || user.incapacitated())
 		return
-	var/parts_to_check = mod_parts - part
+	// Из alist вычитается КЛЮЧ, а не значение, поэтому прежнее `mod_parts - part`
+	// не исключало выбранную часть и она попадала в проверку остальных.
+	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
 	if(part.loc != user)
 		deploy(user, part)
-		for(var/slot in parts_to_check)
-			if(slot == MOD_PART_CELL)
-				continue
-			var/obj/item/piece = mod_parts[slot]
+		for(var/obj/item/piece as anything in parts_to_check)
 			if(piece.loc == user)
 				continue
 			choose_deploy(user)
 			break
 	else
 		conceal(user, part)
-		for(var/slot in parts_to_check)
-			if(slot == MOD_PART_CELL)
-				continue
-			var/obj/item/piece = mod_parts[slot]
+		for(var/obj/item/piece as anything in parts_to_check)
 			if(piece.loc != user)
 				continue
 			choose_deploy(user)
@@ -45,6 +38,8 @@
 
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	var/obj/item/item_in_slot
 	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
@@ -56,6 +51,7 @@
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		ADD_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 		if(!user)
+			piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 			return TRUE
 		wearer.visible_message(span_notice("[wearer]'s [piece] deploy[piece.p_s()] with a mechanical hiss."),
 			span_notice("[piece] разворачивается[piece.p_s()] с механическим шипением."),
@@ -65,6 +61,7 @@
 			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
 		if(need_to_conseal && is_active() && all_parts_deployed())
 			update_hardlight()
+		piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 		return TRUE
 	else if(piece.loc != src)
 		if(!user)
@@ -78,7 +75,9 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
-/obj/item/mod/control/proc/conceal(mob/user, part)
+/obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
+	if(is_welded() && !force)
+		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	wearer.transferItemToLoc(piece, null, TRUE)
 	piece.equip_item_from_overslot()
@@ -88,6 +87,7 @@
 		span_notice("[piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
 		span_hear("You hear a mechanical hiss."))
 	remove_hardlight()
+	piece.toggle_all_linked_modules(MODPART_CONSEALED)
 	playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
@@ -192,7 +192,8 @@
 	update_speed()
 	update_icon_state()
 
-	wearer.update_inv_back()
+	// Костюм деактивируют и без носителя (разбор, крио, force_deactivate).
+	wearer?.update_inv_back()
 
 /obj/item/mod/control/update_icon_state()
 	icon_state = "[skin]-control[is_active() ? "-sealed" : ""]"
@@ -200,14 +201,16 @@
 
 /obj/item/mod/control/proc/quick_activation()
 	var/seal = TRUE
-	for(var/obj/item/part as anything in mod_parts)
+	// `as anything in mod_parts` отдавал КЛЮЧИ alist (числа 1-5) и передавал их в
+	// deploy() под видом частей - развёртывание костюма из аутфита не работало.
+	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
 		if(!deploy(null, part))
 			seal = FALSE
 	if(!seal)
 		return
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
-		MOD_PART.seal_part(TRUE)
+	// Слот батареи тоже лежит в mod_parts, а seal_part() у неё нет.
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+		part.seal_part(TRUE)
 	finish_activation(on = TRUE)
 
 /obj/item/mod/control/proc/has_wearer()

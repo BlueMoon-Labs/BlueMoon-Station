@@ -349,6 +349,11 @@
 		get_asset_datum(/datum/asset/simple/inventory),
 	)
 
+/// Потолок кэша base64-иконок стрип-меню. Ключи файловые, так что запись живёт весь раунд.
+#define STRIP_ICON_CACHE_MAX 1024
+/// Сколько записей вытесняется при переполнении - четверть кэша, самые старые.
+#define STRIP_ICON_CACHE_EVICT (STRIP_ICON_CACHE_MAX / 4)
+
 /datum/strip_menu/ui_data(mob/user)
 	var/list/data = list()
 
@@ -380,24 +385,31 @@
 
 		// Strip-menu UI re-runs ui_data() on every refresh while the menu is open,
 		// so without a cache each open menu burns ~10 icon2base64 calls per tick.
-		// Stringifying a runtime /icon datum gives "/icon" — same for every dynamic
-		// icon — so for those we key by REF instead. File-path icons stringify to
-		// their dmi path and are stable across runs/items.
+		// Файловые иконки стрингифицируются в свой dmi-путь и стабильны между раундами и
+		// вещами - их и кэшируем.
+		//
+		// Рантаймовая /icon В КЭШ НЕ ИДЁТ. Она стрингифицируется в "/icon" - одинаково для
+		// любой динамической иконки, - и прошлый ключ обходил это через REF(item.icon).
+		// Но REF() - это индекс в таблице BYOND, который переиспользуется после сборки
+		// мусора: собранная иконка отдаёт свой слот следующей, ключ совпадает, и меню
+		// показывает картинку СОВСЕМ ДРУГОЙ вещи. Так на проде и выглядели "спрайты
+		// несуществующей одежды" при открытии чужого инвентаря (раунд 10127, 27.08.2026).
+		// Кэш при этом статический и живёт весь раунд, так что промах не самоисправляется.
+		// Динамических иконок в слотах единицы (грейскейл, хамелеон), их дешевле собрать
+		// заново, чем рисковать чужим спрайтом.
 		var/static/list/strip_icon_cache = list()
-		var/cache_key
-		if(isnull(item.icon))
-			cache_key = "NULL:[item.icon_state]"
-		else if(istype(item.icon, /icon))
-			cache_key = "[REF(item.icon)]:[item.icon_state]"
+		var/cached_b64
+		if(!isnull(item.icon) && !istype(item.icon, /icon))
+			var/cache_key = "[item.icon]:[item.icon_state]"
+			cached_b64 = strip_icon_cache[cache_key]
+			if(isnull(cached_b64))
+				cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
+				strip_icon_cache[cache_key] = cached_b64
+				if(length(strip_icon_cache) > STRIP_ICON_CACHE_MAX)
+					strip_icon_cache.Cut(1, STRIP_ICON_CACHE_EVICT + 1)
 		else
-			cache_key = "[item.icon]:[item.icon_state]"
+			cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
 
-		if(!(cache_key in strip_icon_cache))
-			strip_icon_cache[cache_key] = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
-			if(length(strip_icon_cache) > 1024)
-				strip_icon_cache.Cut(1, 257) // Evict oldest 25%
-
-		var/cached_b64 = strip_icon_cache[cache_key]
 		result["icon"] = cached_b64
 		result["name"] = item.name
 		result["alternate"] = item_data.get_alternate_action(owner, user)
@@ -418,6 +430,9 @@
 	data["long_strip_menu"] = user.client.prefs.long_strip_menu
 
 	return data
+
+#undef STRIP_ICON_CACHE_MAX
+#undef STRIP_ICON_CACHE_EVICT
 
 /datum/strip_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

@@ -1445,20 +1445,22 @@
 			O.wash_cum() //sandstorm edit
 
 /datum/reagent/space_cleaner/reaction_turf(turf/T, reac_volume)
-	..()
-	if(reac_volume >= 1)
-		if(!preserves_decor)
-			T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-		SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
-		T.clean_blood()
-		T.wash_cum() //sandstorm edit
-		for(var/obj/effect/decal/cleanable/C in T)
-			if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
-				continue
-			qdel(C)
+	. = ..()
+	if(!preserves_decor)
+		T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+	SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
+	T.clean_blood()
+	T.wash_cum() //sandstorm edit
+	for(var/obj/effect/decal/cleanable/C in T)
+		if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
+			continue
+		qdel(C)
 
-		for(var/mob/living/simple_animal/slime/M in T)
-			M.adjustToxLoss(rand(5,10))
+	for(var/mob/living/simple_animal/slime/M in T)
+		M.adjustToxLoss(rand(5,10))
+
+	if(T.liquids && !T.liquids.immutable)
+		T.liquids.liquid_simple_delete_flat(max(2, reac_volume) * 0.5 * max(LIQUID_ANKLES_LEVEL_HEIGHT * ONE_LIQUIDS_HEIGHT, T.liquids.total_reagents * 0.5))
 
 // Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
 // покраску баров и библиотек, которую экипаж наносил целый раунд.
@@ -2951,7 +2953,7 @@
 				continue
 			if(trait == TRAIT_DUMB_CUM && !prob(15))
 				continue
-			
+
 			// Если лист = рандом
 			if(islist(phrase))
 				phrase = pick(phrase)

@@ -110,6 +110,9 @@ GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdr
 			else
 				to_chat(user, "<span class='warning'>You need two rods to build a catwalk!</span>")
 			return
+		if(!HasAdjacentSupport())
+			user.balloon_alert(user, "Не за что крепить! Нужна опора!")
+			return
 		if(R.use(1))
 			to_chat(user, "<span class='notice'>You construct a lattice.</span>")
 			playsound(src, 'sound/weapons/genhit.ogg', 50, TRUE)

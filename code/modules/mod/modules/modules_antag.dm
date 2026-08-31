@@ -5,9 +5,12 @@
 	name = "infiltrator MOD module"
 	desc = "Скрывает ваше лицо от трекинга ИИ и чужих глаз, делая полностью неузнаваемым."
 	icon_state = "infiltrator"
+	module_type = MODULE_TOGGLE
 	complexity = 1
 	idle_power_cost = 0
 	removable = FALSE
+	required_modpart_index = MOD_PART_HEAD
+	startup_with_suit = TRUE
 
 /obj/item/mod/module/infiltrator/on_install()
 	. = ..()
@@ -19,18 +22,16 @@
 	var/obj/item/clothing/mod_part/head/head = mod.mod_parts[MOD_PART_HEAD]
 	head.blockTracking = FALSE
 
-/obj/item/mod/module/infiltrator/on_suit_activation()
+/obj/item/mod/module/infiltrator/on_activation()
 	. = ..()
-	if(!mod.wearer)
+	if(!mod.wearer || !.) //если родитель выдал FALSE
 		return
 	mod.wearer.infiltrator_active = TRUE
 	mod.wearer.set_bark("bump")
 	mod.wearer.digitalcamo = TRUE
 	mod.wearer.digitalinvis = TRUE
-	// var/list/need_to_conseal = list()
-	// wearer.apply_bodypart_overlays(need_to_conseal, update = TRUE, effect_datum = /datum/overlay_effect/mod_effect/white_noize)
 
-/obj/item/mod/module/infiltrator/on_suit_deactivation()
+/obj/item/mod/module/infiltrator/on_deactivation()
 	. = ..()
 	mod.wearer.infiltrator_active = FALSE
 	mod.wearer.set_bark(mod.wearer.client.prefs.bark_id)
@@ -59,3 +60,26 @@
 		return . = span_warning("Это существо одето в странный желтый МОД, но лицо и любые возможные приметы скрыты белым шумом.")
 	else
 		. = ..()
+
+/obj/item/mod/module/storage_upgrader
+	name = "MOD Storage Upgrader"
+	desc = "Модуль расширения для хранилища МОДа, работающий за счёт технологии BLUESPACE.\
+	Позволяет увеличить размер встроенного рюкзака до уровня БС сумки."
+	icon_state = "storage_updater"
+	incompatible_modules = list(/obj/item/mod/module/storage_upgrader)
+	var/datum/component/storage/storage_module_datum
+	var/old_max_volume
+
+/obj/item/mod/module/storage_upgrader/on_install()
+	. = ..()
+	storage_module_datum = mod.GetComponent(/datum/component/storage)
+	if(!storage_module_datum)
+		return
+	old_max_volume = storage_module_datum.max_volume
+	storage_module_datum.max_volume = STORAGE_VOLUME_MOD_UPLINK_UPDATER
+
+/obj/item/mod/module/storage_upgrader/on_uninstall()
+	. = ..()
+	if(!storage_module_datum || !old_max_volume)
+		return
+	storage_module_datum.max_volume = old_max_volume

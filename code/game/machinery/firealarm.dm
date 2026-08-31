@@ -80,6 +80,26 @@
 	// alarm. The exposure element covers the flameless case.
 	AddElement(/datum/element/atmos_sensitive, mapload)
 
+/obj/machinery/firealarm/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	// Сломанная/разобранная сигнализация снята с учёта в obj_break() - в новую зону её
+	// возвращать нельзя, иначе разбитая коробка снова начинала бы считаться исправным детектором.
+	var/was_registered = myarea && (src in myarea.firealarms)
+	if(myarea)
+		// Тревогу гасим так же, как в Destroy(): без этого покинутая зона навсегда
+		// оставалась с fire = TRUE и захлопнутыми файрлоками.
+		myarea.firereset(src)
+		// firereset() зовёт clear_alarm(), а тот определяет область лениво через get_area(src) -
+		// турф к этому моменту уже переписан на новую зону, поэтому у старой тревогу
+		// снимаем адресно.
+		myarea.alarm_manager.clear_alarm_from_area(ALARM_FIRE, myarea)
+		LAZYREMOVE(myarea.firealarms, src)
+		myarea.refresh_fire_detect()
+	myarea = get_base_area(src)
+	if(myarea && was_registered)
+		LAZYADD(myarea.firealarms, src)
+		myarea.refresh_fire_detect()
+
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 
@@ -138,9 +158,6 @@
 		. += "overlay_[NUM2SECLEVEL(SEC_LEVEL_GREEN)]"
 		. += mutable_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
 		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
-
-	var/area/A = src.loc
-	A = A.loc
 
 	if(obj_flags & EMAGGED)
 		. += "overlay_emagged"

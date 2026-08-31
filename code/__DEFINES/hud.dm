@@ -238,6 +238,11 @@
 #define SCRN_OBJ_IN_PALETTE "palette"
 ///Inserted first in the list
 #define SCRN_OBJ_INSERT_FIRST "first"
+/// Сколько позиций кнопок действий переживает savefile: больше не читаем и не пишем
+#define ACTION_BUTTON_SAVED_POSITIONS_MAX 128
+/// Потолок длины ключа и значения одной сохранённой позиции (аргумент copytext, то есть
+/// строка режется до 64 символов)
+#define ACTION_BUTTON_SAVED_POSITION_LEN 65
 
 // Plane group keys, used to group swaths of plane masters that need to appear in subwindows
 /// The primary group, holds everything on the main window

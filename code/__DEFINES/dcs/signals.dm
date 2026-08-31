@@ -893,3 +893,4 @@
 #define COMSIG_NEURAL_INTERFACE_WRITE_LOG "neural_interface_write_log" // write_log(text, key="LOG", color="#4ad1fa86", size=12, speed=0)
 #define COMSIG_NEURAL_INTERFACE_WRITE_DATA "neural_interface_write_data" // write_data(key, value, decay_duration=3 SECONDS, priority=0)
 #define COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA "neural_interface_write_image_data" // write_image_data(key, image/overlay, atom/target, text, decay_duration=30 SECONDS, pixel_x_text = 0, pixel_y_text = 0, text_size=12)
+#define COMSIG_GLOB_NEURAL_INTERFACE_RELAY "!global_neural_interface_relay"

@@ -1,14 +1,11 @@
 /obj/machinery/door/poddoor/shutters/window/armory
 	var/open_at_level = SEC_LEVEL_GREEN
-	var/listen_to_security = TRUE
 	max_integrity = 1000
 
 /obj/machinery/door/poddoor/shutters/window/armory/Initialize(mapload)
 	. = ..()
 	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
 		return .
-	if(!listen_to_security)
-		return
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/machinery/door/poddoor/shutters/window/armory/LateInitialize()
@@ -48,7 +45,7 @@
 	name = "armory shutter button"
 	desc = "Панель управления ставнями арсенала."
 	skin = "doorctrl"
-	req_access = list(ACCESS_CAPTAIN, ACCESS_HOS)
+	req_one_access = list(ACCESS_CAPTAIN, ACCESS_HOS)
 
 /obj/machinery/button/door/armory/warden
 	name = "Armory Blue Alert Shutter Button"

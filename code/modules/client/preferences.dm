@@ -220,8 +220,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "mam_snouts" = "None",
 "mam_tail" = "None",
 "mam_tail_animated" = "None",
-"xenodorsal" = "Standard",
-"xenohead" = "Standard",
+"xenodorsal" = "None",
+"xenohead" = "None",
 "xenotail" = "Xenomorph Tail",
 "taur" = "None",
 "hardsuit_with_tail" = FALSE,
@@ -495,6 +495,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pref_queue_deadline = 0
 	/// То же самое для записи персонажа.
 	var/char_queue_deadline = 0
+	/// Буфер склейки одиночных записей в савфайл: ключ -> значение.
+	/// Открытие савфайла стоит столько же, сколько сама запись, поэтому поток правок
+	/// одного ключа копится тут и уходит на диск одним открытием. См. save_single_pref().
+	var/list/pending_single_prefs
+	/// id таймера, который сбросит буфер одиночных записей на диск.
+	var/single_pref_queue
+	/// world.time, позже которого сброс буфера одиночных записей больше не переносят.
+	var/single_pref_queue_deadline = 0
 
 	var/silicon_lawset
 
@@ -579,6 +587,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	save_character()		//let's save this new random character so it doesn't keep generating new ones.
 	menuoptions = list()
 	return
+
+/**
+ * Датум префов обычно живёт в GLOB.preferences_datums до конца раунда, но не всегда:
+ * передача персонажа и юнит-тесты его удаляют. Отложенные записи savefile висят на
+ * таймерах, которые держат ссылку на нас, - если датум уходит, дописать их больше
+ * некому, и правки последних секунд пропадают.
+ */
+/datum/preferences/Destroy(force)
+	// Буфер одиночных записей дописываем: это одно открытие файла и только если
+	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
+	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
+	flush_single_prefs()
+	if(pref_queue)
+		deltimer(pref_queue)
+		pref_queue = null
+	if(char_queue)
+		deltimer(char_queue)
+		char_queue = null
+	// Оффер персонажа лежит в GLOB.character_offers и нас не переживёт по смыслу: без qdel
+	// в глобале остаётся висячая запись с сейвфайлом. Хендлер цвета лодаута держит обратную
+	// ссылку на префы - живой хендлер превращает наш снос в харддел.
+	QDEL_NULL(offer)
+	QDEL_NULL(loadout_color_handler)
+	// GLOB.preferences_datums держит датум по ckey: удалённый, но не вычеркнутый оттуда
+	// датум ушёл бы в харддел, а следующий вход этого ckey получил бы труп.
+	for(var/registered_ckey in GLOB.preferences_datums)
+		if(GLOB.preferences_datums[registered_ckey] != src)
+			continue
+		GLOB.preferences_datums -= registered_ckey
+		break
+	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
+	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
+	pref_species = null
+	return ..()
 
 #define SETUP_START_NODE(L)  		  	 		 	 		"<div class='csetup_character_node'><div class='csetup_character_label'>[L]</div><div class='csetup_character_input'>"
 
@@ -1713,7 +1755,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					for(var/mutant_part in GLOB.all_mutant_parts)
 						if(mutant_part == "mam_body_markings")
 							continue
-						if(parent?.can_have_part(mutant_part))
+						var/show_mutant_part = parent?.can_have_part(mutant_part)
+						if(mutant_part in GLOB.mismatched_toggle_parts)
+							show_mutant_part = show_mutant_part && pref_species.id == SPECIES_XENOHYBRID
+						if(show_mutant_part || (show_mismatched_markings && (mutant_part in GLOB.mismatched_toggle_parts)))
 							if(!mutant_category)
 								dat += APPEARANCE_CATEGORY_COLUMN
 							var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -4034,6 +4079,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						if(pref_species.id == "felinid")
 							features["mam_tail"] = "Cat"
 							features["mam_ears"] = "Cat"
+
+						if(pref_species.id == SPECIES_XENOHYBRID)
+							features["xenohead"] = "Standard"
+							features["xenodorsal"] = "Standard"
+						else
+							features["xenohead"] = "None"
+							features["xenodorsal"] = "None"
 
 						//Now that we changed our species, we must verify that the mutant colour is still allowed.
 						var/temp_hsv = RGBtoHSV(features["mcolor"])

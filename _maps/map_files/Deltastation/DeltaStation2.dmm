@@ -39125,6 +39125,10 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
+/obj/machinery/button/door/armory/warden{
+	pixel_x = -24;
+	pixel_y = -12
+	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "eNP" = (
@@ -56526,6 +56530,10 @@
 	icon_state = "0-8"
 	},
 /obj/structure/rack,
+/obj/machinery/button/door/armory/warden{
+	pixel_x = 24;
+	pixel_y = -12
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
 "iCG" = (
@@ -101279,22 +101287,6 @@
 "rWs" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 4
-	},
-/obj/machinery/button/door/armory/officers{
-	pixel_x = 24;
-	pixel_y = -6
-	},
-/obj/machinery/button/door/armory/warden{
-	pixel_x = 24;
-	pixel_y = 6
-	},
-/obj/machinery/button/door/armory/officers{
-	pixel_x = -24;
-	pixel_y = -6
-	},
-/obj/machinery/button/door/armory/warden{
-	pixel_x = -24;
-	pixel_y = 6
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)

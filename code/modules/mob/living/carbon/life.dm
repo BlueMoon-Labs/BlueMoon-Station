@@ -34,7 +34,7 @@
 		handle_liver(delta_time, times_fired)
 
 	if(stat != DEAD)
-		handle_corruption()
+		handle_corruption(delta_time)
 
 
 /mob/living/carbon/PhysicalLife(seconds, times_fired)
@@ -143,6 +143,11 @@
 				if(our_turf.liquids && !HAS_TRAIT(src, TRAIT_NOBREATH) && ((body_position == LYING_DOWN && our_turf.liquids.liquid_state >= LIQUID_STATE_WAIST) || (body_position == STANDING_UP && our_turf.liquids.liquid_state >= LIQUID_STATE_FULLTILE)))
 					//Officially trying to breathe underwater
 					if(HAS_TRAIT(src, TRAIT_WATER_BREATHING))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
+					var/obj/item/clothing/mouth_cover = get_item_by_slot(ITEM_SLOT_MASK)
+					if(mouth_cover && (mouth_cover.flags_cover & MASKCOVERSMOUTH))
 						failed_last_breath = FALSE
 						clear_alert("not_enough_oxy")
 						return FALSE
@@ -957,7 +962,10 @@ BLUEMOON REMOVAL END */
 	return TRUE
 
 /mob/living/carbon/proc/set_heartattack(status)
-	if(!can_heartattack())
+	// Проверка гейтит только постановку приступа. Снятие обязано работать всегда,
+	// иначе синтетик с остановленной помпой (can_heartattack() = FALSE из-за
+	// ORGAN_SYNTHETIC) не запускался обратно ни дефибом, ни fully_heal().
+	if(status && !can_heartattack())
 		return FALSE
 
 	var/obj/item/organ/heart/heart = getorganslot(ORGAN_SLOT_HEART)
@@ -965,6 +973,13 @@ BLUEMOON REMOVAL END */
 		return
 
 	if(status)
-		heart.Stop()
-	else
-		heart.Restart()
+		return heart.Stop()
+
+	// Отказавшую помпу перезапускать нечем: ближайший on_life() снова её остановит,
+	// а заодно напечатает "Fatal error detected" - у синтетика on_life() сбрасывает
+	// failed на каждом проходе с beating, так что каждый разряд дефиба перевзводил
+	// ровно тот спам, ради которого ставили защиту. Орган надо чинить, а не заводить.
+	if(heart.organ_flags & ORGAN_FAILING)
+		return FALSE
+
+	return heart.Restart()

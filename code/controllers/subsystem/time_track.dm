@@ -17,7 +17,25 @@
 /// Порог, когда потолок замерить не удалось. DreamDaemon 32-битный всегда, так что потолок - от трёх до четырёх гигабайт.
 #define MEMORY_WARN_FALLBACK_MB 2048
 /// Следующее предупреждение - не раньше, чем ещё через столько мегабайт: иначе раз перешагнувший порог процесс пишет строку каждые десять секунд до конца раунда.
-#define MEMORY_WARN_STEP_MB 256
+///
+/// Ступень обязана быть МЕНЬШЕ того, на сколько раунд реально вырастает, иначе первая же
+/// ступень оказывается за пределами его жизни и лестница молчит всегда. Прежние 256 МБ
+/// этому не удовлетворяли: логи 28.08.2026 дают четыре раунда, и ступень напечаталась
+/// ровно в одном.
+/// * 10133: база 2320.4 МБ, потолок 4092, первая ступень 2576.4 - за все 24 минуты раунд
+///   дошёл до 2547.3 и не дотянулся 29 МБ. Ни строки, ни переписи. (Раунд не падал, его
+///   перезапустили руками под деплой; цифра - просто верх его роста.)
+/// * 10134: база 2577 МБ, первая ступень 2833 - за 42 минуты дошёл до 2725, не дотянулся 108.
+/// * 10132: раунд длиной 11 минут, до ступени не дожил.
+/// * 10131: база 2228.9, ступень 2484.9 - единственный раунд, где лестница заговорила, и он
+///   же единственный, который прожил пять с половиной часов.
+///
+/// 96 МБ измеряются по тем же логам: короткий раунд вырастает на 150-230 МБ, значит на этом
+/// пробеге умещается две ступени плюс запас, и перепись приходит тогда, когда есть что
+/// сравнивать. Спама это не даёт - порог переезжает от ТЕКУЩЕГО значения, а не от прежнего
+/// порога, поэтому между строками процесс обязан вырасти ещё на ступень: при боевых
+/// 12.8 МБ/мин это одна строка в семь с половиной минут.
+#define MEMORY_WARN_STEP_MB 96
 
 /// За сколько расчётных минут до упора в потолок уходит ЕДИНСТВЕННОЕ за раунд сообщение админам.
 ///
@@ -147,6 +165,11 @@ SUBSYSTEM_DEF(time_track)
 	var/list/memory_sample_vsz = list()
 	/// Скорость роста VmSize, МБ/мин по окну. Ноль - окно ещё короче MEMORY_RATE_MIN_SPAN.
 	var/memory_growth_mb_per_minute = 0
+	/// VmSize последнего замера в МБ. Ноль - память не меряется (Windows) либо замеров ещё
+	/// не было. Отдельным варом, а не хвостом memory_sample_vsz: окно скорости чистится по
+	/// времени и на длинной паузе МК пустеет целиком, а давление спрашивают из чужих
+	/// подсистем, которым пустое окно ничего не должно говорить. См. memory_pressure_fraction().
+	var/memory_last_vsz_mb = 0
 	/// Прошлая перепись инстансов: тип -> количество. Нужна ради разницы, а не итога.
 	var/list/memory_census_previous
 	/// world.time последней переписи.
@@ -248,6 +271,26 @@ SUBSYSTEM_DEF(time_track)
 		(это НЕ старт раунда, пороги ставятся по установившемуся уровню), \
 		хост [host_memory ? "[host_memory["available"]] из [host_memory["total"]] МБ свободно" : "не опрошен"], \
 		объектов [num2text(world.contents.len, 12)] на [world.maxz] z-уровнях")
+	log_world(world_new_entry_memory_line(GLOB.world_new_entry_vsz_mb, memory["vsz"]))
+
+/**
+ * Сколько адресного пространства мир занял ДО первой строки DM.
+ *
+ * Это .dmb, типовые таблицы и инициализация глобальных переменных DM - всё, что происходит
+ * до /world/New(). По внешнему стенду раунда 10108 - 696 МБ, около четверти базы, и это
+ * самый крупный неразобранный кусок памяти: поставить метку раньше /world/New() в DM негде,
+ * поэтому цифра до сих пор существовала только как замер стенда на Windows и ни разу не
+ * снималась на проде.
+ *
+ * Отдельным проком, потому что без живого процесса иначе не проверить, что деление на две
+ * половины сходится: сумма "до DM" и "инициализация" обязана давать середину инициализации.
+ */
+/proc/world_new_entry_memory_line(entry_vsz_mb, current_vsz_mb)
+	if(isnull(entry_vsz_mb))
+		return "## MEMORY: VmSize на входе в /world/New() не замерен - разложить базу на \".dmb и глобалки\" и \"инициализацию\" нечем"
+	var/init_spent = round(current_vsz_mb - entry_vsz_mb, 0.1)
+	return "## MEMORY: до первой строки DM (.dmb, типовые таблицы, глобалки) [entry_vsz_mb] МБ; \
+		инициализация к этой отметке добавила [init_spent] МБ"
 
 /**
  * Пора ли снимать базовый уровень раунда.
@@ -341,6 +384,7 @@ SUBSYSTEM_DEF(time_track)
 	var/vsz = memory["vsz"]
 	if(!memory_first_sample_at)
 		memory_first_sample_at = world.time
+	memory_last_vsz_mb = vsz
 
 	memory_sample_times += world.time
 	memory_sample_vsz += vsz
@@ -1075,6 +1119,7 @@ SUBSYSTEM_DEF(time_track)
  */
 /datum/controller/subsystem/time_track/proc/log_global_list_slots()
 	var/list/found = list()
+	var/list/top_level = list()
 	var/total = 0
 	var/list/built_in = GLOB.gvars_datum_in_built_vars
 	for(var/var_name in GLOB.vars)
@@ -1087,6 +1132,7 @@ SUBSYSTEM_DEF(time_track)
 		if(!slots)
 			continue
 		found["GLOB.[var_name]"] = slots
+		top_level["GLOB.[var_name]"] = length(value)
 		total += slots
 		CHECK_TICK
 
@@ -1104,6 +1150,7 @@ SUBSYSTEM_DEF(time_track)
 			if(!slots)
 				continue
 			found["[subsystem.name].[var_name]"] = slots
+			top_level["[subsystem.name].[var_name]"] = length(value)
 			total += slots
 		CHECK_TICK
 
@@ -1114,9 +1161,23 @@ SUBSYSTEM_DEF(time_track)
 	for(var/entry in found)
 		if(length(top) >= MEMORY_CENSUS_TOP)
 			break
-		top += "[entry] [num2text(found[entry], 12)]"
+		top += census_list_label(entry, found[entry], top_level[entry])
 	log_world("## MEMORY: элементы глобальных списков и списков подсистем: \
 		всего [num2text(total, 12)] в [length(found)] списках; крупнейшие: [top.Join(", ")]")
+
+/**
+ * Подпись одного списка в строке переписи: глубокие слоты и, если они не совпадают с
+ * длиной, длина верхнего уровня отдельно.
+ *
+ * Без второй цифры вложенный список читается как плоский: `cached_icon_states_by_file`
+ * с потолком в 4096 ключей четыре раунда подряд разбирали как «77 тысяч записей без
+ * потолка», хотя это ~2,4 тысячи файлов по ~31 стейту. Число слотов верное и остаётся
+ * первым - но читатель должен видеть, сколько из них ключи, а сколько содержимое.
+ */
+/datum/controller/subsystem/time_track/proc/census_list_label(name, slots, top_level_length)
+	if(slots == top_level_length)
+		return "[name] [num2text(slots, 12)]"
+	return "[name] [num2text(slots, 12)] (верхний уровень [num2text(top_level_length, 12)])"
 
 /**
  * Связи освещения: источники, углы и рёбра между ними.
@@ -1492,6 +1553,22 @@ SUBSYSTEM_DEF(time_track)
 	"light_queue_sources",
 	"light_queue_corners",
 	"light_queue_objects",
+	"light_lit_deferred_z",
+	// Качание сноса/подъёма отложенных уровней. Кумулятивные счётчики: в раунде 10126 их
+	// пришлось восстанавливать подсчётом строк dd.log вручную, а разность соседних строк
+	// CSV сразу показывает частоту. Ноль у обоих - отсрочка работает и никого не трясёт.
+	"light_z_builds",
+	"light_z_teardowns",
+	// Книга недатумных аллокаций (code/__HELPERS/nondatum_ledger.dm). Кумулятив за раунд:
+	// разность соседних строк отвечает на вопрос, который перепись инстансов не берёт -
+	// чем платили ступени VmSize, в которых объектов не прибавилось.
+	"ledger_icons",
+	"ledger_icon_pixels",
+	"ledger_asset_bytes",
+	"ledger_rsc_bytes",
+	"ledger_tgui_bytes",
+	"ledger_statpanel_bytes",
+	"ledger_spritesheets",
 	)
 
 /// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
@@ -1574,5 +1651,18 @@ SUBSYSTEM_DEF(time_track)
 	SSlighting.worst_fire_cost,
 	length(GLOB.lighting_update_lights),
 	length(GLOB.lighting_update_corners),
-	length(GLOB.lighting_update_objects)
+	length(GLOB.lighting_update_objects),
+	SSlighting.lit_deferred_zlevel_count(),
+	SSlighting.zlevel_builds_total,
+	SSlighting.zlevel_teardowns_total,
+	// num2text: счётчики байтов переваливают за миллион уже в первые минуты, а
+	// интерполяция берёт шесть значащих цифр и превращает разность соседних строк
+	// в шум округления (см. комментарий выше у instances).
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ICONS], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ICON_PIXELS], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_ASSET_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_RSC_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_TGUI_BYTES], 12),
+	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_STATPANEL_BYTES], 12),
+	GLOB.nondatum_ledger[NONDATUM_LEDGER_SPRITESHEETS]
 	)

@@ -96,7 +96,6 @@
 	icon_state = "striped_dress"
 	item_state = "stripeddress"
 	body_parts_covered = CHEST|GROIN|ARMS
-	fitted = FEMALE_UNIFORM_FULL
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 

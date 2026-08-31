@@ -998,14 +998,20 @@
 	module.transform_to(/obj/item/robot_module)
 
 	// Remove upgrades.
-	for(var/obj/item/borg/upgrade/I in upgrades)
-		I.deactivate(src)
-		I.forceMove(get_turf(src))
+	// forceMove() сам поднимает COMSIG_MOVABLE_MOVED -> remove_from_upgrades(), а тот
+	// уже зовёт deactivate() и вычищает апгрейд из upgrades. Свой вызов deactivate()
+	// здесь давал второй проход по спискам модуля - см. "list index out of bounds"
+	// у xwelding/rped в прод-раунде 10150. Идём по копии: обработчик правит upgrades.
+	for(var/obj/item/borg/upgrade/upgrade as anything in upgrades.Copy())
+		upgrade.forceMove(get_turf(src))
 
 	upgrades.Cut()
 
 	vtec = 0
 	vtec_disabled = FALSE
+	vtec_expire = 0
+	vtec_drain = 0
+	vtec_cooldown_until = 0
 	ionpulse = FALSE
 	revert_shell()
 
@@ -1098,7 +1104,10 @@
 ///Called when an upgrade is moved outside the robot. So don't call this directly, use forceMove etc.
 /mob/living/silicon/robot/proc/remove_from_upgrades(obj/item/borg/upgrade/old_upgrade)
 	SIGNAL_HANDLER
-	if(loc == src)
+	// Проверять надо loc переехавшего апгрейда, а не свой: у моба loc это турф,
+	// и условие никогда не выполнялось - апгрейд снимался даже при перемещении
+	// внутри киборга.
+	if(old_upgrade.loc == src)
 		return
 	old_upgrade.deactivate(src)
 	upgrades -= old_upgrade

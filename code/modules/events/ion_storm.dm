@@ -102,6 +102,7 @@
 			if(protection & EMP_PROTECT_CONTENTS)
 				continue
 			H.visible_message(span_warning("[H] вздрагивает, когда сквозь [H.ru_ego()] корпус проходит электромагнитный импульс."), span_boldwarning("Электромагнитная буря сбивает ваши сенсоры! Системы визуализации сбоят..."))
+			H.error_handler(CORRUPTION_ERROR_CRITICAL)
 			H.blur_eyes(30)
 			H.overlay_fullscreen("ion_storm_static", /atom/movable/screen/fullscreen/tiled/flash/static)
 			H.clear_fullscreen("ion_storm_static", 8)

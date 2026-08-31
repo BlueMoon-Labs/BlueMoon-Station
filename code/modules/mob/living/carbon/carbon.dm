@@ -740,12 +740,12 @@
 			set_resting(TRUE, FALSE, FALSE)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
 			combat_flags |= COMBAT_FLAG_HARD_STAMCRIT
-			filters += CIT_FILTER_STAMINACRIT
+			add_filter("staminacrit", 1, CIT_FILTER_STAMINACRIT)
 			update_mobility()
 	if((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && total_health <= STAMINA_CRIT_REMOVAL_THRESHOLD)
 		to_chat(src, "<span class='notice'>Вы больше не чувствуете себя так измотанно.</span>")
 		combat_flags &= ~(COMBAT_FLAG_HARD_STAMCRIT)
-		filters -= CIT_FILTER_STAMINACRIT
+		remove_filter("staminacrit")
 		update_mobility()
 	UpdateStaminaBuffer()
 	update_health_hud()
@@ -988,6 +988,26 @@
 		overlay_fullscreen("brute", /atom/movable/screen/fullscreen/scaled/brute, severity)
 	else
 		clear_fullscreen("brute")
+
+	var/toxdamage = getToxLoss()
+	if(toxdamage)
+		var/severity = 0
+		switch(toxdamage)
+			if(5 to 15)
+				severity = 1
+			if(15 to 30)
+				severity = 2
+			if(30 to 45)
+				severity = 3
+			if(45 to 70)
+				severity = 4
+			if(70 to 85)
+				severity = 5
+			if(85 to INFINITY)
+				severity = 6
+		overlay_fullscreen("synthcorrupt", /atom/movable/screen/fullscreen/scaled/synthcorrupt, severity)
+	else
+		clear_fullscreen("synthcorrupt")
 
 	var/blood_effect_volume = blood_volume + integrating_blood
 	var/blood_threshold_high = BLOOD_VOLUME_OKAY * blood_ratio

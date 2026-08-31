@@ -2,6 +2,10 @@
 
 GLOBAL_VAR(restart_counter)
 
+/// VmSize на входе в /world/New(), в мегабайтах; null - замер недоступен (Windows, /proc).
+/// Всё, что было потрачено до этой отметки, - это .dmb, типовые таблицы и глобалки DM.
+GLOBAL_VAR(world_new_entry_vsz_mb)
+
 GLOBAL_VAR(topic_status_lastcache)
 GLOBAL_LIST(topic_status_cache)
 
@@ -9,6 +13,14 @@ GLOBAL_LIST(topic_status_cache)
 //So subsystems globals exist, but are not initialised
 
 /world/New()
+	// Первая строка DM во всём раунде. Замер ЗДЕСЬ отрезает то, что уже потрачено до неё -
+	// загрузку .dmb, типовые таблицы и инициализацию глобальных переменных DM, - от всего,
+	// что делает мир дальше. По внешнему стенду (раунд 10108) это 696 МБ, около четверти
+	// базы, и внутрь этой цифры никто ни разу не заглядывал: до /world/New() поставить метку
+	// в DM негде в принципе. Логировать сразу нельзя (GLOB.world_runtime_log ещё null, а
+	// world.log до SetupLogs() смотрит не в раунд), поэтому число едет в глобалку, а печатает
+	// его SStime_track.log_process_memory_environment().
+	GLOB.world_new_entry_vsz_mb = get_process_memory_mb()?["vsz"]
 	var/dll = GetConfig("env", "AUXTOOLS_DEBUG_DLL")
 	if (dll)
 		LIBCALL(dll, "auxtools_init")()

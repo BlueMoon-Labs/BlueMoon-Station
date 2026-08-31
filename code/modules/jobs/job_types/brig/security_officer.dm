@@ -166,7 +166,9 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	name = "Security Officer"
 	jobtype = /datum/job/officer
 
-	belt = /obj/item/modular_computer/pda/security
+	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
+	mask = /obj/item/clothing/mask/gas/sechailer
+	belt = /obj/item/storage/belt/security
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer
 	gloves = /obj/item/clothing/gloves/color/black
@@ -174,6 +176,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	shoes = /obj/item/clothing/shoes/jackboots/sec
 	l_pocket = /obj/item/storage/bag/security
+	r_pocket = /obj/item/modular_computer/pda/security
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
 						/obj/item/ammo_box/magazine/e45/taser=3
@@ -195,16 +198,12 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	name = "Syndicate Security Officer"
 	jobtype = /datum/job/officer
 
-	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
-
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer/util
 	gloves = /obj/item/clothing/gloves/combat
 	head = /obj/item/clothing/head/helmet/sec
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
-	l_pocket = /obj/item/restraints/handcuffs
-	r_pocket = /obj/item/assembly/flash/handheld
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
 						/obj/item/ammo_box/magazine/e45/taser=3, /obj/item/syndicate_uplink/station=1)
@@ -215,7 +214,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
-	pda_slot = ITEM_SLOT_BELT
+	pda_slot = ITEM_SLOT_RPOCKET
 
 /obj/item/radio/headset/headset_sec/alt/department/Initialize(mapload)
 	. = ..()
