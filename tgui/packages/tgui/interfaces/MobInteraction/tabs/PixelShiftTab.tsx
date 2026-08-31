@@ -48,6 +48,12 @@ export const Pixelshift = (props) => {
     syncOffset(offsetX, offsetY, value, false);
   };
 
+  const handleReset = () => {
+    setOffsetX(0);
+    setOffsetY(0);
+    act('pixel_shift', { type: 'reset' });
+  };
+
   const offsetLabel = (offsetX === 0 && offsetY === 0)
     ? '0 px / 0 px'
     : [
@@ -119,6 +125,13 @@ export const Pixelshift = (props) => {
               color={animateOnClick ? 'green' : 'default'}
               content="Animate on LMB"
               onClick={() => setAnimateOnClick(!animateOnClick)}
+            />
+            <Button
+              fluid
+              mt={1}
+              color="red"
+              content="Reset"
+              onClick={handleReset}
             />
           </Box>
         </Stack.Item>

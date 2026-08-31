@@ -22,9 +22,10 @@ type MainTypes = {
   tab_character_prefs_enabled: boolean;
   tab_sex_animations_enabled: boolean;
   tab_custom_enabled: boolean;
+  compact_custom_tab: boolean;
 }
 
-const TABS = [
+export const TABS = [
   { key: 'interactions', label: 'Interactions', enabledKey: 'tab_interactions_enabled' },
   { key: 'custom', label: 'Custom', enabledKey: 'tab_custom_enabled' },
   { key: 'genitals', label: 'Genital Options', enabledKey: 'tab_genital_options_enabled' },
@@ -53,6 +54,13 @@ export const MainContent = (props) => {
     ? activeTab
     : (visibleTabs[0]?.key || 'preferences');
 
+  const compactCustomTab = !!data.compact_custom_tab;
+  const tabBarTabs = compactCustomTab
+    ? visibleTabs.filter(t => t.key !== 'custom')
+    : visibleTabs;
+  const showCompactCustomButton = compactCustomTab
+    && visibleTabs.some(t => t.key === 'custom');
+
   return (
     <Section fill>
       <Stack vertical fill>
@@ -62,6 +70,16 @@ export const MainContent = (props) => {
               <Tabs.Tab
                 selected={tab === 'interactions'}
                 onClick={() => setActiveTab('interactions')}
+                leftSlot={showCompactCustomButton ? (
+                  <Button
+                    icon="plus"
+                    color={tab === 'custom' ? 'green' : 'transparent'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveTab('custom');
+                    }}
+                    tooltip="Custom" />
+                ) : undefined}
                 rightSlot={
                   <Button
                     icon={"star" + (inFavorites ? "" : "-o")}
@@ -72,7 +90,7 @@ export const MainContent = (props) => {
                 Interactions
               </Tabs.Tab>
             )}
-            {visibleTabs.filter(t => t.key !== 'interactions').map(({ key, label }) => (
+            {tabBarTabs.filter(t => t.key !== 'interactions').map(({ key, label }) => (
               <Tabs.Tab
                 key={key}
                 selected={tab === key}

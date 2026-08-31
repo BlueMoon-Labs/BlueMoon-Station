@@ -6,6 +6,8 @@
 	var/interaction_effect = INTERACTION_EFFECT_HEART
 	var/block_partner_pixel_shift = FALSE
 	var/panel_tab_toggles = ALL_INTERACTION_MENU_TABS
+	var/dynamic_window_size = FALSE
+	var/compact_custom_tab = FALSE
 
 /datum/preferences/proc/get_custom_interaction_limit()
 	var/user_ckey = parent?.ckey

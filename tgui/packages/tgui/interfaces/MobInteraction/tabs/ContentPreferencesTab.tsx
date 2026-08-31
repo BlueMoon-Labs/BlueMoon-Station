@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Button, Stack } from '../../../components';
+import { Box, Button, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
   tab_interactions_enabled: boolean,
@@ -7,6 +7,8 @@ type ContentPrefsInfo = {
   tab_character_prefs_enabled: boolean,
   tab_sex_animations_enabled: boolean,
   tab_custom_enabled: boolean,
+  dynamic_window_size: boolean,
+  compact_custom_tab: boolean,
   verb_consent: boolean,
   custom_verb_consent: boolean,
   ranged_verb_pref : boolean,
@@ -46,6 +48,8 @@ export const ContentPreferencesTab = (props) => {
     tab_character_prefs_enabled,
     tab_sex_animations_enabled,
     tab_custom_enabled,
+    dynamic_window_size,
+    compact_custom_tab,
     verb_consent,
     custom_verb_consent,
     ranged_verb_pref,
@@ -79,63 +83,86 @@ export const ContentPreferencesTab = (props) => {
   return (
     <Stack vertical fill>
       <Stack.Item>
-        <Stack textAlign="center">
-          <Stack.Item grow>
+        <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5em', textAlign: 'center' }}>
+          <Box style={{ flex: '1 1 auto' }}>
             <Button
               fluid
               content="Interactions"
-              tooltip="Показывать вкладку Interactions"
               icon={tab_interactions_enabled ? "eye" : "eye-slash"}
               color={tab_interactions_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_interactions_enabled',
               })} />
-          </Stack.Item>
-          <Stack.Item grow>
+          </Box>
+          <Box style={{ flex: '1 1 auto' }}>
             <Button
               fluid
               content="Custom"
-              tooltip="Показывать вкладку Custom"
               icon={tab_custom_enabled ? "eye" : "eye-slash"}
               color={tab_custom_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_custom_enabled',
               })} />
-          </Stack.Item>
-          <Stack.Item grow>
+          </Box>
+          <Box style={{ flex: '1 1 auto' }}>
             <Button
               fluid
               content="Genital Options"
-              tooltip="Показывать вкладку Genital Options"
               icon={tab_genital_options_enabled ? "eye" : "eye-slash"}
               color={tab_genital_options_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_genital_options_enabled',
               })} />
-          </Stack.Item>
-          <Stack.Item grow>
-            <Button
-              fluid
-              content="Character Prefs"
-              tooltip="Показывать вкладку Character Prefs"
-              icon={tab_character_prefs_enabled ? "eye" : "eye-slash"}
-              color={tab_character_prefs_enabled ? "green" : "default"}
-              onClick={() => act('pref', {
-                pref: 'tab_character_prefs_enabled',
-              })} />
-          </Stack.Item>
-          <Stack.Item grow>
-            <Button
-              fluid
-              content="Sex Animations"
-              tooltip="Показывать вкладку Sex Animations"
-              icon={tab_sex_animations_enabled ? "eye" : "eye-slash"}
-              color={tab_sex_animations_enabled ? "green" : "default"}
-              onClick={() => act('pref', {
-                pref: 'tab_sex_animations_enabled',
-              })} />
-          </Stack.Item>
-        </Stack>
+          </Box>
+          <Box style={{ flex: '1 1 auto', display: 'flex', gap: '0.5em' }}>
+            <Box style={{ flex: '1 1 auto' }}>
+              <Button
+                fluid
+                content="Character Prefs"
+                icon={tab_character_prefs_enabled ? "eye" : "eye-slash"}
+                color={tab_character_prefs_enabled ? "green" : "default"}
+                onClick={() => act('pref', {
+                  pref: 'tab_character_prefs_enabled',
+                })} />
+            </Box>
+            <Box style={{ flex: '1 1 auto' }}>
+              <Button
+                fluid
+                content="Sex Animations"
+                icon={tab_sex_animations_enabled ? "eye" : "eye-slash"}
+                color={tab_sex_animations_enabled ? "green" : "default"}
+                onClick={() => act('pref', {
+                  pref: 'tab_sex_animations_enabled',
+                })} />
+            </Box>
+          </Box>
+        </Box>
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Dynamic window size"
+          tooltip="Изменение размера окна в зависимости от включенных вкладок"
+          icon={dynamic_window_size ? "toggle-on" : "toggle-off"}
+          selected={dynamic_window_size}
+          onClick={() => act('pref', {
+            pref: 'dynamic_window_size',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Compact custom tab"
+          tooltip="Компактная вкладка Custom"
+          icon={compact_custom_tab ? "toggle-on" : "toggle-off"}
+          selected={compact_custom_tab}
+          onClick={() => act('pref', {
+            pref: 'compact_custom_tab',
+          })}
+        />
       </Stack.Item>
       <Stack.Item>
         <Button

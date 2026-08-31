@@ -605,6 +605,8 @@
 		.["tab_character_prefs_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
 		.["tab_sex_animations_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
 		.["tab_custom_enabled"] = 				!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+		.["dynamic_window_size"] = 				prefs.dynamic_window_size
+		.["compact_custom_tab"] = 				prefs.compact_custom_tab
 
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
@@ -986,6 +988,10 @@
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
 				if("tab_custom_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+				if("dynamic_window_size")
+					prefs.dynamic_window_size = !prefs.dynamic_window_size
+				if("compact_custom_tab")
+					prefs.compact_custom_tab = !prefs.compact_custom_tab
 				else
 					return FALSE
 			prefs.save_preferences()
