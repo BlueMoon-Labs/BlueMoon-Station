@@ -1,11 +1,12 @@
 import { useBackend } from '../../../backend';
-import { Button, Section, Stack } from '../../../components';
+import { Button, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
   tab_interactions_enabled: boolean,
   tab_genital_options_enabled: boolean,
   tab_character_prefs_enabled: boolean,
   tab_sex_animations_enabled: boolean,
+  tab_custom_enabled: boolean,
   verb_consent: boolean,
   custom_verb_consent: boolean,
   ranged_verb_pref : boolean,
@@ -44,6 +45,7 @@ export const ContentPreferencesTab = (props) => {
     tab_genital_options_enabled,
     tab_character_prefs_enabled,
     tab_sex_animations_enabled,
+    tab_custom_enabled,
     verb_consent,
     custom_verb_consent,
     ranged_verb_pref,
@@ -77,58 +79,61 @@ export const ContentPreferencesTab = (props) => {
   return (
     <Stack vertical fill>
       <Stack.Item>
-        <Stack vertical>
-          <Stack.Item>
+        <Stack textAlign="center">
+          <Stack.Item grow>
             <Button
               fluid
-              mb={-0.7}
               content="Interactions"
-              icon={tab_interactions_enabled ? "toggle-on" : "toggle-off"}
-              selected={tab_interactions_enabled}
-              tooltip="Показывать вкладку Interactions в меню взаимодействий"
+              tooltip="Показывать вкладку Interactions"
+              icon={tab_interactions_enabled ? "eye" : "eye-slash"}
+              color={tab_interactions_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_interactions_enabled',
-              })}
-            />
+              })} />
           </Stack.Item>
-          <Stack.Item>
+          <Stack.Item grow>
             <Button
               fluid
-              mb={-0.7}
+              content="Custom"
+              tooltip="Показывать вкладку Custom"
+              icon={tab_custom_enabled ? "eye" : "eye-slash"}
+              color={tab_custom_enabled ? "green" : "default"}
+              onClick={() => act('pref', {
+                pref: 'tab_custom_enabled',
+              })} />
+          </Stack.Item>
+          <Stack.Item grow>
+            <Button
+              fluid
               content="Genital Options"
-              icon={tab_genital_options_enabled ? "toggle-on" : "toggle-off"}
-              selected={tab_genital_options_enabled}
-              tooltip="Показывать вкладку Genital Options в меню взаимодействий"
+              tooltip="Показывать вкладку Genital Options"
+              icon={tab_genital_options_enabled ? "eye" : "eye-slash"}
+              color={tab_genital_options_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_genital_options_enabled',
-              })}
-            />
+              })} />
           </Stack.Item>
-          <Stack.Item>
+          <Stack.Item grow>
             <Button
               fluid
-              mb={-0.7}
               content="Character Prefs"
-              icon={tab_character_prefs_enabled ? "toggle-on" : "toggle-off"}
-              selected={tab_character_prefs_enabled}
-              tooltip="Показывать вкладку Character Prefs в меню взаимодействий"
+              tooltip="Показывать вкладку Character Prefs"
+              icon={tab_character_prefs_enabled ? "eye" : "eye-slash"}
+              color={tab_character_prefs_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_character_prefs_enabled',
-              })}
-            />
+              })} />
           </Stack.Item>
-          <Stack.Item>
+          <Stack.Item grow>
             <Button
               fluid
-              mb={-0.7}
               content="Sex Animations"
-              icon={tab_sex_animations_enabled ? "toggle-on" : "toggle-off"}
-              selected={tab_sex_animations_enabled}
-              tooltip="Показывать вкладку Sex Animations в меню взаимодействий"
+              tooltip="Показывать вкладку Sex Animations"
+              icon={tab_sex_animations_enabled ? "eye" : "eye-slash"}
+              color={tab_sex_animations_enabled ? "green" : "default"}
               onClick={() => act('pref', {
                 pref: 'tab_sex_animations_enabled',
-              })}
-            />
+              })} />
           </Stack.Item>
         </Stack>
       </Stack.Item>

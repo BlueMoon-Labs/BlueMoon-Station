@@ -5,6 +5,7 @@ import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../compone
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
+  CustomInteractionsTab,
   GenitalTab,
   InteractionsTab,
   Pixelshift,
@@ -20,10 +21,12 @@ type MainTypes = {
   tab_genital_options_enabled: boolean;
   tab_character_prefs_enabled: boolean;
   tab_sex_animations_enabled: boolean;
+  tab_custom_enabled: boolean;
 }
 
 const TABS = [
   { key: 'interactions', label: 'Interactions', enabledKey: 'tab_interactions_enabled' },
+  { key: 'custom', label: 'Custom', enabledKey: 'tab_custom_enabled' },
   { key: 'genitals', label: 'Genital Options', enabledKey: 'tab_genital_options_enabled' },
   { key: 'character_prefs', label: 'Character Prefs', enabledKey: 'tab_character_prefs_enabled' },
   { key: 'sex_animations', label: 'Sex Animations', enabledKey: 'tab_sex_animations_enabled' },
@@ -69,13 +72,6 @@ export const MainContent = (props) => {
                 Interactions
               </Tabs.Tab>
             )}
-            <Tabs.Tab
-              className="Tab--custom"
-              icon="sliders"
-              color="yellow"
-              onClick={() => act('open_customs_window')}>
-              Custom
-            </Tabs.Tab>
             {visibleTabs.filter(t => t.key !== 'interactions').map(({ key, label }) => (
               <Tabs.Tab
                 key={key}
@@ -111,6 +107,8 @@ export const MainContent = (props) => {
           <Section scrollable fill>
             {(() => {
               switch (tab) {
+                case 'custom':
+                  return <CustomInteractionsTab />;
                 case 'genitals':
                   return <GenitalTab />;
                 case 'character_prefs':

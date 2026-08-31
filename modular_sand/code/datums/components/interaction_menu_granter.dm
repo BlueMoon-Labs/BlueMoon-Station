@@ -604,6 +604,7 @@
 		.["tab_genital_options_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
 		.["tab_character_prefs_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
 		.["tab_sex_animations_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+		.["tab_custom_enabled"] = 				!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
 
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
@@ -983,6 +984,8 @@
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
 				if("tab_sex_animations_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+				if("tab_custom_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
 				else
 					return FALSE
 			prefs.save_preferences()
@@ -1023,8 +1026,6 @@
 			return custom_edit(parent_mob, params)
 		if("custom_delete")
 			return custom_delete(parent_mob, params)
-		if("open_customs_window")
-			return open_customs_window(parent_mob)
 
 //BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
@@ -1154,18 +1155,7 @@
 	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
 	log_admin(log_text)
 
-/datum/component/interaction_menu_granter/proc/open_customs_window(mob/living/user)
-	if(!user?.client)
-		return FALSE
-	for(var/datum/tgui/ui in SStgui.get_all_open_uis(src))
-		if(ui.interface == "MobInteractionCustoms" && ui.user == user)
-			ui.send_update()
-			return TRUE
-	var/datum/tgui/ui = new(user, src, "MobInteractionCustoms", "Custom Interactions")
-	ui.open()
-	return TRUE
-
-/// Обновляет все открытые панели взаимодействия и окно кастомизации
+/// Обновляет все открытые панели взаимодействия
 /// (удаление/изменение кастомов должно немедленно отражаться везде).
 /datum/component/interaction_menu_granter/proc/refresh_interaction_panels()
 	for(var/datum/interaction_menu_panel/panel as anything in panels)
