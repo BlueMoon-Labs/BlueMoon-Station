@@ -650,6 +650,8 @@
 				"requires_tail" = custom.requires_tail,
 				"requires_telekinesis" = custom.requires_telekinesis,
 				"max_distance" = custom.max_distance,
+				"sound_keys" = custom.sound_keys,
+				"sound_labels" = custom.get_sound_labels(),
 			))
 	.["own_custom_interactions"] = own_customs
 	.["max_custom_interactions"] = self.client.prefs.get_custom_interaction_limit()
@@ -700,6 +702,16 @@
 	.["interactions"] = sent_interactions
 	.["interaction_speeds"] = GLOB.interaction_speeds
 	.["interaction_effects_list"] = GLOB.interaction_effects_list
+
+	var/list/custom_sound_options = list()
+	for(var/sound_key in GLOB.custom_interaction_sounds)
+		var/list/sound_data = GLOB.custom_interaction_sounds[sound_key]
+		custom_sound_options += list(list(
+			"key" = sound_key,
+			"label" = sound_data["label"],
+			"group" = sound_data["group"],
+		))
+	.["custom_interaction_sounds"] = custom_sound_options
 
 /proc/num_to_pref(num)
 	switch(num)
@@ -1032,6 +1044,13 @@
 			return custom_edit(parent_mob, params)
 		if("custom_delete")
 			return custom_delete(parent_mob, params)
+		if("custom_preview_sound")
+			var/list/sound_data = GLOB.custom_interaction_sounds[params["sound_key"]]
+			var/soundfile = sound_data?["file"]
+			if(!soundfile)
+				return FALSE
+			parent_mob.playsound_local(get_turf(parent_mob), soundfile, 50, FALSE)
+			return TRUE
 
 //BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
@@ -1072,6 +1091,8 @@
 		details += list(list("info" = "Нужен хвост у кого-то из пары", "icon" = "paw", "color" = "purple"))
 	if(custom.requires_telekinesis)
 		details += list(list("info" = "Нужен телекинез у кого-то из пары", "icon" = "brain", "color" = "purple"))
+	if(length(custom.sound_keys))
+		details += list(list("info" = "Звук: [jointext(custom.get_sound_labels(), ", ")]", "icon" = "volume-up", "color" = "blue"))
 	interaction["additionalDetails"] = details
 	return interaction
 
@@ -1102,6 +1123,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	LAZYADD(prefs.custom_interactions, custom)
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "создал", custom)
@@ -1133,6 +1156,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	refresh_interaction_panels()
