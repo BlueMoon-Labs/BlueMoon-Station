@@ -560,7 +560,7 @@
 	force_antag_preference = TRUE
 	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
-	required_candidates = 5 //BLUEMOON CHANGES - matches FAMILIES_ROUNDSTART_COUNT
+	required_candidates = 8 //BLUEMOON CHANGES - matches FAMILIES_ROUNDSTART_COUNT
 	weight = 48
 	cost = 10
 	intensity = 45

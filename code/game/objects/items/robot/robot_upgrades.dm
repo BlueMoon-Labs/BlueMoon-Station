@@ -36,6 +36,33 @@
 		return FALSE
 	return TRUE
 
+/// Ищет индекс первого предмета нужного типа в списке модулей киборга. 0 - не нашли.
+/obj/item/borg/upgrade/proc/find_module_index(mob/living/silicon/robot/robot, wanted_type)
+	if(!robot?.module)
+		return 0
+	var/list/modules = robot.module.modules
+	for(var/index in 1 to length(modules))
+		if(istype(modules[index], wanted_type))
+			return index
+	return 0
+
+/// Меняет местами два предмета в обоих списках модуля киборга.
+/// Нулевой индекс - штатная ситуация, а не ошибка: ResetModule() сначала обнуляет
+/// модуль (transform_to), и только потом зовёт deactivate() у апгрейдов, так что
+/// заменяемого инструмента в списках уже нет. Раньше это уходило в Swap(0, x) и
+/// валило "list index out of bounds" (прод-раунд 10150).
+/obj/item/borg/upgrade/proc/swap_module_entries(mob/living/silicon/robot/robot, first_index, second_index)
+	if(!robot?.module || first_index < 1 || second_index < 1)
+		return FALSE
+	var/list/modules = robot.module.modules
+	if(first_index > length(modules) || second_index > length(modules))
+		return FALSE
+	modules.Swap(first_index, second_index)
+	var/list/basic_modules = robot.module.basic_modules
+	if(first_index <= length(basic_modules) && second_index <= length(basic_modules))
+		basic_modules.Swap(first_index, second_index)
+	return TRUE
+
 /obj/item/borg/upgrade/rename
 	name = "cyborg reclassification board"
 	desc = "Используется для переименования киборга."
@@ -182,7 +209,6 @@
 	// Старая дрель
 	var/obj/item/pickaxe/drill/cyborg/D
 	// Старая лопата
-	var/obj/item/shovel/S
 	// Новая дрель
 	var/obj/item/pickaxe/drill/cyborg/diamond/DD
 
@@ -197,44 +223,34 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with a BSD module.</span>")
 			return FALSE
 
-	var/D_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		D = R.module.modules[i]
-		if(istype(D, /obj/item/pickaxe/drill/cyborg))
-			D_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/D_index = find_module_index(R, /obj/item/pickaxe/drill/cyborg)
+	D = D_index ? R.module.modules[D_index] : null
 
 	DD = new(R.module)
 	R.module.basic_modules += DD
 	R.module.add_module(DD, FALSE, TRUE)
 	var/DD_index = R.module.modules.Find(DD)
-	for(DD in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(D_index, DD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(D_index, DD_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, D_index, DD_index)
 	R.module.remove_module(D, TRUE) // Замена произошла - избавляемся от старого инструмента
-	R.module.remove_module(S, TRUE)
 
 /obj/item/borg/upgrade/ddrill/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if(!.)
 		return
 
-	var/DD_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления.
-		DD = R.module.modules[i]
-		if(istype(DD, /obj/item/pickaxe/drill/cyborg/diamond))
-			DD_index = i
-			break
+	var/DD_index = find_module_index(R, /obj/item/pickaxe/drill/cyborg/diamond)
+	if(!DD_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		DD = null
+		return
+	DD = R.module.modules[DD_index]
 
 	D = new(R.module)
 	R.module.basic_modules += D
 	R.module.add_module(D, FALSE, TRUE)
-	R.module.basic_modules += S
-	R.module.add_module(S, FALSE, TRUE)
 	var/D_index = R.module.modules.Find(D)
-	for(D in R.module)
-		R.module.modules.Swap(DD_index, D_index)
-		R.module.basic_modules.Swap(DD_index, D_index)
+	swap_module_entries(R, DD_index, D_index)
+	if(DD)
 		R.module.remove_module(DD, TRUE)
 
 /obj/item/borg/upgrade/advcutter
@@ -334,20 +350,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with a bluespace trash bag module.</span>")
 			return FALSE
 
-	var/oldbag_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		oldbag = R.module.modules[i]
-		if(istype(oldbag, /obj/item/storage/bag/trash/cyborg))
-			oldbag_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/oldbag_index = find_module_index(R, /obj/item/storage/bag/trash/cyborg)
+	oldbag = oldbag_index ? R.module.modules[oldbag_index] : null
 
 	bsbag = new(R.module)
 	R.module.basic_modules += bsbag
 	R.module.add_module(bsbag, FALSE, TRUE)
 	var/bsbag_index = R.module.modules.Find(bsbag)
-	for(bsbag in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(oldbag_index, bsbag_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldbag_index, bsbag_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, oldbag_index, bsbag_index)
 	R.module.remove_module(oldbag, TRUE) // Замена произошла - избавляемся от старого инструмента
 
 /obj/item/borg/upgrade/tboh/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -355,20 +365,19 @@
 	if(!.)
 		return
 
-	var/bsbag_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления.
-		bsbag = R.module.modules[i]
-		if(istype(bsbag, /obj/item/storage/bag/trash/bluespace/cyborg))
-			bsbag_index = i
-			break
+	var/bsbag_index = find_module_index(R, /obj/item/storage/bag/trash/bluespace/cyborg)
+	if(!bsbag_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		bsbag = null
+		return
+	bsbag = R.module.modules[bsbag_index]
 
 	oldbag = new(R.module)
 	R.module.basic_modules += oldbag
 	R.module.add_module(oldbag, FALSE, TRUE)
 	var/oldbag_index = R.module.modules.Find(oldbag)
-	for(oldbag in R.module)
-		R.module.modules.Swap(bsbag_index, oldbag_index)
-		R.module.basic_modules.Swap(bsbag_index, oldbag_index)
+	swap_module_entries(R, bsbag_index, oldbag_index)
+	if(bsbag)
 		R.module.remove_module(bsbag, TRUE)
 
 /obj/item/borg/upgrade/amop
@@ -393,20 +402,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with an advanced mop module.</span>")
 			return FALSE
 
-	var/oldmop_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		oldmop = R.module.modules[i]
-		if(istype(oldmop, /obj/item/mop/cyborg))
-			oldmop_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/oldmop_index = find_module_index(R, /obj/item/mop/cyborg)
+	oldmop = oldmop_index ? R.module.modules[oldmop_index] : null
 
 	advmop = new(R.module)
 	R.module.basic_modules += advmop
 	R.module.add_module(advmop, FALSE, TRUE)
 	var/advmop_index = R.module.modules.Find(advmop)
-	for(advmop in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(oldmop_index, advmop_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldmop_index, advmop_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, oldmop_index, advmop_index)
 	R.module.remove_module(oldmop, TRUE) // Замена произошла - избавляемся от старой сварки
 
 /obj/item/borg/upgrade/amop/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -414,20 +417,19 @@
 	if (!.)
 		return
 
-	var/advmop_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
-		advmop = R.module.modules[i]
-		if(istype(advmop, /obj/item/mop/advanced/cyborg))
-			advmop_index = i
-			break
+	var/advmop_index = find_module_index(R, /obj/item/mop/advanced/cyborg)
+	if(!advmop_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		advmop = null
+		return
+	advmop = R.module.modules[advmop_index]
 
 	oldmop = new(R.module)
 	R.module.basic_modules += oldmop
 	R.module.add_module(oldmop, FALSE, TRUE)
 	var/oldmop_index = R.module.modules.Find(oldmop)
-	for(oldmop in R.module)
-		R.module.modules.Swap(advmop_index, oldmop_index)
-		R.module.basic_modules.Swap(advmop_index, oldmop_index)
+	swap_module_entries(R, advmop_index, oldmop_index)
+	if(advmop)
 		R.module.remove_module(advmop, TRUE)
 
 /obj/item/borg/upgrade/syndicate
@@ -697,20 +699,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with an advanced scanner module.</span>")
 			return FALSE
 
-	var/AHBasic_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		AHBasic = R.module.modules[i]
-		if(istype(AHBasic, /obj/item/healthanalyzer/cyborg))
-			AHBasic_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/AHBasic_index = find_module_index(R, /obj/item/healthanalyzer/cyborg)
+	AHBasic = AHBasic_index ? R.module.modules[AHBasic_index] : null
 
 	AHAdv = new(R.module)
 	R.module.basic_modules += AHAdv
 	R.module.add_module(AHAdv, FALSE, TRUE)
 	var/AHAdv_index = R.module.modules.Find(AHAdv)
-	for(AHAdv in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(AHBasic_index, AHAdv_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(AHBasic_index, AHAdv_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, AHBasic_index, AHAdv_index)
 	R.module.remove_module(AHBasic, TRUE) // Замена произошла - избавляемся от старого РПД
 
 /obj/item/borg/upgrade/advhealth/deactivate(mob/living/silicon/robot/R, user = usr) // BLUEMOON FIX you forgot to change processor to advhealth
@@ -718,20 +714,19 @@
 	if(!.)
 		return
 
-	var/AHAdv_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления.
-		AHAdv = R.module.modules[i]
-		if(istype(AHAdv, /obj/item/healthanalyzer/advanced/cyborg))
-			AHAdv_index = i
-			break
+	var/AHAdv_index = find_module_index(R, /obj/item/healthanalyzer/advanced/cyborg)
+	if(!AHAdv_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		AHAdv = null
+		return
+	AHAdv = R.module.modules[AHAdv_index]
 
 	AHBasic = new(R.module)
 	R.module.basic_modules += AHBasic
 	R.module.add_module(AHBasic, FALSE, TRUE)
 	var/AHBasic_index = R.module.modules.Find(AHBasic)
-	for(AHBasic in R.module)
-		R.module.modules.Swap(AHAdv_index, AHBasic_index)
-		R.module.basic_modules.Swap(AHAdv_index, AHBasic_index)
+	swap_module_entries(R, AHAdv_index, AHBasic_index)
+	if(AHAdv)
 		R.module.remove_module(AHAdv, TRUE)
 
 /obj/item/borg/upgrade/ai
@@ -827,20 +822,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with a BSRPED module.</span>")
 			return FALSE
 
-	var/RPED_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		RPED = R.module.modules[i]
-		if(istype(RPED, /obj/item/storage/part_replacer/cyborg))
-			RPED_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/RPED_index = find_module_index(R, /obj/item/storage/part_replacer/cyborg)
+	RPED = RPED_index ? R.module.modules[RPED_index] : null
 
 	BSRPED = new(R.module)
 	R.module.basic_modules += BSRPED
 	R.module.add_module(BSRPED, FALSE, TRUE)
 	var/BSRPED_index = R.module.modules.Find(BSRPED)
-	for(BSRPED in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RPED_index, BSRPED_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RPED_index, BSRPED_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, RPED_index, BSRPED_index)
 	SEND_SIGNAL(RPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(RPED, TRUE) // Замена произошла - избавляемся от старого инструмента
 	RPED = null
@@ -850,20 +839,18 @@
 	if(!.)
 		return
 
-	var/BSRPED_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления.
-		BSRPED = R.module.modules[i]
-		if(istype(BSRPED, /obj/item/storage/part_replacer/bluespace/cyborg))
-			BSRPED_index = i
-			break
+	var/BSRPED_index = find_module_index(R, /obj/item/storage/part_replacer/bluespace/cyborg)
+	if(!BSRPED_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		BSRPED = null
+		return
+	BSRPED = R.module.modules[BSRPED_index]
 
 	RPED = new(R.module)
 	R.module.basic_modules += RPED
 	R.module.add_module(RPED, FALSE, TRUE)
 	var/RPED_index = R.module.modules.Find(RPED)
-	for(RPED in R.module)
-		R.module.modules.Swap(BSRPED_index, RPED_index)
-		R.module.basic_modules.Swap(BSRPED_index, RPED_index)
+	swap_module_entries(R, BSRPED_index, RPED_index)
 	SEND_SIGNAL(BSRPED, COMSIG_TRY_STORAGE_QUICK_EMPTY)
 	R.module.remove_module(BSRPED, TRUE)
 	BSRPED = null

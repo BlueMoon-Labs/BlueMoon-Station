@@ -1,6 +1,6 @@
 /obj/item/mod/control/pre_equipped
-	var/equip_cell = /obj/item/stock_parts/cell/high
 	var/applied_skin
+	var/equip_cell = /obj/item/stock_parts/cell/high
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
 	new_skin = applied_skin
@@ -138,7 +138,7 @@
 
 /obj/item/mod/control/pre_equipped/nuclear
 	theme = /datum/mod_theme/syndicate
-	equip_cell = /obj/item/stock_parts/cell/hyper
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/welding,
@@ -146,6 +146,10 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/armor/prebuild/bullet,
+		/obj/item/mod/module/armor/prebuild/laser,
 	)
 
 /obj/item/mod/control/pre_equipped/elite
@@ -174,7 +178,7 @@
 
 /obj/item/mod/control/pre_equipped/responsory
 	theme = /datum/mod_theme/responsory
-	equip_cell = /obj/item/stock_parts/cell/hyper
+	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
 		/obj/item/mod/module/welding,
@@ -313,6 +317,9 @@
 /obj/item/mod/control/pre_equipped/lustwish
 	slot_flags = ITEM_SLOT_BELT
 	theme = /datum/mod_theme/lustwish
+	initial_modules = list(
+		/obj/item/mod/module/nudity_lover,
+	)
 
 /obj/item/mod/control/pre_equipped/infiltrator_inteq
 	slot_flags = ITEM_SLOT_BELT

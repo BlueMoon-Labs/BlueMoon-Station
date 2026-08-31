@@ -94,7 +94,6 @@
 	var/list/misc = list()
 	var/list/npcs = list()
 	var/list/ghost_roles = list()
-	var/list/swarmer_shells = list() // BLUEMOON ADD - оболочки деактивированных свармеров
 
 	var/list/pois = getpois(mobs_only = compact_mode, skip_mindless = !compact_mode, specify_dead_role = FALSE)
 	for (var/name in pois)
@@ -119,6 +118,11 @@
 				if(!compact_mode)
 					npcs += list(serialized)
 			else
+				if (isswarmer(M)) // BLUEMOON ADD - свармеры уходят в категорию "Ghost-Visible Antagonists"
+					serialized["assignment"] = "swarmer"
+					serialized["antag"] = "Swarmer"
+					antagonists += list(serialized)
+					continue
 				var/number_of_orbiters = M.orbiters?.orbiters?.len
 				if (number_of_orbiters)
 					serialized["orbiters"] = number_of_orbiters
@@ -184,12 +188,12 @@
 				if (!was_special)
 					alive += list(serialized)
 		else if(!compact_mode)
-			if(istype(poi, /obj/item/deactivated_swarmer))
+			if(istype(poi, /obj/item/deactivated_swarmer) || istype(poi, /obj/effect/mob_spawn/swarmer))
 				continue
 			misc += list(serialized)
 
 	for (var/atom/A as anything in GLOB.poi_list)
-		if(!istype(A, /obj/item/deactivated_swarmer))
+		if(!istype(A, /obj/item/deactivated_swarmer) && !istype(A, /obj/effect/mob_spawn/swarmer))
 			continue
 		if(!A.loc)
 			continue
@@ -198,7 +202,8 @@
 		serialized["name"] = area ? "[A.name] \[[area.name]\]" : A.name
 		serialized["ref"] = orbit_poi_ref(A)
 		serialized["assignment"] = "swarmer"
-		swarmer_shells += list(serialized)
+		serialized["antag"] = "Swarmer"
+		antagonists += list(serialized)
 
 	data["alive"] = alive
 	data["antagonists"] = antagonists
@@ -208,7 +213,6 @@
 	data["misc"] = misc
 	data["npcs"] = npcs
 	data["ghost_roles"] = ghost_roles
-	data["swarmer_shells"] = swarmer_shells // BLUEMOON ADD
 
 	return data
 // BLUEMOON EDIT END

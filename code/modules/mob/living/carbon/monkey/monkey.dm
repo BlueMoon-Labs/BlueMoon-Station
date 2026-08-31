@@ -65,14 +65,14 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 /mob/living/carbon/monkey/Destroy()
 	walk(src, 0)
 	stop_pulling()
-	// Clean up references other monkeys hold to us (prevents GC failures)
-	for(var/mob/living/carbon/monkey/M in GLOB.carbon_list)
-		if(M == src)
-			continue
-		if(M.target == src)
-			M.target = null
-			walk(M, 0)
-		M.enemies -= src
+	// Ссылки, которые ДРУГИЕ обезьяны держали на нас, снимает их собственная
+	// подписка на COMSIG_PARENT_QDELETING (watch_mob_qdel/on_enemy_qdeleting):
+	// сигнал уходит до Destroy и чистит и enemies, и target, и нативный walk.
+	// Прежний свип по GLOB.carbon_list закрывал только пару "обезьяна-обезьяна"
+	// и стоил полного обхода всех карбонов на КАЖДОЕ удаление обезьяны.
+	for(var/mob/living/watched_mob as anything in watched_qdel_mobs)
+		UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs = null
 	target = null
 	enemies = null
 	set_pickup_target(null)

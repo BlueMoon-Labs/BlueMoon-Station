@@ -1,3 +1,9 @@
+/// Пол и потолок времени сборки одного патрона.
+/// Достаточно сильные микролазеры уводили сырое время в минус, и turbo-режим
+/// уходил в addtimer() с отрицательной задержкой (прод-раунд 10150).
+#define AMMO_WORKBENCH_MIN_TIME_PER_ROUND 1
+#define AMMO_WORKBENCH_MAX_TIME_PER_ROUND (2 SECONDS)
+
 /obj/machinery/ammo_workbench
 	name = "ammunitions workbench"
 	desc = "A machine, somewhat akin to a lathe, made specifically for manufacturing ammunition. It has a slot for magazines, ammo boxes, clips... anything that holds ammo."
@@ -460,9 +466,9 @@
 	var/time_efficiency = 1.8 SECONDS
 	for(var/obj/item/stock_parts/micro_laser/new_micro_laser in component_parts)
 		time_efficiency -= new_micro_laser.rating * 2
-	time_per_round = clamp(time_efficiency, 1, 20)
+	time_per_round = clamp(time_efficiency, AMMO_WORKBENCH_MIN_TIME_PER_ROUND, AMMO_WORKBENCH_MAX_TIME_PER_ROUND)
 	base_time_per_round = time_per_round
-	turbo_time_per_round = time_efficiency / 8
+	turbo_time_per_round = clamp(time_efficiency / 8, AMMO_WORKBENCH_MIN_TIME_PER_ROUND, AMMO_WORKBENCH_MAX_TIME_PER_ROUND)
 
 	var/efficiency = 1.4
 	for(var/obj/item/stock_parts/manipulator/new_manipulator in component_parts)
@@ -680,3 +686,6 @@
 			A.disabled = !mend
 		if(WIRE_ZAP)
 			A.shock(usr, 50)
+
+#undef AMMO_WORKBENCH_MIN_TIME_PER_ROUND
+#undef AMMO_WORKBENCH_MAX_TIME_PER_ROUND

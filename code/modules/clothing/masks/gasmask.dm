@@ -361,3 +361,12 @@
 	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
 	icon_state = "ranger_gasmask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	name = "Arctic PMC gasmask"
+	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
+	icon = 'icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	icon_state = "wypmcgasmask"
+	item_state = "wypmcgasmask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

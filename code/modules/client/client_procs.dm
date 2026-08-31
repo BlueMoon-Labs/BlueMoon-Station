@@ -900,10 +900,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
 	// Зум приходит пачкой, пока игрок тянет рамку окна, а запись savefile
-	// синхронная - она морозит весь процесс, а не только вызывающего. Откладываем
-	// на дебаунс: таймер держит ссылку на префы сам, поэтому запись переживает
-	// логаут даже если клиент ушёл раньше срабатывания.
-	prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
+	// синхронная - она морозит весь процесс, а не только вызывающего. Кладём один
+	// ключ в буфер склейки: он уйдёт на диск одним открытием савфайла, а не полным
+	// сейвом префов, и переживёт логаут - флаш висит на разлогине и на Destroy датума.
+	prefs.save_single_pref("ui_zoom_preferences", prefs.ui_zoom_preferences)
 	return TRUE
 
 /client/proc/legacy_zoom_head(window_key, base_zoom = 100)
@@ -1155,6 +1155,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		churn_record[3] = min(churn_record[3], lifetime_seconds)
 	else
 		GLOB.round_connection_lifetimes[ckey] = list(1, lifetime_seconds, lifetime_seconds)
+	// Отложенные одиночные записи префов ждут таймера склейки. Игрок уходит - дописываем
+	// их сейчас: датум префов переживёт логаут и таймер бы отработал, но настройка,
+	// изменённая в последние секунды, иначе доедет до диска только если сервер доживёт до
+	// срабатывания. Пустой буфер до диска не доходит, так что обычный логаут бесплатен.
+	prefs?.flush_single_prefs()
 	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
 	if(listed_turf_watched || mob?.listed_turf)
 		clear_listed_turf(send_output = FALSE)
@@ -1775,6 +1780,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
 
 	#if (PRELOAD_RSC == 0)
+	// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
+	// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
+	// Отмечаем весь каталог одной записью и по общему промеру: per-file length(file)
+	// завышал впятеро и заодно дёргал книгу 1596 раз на каждый вход.
+	note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, get_vox_preload_bytes())
 	for (var/type in GLOB.vox_types)
 		if(QDELETED(src))
 			return
@@ -1782,10 +1792,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			if(QDELETED(src))
 				return
 			var/file = GLOB.vox_types[type][word]
-			// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
-			// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
-			if(isfile(file))
-				note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, length(file))
 			Export("##action=load_rsc", file)
 			stoplag()
 	#endif
@@ -1997,24 +2003,20 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)
-	if(prefs)
-		var/savefile/S = new /savefile(prefs.path)
-		var/list/unlockable_loadout_data = prefs.unlockable_loadout_data
-		if(!length(unlockable_loadout_data))
-			unlockable_loadout_data = list()
-			unlockable_loadout_data[key] = amount
-			WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
-			prefs.unlockable_loadout_data = unlockable_loadout_data
-			return TRUE
-		else
-			if(unlockable_loadout_data[key])
-				unlockable_loadout_data[key] += amount
-			else
-				unlockable_loadout_data[key] = amount
-			WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
-			prefs.unlockable_loadout_data = unlockable_loadout_data
-			return TRUE
-	return FALSE
+	if(!prefs || !key)
+		return FALSE
+	var/list/unlockable_loadout_data = prefs.unlockable_loadout_data
+	if(!islist(unlockable_loadout_data))
+		unlockable_loadout_data = list()
+	// null не равен нулю, поэтому сложение через isnull, а не через прямое +=
+	var/current = unlockable_loadout_data[key]
+	unlockable_loadout_data[key] = (isnull(current) ? 0 : current) + amount
+	prefs.unlockable_loadout_data = unlockable_loadout_data
+	// Прежде тут открывался савфайл и писался WRITE_FILE напрямую, мимо замера
+	// блокирующих вызовов: каждая вымытая плитка уходила синхронно на диск, а
+	// детектор спайков видел её как безымянный "внешний столл". Ключ один, так что
+	// пишем его одиночной записью и под тем же прибором, что и остальные префы.
+	return prefs.save_single_pref("unlockable_loadout", safe_json_encode(unlockable_loadout_data))
 
 /client/proc/open_filter_editor(atom/in_atom)
 	if(holder)

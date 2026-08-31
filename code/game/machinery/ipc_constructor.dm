@@ -11,6 +11,14 @@
 	// pixel_x = 16
 
 	var/busy = FALSE
+	/// Кэш превью для tgui: base64 последнего собранного кадра и подпись входов, по
+	/// которым он собран. Сборка превью - это полный манекен (set_species, шесть
+	/// конечностей, гениталии, update_body) плюс getFlatIcon и icon2base64, в проде
+	/// 130-250 мс синхронно. Раньше это делалось на КАЖДЫЙ ui_data - на каждое
+	/// переключение вкладки и на каждый автообновляемый тик, пока окно открыто
+	/// (раунд 10150: ~42 с блокировок только по Topic-ам этой машины).
+	var/preview_cache_base64
+	var/preview_cache_signature
 	var/selected_body_size = RESIZE_DEFAULT_SIZE
 	var/selected_screen
 	var/stored_metal = 0
@@ -1315,15 +1323,47 @@
 	qdel(preview)
 	return result
 
+/// Подпись всего, что влияет на кадр превью. Части сравниваются по ссылке и по
+/// иконке: смена серии конечности (set_bodypart_style) не меняет объект, только
+/// его icon. Гениталии - все переключатели, размеры, формы и цвета целиком.
+/obj/machinery/ipc_constructor/proc/get_preview_signature()
+	var/list/parts = list(head_part, chest_part, l_arm_part, r_arm_part, l_leg_part, r_leg_part)
+	var/list/signature = list(get_applied_screen(), selected_body_size)
+	for(var/obj/item/bodypart/part as anything in parts)
+		if(isnull(part))
+			signature += "-"
+			continue
+		signature += "[REF(part)]|[part.icon]|[part.icon_state]|[part.base_bp_icon]|[part.species_color]|[part.mutation_color]"
+	signature += add_genitals
+	if(add_genitals)
+		signature += list(
+			genital_has_cock, genital_has_balls, genital_has_vag, genital_has_womb,
+			genital_has_breasts, genital_has_butt, genital_has_belly, genital_has_anus,
+			genital_cock_length, genital_balls_size, genital_breasts_size, genital_butt_size, genital_belly_size,
+			genital_cock_shape, genital_balls_shape, genital_vag_shape, genital_breasts_shape,
+			genital_butt_shape, genital_belly_shape, genital_anus_shape,
+			genital_cock_color, genital_balls_color, genital_vag_color, genital_breasts_color,
+			genital_butt_color, genital_belly_color, genital_anus_color,
+		)
+	return jointext(signature, ";")
+
 /obj/machinery/ipc_constructor/proc/get_preview_icon_base64()
+	var/signature = get_preview_signature()
+	if(!isnull(preview_cache_signature) && preview_cache_signature == signature)
+		return preview_cache_base64
+	var/base64
 	try
 		var/icon/preview_icon = build_preview_icon()
-		if(!preview_icon || !isicon(preview_icon))
-			return null
-		return icon2base64(preview_icon)
+		if(preview_icon && isicon(preview_icon))
+			base64 = icon2base64(preview_icon)
 	catch(var/exception/e)
 		stack_trace("ipc_constructor: preview icon generation failed ([e]).")
-		return null
+		base64 = null
+	// Провал тоже кэшируется: падающая сборка не станет успешнее на следующем тике,
+	// а без кэша она падала бы (и стоила) каждое автообновление окна.
+	preview_cache_base64 = base64
+	preview_cache_signature = signature
+	return base64
 
 /obj/machinery/ipc_constructor/proc/install_preview_bodypart(mob/living/carbon/human/preview, obj/item/bodypart/source_part, body_zone, fallback_type)
 	var/obj/item/bodypart/existing_part = preview.get_bodypart(body_zone)

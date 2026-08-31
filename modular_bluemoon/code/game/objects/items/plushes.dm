@@ -966,3 +966,53 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 	desc = "Мягкая и приятная на ощупь игрушка важного рыжего лиса в пальто."
 	icon_state = "vulpix"
 	squeak_override = list('sound/fox/Voice/fox_trill_2.ogg' = 1)
+
+#define BASIC_GIZI_SKIN "Gizi Plushie"
+#define ALT_GIZI_SKIN "Gizi-mini Plushie"
+
+/obj/item/toy/plush/bm/gizi
+	name = BASIC_GIZI_SKIN
+	desc = "Игрушка от которой пахнет сигаретным дымом и вайбом старого времени."
+	icon_state = "gizi"
+	item_state = "gizi"
+	squeak_override = list('modular_bluemoon/sound/plush/gizi.ogg' = 1)
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		BASIC_GIZI_SKIN = list(RESKIN_ICON_STATE = "gizi"),
+		ALT_GIZI_SKIN = list(RESKIN_ICON_STATE = "gizi_mini"),
+	)
+
+/obj/item/toy/plush/bm/gizi/reskin_obj(mob/user)
+	. = ..()
+	name = current_skin
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_hands()
+
+#undef BASIC_GIZI_SKIN
+#undef ALT_GIZI_SKIN
+
+#define BASIC_ARIRAL_SKIN "Ariral Plushie"
+#define ALT_ARIRAL_SKIN "Ariral-mini Plushie"
+
+/obj/item/toy/plush/bm/ariral
+	name = BASIC_ARIRAL_SKIN
+	desc = "Voiding..."
+	icon_state = "ariral"
+	item_state = "ariral"
+	squeak_override = list('modular_bluemoon/sound/plush/gizi.ogg' = 1)
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		BASIC_ARIRAL_SKIN = list(RESKIN_ICON_STATE = "ariral"),
+		ALT_ARIRAL_SKIN = list(RESKIN_ICON_STATE = "ariral_mini"),
+	)
+
+/obj/item/toy/plush/bm/ariral/reskin_obj(mob/user)
+	. = ..()
+	name = current_skin
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_hands()
+
+#undef BASIC_ARIRAL_SKIN
+#undef ALT_ARIRAL_SKIN

@@ -47,7 +47,7 @@
 			download_objective.owner = T.owner
 			download_objective.gen_amount_goal()
 			T.add_objective(download_objective)
-		else if(prob(20))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг
+		else if(prob(20) && !(locate(/datum/objective/frame) in T.objectives))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг
 			var/datum/objective/frame/frame_objective = new
 			frame_objective.owner = T.owner
 			if(!frame_objective.find_target())

@@ -723,6 +723,9 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 /// Memoised cache of `icon_states(icon_file, mode)` results, keyed by "[icon file]|[mode]".
 /// DMI files do not change at runtime, so this never needs invalidation. In practice it is
 /// bounded by the number of distinct compile-time DMIs, but it is soft-capped anyway.
+/// В переписи памяти этот список виден ГЛУБОКИМИ слотами: ~31 стейт на файл, так что
+/// 77 тыс. слотов в конце раунда - это ~2,4 тыс. ключей при капе 4096 (потолок ~130 тыс.
+/// слотов, около мегабайта). Рост за раунд - прогрев кэша, не утечка.
 /// IMPORTANT: callers MUST NOT mutate the returned list — treat it as read-only.
 GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 /// Soft cap on cached_icon_states_by_file entries (each value is a list of state names).

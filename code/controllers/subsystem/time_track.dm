@@ -1119,6 +1119,7 @@ SUBSYSTEM_DEF(time_track)
  */
 /datum/controller/subsystem/time_track/proc/log_global_list_slots()
 	var/list/found = list()
+	var/list/top_level = list()
 	var/total = 0
 	var/list/built_in = GLOB.gvars_datum_in_built_vars
 	for(var/var_name in GLOB.vars)
@@ -1131,6 +1132,7 @@ SUBSYSTEM_DEF(time_track)
 		if(!slots)
 			continue
 		found["GLOB.[var_name]"] = slots
+		top_level["GLOB.[var_name]"] = length(value)
 		total += slots
 		CHECK_TICK
 
@@ -1148,6 +1150,7 @@ SUBSYSTEM_DEF(time_track)
 			if(!slots)
 				continue
 			found["[subsystem.name].[var_name]"] = slots
+			top_level["[subsystem.name].[var_name]"] = length(value)
 			total += slots
 		CHECK_TICK
 
@@ -1158,9 +1161,23 @@ SUBSYSTEM_DEF(time_track)
 	for(var/entry in found)
 		if(length(top) >= MEMORY_CENSUS_TOP)
 			break
-		top += "[entry] [num2text(found[entry], 12)]"
+		top += census_list_label(entry, found[entry], top_level[entry])
 	log_world("## MEMORY: элементы глобальных списков и списков подсистем: \
 		всего [num2text(total, 12)] в [length(found)] списках; крупнейшие: [top.Join(", ")]")
+
+/**
+ * Подпись одного списка в строке переписи: глубокие слоты и, если они не совпадают с
+ * длиной, длина верхнего уровня отдельно.
+ *
+ * Без второй цифры вложенный список читается как плоский: `cached_icon_states_by_file`
+ * с потолком в 4096 ключей четыре раунда подряд разбирали как «77 тысяч записей без
+ * потолка», хотя это ~2,4 тысячи файлов по ~31 стейту. Число слотов верное и остаётся
+ * первым - но читатель должен видеть, сколько из них ключи, а сколько содержимое.
+ */
+/datum/controller/subsystem/time_track/proc/census_list_label(name, slots, top_level_length)
+	if(slots == top_level_length)
+		return "[name] [num2text(slots, 12)]"
+	return "[name] [num2text(slots, 12)] (верхний уровень [num2text(top_level_length, 12)])"
 
 /**
  * Связи освещения: источники, углы и рёбра между ними.

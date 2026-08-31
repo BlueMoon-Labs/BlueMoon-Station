@@ -196,6 +196,7 @@
 			"icon" = "question",
 			"products" = list(
 				/obj/item/mod/control/pre_equipped/lustwish = 3,
+				/obj/item/mod/module/nudity_lover = 5,
 			),
 		),
 	)

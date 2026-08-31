@@ -58,6 +58,10 @@
 	///снимается только самой очередью - флаг заменяет линейный поиск по списку
 	///на каждое добавление (взрыв сыплет их сотнями за тик).
 	var/rebuild_queued = FALSE
+	///TRUE после первого atmosinit(). Машина попадает в SSair.atmos_machinery ещё
+	///из New(), а atmosinit() для шаблона догоняется только после полной загрузки -
+	///в этом окне у неё физически нет нод, и правило "нет ноды - выключайся" врёт.
+	var/atmos_initialized = FALSE
 
 /obj/machinery/atmospherics/Initialize(mapload)
 	. = ..()
@@ -268,6 +272,7 @@
 			if(can_be_node(target, i))
 				nodes[i] = target
 				break
+	atmos_initialized = TRUE
 	update_icon()
 
 /obj/machinery/atmospherics/proc/setPipingLayer(new_layer)

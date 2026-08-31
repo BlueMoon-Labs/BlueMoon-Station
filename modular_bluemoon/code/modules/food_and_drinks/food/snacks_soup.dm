@@ -132,3 +132,12 @@
 	trash = /obj/item/reagent_containers/glass/bowl
 	color = "#D49D26"
 	foodtype = MEAT | VEGETABLES
+
+/obj/item/reagent_containers/food/snacks/soup/shrimp
+	name = "shrimp soup"
+	desc = "A warm broth with fried shrimp, tomato and garlic."
+	icon = 'modular_bluemoon/icons/obj/food/food.dmi'
+	icon_state = "shrimpsoup"
+	bonus_reagents = list(/datum/reagent/consumable/nutriment/protein = 3, /datum/reagent/consumable/nutriment/vitamin = 2)
+	tastes = list("shrimp" = 2, "tomato" = 1, "garlic" = 1)
+	foodtype = SEAFOOD | VEGETABLES

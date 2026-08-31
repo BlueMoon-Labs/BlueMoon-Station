@@ -323,8 +323,10 @@
 	stuck = TRUE
 	helmet.flags_cover &= ~HEADCOVERSMOUTH
 	helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
-	var/list/all_parts = mod.mod_parts.Copy() + mod
-	for(var/obj/item/part in all_parts)
+	// Прежде тут перебирался alist, а он отдаёт КЛЮЧИ - фильтр по типу отбрасывал
+	// их все, и неудаляемым/несбрасываемым становился только сам контроль.
+	var/list/all_parts = mod.get_mod_parts() + mod
+	for(var/obj/item/part as anything in all_parts)
 		ADD_TRAIT(part, TRAIT_NODROP, CURSED_ITEM_TRAIT)
 		part.resistance_flags |= (INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF)
 
