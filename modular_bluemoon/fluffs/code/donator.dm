@@ -2590,3 +2590,27 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/ice_axe_kit
 	ckeywhitelist = list("hartty")
+
+/datum/gear/donator/bm/black_sneakers
+	name = "Black Sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/black_sneakers
+	ckeywhitelist = list("hartty")
+
+/datum/gear/donator/bm/wypmckit
+	name = "Arctic PMC kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/wypmcbox
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcbackpack
+	name = "Arctic PMC packed radiostation"
+	slot = ITEM_SLOT_HANDS
+	path = /obj/item/storage/backpack/wypmcbackpack
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcgasmask
+	name = "Arctic PMC gasmask"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	ckeywhitelist = list("foxrtotlimda")

@@ -220,19 +220,19 @@
 	var/turf/fan_turf = get_turf(remote_eye)
 
 	if(!B.fans_remaining)
-		to_chat(owner, "<span class='warning'>[B] is out of fans!</span>")
+		to_chat(owner, span_warning("У [B] закончились вентиляторы!"))
 		return
 
 	if(!check_spot())
 		return
 
-	if(fan_turf.density)
-		to_chat(owner, "<span class='warning'>Fans may only be placed on a floor.</span>")
+	if(!isfloorturf(fan_turf))
+		to_chat(owner, span_warning("Вентилятор можно установить только на твёрдой поверхности."))
 		return
 
 	new /obj/structure/fans/tiny(fan_turf)
 	B.fans_remaining--
-	to_chat(owner, "<span class='notice'>Tiny fan placed. [B.fans_remaining] remaining.</span>")
+	to_chat(owner, span_notice("Вентилятор размещён. Ещё [B.fans_remaining] осталось в запасе."))
 	playsound(fan_turf, 'sound/machines/click.ogg', 50, 1)
 
 /datum/action/innate/aux_base/install_turret

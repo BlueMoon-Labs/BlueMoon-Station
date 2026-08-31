@@ -826,3 +826,54 @@
     name = "Mountaineering hood"
     desc = "A hood attached to a heavy mountaineering jacket."
     icon_state = "mountaineering_hood"
+
+/obj/item/clothing/head/helmet/sec/wypmchelmet
+	name = "Arctic PMC helmet"
+	desc = "A helmet used by a private paramilitary organization, featuring an insulated design for cold climates. It includes an additional covering to provide protection against harsh acids."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "wypmc_helmet"
+	item_state = "wypmc_helmet"
+
+/obj/item/modkit/wypmchelmet
+	name = "Arctic PMC helmet Kit"
+	desc = "A modkit for making a Elite sec/inteq helmets into a Arctic PMC helmet."
+	product = /obj/item/clothing/head/helmet/sec/wypmchelmet
+	fromitem = list(/obj/item/clothing/head/helmet/blueshirt, /obj/item/clothing/head/helmet/sec, /obj/item/clothing/head/helmet/inteq)
+
+/obj/item/clothing/suit/armor/vest/wypmcjacket
+	name = "Arctic PMC armored jacket"
+	desc = "An armored jacket from a private military organization, featuring an insulated design for cold climates. It includes an additional layer of synthetic polymers for protection against harsh acids."
+	icon_state = "wypmc_jacket"
+	item_state = "wypmc_jacket"
+	dog_fashion = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+
+/obj/item/modkit/wypmcjacket
+	name = "Arctic jacket kit"
+	desc = "A modkit for making a sec/inteq armor vests into a Arctic PMC armored jacket."
+	product = /obj/item/clothing/suit/armor/vest/wypmcjacket
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt, /obj/item/clothing/suit/armor/inteq)
+
+/obj/item/clothing/head/donator/bm/wypmcberet
+	name = "Field officer arctic PMC beret"
+	desc = "This beret, designed for officers of a private military organization operating in cold climates, features not only thermal insulation but also a protective polymer lining to guard against harsh acids."
+	icon_state = "wypmc_beret"
+	item_state = "wypmc_beret"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/wypmcberet
+	name = "Field officer arctic PMC beret kit"
+	desc = "A modkit for making a sec/inteq berets into a Field officer arctic PMC beret kit."
+	product = /obj/item/clothing/head/donator/bm/wypmcberet
+	fromitem = list(/obj/item/clothing/head/beret/sec, /obj/item/clothing/head/beret/sec/peacekeeper, /obj/item/clothing/head/HoS/inteq_vanguard, /obj/item/clothing/head/HoS/inteq_honorable_vanguard)
+
+/obj/item/clothing/head/donator/bm/wypmcmedicalhat
+	name = "Medical officer arctic PMC hat"
+	desc = "An insulated hat worn by a medical worker from a private military organization. Even here, they didn't overlook acid protection... what could be the reason for such concern?"
+	icon_state = "wypmcmedical_hat"
+	item_state = "wypmcmedical_hat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'

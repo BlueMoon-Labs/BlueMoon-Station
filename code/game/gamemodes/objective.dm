@@ -1553,7 +1553,7 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 	name = "frame"
 
 /datum/objective/frame/find_target(blacklist)
-	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain") // на силовиков и капитана подстава не выдаётся
+	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain")
 	var/list/possible_targets = list()
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in SSticker.minds)
