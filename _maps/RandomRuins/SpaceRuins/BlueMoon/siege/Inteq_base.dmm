@@ -3702,6 +3702,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"kD" = (
+/obj/machinery/porta_turret/syndicate/pod/toolbox{
+	faction = list("InteQ")
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "kE" = (
 /obj/machinery/atmospherics/components/unary/shuttle/heater{
 	dir = 4
@@ -9496,7 +9502,6 @@
 /obj/item/encryptionkey/inteq,
 /obj/item/encryptionkey/inteq,
 /obj/item/encryptionkey/inteq,
-/obj/item/mod/control/pre_equipped/syndicate_empty/elite,
 /obj/item/encryptionkey/inteq,
 /obj/item/encryptionkey/inteq,
 /obj/item/disk/tech_disk/illegal,
@@ -46306,9 +46311,9 @@ pR
 nJ
 Cz
 Tz
-hR
+kD
 dv
-hR
+kD
 VQ
 BC
 cf
