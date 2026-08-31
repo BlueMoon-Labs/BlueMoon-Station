@@ -195,7 +195,7 @@
 
 /mob/living/simple_animal/hostile/infected/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
-		return
+		return TRUE
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
@@ -239,7 +239,8 @@
 	if(newloc)
 		for(var/obj/structure/fence/nocut/F in newloc)
 			if(F && F.Adjacent(src))
-				return forceMove(newloc)
+				forceMove(newloc)
+				return TRUE
 	return FALSE
 
 // =============================================================================
@@ -301,7 +302,7 @@
 
 /mob/living/simple_animal/hostile/infected/bruiser/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
-		return
+		return TRUE
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/bruiser/Aggro()
@@ -366,7 +367,7 @@
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
-		return
+		return TRUE
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Aggro()
@@ -450,7 +451,7 @@
 
 /mob/living/simple_animal/hostile/infected/charger/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
-		return
+		return TRUE
 	if(charge_state)
 		new /obj/effect/temp_visual/decoy/fading(loc, src)
 		shake_camera(src, 1, 1)
@@ -631,6 +632,8 @@
 	// Light avoidance
 	var/light_avoidance_range = 8
 	var/light_avoidance_strength = 0.7
+	var/light_avoidance_check_interval = 2 SECONDS
+	var/last_light_avoidance_check = 0
 
 /mob/living/simple_animal/hostile/infected/hunter/Initialize(mapload)
 	. = ..()
@@ -639,7 +642,7 @@
 
 /mob/living/simple_animal/hostile/infected/hunter/Move(atom/newloc, dir, step_x, step_y)
 	if(handle_fence_movement(newloc))
-		return
+		return TRUE
 
 	// Erratic movement when not in combat
 	if(!target && !is_leaping && !is_dragging && prob(15))
@@ -704,6 +707,11 @@
 /mob/living/simple_animal/hostile/infected/hunter/proc/handle_light_avoidance()
 	if(!src || !target)
 		return
+
+	// Check cooldown to avoid expensive operations every tick
+	if(world.time < last_light_avoidance_check + light_avoidance_check_interval)
+		return
+	last_light_avoidance_check = world.time
 
 	// Check if target is holding a light source
 	if(iscarbon(target))

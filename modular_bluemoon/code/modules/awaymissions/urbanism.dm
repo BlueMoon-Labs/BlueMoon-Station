@@ -412,10 +412,10 @@
 	icon_state = "huge1"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 100, BOMB = 20, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 5000
 	layer = SPACEVINE_LAYER
 
 
@@ -426,10 +426,10 @@
 	icon_state = "communication"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 100, BOMB = 20, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 5000
 	layer = SPACEVINE_LAYER
 
 /obj/structure/urbanismfabricator
@@ -439,10 +439,10 @@
 	icon_state = "hugem1"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor = list(MELEE = 100, BULLET =100, LASER = 100, ENERGY = 100, BOMB = 20, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 5000
 	layer = SPACEVINE_LAYER
 
 /obj/structure/microwaveexplosive

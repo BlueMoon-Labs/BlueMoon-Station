@@ -352,7 +352,8 @@
 		var/charge_to_add = min(charge_needed, charge_amount)
 		R.cell.charge = min(R.cell.charge + charge_to_add, R.cell.maxcharge)
 
-	charges = max_charges - 1
+	charges--
+	update_icon()
 
 	if(user == R)
 		to_chat(R, "<span class='green'>Вы успешно использовали [src] на себе!</span>")

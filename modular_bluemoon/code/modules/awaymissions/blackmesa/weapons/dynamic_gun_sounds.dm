@@ -91,6 +91,9 @@
 	var/dynamic_sound_volume = 50
 	var/dynamic_sound_use_suppressed = TRUE
 	var/dynamic_sound_suppressed_volume = 10
+	var/mesa_shotgun_bonus = FALSE
+	var/mesa_melee_knockback = FALSE
+	var/mesa_damage_bonus = 1.2
 
 /obj/item/gun/Initialize(mapload)
 	. = ..()
@@ -107,6 +110,37 @@
 /obj/item/gun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	if(mesa_muzzle_flash && user)
 		user.flash_lighting_fx(4, 5, LIGHT_COLOR_ORANGE, 1)
+	if(mesa_shotgun_bonus && pointblank && pbtarget)
+		var/mob/living/victim
+		if(istype(pbtarget, /mob/living))
+			victim = pbtarget
+		else
+			var/turf/target_turf = get_turf(pbtarget)
+			if(target_turf)
+				for(var/mob/living/L in target_turf)
+					if(L != user)
+						victim = L
+						break
+		if(victim)
+			var/knockback_dir = get_dir(user, victim)
+			if(!knockback_dir)
+				knockback_dir = user ? user.dir : dir
+			var/throw_target = get_edge_target_turf(victim, knockback_dir)
+			victim.safe_throw_at(throw_target, rand(2, 3), 1, user)
+	if(mesa_shotgun_bonus && pbtarget && !ismob(pbtarget))
+		var/turf/target_turf = get_turf(pbtarget)
+		if(target_turf)
+			if(istype(pbtarget, /atom/movable))
+				var/atom/movable/movable_target = pbtarget
+				if(!movable_target.anchored)
+					var/throw_dir = get_dir(user, movable_target) || (user ? user.dir : dir)
+					movable_target.safe_throw_at(get_edge_target_turf(movable_target, throw_dir), 2, 1, user)
+					if(ismob(movable_target))
+						var/mob/living/victim = movable_target
+						victim.Knockdown(20)
+	var/obj/item/projectile/fired_projectile = chambered?.BB
+	if(mesa_damage_bonus > 1 && fired_projectile)
+		fired_projectile.damage *= mesa_damage_bonus
 	if(has_dynamic_sounds && dynamic_sound_datum)
 		if(recoil && !zoomed && user && pbtarget)
 			directional_recoil(user, recoil*dir_recoil_amp, Get_Angle(user, pbtarget))
