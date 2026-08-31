@@ -55,8 +55,13 @@
 	user.client.screen += data_view
 
 /datum/neural_interface_module/data/Destroy(force, ...)
-	QDEL_NULL(data_view)
+	// Тот же порядок, что и у панели логов: экран снимает с client.screen только
+	// UpdateVision() из-под родительского Destroy, а у объекта от ScreenText() нет ни hud'а,
+	// ни assigned_map, чтобы выписаться самому.
 	. = ..()
+	QDEL_NULL(data_view)
+	QDEL_LIST(data_entries)
+	data_entries = null
 
 /datum/neural_interface_module/data/proc/get_data_section()
 	var/write = {"<span style='font-family: \"[font_family]\"; font-size: [font_size]pt; color: [separator_color]; line-height: 0.8; -dm-text-outline: 1px black;'>├─ DATA</span><br>"}

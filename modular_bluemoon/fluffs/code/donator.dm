@@ -2553,7 +2553,7 @@
 	name = "Commando beret"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/commando_beret
-	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak")
+	ckeywhitelist = list("hartty", "hateredsoul", "leony24", "rockymed", "coshak", "mihana964")
 
 /datum/gear/donator/bm/vp78tactic
 	name = "VP78 Tactic ModKit"
@@ -2578,3 +2578,33 @@
     slot = ITEM_SLOT_OCLOTHING
     path = /obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
     ckeywhitelist = list("hartty", "ordinarylife", "spoopyman228")
+
+/datum/gear/donator/bm/robosleek
+	name = "Sleek roboticist's jumpsuit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/rank/rnd/roboticist/sleek
+	ckeywhitelist = list("deltarayx")
+
+/datum/gear/donator/bm/black_sneakers
+	name = "Black Sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/black_sneakers
+	ckeywhitelist = list("hartty")
+
+/datum/gear/donator/bm/wypmckit
+	name = "Arctic PMC kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/wypmcbox
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcbackpack
+	name = "Arctic PMC packed radiostation"
+	slot = ITEM_SLOT_HANDS
+	path = /obj/item/storage/backpack/wypmcbackpack
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcgasmask
+	name = "Arctic PMC gasmask"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	ckeywhitelist = list("foxrtotlimda")

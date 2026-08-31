@@ -740,12 +740,12 @@
 			set_resting(TRUE, FALSE, FALSE)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
 			combat_flags |= COMBAT_FLAG_HARD_STAMCRIT
-			filters += CIT_FILTER_STAMINACRIT
+			add_filter("staminacrit", 1, CIT_FILTER_STAMINACRIT)
 			update_mobility()
 	if((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && total_health <= STAMINA_CRIT_REMOVAL_THRESHOLD)
 		to_chat(src, "<span class='notice'>Вы больше не чувствуете себя так измотанно.</span>")
 		combat_flags &= ~(COMBAT_FLAG_HARD_STAMCRIT)
-		filters -= CIT_FILTER_STAMINACRIT
+		remove_filter("staminacrit")
 		update_mobility()
 	UpdateStaminaBuffer()
 	update_health_hud()

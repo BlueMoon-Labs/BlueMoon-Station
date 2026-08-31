@@ -372,6 +372,10 @@
 /obj/machinery/camera/proc/can_see()
 	var/list/see = null
 	var/turf/pos = get_turf(src)
+	//камера в нуль-пространстве (носитель уехал в контейнер, борг в процессе удаления):
+	//get_hear()/range() от null падали на чтении luminosity
+	if(isnull(pos))
+		return list()
 	if(isXRay())
 		see = range(view_range, pos)
 	else

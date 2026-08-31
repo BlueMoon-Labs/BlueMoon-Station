@@ -1,3 +1,13 @@
+/// Имя фильтра наносьюта на носителе. Раньше состояния костюма ПРИСВАИВАЛИ moba.filters
+/// целиком, а выключение обнуляло список - вместе с чужими именованными фильтрами
+/// (тень хардкрита и стамкрита, замыленные глаза), которые живут в filter_data. Хуже
+/// того, присвоение расходится с filter_data, и первый же чужой add_filter пересобирал
+/// список заново, молча теряя фильтр самого костюма. Имя решает обе стороны: состояния
+/// у костюма взаимоисключающие, поэтому имя одно.
+#define NANOSUIT_FILTER "nanosuit"
+/// Поверх ambient occlusion, но ниже конуса обзора.
+#define NANOSUIT_FILTER_PRIORITY 50
+
 /datum/action/item_action/dusting_implant
 	check_flags =  NONE
 	name = "Activate Dusting Implant"
@@ -390,7 +400,7 @@
 				slowdown = initial(slowdown)
 				armor = armor.setRating(melee = 60, bullet = 60, laser = 55, energy = 60, bomb = 95, rad = 100, fire = 100, acid = 100, wound = 50)
 				helmet.armor = helmet.armor.setRating(melee = 60, bullet = 60, laser = 55, energy = 60, bomb = 95, rad = 100, fire = 100, acid = 100, wound = 50)
-				Wearer.filters = list()
+				Wearer.remove_filter(NANOSUIT_FILTER)
 				animate(Wearer, alpha = 255, time = 5)
 				Wearer.remove_movespeed_modifier(/datum/movespeed_modifier/nanospeed)
 				REMOVE_TRAIT(Wearer, TRAIT_IGNORESLOWDOWN, NANO_SPEED)
@@ -407,7 +417,7 @@
 				slowdown = 0.25 //cloaking makes us move slightly faster
 				armor = armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
 				helmet.armor = helmet.armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
-				Wearer.filters = filter(type="blur",size=1)
+				Wearer.add_filter(NANOSUIT_FILTER, NANOSUIT_FILTER_PRIORITY, list(type="blur", size=1))
 				animate(Wearer, alpha = 40, time = 2)
 				Wearer.remove_movespeed_modifier(/datum/movespeed_modifier/nanospeed)
 				REMOVE_TRAIT(Wearer, TRAIT_IGNORESLOWDOWN, NANO_SPEED)
@@ -426,7 +436,7 @@
 				helmet.armor = helmet.armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
 				Wearer.adjustOxyLoss(-5, 0)
 				Wearer.adjustStaminaLoss(-20)
-				Wearer.filters = filter(type="outline", size=0.1, color=rgb(255,255,224))
+				Wearer.add_filter(NANOSUIT_FILTER, NANOSUIT_FILTER_PRIORITY, list(type="outline", size=0.1, color=rgb(255,255,224)))
 				animate(Wearer, alpha = 255, time = 5)
 				REMOVE_TRAIT(Wearer, TRAIT_PUSHIMMUNE, NANO_STRENGTH)
 				REMOVE_TRAIT(Wearer, TRAIT_HEAVY_MELEE, NANO_STRENGTH)
@@ -444,7 +454,7 @@
 				slowdown = initial(slowdown)
 				armor = armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
 				helmet.armor = helmet.armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
-				Wearer.filters = filter(type="outline", size=0.1, color=rgb(255,0,0))
+				Wearer.add_filter(NANOSUIT_FILTER, NANOSUIT_FILTER_PRIORITY, list(type="outline", size=0.1, color=rgb(255,0,0)))
 				animate(Wearer, alpha = 255, time = 5)
 				ADD_TRAIT(Wearer, TRAIT_PUSHIMMUNE, NANO_STRENGTH)
 				ADD_TRAIT(Wearer, TRAIT_HEAVY_MELEE, NANO_STRENGTH)
@@ -460,7 +470,7 @@
 				slowdown = initial(slowdown)
 				armor = armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
 				helmet.armor = helmet.armor.setRating(melee = 45, bullet = 45, laser = 45, energy = 50, bomb = 80, rad = 100, fire = 100, acid = 100, wound = 40)
-				Wearer.filters = list()
+				Wearer.remove_filter(NANOSUIT_FILTER)
 				animate(Wearer, alpha = 255, time = 5)
 				REMOVE_TRAIT(Wearer, TRAIT_PUSHIMMUNE, NANO_STRENGTH)
 				REMOVE_TRAIT(Wearer, TRAIT_HEAVY_MELEE, NANO_STRENGTH)
@@ -1083,7 +1093,7 @@
 			var/obj/item/gun/G = W
 			if(G.suppressed && G.can_shoot())
 				set_nano_energy(15)
-				Wearer.filters = null
+				Wearer.remove_filter(NANOSUIT_FILTER)
 				animate(Wearer, alpha = 255, time = stealth_cloak_out)
 				addtimer(CALLBACK(src, PROC_REF(resume_cloak)),CLICK_CD_RANGE,TIMER_UNIQUE|TIMER_OVERRIDE)
 				return
@@ -1091,7 +1101,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/nano/proc/resume_cloak()
 	if(cell.charge && mode == NANO_CLOAK)
-		Wearer.filters = filter(type="blur",size=1)
+		Wearer.add_filter(NANOSUIT_FILTER, NANOSUIT_FILTER_PRIORITY, list(type="blur", size=1))
 		animate(Wearer, alpha = 40, time = stealth_cloak_in)
 
 /obj/item/storage/box/syndie_kit/nanosuit
@@ -1276,3 +1286,6 @@
 			return TRUE
 		return FALSE
 	return ..()
+
+#undef NANOSUIT_FILTER
+#undef NANOSUIT_FILTER_PRIORITY

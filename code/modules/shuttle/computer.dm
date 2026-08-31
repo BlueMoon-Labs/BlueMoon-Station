@@ -109,4 +109,9 @@
 
 /obj/machinery/computer/shuttle/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	if(port && (shuttleId == initial(shuttleId) || override))
+		// register() переименовывает shuttle_id при коллизии (foo -> foo_2), и навигационная
+		// консоль следом создаёт порт "foo_2_custom". Без переноса имени в possible_destinations
+		// у заспавненного в раунде корабля пункт "custom location" не появляется вовсе.
+		if(shuttleId && shuttleId != port.shuttle_id)
+			possible_destinations = replacetext(possible_destinations, "[shuttleId]_custom", "[port.shuttle_id]_custom")
 		shuttleId = port.shuttle_id

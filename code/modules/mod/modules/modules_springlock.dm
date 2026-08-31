@@ -294,7 +294,7 @@
 	// Наш несчастный оказался антагом, так что man behind the slaughter always come back... наверное
 	if(!QDELETED(springtrapped) && springtrapped.mind?.has_antag_datum(/datum/antagonist, TRUE) && springtrapped.stat == DEAD)
 		to_chat(springtrapped, "<span class='boldwarning'>У меня... остались незаконченные дела... я... ещё... вернусь... </span>")
-		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 30 MINUTES) // 30 YEARS SINCE ALL THIS HAPPENED, 30 YEARS IT TOOK TO RISE
+		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 5 MINUTES) // 30 Минут реально дохерище. Будет 5.
 	failure = FALSE
 
 // Будем честны, такая штука будет случаться раз в десять лет, так что это максимум будет маленькой пасхалкой
@@ -323,8 +323,10 @@
 	stuck = TRUE
 	helmet.flags_cover &= ~HEADCOVERSMOUTH
 	helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
-	var/list/all_parts = mod.mod_parts.Copy() + mod
-	for(var/obj/item/part in all_parts)
+	// Прежде тут перебирался alist, а он отдаёт КЛЮЧИ - фильтр по типу отбрасывал
+	// их все, и неудаляемым/несбрасываемым становился только сам контроль.
+	var/list/all_parts = mod.get_mod_parts() + mod
+	for(var/obj/item/part as anything in all_parts)
 		ADD_TRAIT(part, TRAIT_NODROP, CURSED_ITEM_TRAIT)
 		part.resistance_flags |= (INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF)
 

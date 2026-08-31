@@ -63,7 +63,7 @@
 	shoes = /obj/item/clothing/shoes/jackboots
 	suit_store = /obj/item/kitchen/knife/combat
 	r_pocket = /obj/item/sensor_device_command
-	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton)
+	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/choice_beacon/blueshied_suit, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton)
 	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
 
 	backpack = /obj/item/storage/backpack/blueshield
@@ -88,7 +88,7 @@
 	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/kitchen/knife/combat
-	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton, /obj/item/syndicate_uplink/station)
+	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/choice_beacon/blueshied_suit, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton, /obj/item/syndicate_uplink/station)
 
 	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie

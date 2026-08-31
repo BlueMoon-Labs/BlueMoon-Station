@@ -260,10 +260,10 @@
 	var/wounding_type = (brute > burn ? WOUND_BLUNT : WOUND_BURN)
 	var/wounding_dmg = max(brute, burn)
 	var/mangled_state = get_mangled_state()
-	var/bio_state = owner.get_biological_state()
-	var/easy_dismember = HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
-	var/glass_bones = HAS_TRAIT(owner, TRAIT_GLASS_BONES)
-	var/paper_skin = HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
+	var/bio_state = owner ? owner.get_biological_state() : (BIO_JUST_FLESH | BIO_JUST_BONE)
+	var/easy_dismember = owner && HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
+	var/glass_bones = owner && HAS_TRAIT(owner, TRAIT_GLASS_BONES)
+	var/paper_skin = owner && HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
 
 	if(wounding_type == WOUND_BLUNT)
 		if(sharpness == SHARP_EDGED)
@@ -1251,8 +1251,16 @@
 /obj/item/bodypart/proc/apply_gauze(obj/item/stack/medical/gauze)
 	if(!istype(gauze) || !gauze.absorption_capacity)
 		return
+	// Киборгский стак умеет существовать только внутри /obj/item/robot_module: его
+	// Initialize() отказывается стартовать где угодно ещё и самоудаляется, а
+	// current_gauze оставался ссылкой на qdel-нутый предмет (прод-раунд 10150,
+	// "Cyborg stack created outside of a robot module"). На конечность кладём
+	// обычный аналог того же типа.
+	var/gauze_type = gauze.is_cyborg ? type2parent(gauze.type) : gauze.type
+	if(!ispath(gauze_type, /obj/item/stack/medical))
+		return
 	QDEL_NULL(current_gauze)
-	current_gauze = new gauze.type(src, 1)
+	current_gauze = new gauze_type(src, 1)
 	gauze.use(1)
 	if(owner)
 		owner.update_bandage_overlays()

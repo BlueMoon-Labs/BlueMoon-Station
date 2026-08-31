@@ -34,7 +34,7 @@
 		handle_liver(delta_time, times_fired)
 
 	if(stat != DEAD)
-		handle_corruption()
+		handle_corruption(delta_time)
 
 
 /mob/living/carbon/PhysicalLife(seconds, times_fired)
@@ -962,7 +962,10 @@ BLUEMOON REMOVAL END */
 	return TRUE
 
 /mob/living/carbon/proc/set_heartattack(status)
-	if(!can_heartattack())
+	// Проверка гейтит только постановку приступа. Снятие обязано работать всегда,
+	// иначе синтетик с остановленной помпой (can_heartattack() = FALSE из-за
+	// ORGAN_SYNTHETIC) не запускался обратно ни дефибом, ни fully_heal().
+	if(status && !can_heartattack())
 		return FALSE
 
 	var/obj/item/organ/heart/heart = getorganslot(ORGAN_SLOT_HEART)
@@ -970,6 +973,13 @@ BLUEMOON REMOVAL END */
 		return
 
 	if(status)
-		heart.Stop()
-	else
-		heart.Restart()
+		return heart.Stop()
+
+	// Отказавшую помпу перезапускать нечем: ближайший on_life() снова её остановит,
+	// а заодно напечатает "Fatal error detected" - у синтетика on_life() сбрасывает
+	// failed на каждом проходе с beating, так что каждый разряд дефиба перевзводил
+	// ровно тот спам, ради которого ставили защиту. Орган надо чинить, а не заводить.
+	if(heart.organ_flags & ORGAN_FAILING)
+		return FALSE
+
+	return heart.Restart()

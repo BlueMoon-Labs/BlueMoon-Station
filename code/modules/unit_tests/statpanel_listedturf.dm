@@ -56,11 +56,21 @@
 	var/list/repeated_snapshot = SSstatpanels.build_listedturf_snapshot(test_turf, SEE_INVISIBLE_LIVING)
 	TEST_ASSERT_EQUAL(repeated_snapshot["encoded"], snapshot["encoded"], "Identical turf contents should produce a stable encoded payload")
 
+	// Запись кэша - list(url, weakref владельца): REF после сборки мусора достаётся
+	// следующему объекту, и без владельца новая вещь считалась бы уже отправленной.
 	var/list/sent_icons = list()
 	for(var/atom/A as anything in needs_icons)
-		sent_icons[REF(A)] = TRUE
+		sent_icons[REF(A)] = list("asset/url/[REF(A)].png", WEAKREF(A))
 	var/list/without_icons = SSstatpanels.build_listedturf_snapshot(test_turf, SEE_INVISIBLE_LIVING, null, sent_icons)
 	TEST_ASSERT_EQUAL(length(without_icons["needs_icons"]), 0, "Snapshot should not request icons that were already sent")
+
+	// Тот же ключ, но владелец записи - посторонний атом: иконку обязаны запросить заново.
+	var/list/recycled_icons = list()
+	for(var/atom/A as anything in needs_icons)
+		recycled_icons[REF(A)] = list("asset/url/stale.png", WEAKREF(transparent_item))
+	var/list/after_recycle = SSstatpanels.build_listedturf_snapshot(test_turf, SEE_INVISIBLE_LIVING, null, recycled_icons)
+	TEST_ASSERT_EQUAL(length(after_recycle["needs_icons"]), length(needs_icons), \
+		"Записи под переиспользованным REF не должны засчитываться за отправленные иконки")
 
 	var/list/override_snapshot = SSstatpanels.build_listedturf_snapshot(test_turf, SEE_INVISIBLE_LIVING, list(overridden_item))
 	var/list/override_decoded = json_decode(url_decode(override_snapshot["encoded"]))

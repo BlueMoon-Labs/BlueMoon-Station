@@ -128,6 +128,12 @@
 				owner.visible_message("<span class='userdanger'>[owner] clutches at [owner.ru_ego()] chest as if [owner.ru_ego()] heart is stopping!</span>")
 			owner.set_heartattack(TRUE)
 			failed = TRUE
+	else if((organ_flags & ORGAN_SYNTHETIC) && failed)
+		// Помпу починили или заменили. У органики beating возвращает set_heartattack(FALSE),
+		// а синтетическую ветку выше никто не отматывал: beating = 0 стояло вечно и
+		// переживало и ребут, и дефиб - синтетик оживал уже с "сердечным приступом".
+		failed = FALSE
+		Restart()
 
 /obj/item/organ/heart/slime
 	name = "mitochondria"

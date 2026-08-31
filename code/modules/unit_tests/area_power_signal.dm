@@ -267,3 +267,62 @@
 	TEST_ASSERT_EQUAL(test_area.static_light, baseline, "destroying a lit lamp must release its static load from the area")
 
 	original_area.contents.Add(floor)
+
+/// E9: power is not the only thing a machine keeps in its area. Fire alarms live in
+/// area.firealarms, and that list is what decides whether the room's firedoors detect at all -
+/// so an area swap has to move the entry, not just the power subscription.
+/datum/unit_test/area_swap_moves_firealarm_registry/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/area/original_area = get_area(floor)
+	var/area/first_area = new /area
+	var/area/second_area = new /area
+	claim_floor_into_area(floor, first_area)
+
+	var/obj/machinery/firealarm/alarm = allocate(/obj/machinery/firealarm)
+	// Appended after the alarm so teardown destroys it before the areas holding its entry.
+	allocated += first_area
+	allocated += second_area
+	TEST_ASSERT_EQUAL(alarm.myarea, first_area, "pre-swap sanity: the alarm registers in the area it initialized in")
+	TEST_ASSERT(alarm in first_area.firealarms, "pre-swap sanity: the area lists the alarm")
+
+	second_area.contents.Add(floor)
+	floor.change_area(first_area, second_area)
+
+	TEST_ASSERT_EQUAL(alarm.myarea, second_area, "an area swap must re-home the alarm")
+	TEST_ASSERT(!(alarm in first_area.firealarms), "the area that lost the turf must drop the alarm from its firealarms list")
+	TEST_ASSERT(alarm in second_area.firealarms, "the area that gained the turf must pick the alarm up")
+
+	original_area.contents.Add(floor)
+
+/// E10: the atmos device registries hang off the BASE area, not off the sub-area a scrubber
+/// literally stands in (see broadcast_status). Cleaning the sub-area instead would leave the
+/// device listed in every air alarm's device list forever after the room was re-marked.
+/datum/unit_test/area_swap_clears_scrubber_registry_from_base_area/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/area/original_area = get_area(floor)
+	var/area/parent_area = new /area
+	var/area/sub_area = new /area
+	var/area/second_area = new /area
+	claim_floor_into_area(floor, sub_area)
+	sub_area.base_area = parent_area
+	LAZYADD(parent_area.sub_areas, sub_area)
+
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber)
+	allocated += parent_area
+	allocated += sub_area
+	allocated += second_area
+	TEST_ASSERT_NOTNULL(scrubber.id_tag, "a scrubber must carry an id_tag to be registered under")
+
+	// broadcast_status() needs a radio connection to run; what it writes is what matters here.
+	parent_area.air_scrub_names[scrubber.id_tag] = "test scrubber"
+	parent_area.air_scrub_info[scrubber.id_tag] = list()
+
+	second_area.contents.Add(floor)
+	floor.change_area(sub_area, second_area)
+
+	TEST_ASSERT(!parent_area.air_scrub_names[scrubber.id_tag], "the base area must drop the scrubber's name entry when its turf leaves")
+	TEST_ASSERT(!parent_area.air_scrub_info[scrubber.id_tag], "the base area must drop the scrubber's status entry when its turf leaves")
+
+	sub_area.base_area = null
+	parent_area.sub_areas = null
+	original_area.contents.Add(floor)

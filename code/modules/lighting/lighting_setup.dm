@@ -133,6 +133,78 @@
 	return (now - lit_since) < LIGHTING_TEARDOWN_MIN_LIT_TIME
 
 /**
+ * Исчерпал ли уровень право на снос: прошлый снос уже доказал, что возвращать нечего.
+ *
+ * Четвёртая чистая функция решения (рядом с lighting_teardown_idle_time,
+ * zlevel_teardown_cooldown_active и pick_lighting_teardown_zlevel) и единственная,
+ * работающая по ЗАМЕРУ, а не по прогнозу. Остальные три предсказывают пользу от сноса
+ * косвенно, и раунд 10146 показал, что все три вместе ошибаются трижды за 48 минут на
+ * одном и том же уровне (см. LIGHTING_TEARDOWN_MIN_PAYOFF_MB).
+ *
+ * Одного сэмпла достаточно намеренно. Куча за процессом остаётся навсегда: уровень, чей
+ * снос уже не вернул ничего, не вернёт ничего и в следующий раз - все последующие подъёмы
+ * лишь переиспользуют ту же арену (в 10146 обратные подъёмы стоили +1.2, +1.3 и 0 МБ
+ * против +73.8 МБ у первого). Ждать второго подтверждения значило бы заплатить за него
+ * ещё одним бесполезным циклом.
+ *
+ * Аргументы:
+ * * last_payoff_mb - сколько МБ VmSize вернул последний ДОВЕДЁННЫЙ ДО КОНЦА снос этого
+ *   уровня; null = сноса ещё не было либо память мерить нечем (Windows, ранний старт),
+ *   и тогда улик против уровня нет - ведём себя как раньше
+ * * pressure - доля потолка адресного пространства, 0 = не замерено
+ */
+/proc/zlevel_teardown_payoff_exhausted(last_payoff_mb, pressure)
+	if(isnull(last_payoff_mb))
+		return FALSE
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return FALSE
+	return last_payoff_mb < LIGHTING_TEARDOWN_MIN_PAYOFF_MB
+
+/**
+ * Хвост итоговой строки сноса: попал ли уровень после него в исключения.
+ *
+ * Отдельным проком и отдельной строкой, потому что разбор прод-логов читает итог сноса как
+ * улику. Цифру возврата строка печатала и раньше (zlevel_teardown_memory_note), но по ней
+ * нельзя было сказать, СДЕЛАЛ ли сервер из этой цифры вывод: в 10146 три сноса подряд
+ * напечатали "-1.5", "-4.2" и "-0.1 МБ" и каждый раз начинали заново.
+ *
+ * Хвост обязан совпадать с тем, что РЕАЛЬНО решит zlevel_teardown_payoff_exhausted() на том
+ * же давлении. Снос, доехавший до критического давления, ничего не исключает - там запрет
+ * снят, - а строка всё равно объявляла уровень исключённым, и разбор прода читал бы её как
+ * причину, по которой уровень больше не берут.
+ *
+ * Аргументы:
+ * * payoff_mb - возврат последнего сноса в МБ; null = не замерено, выводов нет
+ * * pressure - доля потолка адресного пространства на момент финала; 0 = не замерено
+ */
+/proc/zlevel_teardown_payoff_note(payoff_mb, pressure = 0)
+	if(isnull(payoff_mb) || payoff_mb >= LIGHTING_TEARDOWN_MIN_PAYOFF_MB)
+		return ""
+	if(!zlevel_teardown_payoff_exhausted(payoff_mb, pressure))
+		return ", отдача ниже порога [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ, но под критическим давлением уровень из сносов не исключается"
+	return ", уровень исключён из сносов до критического давления (порог отдачи [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ)"
+
+/**
+ * Закоммитила ли постройка света z-уровня свежую память, а не переиспользовала старую арену.
+ *
+ * Пятая чистая функция вокруг решения о сносе, и единственная, работающая на пути ПОДЪЁМА.
+ * Запрет на снос уровня стоит на допущении "арена осталась за процессом, следующий подъём
+ * бесплатный": в 10146 обратные подъёмы z16 стоили +1.2, +1.3 и 0 МБ против +73.8 МБ у
+ * первой постройки. Подъём дороже порога отдачи - прямое опровержение этого допущения, и
+ * улику прошлого сноса после него держать нельзя.
+ *
+ * Порог тот же, что и у отдачи: одна и та же арена меряется одной и той же линейкой, и
+ * второй дефайн разъехался бы с первым молча.
+ *
+ * Аргументы:
+ * * spent_mb - сколько МБ VmSize стоила постройка; null = не замерено (Windows, ранний старт)
+ */
+/proc/zlevel_rebuild_commits_fresh_memory(spent_mb)
+	if(isnull(spent_mb))
+		return FALSE
+	return spent_mb >= LIGHTING_TEARDOWN_MIN_PAYOFF_MB
+
+/**
  * Кого из пустующих уровней разбирать первым при этом сроке простоя.
  *
  * Вторая чистая половина решения (первая - lighting_teardown_idle_time). Разделены они
@@ -240,6 +312,37 @@
 		return FALSE
 	var/datum/space_level/level = SSmapping.z_list.len >= new_z ? SSmapping.z_list[new_z] : null
 	return level && !level.lighting_initialized
+
+/**
+ * Нужен ли отложенному уровню свет всё ещё, спустя выдержку гостового дебаунса.
+ *
+ * Чистая половина отложенного подъёма, и потому отдельным проком: всё, что здесь можно
+ * сломать молча, ломается на пустом уровне, который построят зря, или на живом госте,
+ * которого оставят в темноте.
+ *
+ * Два условия, и оба обязательны. Первое - уровень до сих пор не поднят: за выдержку его
+ * мог поднять живой игрок, стыковка шаттла или фоновый краулер. Второе - на уровне до сих
+ * пор кто-то есть: ровно это и отсекает пролетевшего мимо госта, ради которого в раунде
+ * 10133 построили 65 025 объектов освещения.
+ *
+ * zlevel_has_occupant() считает ЖИВЫЕ записи реестров, а не их длину, поэтому гост,
+ * исчезнувший без смены z, уровень здесь не удержит.
+ */
+/proc/ghost_ondemand_init_still_wanted(z_level)
+	if(!should_ondemand_init_zlevel(z_level))
+		return FALSE
+	return SSlighting.zlevel_has_occupant(z_level)
+
+/**
+ * Отложенный подъём света по гостовому поводу. Цель таймера из /mob/dead/update_z.
+ *
+ * Проверка вынесена в ghost_ondemand_init_still_wanted() целиком: здесь остаётся только
+ * вызов, чтобы таймеру было куда целиться.
+ */
+/proc/ondemand_init_zlevel_for_ghost(z_level)
+	if(!ghost_ondemand_init_still_wanted(z_level))
+		return
+	create_lighting_for_zlevel(z_level, LIGHTING_INIT_REASON_GHOST)
 
 /**
  * Creates lighting infrastructure for a single z-level on demand (synchronous fallback).
@@ -377,6 +480,28 @@
 		return "## LIGHTING: Self-heal pass for z-level [z_level] ([level_name]) - флаш отложенных атомов, уровень уже поднят (повод: [reason])"
 	return "## LIGHTING: On-demand init for z-level [z_level] ([level_name]) (background preempted, повод: [reason])"
 
+/**
+ * Хвост итоговой строки сноса: сколько VmSize снос ВЕРНУЛ операционной системе.
+ *
+ * Чистой функцией, потому что это единственная часть замера, которую можно проверить
+ * тестом, и потому что молчать здесь нельзя ни в одном из трёх случаев. Цена ПОСТРОЙКИ
+ * печаталась с самого начала (log_zlevel_lighting_cost), цена сноса - нет, и вывод
+ * "снос не вернул ничего" (раунд 10134: -64 тыс. инстансов, VmSize 2634 -> 2647 МБ)
+ * приходилось собирать вручную по соседним строкам перф-CSV.
+ *
+ * Знак ОБРАТНЫЙ дельте VmSize: снос, после которого VmSize упал, вернул память, и в строке
+ * это должно читаться как плюс. Ноль и рост - штатный исход (куча остаётся за процессом,
+ * см. LIGHTING_MAX_LIT_DEFERRED_Z), поэтому это не предупреждение, а измерение.
+ *
+ * Аргументы:
+ * * vsz_before - VmSize в МБ на старте сноса; null = память не замерена (Windows)
+ * * memory_after - снимок get_process_memory_mb() на финале; null = то же самое
+ */
+/proc/zlevel_teardown_memory_note(vsz_before, list/memory_after)
+	if(isnull(vsz_before) || !memory_after || isnull(memory_after["vsz"]))
+		return ""
+	return ", ОС возвращено [format_mb_delta(vsz_before - memory_after["vsz"])] VmSize"
+
 /// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
 /// проком, потому что вызывать его придётся и из фонового краула, и из сноса.
 /proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before, objects_created)
@@ -388,3 +513,6 @@
 	var/spent = memory_after["vsz"] - memory_before["vsz"]
 	attribute_memory_elsewhere_mb(spent)
 	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize на [objects_created] объектов")
+	// Дорогая постройка опровергает улику прошлого сноса: арена не переиспользовалась.
+	if(SSlighting?.note_zlevel_lighting_rebuild(z_level, spent))
+		log_world("## LIGHTING: z[z_level] снова допущен к сносам - подъём взял у ОС [format_mb_delta(spent)] свежей памяти")
