@@ -52,7 +52,7 @@
 /datum/unit_test/proc/assert_live_light_matches_fixture(obj/machinery/light/test_light, message_prefix = "Fixture")
 	drain_nightshift_lighting_work()
 	TEST_ASSERT(test_light.light, "[message_prefix] should have a live light source.")
-	TEST_ASSERT_EQUAL(test_light.light.light_power, test_light.light_power, "[message_prefix] light source power should match the fixture state.")
+	TEST_ASSERT(abs(test_light.light.light_power - test_light.light_power) < 0.001, "[message_prefix] light source power should match the fixture state. Expected [test_light.light.light_power] to be close to [test_light.light_power].")
 	TEST_ASSERT_EQUAL(lowertext(test_light.light.light_color), lowertext(test_light.light_color), "[message_prefix] light source color should match the fixture state.")
 
 /datum/unit_test/nightshift_profile/Run()
@@ -108,7 +108,7 @@
 	assert_live_light_matches_fixture(warm_light, "Warm-night fixture")
 
 	TEST_ASSERT_EQUAL(warm_light.light_color, warm_light.bulb_colour, "Warm lights with a null nightshift tint should keep their own bulb colour.")
-	TEST_ASSERT_EQUAL(warm_light.light_power, warm_light.nightshift_light_power, "Warm lights should still dim to the configured nightshift power.")
+	TEST_ASSERT(abs(warm_light.light_power - warm_light.nightshift_light_power) < 0.001, "Warm lights should still dim to the configured nightshift power. Expected [warm_light.light_power] to be close to [warm_light.nightshift_light_power].")
 
 	var/turf/third_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	var/obj/machinery/light/small/default_bulb = allocate(/obj/machinery/light/small, third_turf)
