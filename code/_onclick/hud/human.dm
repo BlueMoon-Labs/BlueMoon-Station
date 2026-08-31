@@ -567,6 +567,9 @@
 			inv_slots[TOBITSHIFT(inv.slot_id) + 1] = inv
 			inv.update_icon()
 
+	ammo_counter = new /atom/movable/screen/ammo_counter(null, src) //BLUEMOON EDIT ADDITION
+	infodisplay += ammo_counter //BLUEMOON EDIT ADDITION
+
 	update_locked_slots()
 
 /datum/hud/human/proc/assert_move_intent_ui(mob/living/carbon/human/owner = mymob, on_new = FALSE)
