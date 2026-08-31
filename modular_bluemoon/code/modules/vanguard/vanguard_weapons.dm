@@ -1,17 +1,17 @@
+#define MAGNETIC_TOMAHAWK_CHARGE_LENIENCY 0.3
+#define MAGNETIC_TOMAHAWK_DEPLETION_RATE 0.006
+
 // ============================================
 // Базовое оружие из ваучеров
 // ============================================
 
 
-//obj/item/gun/energy/e_gun/mini/expeditor
-//	name = "expeditor's miniature energy gun"
-//	desc = "Modernized pistol-sized energy gun with a built-in flashlight and expanded cell. It has two settings: stun and kill."
-//	w_class = WEIGHT_CLASS_SMALL
-//	cell_type = /obj/item/stock_parts/cell{charge = 1200; maxcharge = 1200}
-//	pin = /obj/item/firing_pin/explorer
-
-#define MAGNETIC_TOMAHAWK_CHARGE_LENIENCY 0.3
-#define MAGNETIC_TOMAHAWK_DEPLETION_RATE 0.006
+/obj/item/gun/energy/e_gun/mini/expeditor
+	name = "expeditor's miniature energy gun"
+	desc = "Modernized pistol-sized energy gun with a built-in flashlight and expanded cell. It has two settings: stun and kill."
+	w_class = WEIGHT_CLASS_SMALL
+	cell_type = /obj/item/stock_parts/cell{charge = 1200; maxcharge = 1200}
+	pin = /obj/item/firing_pin/explorer
 
 /obj/item/gun/ballistic/automatic/laser/vanguard
 	name = "Vanguard miniature energy gun"

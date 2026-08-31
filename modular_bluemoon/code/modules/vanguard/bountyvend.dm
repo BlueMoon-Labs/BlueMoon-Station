@@ -78,6 +78,8 @@
 		list("name" = "Illegal technology disk", "path" = /obj/item/disk/tech_disk/illegal, "cost" = 5000, "category" = "Tools"),
 		list("name" = "Fulton beacon", "path" = /obj/item/fulton_core, "cost" = 200, "category" = "Tools"),
 		list("name" = "BEPIS technology disk", "path" = /obj/item/disk/tech_disk/major, "cost" = 1000, "category" = "Tools"),
+		list("name" = "Vanguard basic kit", "path" = /obj/item/storage/backpack/duffelbag/vanguard/conscript, "cost" = 1500, "category" = "Tools"),
+		list("name" = "Vanguard points transfer card", "path" = /obj/item/card/contraband_point_card, "cost" = 100, "category" = "Tools"),
 		list("name" = "Whiskey", "path" = /obj/item/reagent_containers/food/drinks/bottle/whiskey, "cost" = 50, "category" = "Recreational"),
 		list("name" = "Cigar", "path" = /obj/item/clothing/mask/cigarette/cigar/havana, "cost" = 75, "category" = "Recreational"),
 		list("name" = "High quality Soap", "path" = /obj/item/soap/syndie, "cost" = 150, "category" = "Recreational"),
@@ -250,3 +252,34 @@
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "suit_voucher_redeemed", 1, selection)
 	qdel(voucher)
+
+///Basic kit
+/obj/item/card/vanguard_access_card
+	name = "mining access card"
+	desc = "A small card, that when used on any ID, will add Vanguard operative access."
+	icon_state = "data_1"
+
+/obj/item/card/vanguard_access_card/afterattack(atom/movable/AM, mob/user, proximity)
+	. = ..()
+	if(istype(AM, /obj/item/card/id) && proximity)
+		var/obj/item/card/id/I = AM
+		I.access |=	ACCESS_RESEARCH
+		I.access |= ACCESS_GATEWAY
+		I.access |= ACCESS_PRODUCTION_SCIENCE
+		to_chat(user, "You upgrade [I] with Vanguard operative access.")
+		qdel(src)
+
+/obj/item/storage/backpack/duffelbag/vanguard/conscript
+	name = "Vanguard basic kit"
+	desc = "Some outdated vanguard equipment for new members of squadrons"
+
+/obj/item/storage/backpack/duffelbag/vanguard/conscript/PopulateContents()
+	. = ..()
+	new /obj/item/gun/energy/e_gun/mini/expeditor(src)
+	new /obj/item/clothing/head/helmet/exp(src)
+	new /obj/item/clothing/suit/armor/vest/exp(src)
+	new /obj/item/tank/internals/emergency_oxygen/engi(src)
+	new /obj/item/card/vanguard_access_card(src)
+	new /obj/item/kitchen/knife/combat(src)
+	new /obj/item/radio/headset/headset_exp(src)
+	new /obj/item/clothing/glasses/sunglasses(src)

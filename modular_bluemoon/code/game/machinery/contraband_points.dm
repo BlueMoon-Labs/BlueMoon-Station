@@ -191,6 +191,7 @@
 		/obj/item/katana = 1500,
 		/obj/item/melee/baseball_bat/ablative/syndi = 1000,
 		/obj/item/dualsaber = 5000,
+		/obj/item/dualsaber/toy = 0,
 		/obj/item/dualsaber/hypereutactic = 0,
 		/obj/item/melee/transforming/energy/axe = 50000, //this is shit-spawn
 		/obj/item/melee/transforming/energy/sword = 2000,
@@ -491,6 +492,38 @@
 			stop_sending()
 			last_user = null
 	return TRUE
+
+/obj/item/card/contraband_point_card
+	name = "Bounty points card"
+	desc = "A small card for transferring bounty points. Swipe your ID card over it to start the process."
+	icon_state = "data_1"
+	var/points = 100
+
+/obj/item/card/contraband_point_card/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/card/id))
+		var/obj/item/card/id/id_card = I
+		to_chat(user, span_info("You swipe [id_card] on [src] and start the transfer process."))
+		var/choice = alert(user, "Do you want to transfer points to or from the point card's storage?", "Bounty Points Transfer", "From Point Card/Storage", "To Point Card/Storage", "Cancel")
+		if(choice != "Cancel")
+			var/amount = input(user, "How much do you want to transfer? ID Balance: [id_card.contraband_points], Transfer Card Balance: [points]", "Transfer Points") as num|null
+			if(!amount || amount <= 0)
+				return
+			amount = round(amount, 1)
+			if(choice == "To Point Card/Storage")
+				if(amount && amount <= id_card.contraband_points)
+					id_card.contraband_points -= amount
+					points += amount
+					to_chat(user, span_info("You transfer [amount] points to [src] from [id_card]."))
+			else if(choice == "From Point Card/Storage")
+				if(amount && amount <= points)
+					id_card.contraband_points += amount
+					points -= amount
+					to_chat(user, span_info("You transfer [amount] points to [id_card] from [src]."))
+	..()
+
+/obj/item/card/contraband_point_card/examine(mob/user)
+	. = ..()
+	. += "There's [points] point\s on the card."
 
 #undef CONTRABAND_PAD_WARMUP_TIME
 #undef CONTRABAND_PAD_BEAM_DURATION
