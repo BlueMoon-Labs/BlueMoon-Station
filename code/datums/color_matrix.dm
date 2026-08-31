@@ -49,7 +49,7 @@
 		matrix += list(brightness, brightness, brightness, 0)
 		return
 	if(matrix_length == 12)
-		for(var/i = matrix_length to matrix_length - 3 step -1)
+		for(var/i = matrix_length to matrix_length - 2 step -1)
 			matrix[i] = brightness
 		return
 	if(matrix_length == 3)

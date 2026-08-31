@@ -88,7 +88,7 @@
 	GLOB.all_light_sources -= src
 	if (applied || effect_str)
 		remove_lum()
-	if (source_atom)
+	if (source_atom && !QDELETED(source_atom))
 		source_atom.delete_lights()
 		// Clear the atom's light reference if we are its active source.
 		// Without this, the atom's `light` var becomes a zombie reference
