@@ -20,7 +20,7 @@
 
 	return preview
 
-/datum/borg_donator_skin	
+/datum/borg_donator_skin
 	var/name = ""
 	var/module_type = /obj/item/robot_module
 
@@ -311,6 +311,28 @@
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 	sit_lamp_has_state = TRUE
+
+/datum/borg_donator_skin/standard/servmeka
+	name = "Serv Meka"
+	module_type = /obj/item/robot_module/standard
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "sfmekaserv"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "sfmekaserv"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/butler/servmeka
+	name = "Serv Meka"
+	module_type = /obj/item/robot_module/butler
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "sfmekaserv"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "sfmekaserv"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
 
 /proc/smart_init_borgs_skin()
 	. = list()

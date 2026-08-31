@@ -27279,10 +27279,8 @@
 "aUu" = (
 /obj/structure/table/optable,
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/sign/warning/nosmoking{
-	pixel_y = -32
-	},
 /obj/effect/decal/cleanable/blood/old,
+/obj/machinery/vitals_reader/directional/south,
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/surgery)
 "aUv" = (
@@ -33562,6 +33560,9 @@
 	dir = 4;
 	pixel_x = -23
 	},
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/surgery)
 "beg" = (
@@ -33569,10 +33570,10 @@
 /obj/machinery/computer/operating{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	pixel_y = -28
-	},
 /obj/machinery/light/small,
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/surgery)
 "beh" = (
@@ -73457,9 +73458,6 @@
 "csG" = (
 /obj/machinery/atmospherics/components/unary/tank/air,
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/sign/warning/nosmoking{
-	pixel_y = 30
-	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small{
 	dir = 1
@@ -83007,6 +83005,15 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"ift" = (
+/obj/machinery/door/airlock/maintenance{
+	req_access_txt = "12"
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 30
+	},
+/turf/open/floor/plasteel/dark,
+/area/maintenance/port)
 "ikw" = (
 /obj/machinery/camera{
 	c_tag = "Xenobiology Cell 4";
@@ -104294,7 +104301,7 @@ aQN
 aQN
 amA
 amA
-cnJ
+ift
 cni
 awD
 bKN
