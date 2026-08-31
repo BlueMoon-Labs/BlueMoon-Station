@@ -2589,7 +2589,7 @@
 	name = "Black Sneakers"
 	slot = ITEM_SLOT_FEET
 	path = /obj/item/clothing/shoes/black_sneakers
-	ckeywhitelist = list("hartty")
+	ckeywhitelist = list("hartty", "sawwarrr")
 
 /datum/gear/donator/bm/wypmckit
 	name = "Arctic PMC kit"
