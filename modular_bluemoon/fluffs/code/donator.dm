@@ -2584,3 +2584,9 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/rnd/roboticist/sleek
 	ckeywhitelist = list("deltarayx")
+
+/datum/gear/donator/bm/ice_axe_kit
+	name = "Ice Axe Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/ice_axe_kit
+	ckeywhitelist = list("hartty")
