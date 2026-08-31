@@ -198,7 +198,7 @@
 	/// Область, которой сейчас записан static_power_used. Снимать вклад обязательно с неё:
 	/// get_area(src) в момент снятия может быть уже другой (перелёт шаттла, смена области турфа).
 	var/area/static_power_area
-	var/brightness = 8			// luminosity when on, also used in power calculation
+	var/brightness = 6			// luminosity when on, also used in power calculation
 	var/bulb_power = 1
 	var/bulb_colour = LIGHT_COLOR_STATION_HALL
 	var/cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE // Directional cone: light shines away from the wall
@@ -220,7 +220,7 @@
 	var/nightshift_allowed = TRUE	//Set to FALSE to never let this light get switched to night mode.
 	var/nightshift_level = 0
 	var/nightshift_brightness = 8
-	var/nightshift_light_power = 0.40
+	var/nightshift_light_power = 0.35
 	var/nightshift_light_color = LIGHT_COLOR_STATION_HALL_NIGHT
 	var/nightshift_update_queued = FALSE
 	var/last_overlay_alpha_bucket = -1
