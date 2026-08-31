@@ -21026,6 +21026,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "cSh" = (
@@ -60377,7 +60378,7 @@
 	dir = 8
 	},
 /turf/open/space,
-/area/space/nearstation)
+/area/engineering/atmospherics_engine)
 "jsq" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/white{

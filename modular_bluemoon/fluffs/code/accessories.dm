@@ -522,3 +522,14 @@
 					"<span class='notice'>You show \the [src.name].</span>")
 		add_fingerprint(user)
 	user.point_bubble(src)
+
+/obj/item/storage/box/wypmcbox
+	name = "Arctic PMC kit"
+	desc = "Military box that contains a full kit of Arctic PMC."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/wypmcbox/PopulateContents()
+	new /obj/item/modkit/wypmchelmet(src)
+	new /obj/item/modkit/wypmcjacket(src)
+	new /obj/item/modkit/wypmcberet(src)
+
