@@ -231,6 +231,7 @@
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
 #include "unit_test.dm"
+#include "vending_product_enumeration.dm"
 #include "vending_stock_keys.dm"
 #include "verb_manager.dm"
 // #include "wizard.dm"
