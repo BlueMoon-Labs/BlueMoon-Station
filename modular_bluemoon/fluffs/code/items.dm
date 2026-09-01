@@ -123,13 +123,13 @@
 
 /obj/structure/sign/flag/marine/ua
 	name = "flag of United Americas"
-	desc = "flag of Untited Americas. Why did they need to unite them?"
+	desc = "flag of United Americas. Why did they need to unite them?"
 	icon_state = "flag_ua"
 	item_flag = /obj/item/sign/flag/marine/ua
 
 /obj/item/sign/flag/marine/uscmc
 	name = "folded USCMC flag"
-	desc = "folded of United States Marine Corps. There some sign at corner: \"Delta one love\"."
+	desc = "folded flag of United States Marine Corps. There some sign at corner: \"Delta one love\"."
 	icon_state = "folded_uscmc"
 	sign_path = /obj/structure/sign/flag/marine/uscmc
 
