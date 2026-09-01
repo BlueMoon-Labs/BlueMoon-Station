@@ -21,9 +21,15 @@
 
 /// Снимок цели до qdel: держать сам датум в переменной теста нельзя - фрейм
 /// пиннит его и softcheck честно провалится на чистом объекте.
+///
+/// Ref снимаем СЫРЫМ text_ref(), а не REF(): у мобов стоит DF_USE_TAG
+/// (mob_defines.dm:3), REF() для них отдаёт ТЕГ, а /datum/Destroy (datum.dm:117)
+/// обнуляет tag и снимает флаг. После qdel locate() по такой записи возвращает
+/// null - и любая проверка "собрался ли моб" молча засчитывалась как успех,
+/// каким бы держателем он ни был занят. Сырой ref живёт, пока жив сам объект.
 /datum/unit_test/harddel_9813_base/proc/target_record(datum/target, label)
 	return list(
-		"ref" = REF(target),
+		"ref" = text_ref(target),
 		"type_path" = target.type,
 		"label" = label,
 	)

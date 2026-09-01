@@ -132,7 +132,6 @@
 	player_minimum = 25
 	cost = 16
 	purchasable_from = UPLINK_SYNDICATE
-	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/doublesword/get_discount()
 	return pick(4;0.8,2;0.65,1;0.5)

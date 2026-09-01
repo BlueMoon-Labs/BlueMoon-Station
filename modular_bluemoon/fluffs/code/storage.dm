@@ -397,3 +397,14 @@
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/storage/backpack/wypmcbackpack
+	name = "Arctic PMC packed radiostation"
+	desc = "Judging by the camouflage and various types of seals, this portable radio station featuring an integrated backpack for storing various items belongs to a private military organization."
+	icon_state = "wypmc_backpack"
+	item_state = "wypmc_backpack"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	force = 11

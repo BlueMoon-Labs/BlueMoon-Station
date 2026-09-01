@@ -1562,6 +1562,24 @@
 	path = /obj/item/clothing/suit/hooded/bm/donator/cybercoat
 	ckeywhitelist = list("cnaperdodo")
 
+/datum/gear/donator/bm/hood_armored
+	name = "Большой капюшон"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/hood_armored
+	ckeywhitelist = list("cnaperdodo")
+
+/datum/gear/donator/bm/rebel_armor
+	name = "Кольчуга контрабандистов"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/donator/bm/rebel_armor
+	ckeywhitelist = list("cnaperdodo")
+
+/datum/gear/donator/bm/clf_uniform
+	name = "Перекрашенный комплект ЧВК"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/clf_uniform
+	ckeywhitelist = list("cnaperdodo")
+
 /datum/gear/donator/bm/diamond_ring
 	name = "A diamond ring"
 	path = /obj/item/clothing/accessory/ring/diamond
@@ -2584,3 +2602,27 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/rank/rnd/roboticist/sleek
 	ckeywhitelist = list("deltarayx")
+
+/datum/gear/donator/bm/black_sneakers
+	name = "Black Sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/black_sneakers
+	ckeywhitelist = list("hartty", "sawwarrr")
+
+/datum/gear/donator/bm/wypmckit
+	name = "Arctic PMC kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/wypmcbox
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcbackpack
+	name = "Arctic PMC packed radiostation"
+	slot = ITEM_SLOT_HANDS
+	path = /obj/item/storage/backpack/wypmcbackpack
+	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/wypmcgasmask
+	name = "Arctic PMC gasmask"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	ckeywhitelist = list("foxrtotlimda")

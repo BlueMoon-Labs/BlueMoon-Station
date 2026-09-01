@@ -327,7 +327,13 @@
 
 /datum/nanite_program/dermal_button/on_mob_remove()
 	. = ..()
-	qdel(button)
+	QDEL_NULL(button)
+
+/datum/nanite_program/dermal_button/Destroy()
+	// Кнопка и программа держат друг друга: без явного разрыва обе уходили в харддел
+	// с одной внешней ссылкой (прод-раунд 10151).
+	QDEL_NULL(button)
+	return ..()
 
 /datum/nanite_program/dermal_button/proc/press()
 	if(activated)
@@ -349,7 +355,14 @@
 	name = _name
 	button_icon_state = "nanite_[_icon]"
 
+/datum/action/innate/nanite_button/Destroy()
+	// Обратную ссылку рвём сами: программа уже не обязана нас пережить.
+	program = null
+	return ..()
+
 /datum/action/innate/nanite_button/Activate()
+	if(QDELETED(program))
+		return
 	program.press()
 
 /datum/nanite_program/lockout

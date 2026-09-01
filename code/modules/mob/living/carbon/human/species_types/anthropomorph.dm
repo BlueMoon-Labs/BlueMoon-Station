@@ -77,3 +77,7 @@
 	interface?.RemoveSource("SPECIES")
 	. = ..()
 
+/datum/species/mammal/synthetic/spec_updatehealth(mob/living/carbon/human/H)
+	if(H.getCloneLoss() > 0)
+		H.setCloneLoss(0, TRUE)
+

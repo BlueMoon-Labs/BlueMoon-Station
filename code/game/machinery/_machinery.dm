@@ -231,6 +231,13 @@ Class Procs:
 	if(new_area)
 		RegisterSignal(new_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(on_area_power_change))
 
+/// Турф под машиной сменил область (разметка комнаты блюпринтами, создание шаттла).
+/// Питание вызывающий уже переподписал; здесь машина чинит СВОИ реестры в области -
+/// у атмос-машинерии он живёт не в самой машине, а в списках area, и без этого
+/// венты/скрабберы навсегда оставались приписанными к зоне, из которой их вырезали.
+/obj/machinery/proc/on_area_swap(area/old_area, area/new_area)
+	return
+
 ///Re-homes the subscription on an area move and resyncs: the new area's channels can differ from the old one's.
 /obj/machinery/proc/on_enter_area(datum/source, area/new_area)
 	SIGNAL_HANDLER

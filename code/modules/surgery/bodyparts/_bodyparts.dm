@@ -1248,11 +1248,19 @@
   * Arguments:
   * * gauze- Just the gauze stack we're taking a sheet from to apply here
   */
-/obj/item/bodypart/proc/apply_gauze(obj/item/stack/medical/gauze)
-	if(!istype(gauze) || !gauze.absorption_capacity)
+/obj/item/bodypart/proc/apply_gauze(obj/item/stack/gauze)
+	if(!gauze || (!istype(gauze, /obj/item/stack/medical/gauze) && !istype(gauze, /obj/item/stack/sticky_tape)) || !gauze.absorption_capacity)
+		return
+	// Киборгский стак умеет существовать только внутри /obj/item/robot_module: его
+	// Initialize() отказывается стартовать где угодно ещё и самоудаляется, а
+	// current_gauze оставался ссылкой на qdel-нутый предмет (прод-раунд 10150,
+	// "Cyborg stack created outside of a robot module"). На конечность кладём
+	// обычный аналог того же типа.
+	var/gauze_type = gauze.is_cyborg ? type2parent(gauze.type) : gauze.type
+	if(!ispath(gauze_type, /obj/item/stack/medical))
 		return
 	QDEL_NULL(current_gauze)
-	current_gauze = new gauze.type(src, 1)
+	current_gauze = new gauze_type(src, 1)
 	gauze.use(1)
 	if(owner)
 		owner.update_bandage_overlays()

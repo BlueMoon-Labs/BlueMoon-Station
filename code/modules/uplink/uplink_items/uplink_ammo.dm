@@ -242,16 +242,16 @@
 
 /datum/uplink_item/ammo/rocket/basic
 	name = "84mm HE Rocket"
-	desc = "Маломощная осколочная ракета 84mm. Отправим вас на тот свет со стилем!"
+	desc = "Мощная осколочная ракета 84mm. Отправляйте на тот свет со стилем!"
 	item = /obj/item/ammo_casing/caseless/rocket
-	cost = 4
+	cost = 2
 
 /datum/uplink_item/ammo/rocket/hedp
 	name = "84mm HEDP Rocket"
 	desc = "Мощная кумулятивно-осколочная ракета 84mm HEDP. Крайне эффективна против бронированных целей \
 			и всех, кто стоит рядом. Вселяйте страх в сердца врагов."
 	item = /obj/item/ammo_casing/caseless/rocket/hedp
-	cost = 6
+	cost = 4
 
 /datum/uplink_item/ammo/pistolaps
 	name = "9mm Handgun Magazine"

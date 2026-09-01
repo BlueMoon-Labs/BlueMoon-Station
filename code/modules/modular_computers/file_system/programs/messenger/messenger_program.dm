@@ -430,13 +430,9 @@
 	if(istype(pda_device) && pda_device.picture)
 		data["has_scanned_photo"] = TRUE
 		var/datum/picture/pic = pda_device.picture
-		if(pic && pic.picture_image)
-			var/icon/img = pic.picture_image
-			var/base64 = icon2base64(img)
-			if(base64)
-				data["selected_photo_path"] = "data:image/png;base64,[base64]"
-			else
-				data["selected_photo_path"] = null
+		var/base64 = pic?.get_base64()
+		if(base64)
+			data["selected_photo_path"] = "data:image/png;base64,[base64]"
 		else
 			data["selected_photo_path"] = null
 	else
@@ -553,12 +549,10 @@
 	var/obj/item/modular_computer/pda/pda_device = computer
 	if(istype(pda_device) && pda_device.picture)
 		var/datum/picture/pic = pda_device.picture
-		if(pic && pic.picture_image)
-			var/icon/img = pic.picture_image
-			var/base64 = icon2base64(img)
-			if(base64)
-				photo_path = "data:image/png;base64,[base64]"
-				photo_asset = photo_path
+		var/base64 = pic?.get_base64()
+		if(base64)
+			photo_path = "data:image/png;base64,[base64]"
+			photo_asset = photo_path
 			pda_device.picture = null
 
 	if(admin_photo_url)

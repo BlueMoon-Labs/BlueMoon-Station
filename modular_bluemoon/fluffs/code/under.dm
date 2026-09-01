@@ -622,6 +622,19 @@
 	item_state = "saare"
 	can_adjust = TRUE
 
+// Спрайты принадлежат cnaperdodo
+/obj/item/clothing/under/donator/bm/clf_uniform
+	name = "Перекрашенный комплект ЧВК"
+	desc = "Старый перекрашеный комплект ЧВК. По сути своей это когда то было универсальным нижним комплектов для тактических отрядов. А теперь это любят носить те, кто против закона."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_clf_uniform.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_clf_uniform.dmi'
+	icon_state = "clf_uniform"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	item_state = "officer_jumpsuit"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/under/donator/bm/kladmen_dress
 	name = "Gothic Dress"
 	desc = " Long gothic dress decorated with lace patterns ."

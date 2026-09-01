@@ -135,7 +135,7 @@
 ///Отказ от цели 1:1 с легаси: чистим и Target слайма, и blackboard; движение
 ///остановит finish_action по флагу FAILED
 /datum/ai_behavior/slime_pursue_and_feed/proc/give_up(datum/ai_controller/controller, mob/living/simple_animal/slime/slime_pawn, target_key)
-	slime_pawn.Target = null
+	slime_pawn.set_slime_target(null)
 	slime_pawn.chase_hunger = 0 //погоня окончена - следующая возьмёт свежую оценку голода
 	controller.clear_blackboard_key(target_key)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED

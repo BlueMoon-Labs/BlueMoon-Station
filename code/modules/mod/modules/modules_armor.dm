@@ -112,6 +112,9 @@
 
 /obj/item/mod/module/armor/prebuild/on_uninstall(deleting = FALSE, user)
 	. = ..()
+	if(deleting)
+		// Нас уже удаляют: свой qdel(src) отсюда замыкал петлю Destroy -> uninstall -> qdel.
+		return
 	playsound(src, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 	if(user)
 		balloon_alert(user, "модуль раскалывается и разрушается!")

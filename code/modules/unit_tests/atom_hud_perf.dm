@@ -373,7 +373,29 @@
 	for(var/atom/A as anything in atoms)
 		hudatoms += A
 
+/// Зеркало тела remove_from_single_hud, но по test_target вместо client.images.
+/// Держать в синхроне с продовым проком: тесты ниже проверяют именно его форму.
 /datum/atom_hud/test_real/proc/remove_from_test_target(atom/movable/A)
+	if(!A || !A.hud_list)
+		return
+	var/list/atom_hud_list = A.hud_list
+	var/list/local_hud_icons = hud_icons
+	if(length(local_hud_icons) == 1)
+		var/hud_image = atom_hud_list[local_hud_icons[1]]
+		if(hud_image)
+			test_target -= hud_image
+		return
+	var/list/to_remove
+	for(var/i in local_hud_icons)
+		var/hud_image = atom_hud_list[i]
+		if(!hud_image)
+			continue
+		LAZYADD(to_remove, hud_image)
+	if(to_remove)
+		test_target -= to_remove
+
+/// Прежняя посерийная форма: по одному `-=` на иконку. Нужна как эталон.
+/datum/atom_hud/test_real/proc/remove_from_test_target_serial(atom/movable/A)
 	if(!A || !A.hud_list)
 		return
 	for(var/i in hud_icons)
@@ -519,6 +541,44 @@
 	for(var/i in hud.hud_icons)
 		var/image/I = A.hud_list[i]
 		TEST_ASSERT(I in delayed_target, "Control should reproduce the stale image that delayed final flush would re-add")
+
+// -----------------------------------------------------------------------------
+// Снятие худа: батченый `-=` обязан дать ровно тот же результат, что посерийный.
+// Форма add_to_single_hud уже была батченой, а remove_from_single_hud вычитал по
+// одной иконке - у диагностического худа это 11 проходов по client.images.
+// -----------------------------------------------------------------------------
+
+/datum/unit_test/atom_hud_batched_removal_matches_serial
+	priority = TEST_LONGER
+
+/datum/unit_test/atom_hud_batched_removal_matches_serial/Run()
+	for(var/icon_count in list(1, 4, 11))
+		var/datum/atom_hud/test_real/batched = new(num_icons = icon_count)
+		var/datum/atom_hud/test_real/serial = new(num_icons = icon_count)
+		var/list/atoms = list()
+		for(var/i in 1 to 40)
+			atoms += allocate(/obj/effect/perf_hud_test_atom, run_loc_floor_bottom_left, icon_count)
+		batched.seed_hudatoms(atoms)
+		serial.seed_hudatoms(atoms)
+		batched.push_all_atoms_to_image_list(null, batched.test_target)
+		serial.push_all_atoms_to_image_list(null, serial.test_target)
+		TEST_ASSERT_EQUAL(length(batched.test_target), length(serial.test_target), \
+			"test premise: both huds must start from the same image set at [icon_count] icon(s)")
+
+		// Снимаем каждый второй атом - остаются и снятые, и оставленные изображения.
+		for(var/i in 1 to length(atoms) step 2)
+			var/atom/movable/A = atoms[i]
+			batched.remove_from_test_target(A)
+			serial.remove_from_test_target_serial(A)
+
+		TEST_ASSERT_EQUAL(length(batched.test_target), length(serial.test_target), \
+			"Batched removal must drop exactly as many images as serial removal at [icon_count] icon(s)")
+		for(var/image/I as anything in serial.test_target)
+			TEST_ASSERT(I in batched.test_target, \
+				"Batched removal dropped an image that serial removal kept at [icon_count] icon(s)")
+		for(var/image/I as anything in batched.test_target)
+			TEST_ASSERT(I in serial.test_target, \
+				"Batched removal kept an image that serial removal dropped at [icon_count] icon(s)")
 
 // -----------------------------------------------------------------------------
 // Bench I: production-path serial vs batched comparison. Both paths see the
