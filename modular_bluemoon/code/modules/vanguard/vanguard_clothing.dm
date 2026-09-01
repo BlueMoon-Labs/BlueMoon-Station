@@ -14,6 +14,10 @@
 	tail_state = "bombsuit_sci"
 	slowdown = 0.2
 
+/obj/item/clothing/suit/space/vanguard/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
+	storage.max_items = 5
 
 /obj/item/clothing/head/helmet/space/vanguard
 	name = "Vanguard EVA helmet"
@@ -49,6 +53,11 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+
+/obj/item/clothing/suit/space/hardsuit/exploration/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
+	storage.max_items = 5
 
 /obj/item/clothing/suit/armor/vanguard
 	name = "Combined suit "
