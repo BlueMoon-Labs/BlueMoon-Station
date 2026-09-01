@@ -270,3 +270,137 @@
 /obj/docking_port/mobile/emergency/proc/trigger_station_dock_ert_mopp()
 	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp(src)
 	event.trigger_station_dock_spawn()
+
+/// Революционное подкрепление — призрачные роли, высаживающиеся на эвакуационный шаттл, когда революция задержала его 5+ минут.
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary
+	name = "Подкрепление революции"
+	spawning_list = list()
+	spawn_anyway_if_no_player = FALSE
+	ghost_alert_string = "Подкрепление революции высаживается на эвакуационный шаттл. Зайти за бойца?"
+	role_type = ROLE_SENTIENCE
+	event_probability = 0
+	admin_forceable = FALSE
+	/// Тим революции, в который добавляются подкреплённые бойцы.
+	var/datum/team/revolution/rev_team
+	var/next_index = 1
+	var/list/spawning_turfs_pod = list()
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/get_batch_poll_message(count)
+	return "[ghost_alert_string] (До [count] бойцов. Вы не вернётесь в прежнее тело!)"
+
+/// Количество подкрепления зависит от числа революционеров: один вооружённый юнит за каждые пять.
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/build_batch_spawn_types()
+	spawning_list = list()
+	var/rev_count = 0
+	if(rev_team)
+		rev_count = rev_team.members.len
+	var/unit_count = max(1, round(rev_count / 5))
+	spawning_list[/mob/living/carbon/human] = unit_count
+	return ..()
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/gather_pod_landing_turfs()
+	spawning_turfs_pod.Cut()
+	if(!port)
+		return
+	var/list/bounding_coords = port.return_coords()
+	if(!length(bounding_coords))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+		return
+	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_HIT_SHUTTLE, port.preferred_direction)
+	spawning_turfs_pod = spawning_turfs_hit?.Copy() || list()
+	if(!length(spawning_turfs_pod))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/trigger_rev_spawn()
+	if(batch_spawn_started)
+		return
+	gather_pod_landing_turfs()
+	if(!length(spawning_turfs_pod))
+		return
+	next_index = 1
+	var/list/batch = build_batch_spawn_types()
+	if(!length(batch))
+		return
+	batch_spawn_started = TRUE
+	INVOKE_ASYNC(src, PROC_REF(async_batch_spawn_rev), batch)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/async_batch_spawn_rev(list/spawn_types)
+	var/max_slots = length(spawn_types)
+	var/list/winners = pollCandidates(
+		get_batch_poll_message(max_slots),
+		role_type,
+		null,
+		role_type,
+		15 SECONDS,
+		null,
+		TRUE,
+		get_all_ghost_role_eligible(),
+	)
+	if(!length(winners))
+		qdel(src)
+		return
+	var/spawn_count = min(max_slots, length(winners))
+	priority_announce(
+		"Зафиксировано высаживание подкрепления революции на эвакуационном шаттле ([spawn_count] чел.).",
+		null,
+		"shuttledock",
+		"Priority",
+	)
+	for(var/i in 1 to spawn_count)
+		var/mob/chosen = winners[i]
+		if(!chosen || !isobserver(chosen))
+			continue
+		var/turf/spawn_point = get_spawn_turf()
+		if(!spawn_point)
+			break
+		var/obj/structure/closet/supplypod/centcompod/pod = new()
+		pod.explosionSize = list(0, 0, 0, 0)
+		pod.delays = list(POD_TRANSIT = 15, POD_FALLING = 3, POD_OPENING = 15, POD_LEAVING = 20)
+		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
+		if(chosen.client?.prefs)
+			chosen.client.prefs.copy_to(H)
+		equip_rev_outfit(H)
+		if(!assign_ghost_to_mob(chosen, H))
+			qdel(H)
+			qdel(pod)
+			continue
+		post_player_assigned(H)
+		H.anchored = FALSE
+		new /obj/effect/pod_landingzone(spawn_point, pod)
+	qdel(src)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/get_spawn_turf()
+	if(!length(spawning_turfs_pod))
+		return null
+	return pick(spawning_turfs_pod)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/post_spawn(atom/movable/spawnee)
+	return
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/post_player_assigned(mob/living/mob)
+	if(!ishuman(mob))
+		return
+	var/mob/living/carbon/human/H = mob
+	ADD_TRAIT(H, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
+	ADD_TRAIT(H, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
+	H.anchored = FALSE
+	if(H.buckled)
+		H.buckled.unbuckle_mob(H)
+	var/datum/mind/M = H.mind
+	if(M)
+		M.add_antag_datum(/datum/antagonist/rev, rev_team)
+		if(rev_team)
+			M.special_role = ROLE_REV
+	to_chat(H, "<span class='revolution_big'>Вы — боец подкрепления революции, высадившийся на эвакуационный шаттл. Защищайте мятеж и не позволяйте станции уйти от правосудия!</span>")
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/equip_rev_outfit(mob/living/carbon/human/H)
+	if(QDELETED(H))
+		return
+	H.equipOutfit(/datum/outfit/ftu/revolutionary)
+
+/obj/docking_port/mobile/emergency/proc/trigger_revolution_reinforcement(datum/team/revolution/team)
+	if(QDELETED(team) || !team)
+		return
+	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary(src)
+	event.rev_team = team
+	event.trigger_rev_spawn()

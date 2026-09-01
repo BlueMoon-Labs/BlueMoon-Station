@@ -28509,6 +28509,7 @@
 /area/medical/medbay/aft)
 "cmk" = (
 /obj/structure/table/optable,
+/obj/machinery/vitals_reader/directional/west,
 /turf/open/floor/plasteel/white/corner{
 	dir = 4
 	},
@@ -29566,6 +29567,7 @@
 "coG" = (
 /obj/structure/table/optable,
 /obj/effect/decal/cleanable/blood/old,
+/obj/machinery/vitals_reader/directional/east,
 /turf/open/floor/plasteel/white/corner{
 	dir = 1
 	},
@@ -31170,13 +31172,11 @@
 /turf/open/floor/plating,
 /area/medical/medbay/factory)
 "css" = (
-/obj/effect/turf_decal/tile/blue/fourcorners,
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 4
 	},
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/obj/effect/turf_decal/tile/blue,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "cst" = (
@@ -65657,6 +65657,7 @@
 /area/hallway/primary/central)
 "lWL" = (
 /obj/machinery/stasis,
+/obj/machinery/vitals_reader/directional/south,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "lWX" = (

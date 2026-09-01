@@ -4304,6 +4304,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
+/obj/structure/cable/white{
+	icon_state = "1-8"
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "axp" = (
@@ -12634,7 +12637,6 @@
 	dir = 8
 	},
 /obj/structure/table,
-/obj/machinery/vending/wallmed/directional/north,
 /obj/machinery/button/electrochromatic{
 	id = "operating_room";
 	pixel_x = -6;
@@ -12654,6 +12656,9 @@
 	c_tag = "Medbay - Surgery 1";
 	name = "medbay camera";
 	network = list("ss13","medbay")
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = 32
 	},
 /turf/open/floor/plasteel,
 /area/medical/surgery)
@@ -53466,6 +53471,7 @@
 	dir = 8
 	},
 /obj/structure/table/optable,
+/obj/machinery/vitals_reader/directional/south,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "hXf" = (
@@ -60359,7 +60365,7 @@
 	dir = 8
 	},
 /turf/open/space,
-/area/engineering/atmospherics_engine)
+/area/space/nearstation)
 "jsq" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/white{
@@ -62085,6 +62091,7 @@
 	dir = 1;
 	light_color = "#c1caff"
 	},
+/obj/machinery/vending/wallmed/directional/north,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "jKx" = (
@@ -65253,6 +65260,7 @@
 /obj/machinery/light{
 	light_color = "#c9d3e8"
 	},
+/obj/machinery/vending/wallmed/directional/south,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "kuX" = (
@@ -73428,11 +73436,6 @@
 /turf/open/floor/plasteel,
 /area/maintenance/starboard/fore)
 "mcH" = (
-/obj/machinery/vending/wallmed{
-	name = "Emergency NanoMed";
-	pixel_x = 26;
-	use_power = 0
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -74433,6 +74436,7 @@
 	dir = 1
 	},
 /obj/structure/table/optable,
+/obj/machinery/vitals_reader/directional/north,
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "mmR" = (
@@ -77328,9 +77332,6 @@
 /area/security/prison/upper)
 "mUk" = (
 /obj/structure/cable/white{
-	icon_state = "2-8"
-	},
-/obj/structure/cable/white{
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -78493,13 +78494,6 @@
 /turf/open/floor/plasteel/dark,
 /area/service/abandoned_gambling_den)
 "nfq" = (
-/obj/structure/cable/white,
-/obj/machinery/power/apc{
-	areastring = "/area/medical/surgery";
-	name = "Surgery APC";
-	pixel_y = -23;
-	pixel_x = 0
-	},
 /obj/machinery/camera{
 	c_tag = "Medbay - Surgery 2";
 	dir = 1;
@@ -78520,6 +78514,9 @@
 	pixel_x = -6;
 	pixel_y = 11;
 	name = "Window from the operating"
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
 	},
 /turf/open/floor/plasteel,
 /area/medical/surgery)
@@ -125798,6 +125795,10 @@
 /obj/item/reagent_containers/spray/cleaner,
 /obj/machinery/light{
 	dir = 4
+	},
+/obj/machinery/power/apc/auto_name/north,
+/obj/structure/cable/white{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)

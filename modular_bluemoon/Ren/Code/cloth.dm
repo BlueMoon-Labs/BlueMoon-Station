@@ -433,6 +433,7 @@
 	icon_state = "hardsuit0-ftu_combat"
 	item_state = "hardsuit0-ftu_combat"
 	hardsuit_type = "ftu_combat"
+	brightness_on = 5
 	mob_overlay_icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'

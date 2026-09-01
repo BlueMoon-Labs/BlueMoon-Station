@@ -2704,13 +2704,11 @@
 /area/mine/eva)
 "cdl" = (
 /obj/structure/table/optable,
-/obj/machinery/defibrillator_mount/loaded{
-	pixel_y = -32
-	},
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/dark{
 	dir = 8
 	},
+/obj/machinery/vitals_reader/advanced/directional/south,
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "cds" = (
@@ -6959,6 +6957,7 @@
 /area/mine/production)
 "fuu" = (
 /obj/structure/table/optable,
+/obj/machinery/vitals_reader/directional/south,
 /turf/open/floor/plasteel/white,
 /area/mine/xenoarch_area_c)
 "fvf" = (
@@ -15893,6 +15892,9 @@
 /obj/machinery/light{
 	dir = 1
 	},
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = 26
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "lXs" = (
@@ -20179,15 +20181,13 @@
 /area/ruin/lavaland/unpowered)
 "oKX" = (
 /obj/structure/table/optable,
-/obj/machinery/defibrillator_mount/loaded{
-	pixel_y = 26
-	},
 /obj/effect/turf_decal/tile/dark{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
+/obj/machinery/vitals_reader/advanced/directional/north,
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "oLp" = (
@@ -25387,6 +25387,9 @@
 	dir = 8
 	},
 /obj/machinery/light,
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "sNS" = (
@@ -26169,9 +26172,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
-"ttB" = (
-/turf/open/indestructible/hoteltile,
-/area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "tus" = (
 /obj/structure/table/reinforced/brass,
 /obj/item/clothing/head/helmet/clockwork,
@@ -30097,9 +30097,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_c)
-"wAv" = (
-/turf/open/pool/water,
-/area/ruin/lavaland/unpowered/deepspaceone/comms_officer_shower)
 "wAM" = (
 /obj/structure/flora/junglebush/large{
 	pixel_y = -5
@@ -32176,9 +32173,7 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/xenoarch_area_a)
 "xMP" = (
-/obj/machinery/computer/operating{
-	dir = 1
-	},
+/obj/machinery/computer/operating,
 /obj/effect/turf_decal/tile/dark{
 	dir = 4
 	},
@@ -32667,6 +32662,11 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer5,
 /turf/closed/wall/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"yjq" = (
+/obj/structure/table/optable,
+/obj/machinery/vitals_reader/directional/north,
+/turf/open/floor/plasteel/white,
+/area/mine/xenoarch_area_c)
 "yjv" = (
 /obj/effect/turf_decal/tile/dark_green{
 	dir = 4
@@ -49213,7 +49213,7 @@ tfw
 tfw
 pDw
 dbH
-ttB
+hWZ
 udn
 dbw
 uls
@@ -49472,7 +49472,7 @@ tfw
 dbH
 fcZ
 dbw
-wAv
+dbw
 uls
 rdU
 xza
@@ -66337,7 +66337,7 @@ xlA
 wdn
 rFb
 wdn
-fuu
+yjq
 dbt
 qCq
 qCq

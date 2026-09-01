@@ -41893,6 +41893,7 @@
 /obj/effect/turf_decal/tile/blue/anticorner{
 	dir = 1
 	},
+/obj/machinery/vitals_reader/directional/north,
 /turf/open/floor/plasteel/white/textured/corner,
 /area/medical/surgery)
 "fMY" = (
@@ -49988,6 +49989,7 @@
 /obj/effect/turf_decal/tile/blue/anticorner{
 	dir = 4
 	},
+/obj/machinery/vitals_reader/directional/north,
 /turf/open/floor/plasteel/white/textured/corner{
 	dir = 8
 	},
