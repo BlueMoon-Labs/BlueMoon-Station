@@ -136,7 +136,7 @@
 /obj/item/projectile/bullet/a357
 	name = ".357 bullet"
 	damage = 65
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD: явно BR2(20), было 0
+	armour_penetration = BULLET_BR3
 	wound_bonus = 25
 	ricochets_max = 2
 	ricochet_chance = 100
@@ -144,7 +144,7 @@
 /obj/item/projectile/bullet/a357/ap
 	name = ".357 armor-piercing bullet"
 	damage = 50
-	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 45 → BR4(50)
+	armour_penetration = BULLET_BR5   // BLUEMOON EDIT
 
 // admin only really, for ocelot memes
 /obj/item/projectile/bullet/a357/match

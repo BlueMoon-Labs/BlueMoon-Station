@@ -2,7 +2,7 @@
 /obj/item/projectile/bullet/magnetic
 	icon_state = "magjectile"
 	damage = 25
-	armour_penetration = BULLET_BR3   // BLUEMOON EDIT: поднимаем значимость
+	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: поднимаем значимость
 	fired_light_range = 3
 	pixels_per_second = TILES_TO_PIXELS(16.667)
 	range = 35

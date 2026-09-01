@@ -2,8 +2,7 @@
 /obj/item/projectile/bullet/shotgun_slug
 	name = "12g shotgun slug"
 	damage = 45
-	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 30 → BR2(20)... нет, было 30
-// оставляем 30 как есть (между BR2 и BR3, допустимо)
+	armour_penetration = BULLET_BR3
 	sharpness = SHARP_POINTY
 	wound_bonus = 6
 
@@ -111,7 +110,7 @@
 	name = "buckshot pellet"
 	icon_state = "pellet"
 	damage = 12.5                     // BLUEMOON EDIT: было 7.5 → 12.5 (конкретно Bluemoon переопределение)
-	armour_penetration = BULLET_BR1   // BLUEMOON ADD
+	armour_penetration = BULLET_BR4   // BLUEMOON ADD
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5  // low damage + additional dropoff will already curb wounding potential anything past point blank
@@ -142,7 +141,7 @@
 // Самодельная дробь — BR0 (ненадёжная, слабая)
 /obj/item/projectile/bullet/pellet/shotgun_improvised
 	icon_state = "pellet"
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR3
 	tile_dropoff = 0.35
 	damage = 6
 	wound_bonus = 0
@@ -160,7 +159,7 @@
 
 /obj/item/projectile/bullet/scattershot
 	damage = 20
-	armour_penetration = BULLET_BR1
+	armour_penetration = BULLET_BR6
 
 /obj/item/projectile/bullet/seed
 	armour_penetration = BULLET_BR0
