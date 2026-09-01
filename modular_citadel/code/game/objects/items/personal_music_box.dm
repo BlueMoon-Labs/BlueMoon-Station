@@ -167,6 +167,7 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
 	var/list/data = list()
 	data["playing"] = is_playing()
+	data["repeat"] = J?.repeat
 	data["has_track"] = has_track && curfile_path
 	data["track_name"] = song_name
 	data["volume"] = J?.volume || PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
@@ -191,6 +192,12 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	switch(action)
 		if("toggle")
 			toggle_playback(living_user)
+			return TRUE
+		if("repeat")
+			var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+			if(!J)
+				return
+			J.repeat = !J.repeat
 			return TRUE
 		if("upload")
 			var/block_reason = get_upload_block_reason(living_user)

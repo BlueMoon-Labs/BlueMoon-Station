@@ -21,6 +21,11 @@
 		. += "<span class='info'>Alt-click to toggle identity concealment. It's currently <b>[flags_inv & HIDEFACE ? "on" : "off"]</b>.</span>"
 
 /obj/item/clothing/mask/gas/AltClick(mob/user)
+	if(face_hide_capable)
+		if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+			return ..()
+		toggle_face_hiding(user)
+		return TRUE
 	. = ..()
 	if(flavor_adjust && adjustmask(user, TRUE))
 		return TRUE

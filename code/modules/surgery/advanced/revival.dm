@@ -73,10 +73,14 @@
 		"[user] send a powerful shock to [target]'s brain with [tool]...")
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive())
+	if(target.revive(post_revive_effects = TRUE))
+		var/breathless = HAS_TRAIT(target, TRAIT_NOBREATH)
 		user.visible_message("...[target] wakes up, alive and aware!", "<span class='notice'><b>IT'S ALIVE!</b></span>")
 		target.visible_message("...[target] wakes up, alive and aware!")
-		target.emote("gasp")
+		if(breathless)
+			target.emote("twitch")
+		else
+			target.emote("gasp")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 50, 199) //MAD SCIENCE
 		for(var/obj/item/organ/O in target.internal_organs)//zap those buggers back to life!
 			if(O.organ_flags & ORGAN_FAILING)

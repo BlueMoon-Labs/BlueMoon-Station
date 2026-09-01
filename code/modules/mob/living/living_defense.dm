@@ -681,12 +681,47 @@
 
 
 //called when the mob receives a bright flash
-/mob/living/proc/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0)
+/mob/living/proc/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0, duration = 25)
 	if((override_protection || get_eye_protection() < intensity) && (override_blindness_check || !(HAS_TRAIT(src, TRAIT_BLIND))))
-		overlay_fullscreen("flash", type)
-		addtimer(CALLBACK(src, PROC_REF(clear_fullscreen), "flash", 25), 25, TIMER_DELETE_ME)
+		flash_overlay(type, duration)
 		return TRUE
 	return FALSE
+
+/// Обработчик создания оверлея ослепления и отслеживания. Тут же создаётся таймер для него и отслеживается, был ли такой создан до вызова
+/mob/living/proc/flash_overlay(type = /atom/movable/screen/fullscreen/tiled/flash, duration = 25)
+	var/atom/movable/screen/fullscreen/flash_screen
+	if(fullscreens)
+		flash_screen = fullscreens["flash"]
+	var/remaining = timeleft(flash_overlay_timer_id)
+	var/timer_active = flash_overlay_timer_id && !isnull(remaining) && flash_overlay_screen == flash_screen
+
+	// Скрин эффект flash могут поменять другие вещи вне этого прока. Перепроверим или таймер принадлежит все ещё к нужному flash
+	if(flash_overlay_timer_id && !timer_active)
+		deltimer(flash_overlay_timer_id)
+		flash_overlay_timer_id = null
+		flash_overlay_screen = null
+
+	if(timer_active && remaining >= duration)
+		return flash_screen // Текущий таймер уже дольше новой вспышки? Оставляем эффект и таймер без изменений.
+	if(timer_active)
+		deltimer(flash_overlay_timer_id)
+		flash_overlay_timer_id = null
+		flash_overlay_screen = null
+
+	flash_screen = overlay_fullscreen("flash", type)
+	flash_overlay_screen = flash_screen
+	flash_overlay_timer_id = addtimer(CALLBACK(src, PROC_REF(clear_flash_overlay), flash_screen, duration), duration, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	return flash_screen
+
+/// Очищает оверлей вспышки, если callback итога прока flash_overlay() принадлежит к этому скрин-объекту
+/mob/living/proc/clear_flash_overlay(atom/movable/screen/fullscreen/flash_screen, duration)
+	if(flash_overlay_screen != flash_screen)
+		return
+	flash_overlay_timer_id = null
+	flash_overlay_screen = null
+	if(!fullscreens || fullscreens["flash"] != flash_screen)
+		return
+	clear_fullscreen("flash", duration)
 
 //called when the mob receives a loud bang
 /mob/living/proc/soundbang_act()

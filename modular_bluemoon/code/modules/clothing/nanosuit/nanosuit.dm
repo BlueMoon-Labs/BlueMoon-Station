@@ -1245,7 +1245,7 @@
 	name = "Нанокостюм CryNet"
 	desc = "Станьте постчеловеческим воином с этим тяжелобронированным и мощным костюмом. Нанокостюм нельзя снять, а также он предупреждает экипаж о вашем местоположении, если вы его надели."
 	item = /obj/item/storage/box/syndie_kit/nanosuit
-	cost = 30
+	cost = 15
 	surplus = 1
 	cant_discount = TRUE
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)

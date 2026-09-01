@@ -1248,8 +1248,8 @@
   * Arguments:
   * * gauze- Just the gauze stack we're taking a sheet from to apply here
   */
-/obj/item/bodypart/proc/apply_gauze(obj/item/stack/medical/gauze)
-	if(!istype(gauze) || !gauze.absorption_capacity)
+/obj/item/bodypart/proc/apply_gauze(obj/item/stack/gauze)
+	if(!gauze || (!istype(gauze, /obj/item/stack/medical/gauze) && !istype(gauze, /obj/item/stack/sticky_tape)) || !gauze.absorption_capacity)
 		return
 	// Киборгский стак умеет существовать только внутри /obj/item/robot_module: его
 	// Initialize() отказывается стартовать где угодно ещё и самоудаляется, а

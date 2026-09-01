@@ -5,12 +5,12 @@
 
 // Mech LMG — BR2
 /obj/item/projectile/bullet/lmg
-	damage = 20
+	damage = 30
 	armour_penetration = BULLET_BR2   // BLUEMOON ADD
 
 // Mech FNX-99 — BR2
 /obj/item/projectile/bullet/incendiary/fnx99
-	damage = 20
+	damage = 30
 	armour_penetration = BULLET_BR2   // BLUEMOON ADD
 
 // Турели

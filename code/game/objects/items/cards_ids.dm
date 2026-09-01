@@ -117,6 +117,8 @@
 	. = ..()
 	if(mining_points)
 		. += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
+	if(contraband_points)
+		. += "У карты в наличии [contraband_points] ед. очков Авангарда"
 	if(registered_account)
 		. += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
 		if(registered_account.account_job)
@@ -191,6 +193,7 @@
 	var/id_type_name = "Identification Card"
 	var/mining_points = 0 //For redeeming at mining equipment vendors
 	var/mining_points_total = 0 //Для отслеживания рабты шахтёров
+	var/contraband_points = 0 //BLUEMOON ADD - for BountyVend
 	var/list/access = list()
 	var/registered_name = null // The name registered_name on the card
 	var/assignment = null
@@ -439,6 +442,8 @@
 	. = ..()
 	if(mining_points)
 		. += "У этой карты [mining_points] рудокопных очков карго; всего было заработано [mining_points_total] очков."
+	if(contraband_points)
+		. += "<span class='info'>У этой карты [contraband_points] очков Авангарда.</span>"
 	if(!bank_support || (bank_support == ID_LOCKED_BANK_ACCOUNT && !registered_account))
 		. += "<span class='info'>Эта ID-карта не имеет банковского счёта. Должно быть, устаревшая модель...</span>"
 	else if(registered_account)

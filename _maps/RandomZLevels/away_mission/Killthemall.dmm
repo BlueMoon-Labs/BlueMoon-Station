@@ -2743,10 +2743,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/awaymission/Killthemall/Level)
 "Sz" = (
-/obj/structure/salvage/destructive_analyzer,
-/obj/item/clothing/suit/space/hardsuit/syndi/owl{
-	armor = list("melee" = 50, "bullet" = 50, "laser" = 50, "energy" = 50, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 50, "acid" = 90, "wound" = 50)
-	},
+/obj/machinery/suit_storage_unit/syndicate,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/Killthemall/Level)
 "SI" = (
@@ -2797,13 +2794,7 @@
 	},
 /area/awaymission/Killthemall/start)
 "Td" = (
-/mob/living/simple_animal/hostile/werewolf{
-	melee_damage_lower = 40;
-	melee_damage_upper = 50;
-	stop_automated_movement = 1;
-	stop_automated_movement_when_pulled = 1;
-	turns_per_move = 0
-	},
+/mob/living/simple_animal/hostile/werewolf/weakend,
 /turf/open/misc/grass,
 /area/awaymission/Killthemall/Level)
 "Tf" = (
