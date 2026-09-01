@@ -156,7 +156,7 @@ SUBSYSTEM_DEF(lighting)
 	/// подсчётом строк dd.log вручную, а обе цифры кумулятивны и стоят одного сложения.
 	var/zlevel_builds_total = 0
 	var/zlevel_teardowns_total = 0
-	/// "[z]" -> ЛУЧШАЯ отдача (МБ VmSize) среди доведённых до конца сносов этого уровня.
+	/// "[z]" -> сколько МБ VmSize этот уровень способен вернуть ОС, по последней улике.
 	///
 	/// Книга замеров, а не прогнозов: цену сноса прибор печатал и раньше, но ни одна из
 	/// проверок решения её не читала, и раунд 10146 трижды перемолол z16, каждый раз
@@ -170,11 +170,10 @@ SUBSYSTEM_DEF(lighting)
 	/// в ту же цифру. Один шумный сэмпл при last-write запирал бы уровень до конца раунда,
 	/// даже если прошлый снос того же уровня честно вернул сотню мегабайт.
 	///
-	/// Ключ снимается ровно в одном случае: уровень построили заново, и постройка сама
-	/// закоммитила свежей памяти не меньше порога отдачи (см. note_zlevel_lighting_rebuild).
-	/// Это единственное событие, после которого прошлый замер перестаёт быть правдой:
-	/// арена, которую снос оставил за процессом, к этому моменту уже израсходована.
+	/// Замер подъёма перетирает запись в обе стороны, см. note_zlevel_lighting_rebuild().
 	var/list/zlevel_teardown_payoff = list()
+	/// "[z]" -> TRUE, пока уровень частично снесён: цена его подъёма меряет долю, а не уровень.
+	var/list/zlevel_partial_teardown = list()
 	/// Z-уровень, свет которого сейчас сносится (0 = никакой).
 	var/teardown_zlevel = 0
 	/// Фаза сноса: 0 = парковка источников, 1 = объекты и старлайт, 2 = углы, 3 = финал.
@@ -200,6 +199,8 @@ SUBSYSTEM_DEF(lighting)
 	/// молча и по нескольким причинам сразу, а снаружи это неотличимо от штатного завершения:
 	/// в обоих случаях teardown_zlevel обнуляется.
 	var/teardown_abort_reason
+	/// world.time финала последнего доведённого до конца сноса; 0 - сносов ещё не было.
+	var/last_teardown_finished_at = 0
 
 /datum/controller/subsystem/lighting/stat_entry(msg)
 	var/total_cost = cost_sources + cost_corners + cost_objects
@@ -731,7 +732,13 @@ SUBSYSTEM_DEF(lighting)
 		if(zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key], pressure))
 			continue
 		idle_since_by_z[key] = since
+	// Гейт стоит после прохода: книга простоя обязана тикать и ниже порога.
+	if(!lighting_teardown_pressure_allows(pressure))
+		return
 	if(!length(idle_since_by_z))
+		return
+	// Пауза стоит после учёта и гейта: при его открытии все пустующие уровни просрочены разом.
+	if(!lighting_teardown_spacing_elapsed(last_teardown_finished_at, world.time, pressure))
 		return
 	var/idle_time = lighting_teardown_idle_time(pressure, lit_deferred)
 	var/best_z = pick_lighting_teardown_zlevel(idle_since_by_z, idle_time, world.time)
@@ -811,7 +818,13 @@ SUBSYSTEM_DEF(lighting)
 /// Прекращает снос, не откатывая сделанное: уровень уже помечен неинициализированным, и
 /// подъём по требованию достроит недостающее (create_lighting_for_zlevel пропускает турфы,
 /// у которых объект уже есть).
-/datum/controller/subsystem/lighting/proc/abort_zlevel_lighting_teardown()
+/datum/controller/subsystem/lighting/proc/abort_zlevel_lighting_teardown(completed = FALSE)
+	if(teardown_zlevel)
+		var/key = "[teardown_zlevel]"
+		if(completed)
+			zlevel_partial_teardown -= key
+		else if(teardown_objects)
+			zlevel_partial_teardown[key] = TRUE
 	teardown_zlevel = 0
 	teardown_phase = 0
 	teardown_sources = null
@@ -951,8 +964,9 @@ SUBSYSTEM_DEF(lighting)
 	// и книге разные числа, и разбор прода не сошёлся бы сам с собой.
 	var/list/memory_after = get_process_memory_mb()
 	var/payoff_mb = record_zlevel_teardown_payoff(z, memory_after)
+	last_teardown_finished_at = world.time
 	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, memory_after)][zlevel_teardown_payoff_note(payoff_mb, memory_pressure_fraction())]")
-	abort_zlevel_lighting_teardown()
+	abort_zlevel_lighting_teardown(completed = TRUE)
 
 /**
  * Записывает в книгу, сколько МБ VmSize вернул только что завершённый снос уровня.
@@ -978,27 +992,29 @@ SUBSYSTEM_DEF(lighting)
 	zlevel_teardown_payoff[key] = payoff_mb
 	return payoff_mb
 
-/**
- * Снимает с уровня улику прошлого сноса, если постройка света закоммитила свежую память.
- *
- * ЗАЧЕМ. Запрет на снос ставится по замеру "уровень ничего не вернул", и держится он на
- * одном допущении: арена, оставшаяся за процессом, никуда не денется, поэтому следующий
- * подъём того же уровня будет почти бесплатным. Ровно этот случай прибор и печатает
- * (обратные подъёмы z16 в 10146 стоили +1.2, +1.3 и 0 МБ). Но если подъём всё-таки взял
- * у ОС новую память - десятки мегабайт, не шум, - допущение не сработало, и с этого
- * момента сносить уровень СНОВА есть смысл. Без снятия ключа уровень оставался бы вне
- * сносов до конца раунда, сколько бы памяти он ни занял заново.
- *
- * Возвращает TRUE, если запись действительно сняли (нужно тесту и строке лога).
- */
+/// Пересматривает допуск уровня к сносам по цене его подъёма: дорогой подъём снимает улику
+/// прошлого сноса, дешёвый ставит её без сноса. Возвращает LIGHTING_REBUILD_VERDICT_*.
 /datum/controller/subsystem/lighting/proc/note_zlevel_lighting_rebuild(z, spent_mb)
-	if(!zlevel_rebuild_commits_fresh_memory(spent_mb))
-		return FALSE
+	if(isnull(spent_mb))
+		return LIGHTING_REBUILD_VERDICT_UNCHANGED
 	var/key = "[z]"
-	if(isnull(zlevel_teardown_payoff[key]))
-		return FALSE
-	zlevel_teardown_payoff -= key
-	return TRUE
+	var/was_partial = zlevel_partial_teardown[key]
+	zlevel_partial_teardown -= key
+	if(zlevel_rebuild_commits_fresh_memory(spent_mb))
+		if(isnull(zlevel_teardown_payoff[key]))
+			return LIGHTING_REBUILD_VERDICT_UNCHANGED
+		zlevel_teardown_payoff -= key
+		return LIGHTING_REBUILD_VERDICT_REOPENED
+	// После прерванного сноса достраивается лишь доля: её цена об уровне ничего не говорит.
+	if(was_partial)
+		return LIGHTING_REBUILD_VERDICT_UNCHANGED
+	// Отрицательная цена - чужое освобождение в окне замера, а не дешёвый подъём.
+	if(spent_mb < 0)
+		return LIGHTING_REBUILD_VERDICT_UNCHANGED
+	// Давление здесь ноль: вопрос про содержимое книги, а не про то, снимет ли гейт запрет.
+	var/was_excluded = zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key], 0)
+	zlevel_teardown_payoff[key] = spent_mb
+	return was_excluded ? LIGHTING_REBUILD_VERDICT_UNCHANGED : LIGHTING_REBUILD_VERDICT_EXCLUDED
 
 /**
  * Есть ли на z-уровне живой клиент или наблюдатель. Мёртвые считаются наравне: именно они

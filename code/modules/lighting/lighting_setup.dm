@@ -95,6 +95,8 @@
  * Ноль остаётся ровно там, где он и был оправдан, - у критического давления: раунд, доехавший
  * до 88% потолка, иначе умирает молча, и там вспышка дешевле смерти процесса.
  *
+ * Скан зовёт прок только выше LIGHTING_TEARDOWN_PRESSURE_HIGH, поэтому ветка обычного срока приходит только из тестов.
+ *
  * Аргументы:
  * * pressure - доля потолка адресного пространства, 0 = не замерено (Windows, ранний старт)
  * * lit_deferred_count - сколько отложенных уровней сейчас горит, включая занятые
@@ -110,6 +112,11 @@
 	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
 		return 0
 	return min(idle_time, LIGHTING_TEARDOWN_IDLE_TIME_QUOTA)
+
+/// Пускать ли обычный снос света при этом давлении: ниже порога не сносится ничего.
+/// Ноль (давление не замерено) не пропуск.
+/proc/lighting_teardown_pressure_allows(pressure)
+	return pressure >= LIGHTING_TEARDOWN_PRESSURE_HIGH
 
 /**
  * Рано ли сносить уровень, поднятый совсем недавно.
@@ -131,6 +138,15 @@
 	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
 		return FALSE
 	return (now - lit_since) < LIGHTING_TEARDOWN_MIN_LIT_TIME
+
+/// Прошла ли пауза между сносами (LIGHTING_TEARDOWN_SPACING) с финала прошлого.
+/// Пауза общая на подсистему, а не по уровню; с критического давления снимается.
+/proc/lighting_teardown_spacing_elapsed(last_finished, now, pressure)
+	if(!last_finished)
+		return TRUE
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return TRUE
+	return (now - last_finished) >= LIGHTING_TEARDOWN_SPACING
 
 /**
  * Исчерпал ли уровень право на снос: прошлый снос уже доказал, что возвращать нечего.
@@ -187,7 +203,9 @@
 /**
  * Закоммитила ли постройка света z-уровня свежую память, а не переиспользовала старую арену.
  *
- * Пятая чистая функция вокруг решения о сносе, и единственная, работающая на пути ПОДЪЁМА.
+ * Единственная чистая функция решения, работающая на пути ПОДЪЁМА: цена подъёма - это
+ * потолок отдачи будущего сноса, поэтому дешёвый подъём исключает уровень без цикла сноса.
+ *
  * Запрет на снос уровня стоит на допущении "арена осталась за процессом, следующий подъём
  * бесплатный": в 10146 обратные подъёмы z16 стоили +1.2, +1.3 и 0 МБ против +73.8 МБ у
  * первой постройки. Подъём дороже порога отдачи - прямое опровержение этого допущения, и
@@ -388,7 +406,7 @@
 	// Свет целого z-уровня - самая крупная разовая аллокация идущего раунда: в 10119 три
 	// таких постройки стоили 466 МБ из 4094 потолка, и восстанавливать эту цифру пришлось
 	// вручную по ступенькам перф-CSV. Меряем прямо здесь и записываем на СВОЙ счёт, чтобы
-	// прибор подключения не выставлял её счётом игроку, спящему в acquire_dpi().
+	// прибор подключения не выставлял её счётом игроку, чей вход в это окно ждал клиента.
 	// Окно честно только пока внутри него нет второй такой постройки. Пустой повторный
 	// проход по этому же z отсечён ниже по objects_created, а вот параллельный подъём
 	// ДРУГОГО z в окно попадёт и будет посчитан дважды - на проде такое видно по сумме
@@ -504,6 +522,7 @@
 
 /// Записывает цену постройки света z-уровня в лог и на счёт фоновой работы. Отдельным
 /// проком, потому что вызывать его придётся и из фонового краула, и из сноса.
+/// Фоновый краул свою цену не меряет: дельта VmSize за десятки фаеров - не цена света.
 /proc/log_zlevel_lighting_cost(z_level, level_name, list/memory_before, objects_created)
 	if(!should_report_zlevel_lighting_cost(objects_created, memory_before))
 		return
@@ -513,6 +532,8 @@
 	var/spent = memory_after["vsz"] - memory_before["vsz"]
 	attribute_memory_elsewhere_mb(spent)
 	log_world("## MEMORY: свет z-уровня [z_level] ([level_name]) стоил [format_mb_delta(spent)] VmSize на [objects_created] объектов")
-	// Дорогая постройка опровергает улику прошлого сноса: арена не переиспользовалась.
-	if(SSlighting?.note_zlevel_lighting_rebuild(z_level, spent))
-		log_world("## LIGHTING: z[z_level] снова допущен к сносам - подъём взял у ОС [format_mb_delta(spent)] свежей памяти")
+	switch(SSlighting?.note_zlevel_lighting_rebuild(z_level, spent))
+		if(LIGHTING_REBUILD_VERDICT_REOPENED)
+			log_world("## LIGHTING: z[z_level] ([level_name]) снова допущен к сносам - подъём взял у ОС [format_mb_delta(spent)] свежей памяти")
+		if(LIGHTING_REBUILD_VERDICT_EXCLUDED)
+			log_world("## LIGHTING: z[z_level] ([level_name]) исключён из сносов по цене подъёма - подъём стоил [format_mb_delta(spent)], больше этого снос не вернёт при пороге отдачи [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ")
