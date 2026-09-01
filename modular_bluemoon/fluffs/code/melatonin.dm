@@ -9,29 +9,30 @@
 	icon_state = "icon"
 	item_state = "melatonin-carrier-coat-0"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	unique_reskin = list(
-		"Type 0" = list("icon_state" = "melatonin-carrier-coat-0", "item_state" = "melatonin-carrier-coat-0"),
-		"Type 1" = list("icon_state" = "melatonin-carrier-coat-1", "item_state" = "melatonin-carrier-coat-1"),
-		"Type 2" = list("icon_state" = "melatonin-carrier-coat-2", "item_state" = "melatonin-carrier-coat-2"),
-		"Type 3" = list("icon_state" = "melatonin-carrier-coat-3", "item_state" = "melatonin-carrier-coat-3"),
-		"Type 4" = list("icon_state" = "melatonin-carrier-coat-4", "item_state" = "melatonin-carrier-coat-4"),
-		"Type 5" = list("icon_state" = "melatonin-carrier-coat-5", "item_state" = "melatonin-carrier-coat-5"),
-		"Type 6" = list("icon_state" = "melatonin-carrier-coat-6", "item_state" = "melatonin-carrier-coat-6"),
-		"Type 7" = list("icon_state" = "melatonin-carrier-coat-7", "item_state" = "melatonin-carrier-coat-7"),
-		"Type 8" = list("icon_state" = "melatonin-carrier-coat-8", "item_state" = "melatonin-carrier-coat-8")
-	)
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
 	if(!isinhands && item_state)
 		override_state = item_state
 	return ..()
 
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/reskin_obj(mob/user)
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/update_icon_state()
 	. = ..()
-	if(icon_state != "icon")
-		item_state = icon_state
-		icon_state = "icon"
-		update_slot_icon()
+	if(current_equipped_slot == ITEM_SLOT_OCLOTHING && istype(loc, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = loc
+		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
+		var/s = B ? B.size : 0
+		var/t = clamp(round(s), 0, 8)
+		item_state = "melatonin-carrier-coat-[t]"
+		H.update_inv_wear_suit()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING)
+		update_icon_state()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/dropped(mob/user)
+	. = ..()
+	update_icon_state()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin/cosmetic
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
@@ -53,29 +54,30 @@
 	item_state = "melatonin-uniform-0"
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	unique_reskin = list(
-		"Type 0" = list("icon_state" = "melatonin-uniform-0", "item_state" = "melatonin-uniform-0"),
-		"Type 1" = list("icon_state" = "melatonin-uniform-1", "item_state" = "melatonin-uniform-1"),
-		"Type 2" = list("icon_state" = "melatonin-uniform-2", "item_state" = "melatonin-uniform-2"),
-		"Type 3" = list("icon_state" = "melatonin-uniform-3", "item_state" = "melatonin-uniform-3"),
-		"Type 4" = list("icon_state" = "melatonin-uniform-4", "item_state" = "melatonin-uniform-4"),
-		"Type 5" = list("icon_state" = "melatonin-uniform-5", "item_state" = "melatonin-uniform-5"),
-		"Type 6" = list("icon_state" = "melatonin-uniform-6", "item_state" = "melatonin-uniform-6"),
-		"Type 7" = list("icon_state" = "melatonin-uniform-7", "item_state" = "melatonin-uniform-7"),
-		"Type 8" = list("icon_state" = "melatonin-uniform-8", "item_state" = "melatonin-uniform-8")
-	)
 
 /obj/item/clothing/under/donator/bm/melatonin_bodysuit/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
 	if(!isinhands && item_state)
 		override_state = item_state
 	return ..()
 
-/obj/item/clothing/under/donator/bm/melatonin_bodysuit/reskin_obj(mob/user)
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/update_icon_state()
 	. = ..()
-	if(icon_state != "icon")
-		item_state = icon_state
-		icon_state = "icon"
-		update_slot_icon()
+	if(current_equipped_slot == ITEM_SLOT_ICLOTHING && istype(loc, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = loc
+		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
+		var/s = B ? B.size : 0
+		var/t = clamp(round(s), 0, 8)
+		item_state = "melatonin-uniform-[t]"
+		H.update_inv_w_uniform()
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_ICLOTHING)
+		update_icon_state()
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/dropped(mob/user)
+	. = ..()
+	update_icon_state()
 
 // ========== 3. Lycanthrope's Heavy Tactical Belt - Заменяет Brig Officer Webbing ==========
 /obj/item/storage/belt/security/webbing/ds/melatonin
@@ -323,5 +325,4 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/melatonin_kit
 	ckeywhitelist = list("melatonin1")
-
 
