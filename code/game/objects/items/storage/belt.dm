@@ -826,6 +826,42 @@
 	new /obj/item/ammo_box/c38(src)
 	new /obj/item/ammo_box/c38(src)
 
+/obj/item/storage/belt/holster/energy
+	name = "energy shoulder holsters"
+	desc = "A rather plain pair of shoulder holsters with a bit of insulated padding inside. Designed to hold energy weaponry."
+	icon_state = "holster"
+	item_state = "holster"
+
+/obj/item/storage/belt/holster/energy/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 2
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(
+		/obj/item/gun/energy,
+		))
+
+/obj/item/storage/belt/holster/energy/thermal
+	name = "thermal shoulder holsters"
+	desc = "A rather plain pair of shoulder holsters with a bit of insulated padding inside. Meant to hold a twinned pair of thermal pistols, but can fit several kinds of energy handguns as well."
+	icon_state = "syndicate_holster"
+	w_class = WEIGHT_CLASS_BULKY
+
+/obj/item/storage/belt/holster/energy/thermal/equipped(mob/user, slot)
+	. = ..()
+	if(slot in list(ITEM_SLOT_BELT, ITEM_SLOT_SUITSTORE))
+		ADD_TRAIT(user, TRAIT_GUNFLIP, THERMAL_HOLSTER_TRAIT)
+
+/obj/item/storage/belt/holster/energy/thermal/dropped(mob/user, silent = FALSE)
+	. = ..()
+	REMOVE_TRAIT(user, TRAIT_GUNFLIP, THERMAL_HOLSTER_TRAIT)
+
+/obj/item/storage/belt/holster/energy/thermal/PopulateContents()
+	generate_items_inside(list(
+		/obj/item/gun/energy/laser/thermal/inferno = 1,
+		/obj/item/gun/energy/laser/thermal/cryo = 1,
+	), src)
+
 /obj/item/storage/belt/fannypack
 	name = "fannypack"
 	desc = "A dorky fannypack for keeping small items in."

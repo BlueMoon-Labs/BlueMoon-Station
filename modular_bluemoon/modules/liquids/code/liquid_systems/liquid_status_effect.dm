@@ -17,6 +17,11 @@
 	if(!T?.liquids)
 		return
 	var/slowdown_amount = T.liquids.liquid_state * 0.5
+	if(HAS_TRAIT(owner, TRAIT_WATER_ASPECT))
+		if(T.liquids.liquid_state >= LIQUID_STATE_FULLTILE)
+			slowdown_amount = -0.5
+		else
+			slowdown_amount = 0
 	owner.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/status_effect/water_slowdown, multiplicative_slowdown = slowdown_amount)
 
 /datum/status_effect/water_affected/tick(seconds_between_ticks)

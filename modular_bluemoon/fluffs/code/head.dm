@@ -586,6 +586,7 @@
 /obj/item/modkit/concord_riot_helmet_kit
 	name = "Concord light riot helmet Kit"
 	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	icon_state = "riot-helmet_kit"
 	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
@@ -594,10 +595,11 @@
 	name = "Concord light riot helmet"
 	desc = "Котелок для защиты пустой и не очень балды от летящих в неё камней, бит, клинков и прочей гадости, с которой только можно столкнуться при подавлении беспорядков. Прочное забрало-визор обеспечивает защиту глупой головы владельца не только от внешних факторов, не только подавляет лучи глупенькости из миниатюрного мозга, но ещё и излучает ауру стиля, на зависть окружающим."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
 	icon_state = "lapkee-helmet"
-	flags_inv = HIDEEARS|HIDEFACE
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
 
 /obj/item/clothing/head/donator/bm/custom_helmet
     name = "Custom helmet"

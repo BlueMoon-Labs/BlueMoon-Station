@@ -394,6 +394,26 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
+/datum/design/vitals_display
+	name = "Vitals Display Frame"
+	desc = "A wall-mounted screen that displays the vitals of a nearby patient. Connects to stasis beds, operating tables, sleepers and other holding machines using a multitool."
+	id = "vitals_display"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 4000, /datum/material/gold = 500)
+	build_path = /obj/item/wallframe/status_display/vitals
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/vitals_display_advanced
+	name = "Advanced Vitals Display Frame"
+	desc = "A vitals display frame that performs a more detailed scan of the patient than the basic display."
+	id = "vitals_display_advanced"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 4000, /datum/material/gold = 1000, /datum/material/silver = 500)
+	build_path = /obj/item/wallframe/status_display/vitals/advanced
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
 /datum/design/defib_heal
 	name = "Defibrillator Healing disk"
 	desc = "An upgrade which increases the healing power of the defibrillator."

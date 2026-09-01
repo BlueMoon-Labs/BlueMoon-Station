@@ -1,4 +1,4 @@
-// 5.8mm (ACR-5m30 Rifle)
+// 5.8mm (ACR-5m26 Rifle)
 
 /obj/item/ammo_casing/a58mm
 	name = "5.8mm bullet casing"

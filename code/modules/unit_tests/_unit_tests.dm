@@ -328,6 +328,7 @@
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
 #include "simple_animal_icon_states.dm"
+#include "simple_animal_nanotrasen_del_on_death.dm"
 #include "astro_sensor.dm"
 #include "space_weather_effects.dm"
 #include "space_weather_graveyard.dm"

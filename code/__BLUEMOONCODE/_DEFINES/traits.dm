@@ -12,6 +12,7 @@
 #define TRAIT_BLUEMOON_POWERSHARING			"robotic_powersharing"
 #define TRAIT_BLUEMOON_COOLANT_GENERATOR	"coolant_generator"
 #define TRAIT_BLUEMOON_WATER_VULNERABILITY	"robotic_water_vulnerability"
+#define TRAIT_BLUEMOON_WATER_EXPOSED		"robotic_water_exposed"
 #define TRAIT_BLUEMOON_EMP_VULNERABILITY	"robotic_emp_vulnerability"
 #define TRAIT_BLUEMOON_CROCIN_POISONOUS		"crocin_poisonous"
 #define TRAIT_LEWD_SUMMON					"Призываемый"

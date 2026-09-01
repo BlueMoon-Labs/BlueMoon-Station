@@ -1,4 +1,4 @@
-// 5.8mm (ACR-5m30) — BR2 FMJ, BR4 AP, BR0+5 HP
+// 5.8mm (ACR-5m26) — BR2 FMJ, BR4 AP, BR0+5 HP
 /obj/item/projectile/bullet/a58
 	name = "5.8mm bullet"
 	damage = 22

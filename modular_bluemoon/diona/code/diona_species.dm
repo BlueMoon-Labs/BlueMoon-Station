@@ -1,4 +1,3 @@
-#define SPECIES_DIONA "diona"
 #define SPECIES_DIONA_POD "diomorph"
 #define RAD_EAT_AMOUNT 4
 #define RAD_EAT_MESSAGE_PROB 10

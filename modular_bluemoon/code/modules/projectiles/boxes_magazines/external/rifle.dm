@@ -1,4 +1,4 @@
-// ACR-5m30 magazines
+// ACR-5m26 magazines
 /obj/item/ammo_box/magazine/acr5m30
 	name = "ACR-5 magazine (5.8x40mm)"
 	desc = "A standart magazine for ACR rifle."

@@ -927,16 +927,14 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += right_eye
 				// Свечение глаз
 				if(H.dna?.features["emissive_eyes"])
-					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
+					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, FLOAT_LAYER, appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE)
+					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, FLOAT_LAYER, appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE)
 					left_eye_emissive.pixel_x = left_eye.pixel_x
 					left_eye_emissive.pixel_y = left_eye.pixel_y
 					right_eye_emissive.pixel_x = right_eye.pixel_x
 					right_eye_emissive.pixel_y = right_eye.pixel_y
 					left_eye_emissive.category = "HEAD"
 					right_eye_emissive.category = "HEAD"
-					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
-					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
 					standing += left_eye_emissive
 					standing += right_eye_emissive
 

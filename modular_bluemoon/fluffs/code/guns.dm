@@ -903,7 +903,7 @@
 	name = "Anabel Kit"
 	desc = "A modkit for making a Miniature Energy Gun into Anabel."
 	product = /obj/item/gun/energy/e_gun/hos/Anabel
-	fromitem = list(/obj/item/gun/energy/e_gun/mini, /obj/item/gun/energy/e_gun/mini/expeditor)
+	fromitem = list(/obj/item/gun/energy/e_gun/mini)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -954,6 +954,7 @@
 /obj/item/modkit/nebular_kit
 	name = "Nebular Gun Kit"
 	desc = "A modkit for making a Enforcer Gun into a Nebular-9."
+	icon_state = "enforcer_kit"
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
@@ -1007,6 +1008,7 @@
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
+	icon_state = "stun-katana_kit"
 	product = /obj/item/melee/baton/stunsword/stunkatana
 	fromitem = list(/obj/item/melee/baton/stunsword)
 
@@ -1080,6 +1082,7 @@
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
 	desc = "A modkit for making a hybrid taser into a Nebular-T."
+	icon_state = "taser_kit"
 	product = /obj/item/gun/energy/e_gun/advtaser/nebular_t
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
@@ -1148,6 +1151,7 @@
 /obj/item/modkit/supernova_kit
 	name = "Supernova Kit"
 	desc = "A modkit for making a combat shotgun into a Supernova."
+	icon_state = "combat-shotgun_kit"
 	product = /obj/item/gun/ballistic/shotgun/automatic/combat/supernova
 	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
 
@@ -1187,6 +1191,7 @@
 /obj/item/modkit/pulsar_knife_kit
 	name = "Kasari ritual knife Kit"
 	desc = "A modkit for making a combat knife into a kasari ritual knife."
+	icon_state = "kasari-knife_kit"
 	product = /obj/item/kitchen/knife/combat/pulsar
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
@@ -1507,6 +1512,7 @@
 	name = "Quasar Kit"
 	desc = "A modkit for making a advanced energy gun into a Quasar."
 	product = /obj/item/gun/energy/e_gun/nuclear/quasar
+	icon_state = "advanced-energy-gun_kit"
 	fromitem = list(/obj/item/gun/energy/e_gun/nuclear)
 
 /obj/item/gun/energy/e_gun/nuclear/quasar
@@ -1537,6 +1543,7 @@
 /obj/item/modkit/comet_kit
 	name = "Comet Kit"
 	desc = "A modkit for making a WT-550 PDW into a Comet."
+	icon_state = "sec-pdw_kit"
 	product = /obj/item/gun/ballistic/automatic/wt550/comet
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
@@ -1572,6 +1579,7 @@
 /obj/item/modkit/neutron_kit
 	name = "Neutron Kit"
 	desc = "A modkit for making a X-ray laser gun into a Neutron."
+	icon_state = "xray-gun_kit"
 	product = /obj/item/gun/energy/xray/neutron
 	fromitem = list(/obj/item/gun/energy/xray)
 
@@ -1606,9 +1614,11 @@
 		. += "neutron-1"
 	else if(charge_percent<0.1)
 		. += "neutron-0"
+
 /obj/item/modkit/spectral_kit
 	name = "Spectral Kit"
 	desc = "A modkit for making a temperature gun into a Spectral."
+	icon_state = "thermal-gun_kit"
 	product = /obj/item/gun/energy/temperature/spectral
 	fromitem = list(/obj/item/gun/energy/temperature,/obj/item/gun/energy/temperature/security) // на всякий и второй тип добавлю
 
@@ -1644,6 +1654,7 @@
 /obj/item/modkit/pulsar_kit
 	name = "Pulsar Kit"
 	desc = "A modkit for making a Riot Shotgun into a Pulsar."
+	icon_state = "riot-shotgun_kit"
 	product = /obj/item/gun/ballistic/shotgun/riot/pulsar
 	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
 

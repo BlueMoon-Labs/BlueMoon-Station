@@ -205,7 +205,7 @@
 	item_state = "knife"
 	desc = "A military combat utility survival knife."
 	embedding = list("pain_mult" = 4, "embed_chance" = 65, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
-	force = 16
+	force = 20
 	throwforce = 16
 	wound_bonus = 8
 	bare_wound_bonus = 11

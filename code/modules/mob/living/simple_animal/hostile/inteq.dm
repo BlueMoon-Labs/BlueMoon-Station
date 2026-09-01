@@ -35,6 +35,8 @@
 	attack_sound = 'sound/weapons/punch1.ogg'
 	a_intent = INTENT_HARM
 	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
+	// Новая переменная для случайного лута (ассоциативный список: предмет -> вес)
+	var/list/random_loot = null
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	faction = list(ROLE_INTEQ)
@@ -45,6 +47,11 @@
 	rapid_melee = 2
 
 	footstep_type = FOOTSTEP_MOB_SHOE
+
+/mob/living/simple_animal/hostile/inteq/Initialize(mapload)
+	. = ..()
+	if(random_loot && length(random_loot))
+		AddComponent(/datum/component/random_loot, random_loot)
 
 ///////////////Melee////////////
 
@@ -79,8 +86,17 @@
 	icon_state = "syndicate_knife"
 	icon_living = "syndicate_knife"
 	loot = list(/obj/effect/gibspawner/human)
-	attack_verb_continuous = "slashes"
-	attack_verb_simple = "slash"
+	random_loot = list(
+		/obj/item/inteq_sledgehammer = 5,
+		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/armor/inteq = 5,
+		/obj/item/clothing/head/helmet/swat/inteq = 5,
+		null = 40   // ничего не выпадает
+	)
+	attack_verb_continuous = "smashes"
+	attack_verb_simple = "smash"
 	attack_sound = 'modular_bluemoon/kovac_shitcode/sound/weapons/sledge.ogg'
 	status_flags = 0
 
@@ -94,6 +110,15 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+	random_loot = list(
+		/obj/item/inteq_sledgehammer = 5,
+		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
+		/obj/item/clothing/suit/space/syndicate/inteq = 5,
+		null = 40   // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/melee/space/Initialize(mapload)
 	. = ..()
@@ -105,6 +130,15 @@
 	name = "InteQ Stormtrooper"
 	maxHealth = 250
 	health = 250
+	random_loot = list(
+		/obj/item/inteq_sledgehammer = 5,
+		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
+		/obj/item/broken/inteq_elite = 35,
+		null = 10   // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword
 	melee_damage_lower = 30
@@ -118,6 +152,17 @@
 	light_color = LIGHT_COLOR_RED
 	status_flags = 0
 	var/obj/effect/light_emitter/red_energy_sword/sord
+	random_loot = list(
+		/obj/item/dualsaber = 1,
+		/obj/item/broken/dualsaber = 15,
+		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/broken/energy_sword = 40,
+		/obj/item/clothing/under/inteq = 5,
+		/obj/item/clothing/mask/gas/inteq = 5,
+		/obj/item/clothing/suit/armor/inteq = 5,
+		/obj/item/clothing/head/helmet/swat/inteq = 5,
+		null = 19   // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/Initialize(mapload)
 	. = ..()
@@ -143,6 +188,17 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+	random_loot = list(
+		/obj/item/dualsaber = 1,
+		/obj/item/broken/dualsaber = 15,
+		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/broken/energy_sword = 40,
+		/obj/item/clothing/under/inteq = 5,
+		/obj/item/clothing/mask/gas/inteq = 5,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
+		/obj/item/clothing/suit/space/syndicate/inteq = 5,
+		null = 19   // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/space/Initialize(mapload)
 	. = ..()
@@ -159,6 +215,17 @@
 	name = "InteQ Stormtrooper"
 	maxHealth = 250
 	health = 250
+	random_loot = list(
+		/obj/item/dualsaber = 1,
+		/obj/item/broken/dualsaber = 15,
+		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/broken/energy_sword = 20,
+		/obj/item/clothing/under/inteq = 5,
+		/obj/item/clothing/mask/gas/inteq = 5,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
+		/obj/item/broken/inteq_elite = 35,
+		null = 9   // ничего не выпадает
+	)
 
 ///////////////Guns////////////
 
@@ -173,6 +240,16 @@
 	loot = list(/obj/effect/gibspawner/human)
 	dodging = FALSE
 	rapid_melee = 1
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/pistol = 5,
+		/obj/item/broken/makarov = 30,
+		/obj/item/ammo_box/magazine/m10mm = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/armor/inteq = 5,
+		/obj/item/clothing/head/helmet/swat/inteq = 5,
+		null = 30 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/infiltrator //shuttle loan event / GateInteQ
 	projectilesound = 'sound/weapons/gunshot_silenced.ogg'
@@ -188,6 +265,16 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/pistol = 5,
+		/obj/item/broken/makarov = 30,
+		/obj/item/ammo_box/magazine/m10mm = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
+		/obj/item/clothing/suit/space/syndicate/inteq = 5,
+		null = 30 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/space/Initialize(mapload)
 	. = ..()
@@ -199,6 +286,16 @@
 	name = "InteQ Stormtrooper"
 	maxHealth = 250
 	health = 250
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/pistol = 5,
+		/obj/item/broken/makarov = 10,
+		/obj/item/ammo_box/magazine/m10mm = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
+		/obj/item/broken/inteq_elite = 35,
+		null = 10 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/smg
 	rapid = 2
@@ -206,6 +303,17 @@
 	icon_living = "syndicate_smg"
 	casingtype = /obj/item/ammo_casing/c45/lethal
 	projectilesound = 'sound/weapons/gunshot_smg.ogg'
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/c20r = 5,
+		/obj/item/broken/c20r = 30,
+		/obj/item/ammo_box/magazine/smgm45 = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/armor/inteq = 5,
+		/obj/item/clothing/head/helmet/swat/inteq = 5,
+		null = 20 // ничего не выпадает
+	)
+
 
 /mob/living/simple_animal/hostile/inteq/ranged/smg/pilot
 	name = "InteQ Salvage Pilot"
@@ -221,6 +329,16 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/c20r = 5,
+		/obj/item/broken/c20r = 30,
+		/obj/item/ammo_box/magazine/smgm45 = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
+		/obj/item/clothing/suit/space/syndicate/inteq = 5,
+		null = 20 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/smg/space/Initialize(mapload)
 	. = ..()
@@ -232,6 +350,16 @@
 	name = "InteQ Stormtrooper"
 	maxHealth = 250
 	health = 250
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/c20r = 5,
+		/obj/item/broken/c20r = 10,
+		/obj/item/ammo_box/magazine/smgm45 = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
+		/obj/item/broken/inteq_elite = 35,
+		null = 10 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun
 	rapid = 2
@@ -240,6 +368,16 @@
 	icon_state = "syndicate_shotgun"
 	icon_living = "syndicate_shotgun"
 	casingtype = /obj/item/ammo_casing/shotgun/buckshot //buckshot (up to 72.5 brute) fired in a two-round burst
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
+		/obj/item/broken/bulldog = 30,
+		/obj/item/ammo_box/magazine/m12g = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/armor/inteq = 5,
+		/obj/item/clothing/head/helmet/swat/inteq = 5,
+		null = 20 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun/space
 	icon_state = "syndicate_space_shotgun"
@@ -251,6 +389,16 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
+		/obj/item/broken/bulldog = 30,
+		/obj/item/ammo_box/magazine/m12g = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
+		/obj/item/clothing/suit/space/syndicate/inteq = 5,
+		null = 20 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/Initialize(mapload)
 	. = ..()
@@ -262,6 +410,16 @@
 	name = "InteQ Stormtrooper"
 	maxHealth = 250
 	health = 250
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
+		/obj/item/broken/bulldog = 10,
+		/obj/item/ammo_box/magazine/m12g = 10,
+		/obj/item/clothing/under/inteq = 15,
+		/obj/item/clothing/mask/gas/inteq = 10,
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
+		/obj/item/broken/inteq_elite = 35,
+		null = 10 // ничего не выпадает
+	)
 
 ///////////////Misc////////////
 

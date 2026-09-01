@@ -26,6 +26,12 @@
 	var/obj/effect/big_manipulator_arm/manipulator_arm = null
 	/// Is the power access wire cut? Disables the power button if `TRUE`.
 	var/power_access_wire_cut = FALSE
+	/// Is harm mode unlocked (via emag or wire hack)?
+	var/harm_unlocked = FALSE
+	/// Is interact mode unlocked (via emag)?
+	var/interact_unlocked = FALSE
+	/// Dummy user for attackby calls (interact task).
+	var/mob/living/simple_animal/dummy_user
 
 	/// How many tasks total we can have.
 	var/interaction_point_limit = MAX_TASKS_TIER_1
@@ -82,6 +88,10 @@
 			new_task = new /datum/manipulator_task/cargo/dropoff_base/throw(new_turf, manipulator_tier)
 		if(TASK_TYPE_WAIT)
 			new_task = new /datum/manipulator_task/simple/wait()
+		if(TASK_TYPE_HARM)
+			new_task = new /datum/manipulator_task/harm()
+		if(TASK_TYPE_INTERACT)
+			new_task = new /datum/manipulator_task/interact()
 
 	if(QDELETED(new_task))
 		return FALSE
@@ -145,6 +155,7 @@
 	return
 
 /obj/machinery/big_manipulator/deconstruct(disassembled)
+	drop_held_atom()
 	task_disk?.forceMove(drop_location())
 	task_disk = null
 	unregister_task_turf_signals()
@@ -153,13 +164,53 @@
 	id_lock = null
 	return ..()
 
+/// Dummy mob subtype that can never leave its parent.
+/mob/living/simple_animal/manipulator_dummy
+	name = "manipulator arm"
+	invisibility = INVISIBILITY_ABSTRACT
+	status_flags = GODMODE
+	health = INFINITY
+	maxHealth = INFINITY
+
+/mob/living/simple_animal/manipulator_dummy/forceMove(atom/destination)
+	if(destination == loc)
+		return ..()
+	if(istype(loc, /obj/machinery/big_manipulator))
+		return
+	return ..()
+
+/mob/living/simple_animal/manipulator_dummy/Move(NewLoc, direct)
+	return FALSE
+
+/mob/living/simple_animal/manipulator_dummy/Process_Spacemove(movement_dir, movement_type)
+	return FALSE
+
+/obj/machinery/big_manipulator/New(loc)
+	. = ..()
+	if(interact_unlocked)
+		create_dummy_user()
+
 /obj/machinery/big_manipulator/Destroy(force)
+	drop_held_atom()
 	unregister_task_turf_signals()
 	QDEL_NULL(task_disk)
 	QDEL_NULL(manipulator_arm)
+	QDEL_NULL(dummy_user)
 	QDEL_LIST(tasks)
 	id_lock = null
 	return ..()
+
+/obj/machinery/big_manipulator/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
+	. = ..()
+	if(dummy_user && dummy_user.loc != src)
+		dummy_user.forceMove(src)
+
+/// Creates the dummy user for interact attackby.
+/obj/machinery/big_manipulator/proc/create_dummy_user()
+	if(dummy_user)
+		return
+	dummy_user = new /mob/living/simple_animal/manipulator_dummy(src)
+	ADD_TRAIT(dummy_user, TRAIT_PACIFISM, "manipulator")
 
 /// Removes an invalid task from the list.
 /obj/machinery/big_manipulator/proc/remove_invalid_task(datum/manipulator_task/task)
@@ -175,6 +226,9 @@
 
 	balloon_alert(user, "overloaded")
 	obj_flags |= EMAGGED
+	harm_unlocked = TRUE
+	interact_unlocked = TRUE
+	create_dummy_user()
 
 	return TRUE
 
@@ -270,19 +324,16 @@
 
 		on = newly_on
 		SStgui.update_uis(src)
-		try_kickstart(user)
+		if(current_task)
+			step_tasks()
+		else
+			try_kickstart(user)
 
 	else
-		drop_held_atom()
 		on = newly_on
 		next_cycle_scheduled = FALSE
-		if(current_task != null && !stopping)
-			stopping = TRUE
-			addtimer(CALLBACK(src, PROC_REF(complete_stopping_task)), 1 SECONDS)
-		else
-			stopping = FALSE
-			unregister_task_turf_signals()
-			waiting_for_signal = FALSE
+		unregister_task_turf_signals()
+		waiting_for_signal = FALSE
 		SStgui.update_uis(src)
 
 /// Validates all cargo tasks, removing those on closed turfs.
@@ -334,6 +385,8 @@
 	data["disk_inserted"] = !isnull(task_disk)
 	data["disk_read_only"] = task_disk?.read_only
 	data["disk_task_count"] = length(task_disk?.tasks_data)
+	data["harm_unlocked"] = harm_unlocked
+	data["interact_unlocked"] = interact_unlocked
 
 	var/list/tasks_data = list()
 	for(var/datum/manipulator_task/task as anything in tasks)
@@ -363,6 +416,18 @@
 			td["task_type"] = TASK_TYPE_WAIT
 			var/datum/manipulator_task/simple/wait/t = task
 			td["time"] = t.time_seconds
+
+		else if(istype(task, /datum/manipulator_task/harm))
+			td["task_type"] = TASK_TYPE_HARM
+			var/datum/manipulator_task/harm/t = task
+			td["harm_dir"] = t.harm_dir
+			td["turf"] = t.harm_dir
+
+		else if(istype(task, /datum/manipulator_task/interact))
+			td["task_type"] = TASK_TYPE_INTERACT
+			var/datum/manipulator_task/interact/t = task
+			td["harm_dir"] = t.harm_dir
+			td["turf"] = t.harm_dir
 
 		tasks_data += list(td)
 
@@ -548,7 +613,10 @@
 			if(!istype(target_task, /datum/manipulator_task/simple/wait))
 				return FALSE
 			var/datum/manipulator_task/simple/wait/t = target_task
-			t.time_seconds = clamp(text2num(value), 1, 60)
+			var/num_value = text2num(value)
+			if(isnull(num_value))
+				return FALSE
+			t.time_seconds = clamp(num_value, 1, 60)
 			return TRUE
 
 		if("remove_task")
@@ -571,6 +639,55 @@
 			return TRUE
 
 		if("move_to")
+			// Harm tasks: map numpad buttons to 8 directions.
+			if(istype(target_task, /datum/manipulator_task/harm))
+				var/datum/manipulator_task/harm/harm_task = target_task
+				var/button_number = text2num(value)
+				switch(button_number)
+					if(1)
+						harm_task.harm_dir = NORTHWEST
+					if(2)
+						harm_task.harm_dir = NORTH
+					if(3)
+						harm_task.harm_dir = NORTHEAST
+					if(4)
+						harm_task.harm_dir = WEST
+					if(6)
+						harm_task.harm_dir = EAST
+					if(7)
+						harm_task.harm_dir = SOUTHWEST
+					if(8)
+						harm_task.harm_dir = SOUTH
+					if(9)
+						harm_task.harm_dir = SOUTHEAST
+					else
+						return FALSE
+				return TRUE
+			// Interact tasks: map numpad buttons to 8 directions.
+			if(istype(target_task, /datum/manipulator_task/interact))
+				var/datum/manipulator_task/interact/interact_task = target_task
+				var/button_number = text2num(value)
+				switch(button_number)
+					if(1)
+						interact_task.harm_dir = NORTHWEST
+					if(2)
+						interact_task.harm_dir = NORTH
+					if(3)
+						interact_task.harm_dir = NORTHEAST
+					if(4)
+						interact_task.harm_dir = WEST
+					if(6)
+						interact_task.harm_dir = EAST
+					if(7)
+						interact_task.harm_dir = SOUTHWEST
+					if(8)
+						interact_task.harm_dir = SOUTH
+					if(9)
+						interact_task.harm_dir = SOUTHEAST
+					else
+						return FALSE
+				return TRUE
+			// Cargo tasks: move turf position.
 			if(!istype(target_task, /datum/manipulator_task/cargo))
 				return FALSE
 			var/datum/manipulator_task/cargo/cargo_task = target_task
@@ -606,6 +723,13 @@
 				return FALSE
 			var/datum/manipulator_task/cargo/dropoff_base/throw/cycle_target_task = target_task
 			cycle_target_task.throw_range = cycle_value(cycle_target_task.throw_range, list(1, 2, 3, 4, 5, 6, 7))
+			return TRUE
+
+		if("cycle_harm_dir")
+			if(!istype(target_task, /datum/manipulator_task/harm))
+				return FALSE
+			var/datum/manipulator_task/harm/cycle_target_task = target_task
+			cycle_target_task.harm_dir = cycle_value(cycle_target_task.harm_dir, list(NORTH, EAST, SOUTH, WEST))
 			return TRUE
 
 /// Cycles the given value in the given list.

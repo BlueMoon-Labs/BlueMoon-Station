@@ -30,7 +30,7 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 		features["allow_emissives"] = TRUE
 	return (part in parts)
 
-/proc/emissive_copy(mutable_appearance/source, layer = EMISSIVE_BLOCKER_LAYER + 0.5)
+/proc/emissive_copy(mutable_appearance/source, layer = FLOAT_LAYER)
 	var/mutable_appearance/emissive = new /mutable_appearance(source)
 	emissive.layer = layer
 	emissive.plane = EMISSIVE_PLANE

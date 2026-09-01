@@ -82,7 +82,6 @@
 	new /obj/item/flashlight/seclite(src)
 	new /obj/item/clothing/gloves/krav_maga/sec(src)
 	new /obj/item/door_remote/head_of_security(src)
-	new /obj/item/gun/ballistic/shotgun/automatic/combat/warden(src)
 	new /obj/item/storage/garment_case/warden(src) // Bluemoon Add
 
 /obj/structure/closet/secure_closet/security

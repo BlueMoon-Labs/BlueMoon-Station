@@ -1,5 +1,6 @@
 /mob/dead/new_player
 	var/ready = 0
+	var/ready_reward_pending = FALSE
 	///Referenced when you want to delete the new_player later on in the code.
 	var/spawning = 0
 
@@ -378,6 +379,7 @@
 /mob/dead/new_player/proc/make_me_an_observer()
 	if(QDELETED(src) || !src.client)
 		ready = PLAYER_NOT_READY
+		ready_reward_pending = FALSE
 		return FALSE
 
 	var/mintime = max(CONFIG_GET(number/respawn_delay) * 600, (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time, 0)
@@ -386,6 +388,7 @@
 
 	if(QDELETED(src) || !src.client || this_is_like_playing_right != "Да")
 		ready = PLAYER_NOT_READY
+		ready_reward_pending = FALSE
 		src << browse(null, "window=playersetup") //closes the player setup window
 		new_player_panel()
 		return FALSE
@@ -732,6 +735,10 @@
 /mob/dead/new_player/proc/transfer_character(late_transfer = FALSE)
 	. = new_character
 	if(.)
+		var/award_ready_metadollar = ready_reward_pending
+		if(award_ready_metadollar)
+			ready_reward_pending = FALSE
+			SSmetadollars.metadollar_adjust(1, src.ckey, src.key)
 		new_character.key = key		//Manually transfer the key to log them in
 		//splurt change
 		if(jobban_isbanned(new_character, "pacifist"))
@@ -740,6 +747,8 @@
 		//
 		new_character.stop_sound_channel(CHANNEL_LOBBYMUSIC)
 		SEND_SIGNAL(new_character, COMSIG_MOB_CLIENT_JOINED_FROM_LOBBY, new_character?.client, late_transfer)
+		if(award_ready_metadollar)
+			to_chat(new_character, span_notice("Вы получили 1 метадоллар за готовность к раунду!"))
 		new_character = null
 		qdel(src)
 

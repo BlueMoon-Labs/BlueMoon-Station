@@ -351,7 +351,11 @@ The rod will spawn at some location outside the station, and travel in a straigh
 	max_occurrences = 1
 	category = EVENT_CATEGORY_SPACE
 	description = "The station passes through an immovable rod."
-	admin_setup = list(/datum/event_admin_setup/set_location/immovable_rod, /datum/event_admin_setup/question/immovable_rod)
+	admin_setup = list(
+		/datum/event_admin_setup/set_location/immovable_rod,
+		/datum/event_admin_setup/direction/immovable_rod,
+		/datum/event_admin_setup/question/immovable_rod,
+	)
 
 /datum/round_event/immovable_rod
 	announce_when = 5
@@ -359,13 +363,20 @@ The rod will spawn at some location outside the station, and travel in a straigh
 	var/atom/special_target
 	/// Admins can also force it to loop around forever, or at least until the RD gets their hands on it.
 	var/force_looping = FALSE
+	/// Сторона света, с которой стержень входит на станцию; null = случайная.
+	var/side
 
 /datum/round_event/immovable_rod/announce(fake)
 	priority_announce("Что это за хуета?!", "Приоритетная Тревога!", 'sound/announcer/classic/irod.ogg')
 
 /datum/round_event/immovable_rod/start()
-	var/startside = pick(GLOB.cardinals)
-	var/z = pick(SSmapping.levels_by_trait(ZTRAIT_STATION))
+	var/startside = side ? side : pick(GLOB.cardinals)
+	var/z
+	if(special_target)
+		var/turf/st = get_turf(special_target)
+		z = st?.z ? st.z : pick(SSmapping.levels_by_trait(ZTRAIT_STATION))
+	else
+		z = pick(SSmapping.levels_by_trait(ZTRAIT_STATION))
 	var/turf/end_turf = spaceDebrisFinishLoc(startside, z)
 	var/turf/start_turf = spaceDebrisStartLoc(startside, z)
 	var/atom/rod = new /obj/effect/immovablerod(start_turf, end_turf, special_target, force_looping)
@@ -378,12 +389,45 @@ The rod will spawn at some location outside the station, and travel in a straigh
 /datum/event_admin_setup/set_location/immovable_rod/apply_to_event(datum/round_event/immovable_rod/event)
 	event.special_target = chosen_turf
 
+/// Общий датум выбора стороны света (север/юг/восток/запад или случайно) для событий.
+/// apply_to_event() наследуется пустым — конкретный ивент переопределяет и сохраняет сторону.
+/datum/event_admin_setup/direction
+	var/input_text = "С какой стороны света будет лететь объект?"
+	var/chosen_side
+
+/datum/event_admin_setup/direction/prompt_admins()
+	var/list/choices = list(
+		"Случайная сторона" = "random",
+		"С севера" = "north",
+		"С юга" = "south",
+		"С востока" = "east",
+		"С запада" = "west",
+	)
+	var/choice = tgui_input_list(usr, input_text, event_control.name, choices)
+	if(isnull(choice))
+		return ADMIN_CANCEL_EVENT
+	switch(choice)
+		if("north")
+			chosen_side = NORTH
+		if("south")
+			chosen_side = SOUTH
+		if("east")
+			chosen_side = EAST
+		if("west")
+			chosen_side = WEST
+
+/datum/event_admin_setup/direction/apply_to_event(datum/round_event/event)
+	return
+
+/datum/event_admin_setup/direction/immovable_rod/apply_to_event(datum/round_event/immovable_rod/event)
+	event.side = chosen_side
+
 /// Admins can also force it to loop around forever, or at least until the RD gets their hands on it.
 /datum/event_admin_setup/question/immovable_rod
 	input_text = "Would you like this rod to force-loop across space z-levels?"
 
 /datum/event_admin_setup/question/immovable_rod/apply_to_event(datum/round_event/immovable_rod/event)
 	event.force_looping = chosen
-	var/log_message = "[key_name_admin(usr)] направил неподвижный стержень [event.force_looping ? "(с принудительным зацикливанием) " : ""]в [event.special_target ? AREACOORD(event.special_target) : "случайную точку"]."
+	var/log_message = "[key_name_admin(usr)] направил неподвижный стержень [event.force_looping ? "(с принудительным зацикливанием) " : ""]с [dir2text(event.side)] на [event.special_target ? AREACOORD(event.special_target) : "случайную точку"]."
 	message_admins(log_message)
 	log_admin(log_message)

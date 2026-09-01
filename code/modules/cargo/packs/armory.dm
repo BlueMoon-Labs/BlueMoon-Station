@@ -101,6 +101,13 @@
 					/obj/item/ammo_box/c38/trac)
 	crate_name = "tracking implant crate"
 
+/datum/supply_pack/security/armory/thermal
+	name = "Thermal Pistol Crate"
+	desc = "Содержит пару портупей, каждая с двумя экспериментальными термальными пистолетами, использующими наниты в качестве основы боеприпасов. Перезаряжаются встряхиванием. Для открытия требуется доступ к оружейной."
+	cost = 5000
+	contains = list(/obj/item/storage/belt/holster/energy/thermal = 2)
+	crate_name = "thermal pistol crate"
+
 /datum/supply_pack/security/armory/fire
 	name = "Incendiary Weapons Crate"
 	desc = "Гори, детка, гори. Содержит три зажигательные гранаты, семь зажигательных пуль, три плазменных баллона и огнемет. Для открытия требуется доступ к оружейной"

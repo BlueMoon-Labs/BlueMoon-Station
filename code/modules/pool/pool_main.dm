@@ -72,28 +72,42 @@
 		// (drained but not yet destroyed) still counts as empty.
 		var/water_level = liquids ? liquids.liquid_state : LIQUID_STATE_PUDDLE
 		if(water_level <= LIQUID_STATE_PUDDLE)
+		{
 			// BLUEMOON: drained/empty pool - falling in hits the hard bottom. The same for everyone.
 			if(iscarbon(victim) && !HAS_TRAIT(victim, TRAIT_SWIMMING) && !istype(oldloc, /turf/open/pool))
+			{
+				if(locate(/obj/structure/pool/ladder) in src)
+					return
 				var/mob/living/carbon/H = victim
 				if(!H.head || !(H.head.armor.getRating(MELEE) > 20))
+				{
 					if(prob(75))
+					{
 						H.visible_message("<span class='danger'>[H] falls in the drained pool!</span>",
 											"<span class='userdanger'>You fall in the drained pool!</span>")
 						H.adjustBruteLoss(7)
 						H.DefaultCombatKnockdown(80)
 						playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
+					}
 					else
+					{
 						H.visible_message("<span class='danger'>[H] falls in the drained pool, and cracks [H.ru_ego()] skull!</span>",
 											"<span class='userdanger'>You fall in the drained pool, and crack your skull!</span>")
 						H.apply_damage(15, BRUTE, "head")
 						H.DefaultCombatKnockdown(200) // This should hurt. And it does.
 						playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
 						playsound(src, 'sound/misc/crack.ogg', 100, TRUE)
+					}
+				}
 				else
+				{
 					H.visible_message("<span class='danger'>[H] falls in the drained pool, but had an helmet!</span>",
 										"<span class='userdanger'>You fall in the drained pool, but you had an helmet!</span>")
 					H.DefaultCombatKnockdown(40)
 					playsound(src, 'sound/effects/woodhit.ogg', 60, TRUE, 1)
+				}
+			}
+		}
 		else if(water_level >= LIQUID_STATE_ANKLES && !HAS_TRAIT(victim, TRAIT_SWIMMING))		//poor guy not swimming time to dunk them!
 			victim.AddElement(/datum/element/swimming)
 			if(locate(/obj/structure/pool/ladder) in src)		//safe climbing
@@ -101,22 +115,9 @@
 			if(iscarbon(AM))		//FUN TIME!
 				var/mob/living/carbon/H = victim
 				if(vulnerable_robo)
-					H.visible_message("<span class='danger'>[H] sparks and shorts out as the water hits [H.ru_ego()] circuits!</span>",
-										"<span class='userdanger'>The water shorts out your circuits!</span>")
-					do_sparks(4, TRUE, H)
 					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
 					playsound(src, 'sound/machines/hiss.ogg', 40, FALSE)
-					if(H.stat == CONSCIOUS)
-						H.apply_damage(25, BURN)
-						H.AdjustConfused(30 SECONDS)
-						H.Jitter(15)
-						H.DefaultCombatKnockdown(40)
-				else if(isrobotic(H))
-					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
-										"<span class='userdanger'>You fall in the water!</span>")
-					playsound(src, 'sound/effects/splash.ogg', 60, TRUE, 1)
-					H.adjustBruteLoss(5)
-					H.DefaultCombatKnockdown(60)
+					synth_water_damage_start(H)
 				else if (H.wear_mask && H.wear_mask.flags_cover & MASKCOVERSMOUTH)
 					H.visible_message("<span class='danger'>[H] falls in the water!</span>",
 										"<span class='userdanger'>You fall in the water!</span>")

@@ -141,6 +141,13 @@
 //Note: reminder, if you're a coder adding more bitflags here in the event we add more horny things, the maximum is (1<<23).
 #define TOGGLES_CITADEL 0
 
+#define TAB_INTERACTIONS (1<<0)
+#define TAB_GENITAL_OPTIONS (1<<1)
+#define TAB_CHARACTER_PREFS (1<<2)
+#define TAB_SEX_ANIMATIONS (1<<3)
+#define TAB_CUSTOM (1<<4)
+#define ALL_INTERACTION_MENU_TABS (TAB_INTERACTIONS|TAB_GENITAL_OPTIONS|TAB_CHARACTER_PREFS|TAB_SEX_ANIMATIONS|TAB_CUSTOM)
+
 //belly sound pref things
 #define NORMIE_HEARCHECK 4
 
