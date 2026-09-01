@@ -242,6 +242,44 @@
 	foam.process()
 	TEST_ASSERT_EQUAL(probe.exposures, 0, "пена с пустым холдером не имеет права обходить содержимое турфа")
 
+// ===== Покрытие противометеоритного щита =====
+
+/// Кэш покрытия отдаётся без пересчёта и сбрасывается при изменении сети спутников.
+/datum/unit_test/shield_coverage_is_cached
+	var/saved_cache
+	var/saved_expiry
+	var/cache_saved = FALSE
+
+/datum/unit_test/shield_coverage_is_cached/Destroy()
+	if(cache_saved)
+		GLOB.shield_coverage_cache = saved_cache
+		GLOB.shield_coverage_cache_expiry = saved_expiry
+	return ..()
+
+/datum/unit_test/shield_coverage_is_cached/Run()
+	saved_cache = GLOB.shield_coverage_cache
+	saved_expiry = GLOB.shield_coverage_cache_expiry
+	cache_saved = TRUE
+	var/datum/station_goal/station_shield/goal = GLOB.shield_goal_coverage_dummy
+	TEST_ASSERT_NOTNULL(goal, "Sanity: дамми цели станции обязан существовать")
+
+	GLOB.shield_coverage_cache = 4242
+	GLOB.shield_coverage_cache_expiry = world.time + 1 MINUTES
+	TEST_ASSERT_EQUAL(goal.get_coverage(), 4242, "Живой кэш обязан отдаваться без пересчёта view() по спутникам")
+
+	GLOB.shield_coverage_cache_expiry = world.time - 1
+	var/after_expiry = goal.get_coverage()
+	TEST_ASSERT_NOTEQUAL(after_expiry, 4242, "Просроченный кэш обязан пересчитываться, а не отдавать старое число")
+
+	GLOB.shield_coverage_cache = 4242
+	GLOB.shield_coverage_cache_expiry = world.time + 1 MINUTES
+	invalidate_shield_coverage()
+	TEST_ASSERT(GLOB.shield_coverage_cache_expiry <= world.time, "Сброс обязан помечать кэш протухшим")
+	var/recomputed = goal.get_coverage()
+	TEST_ASSERT_NOTEQUAL(recomputed, 4242, "После сброса кэша покрытие обязано пересчитаться, а не отдать старое число")
+	TEST_ASSERT_EQUAL(GLOB.shield_coverage_cache, recomputed, "Пересчёт обязан положить результат обратно в кэш")
+	TEST_ASSERT(GLOB.shield_coverage_cache_expiry > world.time, "Пересчёт обязан продлить срок жизни кэша")
+
 // ===== Список игнора ботов =====
 
 /// ignore_list стал ассоциативным множеством. Проверяем, что членство читается,
