@@ -202,9 +202,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 /datum/inteq_pact_siege/proc/gib_defender_breacher(mob/living/L)
 	L.Immobilize(12 SECONDS)
-	var/datum/smite/gib/smite = new
-	smite.should_log = FALSE
-	INVOKE_ASYNC(smite, TYPE_PROC_REF(/datum/smite, effect), null, L)
+	L.gib(FALSE)
 
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
@@ -351,6 +349,22 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		if(is_on_battlefield(L))
 			register_defender(L)
 
+/datum/inteq_pact_siege/proc/remove_inteq_spawners()
+	var/z = resolve_siege_z()
+	if(!z)
+		return
+	var/list/to_remove = list()
+	for(var/group in GLOB.mob_spawners)
+		for(var/obj/effect/mob_spawn/human/inteqspace/S as anything in GLOB.mob_spawners[group])
+			if(QDELETED(S) || S.z != z)
+				continue
+			to_remove += S
+	for(var/obj/effect/mob_spawn/human/inteqspace/S as anything in to_remove)
+		qdel(S)
+	if(length(to_remove))
+		message_admins("PACT siege: удалено [length(to_remove)] спейвнеров InteQ на поле боя (z=[z]).")
+		log_game("PACT siege: removed [length(to_remove)] inteqspace spawners on battlefield z=[z].")
+
 /datum/inteq_pact_siege/proc/gates_unlocked()
 	return active && gateway_announced && (world.time >= started_at + PACT_SIEGE_PREP_TIME)
 
@@ -400,6 +414,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 	setup_battlefield_return_gateway()
 	register_existing_defenders()
+	remove_inteq_spawners()
 	suppress_auto_away_destinations()
 
 	priority_announce(
@@ -748,22 +763,25 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 				continue
 			reward_inteq_winner(L)
 
-	/// InteQ leave via goodbye when the shuttle actually departs; PACT still aboard are wiped with it.
-	warn_evac_shuttle_departure()
-	addtimer(CALLBACK(src, PROC_REF(depart_evac_shuttle)), PACT_SIEGE_EVAC_WARNING)
+	if(side == PACT_SIEGE_SIDE_INTEQ)
+		/// InteQ leave via goodbye when the shuttle actually departs; PACT still aboard are wiped with it.
+		warn_evac_shuttle_departure()
+		addtimer(CALLBACK(src, PROC_REF(depart_evac_shuttle)), PACT_SIEGE_EVAC_WARNING)
+		/// defenders kept until depart_evac_shuttle() for goodbye targeting; siege_z kept until wipe
+		addtimer(CALLBACK(src, PROC_REF(finish_siege_cleanup)), PACT_SIEGE_EVAC_WARNING + 12 SECONDS)
+	else
+		/// PACT победил — шаттл остаётся на объекте: без оповещений об эвакуации, без стирания шаттла/поля боя
+		finish_siege_cleanup()
 	recall_attackers()
 	cleanup_gateway()
 	remove_siege_traits()
 	attackers.Cut()
-	/// defenders kept until depart_evac_shuttle() for goodbye targeting
 	defenders_ever_registered = FALSE
 	gateway_announced = FALSE
-	/// siege_z kept until wipe so hyperspace sound / wipe can resolve the battlefield
 	started_at = 0
 	end_time = 0
 	refresh_console_descriptions()
 	log_game("PACT siege concluded: [side] — [reason]")
-	addtimer(CALLBACK(src, PROC_REF(finish_siege_cleanup)), PACT_SIEGE_EVAC_WARNING + 12 SECONDS)
 
 /datum/inteq_pact_siege/proc/finish_siege_cleanup()
 	defenders.Cut()
@@ -783,6 +801,10 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return
 	refresh_station_gateway_visuals()
 	scan_battlefield_participants()
+	for(var/datum/weakref/W as anything in defenders)
+		var/mob/living/L = W.resolve()
+		if(!QDELETED(L) && L.stat == DEAD)
+			L.gib(FALSE)
 	if(defenders_ever_registered && !living_defenders_count())
 		conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы; ПАКТ выполнил цель.", TRUE)
 		return

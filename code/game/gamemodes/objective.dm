@@ -297,8 +297,14 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	return target
 
 /datum/objective/mutiny/check_completion()
+	if(!target)
+		return TRUE
 	var/turf/T = get_turf(target.current)
-	return !T || !is_station_level(T.z)
+	// A dead head's body left on-station must not stall the revolution forever:
+	// treat a dead (or otherwise non-living) target as eliminated, matching the "kill" part of "kill or exile".
+	if(!target.current || !considered_alive(target, FALSE) || !T || !is_station_level(T.z))
+		return TRUE
+	return FALSE
 
 /datum/objective/mutiny/check_midround_completion()
 	return FALSE
@@ -1553,7 +1559,7 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 	name = "frame"
 
 /datum/objective/frame/find_target(blacklist)
-	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain") // на силовиков и капитана подстава не выдаётся
+	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain")
 	var/list/possible_targets = list()
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in SSticker.minds)
@@ -1567,6 +1573,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 		if(possible_target.assigned_role in excluded_roles)
 			continue
 		if(possible_target.has_antag_datum(/datum/antagonist/ghost_role)) // BLUEMOON ADD - гостроли (хермит и т.п.) не берутся в оборот
+			continue
+		if(!is_unique_objective(possible_target)) // на одного и того же игрока подстава не выдаётся одному и тому же владельцу дважды
 			continue
 		possible_targets += possible_target
 	if(!length(possible_targets))

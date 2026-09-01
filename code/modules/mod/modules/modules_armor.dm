@@ -108,8 +108,17 @@
 /obj/item/mod/module/armor/prebuild
 	name = "Base prebuild"
 	complexity = 0
-	slowdown_bonus = 0
-	removable = FALSE
+	removable = TRUE
+
+/obj/item/mod/module/armor/prebuild/on_uninstall(deleting = FALSE, user)
+	. = ..()
+	if(deleting)
+		// Нас уже удаляют: свой qdel(src) отсюда замыкал петлю Destroy -> uninstall -> qdel.
+		return
+	playsound(src, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(user)
+		balloon_alert(user, "модуль раскалывается и разрушается!")
+	qdel(src)
 
 /obj/item/mod/module/armor/prebuild/Initialize(mapload)
 	. = ..()

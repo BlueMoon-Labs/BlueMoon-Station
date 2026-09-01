@@ -71,6 +71,21 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 		if(!low_priority)
 			GLOB.ghost_eligible_mobs_priority |= M
 
+/**
+ * Достаёт элемент гост-ролей из подписчиков моба на COMSIG_MOB_GHOSTIZE.
+ *
+ * comp_lookup хранит одного подписчика голой ссылкой, а нескольких - ассоциативным
+ * списком "подписчик = TRUE" (см. RegisterSignal). Слепой LAZYACCESS отдавал этот список,
+ * и кнопка звала change_role_lists() у /list.
+ */
+/proc/get_ghost_role_eligibility_element(mob/target)
+	var/listeners = LAZYACCESS(target?.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	if(islist(listeners))
+		for(var/datum/element/ghost_role_eligibility/candidate in listeners)
+			return candidate
+		return null
+	return istype(listeners, /datum/element/ghost_role_eligibility) ? listeners : null
+
 // Кнопка по отключению от доступных к выбору мобов
 /datum/action/cooldown/ghost_role_eligible
 	name = "Участие в распределении гост ролей"
@@ -81,7 +96,7 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 
 /datum/action/cooldown/ghost_role_eligible/UpdateButton(atom/movable/screen/movable/action_button/button, status_only, force)
 	var/mob/action_owner = owner
-	var/datum/element/ghost_role_eligibility/elem = LAZYACCESS(action_owner.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	var/datum/element/ghost_role_eligibility/elem = get_ghost_role_eligibility_element(action_owner)
 	if(elem)
 		button_icon_state = (action_owner in GLOB.ghost_eligible_mobs) ? "ghost" : "ghost_red"
 	else
@@ -92,7 +107,7 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 
 /datum/action/cooldown/ghost_role_eligible/Activate(atom/target)
 	var/mob/action_owner = owner
-	var/datum/element/ghost_role_eligibility/elem = LAZYACCESS(action_owner.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	var/datum/element/ghost_role_eligibility/elem = get_ghost_role_eligibility_element(action_owner)
 	if(elem)
 		var/remove = (action_owner in GLOB.ghost_eligible_mobs)
 		elem.change_role_lists(action_owner, remove = remove)

@@ -905,7 +905,6 @@
 		regenerate_limbs()
 		regenerate_organs()
 	remove_all_embedded_objects()
-	set_heartattack(FALSE)
 	drunkenness = 0
 	for(var/datum/mutation/human/HM in dna.mutations)
 		if(HM.quality != POSITIVE)
@@ -914,6 +913,10 @@
 		blood_volume = (BLOOD_VOLUME_NORMAL*blood_ratio)
 	integrating_blood = 0
 	..()
+	//Только после ..(): урон органов обнуляет /mob/living/carbon/fully_heal(), и лишь
+	//тогда сердце перестаёт быть ORGAN_FAILING. Отказавшую помпу set_heartattack(FALSE)
+	//не заводит - её всё равно остановил бы ближайший on_life().
+	set_heartattack(FALSE)
 
 /mob/living/carbon/human/check_weakness(obj/item/weapon, mob/living/attacker)
 	. = ..()

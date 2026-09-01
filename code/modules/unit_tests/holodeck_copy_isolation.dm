@@ -14,6 +14,7 @@
 	check_forbidden_vars()
 	check_debris_isolation()
 	check_component_parts_isolation()
+	check_turf_overlay_transfer()
 
 /datum/unit_test/holodeck_copy_isolation/proc/check_forbidden_vars()
 	for(var/forbidden_var in list("component_parts", "debris", "actions"))
@@ -55,3 +56,30 @@
 		TEST_ASSERT(!QDELETED(part), "Удаление клона убило деталь оригинала [part.type]")
 
 	qdel(original)
+
+/// Встроенные списки BYOND проходят islist(), но ассоциативного чтения не поддерживают:
+/// общий цикл copy_template_vars() спрашивал у overlays значение по ключу-аппирансу и
+/// падал "bad index" (273 рантайма за раунд 10137), а оверлеи шаблона на копию не
+/// переезжали вовсе - у турфов голодека слетала вся нарисованная обвязка.
+/datum/unit_test/holodeck_copy_isolation/proc/check_turf_overlay_transfer()
+	for(var/builtin_list in list("overlays", "underlays", "filters", "vis_contents", "vis_locs"))
+		TEST_ASSERT(builtin_list in GLOB.turf_copy_forbidden_vars, "[builtin_list] выпал из turf_copy_forbidden_vars - copy_template_vars снова полезет читать встроенный список по ключу")
+
+	var/turf/template = run_loc_floor_bottom_left
+	var/turf/copy = run_loc_floor_top_right
+	TEST_ASSERT(template != copy, "Шаблон и приёмник - один и тот же турф, предпосылка теста сломана")
+
+	var/overlays_before = length(template.overlays)
+	var/mutable_appearance/marker = mutable_appearance(template.icon, template.icon_state)
+	marker.color = COLOR_RED
+	template.add_overlay(marker)
+	TEST_ASSERT_EQUAL(length(template.overlays), overlays_before + 1, "Оверлей не встал на турф-шаблон, предпосылка теста сломана")
+
+	copy.cut_overlays()
+	copy.copy_template_vars(template)
+
+	TEST_ASSERT_EQUAL(length(copy.overlays), length(template.overlays), "Оверлеи шаблона не переехали на копию турфа")
+
+	//арену за собой прибираем точечно: cut_overlays() снёс бы и то, что турф носил до теста
+	template.cut_overlay(marker)
+	copy.cut_overlay(marker)

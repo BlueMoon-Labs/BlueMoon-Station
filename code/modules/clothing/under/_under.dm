@@ -11,7 +11,9 @@
 	pickup_sound = 'sound/items/handling/cloth_pickup.ogg'
 	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 	limb_integrity = 120
-	var/fitted = FEMALE_UNIFORM_FULL // For use in alternate clothing styles for women
+	// FULL отличается от TOP ровно одним вырезанным пикселем в паху (alpha_masks.dmi).
+	// На спрайтах без разреза ног он даёт дырку насквозь - те самые "точки" на женском теле.
+	var/fitted = FEMALE_UNIFORM_TOP // For use in alternate clothing styles for women
 	var/has_sensor = HAS_SENSORS // For the crew computer
 	var/sensor_flags = SENSOR_RANDOM
 	var/sensor_mode = NO_SENSORS

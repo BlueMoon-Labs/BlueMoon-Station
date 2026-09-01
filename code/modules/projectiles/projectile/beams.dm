@@ -30,6 +30,19 @@
 	damage = 12.5
 	armour_penetration = 10
 
+/obj/item/projectile/beam/laser/musket
+	name = "musket laser"
+	icon_state = "laser_musket"
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/purple_laser
+	damage = 25
+	stamina = 25
+	light_color = COLOR_STRONG_VIOLET
+
+/obj/item/projectile/beam/laser/musket/prime
+	name = "heroic musket laser"
+	damage = 20
+	stamina = 20
+
 /obj/item/projectile/beam/laser/mutation
 	name = "ocular laser"
 	desc = "Focused burn from mutated eye tissue — mirrors real laser projectile rules so reflective plating can send it back."
@@ -99,7 +112,7 @@
 	icon_state = "xray"
 	damage = 15
 	irradiate = 100
-	range = 15
+	range = 30
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE | PASSCLOSEDTURF | PASSMACHINE | PASSSTRUCTURE
 	projectile_piercing = ALL
 	is_reflectable = TRUE

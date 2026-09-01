@@ -173,6 +173,7 @@
 	if(old_area != new_area && !skip_machinery)
 		for(var/obj/machinery/machine in contents)
 			machine.register_power_change_area(new_area)
+			machine.on_area_swap(old_area, new_area)
 			// Каналы новой области отличаются от старой, а сигнала о смене питания по ней уже не будет -
 			// синхронизируем machine_stat сразу, как это делает on_enter_area().
 			machine.power_change()

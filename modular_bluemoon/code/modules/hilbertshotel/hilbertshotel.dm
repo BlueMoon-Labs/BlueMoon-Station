@@ -22,6 +22,11 @@
 	/// отпускает тик): второй параллельный вход в тот же номер плодил комнату-двойник,
 	/// перезаписывал activeRooms/storedRooms и при следующем восстановлении удалял вещи игрока
 	var/list/rooms_in_flight = list()
+	/// Область, в которую прямо сейчас едет MobTransfer(). Пока перенос не закончен,
+	/// консервировать её нельзя: питомец на поводке, отброшенный назад собственным
+	/// Moved()-обработчиком, дёргал area/Exited() у ещё пустой комнаты, storeRoom()
+	/// сносил резервацию, и хозяина следом ставило на голый космос.
+	var/area/transfer_target
 	light_color = "#5692d6"
 	light_range = 5
 	light_power = 3
@@ -44,6 +49,7 @@
 
 /obj/item/hilbertshotel/Destroy()
 	SShilbertshotel.all_hilbert_spheres -= src
+	transfer_target = null // жёсткая ссылка на область, если сферу снесли посреди переноса
 	ejectRooms()
 	return ..()
 
@@ -440,6 +446,21 @@
 	return TRUE
 
 /obj/item/hilbertshotel/proc/MobTransfer(mob/living/user, turf/T, depth = 0)
+	var/area/previous_target = transfer_target
+	transfer_target = get_area(T)
+	// Восстановление обязано пережить рантайм внутри переноса: хвостовой строкой оно
+	// пропускалось, transfer_target навсегда оставался приколот к комнате, и та уже
+	// никогда не консервировалась (см. /area/hilbertshotel/Exited), а сфера держала
+	// жёсткую ссылку на /area до конца раунда.
+	try
+		. = perform_mob_transfer(user, T, depth)
+	catch(var/exception/transfer_error)
+		transfer_target = previous_target
+		stack_trace("Hilbert's Hotel: перенос [user] упал - [transfer_error]")
+		return
+	transfer_target = previous_target
+
+/obj/item/hilbertshotel/proc/perform_mob_transfer(mob/living/user, turf/T, depth = 0)
 	depth++
 	if(depth > 4)
 		return
@@ -643,10 +664,17 @@
 	explosion_block = INFINITY
 	var/obj/item/hilbertshotel/parentSphere
 
-/turf/open/space/bluespace/Entered(atom/movable/A)
+/turf/open/space/bluespace/Entered(atom/movable/arrived, atom/old_loc)
 	. = ..()
-	if (parentSphere)
-		A.forceMove(get_turf(parentSphere))
+	if(!parentSphere)
+		return
+	// Exited() исходного турфа успевает утащить или вовсе удалить пришедшего: гиперспейс
+	// сбрасывает предмет в космос, а TRAIT_DEL_ON_SPACE_DUMP - qdel-ит его. Тогда наш
+	// forceMove бил по qdel-нутому (прод-раунд 10150, ящики донк-покетов). Гард ровно
+	// тот же, что стоит у /turf/open/space/Entered и /turf/open/space/transit/Entered.
+	if(QDELETED(arrived) || arrived.loc != src)
+		return
+	arrived.forceMove(get_turf(parentSphere))
 
 /turf/closed/indestructible/hoteldoor
 	name = "Hotel Door"
@@ -821,7 +849,7 @@
 			if(L.mind)
 				stillPopulated = TRUE
 				break
-		if(!stillPopulated)
+		if(!stillPopulated && parentSphere?.transfer_target != src)
 			storeRoom()
 
 /area/hilbertshotelstorage

@@ -66,7 +66,7 @@
 		RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 
 /obj/item/mod/module/Destroy()
-	mod?.uninstall(src)
+	mod?.uninstall(src, deleting = TRUE)
 	if(device)
 		UnregisterSignal(device, COMSIG_PARENT_PREQDELETED)
 		QDEL_NULL(device)
@@ -92,7 +92,7 @@
 		return
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
-/obj/item/mod/module/proc/on_uninstall()
+/obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
 	if(required_modpart)
 		required_modpart.linked_modules -= src
 		required_modpart = null

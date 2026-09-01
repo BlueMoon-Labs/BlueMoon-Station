@@ -23,10 +23,18 @@
 	return ..()
 
 /datum/action/item_action/mod/Remove(mob/user)
-	if(ai_action && mod && user != mod.ai)
-		return
-	else if(!ai_action && mod && user == mod.ai)
-		return
+	// Фильтр "ИИ-действие снимается только с ИИ" нужен живому костюму: при сносе
+	// (свой qdel или qdel костюма, у которого ai уже занулен) снимать надо безусловно,
+	// иначе действие остаётся в owner.actions с живой кнопкой и держит костюм.
+	if(!QDELING(src) && !QDELETED(mod))
+		if(ai_action && user != mod.ai)
+			return
+		else if(!ai_action && user == mod.ai)
+			return
+	return ..()
+
+/datum/action/item_action/mod/Destroy()
+	mod = null
 	return ..()
 
 /datum/action/item_action/mod/Trigger(trigger_flags)

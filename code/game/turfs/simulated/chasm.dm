@@ -53,6 +53,9 @@
 		var/obj/item/stack/rods/R = C
 		var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 		if(!L)
+			if(!HasAdjacentSupport())
+				user.balloon_alert(user, "Не за что крепить! Нужна опора!")
+				return
 			if(R.use(1))
 				to_chat(user, "<span class='notice'>You construct a lattice.</span>")
 				playsound(src, 'sound/weapons/genhit.ogg', 50, 1)

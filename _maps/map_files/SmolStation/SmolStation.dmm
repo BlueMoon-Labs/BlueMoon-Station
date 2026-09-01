@@ -4764,15 +4764,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/ai_monitored/command/storage/eva)
-"dni" = (
-/obj/effect/turf_decal/tile/red,
-/obj/effect/turf_decal/tile/red{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/plasteel/dark,
-/area/security/brig)
 "dnD" = (
 /obj/effect/turf_decal/tile/red,
 /obj/effect/turf_decal/tile/red{
@@ -8558,9 +8549,7 @@
 	dir = 1
 	},
 /obj/structure/table/optable,
-/obj/machinery/defibrillator_mount{
-	pixel_y = -28
-	},
+/obj/machinery/vitals_reader/directional/south,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "ghh" = (
@@ -13497,6 +13486,9 @@
 	dir = 1;
 	pixel_y = -22
 	},
+/obj/machinery/defibrillator_mount{
+	pixel_y = -28
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone3)
 "jLs" = (
@@ -16414,9 +16406,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
-"lOW" = (
-/turf/open/floor/plasteel/yellowsiding,
-/area/commons/dorms)
 "lPS" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/external/glass{
@@ -18859,7 +18848,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -26;
-	pixel_y = -26;
+	pixel_y = -26
 	},
 /turf/open/floor/plasteel/freezer,
 /area/security/prison)
@@ -21183,7 +21172,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 26;
-	pixel_y = -26;
+	pixel_y = -26
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)
@@ -21441,9 +21430,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"pAq" = (
-/turf/open/pool/water,
-/area/commons/dorms)
 "pAu" = (
 /obj/structure/closet/firecloset,
 /turf/open/floor/plating,
@@ -22356,14 +22342,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/teleporter)
-"qoW" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plasteel,
-/area/hallway/primary/central)
 "qpw" = (
 /obj/machinery/atmospherics/miner/toxins,
 /obj/machinery/portable_atmospherics/canister/toxins,
@@ -23395,9 +23373,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
-"rgA" = (
-/turf/open/pool/water,
-/area/commons/dorms)
 "rgN" = (
 /obj/effect/turf_decal/tile/red,
 /obj/effect/turf_decal/tile/red{
@@ -31315,14 +31290,6 @@
 	dir = 4
 	},
 /obj/structure/disposalpipe/segment,
-/turf/open/floor/plasteel,
-/area/hallway/primary/central)
-"xhk" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "xht" = (
@@ -63227,7 +63194,7 @@ nrU
 ufh
 xuz
 cvc
-dni
+cvc
 nhQ
 kBv
 inK
@@ -65478,41 +65445,41 @@ aoN
 xrg
 uKW
 lrX
-qoW
-qoW
+mEK
+mEK
 lkc
-qoW
+mEK
 qFH
 sSI
 aOd
-qoW
-qoW
-qoW
+mEK
+mEK
+mEK
 qqH
 dOb
-qoW
-qoW
+mEK
+mEK
 uYk
 lrX
 hCH
-qoW
-qoW
-qoW
+mEK
+mEK
+mEK
 eKJ
-qoW
-qoW
-qoW
+mEK
+mEK
+mEK
 dOb
 jWV
-qoW
-qoW
-wJk
-qoW
-qoW
 mEK
-qoW
+mEK
+wJk
+mEK
+mEK
+mEK
+mEK
 lkc
-qoW
+mEK
 lrX
 hOL
 wUm
@@ -65531,20 +65498,20 @@ ewS
 wUm
 wUm
 wbD
-xhk
+sSI
 gSX
-xhk
+sSI
 fkZ
-xhk
-xhk
-xhk
+sSI
+sSI
+sSI
 kcj
-xhk
-xhk
-xhk
-xhk
+sSI
+sSI
+sSI
+sSI
 wFr
-xhk
+sSI
 wUm
 fjd
 wUm
@@ -67334,10 +67301,10 @@ mmq
 gQI
 hEf
 puN
-rgA
+puN
 nPf
-rgA
-rgA
+puN
+puN
 uBO
 oLA
 bGI
@@ -67590,11 +67557,11 @@ wxE
 mmq
 vvT
 hEf
-rgA
-rgA
-rgA
-rgA
-rgA
+puN
+puN
+puN
+puN
+puN
 vuN
 vPs
 bGI
@@ -67848,9 +67815,9 @@ mmq
 taA
 hEf
 rGC
-rgA
-rgA
-rgA
+puN
+puN
+puN
 xFP
 uBO
 xAK
@@ -68104,11 +68071,11 @@ sir
 mmq
 eBF
 hEf
-rgA
-rgA
-rgA
-rgA
-rgA
+puN
+puN
+puN
+puN
+puN
 uBO
 tco
 bGI
@@ -68360,12 +68327,12 @@ wXO
 wXO
 wXO
 wNO
-lOW
-rgA
-rgA
-pAq
-rgA
-rgA
+hEf
+puN
+puN
+puN
+puN
+puN
 bVr
 vPs
 bGI
@@ -68618,11 +68585,11 @@ lWx
 wXO
 dAv
 hEf
-rgA
-rgA
-rgA
-rgA
-rgA
+puN
+puN
+puN
+puN
+puN
 uBO
 pZO
 mmq
@@ -68876,9 +68843,9 @@ wXO
 mLC
 hEf
 rGC
-rgA
-rgA
-rgA
+puN
+puN
+puN
 xFP
 uBO
 lky
@@ -69132,11 +69099,11 @@ asC
 wXO
 fOe
 aFx
-rgA
-rgA
-rgA
-rgA
-rgA
+puN
+puN
+puN
+puN
+puN
 uBO
 vPs
 mmq
@@ -69389,11 +69356,11 @@ uap
 wXO
 wXO
 hkt
-rgA
-rgA
+puN
+puN
 rdM
-rgA
-rgA
+puN
+puN
 slD
 vPs
 mmq

@@ -81,7 +81,7 @@
 /datum/round_event/space_weather/bluespace_storm/proc/thunder(current_intensity)
 	if(!prob(current_intensity * BLUESPACE_STORM_THUNDER_CHANCE))
 		return
-	sound_to_playing_players(pick(BLUESPACE_STORM_THUNDER), volume = 65)
+	sound_to_playing_players(pick(BLUESPACE_STORM_THUNDER), volume = 25)
 
 /datum/round_event/space_weather/bluespace_storm/cleanup_effects()
 	GLOB.bluespace_teleport_noise = 0
