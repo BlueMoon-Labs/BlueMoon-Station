@@ -53,7 +53,7 @@
 	if(defense_mode)
 		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, M, /datum/action/vehicle/sealed/mecha/mech_defense_mode)
 		if(action)
-			INVOKE_ASYNC(action, TYPE_PROC_REF(/datum/action, Trigger), FALSE)
+			INVOKE_ASYNC(action, TYPE_PROC_REF(/datum/action, Trigger))
 	return ..()
 
 ///Relays the signal from the action button to the shield, and creates a new shield if the old one is MIA.
@@ -229,7 +229,7 @@ own integrity back to max. Shield is automatically dropped if we run out of powe
 		for(var/O in chassis.occupants)
 			var/mob/living/occupant = O
 			var/datum/action/action = LAZYACCESSASSOC(chassis.occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/mech_defense_mode)
-			action.Trigger(FALSE)
+			action.Trigger()
 	obj_integrity = 10000
 
 /obj/durand_shield/play_attack_sound()
