@@ -6,20 +6,35 @@
 	desc = "Тяжелая кожаная куртка со следами долгого износа. Ткань на груди и спине заметно уплотнена — изнутри она прошита защитным слоем кевлара. По швам и воротнику куртки идут массивные клёпки из серебристого металла, а на рукавах затянуты грубые ремни. Шов между рукавом и правым плечом небрежно порван, обнажая подкладку, а чуть ниже пришита нашивка в форме полумесяца. Из-под потертой кожаной кобуры на плече отчетливо несет стойким запахом сигаретного дыма и перегара."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/melatonin/melatonin_carrier.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_carrier.dmi'
-	icon_state = "melatonin-carrier-coat-0"
+	icon_state = "icon"
 	item_state = "melatonin-carrier-coat-0"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	unique_reskin = list(
-		"Type 0" = list("icon_state" = "melatonin-carrier-coat-0"),
-		"Type 1" = list("icon_state" = "melatonin-carrier-coat-1"),
-		"Type 2" = list("icon_state" = "melatonin-carrier-coat-2"),
-		"Type 3" = list("icon_state" = "melatonin-carrier-coat-3"),
-		"Type 4" = list("icon_state" = "melatonin-carrier-coat-4"),
-		"Type 5" = list("icon_state" = "melatonin-carrier-coat-5"),
-		"Type 6" = list("icon_state" = "melatonin-carrier-coat-6"),
-		"Type 7" = list("icon_state" = "melatonin-carrier-coat-7"),
-		"Type 8" = list("icon_state" = "melatonin-carrier-coat-8")
+		"Type 0" = list("icon_state" = "melatonin-carrier-coat-0", "item_state" = "melatonin-carrier-coat-0"),
+		"Type 1" = list("icon_state" = "melatonin-carrier-coat-1", "item_state" = "melatonin-carrier-coat-1"),
+		"Type 2" = list("icon_state" = "melatonin-carrier-coat-2", "item_state" = "melatonin-carrier-coat-2"),
+		"Type 3" = list("icon_state" = "melatonin-carrier-coat-3", "item_state" = "melatonin-carrier-coat-3"),
+		"Type 4" = list("icon_state" = "melatonin-carrier-coat-4", "item_state" = "melatonin-carrier-coat-4"),
+		"Type 5" = list("icon_state" = "melatonin-carrier-coat-5", "item_state" = "melatonin-carrier-coat-5"),
+		"Type 6" = list("icon_state" = "melatonin-carrier-coat-6", "item_state" = "melatonin-carrier-coat-6"),
+		"Type 7" = list("icon_state" = "melatonin-carrier-coat-7", "item_state" = "melatonin-carrier-coat-7"),
+		"Type 8" = list("icon_state" = "melatonin-carrier-coat-8", "item_state" = "melatonin-carrier-coat-8")
 	)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
+	if(!isinhands && item_state)
+		override_state = item_state
+	return ..()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/reskin_obj(mob/user)
+	. = ..()
+	if(icon_state != "icon")
+		item_state = icon_state
+		icon_state = "icon"
+		update_slot_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/cosmetic
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 
 /obj/item/modkit/melatonin_carrier_kit
 	name = "Lycanthrope's Reinforced Coat Kit"
@@ -34,21 +49,33 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/melatonin/melatonin_uniform.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_uniform.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_uniform.dmi'
-	icon_state = "melatonin-uniform-0"
+	icon_state = "icon"
 	item_state = "melatonin-uniform-0"
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	unique_reskin = list(
-		"Type 0" = list("icon_state" = "melatonin-uniform-0"),
-		"Type 1" = list("icon_state" = "melatonin-uniform-1"),
-		"Type 2" = list("icon_state" = "melatonin-uniform-2"),
-		"Type 3" = list("icon_state" = "melatonin-uniform-3"),
-		"Type 4" = list("icon_state" = "melatonin-uniform-4"),
-		"Type 5" = list("icon_state" = "melatonin-uniform-5"),
-		"Type 6" = list("icon_state" = "melatonin-uniform-6"),
-		"Type 7" = list("icon_state" = "melatonin-uniform-7"),
-		"Type 8" = list("icon_state" = "melatonin-uniform-8")
+		"Type 0" = list("icon_state" = "melatonin-uniform-0", "item_state" = "melatonin-uniform-0"),
+		"Type 1" = list("icon_state" = "melatonin-uniform-1", "item_state" = "melatonin-uniform-1"),
+		"Type 2" = list("icon_state" = "melatonin-uniform-2", "item_state" = "melatonin-uniform-2"),
+		"Type 3" = list("icon_state" = "melatonin-uniform-3", "item_state" = "melatonin-uniform-3"),
+		"Type 4" = list("icon_state" = "melatonin-uniform-4", "item_state" = "melatonin-uniform-4"),
+		"Type 5" = list("icon_state" = "melatonin-uniform-5", "item_state" = "melatonin-uniform-5"),
+		"Type 6" = list("icon_state" = "melatonin-uniform-6", "item_state" = "melatonin-uniform-6"),
+		"Type 7" = list("icon_state" = "melatonin-uniform-7", "item_state" = "melatonin-uniform-7"),
+		"Type 8" = list("icon_state" = "melatonin-uniform-8", "item_state" = "melatonin-uniform-8")
 	)
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
+	if(!isinhands && item_state)
+		override_state = item_state
+	return ..()
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/reskin_obj(mob/user)
+	. = ..()
+	if(icon_state != "icon")
+		item_state = icon_state
+		icon_state = "icon"
+		update_slot_icon()
 
 // ========== 3. Lycanthrope's Heavy Tactical Belt - Заменяет Brig Officer Webbing ==========
 /obj/item/storage/belt/security/webbing/ds/melatonin
@@ -56,7 +83,7 @@
 	desc = "Массивный тактический пояс, который когда-то служил обычным утяжеленным ремнем. Со временем он оброс модификациями: к нему добавились прочная кожаная кобура, дополнительный поддерживающий ремень, подсумки для патронов и незаметные ножны для складного клинка. Вся эта конструкция выглядит исключительно надежной, хоть и неоправданно тяжелой. На крупной металлической пряжке по центру выгравирован оскал свирепого волка."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/melatonin/melatonin_belt.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_belt.dmi'
-	icon_state = "on-body"
+	icon_state = "icon"
 	item_state = "on-body"
 
 /obj/item/modkit/melatonin_belt_kit
@@ -121,8 +148,57 @@
 	desc = "Измененный и переделанный боевой ребризер ранней серии «Star Dust», некогда поставлявшийся ополчению Небулы и бойцам запаса Конкорда. Конструктивное отличие этой старой модели — дыхательные пазухи, расположенные по всему внешнему ободу корпуса, а не у основания, как на современных образцах. В отличие от фабричного оригинала, предназначенного для распыления аэрозольных медикаментов, этот прибор полностью заглушен. Его корпус запечатан глухими заглушками, намертво изолируя дыхательные пути пользователя от окружающей среды и превращая медицинское устройство в сугубо защитную маску."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/melatonin/melatonin_gasmask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_gasmask.dmi'
-	icon_state = "equipped-down"
+	icon_state = "icon"
 	item_state = "equipped-down"
+	flags_inv = HIDEFACIALHAIR|HIDEFACE
+	visor_flags = BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
+	visor_flags_inv = HIDEFACE
+	visor_flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES
+	flags_cover = MASKCOVERSMOUTH
+	alternate_worn_layer = BACK_LAYER
+	actions_types = list(/datum/action/item_action/halt, /datum/action/item_action/adjust, /datum/action/item_action/dispatch)
+
+/obj/item/clothing/mask/gas/sechailer/melatonin/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
+	if(!isinhands && item_state)
+		override_state = item_state
+	return ..()
+
+/obj/item/clothing/mask/gas/sechailer/melatonin/attack_self(mob/user)
+	adjustmask(user)
+
+/obj/item/clothing/mask/gas/sechailer/melatonin/adjustmask(mob/living/user, just_flavor = FALSE)
+	if(user && user.incapacitated())
+		return FALSE
+	mask_adjusted = !mask_adjusted
+	if(!mask_adjusted)
+		item_state = "equipped-up"
+		if(!just_flavor)
+			gas_transfer_coefficient = initial(gas_transfer_coefficient)
+			permeability_coefficient = initial(permeability_coefficient)
+			slot_flags = initial(slot_flags)
+			flags_cover |= visor_flags_cover
+			clothing_flags |= visor_flags
+		flags_inv |= visor_flags_inv
+	else
+		item_state = "equipped-down"
+		if(!just_flavor)
+			gas_transfer_coefficient = null
+			permeability_coefficient = null
+			clothing_flags &= ~visor_flags
+			flags_cover &= ~visor_flags_cover
+			if(adjusted_flags)
+				slot_flags = adjusted_flags
+		flags_inv &= ~visor_flags_inv
+	icon_state = "icon"
+	if(user)
+		if(!just_flavor)
+			to_chat(user, "<span class='notice'>You push \the [src] [mask_adjusted ? "out of the way" : "back into place"].</span>")
+			user.wear_mask_update(src, toggle_off = mask_adjusted)
+			user.update_action_buttons_icon()
+		else
+			to_chat(usr, "<span class='notice'>You adjust [src], it will now [mask_adjusted ? "not" : ""] obscure your identity while worn.</span>")
+		user.update_inv_wear_mask()
+	return TRUE
 
 /obj/item/modkit/melatonin_gasmask_kit
 	name = "Dishonored \"Star Dust\" Combat Rebreather Kit"
@@ -136,7 +212,7 @@
 	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/melatonin/melatonin_riot.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/melatonin/melatonin_riot.dmi'
-	icon_state = "equipped-close"
+	icon_state = "icon-close"
 	item_state = "equipped-close"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	can_toggle = TRUE
@@ -146,18 +222,26 @@
 	visor_flags_inv = HIDEFACE
 	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 
+/obj/item/clothing/head/helmet/riot/melatonin/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state, style_flags, use_mob_overlay_icon, alpha_mask)
+	if(!isinhands && item_state)
+		override_state = item_state
+	return ..()
+
 /obj/item/clothing/head/helmet/riot/melatonin/attack_self(mob/user)
 	. = ..()
 	if(up)
-		icon_state = "equipped-open"
+		icon_state = "icon-open"
 		item_state = "equipped-open"
 	else
-		icon_state = "equipped-close"
+		icon_state = "icon-close"
 		item_state = "equipped-close"
 	user.update_inv_head()
 	if(iscarbon(user))
 		var/mob/living/carbon/C = user
 		C.head_update(src, forced = 1)
+
+/obj/item/clothing/head/helmet/riot/melatonin/cosmetic
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 
 /obj/item/modkit/melatonin_riot_kit
 	name = "Refurbished Concord Riot Helmet Kit"
@@ -197,57 +281,47 @@
 	product = /obj/item/melee/baton/stunsword/melatonin
 	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
-// ========== Donator Gear for Melatonin1 ==========
-/datum/gear/donator/bm/melatonin_carrier
-	name = "Lycanthrope's Reinforced Coat"
-	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin
-	ckeywhitelist = list("melatonin1")
+/obj/item/storage/box/melatonin_kit
+	name = "Melatonin weapon case"
+	desc = "Кейс с полным набором оружейных китов Melatonin. Содержит киты для модификации стандартного вооружения в кастомное."
+	icon_state = "ammobox"
 
+/obj/item/storage/box/melatonin_kit/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_combined_w_class = 21
+
+/obj/item/storage/box/melatonin_kit/PopulateContents()
+	new /obj/item/modkit/melatonin_belt_kit(src)
+	new /obj/item/modkit/melatonin_shotgun_kit(src)
+	new /obj/item/modkit/melatonin_shotgun_sawn_kit(src)
+	new /obj/item/modkit/melatonin_enforcer_kit(src)
+	new /obj/item/modkit/melatonin_gasmask_kit(src)
+	new /obj/item/modkit/melatonin_stunsword_kit(src)
+
+// ========== Donator Gear for Melatonin1 ==========
 /datum/gear/donator/bm/melatonin_bodysuit
 	name = "Lycanthrope's Form-Fitting Bodysuit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/melatonin_bodysuit
 	ckeywhitelist = list("melatonin1")
 
-/datum/gear/donator/bm/melatonin_belt
-	name = "Lycanthrope's Heavy Tactical Belt"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/storage/belt/security/webbing/ds/melatonin
+/datum/gear/donator/bm/melatonin_carrier_cosmetic
+	name = "Lycanthrope's Reinforced Coat (Cosmetic)"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin/cosmetic
 	ckeywhitelist = list("melatonin1")
 
-/datum/gear/donator/bm/melatonin_shotgun
-	name = "Nebula Workshop's 'Original Guilt'"
-	slot = ITEM_SLOT_BACK
-	path = /obj/item/gun/ballistic/revolver/doublebarrel/melatonin
-	ckeywhitelist = list("melatonin1")
-
-/datum/gear/donator/bm/melatonin_shotgun_sawn
-	name = "Sawn-Off Nebula Workshop's 'Original Guilt'"
-	slot = ITEM_SLOT_BACK
-	path = /obj/item/gun/ballistic/revolver/doublebarrel/sawn/melatonin
-	ckeywhitelist = list("melatonin1")
-
-/datum/gear/donator/bm/melatonin_enforcer
-	name = "Mallorian Arms 'The Parade'"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
-	ckeywhitelist = list("melatonin1")
-
-/datum/gear/donator/bm/melatonin_gasmask
-	name = "Dishonored \"Star Dust\" Combat Rebreather"
-	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/gas/sechailer/melatonin
-	ckeywhitelist = list("melatonin1")
-
-/datum/gear/donator/bm/melatonin_riot
-	name = "Refurbished Concord Riot Helmet"
+/datum/gear/donator/bm/melatonin_riot_cosmetic
+	name = "Refurbished Concord Riot Helmet (Cosmetic)"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/helmet/riot/melatonin
+	path = /obj/item/clothing/head/helmet/riot/melatonin/cosmetic
 	ckeywhitelist = list("melatonin1")
 
-/datum/gear/donator/bm/melatonin_stunsword
-	name = "Dunwall Folding Stun-Sword"
-	slot = ITEM_SLOT_BELT
-	path = /obj/item/melee/baton/stunsword/melatonin
+/datum/gear/donator/bm/melatonin_kit
+	name = "Melatonin Kit Box"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/melatonin_kit
 	ckeywhitelist = list("melatonin1")
+
+
