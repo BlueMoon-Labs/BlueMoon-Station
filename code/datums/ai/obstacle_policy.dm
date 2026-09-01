@@ -313,31 +313,8 @@
 	opens_doors = FALSE
 	forces_powered_doors = FALSE
 
-///A small weighted A* node. This pathfinder is a fallback only: ordinary JPS
+///A small weighted A* over turfs. This pathfinder is a fallback only: ordinary JPS
 ///must first prove that no route without demolition exists.
-/datum/ai_breach_node
-	var/turf/tile
-	var/datum/ai_breach_node/parent
-	var/travel_cost
-	var/steps
-	var/f_score
-
-/datum/ai_breach_node/New(turf/tile, datum/ai_breach_node/parent, travel_cost, steps, turf/goal)
-	. = ..()
-	src.tile = tile
-	src.parent = parent
-	src.travel_cost = travel_cost
-	src.steps = steps
-	f_score = travel_cost + abs(tile.x - goal.x) + abs(tile.y - goal.y)
-
-/datum/ai_breach_node/Destroy(force, ...)
-	parent = null
-	tile = null
-	return ..()
-
-/proc/HeapAIBreachWeightCompare(datum/ai_breach_node/a, datum/ai_breach_node/b)
-	return b.f_score - a.f_score
-
 /datum/ai_breach_pathfinder
 	var/mob/living/pawn
 	var/datum/ai_controller/controller
@@ -352,8 +329,17 @@
 	var/obj/item/card/id/id
 	var/check_environment = FALSE
 	var/datum/cancel_source
-	var/datum/heap/open
+	/// Открытый список: параллельные плоские списки турфов и их f-оценок.
+	var/list/open_tiles
+	var/list/open_scores
+	/// turf -> минимальная известная стоимость пути до него.
 	var/list/best_cost
+	/// turf -> число кардинальных шагов до него по лучшему пути.
+	var/list/best_steps
+	/// turf -> предыдущий турф лучшего пути; по нему разворачивается маршрут.
+	var/list/came_from
+	/// turf -> TRUE, когда турф уже развёрнут окончательно.
+	var/list/closed
 
 /datum/ai_breach_pathfinder/New(mob/living/pawn, datum/ai_controller/controller, datum/obstacle_policy/policy, turf/start, turf/goal, max_distance, minimum_distance, simulated_only, turf/avoid, obj/item/card/id/id, datum/cancel_source)
 	. = ..()
@@ -370,8 +356,12 @@
 	src.cancel_source = cancel_source
 	var/mob/living/simple_animal/simple_pawn = pawn
 	check_environment = istype(simple_pawn) && simple_pawn.requires_safe_atmosphere()
-	open = new /datum/heap(/proc/HeapAIBreachWeightCompare)
+	open_tiles = list()
+	open_scores = list()
 	best_cost = list()
+	best_steps = list()
+	came_from = list()
+	closed = list()
 
 /datum/ai_breach_pathfinder/Destroy(force, ...)
 	pawn = null
@@ -382,12 +372,50 @@
 	avoid = null
 	id = null
 	cancel_source = null
-	// Nodes still queued in the heap are freed by its Destroy. Popped nodes are left to
-	// GC through their broken parent chains, exactly like JPS jps_nodes - tracking and
-	// qdel-ing every expanded node instead flooded SSgarbage (was the top breach cost).
-	QDEL_NULL(open)
+	open_tiles = null
+	open_scores = null
 	best_cost = null
+	best_steps = null
+	came_from = null
+	closed = null
 	return ..()
+
+///Кладёт турф в открытый список, сохраняя свойство двоичной кучи по f-оценке.
+/datum/ai_breach_pathfinder/proc/open_push(turf/tile, score)
+	open_tiles += tile
+	open_scores += score
+	var/index = length(open_tiles)
+	while(index > 1)
+		var/parent_index = round(index * 0.5)
+		if(open_scores[parent_index] <= open_scores[index])
+			return
+		open_tiles.Swap(index, parent_index)
+		open_scores.Swap(index, parent_index)
+		index = parent_index
+
+///Снимает турф с наименьшей f-оценкой; null - открытый список пуст.
+/datum/ai_breach_pathfinder/proc/open_pop()
+	var/count = length(open_tiles)
+	if(!count)
+		return null
+	. = open_tiles[1]
+	open_tiles[1] = open_tiles[count]
+	open_scores[1] = open_scores[count]
+	open_tiles.Cut(count)
+	open_scores.Cut(count)
+	count--
+	var/index = 1
+	while(TRUE)
+		var/child_index = index * 2
+		if(child_index > count)
+			return
+		if(child_index < count && open_scores[child_index + 1] < open_scores[child_index])
+			child_index++
+		if(open_scores[index] <= open_scores[child_index])
+			return
+		open_tiles.Swap(index, child_index)
+		open_scores.Swap(index, child_index)
+		index = child_index
 
 /datum/ai_breach_pathfinder/proc/search(skip_first = TRUE)
 	if(!pawn || !controller || !start || !goal || start.z != goal.z || start == goal)
@@ -399,43 +427,55 @@
 		if(max_distance < minimum_cardinal_steps)
 			return list()
 
-	var/datum/ai_breach_node/start_node = new(start, null, 0, 0, goal)
-	open.insert(start_node)
 	best_cost[start] = 0
+	best_steps[start] = 0
+	open_push(start, MANHATTAN_DISTANCE(start, goal))
 	var/max_expansions = max_distance ? min(4096, max(128, max_distance * max_distance * 2)) : 2048
 	var/expansions = 0
 
-	while(!open.is_empty() && expansions < max_expansions)
+	while(length(open_tiles) && expansions < max_expansions)
 		if(QDELETED(pawn) || QDELETED(controller) || (cancel_source && QDELETED(cancel_source)))
 			return list()
-		var/datum/ai_breach_node/current = open.pop()
-		if(current.travel_cost > best_cost[current.tile])
+		var/turf/current = open_pop()
+		// Устаревшие записи из кучи не удаляются, а отбрасываются здесь: эвристика
+		// согласована по рёбрам, поэтому первое снятие турфа уже оптимально.
+		if(closed[current])
 			continue
+		closed[current] = TRUE
 		expansions++
 
-		if(current.tile == goal || (minimum_distance && get_dist(current.tile, goal) <= minimum_distance))
+		if(current == goal || (minimum_distance && get_dist(current, goal) <= minimum_distance))
+			// Собираем с конца и переворачиваем один раз, как JPS в path.dm: Insert(1, ...) квадратичен.
 			var/list/path = list()
-			var/datum/ai_breach_node/unwind = current
-			while(unwind && unwind.tile != start)
-				path.Insert(1, unwind.tile)
-				unwind = unwind.parent
+			var/turf/unwind = current
+			while(unwind && unwind != start)
+				path += unwind
+				unwind = came_from[unwind]
 			if(!skip_first)
-				path.Insert(1, start)
+				path += start
+			for(var/i = 1 to round(0.5 * length(path)))
+				path.Swap(i, length(path) - i + 1)
 			return path
 
-		if(max_distance && current.steps >= max_distance)
+		var/current_steps = best_steps[current]
+		if(max_distance && current_steps >= max_distance)
 			continue
+		var/current_cost = best_cost[current]
 		for(var/direction in GLOB.cardinals)
-			var/turf/next_turf = get_step(current.tile, direction)
-			var/step_cost = policy.get_breach_step_cost(pawn, controller, current.tile, next_turf, simulated_only, avoid, id, check_environment)
+			var/turf/next_turf = get_step(current, direction)
+			if(!next_turf || closed[next_turf])
+				continue
+			var/step_cost = policy.get_breach_step_cost(pawn, controller, current, next_turf, simulated_only, avoid, id, check_environment)
 			if(!step_cost)
 				continue
-			var/new_cost = current.travel_cost + step_cost
+			var/new_cost = current_cost + step_cost
 			var/known_cost = best_cost[next_turf]
 			if(!isnull(known_cost) && known_cost <= new_cost)
 				continue
 			best_cost[next_turf] = new_cost
-			open.insert(new /datum/ai_breach_node(next_turf, current, new_cost, current.steps + 1, goal))
+			best_steps[next_turf] = current_steps + 1
+			came_from[next_turf] = current
+			open_push(next_turf, new_cost + MANHATTAN_DISTANCE(next_turf, goal))
 		CHECK_TICK
 
 	return list()

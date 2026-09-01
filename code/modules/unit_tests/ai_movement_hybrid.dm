@@ -11,6 +11,11 @@
 /datum/unit_test/proc/hold_move_loop(datum/move_loop/loop)
 	loop.pause_for(1 MINUTES)
 
+///Ждёт стартовый асинхронный маршрут лупа: на полной карте search() спит в очереди
+///SSpathfinder, и сброс repath_in_progress руками пустил бы второй поиск параллельно.
+/datum/unit_test/proc/await_initial_route(datum/move_loop/has_target/jps/loop)
+	return wait_for_var(loop, "repath_in_progress", FALSE, 10 SECONDS)
+
 ///Тестовый контроллер с гибридным движением
 /datum/ai_controller/unit_test_mover
 	ai_movement = /datum/ai_movement/hybrid
@@ -266,6 +271,89 @@
 	loop.recalculate_path()
 	TEST_ASSERT_EQUAL(length(loop.movement_path), 1, "A failed mid-route rebuild must leave the working path in place")
 	TEST_ASSERT_EQUAL(loop.movement_path[1], live_step, "The surviving path must still be the original one")
+
+	SSmove_manager.stop_looping(pawn, SSai_movement)
+	qdel(controller)
+
+///Считает попытки фолбэка через преграды.
+/datum/ai_controller/unit_test_mover/breach_counter
+	var/breach_attempts = 0
+
+/datum/ai_controller/unit_test_mover/breach_counter/get_path_through_obstacles(atom/target, max_distance, minimum_distance, obj/item/card/id/id, simulated_only, turf/avoid, skip_first, datum/cancel_source)
+	breach_attempts++
+	return ..()
+
+///Найденный чистым JPS маршрут фолбэк через преграды не запускает.
+/datum/unit_test/ai_breach_fallback_skipped_when_jps_succeeds/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/prey_turf = locate(start.x + 2, start.y, start.z)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/datum/ai_controller/unit_test_mover/breach_counter/controller = new(pawn)
+
+	var/datum/move_loop/has_target/jps/loop = SSmove_manager.jps_move(pawn, prey, 2, repath_delay = 10 SECONDS, max_path_length = 10, subsystem = SSai_movement, extra_info = controller)
+	TEST_ASSERT_NOTNULL(loop, "Sanity: jps_move must create a loop")
+	hold_move_loop(loop)
+	TEST_ASSERT(await_initial_route(loop), "Sanity: стартовый асинхронный маршрут обязан доехать")
+	loop.movement_path = null
+	COOLDOWN_RESET(loop, repath_cooldown)
+	controller.breach_attempts = 0
+
+	loop.recalculate_path()
+
+	TEST_ASSERT(length(loop.movement_path), "Sanity: чистый JPS обязан найти открытый маршрут")
+	TEST_ASSERT_EQUAL(controller.breach_attempts, 0, "Найденный JPS маршрут не имеет права запускать фолбэк через преграды")
+
+	SSmove_manager.stop_looping(pawn, SSai_movement)
+	qdel(controller)
+
+///Исчерпавший открытый список JPS отдаёт поиск фолбэку через преграды.
+/datum/unit_test/ai_breach_fallback_runs_when_jps_exhausted/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/prey_turf = locate(start.x + 2, start.y + 2, start.z)
+	for(var/direction in GLOB.alldirs)
+		allocate(/obj/structure/ai_unit_test_boundary, get_step(prey_turf, direction))
+
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/datum/ai_controller/unit_test_mover/breach_counter/controller = new(pawn)
+
+	var/datum/move_loop/has_target/jps/loop = SSmove_manager.jps_move(pawn, prey, 2, repath_delay = 10 SECONDS, max_path_length = 10, subsystem = SSai_movement, extra_info = controller)
+	TEST_ASSERT_NOTNULL(loop, "Sanity: jps_move must create a loop")
+	hold_move_loop(loop)
+	TEST_ASSERT(await_initial_route(loop), "Sanity: стартовый асинхронный маршрут обязан доехать")
+	TEST_ASSERT_EQUAL(controller.breach_attempts, 1, "Одна перепрокладка обязана дать ровно одну попытку фолбэка")
+
+	loop.movement_path = null
+	COOLDOWN_RESET(loop, repath_cooldown)
+	controller.breach_attempts = 0
+
+	loop.recalculate_path()
+
+	TEST_ASSERT_EQUAL(controller.breach_attempts, 1, "Исчерпанный JPS обязан отдать поиск фолбэку через преграды")
+
+	SSmove_manager.stop_looping(pawn, SSai_movement)
+	qdel(controller)
+
+///Пустой ответ JPS без исчерпания открытого списка фолбэк через преграды не запускает.
+/datum/unit_test/ai_breach_fallback_skipped_on_empty_non_exhausted_search/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, start)
+	var/datum/ai_controller/unit_test_mover/breach_counter/controller = new(pawn)
+
+	var/datum/move_loop/has_target/jps/loop = SSmove_manager.jps_move(pawn, prey, 2, repath_delay = 10 SECONDS, max_path_length = 10, subsystem = SSai_movement, extra_info = controller)
+	TEST_ASSERT_NOTNULL(loop, "Sanity: jps_move must create a loop")
+	hold_move_loop(loop)
+	TEST_ASSERT(await_initial_route(loop), "Sanity: стартовый асинхронный маршрут обязан доехать")
+	loop.movement_path = null
+	COOLDOWN_RESET(loop, repath_cooldown)
+	controller.breach_attempts = 0
+
+	loop.recalculate_path()
+
+	TEST_ASSERT(!length(loop.movement_path), "Sanity: к цели на своём же турфе маршрута нет")
+	TEST_ASSERT_EQUAL(controller.breach_attempts, 0, "Пустой ответ JPS без исчерпания открытого списка не имеет права запускать фолбэк через преграды")
 
 	SSmove_manager.stop_looping(pawn, SSai_movement)
 	qdel(controller)

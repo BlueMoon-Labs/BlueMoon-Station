@@ -116,6 +116,10 @@
 ///prey behind cover, lower it to reclaim more of the failed-search saving.
 #define AI_JPS_DETOUR_SLACK 16
 
+///Ключ отчёта get_path_to(): TRUE = JPS исчерпал открытый список и доказал, что чистого
+///маршрута в радиусе поиска нет. Ранние выходы и отмена ключ не ставят.
+#define JPS_SEARCH_EXHAUSTED "jps_search_exhausted"
+
 ///Cooldown on planning if planning failed last time
 
 #define AI_FAILED_PLANNING_COOLDOWN 1.5 SECONDS
