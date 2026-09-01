@@ -507,6 +507,8 @@
 	icon_state = "rubble_bg"
 	anchored = TRUE
 	pixel_x = SUPPLYPOD_X_OFFSET
+	// Под держит ссылку и рисует по нему передний план - кап декалей его не вытесняет.
+	cap_exempt = TRUE
 	var/foreground = "rubble_fg"
 	var/verticle_offset = 0
 	var/obj/structure/closet/supplypod/pod

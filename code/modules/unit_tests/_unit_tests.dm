@@ -162,6 +162,7 @@
 #include "airalarm_danger_read.dm"
 #include "area_power_signal.dm"
 #include "area_tracking.dm"
+#include "cleanable_decal_turf_cap.dm"
 #include "cleanable_decals_tracking.dm"
 #include "clockwork_power.dm"
 #include "login_path_async_audit.dm"
