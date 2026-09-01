@@ -30,6 +30,6 @@
 		"moffplush_witchwing",
 		"moffplush_plasmafire",
 		"moffplush_bluespace",
-		"moffbartender",
+		"moffplush_rosy",
 		"moffplush_brown"
     ))
