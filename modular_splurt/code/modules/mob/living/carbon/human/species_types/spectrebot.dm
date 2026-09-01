@@ -47,3 +47,17 @@
 	languagewhitelist = list("Encoded Audio Language")
 
 	eye_type = "spectre"
+
+/datum/species/spectrebot/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.AddSource("SPECIES")
+	. = ..()
+
+/datum/species/spectrebot/on_species_loss(mob/living/carbon/human/C, datum/species/new_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
+	. = ..()
+
+/datum/species/spectrebot/spec_updatehealth(mob/living/carbon/human/H)
+	if(H.getCloneLoss() > 0)
+		H.setCloneLoss(0, TRUE)

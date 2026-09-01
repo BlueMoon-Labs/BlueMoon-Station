@@ -12,6 +12,6 @@
 	can_synth = FALSE
 	taste_description = "ash"
 
-/datum/reagent/dragon_blood/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/dragon_blood/reaction_mob(mob/living/L, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(method==PATCH || method==INGEST || method==INJECT || (method == VAPOR && prob(min(reac_volume,100)*(1 - touch_protection))))
 		L.ForceContractDisease(new /datum/disease/transformation/dragon(), FALSE, TRUE)

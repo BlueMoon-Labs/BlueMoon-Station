@@ -1,8 +1,9 @@
 import { filter, map, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Divider, Dropdown, Flex, Input, Modal, ProgressBar, Section, Tabs } from '../components';
+import { Box, Button, Divider, Dropdown, Flex, Input, Modal, ProgressBar, Section, Tabs, Tooltip } from '../components';
 import { NtosWindow, Window } from '../layouts';
 
 // Data reshaping / ingestion (thanks stylemistake for the help, very cool!)
@@ -10,8 +11,54 @@ import { NtosWindow, Window } from '../layouts';
 // of the sent static JSON payload to as minimal of a size as possible
 // as larger sizes cause a delay for the user when opening the UI.
 
+// Ячейка сетки плиток дизайнов - один тайл BYOND.
+const DESIGN_CELL_SIZE = 32;
+const DESIGN_SIZE_REGEX = /design(\d+)x(\d+)/;
+// Класс размера идёт первым словом и только в паре с числами: id вроде
+// design_disk на "design" тоже начинается, а размер ему всё равно нужен.
+const DESIGN_SIZE_CLASS_REGEX = /^design\d+x\d+\s/;
+
+/**
+ * Дописывает дефолтный класс размера дизайнам, которым DM его не прислал:
+ * без него у плитки нет ни ширины, ни высоты, и иконка не рисуется вовсе.
+ */
+export const withDesignSizeClass = classes => (
+  DESIGN_SIZE_CLASS_REGEX.test(classes)
+    ? classes
+    : `design${DESIGN_CELL_SIZE}x${DESIGN_CELL_SIZE} ${classes}`
+);
+
+/**
+ * Спрайт шире или выше тайла занимает столько ячеек сетки, сколько реально
+ * закрывает: иначе он распирает свой ряд и уводит соседние плитки вкось.
+ */
+export const designGridSpan = classes => {
+  const match = DESIGN_SIZE_REGEX.exec(classes || '');
+  if (!match) {
+    return undefined;
+  }
+  const columns = Math.ceil(parseInt(match[1], 10) / DESIGN_CELL_SIZE);
+  const rows = Math.ceil(parseInt(match[2], 10) / DESIGN_CELL_SIZE);
+  if (columns <= 1 && rows <= 1) {
+    return undefined;
+  }
+  return {
+    gridColumn: `span ${columns}`,
+    gridRow: `span ${rows}`,
+  };
+};
+
 const remappingIdCache = {};
 const remapId = id => remappingIdCache[id];
+const hasRemappableStaticData = data => {
+  return !!(
+    data
+    && data.static_data
+    && Array.isArray(data.static_data.id_cache)
+    && data.static_data.node_cache
+    && data.static_data.design_cache
+  );
+};
 
 const selectRemappedStaticData = data => {
   // Handle reshaping of node cache to fill in unsent fields, and
@@ -31,10 +78,11 @@ const selectRemappedStaticData = data => {
   // Do the same as the above for the design cache
   const design_cache = {};
   for (let id of Object.keys(data.static_data.design_cache)) {
-    const [name, classes] = data.static_data.design_cache[id];
+    const [name, hacked_only, classes] = data.static_data.design_cache[id];
     design_cache[remapId(id)] = {
-      name: name,
-      class: classes.startsWith("design") ? classes : `design32x32 ${classes}`,
+      name,
+      hacked_only,
+      class: withDesignSizeClass(classes),
     };
   }
 
@@ -46,10 +94,11 @@ const selectRemappedStaticData = data => {
 
 let remappedStaticData;
 
-const useRemappedBackend = context => {
-  const { data, ...rest } = useBackend(context);
+const useRemappedBackend = () => {
+  const { data, ...rest } = useBackend();
+  const staticReady = hasRemappableStaticData(data);
   // Only remap the static data once, cache for future use
-  if (!remappedStaticData) {
+  if (staticReady && !remappedStaticData) {
     const id_cache = data.static_data.id_cache;
     for (let i = 0; i < id_cache.length; i++) {
       remappingIdCache[i + 1] = id_cache[i];
@@ -57,10 +106,13 @@ const useRemappedBackend = context => {
     remappedStaticData = selectRemappedStaticData(data);
   }
   return {
-    data: {
-      ...data,
-      ...remappedStaticData,
-    },
+    data: staticReady
+      ? {
+        ...data,
+        ...remappedStaticData,
+      }
+      : data,
+    staticReady,
     ...rest,
   };
 };
@@ -73,11 +125,16 @@ const abbreviations = {
   "Discovery Research": "Disc. Res.",
 };
 const abbreviateName = name => abbreviations[name] ?? name;
+const TechwebLoading = () => (
+  <Section fill>
+    <Box>Loading research data...</Box>
+  </Section>
+);
 
 // Actual Components
 
-export const Techweb = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+export const Techweb = (props) => {
+  const { act, data, staticReady } = useRemappedBackend();
   const {
     locked,
   } = data;
@@ -96,14 +153,14 @@ export const Techweb = (props, context) => {
             </Button>
           </Modal>
         )}
-        <TechwebContent />
+        {staticReady ? <TechwebContent /> : <TechwebLoading />}
       </Window.Content>
     </Window>
   );
 };
 
-export const AppTechweb = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+export const AppTechweb = (props) => {
+  const { act, data, staticReady } = useRemappedBackend();
   const {
     locked,
   } = data;
@@ -122,17 +179,17 @@ export const AppTechweb = (props, context) => {
             </Button>
           </Modal>
         )}
-        <TechwebContent />
+        {staticReady ? <TechwebContent /> : <TechwebLoading />}
       </NtosWindow.Content>
     </NtosWindow>
   );
 };
 
-export const TechwebContent = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+export const TechwebContent = (props) => {
+  const { act, data } = useRemappedBackend();
   const {
-    points,
-    points_last_tick,
+    points = {},
+    points_last_tick = {},
     web_org,
     sec_protocols,
     t_disk,
@@ -144,11 +201,11 @@ export const TechwebContent = (props, context) => {
   const [
     techwebRoute,
     setTechwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
   const [
     lastPoints,
     setLastPoints,
-  ] = useLocalState(context, 'lastPoints', {});
+  ] = useState({});
 
   return (
     <Flex direction="column" className="Techweb__Viewport" height="100%">
@@ -221,17 +278,17 @@ export const TechwebContent = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className="Techweb__RouterContent" height="100%">
+      <Flex.Item className="Techweb__RouterContent" grow={1}>
         <TechwebRouter />
       </Flex.Item>
     </Flex>
   );
 };
 
-const TechwebRouter = (props, context) => {
+const TechwebRouter = (props) => {
   const [
     techwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
 
   const route = techwebRoute?.route;
   const RoutedComponent = (
@@ -246,20 +303,26 @@ const TechwebRouter = (props, context) => {
   );
 };
 
-const TechwebOverview = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
-  const { nodes, node_cache, design_cache } = data;
+const TechwebOverview = (props) => {
+  const { act, data } = useRemappedBackend();
+  const {
+    nodes = [],
+    node_cache = {},
+    design_cache = {},
+    sec_protocols,
+  } = data;
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState(context, 'overviewTabIndex', 1);
+  ] = useState(1);
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText');
+  ] = useState();
+  const searchValue = searchText?.trim().toLowerCase() || '';
 
   // Only search when 3 or more characters have been input
-  const searching = searchText && searchText.trim().length > 1;
+  const searching = searchValue.length > 1;
 
   let displayedNodes = nodes;
   let researchednodes = nodes;
@@ -267,17 +330,27 @@ const TechwebOverview = (props, context) => {
   if (searching) {
     displayedNodes = displayedNodes.filter(x => {
       const n = node_cache[x.id];
-      return n.name.toLowerCase().includes(searchText)
-        || n.description.toLowerCase().includes(searchText)
-        || n.design_ids.some(e =>
-          design_cache[e].name.toLowerCase().includes(searchText));
+      if (!n) {
+        return false;
+      }
+      return (n.name || '').toLowerCase().includes(searchValue)
+        || (n.description || '').toLowerCase().includes(searchValue)
+        || (n.design_ids || []).some(e => {
+          const design = design_cache[e];
+
+          if (!design || (design.hacked_only && sec_protocols)) {
+            return false;
+          }
+
+          return (design.name || '').toLowerCase().includes(searchValue);
+        });
     });
   } else {
-    displayedNodes = sortBy(x => node_cache[x.id].name)(
+    displayedNodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 0));
-    researchednodes = sortBy(x => node_cache[x.id].name)(
+    researchednodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 1));
-    futurenodes = sortBy(x => node_cache[x.id].name)(
+    futurenodes = sortBy(x => node_cache[x.id]?.name || '')(
       nodes.filter(x => x.tier === 2));
   }
 
@@ -311,8 +384,8 @@ const TechwebOverview = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className={"Techweb__OverviewNodes"} height="100%">
-        <Flex height="100%">
+      <Flex.Item className={"Techweb__OverviewNodes"} grow={1}>
+        <Flex>
           {!searching && (
             <>
               <Flex.Item mr={1}>
@@ -353,8 +426,8 @@ const TechwebOverview = (props, context) => {
   );
 };
 
-const TechwebNodeDetail = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebNodeDetail = (props) => {
+  const { act, data } = useRemappedBackend();
   const { nodes } = data;
   const { selectedNode } = props;
 
@@ -365,14 +438,14 @@ const TechwebNodeDetail = (props, context) => {
   );
 };
 
-const TechwebDiskMenu = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebDiskMenu = (props) => {
+  const { act, data } = useRemappedBackend();
   const { diskType } = props;
   const { t_disk, d_disk } = data;
   const [
     techwebRoute,
     setTechwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
 
   // Check for the disk actually being inserted
   if ((diskType === "design" && !d_disk) || (diskType === "tech" && !t_disk)) {
@@ -436,13 +509,13 @@ const TechwebDiskMenu = (props, context) => {
   );
 };
 
-const Techwebanalyzer = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const Techwebanalyzer = (props) => {
+  const { act, data } = useRemappedBackend();
   const { linkedanalyzer, analyzertechs, analyzeritem } = data;
   const [
     techwebRoute,
     setTechwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
 
   return (
     <Flex direction="column" height="100%">
@@ -476,7 +549,7 @@ const Techwebanalyzer = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      {!!linkedanalyzer &&(
+      {!!linkedanalyzer && (
         <>
           <Flex.Item>
             {analyzeritem ? <TechwebItemmaterials /> : ""}
@@ -490,8 +563,8 @@ const Techwebanalyzer = (props, context) => {
   );
 };
 
-const TechwebItemmaterials = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebItemmaterials = (props) => {
+  const { act, data } = useRemappedBackend();
   const { itemmats, itempoints } = data;
 
   return (itempoints || itemmats) && (
@@ -526,8 +599,8 @@ const TechwebItemmaterials = (props, context) => {
   );
 };
 
-const TechwebItemtechs = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebItemtechs = (props) => {
+  const { act, data } = useRemappedBackend();
   const { analyzertechs } = data;
 
   return (
@@ -537,8 +610,8 @@ const TechwebItemtechs = (props, context) => {
   );
 };
 
-const TechwebDesignDisk = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebDesignDisk = (props) => {
+  const { act, data } = useRemappedBackend();
   const {
     design_cache,
     researched_designs,
@@ -548,11 +621,11 @@ const TechwebDesignDisk = (props, context) => {
   const [
     selectedDesign,
     setSelectedDesign,
-  ] = useLocalState(context, "designDiskSelect", null);
+  ] = useState(null);
   const [
     showModal,
     setShowModal,
-  ] = useLocalState(context, 'showDesignModal', -1);
+  ] = useState(-1);
 
   const designIdByIdx = Object.keys(researched_designs);
   const designOptions = flow([
@@ -639,8 +712,8 @@ const TechwebDesignDisk = (props, context) => {
   );
 };
 
-const TechwebTechDisk = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechwebTechDisk = (props) => {
+  const { act, data } = useRemappedBackend();
   const { t_disk } = data;
   const { stored_research } = t_disk;
 
@@ -649,8 +722,8 @@ const TechwebTechDisk = (props, context) => {
   ));
 };
 
-const TechNodeDetail = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechNodeDetail = (props) => {
+  const { act, data } = useRemappedBackend();
   const {
     nodes,
     node_cache,
@@ -661,11 +734,11 @@ const TechNodeDetail = (props, context) => {
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState(context, 'nodeDetailTabIndex', 0);
+  ] = useLocalState('nodeDetailTabIndex', 0);
   const [
     techwebRoute,
     setTechwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
 
   const prereqNodes = nodes.filter(x => prereq_ids.includes(x.id));
   const unlockedNodes = nodes.filter(x => unlock_ids.includes(x.id));
@@ -686,7 +759,7 @@ const TechNodeDetail = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      <Flex.Item className={"Techweb__OverviewNodes"} height="100%">
+      <Flex.Item className={"Techweb__OverviewNodes"} grow={1}>
         <Flex>
           <Flex.Item mr={1}>
             {prereqNodes.map(n => (
@@ -707,8 +780,8 @@ const TechNodeDetail = (props, context) => {
   );
 };
 
-const TechNode = (props, context) => {
-  const { act, data } = useRemappedBackend(context);
+const TechNode = (props) => {
+  const { act, data } = useRemappedBackend();
   const {
     node_cache,
     design_cache,
@@ -716,6 +789,7 @@ const TechNode = (props, context) => {
     nodes,
     compact,
     researchable,
+    sec_protocols,
   } = data;
   const { node, nodetails, nocontrols, destructive } = props;
   const { id, can_unlock, tier, costs } = node;
@@ -728,11 +802,11 @@ const TechNode = (props, context) => {
   const [
     techwebRoute,
     setTechwebRoute,
-  ] = useLocalState(context, 'techwebRoute', null);
+  ] = useLocalState('techwebRoute', null);
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState(context, 'nodeDetailTabIndex', 0);
+  ] = useLocalState('nodeDetailTabIndex', 0);
 
   return (
     <Section
@@ -784,7 +858,7 @@ const TechNode = (props, context) => {
                   }}
                   value={reqPts === 0
                     ? 1
-                    : Math.min(1, (points[key]||0) / reqPts)}>
+                    : Math.min(1, (points[key] || 0) / reqPts)}>
                   {abbreviateName(key)} ({nodeProg}/{reqPts})
                 </ProgressBar>
               </Flex.Item>
@@ -797,14 +871,22 @@ const TechNode = (props, context) => {
       </Box>
       {!!compact && (
         <Box className="Techweb__NodeUnlockedDesigns" mt={1}>
-          {design_ids.map((k) => (
-            <Button
-              key={id}
-              className={`${design_cache[k].class} Techweb__DesignIcon`}
-              tooltip={design_cache[k].name}
-              tooltipPosition="bottom"
-            />
-          ))}
+          {design_ids
+            .filter(k => {
+              const design = design_cache[k];
+              return design && (!design.hacked_only || !sec_protocols);
+            })
+            .map(k => (
+              <Tooltip
+                key={k}
+                content={design_cache[k].name}
+                position="bottom">
+                <div
+                  className={`${design_cache[k].class} Techweb__DesignIcon`}
+                  style={designGridSpan(design_cache[k].class)}
+                />
+              </Tooltip>
+            ))}
         </Box>
       )}
     </Section>

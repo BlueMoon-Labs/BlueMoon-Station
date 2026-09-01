@@ -29,6 +29,39 @@
 	show_in_roundend = FALSE
 	make_team = FALSE
 
+/// Rune "Spirit Realm": add_antag must succeed despite jobban on the ghost, then /datum/antagonist/on_gain calls replace_banned_player() like for other antags.
+/datum/antagonist/cult/manifest_summon
+	ignore_eligibility_checks = TRUE
+	give_equipment = FALSE
+	var/obj/effect/rune/manifest/linked_rune
+	var/mob/living/summon_invoker
+
+/datum/antagonist/cult/manifest_summon/on_gain()
+	. = ..()
+	if(owner.current && is_banned(owner.current))
+		manifest_replacement_failed()
+
+/datum/antagonist/cult/manifest_summon/proc/manifest_replacement_failed()
+	var/mob/living/si = summon_invoker
+	var/obj/effect/rune/manifest/RM = linked_rune
+	if(istype(si) && !QDELETED(si))
+		to_chat(si, "<span class='cultitalic'>The gathered spirits could not be bound, and no other soul answered the call.</span>")
+	if(istype(RM) && !QDELETED(RM))
+		RM.fail_invoke()
+		log_game("Manifest rune: replace_banned_player had no replacement for cult-jobbanned manifest at [get_area(RM)]")
+	if(!owner)
+		return
+	if(SSticker.mode)
+		var/datum/antagonist/cult/cult_datum = owner.has_antag_datum(/datum/antagonist/cult, TRUE)
+		if(cult_datum)
+			SSticker.mode.remove_cultist(owner, silent = TRUE)
+	var/mob/living/L = owner.current
+	if(istype(L))
+		if(L.key)
+			L.ghostize(0)
+		if(!QDELETED(L))
+			L.dust(TRUE)
+
 /datum/antagonist/cult/get_team()
 	return cult_team
 
@@ -82,6 +115,7 @@
 
 	if(cult_team?.blood_target && cult_team.blood_target_image && current.client)
 		current.client.images += cult_team.blood_target_image
+		cult_team.blood_target_image_recipients |= current.client // BLUEMOON FIX: track recipient
 
 
 /datum/antagonist/cult/proc/equip_cultist(metal=TRUE)
@@ -166,6 +200,7 @@
 		owner.current.log_message("has renounced the cult of Nar'Sie!", LOG_ATTACK, color="#960000")
 	if(cult_team?.blood_target && cult_team.blood_target_image && owner.current.client)
 		owner.current.client.images -= cult_team.blood_target_image
+		cult_team.blood_target_image_recipients -= owner.current.client // BLUEMOON FIX: drop from recipients
 	owner.special_role = null // BLUEMOON ADD
 	. = ..()
 
@@ -258,6 +293,10 @@
 
 	var/atom/blood_target
 	var/image/blood_target_image
+	/// BLUEMOON FIX: list of clients that currently hold blood_target_image in their
+	/// client.images. Without this, reset_blood_target only sweeps team.members and
+	/// leaves the image stuck on disconnected / deconverted cultists' old clients.
+	var/list/client/blood_target_image_recipients = list()
 	var/blood_target_reset_timer
 
 	var/cult_vote_called = FALSE
@@ -270,7 +309,13 @@
 	. = ..()
 	START_PROCESSING(SSprocessing, src)
 
+/datum/team/cult/proc/on_blood_target_destroyed(datum/source)
+	SIGNAL_HANDLER
+	reset_blood_target(src)
+
 /datum/team/cult/Destroy()
+	if(blood_target)
+		UnregisterSignal(blood_target, COMSIG_PARENT_QDELETING)
 	STOP_PROCESSING(SSprocessing, src)
 	return ..()
 
@@ -312,6 +357,8 @@
 				to_chat(B.current, "<span class='cultlarge'>The veil weakens as your cult grows, your eyes begin to glow...")
 				addtimer(CALLBACK(src, PROC_REF(rise), B.current), 200)
 		cult_risen = TRUE
+		// Завеса истончается не только для культистов: за иллюминатором это видно всем.
+		set_antag_parallax_scene(ANTAG_SCENE_CULT_RISEN, ANTAG_PARALLAX_TOKEN_CULT)
 
 	if(ratio > CULT_ASCENDENT && !cult_ascendent)
 		for(var/datum/mind/B in members)
@@ -320,6 +367,9 @@
 				to_chat(B.current, "<span class='cultlarge'>Your cult is ascendent and the red harvest approaches - you cannot hide your true nature for much longer!!")
 				addtimer(CALLBACK(src, PROC_REF(ascend), B.current), 200)
 		priority_announce("На вашей станции обнаружена внепространственная активность, связанная с культом Нар’Си. Данные свидетельствуют о том, что в ряды культа обращено около Сорока Процентов Экипажа Станции. Служба безопасности получает право свободно применять летальную силу против культистов. Прочий персонал должен быть готов защищать себя и свои рабочие места от нападений культистов (в том числе используя летальную силу в качестве крайней меры самообороны), но не должен выслеживать культистов и охотиться на них. Погибшие члены экипажа должны быть оживлены и деконвертированы, как только ситуация будет взята под контроль.", "Центральное Командование, Отдел Работы с Реальностью", 'sound/announcer/classic/_admin_horror_music.ogg')
+		// Тот же токен, что и у первой ступени: add_modifier заменяет запись, поэтому
+		// красная жатва встаёт ВМЕСТО слабого багрянца, а не поверх него.
+		set_antag_parallax_scene(ANTAG_SCENE_CULT_ASCENDENT, ANTAG_PARALLAX_TOKEN_CULT)
 		cult_ascendent = TRUE
 
 
@@ -360,13 +410,13 @@
 		sac_objective.team = src
 
 	for(var/mob/living/carbon/human/player in GLOB.player_list)
-		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD)
+		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD && !player.mind.is_ghost_role())
 			target_candidates += player.mind
 
 	if(!length(target_candidates))
 		message_admins("Cult Sacrifice: Could not find unconvertible target, checking for convertible target.")
 		for(var/mob/living/carbon/human/player in GLOB.player_list)
-			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD)
+			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD && !player.mind.is_ghost_role())
 				target_candidates += player.mind
 
 	listclearnulls(target_candidates)
@@ -408,6 +458,11 @@
 	var/sacced = FALSE
 	var/sac_image
 	var/mob/living/target_current
+
+/datum/objective/sacrifice/Destroy(force, ...)
+	//жёсткая ссылка на тело жертвы: в раунде 9827 объектив утёк в один тик с человеком
+	target_current = null
+	return ..()
 
 /datum/objective/sacrifice/check_completion()
 	return sacced || completed

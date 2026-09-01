@@ -300,7 +300,7 @@
 	breakouttime = 60
 	knockdown = 20
 
-/obj/item/restraints/legcuffs/bola/cult/pickup(mob/living/user)
+/obj/item/restraints/legcuffs/bola/cult/equipped(mob/living/user, slot)
 	. = ..()
 	if(!iscultist(user))
 		to_chat(user, "<span class='warning'>The bola seems to take on a life of its own!</span>")
@@ -1219,8 +1219,7 @@
 				else
 					var/mob/living/simple_animal/hostile/illusion/escape/E = new(owner.loc)
 					E.Copy_Parent(owner, 70, 10)
-					E.GiveTarget(owner)
-					E.Goto(owner, owner.movement_delay(), E.minimum_distance)
+					E.GiveTarget(owner) //контроллер бежит сам
 			return
 	else
 		if(prob(50))

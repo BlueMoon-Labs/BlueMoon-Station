@@ -98,7 +98,7 @@
 /area/shuttle/supply)
 "q" = (
 /obj/structure/sign/warning/fire,
-/turf/closed/wall/mineral/titanium/spaceship/nodiagonal,
+/turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/supply)
 "s" = (
 /turf/closed/wall/mineral/plastitanium,
@@ -167,7 +167,7 @@
 /obj/structure/fluff/metalpole/end{
 	pixel_y = -32
 	},
-/turf/closed/wall/mineral/titanium/spaceship/nodiagonal,
+/turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/supply)
 "I" = (
 /obj/effect/turf_decal/loading_area/white{

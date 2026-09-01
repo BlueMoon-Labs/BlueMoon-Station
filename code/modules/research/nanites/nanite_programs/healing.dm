@@ -22,9 +22,15 @@
 		var/list/parts = C.get_damaged_bodyparts(TRUE,TRUE, status = list(BODYPART_ORGANIC, BODYPART_NANITES))
 		if(!parts.len)
 			return
+		// Heal every limb first and recompute health once — letting each limb run
+		// its own updatehealth() made this program cost milliseconds per tick.
+		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(0.5/parts.len, 0.5/parts.len))
-				host_mob.update_damage_overlays()
+			if(L.heal_damage(0.5/parts.len, 0.5/parts.len, updating_health = FALSE))
+				update = TRUE
+		host_mob.updatehealth()
+		if(update)
+			host_mob.update_damage_overlays()
 	else
 		host_mob.adjustBruteLoss(-0.5, TRUE)
 		host_mob.adjustFireLoss(-0.5, TRUE)
@@ -68,6 +74,20 @@
 			continue
 		host_mob.reagents.remove_reagent(R.type,1)
 
+/datum/nanite_program/purging_synth
+	name = "Purge Corruption"
+	desc = "Nanites clean the circuits in the host's positronic brain from corrosion."
+	use_rate = 1
+	rogue_types = list(/datum/nanite_program/suffocating, /datum/nanite_program/necrotic)
+
+/datum/nanite_program/purging_synth/check_conditions()
+	. = ..()
+	if(!. || !host_mob.getToxLoss(TOX_SYSCORRUPT))
+		return FALSE
+
+/datum/nanite_program/purging_synth/active_effect()
+	host_mob.adjustToxLoss(-1, toxins_type = TOX_SYSCORRUPT)
+
 /datum/nanite_program/brain_heal
 	name = "Neural Regeneration"
 	desc = "The nanites fix neural connections in the host's brain, reversing brain damage and minor traumas. Will not consume nanites while it would not have an effect."
@@ -109,7 +129,7 @@
 /datum/nanite_program/blood_restoring/active_effect()
 	if(iscarbon(host_mob))
 		var/mob/living/carbon/C = host_mob
-		C.adjust_integration_blood(2)
+		C.adjust_integration_blood(2, 2)
 
 /datum/nanite_program/repairing
 	name = "Mechanical Repair"
@@ -139,8 +159,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE)) //much faster than organic healing
+			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE, updating_health = FALSE)) //much faster than organic healing
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
@@ -185,8 +206,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(3/parts.len, 3/parts.len, 0))
+			if(L.heal_damage(3/parts.len, 3/parts.len, 0, updating_health = FALSE))
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
@@ -242,14 +264,18 @@
 	sleep(30)
 	playsound(C, 'sound/machines/defib_zap.ogg', 50, FALSE)
 	if(check_revivable())
+		var/breathless = HAS_TRAIT(C, TRAIT_NOBREATH)
 		playsound(C, 'sound/machines/defib_success.ogg', 50, FALSE)
 		C.set_heartattack(FALSE)
 		var/oxydamage = C.getOxyLoss()
 		if(C.health < HEALTH_THRESHOLD_FULLCRIT && oxydamage)
 			var/diff = C.health - HEALTH_THRESHOLD_FULLCRIT
 			C.adjustOxyLoss(diff)	//Heal their oxydamage up to hardcrit (or if less, as much as they have, since the proc has sanity)
-		C.revive(full_heal = FALSE, admin_revive = FALSE)
-		C.emote("gasp")
+		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE)
+		if(breathless)
+			C.emote("twitch")
+		else
+			C.emote("gasp")
 		C.Jitter(100)
 		SEND_SIGNAL(C, COMSIG_LIVING_MINOR_SHOCK)
 		// BLUEMOON EDIT START - изменение памяти после смерти
@@ -258,3 +284,58 @@
 	else
 		playsound(C, 'sound/machines/defib_failed.ogg', 50, FALSE)
 
+/datum/nanite_program/hard_reboot
+	name = "Hard Reboot Protocol"
+	desc = "Nanomachines store protocols for rebooting the host's positronic brain."
+	can_trigger = TRUE
+	trigger_cost = 25
+	trigger_cooldown = 120
+	rogue_types = list(/datum/nanite_program/shocking)
+
+/datum/nanite_program/hard_reboot/check_conditions()
+	. = ..()
+	if(!. || !(host_mob.mob_biotypes & MOB_ROBOTIC))
+		return FALSE
+
+/datum/nanite_program/hard_reboot/on_trigger(comm_message)
+	host_mob.notify_ghost_cloning("Nanites is trying to reboot you! Re-enter your corpse if you want to be revived!")
+	addtimer(CALLBACK(src, PROC_REF(reboot)), 50)
+
+/datum/nanite_program/hard_reboot/proc/reboot()
+	var/mob/living/carbon/target = host_mob
+	target.adjustOxyLoss(-50, 0)
+	target.updatehealth()
+	if(target.revive())
+		target.visible_message("...[target]'s posibrain flickers to life once again!")
+		target.emote("ping")
+		// BLUEMOON EDIT START - изменение памяти после смерти
+		target.mind?.revival_handle_memory("force reboot")
+		// BLUEMOON EDIT END
+		return TRUE
+	else
+		target.visible_message("...[target]'s posibrain flickers a few times, before the lights fade yet again...")
+		return FALSE
+
+/datum/nanite_program/heal_wounds
+	name = "Recovery Wounds"
+	desc = "Nanites use themselves to restore the body, replacing damage and thus healing wounds."
+	use_rate = 10
+	rogue_types = list(/datum/nanite_program/necrotic)
+
+/datum/nanite_program/heal_wounds/check_conditions()
+	. = ..()
+	if(!. || !iscarbon(host_mob))
+		return FALSE
+
+	var/mob/living/carbon/host_carbon = host_mob
+	if(!host_carbon.all_wounds?.len)
+		return FALSE
+
+	return TRUE
+
+/datum/nanite_program/heal_wounds/active_effect()
+	var/mob/living/carbon/host_carbon = host_mob
+	var/datum/wound/heal_wound = pick(host_carbon.all_wounds)
+	if(!heal_wound)
+		return FALSE
+	heal_wound.on_xadone(5)

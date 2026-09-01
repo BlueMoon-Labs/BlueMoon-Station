@@ -22,7 +22,7 @@
 	speak_emote = list("squeaks")
 	var/datum/mind/origin
 	var/egg_lain = 0
-	gold_core_spawnable = HOSTILE_SPAWN //NO, It's powergame time! :wooo:
+	gold_core_spawnable = NO_SPAWN //are you sure about this?? // CITADEL CHANGE, Yes.
 
 /mob/living/simple_animal/hostile/headslug/Initialize(mapload)
 	. = ..()
@@ -70,7 +70,7 @@
 
 /obj/item/organ/body_egg/changeling_egg/proc/Pop()
 	var/mob/living/carbon/monkey/M = new(owner)
-	owner.stomach_contents += M
+	owner.add_to_stomach(M)
 
 	for(var/obj/item/organ/I in src)
 		I.Insert(M, 1)

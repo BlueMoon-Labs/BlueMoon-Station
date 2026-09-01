@@ -26,7 +26,7 @@
 	name = "The Greatest of the Greys"
 	desc = "Вещи величайшего грейтайдера. Его копьё впитало в себя столько крови, страха и превозмогания, что стало великим артефактом равным которому нет в бою. С этим даже один человек сможет стать целым тайфуном."
 	item = /obj/item/storage/box/syndie_kit/grayhero
-	cost = 20
+	cost = 14
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/explosives/bombcollar
@@ -42,7 +42,7 @@
 			костюм подарит рефлексы своего прошлого владельца. Увернуться от пули ещё никогда не было так стильно."
 	item = /obj/item/storage/box/inteq_kit/hank
 	cost = 13
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/iron_tombstone
 	name = "Iron tombstone"
@@ -50,14 +50,14 @@
 			Теперь эта пятнадцати килограммовая пластина сбережёт твоё личико от недружественного огня."
 	item = /obj/item/clothing/suit/space/hardsuit/iron_tombstone
 	cost = 10
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/quet
 	name = "Quiet kid kit"
 	desc = "Тебя выгоняют из дома на самоубийственную миссию, а менять толстовку с кепкой на каску с бронежилетом не хочется? Наборы из гибких пластин помогут с этим и будут отлично сидеть под любой одеждой."
 	item = /obj/item/storage/box/inteq_kit/quetkid
 	cost = 3
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 ///Оружие
 /datum/uplink_item/inteq/angle_grinder
@@ -71,15 +71,14 @@
 	name = "Melter"
 	desc = "Генератор высокотемпературной плазмы, предназначенный для производственных нужд, но после внедрения технологий NT получил возможность отправлять сгусток плазмы в полёт. Имеет два режима стрельбы"
 	item = /obj/item/gun/energy/pulse/pistol/inteq
-	cost = 15
-	limited_stock = 1
+	cost = 10
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/canceller
 	name = "Canceller"
 	desc = "Старый пистолет для не летальных задержаний использовавшийся спецслужбами Солнечной федерации. Вместо батареи был поставлен РИТЭГ, благодаря чему заряд постепенно восполняется, а рукам становится тепло в этом холодном космосе."
 	item = /obj/item/gun/energy/laser/canceller
-	cost = 6
+	cost = 5
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/sand_parasite
@@ -88,12 +87,13 @@
 	item = /obj/item/reagent_containers/syringe/sand
 	cost = 15
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	required_round_types = list(ROUNDTYPE_DYNAMIC_HARD)
 
 /datum/uplink_item/dangerous/garand
 	name = "Old, but gold rifle"
 	desc = "Классическая полуавтоматическая винтовка с деревянной фурнитурой под калибр .308 winchester. Мы знаем как трудно достать в наше время сменные клипсы, по этому в комплекте идёт диск с чертежами патронов для автолата."
 	item = /obj/item/storage/backpack/guitarbag/sniper
-	cost = 9 //у патронов .308 оказывается понизили урон до 45 с 60.
+	cost = 8 //у патронов .308 оказывается понизили урон до 45 с 60.
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 
@@ -220,7 +220,7 @@
 			new /obj/item/suspiciousphone(src)
 			new /obj/item/camera_bug(src)
 			new /obj/item/sbeacondrop/powersink(src)
-			new /obj/item/cartridge/virus/syndicate(src)
+			new /obj/item/cartridge/virus/detomatix(src)
 			new /obj/item/storage/toolbox/syndicate(src) //To actually get to those places
 			new /obj/item/pizzabox/bomb
 
@@ -244,10 +244,10 @@
 
 		if("metaops") // 30 tc
 			new /obj/item/clothing/suit/space/hardsuit/syndi/inteq(src) // 8 tc
-			new /obj/item/gun/ballistic/automatic/shotgun/aa12(src) // 8 tc
+			new /obj/item/gun/ballistic/automatic/shotgun/bulldog(src) // 8 tc
 			new /obj/item/implanter/explosive(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/card/emag(src) // 6 tc
@@ -273,7 +273,13 @@
 			new /obj/item/lipstick/black/death(src) // 12 tc
 			new /obj/item/storage/box/syndie_kit/chemical (src) //  6
 			new /obj/item/gun/syringe/syndicate(src) //  3
-			new /obj/item/storage/fancy/cigarettes/derringer(src) //  6
+			new /obj/item/storage/fancy/cigarettes/derringer(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)//  6
 
 		if("launchman") // 29 tc worth
 			new /obj/item/storage/briefcase/launchpad(src) // 6

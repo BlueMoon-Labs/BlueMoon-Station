@@ -26,6 +26,8 @@
 	. = ..()
 	if(.)
 		return
+	if(!magazine) // нечего заряжать без барабана/магазина (напр. он извлечён через Alt-click или оружие создано без него)
+		return
 	var/num_loaded = 0
 	if(istype(A, /obj/item/ammo_box)) //проверка что контейнер с боеприпасами и приведение к типу
 		var/obj/item/ammo_box/AM = A
@@ -59,6 +61,7 @@
 		to_chat(user, "<span class='notice'>You unload [num_unloaded] shell\s from [src].</span>")
 	else
 		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+	update_icon()
 
 /obj/item/gun/ballistic/revolver/verb/spin()
 	set name = "Spin Chamber"
@@ -130,15 +133,16 @@
 
 /obj/item/gun/ballistic/revolver/detective/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	if(chambered && !(chambered.caliber in safe_calibers))
-		if(prob(70 - (magazine.ammo_count() * 10)))	//minimum probability of 10, maximum of 60
+		var/real_ammo_count = magazine ? magazine.ammo_count(0) : 0
+		if(prob(65 - (real_ammo_count * 10)))	//минимум 5, максимум 55
 			playsound(user, fire_sound, 50, 1)
 			to_chat(user, "<span class='userdanger'>[src] blows up in your face!</span>")
-			user.take_bodypart_damage(0,20)
+			user.take_bodypart_damage(10,10)
 			user.dropItemToGround(src)
 			return FALSE
 	..()
 
-/obj/item/gun/ballistic/revolver/detective/screwdriver_act(mob/living/user, obj/item/I)
+/obj/item/gun/ballistic/revolver/detective/wrench_act(mob/living/user, obj/item/I)
 	if(..())
 		return TRUE
 	if("38" in magazine.caliber)
@@ -170,10 +174,44 @@
 	return TRUE
 
 
+/obj/item/gun/ballistic/revolver/requiem
+	name = "\improper Requiem"
+	desc = "A massive Nanotrasen heavy assault revolver chambered in 12.7x55mm. Issued in tiny numbers to Central Command and asset-protection details. The cylinder only accepts 12.7x55mm cartridges — not .357."
+	icon = 'modular_bluemoon/icons/obj/guns/requiem_revolver.dmi'
+	icon_state = "revolver"
+	item_state = "revolver"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/requiem127
+	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_HEAVY
+	fire_sound = 'modular_bluemoon/sound/weapons/re9_requiem_fire.ogg'
+	recoil = 6
+	dir_recoil_amp = 7
+	slowdown = 0.15
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+
+/obj/item/gun/ballistic/revolver/requiem/update_icon_state()
+	. = ..()
+	icon = 'modular_bluemoon/icons/obj/guns/requiem_revolver.dmi'
+	if(suppressed || sawn_off)
+		return
+	if(!get_ammo(0, 0))
+		icon_state = "revolver_open"
+	else
+		icon_state = "revolver"
+	item_state = icon_state
+
+/obj/item/gun/ballistic/revolver/requiem/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
+	. = ..()
+	if(user?.client)
+		shake_camera(user, 2, 2)
+
 /obj/item/gun/ballistic/revolver/mateba
 	name = "\improper Unica 6 auto-revolver"
 	desc = "A retro high-powered autorevolver typically used by officers of the New Russia military. Uses .357 ammo."
 	icon_state = "mateba" //Поменял стандартную иконку Револьвера Русских.
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/golden
 	name = "\improper Golden revolver"
@@ -298,6 +336,7 @@
 
 /obj/item/gun/ballistic/revolver/doublebarrel
 	name = "double-barreled shotgun"
+	icon = 'icons/obj/guns/projectile.dmi'
 	desc = "A true classic."
 	icon_state = "dshotgun"
 	item_state = "dshotgun-wielded"
@@ -414,24 +453,27 @@
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws
 	name = "MWS-01 'Big Iron'"
-	desc = "Modular Weapon System-01, does fit on your hip."
+	desc = "Modular Weapon System-01, помещается на вашем бедре."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "mws"
 	fire_sound = 'sound/weapons/MWSfire.ogg' //i spent 1 hour making a cool sound but byond just compresses it to shit so have this instead >:(
 	mag_type = /obj/item/ammo_box/magazine/mws_mag
 	spawnwithmagazine = FALSE
 	recoil = 0
+	can_flashlight = 1
+	flight_x_offset = 21
+	flight_y_offset = 10
 
 	var/charge_sections = 6
 
 /obj/item/gun/ballistic/revolver/mws/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click to remove the magazine.</span>"
+	. += span_notice("Alt-click для извлечения магазина.")
 
 /obj/item/gun/ballistic/revolver/mws/shoot_with_empty_chamber(mob/living/user as mob|obj)
 	process_chamber(user)
 	if(!chambered || !chambered.BB)
-		to_chat(user, "<span class='danger'>*click*</span>")
+		to_chat(user, span_danger("*click*"))
 		playsound(src, "gun_dry_fire", 30, 1)
 
 
@@ -451,9 +493,9 @@
 /obj/item/gun/ballistic/revolver/mws/proc/switch_to(obj/item/ammo_casing/mws_batt/new_batt, mob/living/user)
 	if(ishuman(user))
 		if(chambered && new_batt.type == chambered.type)
-			to_chat(user,"<span class='warning'>[src] is now using the next [new_batt.type_name] power cell.</span>")
+			to_chat(user, span_warning("[src] начинает тратить следующую батарею, [new_batt.type_name]."))
 		else
-			to_chat(user,"<span class='warning'>[src] is now firing [new_batt.type_name].</span>")
+			to_chat(user, span_warning("[src] теперь использует [new_batt.type_name]."))
 
 	chambered = new_batt
 	update_icon()
@@ -487,7 +529,7 @@
 		else
 			playsound(src, "gun_remove_empty_magazine", 70, 1)
 		magazine = null
-		to_chat(user, "<span class='notice'>You pull the magazine out of [src].</span>")
+		to_chat(user, span_notice("Вы извлекли магазин из [src]."))
 		if(chambered)
 			chambered = null
 		update_icon()

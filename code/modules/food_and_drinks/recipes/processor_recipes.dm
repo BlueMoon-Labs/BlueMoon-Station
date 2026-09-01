@@ -48,6 +48,10 @@
 	input = /obj/item/reagent_containers/food/snacks/tortilla
 	output = /obj/item/reagent_containers/food/snacks/cornchips
 
+/datum/food_processor_process/curd_cheese
+	input = /obj/item/reagent_containers/food/snacks/curd
+	output = /obj/item/reagent_containers/food/snacks/curd_cheese
+
 /datum/food_processor_process/mob/slime
 	input = /mob/living/simple_animal/slime
 	output = null

@@ -11,7 +11,7 @@
 /datum/status_effect/pregnancy
 	id = "pregnancy"
 	duration = -1
-	tick = FALSE
+	tick_interval = -1
 	alert_type = /atom/movable/screen/alert/status_effect/pregnancy
 
 /atom/movable/screen/alert/status_effect/lactation
@@ -22,7 +22,7 @@
 /datum/status_effect/lactation
 	id = "lactation"
 	duration = -1 //Make Lactation permanent - Gardelin0
-	tick = FALSE
+	tick_interval = -1
 	alert_type = /atom/movable/screen/alert/status_effect/lactation
 	var/noapply
 

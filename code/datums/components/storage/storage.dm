@@ -33,6 +33,8 @@
 	/// Max volume we can hold. Applies to [STORAGE_LIMIT_VOLUME]. Auto scaled on New() if unset.
 	var/max_volume
 
+	var/allow_other_storages = TRUE					// whether this storage can hold other storage items.
+
 	var/emp_shielded = FALSE
 
 	var/silent = FALSE								//whether this makes a message when things are put in.
@@ -49,6 +51,9 @@
 
 	/// Ui objects by person. mob = list(objects)
 	var/list/ui_by_mob = list()
+	// Пул переиспользуемых экранных объектов у хранилищ общий на весь мир, см.
+	// GLOB.storage_item_holder_pool в ui.dm. Свой пул у каждого компонента означал, что
+	// каждый когда-либо открытый рюкзак держит свои холдеры до конца раунда.
 
 	var/allow_big_nesting = FALSE					//allow storage objects of the same or greater size.
 
@@ -116,14 +121,17 @@
 	update_actions()
 
 /datum/component/storage/Destroy()
+	QDEL_NULL(modeswitch_action)
 	close_all()
 	wipe_ui_objects()
 	LAZYCLEARLIST(is_using)
 	return ..()
 
 /datum/component/storage/proc/wipe_ui_objects()
-	for(var/i in ui_by_mob)
-		var/list/objects = ui_by_mob[i]
+	for(var/mob/M as anything in ui_by_mob)
+		var/list/objects = ui_by_mob[M]
+		if(M.client)
+			M.client.screen -= objects
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
 
@@ -173,6 +181,13 @@
 					contents.Cut(1, limited_random_access_stack_position + 1)
 				else
 					contents.Cut(1, length(contents) - limited_random_access_stack_position + 1)
+		var/obj/o
+		for(var/i = contents.len to 1 step -1)
+			o = contents[i]
+			if(!istype(o))
+				continue
+			if(o.obj_flags & NOT_VISIBLE_IN_STORAGE)
+				contents.Cut(i,i+1)
 	return contents
 
 /datum/component/storage/proc/canreach_react(datum/source, list/next)
@@ -193,6 +208,10 @@
 
 /datum/component/storage/proc/preattack_intercept(datum/source, obj/O, mob/M, params)
 	if(!isitem(O) || !click_gather || (SEND_SIGNAL(O, COMSIG_CONTAINS_STORAGE) && !quick_gather_storages))
+		return FALSE
+	// цель может хотеть саму сумку, а не поездку в ней: сбор ниже возвращает
+	// COMPONENT_NO_ATTACK и до attackby() цели дело уже не доходит
+	if(SEND_SIGNAL(O, COMSIG_ATOM_PRE_STORAGE_GATHER, parent, M) & COMPONENT_CANCEL_STORAGE_GATHER)
 		return FALSE
 	. = COMPONENT_NO_ATTACK
 	if(check_locked(source, M, TRUE))
@@ -280,13 +299,16 @@
 
 /datum/component/storage/proc/mass_remove_from_storage(atom/target, list/things, datum/progressbar/progress, trigger_on_found = TRUE, mob/user)
 	var/atom/real_location = real_location()
+	var/target_isturf = isturf(target)
 	for(var/obj/item/I in things)
 		things -= I
 		if(I.loc != real_location)
 			continue
 		if(trigger_on_found && user && (user.active_storage != src) && I.on_found(user))
 			return FALSE
-		remove_from_storage(I, target)
+		if(remove_from_storage(I, target))
+			if(target_isturf)
+				I.randomize_pixel_position(user)
 		if(TICK_CHECK)
 			progress.update(progress.goal - length(things))
 			return TRUE
@@ -493,6 +515,11 @@
 /datum/component/storage/proc/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
 	if(!istype(I) || (I.item_flags & ABSTRACT))
 		return FALSE //Not an item
+	// Протухшая ссылка из уснувшего вызова (do_after/опрос) не должна возвращать
+	// удаляемый предмет в contents: Destroy уже вынес его в nullspace, повторная
+	// вставка = гарантированный вечный harddel (прод: магазин e45 в сатчеле).
+	if(QDELETED(I))
+		return FALSE
 	if(I == parent)
 		return FALSE	//no paradoxes for you
 	var/atom/real_location = real_location()
@@ -506,21 +533,21 @@
 	if(!length(can_hold_extra) || !is_type_in_typecache(I, can_hold_extra))
 		if(length(can_hold) && !is_type_in_typecache(I, can_hold))
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] cannot hold [I]!</span>")
+				to_chat(M, span_warning("[host] не может уместить [I]!"))
 			return FALSE
 		if(is_type_in_typecache(I, cant_hold)) //Check for specific items which this container can't hold.
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] cannot hold [I]!</span>")
+				to_chat(M, span_warning("[host] не может уместить [I]!</span>"))
 			return FALSE
 		if(storage_flags & STORAGE_LIMIT_MAX_W_CLASS && I.w_class > max_w_class)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] is too long for [host]!</span>")
+				to_chat(M, span_warning("[I] не вмещается по длине в [host]!"))
 			return FALSE
 		// STORAGE LIMITS
 	if(storage_flags & STORAGE_LIMIT_MAX_ITEMS)
 		if(real_location.contents.len >= max_items)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[host] has too many things in it, make some space!</span>")
+				to_chat(M, span_warning("Внутри [host] слишком много вещей, освободите место!"))
 			return FALSE //Storage item is full
 	if(storage_flags & STORAGE_LIMIT_COMBINED_W_CLASS)
 		var/sum_w_class = I.w_class
@@ -528,7 +555,7 @@
 			sum_w_class += _I.w_class //Adds up the combined w_classes which will be in the storage item if the item is added to it.
 		if(sum_w_class > max_combined_w_class)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] won't fit in [host], make some space!</span>")
+				to_chat(M, span_warning("[I] не поместится в [host], освободите место!"))
 			return FALSE
 	if(storage_flags & STORAGE_LIMIT_VOLUME)
 		var/sum_volume = I.get_w_volume()
@@ -536,18 +563,22 @@
 			sum_volume += _I.get_w_volume()
 		if(sum_volume > get_max_volume())
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[I] is too spacious to fit in [host], make some space!</span>")
+				to_chat(M, span_warning("[I] слишком объемный для [host], освободите место!"))
 			return FALSE
 	/////////////////
 	if(isitem(host))
 		var/obj/item/IP = host
 		var/datum/component/storage/STR_I = I.GetComponent(/datum/component/storage)
+		if(STR_I && !allow_other_storages)
+			if(!stop_messages)
+				to_chat(M, span_warning("[host] не может уместить в себя ёмкости вроде [I]!"))
+				return FALSE
 		if((I.w_class >= IP.w_class) && STR_I && !allow_big_nesting)
 			if(!stop_messages)
-				to_chat(M, "<span class='warning'>[IP] cannot hold [I] as it's a storage item of the same size!</span>")
+				to_chat(M, span_warning("[IP] не может уместить [I], так как это ёмкость того же размера!"))
 			return FALSE //To prevent the stacking of same sized storage items.
 	if(HAS_TRAIT(I, TRAIT_NODROP)) //SHOULD be handled in unEquip, but better safe than sorry.
-		to_chat(M, "<span class='warning'>\the [I] is stuck to your hand, you can't put it in \the [host]!</span>")
+		to_chat(M, span_warning("[I] прилипло к вашей руке, не выйдет положить в [host]!"))
 		return FALSE
 	var/datum/component/storage/concrete/master = master()
 	if(!istype(master))
@@ -577,7 +608,12 @@
 	if(rustle_sound)
 		playsound(parent, "rustle", 50, 1, -5)
 	to_chat(user, "<span class='notice'>You put [I] [insert_preposition]to [parent].</span>")
-	for(var/mob/viewing in fov_viewers(world.view, user)-M)
+	// user может быть null (вставка сигналом без юзера) - fov_viewers(null) вернёт 0,
+	// и "0 - M" рантаймил type mismatch. Центр обзора тогда сам M.
+	var/mob/feedback_center = user || M
+	if(!feedback_center)
+		return
+	for(var/mob/viewing in fov_viewers(world.view, feedback_center)-M)
 		if(in_range(M, viewing)) //If someone is standing close enough, they can tell what it is...
 			viewing.show_message("<span class='notice'>[M] puts [I] [insert_preposition]to [parent].</span>", MSG_VISUAL)
 		else if(I && I.w_class >= 3) //Otherwise they can only see large or normal items from a distance...
@@ -610,7 +646,7 @@
 	if(message && . && user)
 		to_chat(user, "<span class='warning'>[parent] seems to be locked!</span>")
 
-/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted)
+/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted, datum/callback/extra_checks)
 	if(!force)
 		if(check_adjacent)
 			if(!user || !user.CanReach(destination) || !user.CanReach(parent))
@@ -620,10 +656,12 @@
 		taking.len = amount
 	if(inserted)			//duplicated code for performance, don't bother checking retval/checking for list every item.
 		for(var/i in taking)
-			if(remove_from_storage(i, destination))
+			if((!extra_checks || extra_checks.Invoke(i)) && remove_from_storage(i, destination))
 				inserted |= i
 	else
 		for(var/i in taking)
+			if(extra_checks && !extra_checks.Invoke(i))
+				continue
 			remove_from_storage(i, destination)
 	return TRUE
 
@@ -641,6 +679,7 @@
 	return TRUE
 
 /datum/component/storage/proc/on_attack_hand(datum/source, mob/user)
+	SIGNAL_HANDLER
 	var/atom/A = parent
 	if(!attack_hand_interact)
 		return
@@ -649,23 +688,8 @@
 		close(user)
 		. = COMPONENT_NO_ATTACK_HAND
 		return
-
 	if(rustle_sound)
 		playsound(A, "rustle", 50, 1, -5)
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(H.l_store == A && !H.get_active_held_item())	//Prevents opening if it's in a pocket.
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.l_store = null
-			return
-		if(H.r_store == A && !H.get_active_held_item())
-			. = COMPONENT_NO_ATTACK_HAND
-			H.put_in_hands(A)
-			H.r_store = null
-			return
-
 	if(A.loc == user)
 		. = COMPONENT_NO_ATTACK_HAND
 		if(!check_locked(source, user, TRUE))

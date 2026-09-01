@@ -29,7 +29,10 @@
 		return
 	log_admin("[key] ([key_name(C)]) has initiated an autobunker authentication with linked servers.")
 	for(var/name in servers)
+		// world.Export держит весь мир на всё время HTTP-обмена, и это цикл по серверам
+		var/blocking_started_ms = blocking_call_start()
 		var/returned = world.Export("[servers[name]]?[list2params(message)]")
+		blocking_call_finish(blocking_started_ms, "world.Export", "автобункер [name]")
 		switch(returned)
 			if("Bad Key")
 				to_chat(C, "<span class='boldwarning'>AUTOBuNKER: [name] failed to authenticate with this server.</span>")

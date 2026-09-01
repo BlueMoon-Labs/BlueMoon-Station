@@ -21,9 +21,10 @@
 		current_cycle++
 		M.adjust_nutrition(nutriment_factor, max_nutrition)
 	M.CheckBloodsuckerEatFood(nutriment_factor)
-	holder.remove_reagent(type, metabolization_rate)
+	if(holder)
+		holder.remove_reagent(type, metabolization_rate)
 
-/datum/reagent/consumable/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == INGEST)
 		if (quality && !HAS_TRAIT(M, TRAIT_AGEUSIA))
 			switch(quality)
@@ -128,7 +129,7 @@
 			if(O.reagents)
 				O.reagents.add_reagent(/datum/reagent/consumable/cooking_oil, reac_volume)
 
-/datum/reagent/consumable/cooking_oil/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/consumable/cooking_oil/reaction_mob(mob/living/M, method = TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(!istype(M))
 		return
 	if(holder && holder.chem_temp >= fry_temperature)
@@ -251,15 +252,15 @@
 	description = "This is what makes chilis hot."
 	color = "#B31008" // rgb: 179, 16, 8
 	taste_description = "hot peppers"
-	taste_mult = 1.5
+	taste_mult = 4.5
+	var/safe_heating = TRUE
 
 /datum/reagent/consumable/capsaicin/on_mob_life(mob/living/carbon/M)
 	var/heating = 0
 	switch(current_cycle)
 		if(1 to 15)
 			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/cryostylane))
-				holder.remove_reagent(/datum/reagent/cryostylane, 5)
+			holder.remove_reagent(/datum/reagent/cryostylane, 5)
 			if(isslime(M))
 				heating = rand(5,20)
 		if(15 to 25)
@@ -274,8 +275,27 @@
 			heating = 20 * TEMPERATURE_DAMAGE_COEFFICIENT
 			if(isslime(M))
 				heating = rand(20,25)
-	M.adjust_bodytemperature(heating)
+	if(safe_heating)
+		M.adjust_bodytemperature(heating, max_temp = BODYTEMP_HEAT_DAMAGE_LIMIT)
+	else
+		M.adjust_bodytemperature(heating)
+		if(prob(8))
+			M.blur_eyes(3)
+			to_chat(M, span_warning(pick("Язык жжет огнем!", "Мой рот в огне!", "ОЧЕНЬ остро!")))
 	..()
+
+/datum/reagent/consumable/capsaicin/reaper
+	name = "Reaper Capsaicin Oil"
+	description = "The spiciest thing you can eat, your tongue will experience hell."
+	color = "#a60800"
+	taste_description = "very, VERY HOT"
+	taste_mult = 10
+	safe_heating = FALSE
+
+/datum/reagent/consumable/capsaicin/reaper/on_mob_metabolize(mob/living/L)
+	. = ..()
+	L.adjust_bodytemperature(20 * TEMPERATURE_DAMAGE_COEFFICIENT)
+	to_chat(L, span_warning("Вы чувствуете нестерпимое жжение на языке, ОЧЕНЬ ОСТРО!"))
 
 /datum/reagent/consumable/frostoil
 	name = "Frost Oil"
@@ -290,8 +310,7 @@
 	switch(current_cycle)
 		if(1 to 15)
 			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
-				holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
+			holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
 			if(isslime(M))
 				cooling = -rand(5,20)
 		if(15 to 25)
@@ -330,75 +349,81 @@
 	taste_description = "scorching agony"
 	pH = 7.4
 
-/datum/reagent/consumable/condensedcapsaicin/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/condensedcapsaicin/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(!ishuman(M) && !ismonkey(M))
 		return
 
 	var/mob/living/carbon/victim = M
-	if(method == TOUCH || method == VAPOR)
-		//check for protection
-		var/mouth_covered = 0
-		var/eyes_covered = 0
-		var/obj/item/safe_thing = null
+	if(method != TOUCH && method != VAPOR)
+		return
 
-		//monkeys and humans can have masks
-		if( victim.wear_mask )
-			if ( victim.wear_mask.flags_cover & MASKCOVERSEYES )
-				eyes_covered = 1
-				safe_thing = victim.wear_mask
-			if ( victim.wear_mask.flags_cover & MASKCOVERSMOUTH )
-				mouth_covered = 1
-				safe_thing = victim.wear_mask
+	var/mouth_covered = FALSE
+	var/eyes_covered = FALSE
 
-		//only humans can have helmets and glasses
-		if(ishuman(victim))
-			var/mob/living/carbon/human/H = victim
-			if( H.head )
-				if ( H.head.flags_cover & HEADCOVERSEYES )
-					eyes_covered = 1
-					safe_thing = H.head
-				if ( H.head.flags_cover & HEADCOVERSMOUTH )
-					mouth_covered = 1
-					safe_thing = H.head
-			if(H.glasses)
-				eyes_covered = 1
-				if ( !safe_thing )
-					safe_thing = H.glasses
+	if(victim.wear_mask)
+		if(victim.wear_mask.flags_cover & MASKCOVERSEYES)
+			eyes_covered = TRUE
+		if(victim.wear_mask.flags_cover & MASKCOVERSMOUTH)
+			mouth_covered = TRUE
 
-		//actually handle the pepperspray effects
-		if ( eyes_covered && mouth_covered )
-			return
-		else if ( mouth_covered )	// Reduced effects if partially protected
-			if(prob(50))
-				if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
-					victim.emote("realagony")
-			victim.blur_eyes(6)
-			victim.blind_eyes(4)
-			victim.confused = max(M.confused, 6)
-			victim.damageoverlaytemp = 120
-			victim.DefaultCombatKnockdown(160, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 3, 15))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 10 SECONDS)
-			return
-		else if ( eyes_covered ) // Eye cover is better than mouth cover
-			victim.blur_eyes(6)
-			victim.damageoverlaytemp = 60
-			return
-		else // Oh dear :D
-			if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
-				victim.emote("realagony")
-			victim.blur_eyes(10)
-			victim.blind_eyes(6)
-			victim.confused = max(M.confused, 12)
-			victim.damageoverlaytemp = 150
-			victim.DefaultCombatKnockdown(160, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 5, 25))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 10 SECONDS)
-		victim.update_damage_hud()
+	if(ishuman(victim))
+		var/mob/living/carbon/human/H = victim
+		if(H.head)
+			if(H.head.flags_cover & HEADCOVERSEYES)
+				eyes_covered = TRUE
+			if(H.head.flags_cover & HEADCOVERSMOUTH)
+				mouth_covered = TRUE
+		if(H.glasses && istype(H.glasses, /obj/item/clothing/glasses))
+			var/obj/item/clothing/glasses/G = H.glasses
+			if(G.flash_protect >= 2) // welding-grade eye protection only
+				eyes_covered = TRUE
+
+	if(eyes_covered && mouth_covered)
+		return
+
+	var/can_scream = !HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)
+
+	if(mouth_covered) // Eyes exposed — searing pain
+		if(can_scream)
+			victim.emote("realagony")
+		victim.blur_eyes(12)
+		victim.blind_eyes(8)
+		victim.confused = max(victim.confused, 12)
+		victim.damageoverlaytemp = 200
+		victim.Paralyze(min(reac_volume * 4, 30))
+		shake_camera(victim, 12, 3)
+		victim.DefaultCombatKnockdown(240, override_hardstun = 0.15, override_stamdmg = min(reac_volume * 5, 30))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 22 SECONDS)
+	else if(eyes_covered) // Mouth exposed — inhaled capsaicin
+		victim.emote("cough")
+		victim.confused = max(victim.confused, 14)
+		victim.damageoverlaytemp = 160
+		victim.Paralyze(min(reac_volume * 3, 25))
+		shake_camera(victim, 6, 2)
+		victim.DefaultCombatKnockdown(200, override_hardstun = 0.12, override_stamdmg = min(reac_volume * 5, 28))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 20 SECONDS)
+	else // Full face hit
+		if(can_scream)
+			victim.emote("realagony")
+		victim.emote("cough")
+		victim.blur_eyes(18)
+		victim.blind_eyes(12)
+		victim.confused = max(victim.confused, 20)
+		victim.damageoverlaytemp = 250
+		victim.Paralyze(min(reac_volume * 8, 50))
+		shake_camera(victim, 18, 6)
+		victim.DefaultCombatKnockdown(280, override_hardstun = 0.15, override_stamdmg = min(reac_volume * 8, 45))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 28 SECONDS)
+	victim.update_damage_hud()
 
 /datum/reagent/consumable/condensedcapsaicin/on_mob_life(mob/living/carbon/M)
-	if(prob(5))
-		M.visible_message("<span class='warning'>[M] [pick("dry heaves!","coughs!","splutters!")]</span>")
+	if(prob(22))
+		M.emote("cough")
+	if(prob(10))
+		M.blur_eyes(3)
 	..()
 
 /datum/reagent/consumable/sodiumchloride
@@ -408,7 +433,7 @@
 	color = "#FFFFFF" // rgb: 255,255,255
 	taste_description = "salt"
 
-/datum/reagent/consumable/sodiumchloride/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/sodiumchloride/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(!istype(M))
 		return
 	if(M.has_bane(BANE_SALT))
@@ -513,7 +538,7 @@
 				. = 1
 	..()
 
-/datum/reagent/consumable/garlic/reaction_mob(mob/living/M, method, reac_volume)
+/datum/reagent/consumable/garlic/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
 	if(AmBloodsucker(M, TRUE)) //Theyll be immune to garlic as long as they masquarade, but they cant do it if they already have it.
 		switch(method)
 			if(INGEST)
@@ -553,6 +578,19 @@
 	value = REAGENT_VALUE_UNCOMMON
 	nutriment_factor = 10 * REAGENTS_METABOLISM
 	taste_description = "peanuts"
+
+/datum/reagent/consumable/vinegar
+	name = "Vinegar"
+	description = "Useful for pickling, or putting on chips."
+	taste_description = "acid"
+	color = "#661F1E"
+
+/datum/reagent/consumable/yoghurt
+	name = "Yoghurt"
+	description = "Creamy natural yoghurt, with applications in both food and drinks."
+	taste_description = "yoghurt"
+	color = "#efeff0"
+	nutriment_factor = 2 * REAGENTS_METABOLISM
 
 /datum/reagent/consumable/cornoil
 	name = "Corn Oil"
@@ -668,6 +706,12 @@
 	color = "#FFB500"
 	taste_description = "egg"
 
+/datum/reagent/consumable/eggwhite
+	name = "Egg White"
+	description = "It's full of even more protein."
+	nutriment_factor = 1.5 * REAGENTS_METABOLISM
+	color = "#fffdf7"
+
 /datum/reagent/consumable/corn_starch
 	name = "Corn Starch"
 	description = "A slippery solution."
@@ -704,7 +748,7 @@
 		M.adjustToxLoss(-1*REM, 0, TRUE) //heals TOXINLOVERs
 	..()
 
-/datum/reagent/consumable/honey/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/honey/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method in list(TOUCH, VAPOR, PATCH))
 		M.sterilize(60, 1 MINUTES * reac_volume/5) // +60% success probability on each step, compared to bacchus' blessing's ~46%
 	..()
@@ -725,7 +769,7 @@
 	pH = 5
 	value = REAGENT_VALUE_COMMON
 
-/datum/reagent/consumable/tearjuice/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/tearjuice/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(!istype(M))
 		return
 	var/unprotected = FALSE
@@ -798,7 +842,7 @@
 	pH = 11.2
 	value = REAGENT_VALUE_RARE
 
-/datum/reagent/consumable/tinlux/reaction_mob(mob/living/M)
+/datum/reagent/consumable/tinlux/reaction_mob(mob/living/M, affected_bodypart)
 	M.set_light(2)
 
 /datum/reagent/consumable/tinlux/on_mob_end_metabolize(mob/living/M)
@@ -849,7 +893,7 @@
 	color = "#97ee63"
 	taste_description = "pure electricity"
 
-/datum/reagent/consumable/liquidelectricity/reaction_mob(mob/living/M, method=TOUCH, reac_volume) //can't be on life because of the way blood works.
+/datum/reagent/consumable/liquidelectricity/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart) //can't be on life because of the way blood works.
 	if((method == INGEST || method == INJECT || method == PATCH) && iscarbon(M))
 
 		var/mob/living/carbon/C = M

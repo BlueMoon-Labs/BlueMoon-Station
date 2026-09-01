@@ -22,6 +22,8 @@
 	var/turf/T = pick(get_area_turfs(impact_area))
 	if(!T)
 		return
+	if(is_centcom_level(T.z)) // Мы обойдёмся без меж-секторных телепортов из сектора ЦК (Гкафе, тандердомы), если аномалия вдруг появится
+		return
 
 	// Calculate new position (searches through beacons in world)
 	var/obj/item/beacon/chosen
@@ -82,7 +84,7 @@
 	teleport_distance = 12
 	aSignal = null
 
-/obj/effect/anomaly/bluespace/big/Initialize(mapload, new_lifespan, drops_core)
+/obj/effect/anomaly/bluespace/big/Initialize(mapload, new_lifespan)
 	. = ..()
 
 	transform *= 3

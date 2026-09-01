@@ -10,18 +10,18 @@
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, CLONE = 0, STAMINA = 0, OXY = 0)
 	healable = FALSE
 	del_on_death = TRUE
-	speak_emote = list("clanks", "clinks", "clunks", "clangs")
-	verb_ask = "requests"
-	verb_exclaim = "proclaims"
-	verb_whisper = "imparts"
-	verb_yell = "harangues"
+	speak_emote = list("лязгает", "звенит", "грохочет", "гремит")
+	verb_ask = "запрашивает"
+	verb_exclaim = "заявляет"
+	verb_whisper = "передаёт"
+	verb_yell = "разглагольствует"
 	initial_language_holder = /datum/language_holder/clockmob
 	bubble_icon = "clock"
 	light_color = "#E42742"
 	death_sound = 'sound/magic/clockwork/anima_fragment_death.ogg'
 	speech_span = SPAN_ROBOT
-	var/playstyle_string = "<span class='heavy_brass'>You are a bug, yell at whoever spawned you!</span>"
-	var/empower_string = "<span class='heavy_brass'>You have nothing to empower, yell at the coders!</span>" //Shown to the mob when the herald beacon activates
+	var/playstyle_string = "<span class='heavy_brass'>Ты жук, кричи на того, кто тебя породил!</span>"
+	var/empower_string = "<span class='heavy_brass'>Вам нечего расширять, кричите на программистов!</span>" //Shown to the mob when the herald beacon activates
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/clock
 
 /mob/living/simple_animal/hostile/clockwork/Initialize(mapload)
@@ -43,16 +43,16 @@
 
 /mob/living/simple_animal/hostile/clockwork/examine(mob/user)
 	var/t_He = ru_who(TRUE)
-	var/t_s = p_s()
-	var/msg = "<span class='brass'>This is [icon2html(src, user)] \a <b>[src]</b>!\n"
+	// var/t_s = p_s() Комментим, т.к эта штука применима только к английскому. Мы же переводим текст и оно нам не надо
+	var/msg = "<span class='brass'>Это [icon2html(src, user)] <b>[src]</b>!\n"
 	if(desc)
 		msg += "<hr>[desc]\n"
 	if(health < maxHealth)
 		msg += "<hr><span class='warning'>"
 		if(health >= maxHealth/2)
-			msg += "[t_He] look[t_s] slightly dented.\n"
+			msg += "[t_He] выглядит немного поврежденным.\n"
 		else
-			msg += "<b>[t_He] look[t_s] severely dented!</b>\n"
+			msg += "<b>[t_He] выглядит серьёзно поврежденным!</b>\n"
 		msg += "</span>"
 	var/addendum = examine_info()
 	if(addendum)

@@ -6,7 +6,7 @@
 	product_slogans = "Картриджи!!!"
 	icon_state = "cart"
 	icon_deny = "cart-deny"
-	products = list(/obj/item/pda/heads = 10, // PDA
+	products = list(/obj/item/modular_computer/pda/heads = 10, // PDA
 					// Normal staff cards
 					/obj/item/cartridge/medical = 10,
 					/obj/item/cartridge/engineering = 10,
@@ -15,11 +15,9 @@
 					/obj/item/cartridge/signal/toxins = 10,
 					/obj/item/cartridge/roboticist = 10,
 					/obj/item/cartridge/atmos = 10,
-					/obj/item/cartridge/chemistry = 10,
 					/obj/item/cartridge/detective = 10,
 					/obj/item/cartridge/lawyer = 10,
 					/obj/item/cartridge/curator = 10,
-					/obj/item/cartridge/bartender = 10,
 
 					// Virus cards
 					/obj/item/cartridge/virus/clown = 3,

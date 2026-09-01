@@ -14,13 +14,20 @@
 											"mining" = 'icons/mob/augmentation/augments_mining.dmi',
 											"Talon" = 'icons/mob/augmentation/cosmetic_prosthetic/talon.dmi',
 											"Nanotrasen" = 'icons/mob/augmentation/cosmetic_prosthetic/nanotrasen.dmi',
-											"Hephaesthus" = 'icons/mob/augmentation/cosmetic_prosthetic/hephaestus.dmi',
 											"Veymed" = 'icons/mob/augmentation/cosmetic_prosthetic/veymed.dmi', //i don't know if i can module this either
-											"Bishop" = 'icons/mob/augmentation/cosmetic_prosthetic/bishop.dmi',
-											"Xion" = 'icons/mob/augmentation/cosmetic_prosthetic/xion.dmi',
 											"Grayson" = 'icons/mob/augmentation/cosmetic_prosthetic/grayson.dmi',
 											"Cybersolutions" = 'icons/mob/augmentation/cosmetic_prosthetic/cybersolutions.dmi',
-											"Ward" = 'icons/mob/augmentation/cosmetic_prosthetic/ward.dmi'
+											"Morpheus" = 'icons/mob/augmentation/cosmetic_prosthetic/morpheus.dmi', // cuz digi sprites yeahhhh
+											"Bishop" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop_ipc.dmi',
+											"Bishop 2.0" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/bishop2_ipc.dmi',
+											"Hephaestus" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/hephaestus_ipc.dmi',
+											"Hephaestus 2.0" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/hephaestus2_ipc.dmi',
+											"Shellguard" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/shellguard_ipc.dmi',
+											"Ward" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/ward_ipc.dmi',
+											"Xion" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/xion_ipc.dmi',
+											"Xion 2.0" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/xion2_ipc.dmi',
+											"Zeng-Hu" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/zenghu_ipc.dmi',
+											"Mariinsky" = 'icons/mob/augmentation/cosmetic_prosthetic/ipc/mariinsky_ipc.dmi'
 											)
 
 /obj/machinery/aug_manipulator/examine(mob/user)
@@ -99,7 +106,7 @@
 				if(!(machine_stat & BROKEN))
 					return
 				to_chat(user, "<span class='notice'>Вы починили [src].</span>")
-				machine_stat &= ~BROKEN
+				set_machine_stat(machine_stat & ~BROKEN)
 				obj_integrity = max(obj_integrity, max_integrity)
 				update_icon()
 		else
@@ -110,7 +117,7 @@
 /obj/machinery/aug_manipulator/obj_break(damage_flag)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		if(!(machine_stat & BROKEN))
-			machine_stat |= BROKEN
+			set_machine_stat(machine_stat | BROKEN)
 			update_icon()
 
 /obj/machinery/aug_manipulator/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)

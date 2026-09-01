@@ -5,7 +5,12 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	60
+#define SAVEFILE_VERSION_MAX	79
+
+/// Upper bound for character slot indices during savefile migration (loop over S.dir).
+/// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
+/// and running thousands of load_character/save_character pairs (OOM / DD hangs).
+#define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT	128
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -65,6 +70,102 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Input had a bad reception anyways, this way people won't even have to look into it.
 	if(current_version < 59)
 		hotkeys = TRUE
+
+	// BLUEMOON ADD - миграция кейбинда pixel_tilt
+	if(current_version < 62)
+		if(GLOB.keybindings_by_name["pixel_tilt"])
+			var/has_pixel_tilt = FALSE
+			for(var/key in key_bindings)
+				if("pixel_tilt" in key_bindings[key])
+					has_pixel_tilt = TRUE
+					break
+			if(!has_pixel_tilt)
+				LAZYADD(key_bindings["N"], "pixel_tilt")
+
+	// BLUEMOON ADD - принудительный FPS 120 для фикса лага движения в BYOND 516
+	if(current_version < 64)
+		clientfps = 120
+
+	// Возможность выключения кастомного цвета для педалей
+	if(current_version < 65)
+		custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
+
+	//Возвращение тильтинга по пикселям
+	if(current_version < 66)
+		var/static/list/dat_to_check = list("pixel_tilt_east", "pixel_tilt_west")
+		for(var/dat_key in dat_to_check)
+			var/datum/keybinding/mob/key_dat = GLOB.keybindings_by_name[dat_key]
+			if(!key_dat)
+				continue
+			for(var/button in key_dat.hotkey_keys)
+				var/list/hotkey_list = key_bindings[button]
+				if(!hotkey_list)
+					var/list/temp = list()
+					key_bindings[button] = temp
+					hotkey_list = temp
+				hotkey_list |= dat_key
+
+	// Преф на старый вариант say, OOC, me и прочих окон ввода, которые часто используются
+	if(current_version < 67)
+		tgui_input_verbs = tgui_input_mode
+
+	if(current_version < 69)
+		chat_on_map_looc = TRUE
+
+	if(current_version < 70) // Bitflag toggles don't set their defaults when they're added, always defaulting to off instead.
+		toggles |= SOUND_PERSONAL_JUKEBOXES
+
+	if(current_version < 74)
+		new_character_creator = TRUE
+		charcreation_theme = "modern"
+
+	if(current_version < 75)
+		toggles |= SOUND_EMOTE
+
+	if(current_version < 76) // BLUEMOON ADD - новые звуковые тогглы
+		mentor_toggles |= SOUND_MENTORHELP
+		toggles |= SOUND_FAX
+
+	// На версию 78 пришлись две независимые миграции - дедуп антаг-префов и чистка
+	// привязок Subtle. Поля разные, порядок между ними не важен.
+	if(current_version < 78)
+		// чиним сейвы, испорченные `be_special += role` в окне антаг-префов: каждый
+		// клик дописывал ещё одну строку с тем же ключом и значением null, а
+		// выключение убирало только одну из них - роль так и оставалась включённой
+		var/list/deduped_be_special = list()
+		for(var/role in be_special)
+			if(role in deduped_be_special)
+				continue
+			// индексация по ключу всегда попадает в ПЕРВОЕ вхождение, а его-то
+			// старый код и держал в актуальном состоянии
+			var/priority = be_special[role]
+			deduped_be_special[role] = isnull(priority) ? ANTAG_PRIORITY_LOW : priority
+		be_special = deduped_be_special
+
+	if(current_version < 78) // Удаление Subtle и замена клавиш
+		var/static/list/commands_to_clear = list(
+			"Subtle",
+			"Subtle_Indicator",
+			"Subtler",
+			"Subtler (Indicatored)",
+			"subtler_indicatored",
+			"Subtler Target",
+			"subtler_target",
+			"Subtler Target (Indicator)",
+			"subtler_target_indicatored",
+		)
+		// Чистим старые привязки клавиш
+		for(var/key in key_bindings)
+			var/list/commands = key_bindings[key]
+			for(var/command_to_clear in commands_to_clear)
+				commands -= command_to_clear
+		// Находим и устанавливаем новые
+		for(var/command_to_set in commands_to_clear)
+			var/datum/keybinding/KB = GLOB.keybindings_by_name[command_to_set]
+			if(!KB)
+				continue
+			for(var/HK in KB.hotkey_keys)
+				LAZYADD(key_bindings[HK], KB.name)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -414,6 +515,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			new_custom_emote_panel[emote_name] = list("type" = TGUI_PANEL_EMOTE_TYPE_DEFAULT, "key" = emote_key)
 		custom_emote_panel = new_custom_emote_panel
 
+	if(current_version < 79)
+		var/species_id = S["species"]
+		if(species_id != SPECIES_XENOHYBRID)
+			features["xenohead"] = "None"
+			features["xenodorsal"] = "None"
+			features["xenotail"] = "None"
+
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
 		return
@@ -432,6 +540,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!fexists(path))
 		return FALSE
 
+	// Буфер склейки держит правки, которых на диске ещё нет. Читать поверх них - значит
+	// затереть свежее значение старым в переменной датума, а потом дописать старое же
+	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
+	flush_single_prefs()
+
 	var/savefile/S = new /savefile(path)
 	if(!S)
 		return FALSE
@@ -449,6 +562,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//general preferences
 	S["ooccolor"] 				>> ooccolor
+	S["aooccolor"] 				>> aooccolor
 	S["lastchangelog"] 			>> lastchangelog
 	S["UI_style"] 				>> UI_style
 	S["outline_color"] 			>> outline_color
@@ -458,15 +572,25 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["screentip_images"] 		>> screentip_images
 	S["hotkeys"] 				>> hotkeys
 	S["chat_on_map"] 			>> chat_on_map
+	S["chat_on_map_looc"] 		>> chat_on_map_looc
 	S["max_chat_length"] 		>> max_chat_length
 	S["see_chat_non_mob"] 		>> see_chat_non_mob
+	S["runechat_anim"]			>> runechat_anim
 	S["tgui_fancy"] 			>> tgui_fancy
 	S["tgui_lock"] 				>> tgui_lock
 	S["tgui_input_mode"]		>> tgui_input_mode
+	S["tgui_input_verbs"]		>> tgui_input_verbs
 	S["tgui_large_buttons"]		>> tgui_large_buttons
 	S["tgui_swapped_buttons"]	>> tgui_swapped_buttons
+	S["tgui_panel_theme"]		>> tgui_panel_theme
+	S["tgui_panel_state"]		>> tgui_panel_state
+	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
+	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
+	S["mood_vignette"] 			>> mood_vignette
+	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
+	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
 	S["be_special"] 			>> be_special
 
 	//SKYRAT CHANGES BEGIN
@@ -476,20 +600,48 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["default_slot"] >> default_slot
 	S["chat_toggles"] >> chat_toggles
 	S["toggles"] >> toggles
+	S["custom_colors"] >> custom_colors
 	S["deadmin"] >> deadmin
+	S["ticket_nickname"] >> ticket_nickname
 	S["ghost_form"] >> ghost_form
 	S["ghost_orbit"] >> ghost_orbit
 	S["ghost_accs"] >> ghost_accs
 	S["ghost_others"] >> ghost_others
 	S["preferred_map"] >> preferred_map
 	S["ignoring"] >> ignoring
-	S["ghost_hud"] >> ghost_hud
+	S["hearted_until"] >> hearted_until
+	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
 	S["uses_glasses_colour"]>> uses_glasses_colour
+	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
+	S["neural_interface_visibility"]>> neural_interface_visibility // BLUEMOON ADD
+	S["chem_dispenser_classic_view"]>> chem_dispenser_classic_view // BLUEMOON ADD
+	S["chem_dispenser_use_reagent_color"]>> chem_dispenser_use_reagent_color // BLUEMOON ADD
+	S["chem_dispenser_show_icons"]>> chem_dispenser_show_icons // BLUEMOON ADD
+	S["chem_dispenser_alphabetical_sort"]>> chem_dispenser_alphabetical_sort // BLUEMOON ADD
+	S["ie_classic_circuit_ui"]>> ie_classic_circuit_ui // BLUEMOON ADD
+	S["color_presets_tint"]>> color_presets_tint // BLUEMOON ADD
+	S["color_presets_hsv"]>> color_presets_hsv // BLUEMOON ADD
+	S["color_presets_matrix"]>> color_presets_matrix // BLUEMOON ADD
 	S["clientfps"] >> clientfps
+	S["sound_volume_midi"] >> sound_volume_midi
+	S["sound_volume_ambience"] >> sound_volume_ambience
+	S["sound_volume_ship_ambience"] >> sound_volume_ship_ambience
+	S["sound_volume_announcements"] >> sound_volume_announcements
+	S["sound_volume_bark"] >> sound_volume_bark
+	S["sound_volume_prayers"] >> sound_volume_prayers
+	S["sound_volume_adminhelp"] >> sound_volume_adminhelp
+	S["sound_volume_instruments"] >> sound_volume_instruments
+	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
+	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
+	S["sound_volume_emote"] >> sound_volume_emote
+	S["sound_volume_mentorhelp"] >> sound_volume_mentorhelp
+	S["sound_volume_fax"] >> sound_volume_fax
+	S["mentor_toggles"] >> mentor_toggles
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
+	S["lighting_blur"] >> lighting_blur
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -519,10 +671,28 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["recoil_screenshake"] >> recoil_screenshake
 
 	// Splurt
-	S["be_victim"]				>> be_victim
 	S["disable_combat_cursor"]	>> disable_combat_cursor
-	S["use_new_playerpanel"]	>> use_new_playerpanel
+	S["disable_combat_mouse_lock"]	>> disable_combat_mouse_lock
 	S["gfluid_blacklist"]		>> gfluid_blacklist
+
+	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
+	S["charcreation_theme"]		>> charcreation_theme
+	S["modern_button_shape"]	>> modern_button_shape
+	S["modern_custom_enabled"]	>> modern_custom_enabled
+	S["modern_custom_bg_primary"]	>> modern_custom_bg_primary
+	S["modern_custom_bg_secondary"]	>> modern_custom_bg_secondary
+	S["modern_custom_text_primary"]	>> modern_custom_text_primary
+	S["modern_custom_text_secondary"]	>> modern_custom_text_secondary
+	S["modern_custom_button_bg"]	>> modern_custom_button_bg
+	S["modern_custom_button_hover"]	>> modern_custom_button_hover
+	S["modern_custom_button_active"]	>> modern_custom_button_active
+	S["modern_custom_button_text"]	>> modern_custom_button_text
+	S["modern_custom_border_color"]	>> modern_custom_border_color
+	S["modern_custom_accent_color"]	>> modern_custom_accent_color
+	S["modern_custom_bg_pattern"]	>> modern_custom_bg_pattern
+	S["ui_decoration_level"]	>> ui_decoration_level
+	S["modern_ui_language"]		>> modern_ui_language
+	S["use_modern_translations"]	>> use_modern_translations
 	S["new_character_creator"]	>> new_character_creator
 	S["view_pixelshift"]		>> view_pixelshift
 
@@ -546,26 +716,75 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Sanitize
 	ooccolor = sanitize_ooccolor(sanitize_hexcolor(ooccolor, 6, 1, initial(ooccolor)))
+	aooccolor = sanitize_ooccolor(sanitize_hexcolor(aooccolor, 6, 1, initial(aooccolor)))
+	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
+	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
 	chat_on_map = sanitize_integer(chat_on_map, 0, 1, initial(chat_on_map))
+	chat_on_map_looc = sanitize_integer(chat_on_map_looc, 0, 1, initial(chat_on_map_looc))
 	max_chat_length = sanitize_integer(max_chat_length, 1, CHAT_MESSAGE_MAX_LENGTH, initial(max_chat_length))
 	see_chat_non_mob = sanitize_integer(see_chat_non_mob, 0, 1, initial(see_chat_non_mob))
+	runechat_anim = sanitize_integer(runechat_anim, RUNECHAT_ANIM_NONE, RUNECHAT_ANIM_TYPEWRITER, initial(runechat_anim))
 	tgui_fancy = sanitize_integer(tgui_fancy, 0, 1, initial(tgui_fancy))
 	tgui_lock = sanitize_integer(tgui_lock, 0, 1, initial(tgui_lock))
 	tgui_input_mode	= sanitize_integer(tgui_input_mode, 0, 1, initial(tgui_input_mode))
+	tgui_input_verbs	= sanitize_integer(tgui_input_verbs, 0, 1, initial(tgui_input_verbs))
 	tgui_large_buttons	= sanitize_integer(tgui_large_buttons, 0, 1, initial(tgui_large_buttons))
 	tgui_swapped_buttons	= sanitize_integer(tgui_swapped_buttons, 0, 1, initial(tgui_swapped_buttons))
+	tgui_panel_theme = sanitize_inlist(tgui_panel_theme, list("default", "light", "dark"), initial(tgui_panel_theme))
+	tgui_panel_state = sanitize_text(tgui_panel_state, initial(tgui_panel_state))
+	if(length(tgui_panel_state) > 16384)
+		tgui_panel_state = initial(tgui_panel_state)
+	if(!islist(ui_zoom_preferences))
+		ui_zoom_preferences = list()
+	else
+		var/list/sanitized_ui_zoom_preferences = list()
+		var/ui_zoom_count = 0
+		for(var/ui_zoom_key in ui_zoom_preferences)
+			if(ui_zoom_count >= 64)
+				break
+			if(!istext(ui_zoom_key))
+				continue
+			var/safe_ui_zoom_key = copytext(ui_zoom_key, 1, 65)
+			if(!length(safe_ui_zoom_key))
+				continue
+			var/safe_ui_zoom_value = ui_zoom_preferences[ui_zoom_key]
+			if(isnum(safe_ui_zoom_value))
+				safe_ui_zoom_value = round(clamp(safe_ui_zoom_value, 0.5, 2.0), 0.01)
+				sanitized_ui_zoom_preferences[safe_ui_zoom_key] = safe_ui_zoom_value
+				ui_zoom_count++
+		ui_zoom_preferences = sanitized_ui_zoom_preferences
+	action_buttons_screen_locs = sanitize_action_button_positions(action_buttons_screen_locs)
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
+	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
+	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
+	custom_colors = sanitize_integer(custom_colors, 0, 16777215, initial(custom_colors))
 	deadmin = sanitize_integer(deadmin, 0, 16777215, initial(deadmin))
-	clientfps = sanitize_integer(clientfps, 0, 1000, 0)
+	clientfps = sanitize_clientfps(clientfps)
+	sound_volume_midi = sanitize_integer(sound_volume_midi, 0, 100, initial(sound_volume_midi))
+	sound_volume_ambience = sanitize_integer(sound_volume_ambience, 0, 100, initial(sound_volume_ambience))
+	sound_volume_ship_ambience = sanitize_integer(sound_volume_ship_ambience, 0, 100, initial(sound_volume_ship_ambience))
+	sound_volume_announcements = sanitize_integer(sound_volume_announcements, 0, 100, initial(sound_volume_announcements))
+	sound_volume_bark = sanitize_integer(sound_volume_bark, 0, 100, initial(sound_volume_bark))
+	sound_volume_prayers = sanitize_integer(sound_volume_prayers, 0, 100, initial(sound_volume_prayers))
+	sound_volume_adminhelp = sanitize_integer(sound_volume_adminhelp, 0, 100, initial(sound_volume_adminhelp))
+	sound_volume_instruments = sanitize_integer(sound_volume_instruments, 0, 100, initial(sound_volume_instruments))
+	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
+	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
+	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
+	sound_volume_mentorhelp = sanitize_integer(sound_volume_mentorhelp, 0, 100, initial(sound_volume_mentorhelp))
+	sound_volume_fax = sanitize_integer(sound_volume_fax, 0, 100, initial(sound_volume_fax))
+	mentor_toggles = sanitize_integer(mentor_toggles, 0, 16777215, initial(mentor_toggles))
 	preferred_chaos_level = sanitize_integer(preferred_chaos_level, 0, 3, 2)
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
+	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -590,15 +809,39 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	key_bindings = sanitize_islist(key_bindings, list())
 	modless_key_bindings = sanitize_islist(modless_key_bindings, list())
 	favorite_outfits = SANITIZE_LIST(favorite_outfits)
+	color_presets_tint = sanitize_color_preset_keys(color_presets_tint) // BLUEMOON ADD
+	color_presets_hsv = sanitize_color_preset_keys(color_presets_hsv) // BLUEMOON ADD
+	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
 	screentip_color = sanitize_hexcolor(screentip_color, 6, 1, initial(screentip_color))
 	screentip_pref = sanitize_inlist(screentip_pref, GLOB.screentip_pref_options, SCREENTIP_PREFERENCE_ENABLED)
 
 	//SKYRAT CHANGES BEGIN
 	see_chat_emotes	= sanitize_integer(see_chat_emotes, 0, 1, initial(see_chat_emotes))
+	auto_capitalize_enabled = sanitize_integer(auto_capitalize_enabled, 0, 1, initial(auto_capitalize_enabled))
 	//SKYRAT CHANGES END
 
 	//SPLURT CHANGES BEGIN
 	gfluid_blacklist = sanitize_islist(gfluid_blacklist, list())
+
+	collapse_empty_character_slots = sanitize_integer(collapse_empty_character_slots, 0, 1, initial(collapse_empty_character_slots))
+	charcreation_theme = sanitize_inlist(charcreation_theme, list("classic", "modern", "modern_classic", "modern_purple", "modern_green", "modern_neutral", "modern_custom"), initial(charcreation_theme))
+	modern_button_shape = sanitize_inlist(modern_button_shape, list("rect", "soft", "round"), initial(modern_button_shape))
+	modern_custom_enabled = sanitize_integer(modern_custom_enabled, 0, 1, initial(modern_custom_enabled))
+	modern_custom_bg_primary = sanitize_hexcolor(modern_custom_bg_primary, 6, 0, initial(modern_custom_bg_primary))
+	modern_custom_bg_secondary = sanitize_hexcolor(modern_custom_bg_secondary, 6, 0, initial(modern_custom_bg_secondary))
+	modern_custom_text_primary = sanitize_hexcolor(modern_custom_text_primary, 6, 0, initial(modern_custom_text_primary))
+	modern_custom_text_secondary = sanitize_hexcolor(modern_custom_text_secondary, 6, 0, initial(modern_custom_text_secondary))
+	modern_custom_button_bg = sanitize_hexcolor(modern_custom_button_bg, 6, 0, initial(modern_custom_button_bg))
+	modern_custom_button_hover = sanitize_hexcolor(modern_custom_button_hover, 6, 0, initial(modern_custom_button_hover))
+	modern_custom_button_active = sanitize_hexcolor(modern_custom_button_active, 6, 0, initial(modern_custom_button_active))
+	modern_custom_button_text = sanitize_hexcolor(modern_custom_button_text, 6, 0, initial(modern_custom_button_text))
+	modern_custom_border_color = sanitize_hexcolor(modern_custom_border_color, 6, 0, initial(modern_custom_border_color))
+	modern_custom_accent_color = sanitize_hexcolor(modern_custom_accent_color, 6, 0, initial(modern_custom_accent_color))
+	modern_custom_bg_pattern = sanitize_integer(modern_custom_bg_pattern, 0, 1, initial(modern_custom_bg_pattern))
+	ui_decoration_level = sanitize_inlist(ui_decoration_level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
+	modern_ui_language = sanitize_integer(modern_ui_language, 0, 1, initial(modern_ui_language))
+	use_modern_translations = sanitize_integer(use_modern_translations, 0, 1, initial(use_modern_translations))
+	new_character_creator = sanitize_integer(new_character_creator, 0, 1, initial(new_character_creator))
 	//SPLURT CHANGES END
 
 	verify_keybindings_valid()		// one of these days this will runtime and you'll be glad that i put it in a different proc so no one gets their saves wiped
@@ -617,6 +860,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				continue
 			var/slotnum = text2num(copytext(slot, 10))
 			if (!slotnum)
+				continue
+			if (slotnum > SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT)
 				continue
 			max_save_slots = max(max_save_slots, slotnum) //so we can still update byond member slots after they lose memeber status
 			default_slot = slotnum
@@ -645,6 +890,235 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		var/bindname = modless_key_bindings[key]
 		if(!GLOB.keybindings_by_name[bindname])
 			modless_key_bindings -= key
+	ensure_default_keybindings_present()
+
+/datum/preferences/proc/ensure_default_keybindings_present()
+	var/list/default_keybindings = hotkeys ? GLOB.hotkey_keybinding_list_by_key : GLOB.classic_keybinding_list_by_key
+	if(!islist(default_keybindings))
+		return
+
+	var/list/present_keybindings = list()
+	for(var/key in key_bindings)
+		if(!islist(key_bindings[key]))
+			continue
+		for(var/bindname in key_bindings[key])
+			present_keybindings[bindname] = TRUE
+
+	for(var/key in modless_key_bindings)
+		var/bindname = modless_key_bindings[key]
+		present_keybindings[bindname] = TRUE
+
+	var/list/missing_keybindings = list()
+	for(var/key in default_keybindings)
+		var/list/default_binds = default_keybindings[key]
+		if(!islist(default_binds))
+			continue
+		for(var/bindname in default_binds)
+			if(present_keybindings[bindname])
+				continue
+			if(!islist(missing_keybindings[bindname]))
+				missing_keybindings[bindname] = list()
+			missing_keybindings[bindname] += key
+
+	for(var/bindname in missing_keybindings)
+		var/list/default_keys = missing_keybindings[bindname]
+		for(var/key in default_keys)
+			if(!islist(key_bindings[key]))
+				key_bindings[key] = list()
+			LAZYADD(key_bindings[key], bindname)
+		present_keybindings[bindname] = TRUE
+
+
+/**
+ * Чистое решение: что делать с очередной отложенной записью савфайла.
+ *
+ * Общее для полной записи (pref_queue) и для сброса буфера одиночных записей
+ * (single_pref_queue): пачку правок склеиваем в одну запись, но переносить её
+ * бесконечно нельзя - игрок, который щёлкает настройки чаще окна склейки, иначе не
+ * сохраняется до самого логаута.
+ *
+ * Возвращает PREF_DEFER_ARM / PREF_DEFER_RESCHEDULE / PREF_DEFER_KEEP.
+ */
+/proc/pref_defer_decision(timer_id, deadline, now)
+	if(!timer_id)
+		return PREF_DEFER_ARM
+	// Сравниваем "deadline > 0", а не только "now >= deadline": незаряженный срок это 0
+	// или null, и в обоих случаях "срок истёк" дало бы TRUE. null в DM не равен нулю, но
+	// и "null > 0" тоже FALSE, так что одна проверка закрывает оба случая.
+	if(deadline > 0 && now >= deadline)
+		return PREF_DEFER_KEEP
+	return PREF_DEFER_RESCHEDULE
+
+/**
+ * Чистит позиции кнопок действий, приехавшие с диска.
+ *
+ * Ключ - "[имя действия]_[id]", значение - screen_loc или один из SCRN_OBJ_*. Всё это
+ * пишет клиент, перетаскивая кнопки по экрану, поэтому и длину строк, и число записей
+ * режем: кнопок у моба бывает под сотню, но набивать савфайл мусором произвольного
+ * размера нельзя. Возвращает НОВЫЙ список, исходный не трогает.
+ */
+/proc/sanitize_action_button_positions(list/raw_positions)
+	var/list/sanitized = list()
+	if(!islist(raw_positions))
+		return sanitized
+	var/kept = 0
+	for(var/position_key in raw_positions)
+		if(kept >= ACTION_BUTTON_SAVED_POSITIONS_MAX)
+			break
+		if(!istext(position_key) || !length(position_key))
+			continue
+		// Ключ - это "[имя]_[id]", по которому load_position() ищет позицию ЦЕЛИКОМ:
+		// обрезанный ключ не совпадёт никогда, то есть обрезка равна молчаливой потере.
+		// Слишком длинный ключ поэтому выбрасывается, а не режется. Длина в символах,
+		// не в байтах: имена действий кириллические, и байтовый copytext резал бы
+		// UTF-8 посреди символа.
+		if(length_char(position_key) >= ACTION_BUTTON_SAVED_POSITION_LEN)
+			continue
+		var/safe_value = raw_positions[position_key]
+		if(!istext(safe_value))
+			continue
+		safe_value = copytext_char(safe_value, 1, ACTION_BUTTON_SAVED_POSITION_LEN)
+		if(!length(safe_value))
+			continue
+		sanitized[position_key] = safe_value
+		kept++
+	return sanitized
+
+/**
+ * Кладёт одиночную запись в буфер склейки.
+ *
+ * Возвращает TRUE, если ключ в буфере уже лежал - то есть эта запись схлопнулась с
+ * предыдущей и на диск уйдёт одна вместо двух.
+ */
+/proc/pref_pending_absorb(list/pending, key, value)
+	if(!islist(pending) || !key)
+		return FALSE
+	// Проверяем наличие КЛЮЧА, а не значение: в префы легально пишется и null, а
+	// pending[key] тогда неотличим от отсутствующего ключа.
+	. = (key in pending)
+	// Обычное присваивание. Индексированная левая часть с оператором вывода (то есть
+	// WRITE_FILE по такому списку) скомпилировалась бы в опкод вывода и испортила список.
+	pending[key] = value
+
+/// Записывает в савфайл ОДИН ключ, не переписывая весь блок префов.
+///
+/// Полный save_preferences() это ~124 WRITE_FILE подряд, и каждый - синхронный поход
+/// на диск, морозящий весь процесс. За раунд 10137 таких заморозок набралось 6230 на
+/// 32.8 секунды: детектор спайков списал на них 30-34% всего дрифта. Львиную долю
+/// давала панель tgui, сохранявшая одну JSON-строку состояния чата на каждое действие
+/// игрока. Ради одной строки переписывать сто двадцать четыре не нужно.
+///
+/// Раунд 10146 показал, что рычаг на этом не кончился: записей стало 3712 на 21.1 с -
+/// вдвое меньше, а вот цена ОДНОЙ выросла с 5.3 до 5.7 мс. Если бы платили за
+/// WRITE_FILE, замена 124 записей на одну обвалила бы среднюю цену вызова; она не
+/// шелохнулась - значит платим за ОТКРЫТИЕ файла, а не за запись в него. Поэтому тут
+/// больше не ходят на диск сразу: ключ ложится в буфер склейки, и весь буфер уходит
+/// одним открытием (см. flush_single_prefs). Швабра дёргает прогресс на каждую отмытую
+/// плитку (mop.dm), панель tgui шлёт состояние чата раз в 3 секунды - обе пачки
+/// схлопываются в одно открытие вместо десятков.
+///
+/// Существование файла проверяет сброс буфера (flush_single_prefs), а не каждый вызов:
+/// у нового игрока запись одного ключа создала бы савфайл без "version", поэтому сброс
+/// в такой файл уходит полной записью. Здесь походов на диск нет вовсе - швабра зовёт
+/// это на каждую отмытую плитку.
+///
+/// immediate = TRUE ходит на диск сразу, мимо склейки - для вызывающих, которым нужен
+/// честный результат записи прямо сейчас.
+/datum/preferences/proc/save_single_pref(key, value, immediate = FALSE)
+	if(!path || !key)
+		return FALSE
+	buffer_single_pref(key, value)
+	if(immediate)
+		return flush_single_prefs()
+	return TRUE
+
+/**
+ * Кладёт ключ в буфер склейки и заряжает (или переносит) сброс буфера на диск.
+ *
+ * Вынесено из save_single_pref отдельным проком, потому что тут нет ни одного похода
+ * на диск: юнит-тест гоняет именно эту половину и ничего за собой не оставляет.
+ */
+/datum/preferences/proc/buffer_single_pref(key, value)
+	if(!key)
+		return FALSE
+	LAZYINITLIST(pending_single_prefs)
+	pref_pending_absorb(pending_single_prefs, key, value)
+	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
+	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие савфайла
+	// на того же игрока - ровно то, от чего мы и уходим.
+	if(pref_queue)
+		return TRUE
+	switch(pref_defer_decision(single_pref_queue, single_pref_queue_deadline, world.time))
+		if(PREF_DEFER_KEEP)
+			return TRUE
+		if(PREF_DEFER_ARM)
+			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
+		if(PREF_DEFER_RESCHEDULE)
+			deltimer(single_pref_queue)
+	// Одноразовый таймер, а не TIMER_LOOP: deltimer() из колбека лупа - no-op, и перенос
+	// сброса перестал бы работать с первой же правки.
+	single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
+	return TRUE
+
+/**
+ * Дописывает буфер склейки в УЖЕ открытый савфайл и опустошает его.
+ *
+ * Вызывающий обязан держать target.cd на корне: одиночные ключи живут там же, где их
+ * пишет save_preferences. Возвращает число записанных ключей.
+ */
+/datum/preferences/proc/write_pending_single_prefs(savefile/target)
+	if(!target || !length(pending_single_prefs))
+		return 0
+	// Забираем список себе до записи: если по дороге кто-то положит ещё ключ, он обязан
+	// попасть в СЛЕДУЮЩИЙ сброс, а не потеряться в этом.
+	var/list/pending = pending_single_prefs
+	pending_single_prefs = null
+	var/written = 0
+	for(var/key in pending)
+		var/value = pending[key]
+		WRITE_FILE(target[key], value)
+		written++
+	return written
+
+/**
+ * Сбрасывает буфер склейки на диск ОДНИМ открытием савфайла.
+ *
+ * Дёргается таймером из buffer_single_pref, разлогином клиента и Destroy датума.
+ * Пустой буфер до диска не доходит вовсе.
+ */
+/datum/preferences/proc/flush_single_prefs()
+	if(single_pref_queue)
+		deltimer(single_pref_queue)
+	// Обнуляем явно: сработавший one-shot оставляет непустой id, и следующая постановка
+	// в очередь сверялась бы с протухшим крайним сроком.
+	single_pref_queue = null
+	single_pref_queue_deadline = 0
+	if(!length(pending_single_prefs))
+		return FALSE
+	if(!path)
+		pending_single_prefs = null
+		return FALSE
+	if(!fexists(path))
+		// Одиночная запись создала бы савфайл без "version", поэтому уходим полной
+		// записью. Буфер при этом НЕ обнуляем заранее: полная запись дописывает его
+		// сама (write_pending_single_prefs), а если файл не откроется - буфер
+		// переживёт провал и уйдёт со следующим сбросом.
+		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/keys_written = length(pending_single_prefs)
+	// Три разных kind вместо одного общего "savefile (запись)": детектор спайков ведёт
+	// разбивку по kind и печатает её в итоге раунда, а имя вызова (desc) он запоминает
+	// только тем, кто перешагнул slow_work_threshold_ms - ни одна запись савфайла до
+	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
+	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
+	var/blocking_started_ms = blocking_call_start()
+	var/savefile/single_file = new /savefile(path)
+	if(!single_file)
+		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+		return FALSE
+	single_file.cd = "/"
+	write_pending_single_prefs(single_file)
+	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+	return TRUE
 
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	if(!path)
@@ -657,8 +1131,23 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, saveprefcooldown, PREF_SAVE_COOLDOWN)
 	if(pref_queue)
 		deltimer(pref_queue)
+	// Обнуляем явно: сработавший one-shot оставлял непустой id, и следующая
+	// постановка в очередь сверялась бы с протухшим крайним сроком.
+	pref_queue = null
+	pref_queue_deadline = 0
+	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
+	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
+	// безымянный "внешний столл", поэтому замеряем
+	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(path)
 	if(!S)
+		blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "не открылся [parent?.ckey || "?"]")
+		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
+		// заводил, полагаясь на неё (buffer_single_pref): без перезарядки он долежал бы
+		// до логаута. Возвращаем ему собственный сброс.
+		if(length(pending_single_prefs) && !single_pref_queue)
+			single_pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
+			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
 	S.cd = "/"
 
@@ -666,6 +1155,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//general preferences
 	WRITE_FILE(S["ooccolor"], ooccolor)
+	WRITE_FILE(S["aooccolor"], aooccolor)
 	WRITE_FILE(S["lastchangelog"], lastchangelog)
 	WRITE_FILE(S["UI_style"], UI_style)
 	WRITE_FILE(S["outline_enabled"], outline_enabled)
@@ -675,18 +1165,29 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["screentip_images"], screentip_images)
 	WRITE_FILE(S["hotkeys"], hotkeys)
 	WRITE_FILE(S["chat_on_map"], chat_on_map)
+	WRITE_FILE(S["chat_on_map_looc"], chat_on_map_looc)
 	WRITE_FILE(S["max_chat_length"], max_chat_length)
 	WRITE_FILE(S["see_chat_non_mob"], see_chat_non_mob)
+	WRITE_FILE(S["runechat_anim"], runechat_anim)
 	WRITE_FILE(S["tgui_fancy"], tgui_fancy)
 	WRITE_FILE(S["tgui_lock"], tgui_lock)
 	WRITE_FILE(S["tgui_input_mode"], tgui_input_mode)
+	WRITE_FILE(S["tgui_input_verbs"], tgui_input_verbs)
 	WRITE_FILE(S["tgui_large_buttons"], tgui_large_buttons)
 	WRITE_FILE(S["tgui_swapped_buttons"], tgui_swapped_buttons)
+	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
+	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
+	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
+	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
 	WRITE_FILE(S["windownoise"], windownoise)
+	WRITE_FILE(S["mood_vignette"], mood_vignette)
+	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
+	WRITE_FILE(S["action_buttons_screen_locs"], action_buttons_screen_locs)
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
+	WRITE_FILE(S["custom_colors"], custom_colors)
 	WRITE_FILE(S["deadmin"], deadmin)
 	WRITE_FILE(S["chat_toggles"], chat_toggles)
 	WRITE_FILE(S["ghost_form"], ghost_form)
@@ -695,13 +1196,38 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ghost_others"], ghost_others)
 	WRITE_FILE(S["preferred_map"], preferred_map)
 	WRITE_FILE(S["ignoring"], ignoring)
-	WRITE_FILE(S["ghost_hud"], ghost_hud)
+	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
+	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
+	WRITE_FILE(S["neural_interface_visibility"], neural_interface_visibility) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_classic_view"], chem_dispenser_classic_view) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_use_reagent_color"], chem_dispenser_use_reagent_color) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_show_icons"], chem_dispenser_show_icons) // BLUEMOON ADD
+	WRITE_FILE(S["chem_dispenser_alphabetical_sort"], chem_dispenser_alphabetical_sort) // BLUEMOON ADD
+	WRITE_FILE(S["ie_classic_circuit_ui"], ie_classic_circuit_ui) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_tint"], color_presets_tint) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_hsv"], color_presets_hsv) // BLUEMOON ADD
+	WRITE_FILE(S["color_presets_matrix"], color_presets_matrix) // BLUEMOON ADD
 	WRITE_FILE(S["clientfps"], clientfps)
+	WRITE_FILE(S["sound_volume_midi"], sound_volume_midi)
+	WRITE_FILE(S["sound_volume_ambience"], sound_volume_ambience)
+	WRITE_FILE(S["sound_volume_ship_ambience"], sound_volume_ship_ambience)
+	WRITE_FILE(S["sound_volume_announcements"], sound_volume_announcements)
+	WRITE_FILE(S["sound_volume_bark"], sound_volume_bark)
+	WRITE_FILE(S["sound_volume_prayers"], sound_volume_prayers)
+	WRITE_FILE(S["sound_volume_adminhelp"], sound_volume_adminhelp)
+	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
+	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
+	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
+	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
+	WRITE_FILE(S["sound_volume_mentorhelp"], sound_volume_mentorhelp)
+	WRITE_FILE(S["sound_volume_fax"], sound_volume_fax)
+	WRITE_FILE(S["mentor_toggles"], mentor_toggles)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
+	WRITE_FILE(S["lighting_blur"], lighting_blur)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
@@ -729,13 +1255,30 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["recoil_screenshake"], recoil_screenshake)
 
 	// Splurt
-	WRITE_FILE(S["be_victim"], be_victim)
 	WRITE_FILE(S["disable_combat_cursor"], disable_combat_cursor)
-	WRITE_FILE(S["use_new_playerpanel"], use_new_playerpanel)
+	WRITE_FILE(S["disable_combat_mouse_lock"], disable_combat_mouse_lock)
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
+
+	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
+	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
+	WRITE_FILE(S["modern_button_shape"], modern_button_shape)
+	WRITE_FILE(S["modern_custom_enabled"], modern_custom_enabled)
+	WRITE_FILE(S["modern_custom_bg_primary"], modern_custom_bg_primary)
+	WRITE_FILE(S["modern_custom_bg_secondary"], modern_custom_bg_secondary)
+	WRITE_FILE(S["modern_custom_text_primary"], modern_custom_text_primary)
+	WRITE_FILE(S["modern_custom_text_secondary"], modern_custom_text_secondary)
+	WRITE_FILE(S["modern_custom_button_bg"], modern_custom_button_bg)
+	WRITE_FILE(S["modern_custom_button_hover"], modern_custom_button_hover)
+	WRITE_FILE(S["modern_custom_button_active"], modern_custom_button_active)
+	WRITE_FILE(S["modern_custom_button_text"], modern_custom_button_text)
+	WRITE_FILE(S["modern_custom_border_color"], modern_custom_border_color)
+	WRITE_FILE(S["modern_custom_accent_color"], modern_custom_accent_color)
+	WRITE_FILE(S["modern_custom_bg_pattern"], modern_custom_bg_pattern)
+	WRITE_FILE(S["ui_decoration_level"], ui_decoration_level)
+	WRITE_FILE(S["modern_ui_language"], modern_ui_language)
+	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
-	WRITE_FILE(S["eorg_enabled"], eorg_enabled)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)
@@ -746,6 +1289,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
 
+	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
+
+	// Файл уже открыт - дописать в него буфер склейки бесплатно, а отдельный сброс
+	// открыл бы тот же савфайл второй раз.
+	if(single_pref_queue)
+		deltimer(single_pref_queue)
+	single_pref_queue = null
+	single_pref_queue_deadline = 0
+	write_pending_single_prefs(S)
+
 	if(parent)
 		if(ishuman(parent?.mob))
 			var/mob/living/carbon/human/H = parent.mob
@@ -754,13 +1307,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved preferences!"))
 
+	blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving preferences in [save_in * 0.1] second\s."))
 	if(pref_queue)
+		// Крайний срок уже наступил: пусть заряженный таймер отработает, иначе
+		// поток правок чаще кулдауна переносит запись бесконечно.
+		if(world.time >= pref_queue_deadline)
+			return
 		deltimer(pref_queue)
+	else
+		pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	pref_queue = addtimer(CALLBACK(src, PROC_REF(save_preferences), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 /datum/preferences/proc/load_character(slot, bypass_cooldown = FALSE, savefile/provided)
@@ -821,13 +1381,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "arachnid_legs" = "Plain",
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
-"mam_body_markings" = "Plain",
+	"mam_body_markings" = "Plain",
+	"allow_emissives" = FALSE,
+	"emissive_parts" = list(),
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
 "mam_tail_animated" = "None",
-"xenodorsal" = "Standard",
-"xenohead" = "Standard",
+"xenodorsal" = "None",
+"xenohead" = "None",
 "xenotail" = "Xenomorph Tail",
 "taur" = "None",
 "hardsuit_with_tail" = FALSE,
@@ -902,8 +1464,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "fuzzy" = FALSE,
 "color_scheme" = OLD_CHARACTER_COLORING,
 "neckfire" = FALSE,
-"neckfire_color" = "ffffff"
-)
+"neckfire_color" = "ffffff",
+	"puddle_slime_fea" = FALSE
+	)
 
 	//Species
 	var/species_id
@@ -914,8 +1477,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		else if(species_id == "moth")
 			species_id = "insect"
 
+		// Тот же тип - тот же экземпляр. Датум вида в prefs только читают (.type, .id,
+		// mutant_bodyparts), ни один прок его не правит, а mutant_bodyparts собирается из
+		// константного GLOB.unlocked_mutant_parts - значит новый экземпляр того же типа
+		// неотличим от старого. Инициализатор поля (preferences.dm) уже завёл
+		// /datum/species/human, и безусловный new заводил на каждый вход человеком второй
+		// экземпляр, который тут же становился мусором. Перепись раунда 10060: 15-21
+		// /datum/species/human за 30-минутный интервал при НУЛЕ игроков - ровно по числу
+		// попыток подключения.
 		var/newtype = GLOB.species_list[species_id]
-		if(newtype)
+		if(newtype && (isnull(pref_species) || newtype != pref_species.type))
 			pref_species = new newtype
 
 
@@ -973,14 +1544,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_horns_color"] 				>> features["horns_color"]
 	S["feature_wings_color"] 				>> features["wings_color"]
 	S["feature_color_scheme"] 				>> features["color_scheme"]
-	S["headshot"] 							>> features["headshot_link"] //SPLURT edit
-	S["headshot1"] 							>> features["headshot_link1"] //BLUEMOON edit
-	S["headshot2"] 							>> features["headshot_link2"] //BLUEMOON edit
-	S["headshot_naked"] 						>> features["headshot_naked_link"] //BLUEMOON ADD
-	S["headshot_naked1"] 					>> features["headshot_naked_link1"] //BLUEMOON ADD
-	S["headshot_naked2"] 					>> features["headshot_naked_link2"] //BLUEMOON ADD
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
+	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
+	S["onelife_death_type"]					>> onelife_death_type // BLUEMOON ADD - форма рассыпания для Одной Жизни
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1012,6 +1579,21 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["chosen_limb_id"] >> chosen_limb_id
 	S["hide_ckey"] >> hide_ckey //saved per-character
 
+	//Headshots
+	var/list/headshots_temp = list()
+	for(var/i = 1, i <= MAX_HEADSHOTS, i++)
+		var/postfix = i == 1 ? null : i-1
+		headshots_temp += null
+		S["headshot[postfix]"] >> headshots_temp[i]
+	features["headshot_links"] = headshots_temp
+
+	headshots_temp = list()
+	for(var/i = 1, i <= MAX_HEADSHOTS_NAKED, i++)
+		var/postfix = i == 1 ? null : i-1
+		headshots_temp += null
+		S["headshot_naked[postfix]"] >> headshots_temp[i]
+	features["headshot_naked_links"] = headshots_temp
+	headshots_temp = list()
 
 	//Custom names
 	for(var/custom_name_id in GLOB.preferences_custom_names)
@@ -1026,6 +1608,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Load prefs
 	S["job_preferences"] >> job_preferences
+	// Отсутствующее поле сейва затирает дефолт list() нулём, а компенсирующие присвоения
+	// заперты за current_version < 23 - современный сейв их проходит мимо. Дальше любой
+	// .len по этому списку рантаймит, и лобби перестаёт пускать игрока в раунд.
+	job_preferences = SANITIZE_LIST(job_preferences)
+	S["pda_theme"] >> pda_theme
 
 	//Custom emote panel
 	S["custom_emote_panel"] >> custom_emote_panel
@@ -1045,6 +1632,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_mcolor3"] >> features["mcolor3"]
 	// note safe json decode will runtime the first time it migrates but this is fine and it solves itself don't worry about it if you see it error
 	features["mam_body_markings"] = safe_json_decode(S["feature_mam_body_markings"])
+	features["emissive_parts"] = safe_json_decode(S["feature_emissive_parts"])
 	S["feature_mam_tail"] >> features["mam_tail"]
 	S["feature_mam_ears"] >> features["mam_ears"]
 	S["feature_mam_tail_animated"] >> features["mam_tail_animated"]
@@ -1124,6 +1712,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//death emote
 	S["feature_custom_deathgasp"] >> features["custom_deathgasp"] // BLUEMOON ADD - пользовательский эмоут смерти
 	S["feature_custom_deathsound"] >> features["custom_deathsound"] // BLUEMOON ADD - пользовательский эмоут смерти
+	S["feature_puddle_slime_fea"] >> features["puddle_slime_fea"]
 	// Barks
 	S["bark_id"] >> bark_id
 	S["bark_speed"] >> bark_speed
@@ -1176,35 +1765,98 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//gear loadout
 	if(istext(S["loadout"]))
 		loadout_data = safe_json_decode(S["loadout"])
-		var/list/sanitize_current_slot = loadout_data["SAVE_[loadout_slot]"]
-		if(LAZYLEN(sanitize_current_slot))
-			for(var/list/entry in sanitize_current_slot)
-				for(var/setting in entry)
-					switch(setting)
-						if(LOADOUT_ITEM)
-							if(!ispath(entry[setting]))
-								continue
-						if(LOADOUT_COLOR)
-							if(islist(entry[setting]))
-								for(var/polychromic in entry[setting])
-									if(!findtext(polychromic, GLOB.is_color))
-										polychromic = "#FFFFFF"
-							else
-								entry -= setting
+		if(!islist(loadout_data))
+			loadout_data = list()
 
-						if(LOADOUT_CUSTOM_NAME)
-							entry[setting] = trim(html_encode(entry[setting]), MAX_NAME_LEN)
-						if(LOADOUT_CUSTOM_DESCRIPTION)
-							entry[setting] = trim(html_encode(entry[setting]), 500)
+		for(var/loadout_save_index = 1, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
+			var/save_key = "SAVE_[loadout_save_index]"
+			var/list/sanitize_entries = loadout_data[save_key]
+			if(islist(sanitize_entries) && LAZYLEN(sanitize_entries))
+				for(var/list/entry in sanitize_entries)
+					for(var/setting in entry)
+						switch(setting)
+							if(LOADOUT_ITEM)
+								if(!ispath(entry[setting]))
+									continue
+							if(LOADOUT_COLOR)
+								if(islist(entry[setting]))
+									var/list/colors = entry[setting]
+									if(!LAZYLEN(colors))
+										entry[setting] = list("#FFFFFF")
+									else
+										for(var/i in 1 to colors.len)
+											var/polychromic = colors[i]
+											if(!istext(polychromic))
+												if(islist(polychromic))
+													var/list/matrix = polychromic
+													var/list/default_color
+													var/loadout_item_type = entry[LOADOUT_ITEM]
+													if(ispath(loadout_item_type) && islist(GLOB.loadout_items))
+														for(var/cat in GLOB.loadout_items)
+															var/list/subcategories = GLOB.loadout_items[cat]
+															if(!islist(subcategories))
+																continue
+															for(var/subcat in subcategories)
+																var/list/items = subcategories[subcat]
+																if(!islist(items))
+																	continue
+																for(var/item_name in items)
+																	var/datum/gear/G = items[item_name]
+																	if(G?.type == loadout_item_type && length(G.loadout_initial_colors))
+																		default_color = G.loadout_initial_colors
+																		break
+																if(default_color)
+																	break
+														if(default_color)
+															break
+													var/source_color = "#FFFFFF"
+													if(default_color && i <= length(default_color))
+														source_color = default_color[i]
+													var/mode = entry[LOADOUT_COLOR_MODE]
+													if(mode == COLORMATE_HSV || mode == COLORMATE_MATRIX)
+														if(!(length(matrix) >= 9 && length(matrix) <= 12) || !isnum(matrix[1]))
+															colors[i] = "#FFFFFF"
+													else
+														if(length(matrix) >= 9 && length(matrix) <= 12)
+															if(!isnum(matrix[1]) || !isnum(matrix[2]) || !isnum(matrix[3]) || !isnum(matrix[4]) || !isnum(matrix[5]) || !isnum(matrix[6]) || !isnum(matrix[7]) || !isnum(matrix[8]) || !isnum(matrix[9]))
+																colors[i] = "#FFFFFF"
+															else
+																var/r_part = hex2num(copytext(source_color, 2, 4)) / 255
+																var/g_part = hex2num(copytext(source_color, 4, 6)) / 255
+																var/b_part = hex2num(copytext(source_color, 6, 8)) / 255
+																var/new_r = round(clamp((r_part * matrix[1] + g_part * matrix[2] + b_part * matrix[3]) * 255, 0, 255))
+																var/new_g = round(clamp((r_part * matrix[4] + g_part * matrix[5] + b_part * matrix[6]) * 255, 0, 255))
+																var/new_b = round(clamp((r_part * matrix[7] + g_part * matrix[8] + b_part * matrix[9]) * 255, 0, 255))
+																colors[i] = rgb(new_r, new_g, new_b)
+														else
+															colors[i] = "#FFFFFF"
+												else
+													colors[i] = "#FFFFFF"
+											else if(!findtext(polychromic, regex(@"^#[0-9a-fA-F]{6}$")))
+												colors[i] = "#FFFFFF"
+								else
+									entry -= setting
 
-			loadout_data["SAVE_[loadout_slot]"] = sanitize_current_slot.Copy()
-		else
-			loadout_data["SAVE_[loadout_slot]"] = list()
-	else
-		loadout_data = list()
+							// Already html_encoded at write time by stripped_input(); re-encoding
+							// here double-encodes (& -> &amp; -> &amp;amp;) on every load. Only bound
+							// length, and only for text - a malformed savefile could hold a non-text
+							// value here, which trim() would choke on.
+							if(LOADOUT_CUSTOM_NAME)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], MAX_NAME_LEN)
+							if(LOADOUT_CUSTOM_DESCRIPTION)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], 500)
+
+				loadout_data[save_key] = sanitize_entries.Copy()
+			else
+				loadout_data[save_key] = list()
 
 	//let's remember their last used slot, i'm sure "oops i brought the wrong stuff" will be an issue now
 	S["loadout_slot"] >> loadout_slot
+	// BLUEMOON ADD - загрузка переключателя лодаута
+	S["loadout_enabled"] >> loadout_enabled
+	// BLUEMOON ADD END
 
 	//try to fix any outdated data if necessary
 	//preference updating will handle saving the updated data for us.
@@ -1245,6 +1897,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	onelife_death_type = sanitize_inlist(onelife_death_type, GLOB.onelife_death_forms, "Пепел") // BLUEMOON ADD
+	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
+	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
+	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
+	//навсегда, потому что следующий же save_character писал null на диск
+	if(SStraumas)
+		phobia_type = SStraumas.sanitize_phobia_type(phobia_type)
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 
@@ -1278,6 +1937,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["arachnid_legs"] = sanitize_inlist(features["arachnid_legs"], GLOB.arachnid_legs_list, "Plain")
 	features["arachnid_spinneret"] = sanitize_inlist(features["arachnid_spinneret"], GLOB.arachnid_spinneret_list, "Plain")
 	features["arachnid_mandibles"] = sanitize_inlist(features["arachnid_mandibles"], GLOB.arachnid_mandibles_list, "Plain")
+	if(!islist(features["emissive_parts"]))
+		features["emissive_parts"] = list()
+	else
+		var/list/filtered_emissive_parts = list()
+		for(var/part in features["emissive_parts"])
+			if(part in GLOB.emissive_parts_list)
+				filtered_emissive_parts += part
+		features["emissive_parts"] = filtered_emissive_parts
 
 	var/static/size_min
 	if(!size_min)
@@ -1357,6 +2024,29 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["custom_species_lore"] = copytext_char(features["custom_species_lore"], 1, MAX_FLAVOR_LEN) //SPLURT edit
 	features["ooc_notes"] = copytext_char(features["ooc_notes"], 1, MAX_FLAVOR_LEN)
 
+	//Headshots
+	features["headshot_links"] = sanitize_islist(features["headshot_links"], list())
+	headshots_temp = features["headshot_links"]
+	if(headshots_temp.len != MAX_HEADSHOTS)
+		if(headshots_temp.len < MAX_HEADSHOTS)
+			for(var/i = headshots_temp.len, i+1 <= MAX_HEADSHOTS, i++)
+				headshots_temp[i+1] = null
+		else
+			headshots_temp.Cut(MAX_HEADSHOTS+1)
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
+
+	features["headshot_naked_links"] = sanitize_islist(features["headshot_naked_links"], list())
+	headshots_temp = features["headshot_naked_links"]
+	if(headshots_temp.len != MAX_HEADSHOTS_NAKED)
+		if(headshots_temp.len < MAX_HEADSHOTS_NAKED)
+			for(var/i = headshots_temp.len, i+1 <= MAX_HEADSHOTS_NAKED, i++)
+				headshots_temp[i+1] = null
+		else
+			headshots_temp.Cut(MAX_HEADSHOTS_NAKED+1)
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
+
 	//load every advanced coloring mode thing in one go
 	//THIS MUST BE DONE AFTER ALL FEATURE SAVES OR IT WILL NOT WORK
 	for(var/feature in features)
@@ -1402,7 +2092,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(job_preferences["[j]"] != JP_LOW && job_preferences["[j]"] != JP_MEDIUM && job_preferences["[j]"] != JP_HIGH)
 			job_preferences -= j
 
-	custom_emote_panel = SANITIZE_LIST(custom_emote_panel)
+	// Strips control characters from saved emote names so legacy entries that could
+	// not round-trip through TGUI become matchable again (and thus renamable/removable).
+	custom_emote_panel = sanitize_custom_emote_panel(custom_emote_panel)
 
 	all_quirks = SANITIZE_LIST(all_quirks)
 
@@ -1448,6 +2140,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//SPLURT EDIT END
 
 	loadout_slot = sanitize_num_clamp(loadout_slot, 1, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
+	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
 	if(SSjob)
@@ -1458,11 +2151,58 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_load(S)
 
+	sand_character_pref_load(S)
+
 	splurt_character_pref_load(S)
 
 	bluemoon_character_pref_load(S)
 
+	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+
 	return S
+
+/// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
+/// Если удаляется текущий слот — переключается на ближайший непустой, или на слот 1.
+/datum/preferences/proc/delete_character(slot)
+	if(!path)
+		return FALSE
+	slot = sanitize_integer(slot, 1, max_save_slots, 1)
+	var/savefile/S = new /savefile(path)
+	if(!S)
+		return FALSE
+
+	// Проверяем, что в слоте действительно есть персонаж
+	S.cd = "/character[slot]"
+	var/check_name
+	S["real_name"] >> check_name
+	if(!check_name)
+		return FALSE // слот уже пуст
+
+	// Удаляем директорию персонажа из сейвфайла
+	S.cd = "/"
+	S.dir.Remove("character[slot]")
+
+	// Если удалили текущий слот — нужно переключиться на другой
+	if(slot == default_slot)
+		var/new_slot = 0
+		// Ищем ближайший непустой слот
+		for(var/i in 1 to max_save_slots)
+			if(i == slot)
+				continue
+			S.cd = "/character[i]"
+			var/name
+			S["real_name"] >> name
+			if(name)
+				new_slot = i
+				break
+		// Если не нашли непустой — просто переключаемся на слот 1
+		if(!new_slot)
+			new_slot = 1
+		default_slot = new_slot
+		load_character(new_slot)
+
+	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	return TRUE
 
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
 	if(!path)
@@ -1475,6 +2215,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
 	if(char_queue)
 		deltimer(char_queue)
+	char_queue = null
+	char_queue_deadline = 0
+	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
 		return FALSE
@@ -1499,10 +2242,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["eye_type"]							, eye_type)
 	WRITE_FILE(S["shriek_type"]							, shriek_type) // BLUEMOON ADD
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
+	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
+	WRITE_FILE(S["onelife_death_type"]					, onelife_death_type) // BLUEMOON ADD
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)
 	WRITE_FILE(S["use_custom_skin_tone"]				, use_custom_skin_tone)
+	WRITE_FILE(S["pda_ringtone"]						, pda_ringtone)
+	WRITE_FILE(S["pda_theme"]							, pda_theme)
 	WRITE_FILE(S["skin_tone"]							, skin_tone)
 	WRITE_FILE(S["hair_style_name"]						, hair_style)
 	WRITE_FILE(S["facial_style_name"]					, facial_hair_style)
@@ -1633,6 +2380,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	WRITE_FILE(S["feature_neckfire"], features["neckfire"])
 	WRITE_FILE(S["feature_neckfire_color"], features["neckfire_color"])
+	WRITE_FILE(S["feature_puddle_slime_fea"], features["puddle_slime_fea"])
 
 	WRITE_FILE(S["alt_titles_preferences"], alt_titles_preferences)
 
@@ -1714,16 +2462,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["egg_shell"], egg_shell)
 	WRITE_FILE(S["pregnancy_inflation"], pregnancy_inflation)
 	WRITE_FILE(S["pregnancy_breast_growth"], pregnancy_breast_growth)
-	WRITE_FILE(S["headshot"], features["headshot_link"])
-	WRITE_FILE(S["headshot1"], features["headshot_link1"])
-	WRITE_FILE(S["headshot2"], features["headshot_link2"])
-	//SPLURT EDIT END
-	// BLUEMOON ADD START
-	WRITE_FILE(S["headshot_naked"], features["headshot_naked_link"])
-	WRITE_FILE(S["headshot_naked1"], features["headshot_naked_link1"])
-	WRITE_FILE(S["headshot_naked2"], features["headshot_naked_link2"])
-	// BLUEMOON ADD END
 
+	//Headshots
+	var/list/headshots_temp = features["headshot_links"]
+	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
+		var/postfix = i == 1 ? null : i-1
+		WRITE_FILE(S["headshot[postfix]"], headshots_temp[i])
+
+	headshots_temp = features["headshot_naked_links"]
+	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
+		var/postfix = i == 1 ? null : i-1
+		WRITE_FILE(S["headshot_naked[postfix]"], headshots_temp[i])
 
 	//gear loadout
 	if(islist(loadout_data))
@@ -1731,6 +2480,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
 
 	if(length(tcg_cards))
 		S["tcg_cards"] << safe_json_encode(tcg_cards)
@@ -1744,9 +2494,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_save(S)
 
+	sand_character_pref_save(S)
+
 	splurt_character_pref_save(S)
 
 	bluemoon_character_pref_save(S)
+
+	save_tattoo_prefs(S) // BLUEMOON ADD - сохранение татуировок
 
 	if(parent)
 		if(ishuman(parent?.mob))
@@ -1756,13 +2510,19 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved character slot!"))
 
+	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving character in [save_in * 0.1] second\s."))
 	if(char_queue)
+		// См. queue_save_pref: перенос отложенной записи ограничен крайним сроком.
+		if(world.time >= char_queue_deadline)
+			return
 		deltimer(char_queue)
+	else
+		char_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	char_queue = addtimer(CALLBACK(src, PROC_REF(save_character), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 #undef SAVEFILE_VERSION_MAX

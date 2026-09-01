@@ -2,7 +2,7 @@
 #define BLUEMOON_PLAYER_RANKS list("Mentor")
 
 /client/proc/manage_player_ranks()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Manage Player Ranks"
 	set desc = "Manage who has the special player ranks while the server is running."
 
@@ -87,7 +87,7 @@
 
 
 /client/proc/migrate_player_ranks()
-	set category = "Debug"
+	set category = "Debug.3) Fixing"
 	set name = "Migrate Player Ranks"
 	set desc = "Individually migrate the various player ranks from their legacy system to the SQL-based one."
 

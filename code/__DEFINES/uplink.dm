@@ -11,3 +11,6 @@
 
 /// Bluemoon added. This item is purchasable to syndicate dudes
 #define UPLINK_SYNDICATE (1 << 3)
+
+// Bluemoon added. Дефайт для аплинка синдистанции. В нём только разрешенная по НРП зелёная КБшка, плюс пару не контрабандных плюшек.
+#define UPLINK_SYNDICATE_PACT_CREW (1 << 4)

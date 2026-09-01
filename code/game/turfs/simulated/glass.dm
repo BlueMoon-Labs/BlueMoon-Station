@@ -4,7 +4,7 @@
 	icon = 'icons/turf/floors/glass.dmi'
 	icon_state = "floor_glass"
 	baseturfs = /turf/open/openspace
-	intact = FALSE //this means wires go on top
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_INTACT
 	smooth = SMOOTH_MORE
 	canSmoothWith = list(/turf/open/floor/glass, /turf/open/floor/glass/reinforced)
 	footstep = FOOTSTEP_PLATING

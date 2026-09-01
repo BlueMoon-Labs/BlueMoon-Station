@@ -17,6 +17,7 @@
 
 /obj/structure/transit_tube_pod/Destroy()
 	empty_pod()
+	QDEL_NULL(air_contents)
 	return ..()
 
 /obj/structure/transit_tube_pod/update_icon_state()
@@ -81,11 +82,11 @@
 		M.forceMove(location)
 	update_icon()
 
-/obj/structure/transit_tube_pod/Process_Spacemove()
+/obj/structure/transit_tube_pod/Process_Spacemove(movement_dir = 0)
 	if(moving) //No drifting while moving in the tubes
 		return TRUE
 	else
-		return ..()
+		return ..(movement_dir)
 
 /obj/structure/transit_tube_pod/proc/follow_tube()
 	set waitfor = 0

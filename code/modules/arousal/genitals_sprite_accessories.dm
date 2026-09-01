@@ -5,6 +5,7 @@
 	var/feat_taur //the text string of the dna feature to check for those who want to opt out.
 	var/taur_dimension_y = 32
 	var/taur_dimension_x = 32
+	var/use_custom_mod_icon = FALSE
 
 /*
  * This is an example of a penis object in the code.
@@ -27,10 +28,11 @@
 	alt_aroused = TRUE
 	feat_taur = "cock_taur"
 	var/ru_name = "человеческий"
+	mutant_part_string = "penis"
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
-	name = "Teshari(For Teshari Only)"
+	name = "Teshari (For Teshari Only)"
 	ru_name = "тешарьский"
 	icon = 'modular_splurt/icons/obj/genitals/teshari_penis.dmi'
 
@@ -39,9 +41,23 @@
 	name = "Human"
 	ru_name = "человеческий"
 
+/datum/sprite_accessory/penis/human_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "human"
+	name = "Human (New Tg)"
+	ru_name = "человеческий"
+
 /datum/sprite_accessory/penis/knotted
 	icon_state = "knotted"
 	name = "Knotted"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "узловатый"
+
+/datum/sprite_accessory/penis/knotted_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "knotted"
+	name = "Knotted (New Tg)"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "узловатый"
@@ -53,14 +69,37 @@
 	taur_dimension_x = 64
 	ru_name = "конический"
 
+/datum/sprite_accessory/penis/flared_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "flared"
+	name = "Flared (New Tg)"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "конический"
+
 /datum/sprite_accessory/penis/barbknot
+
 	icon_state = "barbknot"
 	name = "Barbed, Knotted"
+	ru_name = "узловатый и немного колючий"
+
+/datum/sprite_accessory/penis/barbknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "barbknot"
+	name = "Barbed, Knotted (New Tg)"
 	ru_name = "узловатый и немного колючий"
 
 /datum/sprite_accessory/penis/tapered
 	icon_state = "tapered"
 	name = "Tapered"
+	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
+	taur_dimension_x = 64
+	ru_name = "утончённый к концу"
+
+/datum/sprite_accessory/penis/tapered_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tapered"
+	name = "Tapered (New Tg)"
 	taur_icon = 'icons/obj/genitals/taur_penis_onmob.dmi'
 	taur_dimension_x = 64
 	ru_name = "утончённый к концу"
@@ -76,9 +115,21 @@
 	name = "Tentacled"
 	ru_name = "тентяклевидный"
 
+/datum/sprite_accessory/penis/tentacle_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "tentacle"
+	name = "Tentacled (New Tg)"
+	ru_name = "тентяклевидный"
+
 /datum/sprite_accessory/penis/hemi
 	icon_state = "hemi"
 	name = "Hemi"
+	ru_name = "двойной"
+
+/datum/sprite_accessory/penis/hemi_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "hemi"
+	name = "Hemi (New Tg)"
 	ru_name = "двойной"
 
 /datum/sprite_accessory/penis/hemiknot
@@ -86,8 +137,14 @@
 	name = "Knotted Hemi"
 	ru_name = "двойной узловатый"
 
-/datum/sprite_accessory/penis/barbedhemiknot
+/datum/sprite_accessory/penis/hemiknot_new
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
 	icon_state = "hemiknot"
+	name = "Knotted Hemi (New Tg)"
+	ru_name = "двойной узловатый"
+
+/datum/sprite_accessory/penis/barbedhemiknot
+	icon_state = "bhemiknot"
 	name = "Barbed, Knotted Hemi"
 	ru_name = "двойной, узловатый и немного колючий"
 
@@ -96,16 +153,28 @@
 	name = "Thick"
 	ru_name = "обрезанный"
 
+/datum/sprite_accessory/penis/nondescript
+	icon = 'modular_bluemoon/icons/obj/genitals/penis_onmob.dmi'
+	icon_state = "nondescript"
+	name = "Thick (New Tg)"
+	ru_name = "обрезанный"
+
 //Testicles
 /datum/sprite_accessory/testicles
 	icon = 'icons/obj/genitals/testicles_onmob.dmi'
 	icon_state = "testicle"
 	name = "testicle"		//the preview name of the accessory
 	color_src = "balls_color"
+	mutant_part_string = "testicles"
 
 /datum/sprite_accessory/testicles/single
 	icon_state = "single"
 	name = "Single" //Single as "single pair", for clarity.
+
+/datum/sprite_accessory/testicles/single_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "single"
+	name = "Single (New Tg)"
 
 /datum/sprite_accessory/testicles/hidden
 	icon_state = "hidden"
@@ -115,12 +184,18 @@
 	icon_state = "sheath"
 	name = "Sheath"
 
+/datum/sprite_accessory/testicles/sheath_new
+	icon = 'modular_bluemoon/icons/obj/genitals/testicles_onmob.dmi'
+	icon_state = "sheath"
+	name = "Sheath (New Tg)"
+
 //Vaginas
 /datum/sprite_accessory/vagina
 	icon = 'icons/obj/genitals/vagina_onmob.dmi'
 	name = "vagina"
 	color_src = "vag_color"
 	alt_aroused = TRUE
+	mutant_part_string = "vagina"
 
 /datum/sprite_accessory/vagina/human
 	icon_state = "human"
@@ -188,6 +263,7 @@
 	icon = 'icons/obj/genitals/breasts_onmob.dmi'
 	name = "breasts"
 	color_src = "breasts_color"
+	mutant_part_string = "breasts"
 
 /datum/sprite_accessory/breasts/pair
 	icon_state = "pair"
@@ -207,6 +283,7 @@
 	icon_state = "butt"
 	name = "butt"
 	color_src = "butt_color"
+	mutant_part_string = "butt"
 
 /datum/sprite_accessory/butt
 	icon = 'modular_splurt/icons/obj/genitals/butt_onmob.dmi'
@@ -221,6 +298,7 @@
 	icon_state = "belly"
 	name = "belly"
 	color_src = "belly_color"
+	mutant_part_string = "belly"
 
 //there literally shouldn't be any other ass types besides one because that'd be weird, this is just here to keep things consistent for the genital system.
 /datum/sprite_accessory/belly/pair

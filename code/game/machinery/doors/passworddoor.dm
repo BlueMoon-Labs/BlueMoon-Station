@@ -20,6 +20,7 @@
 	. = ..()
 	if(voice_activated)
 		flags_1 |= HEAR_1
+		become_hearing_sensitive(INNATE_TRAIT) //флаг ставится после общего хука в /atom/movable/Initialize
 
 /obj/machinery/door/password/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
 	. = ..()
@@ -31,7 +32,7 @@
 /obj/machinery/door/password/Bumped(atom/movable/AM)
 	return !density && ..()
 
-/obj/machinery/door/password/try_to_activate_door(mob/user)
+/obj/machinery/door/password/try_to_activate_door(mob/user, access_bypass = FALSE)
 	add_fingerprint(user)
 	if(operating)
 		return

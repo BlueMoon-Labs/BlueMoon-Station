@@ -17,21 +17,19 @@
 	if(isliving(target))
 		var/mob/living/living = target
 		var/new_size = RESIZE_NORMAL
-		switch(get_size(target))
-			if(RESIZE_MACRO to INFINITY)
-				new_size = RESIZE_HUGE
-			if(RESIZE_HUGE to RESIZE_MACRO)
-				new_size = RESIZE_BIG
-			if(RESIZE_BIG to RESIZE_HUGE)
-				new_size = RESIZE_NORMAL
-			if(RESIZE_NORMAL to RESIZE_BIG)
-				new_size = RESIZE_SMALL
-			if(RESIZE_SMALL to RESIZE_NORMAL)
-				new_size = RESIZE_TINY
-			if(RESIZE_TINY to RESIZE_SMALL)
-				new_size = RESIZE_MICRO
-			if((0 - INFINITY) to RESIZE_NORMAL)
-				new_size = RESIZE_MICRO
+		var/size = get_size(target)
+		if(size >= RESIZE_MACRO)
+			new_size = RESIZE_HUGE
+		else if(size >= RESIZE_HUGE)
+			new_size = RESIZE_BIG
+		else if(size >= RESIZE_BIG)
+			new_size = RESIZE_NORMAL
+		else if(size >= RESIZE_NORMAL)
+			new_size = RESIZE_SMALL
+		else if(size >= RESIZE_SMALL)
+			new_size = RESIZE_TINY
+		else
+			new_size = RESIZE_MICRO
 		living.update_size(new_size)
 	return TRUE
 
@@ -39,21 +37,22 @@
 	if(isliving(target))
 		var/mob/living/living = target
 		var/new_size = RESIZE_NORMAL
-		switch(get_size(target))
-			if(RESIZE_HUGE to RESIZE_MACRO)
-				new_size = RESIZE_MACRO
-			if(RESIZE_BIG to RESIZE_HUGE)
-				new_size = RESIZE_HUGE
-			if(RESIZE_NORMAL to RESIZE_BIG)
-				new_size = RESIZE_BIG
-			if(RESIZE_SMALL to RESIZE_NORMAL)
-				new_size = RESIZE_NORMAL
-			if(RESIZE_TINY to RESIZE_SMALL)
-				new_size = RESIZE_SMALL
-			if(RESIZE_MICRO to RESIZE_TINY)
-				new_size = RESIZE_TINY
-			if((0 - INFINITY) to RESIZE_MICRO)
-				new_size = RESIZE_MICRO
+		var/size = get_size(target)
+		if(size >= RESIZE_HUGE)
+			new_size = RESIZE_MACRO
+		else if(size >= RESIZE_BIG)
+			new_size = RESIZE_HUGE
+		else if(size >= RESIZE_NORMAL)
+			new_size = RESIZE_BIG
+		else if(size >= RESIZE_SMALL)
+			new_size = RESIZE_NORMAL
+		else if(size >= RESIZE_TINY)
+			new_size = RESIZE_SMALL
+		else if(size >= RESIZE_MICRO)
+			new_size = RESIZE_TINY
+		else
+			new_size = RESIZE_MICRO
+
 		living.update_size(new_size)
 	return TRUE
 

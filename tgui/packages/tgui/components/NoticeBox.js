@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { classes, pureComponentHooks } from 'common/react';
+import { classes } from 'common/react';
 
 import { Box } from './Box';
 
@@ -32,4 +32,3 @@ export const NoticeBox = props => {
   );
 };
 
-NoticeBox.defaultHooks = pureComponentHooks;

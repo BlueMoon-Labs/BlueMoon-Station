@@ -12,11 +12,27 @@
 	exp_requirements = 240
 	exp_type = EXP_TYPE_CREW
 
+	alt_titles = list(
+		"Counsellor",
+		"Hypnosis Expert",
+		"Hypnotherapist",
+		"Hypnotist",
+		"Psychiatrist",
+		"Psycho-Slut",
+		"Psychotherapist",
+		"Rental Daddy",
+		"Rental Mommy",
+		"Sex Therapist",
+		"Sexual Advisor",
+		"The Rapist",
+		"Therapist",
+		"Trust Service Specialist"
+		)
 
 	outfit = /datum/outfit/job/doctor/psychologist
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PSYCH)
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PSYCH)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PSYCH, ACCESS_PRODUCTION_MEDICAL)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PSYCH, ACCESS_PRODUCTION_MEDICAL)
 
 	display_order = JOB_DISPLAY_ORDER_PSYCH
 
@@ -40,7 +56,7 @@
 	name = "Syndicate Psychologist"
 	jobtype = /datum/job/psychologist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -50,8 +66,10 @@
 	r_hand = /obj/item/storage/briefcase/medical
 	l_pocket = /obj/item/laser_pointer
 
-	backpack_contents = list(/obj/item/syndicate_uplink=1, /obj/item/storage/pill_bottle/mannitol, /obj/item/storage/pill_bottle/psicodine, /obj/item/storage/pill_bottle/paxpsych, /obj/item/storage/pill_bottle/happinesspsych, /obj/item/storage/pill_bottle/lsdpsych)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1, /obj/item/storage/pill_bottle/mannitol, /obj/item/storage/pill_bottle/psicodine, /obj/item/storage/pill_bottle/paxpsych, /obj/item/storage/pill_bottle/happinesspsych, /obj/item/storage/pill_bottle/lsdpsych)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med

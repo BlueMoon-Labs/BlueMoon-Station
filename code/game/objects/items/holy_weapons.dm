@@ -143,6 +143,59 @@
 	icon_state = "knight_ancient"
 	item_state = "knight_ancient"
 
+/obj/item/storage/box/holy/omnissiah
+	name = "Omnissiah Follower"
+
+/obj/item/storage/box/holy/omnissiah/PopulateContents()
+	new /obj/item/clothing/suit/hooded/adept_mech(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+
+/obj/item/clothing/suit/hooded/adept_mech
+	name = "Adeptus Mechanicus fancy robe"
+	desc = "Bless Omnissiah!"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	icon_state = "genetor"
+	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	item_state = "genetor"
+	blood_overlay_type = "coat"
+	no_t = TRUE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	hoodtype = /obj/item/clothing/head/hooded/chaplain/adept_mech_hood
+
+/obj/item/clothing/suit/hooded/adept_mech_follower
+	name = "Adeptus Mechanicus follower robe"
+	desc = "Bless Omnissiah!"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	icon_state = "genetor"
+	item_state = "genetor"
+	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	no_t = TRUE
+	blood_overlay_type = "coat"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	hoodtype = /obj/item/clothing/head/hooded/chaplain/adept_mech_follower_hood
+
+/obj/item/clothing/head/hooded/chaplain/adept_mech_hood
+	name = "Adeptus Mechanicus Hood"
+	desc = "Bless Omnissiah in my head."
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "techpriestnew"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
+
+/obj/item/clothing/head/hooded/chaplain/adept_mech_follower_hood
+	name = "Adeptus Mechanicus Follower Hood"
+	desc = "Bless Omnissiah in my head."
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "genetor"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
+
 /obj/item/storage/box/holy/witchhunter
 	name = "Witchhunter Kit"
 
@@ -352,6 +405,41 @@
 	if(attack_type & ATTACK_TYPE_PROJECTILE) // Don't bring a sword to a gunfight
 		return NONE
 	return ..()
+
+/obj/item/nullrod/mimicry_sword
+	name = "Mimicry Sword"
+	desc = "Влажный и грязный, как будто, если бы ваше желание сымитировать человека остановилось на жадности. От взгляда его таинственных глаз вас охватит дрожь. Он обожает мучить жертв"
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mimicry_sword"
+	item_state = "mimicry_sword"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
+	w_class = WEIGHT_CLASS_HUGE
+	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
+	item_flags = ITEM_CAN_PARRY
+	block_chance = 35
+	armour_penetration = 10
+	sharpness = SHARP_EDGED
+	damtype = BRUTE
+	force = 20
+
+	hitsound = 'sound/weapons/bladeslice2.ogg'
+	attack_verb = list("healed", "mended", "soothed", "restored")
+
+	attack(mob/living/carbon/C, mob/living/user)
+		playsound(src, 'sound/weapons/bladeslice2.ogg', 50, TRUE)
+		. = ..()
+		if(!iscarbon(C))
+			return
+		C.heal_bodypart_damage(0, 0, 0, 15)
+
+	run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+		if(attack_type & ATTACK_TYPE_PROJECTILE)
+			if(prob(25))
+				return ..()
+			return NONE
+		return ..()
 
 /obj/item/nullrod/claymore/darkblade
 	icon_state = "cultblade"
@@ -649,6 +737,8 @@
 	item_flags = ABSTRACT
 	w_class = WEIGHT_CLASS_HUGE
 	sharpness = SHARP_EDGED
+	tool_behaviour = TOOL_CROWBAR
+	usesound = 'sound/items/crowbar.ogg'
 	wound_bonus = -20
 	bare_wound_bonus = 25
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
@@ -662,6 +752,7 @@
 	name = "unholy blessing"
 	icon_state = "tentacle"
 	item_state = "tentacle"
+	tool_behaviour = NONE
 
 /obj/item/nullrod/carp
 	name = "carp-sie plushie"

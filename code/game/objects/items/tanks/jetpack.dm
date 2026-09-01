@@ -10,9 +10,15 @@
 	actions_types = list(/datum/action/item_action/set_internals, /datum/action/item_action/toggle_jetpack, /datum/action/item_action/jetpack_stabilization)
 	var/gas_type = GAS_O2
 	var/on = FALSE
-	var/stabilizers = FALSE
+	/// Гасить ли дрейф. Включено по умолчанию и переживает выключение самого джетпака:
+	/// прежний сброс в FALSE на каждом `turn_off` и был той "сбрасывающейся стабилизацией",
+	/// на которую жаловались в баг-репорте.
+	var/stabilizers = TRUE
 	var/full_speed = TRUE // If the jetpack will have a speedboost in space/nograv or not
 	var/datum/effect_system/trail_follow/ion/ion_trail
+	/// Не больше одного списания за тик: за один шаг Process_Spacemove зовут и с ручного
+	/// пути, и с тика дрейфа, а работа двигателя при этом одна и та же.
+	var/last_thrust_time = -1
 
 /obj/item/tank/jetpack/Initialize(mapload)
 	. = ..()
@@ -32,9 +38,7 @@
 	if(istype(action, /datum/action/item_action/toggle_jetpack))
 		cycle(user)
 	else if(istype(action, /datum/action/item_action/jetpack_stabilization))
-		if(on)
-			stabilizers = !stabilizers
-			to_chat(user, "<span class='notice'>You turn the jetpack stabilization [stabilizers ? "on" : "off"].</span>")
+		set_stabilizers(!stabilizers, user)
 	else
 		toggle_internals(user)
 
@@ -44,46 +48,93 @@
 
 	if(!on)
 		turn_on(user)
-		to_chat(user, "<span class='notice'>You turn the jetpack on.</span>")
+		to_chat(user, "<span class='notice'>Вы включаете джетпак. Режим: [stabilizers ? "стабилизация" : "свободный полёт"].</span>")
 	else
 		turn_off(user)
-		to_chat(user, "<span class='notice'>You turn the jetpack off.</span>")
+		to_chat(user, "<span class='notice'>Вы выключаете джетпак.</span>")
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()
 
+/// Единая точка переключения режима.
+/obj/item/tank/jetpack/proc/set_stabilizers(new_state, mob/user)
+	if(!on || stabilizers == new_state)
+		return FALSE
+	stabilizers = new_state
+	if(user)
+		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
+	for(var/datum/action/current_action as anything in actions)
+		current_action.UpdateButtons()
+	return TRUE
+
 /obj/item/tank/jetpack/proc/turn_on(mob/user)
+	if(!user)
+		return
 	on = TRUE
 	icon_state = "[initial(icon_state)]-on"
 	ion_trail.start()
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
-	if(full_speed)
-		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	else
-		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_user_death), override = TRUE)
+	user.update_movespeed()
 
 /obj/item/tank/jetpack/proc/turn_off(mob/user)
 	on = FALSE
-	stabilizers = FALSE
 	icon_state = initial(icon_state)
 	ion_trail.stop()
-	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
-	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	if(!user)
+		return
+	UnregisterSignal(user, COMSIG_LIVING_DEATH)
+	user.update_movespeed()
 
-/obj/item/tank/jetpack/proc/move_react(mob/user)
-	allow_thrust(0.01, user)
-
-/obj/item/tank/jetpack/proc/allow_thrust(num, mob/living/user)
+/// Мёртвый не тянет рычаги. Дрейф при этом остаётся - тело летит по инерции, как и положено.
+/obj/item/tank/jetpack/proc/on_user_death(mob/living/source)
+	SIGNAL_HANDLER
 	if(!on)
 		return
-	if((num < 0.005 || air_contents.total_moles() < num))
-		turn_off(user)
-		return
+	turn_off(source)
+	for(var/datum/action/current_action as anything in actions)
+		current_action.UpdateButtons()
 
-	assume_air_moles(air_contents, num)
+/obj/item/tank/jetpack/dropped(mob/user, silent = FALSE)
+	. = ..()
+	if(on)
+		turn_off(user)
+
+/**
+ * Спрашивает у двигателя, есть ли тяга, и по желанию списывает за неё.
+ *
+ * Разделено надвое, потому что разрешить шаг и оплатить его - разные вопросы: накат по курсу
+ * на крейсерской скорости двигателю ничего не стоит, но шагать он всё равно разрешает.
+ */
+/obj/item/tank/jetpack/proc/allow_thrust(num, mob/living/user, consume = TRUE)
+	if(!on)
+		return FALSE
+	if(user && user.stat != CONSCIOUS)
+		return FALSE
+	if(num < 0.005 || air_contents.total_moles() < num)
+		if(user)
+			to_chat(user, "<span class='warning'>Двигатели [src] глохнут - топливо кончилось.</span>")
+		turn_off(user)
+		return FALSE
+	if(!consume || last_thrust_time == world.time)
+		return TRUE
+	last_thrust_time = world.time
+
+	// Выхлоп уходит из баллона в турф под носителем: вызов на src переливал
+	// смесь саму в себя, и джетпак летал бесконечно.
+	var/turf/exhaust_turf = get_turf(user)
+	if(!exhaust_turf)
+		return TRUE
+	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
+
+/obj/item/tank/jetpack/examine(mob/user)
+	. = ..()
+	if(!on)
+		. += "<span class='notice'>Двигатели выключены.</span>"
+		return
+	. += "<span class='notice'>Режим: [stabilizers ? "стабилизация - гасит дрейф, топливо тратится на каждый шаг" : "свободный полёт - разгон до крейсерской скорости, дальше накат бесплатно"].</span>"
+	. += "<span class='notice'>В баке [round(air_contents.total_moles(), 0.1)] молей.</span>"
 
 /obj/item/tank/jetpack/suicide_act(mob/user)
 	if (ishuman(user))
@@ -103,20 +154,13 @@
 	gas_type = null //it starts empty
 	full_speed = FALSE //moves at hardsuit jetpack speeds
 
-/obj/item/tank/jetpack/improvised/allow_thrust(num, mob/living/user)
-	if(!on)
-		return
-	if((num < 0.005 || air_contents.total_moles() < num))
-		turn_off(user)
-		return
-	if(rand(0,250) == 0)
+/obj/item/tank/jetpack/improvised/allow_thrust(num, mob/living/user, consume = TRUE)
+	// Глохнет только когда двигатель реально работает: за бесплатный накат его не наказываем.
+	if(consume && on && rand(0, 250) == 0)
 		to_chat(user, "<span class='notice'>You feel your jetpack's engines cut out.</span>")
 		turn_off(user)
-		return
-
-	assume_air_moles(air_contents, num)
-
-	return TRUE
+		return FALSE
+	return ..()
 
 /obj/item/tank/jetpack/void
 	name = "void jetpack (oxygen)"
@@ -140,6 +184,7 @@
 	volume = 50
 	throw_range = 7
 	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 
 /obj/item/tank/jetpack/oxygen/captain
 	name = "\improper Captain's jetpack"
@@ -155,7 +200,7 @@
 	desc = "A tank of compressed oxygen for use as propulsion in zero-gravity areas by security forces."
 	icon_state = "jetpack-sec"
 	item_state = "jetpack-sec"
-	full_speed = FALSE
+	full_speed = TRUE
 
 /obj/item/tank/jetpack/carbondioxide
 	name = "jetpack (carbon dioxide)"
@@ -180,7 +225,7 @@
 	volume = 1
 	slot_flags = null
 	gas_type = null
-	full_speed = FALSE
+	full_speed = TRUE
 	var/datum/gas_mixture/temp_air_contents
 	var/obj/item/tank/internals/tank = null
 	var/mob/living/carbon/human/cur_user
@@ -240,6 +285,9 @@
 
 /mob/living/carbon/get_jetpack()
 	var/obj/item/I = back
+	var/obj/item/B = belt
+	if(istype(B, /obj/item/tank/jetpack/oxygen/harness))
+		return B
 	if(istype(I, /obj/item/tank/jetpack))
 		return I
 	else if(istype(I, /obj/item/mod/control))

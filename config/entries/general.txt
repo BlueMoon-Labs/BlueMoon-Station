@@ -345,6 +345,7 @@ ROUNDSTART_RACES undead_mammal
 ROUNDSTART_RACES undead_insect
 ROUNDSTART_RACES ghoul_lizard
 ROUNDSTART_RACES podweak
+ROUNDSTART_RACES diona
 
 ROUNDSTART_RACES vox
 ROUNDSTART_RACES nucleation
@@ -360,9 +361,9 @@ OVERFLOW_JOB Clown
 ## Overflow slot cap. Set to -1 for unlimited. If limited, it will still open up if every other job is full.
 OVERFLOW_CAP 5
 
-## Starlight for exterior walls and breaches. Uncomment for starlight!
-## This is disabled by default to make testing quicker, should be enabled on production servers or testing servers messing with lighting
-#STARLIGHT
+## Starlight for exterior walls and breaches.
+## Provides ambient lighting through windows facing space.
+STARLIGHT
 
 ## Uncomment to bring back old grey suit assistants instead of the now default rainbow colored assistants.
 #GREY_ASSISTANTS
@@ -456,7 +457,7 @@ ROUNDSTART_TRAITS
 #DISABLE_HUMAN_MOOD
 
 ## Enable night shifts ##
-#ENABLE_NIGHT_SHIFTS
+ENABLE_NIGHT_SHIFTS
 
 ## Makes night shifts only affect in-code public-flagged areas. Nightshifts hit the level as defined in __DEFINES/misc.dm that this is set to and anything below. ##
 NIGHT_SHIFT_PUBLIC_AREAS_ONLY 0
@@ -466,6 +467,10 @@ NIGHT_SHIFT_PUBLIC_AREAS_ONLY 0
 
 ## Nightshift toggles in public areas REQUIRE APC authorization ##
 NIGHTSHIFT_TOGGLE_PUBLIC_REQUIRES_AUTH
+
+## Enable dynamic starlight color/brightness cycling based on solar time ##
+## Requires both STARLIGHT and ENABLE_NIGHT_SHIFTS ##
+DYNAMIC_STARLIGHT_CYCLE
 
 ## Enable randomized shift start times##
 #RANDOMIZE_SHIFT_TIME
@@ -487,9 +492,6 @@ ECONOMY
 
 #Replaces standard extended/secret dichotomy with extended and calm/chaotic votes for dynamic.
 #DYNAMIC_VOTING
-
-## Uncomment to enable dynamic ruleset config file.
-DYNAMIC_CONFIG_ENABLED
 
 ## Choose which Engine to start the round with. Weight is after the comma. Setting the weight to 0 removes the engine from rotation.
 BOX_RANDOM_ENGINE Box SM,3
@@ -531,10 +533,22 @@ PAI_CUSTOM_HOLOFORMS
 ## Enables monstermos/"equalization" step in atmos.
 # ATMOS_EQUALIZE_ENABLED
 
+## Heat conduction through walls, windows and conductive materials. Enabled by default;
+## set to 0 to disable. Turfs only register above 493 K, so an ordinary station pays nothing.
+#ATMOS_HEAT_ENABLED 0
+
+## Multiplier for atmos processing speed. Scales how often SSair fires: 1 = default (every 0.5s),
+## 2 = twice as often, so gas moves twice as fast and atmos costs about twice as much CPU.
+## The cadence saturates one server tick apart, and it is walked back automatically while the
+## server is time-dilating. ТУТ МЕНЯТЬ ЗНАЧЕНИЯ
+ATMOS_SPEED_MULTIPLIER 1
+
 ## Do station renames from the station charter require admin approval to pass, as opposed to autoapproving if not denied.
 STATION_NAME_NEEDS_APPROVAL
 
-INITIAL_GEAR_POINTS 16
+INITIAL_GEAR_POINTS 12
+SUBSCRIBER_EXTRA_GEAR_POINTS 4
+SPONSOR_EXTRA_GEAR_POINTS 8
 
 ## Strings for the station trait "Randomizing station name"
 RANDOMIZING_STATION_NAME_MESSAGE Due to internal affairs, the station is now named %NEW_STATION_NAME%.
@@ -556,3 +570,6 @@ RANDOMIZING_STATION_NAME_MESSAGE %RANDOM_NAME% made us change the station name, 
 ## Comment to disable sending a toast notification on the host server when initializations complete.
 ## Even if this is enabled, a notification will only be sent if there are no clients connected.
 TOAST_NOTIFICATION_ON_INIT
+
+## Fraction of joined players polled for end-of-round hearts when the evacuation shuttle leaves (0 disables).
+# COMMENDATION_PERCENT_POLL 0.1

@@ -42,11 +42,14 @@
 	if(ethernet) // Computer is connected via wired connection.
 		return 3
 
-	if(!SSnetworks.station_network || !SSnetworks.station_network.check_function(specific_action)) // NTNet is down and we are not connected via wired connection. No signal.
+	if(!SSnetworks.station_network)
 		return FALSE
 
-	if(holder)
+	if(!SSnetworks.station_network.check_function(specific_action))
+		if(!SSnetworks.ntnet_debug_global_signal)
+			return FALSE
 
+	if(holder)
 		var/turf/T = get_turf(holder)
 		if((T && istype(T)) && (is_station_level(T.z) || is_mining_level(T.z)))
 			// Computer is on station. Low/High signal depending on what type of network card you have
@@ -54,6 +57,8 @@
 				return 2
 			else
 				return TRUE
+		else if(SSnetworks.ntnet_debug_global_signal)
+			return 2
 
 	if(long_range) // Computer is not on station, but it has upgraded network card. Low signal.
 		return TRUE

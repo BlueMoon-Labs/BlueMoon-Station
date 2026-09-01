@@ -5,8 +5,8 @@
  */
 
 import { KEY_ENTER, KEY_ESCAPE, KEY_SPACE } from 'common/keycodes';
-import { classes, pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { classes } from 'common/react';
+import { Component, createRef } from 'react';
 
 import { createLogger } from '../logging';
 import { Box } from './Box';
@@ -44,11 +44,8 @@ export const Button = props => {
     logger.warn(
       `Lowercase 'onclick' is not supported on Button and lowercase`
       + ` prop names are discouraged in general. Please use a camelCase`
-      + `'onClick' instead and read: `
-      + `https://infernojs.org/docs/guides/event-handling`);
+      + ` 'onClick' instead.`);
   }
-  // IE8: Use a lowercase "onclick" because synthetic events are fucked.
-  // IE8: Use an "unselectable" prop because "user-select" doesn't work.
   let buttonContent = (
     <Box
       className={classes([
@@ -66,17 +63,15 @@ export const Button = props => {
           : 'Button--color--default',
         className,
       ])}
-      tabIndex={!disabled && '0'}
-      unselectable={Byond.IS_LTE_IE8}
+      tabIndex={disabled ? undefined : '0'}
       onClick={e => {
         if (!disabled && onClick) {
           onClick(e);
         }
       }}
       onKeyDown={e => {
-        const keyCode = window.event ? e.which : e.keyCode;
         // Simulate a click when pressing space or enter.
-        if (keyCode === KEY_SPACE || keyCode === KEY_ENTER) {
+        if (e.key === KEY_SPACE || e.key === KEY_ENTER) {
           e.preventDefault();
           if (!disabled && onClick) {
             onClick(e);
@@ -84,7 +79,7 @@ export const Button = props => {
           return;
         }
         // Refocus layout on pressing escape.
-        if (keyCode === KEY_ESCAPE) {
+        if (e.key === KEY_ESCAPE) {
           e.preventDefault();
           return;
         }
@@ -119,8 +114,6 @@ export const Button = props => {
 
   return buttonContent;
 };
-
-Button.defaultHooks = pureComponentHooks;
 
 export const ButtonCheckbox = props => {
   const { checked, ...rest } = props;
@@ -197,12 +190,13 @@ export class ButtonInput extends Component {
   }
 
   setInInput(inInput) {
+    // setState is async in React: focus the input only after the rerender
+    // makes it visible, otherwise focus() on a display:none node is a no-op.
     this.setState({
       inInput,
-    });
-    if (this.inputRef) {
+    }, () => {
       const input = this.inputRef.current;
-      if (inInput) {
+      if (inInput && input) {
         input.value = this.props.currentValue || "";
         try {
           input.focus();
@@ -210,7 +204,7 @@ export class ButtonInput extends Component {
         }
         catch {}
       }
-    }
+    });
   }
 
   commitResult(e) {
@@ -264,7 +258,7 @@ export class ButtonInput extends Component {
           className="NumberInput__input"
           style={{
             'display': !this.state.inInput ? 'none' : undefined,
-            'text-align': 'left',
+            textAlign: 'left',
           }}
           onBlur={e => {
             if (!this.state.inInput) {
@@ -274,12 +268,12 @@ export class ButtonInput extends Component {
             this.commitResult(e);
           }}
           onKeyDown={e => {
-            if (e.keyCode === KEY_ENTER) {
+            if (e.key === KEY_ENTER) {
               this.setInInput(false);
               this.commitResult(e);
               return;
             }
-            if (e.keyCode === KEY_ESCAPE) {
+            if (e.key === KEY_ESCAPE) {
               this.setInInput(false);
             }
           }}

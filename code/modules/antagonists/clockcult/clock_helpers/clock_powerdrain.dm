@@ -45,7 +45,7 @@ drain_amount: How much is drained by default; Influenced by a multiplier on most
 		cell.use(min(cell.charge, . * 4)) //Better than a power sink!
 		if(!cell.charge && !shorted)
 			shorted = 1
-			visible_message("<span class='warning'>The [name]'s screen blurs with static.</span>")
+			visible_message("<span class='warning'>Экран [name] покрывается помехами.</span>")
 		update()
 		update_icon()
 
@@ -57,7 +57,7 @@ drain_amount: How much is drained by default; Influenced by a multiplier on most
 			panel_open = TRUE
 			icon_state = "[initial(icon_state)]-o"
 			do_sparks(10, FALSE, src)
-			visible_message("<span class='warning'>[src]'s panel flies open with a flurry of sparks!</span>")
+			visible_message("<span class='warning'>Панель [src] резко открывается, сопровождаясь снопом искр!</span>")
 		update_icon()
 
 /obj/item/stock_parts/cell/power_drain(clockcult_user, drain_weapons = FALSE, recursive = FALSE, drain_amount = MIN_CLOCKCULT_POWER)

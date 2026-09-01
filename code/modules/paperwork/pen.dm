@@ -17,7 +17,7 @@
 	icon_state = "pen"
 	item_state = "pen"
 	// item_state = "pen"
-	// worn_icon_state = "pen"
+	// icon_state = "pen"
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
 	throwforce = 0
 	w_class = WEIGHT_CLASS_TINY
@@ -181,7 +181,7 @@
 		return
 
 	if(!force)
-		if(M.can_inject(user, 1))
+		if(M.can_inject(user, error_msg = TRUE, penetrate_thick = TRUE))
 			to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
 			if(!stealth)
 				to_chat(M, "<span class='danger'>You feel a tiny prick!</span>")
@@ -252,12 +252,16 @@
 	if(!istype(M))
 		return
 
-	if(..())
-		if(reagents.total_volume)
-			if(M.reagents)
-				log_combat(user, M, "injected with sleepypen", src, reagents.log_list())
-				reagents.reaction(M, INJECT)
-				reagents.trans_to(M, reagents.total_volume, log = "sleepypen inject")
+	if(!M.can_inject(user, error_msg = TRUE, penetrate_thick = TRUE))
+		return
+
+	to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
+	log_combat(user, M, "stabbed", src)
+
+	if(reagents.total_volume && M.reagents)
+		log_combat(user, M, "injected with sleepypen", src, reagents.log_list())
+		reagents.reaction(M, INJECT)
+		reagents.trans_to(M, reagents.total_volume, log = "sleepypen inject")
 
 
 /obj/item/pen/sleepy/Initialize(mapload)

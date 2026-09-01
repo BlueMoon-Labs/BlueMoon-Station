@@ -20,7 +20,7 @@ Bonus
 	name = "Spontaneous Combustion"
 	desc = "The virus turns fat into an extremely flammable compound, and raises the body's temperature, making the host burst into flames spontaneously."
 	stealth = -1
-	resistance = -4
+	resistance = -2
 	stage_speed = -3
 	transmittable = -4
 	level = 6

@@ -6,10 +6,11 @@
 
 /obj/item/mod/control/ui_data(mob/user)
 	var/data = list()
+	var/obj/item/stock_parts/cell/cell = get_cell()
 	data["interface_break"] = interface_break
-	data["malfunctioning"] = malfunctioning
-	data["open"] = open
-	data["active"] = active
+	data["malfunctioning"] = is_malfunctioning()
+	data["open"] = is_open()
+	data["active"] = is_active()
 	data["complexity"] = complexity
 	data["selected_module"] = selected_module?.name
 	data["wearer_name"] = wearer ? (wearer.get_authentification_name("Unknown") || "Unknown") : "No Occupant"
@@ -42,6 +43,10 @@
 
 /obj/item/mod/control/ui_static_data(mob/user)
 	var/data = list()
+	var/obj/item/helmet = get_helmet()
+	var/obj/item/chestplate = get_chestplate()
+	var/obj/item/gauntlets = get_gauntlets()
+	var/obj/item/boots = get_boots()
 	data["ui_theme"] = ui_theme
 	data["control"] = name
 	data["complexity_max"] = complexity_max
@@ -55,7 +60,7 @@
 	. = ..()
 	if(.)
 		return
-	if(malfunctioning && prob(75))
+	if(is_malfunctioning() && prob(75))
 		balloon_alert(usr, "button malfunctions!")
 		return
 	switch(action)

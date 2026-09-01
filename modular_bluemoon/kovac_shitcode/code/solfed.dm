@@ -47,6 +47,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/obj_sol.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol.dmi'
+	alternate_worn_layer = DRESS_LAYER
 
 /// Suits
 
@@ -236,10 +237,10 @@
 
 	H.grant_language(/datum/language/modular_sand/solcommon, TRUE, TRUE)
 
-	var/obj/item/card/id/sol_citizen/W = H.wear_id
+	var/obj/item/card/id/W = H.wear_id
 	W.registered_name = H.real_name
 	W.access = get_all_inteq_access()
-	W.update_label(W.registered_name)
+	W.update_label()
 
 /datum/outfit/sol_diplomacy/slut
 	name = "SolFed Secretary?"

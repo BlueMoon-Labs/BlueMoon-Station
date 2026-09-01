@@ -7,7 +7,13 @@
 	icon_living = "drone3"
 	icon_dead = "drone_dead"
 	ranged = 1
-	rapid = 3
+	//Прод 9881: 27.5 урона за луч, три луча за 0.25 с - 82 HP залпом, игрок с
+	//83 HP падал за полсекунды и добивался следующим заходом. Урон легаси, а вот
+	//попадать всеми тремя дрон научился только с новым ИИ, который проверяет
+	//реальную трассу снаряда. Режем залп и добавляем окно на реакцию.
+	rapid = 2
+	ranged_cooldown_time = 40
+	ranged_telegraph_duration = 0.6 SECONDS
 	retreat_distance = 3
 	minimum_distance = 3
 	speak_chance = 5
@@ -29,12 +35,13 @@
 	faction = list("malf_drone")
 	deathmessage = "suddenly breaks apart."
 	del_on_death = 1
+	var/emp_damage_modifier = 1
 
 /mob/living/simple_animal/hostile/malf_drone/Initialize(mapload)
 	. = ..()
 	update_icons()
 
-/mob/living/simple_animal/hostile/malf_drone/Process_Spacemove(check_drift = 0)
+/mob/living/simple_animal/hostile/malf_drone/Process_Spacemove(movement_dir = 0)
 	return 1
 
 /mob/living/simple_animal/hostile/malf_drone/AttackingTarget()
@@ -74,7 +81,10 @@
 		update_icons()
 
 /mob/living/simple_animal/hostile/malf_drone/emp_act(severity)
-	adjustHealth(100 / severity) // takes the same damage as a mining drone from emp
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	adjustHealth((100 * emp_damage_modifier) / severity) // takes the same damage as a mining drone from emp
 
 /mob/living/simple_animal/hostile/malf_drone/drop_loot()
 	do_sparks(3, 1, src)

@@ -109,6 +109,8 @@ SUBSYSTEM_DEF(job)
 			return FALSE
 		if(job.is_species_blacklisted(player.client)) //BLUEMOON ADDITION - XENO SUPREMACY
 			return FALSE //BLUEMOON ADDITION - XENO SUPREMACY
+		if(!player.client.prefs.pref_species.qualifies_for_rank(rank, player.client.prefs.features))
+			return FALSE
 		var/position_limit = job.total_positions
 		if(!latejoin)
 			position_limit = job.spawn_positions
@@ -340,7 +342,11 @@ SUBSYSTEM_DEF(job)
 		CheckHeadPositions(level)
 
 		// Loop through all unassigned players
-		for(var/mob/dead/new_player/player in unassigned)
+		//обходим копию: AssignRole/RejectPlayer правят unassigned прямо в теле цикла,
+		//а на живом списке индекс сдвигался и каждый второй игрок пропускался
+		for(var/mob/dead/new_player/player in unassigned.Copy())
+			if(QDELETED(player) || !(player in unassigned))
+				continue
 			if(PopcapReached())
 				RejectPlayer(player)
 
@@ -390,12 +396,16 @@ SUBSYSTEM_DEF(job)
 	JobDebug("DO, Handling unassigned.")
 	// Hand out random jobs to the people who didn't get any in the last check
 	// Also makes sure that they got their preference correct
-	for(var/mob/dead/new_player/player in unassigned)
+	for(var/mob/dead/new_player/player in unassigned.Copy())
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 		HandleUnassigned(player)
 
 	JobDebug("DO, Handling unrejectable unassigned")
 	//Mop up people who can't leave.
-	for(var/mob/dead/new_player/player in unassigned) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+	for(var/mob/dead/new_player/player in unassigned.Copy()) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 /* BLUEMOON REMOVAL START - убираем вариант получения рандомной роли при получении антажки, оставляя только ассистента
 		if(player.client.prefs.joblessrole == BERANDOMJOB) //Gives the player a random role if their preferences are set to it
 			if(!GiveRandomJob(player))
@@ -495,7 +505,7 @@ SUBSYSTEM_DEF(job)
 		SSpersistence.antag_rep_change[M.client.ckey] += job.GetAntagRep()
 
 		if(M.client.holder)
-			if(CONFIG_GET(flag/auto_deadmin_players) || (M.client.prefs?.deadmin & DEADMIN_ALWAYS))
+			if(CONFIG_GET(flag/auto_deadmin_players) || (M.client.prefs?.deadmin & DEADMIN_ONSPAWN))
 				M.client.holder.auto_deadmin()
 			else
 				handle_auto_deadmin_roles(M.client, rank)
@@ -516,24 +526,31 @@ SUBSYSTEM_DEF(job)
 			flavor_display_text += "\n<li>Ввиду критической нехватки персонала, ваша ID-карта имеет дополнительный доступ.</li>"
 		if(job.custom_spawn_text)
 			flavor_display_text += "\n<li>[capitalize(job.custom_spawn_text)]</li>"
-	if(H.mind.assigned_role == "Head of Security") // Секция добавления штук для ГСБ
-		for(var/obj/structure/safe/floor/syndi/armory/brigsafe in world)
-			var/code_text = "[brigsafe.tumblers.Join("-")]"
-			flavor_display_text += "\n<li><span class='red'>Вам известен код сейфа оружейной:<br><B>[code_text].</B></span>\n</li>"
-			H.mind.memory += ("Код сейфа оружейной: [code_text].\n") // Нет, add_memory не работает, этот брутфорс был нужен.
 	if(ishuman(H))
 		var/mob/living/carbon/human/wageslave = H
 		flavor_display_text += "\n<li>Номер вашего банковского аккаунта - [wageslave.account_id].</li>"
 		H.add_memory("Номер вашего банковского аккаунта - [wageslave.account_id].")
-	to_chat(M, examine_block(flavor_display_text))
 	// BLUEMOON EDIT END
 	if(job && H)
 		if(job.dresscodecompliant)// CIT CHANGE - dress code compliance
 			equip_loadout(N, H) // CIT CHANGE - allows players to spawn with loadout items
 		job.after_spawn(H, M.client, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 		post_equip_loadout(N, H)//CIT CHANGE - makes players spawn with in-backpack loadout items properly. A little hacky but it works
-
+		// BLUEMOON ADDITION
+		switch(rank)
+			if("Head of Security") // Секция добавления штук для ГСБ
+				var/station_armory = GLOB.areas_by_type[/area/ai_monitored/security/armory]
+				if(station_armory)
+					var/obj/structure/safe/floor/syndi/armory/armory_safe
+					for(armory_safe in station_armory)
+						var/code_text = "[armory_safe.tumblers.Join("-")]"
+						flavor_display_text += "\n<li><span class='red'>Вам известен код сейфа оружейной:<br><B>[code_text].</B></span>\n</li>"
+						H.mind.memory += ("Код сейфа оружейной: [code_text].\n") // Нет, add_memory не работает, этот брутфорс был нужен.
+		// BLUEMOON EDIT END
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
+		if(ishuman(H))
+			bm_deliver_metadollar_purchases(H, M.client)
+	to_chat(M, examine_block(flavor_display_text))
 
 	var/list/tcg_cards
 	if(ishuman(H))
@@ -544,20 +561,21 @@ SUBSYSTEM_DEF(job)
 	if(tcg_cards)
 		var/obj/item/tcgcard_binder/binder = new(get_turf(H))
 		H.equip_to_slot_if_possible(binder, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
-		for(var/card_type in N.client.prefs.tcg_cards)
+		for(var/card_type in tcg_cards)
 			if(card_type)
-				if(islist(H.client.prefs.tcg_cards[card_type]))
-					for(var/duplicate in N.client.prefs.tcg_cards[card_type])
+				if(islist(tcg_cards[card_type]))
+					for(var/duplicate in tcg_cards[card_type])
 						var/obj/item/tcg_card/card = new(get_turf(H), card_type, duplicate)
 						card.forceMove(binder)
 						binder.cards.Add(card)
 				else
-					var/obj/item/tcg_card/card = new(get_turf(H), card_type, N.client.prefs.tcg_cards[card_type])
+					var/obj/item/tcg_card/card = new(get_turf(H), card_type, tcg_cards[card_type])
 					card.forceMove(binder)
 					binder.cards.Add(card)
 		binder.check_for_exodia()
-		if(length(N.client.prefs.tcg_decks))
-			binder.decks = N.client.prefs.tcg_decks
+		var/list/tcg_decks = H.client?.prefs?.tcg_decks || N?.client?.prefs?.tcg_decks
+		if(length(tcg_decks))
+			binder.decks = tcg_decks
 
 	if(ambition_text)
 		to_chat(M, span_notice(ambition_text))
@@ -743,180 +761,324 @@ SUBSYSTEM_DEF(job)
 	var/mob/the_mob = N
 	if(!the_mob)
 		the_mob = M // cause this doesn't get assigned if player is a latejoiner
+	// BLUEMOON FIX — null-check client/prefs BEFORE accessing loadout_data and all_quirks
+	if(!the_mob?.client?.prefs)
+		return
+	// BLUEMOON ADD — заменять ли стандартную одежду лодаутной
+	var/replace_clothing = !is_dummy && the_mob.client.prefs.loadout_enabled
+	// BLUEMOON ADD END
 	var/list/chosen_gear
 	if(the_mob.client.prefs.loadout_data)
 		chosen_gear = the_mob.client.prefs.loadout_data["SAVE_[the_mob.client.prefs.loadout_slot]"]
 	var/heirloomer = FALSE
 	if(!is_dummy)
-		var/list/my_quirks = the_mob.client.prefs.all_quirks.Copy()
-		if("Семейная реликвия" in my_quirks)
+		var/list/my_quirks = the_mob.client.prefs.all_quirks
+		if(islist(my_quirks) && (/datum/quirk/family_heirloom::name in my_quirks))
 			heirloomer = TRUE
-	if(the_mob.client && the_mob.client.prefs && (chosen_gear && chosen_gear.len))
-		if(!ishuman(M))//no silicons allowed
-			return
-		for(var/i in chosen_gear)
-			var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
-			if(!ispath(G))
-				continue
-			G = GLOB.loadout_items[initial(G.category)][initial(G.subcategory)][initial(G.name)]
-			if(!G)
-				continue
-			var/permitted = TRUE
-			if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && !(M.mind.assigned_role in G.restricted_roles))
-				permitted = FALSE
-			if(G.donoritem && !G.donator_ckey_check(the_mob.client.ckey))
-				permitted = FALSE
-			if(G.handle_post_equip)
-				permitted = FALSE
-			if(!permitted)
-				// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
-				if(i[LOADOUT_IS_HEIRLOOM] && heirloomer && !G.handle_post_equip)
-					to_chat(M, "<span class='warning'>Вы не смогли взять с собой свой любимый предмет, [G.name], из-за ограничений вашей профессии или других проблем, но у вас была и другая семейная ценность, поэтому вы прихватили её!</span>")
-				// BLUEMOON END
-				continue
-			var/obj/item/I = new G.path
-			if(I)
-				if(length(i[LOADOUT_COLOR])) //handle loadout colors
-				 	//handle polychromic items
-					if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
-						var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
-						if(polychromic && istype(polychromic))
-							var/list/polychromic_entry = polychromic.colors_by_atom[I]
-							if(polychromic_entry)
-								if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
-									polychromic.connect_helmet(I,i[LOADOUT_COLOR])
-								polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
-								I.update_icon()
-					else
-						//handle non-polychromic items (they only have one color)
-						I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
+	if(!(chosen_gear && chosen_gear.len))
+		return
+	if(!ishuman(M))//no silicons allowed
+		return
+	for(var/i in chosen_gear)
+		if(!islist(i))
+			continue
+		var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
+		if(!ispath(G, /datum/gear))
+			continue
+		var/cat = initial(G.category)
+		var/subcat = initial(G.subcategory)
+		var/gname = initial(G.name)
+		if(!GLOB.loadout_items[cat] || !GLOB.loadout_items[cat][subcat])
+			continue
+		G = GLOB.loadout_items[cat][subcat][gname]
+		if(!G)
+			continue
+		var/permitted = TRUE
+		if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && M.mind && !(M.mind.assigned_role in G.restricted_roles))
+			permitted = FALSE
+		if(G.donoritem && !G.donator_ckey_check(the_mob.client.ckey))
+			permitted = FALSE
+		if(G.handle_post_equip)
+			permitted = FALSE
+		if(!permitted)
+			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
+			if(i[LOADOUT_IS_HEIRLOOM] && heirloomer && !G.handle_post_equip)
+				to_chat(M, "<span class='warning'>Вы не смогли взять с собой свой любимый предмет, [G.name], из-за ограничений вашей профессии или других проблем, но у вас была и другая семейная ценность, поэтому вы прихватили её!</span>")
+			// BLUEMOON END
+			continue
+		var/obj/item/I = new G.path
+		if(QDELETED(I))
+			continue
+		if(islist(i[LOADOUT_COLOR]) && length(i[LOADOUT_COLOR])) //handle loadout colors
+			//handle polychromic items
+			if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
+				var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
+				if(polychromic && istype(polychromic))
+					var/list/polychromic_entry = polychromic.colors_by_atom[I]
+					if(polychromic_entry)
+						if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
+							polychromic.connect_helmet(I,i[LOADOUT_COLOR])
+						polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
 						I.update_icon()
-				//when inputting the data it's already sanitized
-				if(i[LOADOUT_CUSTOM_NAME])
-					var/custom_name = i[LOADOUT_CUSTOM_NAME]
-					I.name = custom_name
-				if(i[LOADOUT_CUSTOM_DESCRIPTION])
-					var/custom_description = i[LOADOUT_CUSTOM_DESCRIPTION]
-					I.desc = custom_description
-				if(i["loadout_custom_tagname"]) //for collars with tagnames
-					var/custom_tagname = i["loadout_custom_tagname"]
-					var/obj/item/clothing/neck/petcollar/collar = I
-					collar.tagname = custom_tagname
-					collar.name = "[initial(collar.name)] - [collar.tagname]"
-			if(!M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+			else
+				//handle non-polychromic items (they only have one color)
+				I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
+				I.update_icon()
+		//when inputting the data it's already sanitized
+		if(i[LOADOUT_CUSTOM_NAME])
+			I.name = i[LOADOUT_CUSTOM_NAME]
+		if(i[LOADOUT_CUSTOM_DESCRIPTION])
+			I.desc = i[LOADOUT_CUSTOM_DESCRIPTION]
+		if(isclothing(I) && islist(i["loadout_examtooltip"]))
+			I:custom_examine_tooltip = list(i["loadout_examtooltip"][1], i["loadout_examtooltip"][2])
+		if(i["loadout_custom_tagname"]) //for collars with tagnames
+			var/obj/item/clothing/neck/petcollar/collar = I
+			if(istype(collar))
+				collar.tagname = i["loadout_custom_tagname"]
+				collar.name = "[initial(collar.name)] - [collar.tagname]"
+
+		var/already_equiped = FALSE
+		var/list/bag_contents = null
+		if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
+			var/obj/item/clothing/accessory/A = I
+			var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)
+			if(istype(wear))
+				already_equiped = wear.attach_accessory(A, M, FALSE)
+		// BLUEMOON ADD — если включена замена одежды, снимаем стандартную перед экипировкой лодаутной
+		if(!already_equiped && replace_clothing && G.slot)
+			var/obj/item/existing = M.get_item_by_slot(G.slot)
+			if(existing)
+				if(G.slot == ITEM_SLOT_BACK)
+					bag_contents = list()
+					SEND_SIGNAL(existing, COMSIG_TRY_STORAGE_RETURN_INVENTORY, bag_contents, FALSE)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								LAZYADD(bag_contents, AC)
+
+				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
+				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
-					var/mob/living/carbon/C = M
-					var/obj/item/storage/backpack/B = C.back
-					if(!B || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
-						if(can_drop)
-							I.forceMove(get_turf(C))
-						else
-							qdel(I)
-				else if(!M.equip_to_slot_if_possible(I, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // Otherwise, try to put it in the backpack
+					var/mob/living/carbon/RC = M
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
+					if(RB)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								for(var/obj/item/item_in_hand in M.held_items)
+									LAZYADD(bag_contents, item_in_hand)
+								M.drop_all_held_items()
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
+					else if(!can_drop)
+						qdel(existing)
+				else if(!can_drop)
+					qdel(existing)
+		// BLUEMOON ADD END
+		if(!already_equiped && !M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+			if(iscarbon(M))
+				var/mob/living/carbon/C = M
+				var/obj/item/storage/backpack/B = C.back
+				if(!B || istype(I, /obj/item/storage/backpack) || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
 					if(can_drop)
-						I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
+						I.forceMove(get_turf(C))
 					else
 						qdel(I)
-			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
-			if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
-				I.item_flags |= FAMILY_HEIRLOOM
-				M.mind.assigned_heirloom = I
-				if(!i[LOADOUT_CUSTOM_NAME])
-					var/list/family_name = splittext(M.real_name, " ")
+			else if(!M.equip_to_slot_if_possible(I, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // Otherwise, try to put it in the backpack
+				if(can_drop)
+					I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
+				else
+					qdel(I)
+		if(LAZYLEN(bag_contents) && !QDELETED(I) && iscarbon(M))
+			var/mob/living/carbon/CB = M
+			if(CB.back == I)
+				for(var/obj/item/stored_item in bag_contents)
+					if(!QDELETED(stored_item))
+						SEND_SIGNAL(I, COMSIG_TRY_STORAGE_INSERT, stored_item, null, TRUE, TRUE)
+		// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
+		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
+			I.item_flags |= FAMILY_HEIRLOOM
+			if(M.mind)
+				M.mind.set_assigned_heirloom(I)
+			if(!i[LOADOUT_CUSTOM_NAME])
+				var/list/family_name = splittext(M.real_name, " ")
+				if(length(family_name))
 					I.name = "\improper [family_name[family_name.len]] family [I.name]"
-			// Эффект при спавне
+		// Эффект при спавне
+		if(!QDELETED(I))
 			G.on_spawn(M, I)
-			// BLUEMOON ADD END
+		// BLUEMOON ADD END
 
 
 /datum/controller/subsystem/job/proc/post_equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE)
 	var/mob/the_mob = N
 	if(!the_mob)
 		the_mob = M // cause this doesn't get assigned if player is a latejoiner
+	// BLUEMOON FIX — null-check client/prefs BEFORE accessing loadout_data and all_quirks
+	if(!the_mob?.client?.prefs)
+		return
+	// BLUEMOON ADD — заменять ли стандартную одежду лодаутной
+	var/replace_clothing = !is_dummy && the_mob.client.prefs.loadout_enabled
+	// BLUEMOON ADD END
 	var/list/chosen_gear
 	if(the_mob.client.prefs.loadout_data)
 		chosen_gear = the_mob.client.prefs.loadout_data["SAVE_[the_mob.client.prefs.loadout_slot]"]
 	var/heirloomer = FALSE
 	if(!is_dummy)
-		var/list/my_quirks = the_mob.client.prefs.all_quirks.Copy()
-		if("Семейная реликвия" in my_quirks)
+		var/list/my_quirks = the_mob.client.prefs.all_quirks
+		if(islist(my_quirks) && (/datum/quirk/family_heirloom::name in my_quirks))
 			heirloomer = TRUE
-	if(the_mob.client && the_mob.client.prefs && (chosen_gear && chosen_gear.len))
-		if(!ishuman(M))//no silicons allowed
-			return
-		for(var/i in chosen_gear)
-			var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
-			if(!ispath(G))
-				continue
-			G = GLOB.loadout_items[initial(G.category)][initial(G.subcategory)][initial(G.name)]
-			if(!G)
-				continue
-			var/permitted = TRUE
-			if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && !(M.mind.assigned_role in G.restricted_roles))
-				permitted = FALSE
-			if(G.donoritem && !G.donator_ckey_check(the_mob.client.ckey))
-				permitted = FALSE
-			if(!G.handle_post_equip)
-				permitted = FALSE
-			if(!permitted)
-				// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
-				if(i[LOADOUT_IS_HEIRLOOM] && heirloomer && G.handle_post_equip)
-					to_chat(M, "<span class='warning'>Вы не смогли взять с собой свой любимый предмет, [G.name], из-за ограничений вашей профессии или других проблем, но у вас была и другая семейная ценность, поэтому вы прихватили её!</span>")
-				// BLUEMOON ADD END
-				continue
-			var/obj/item/I = new G.path
-			if(I)
-				if(length(i[LOADOUT_COLOR])) //handle loadout colors
-				 	//handle polychromic items
-					if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
-						var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
-						if(polychromic && istype(polychromic))
-							var/list/polychromic_entry = polychromic.colors_by_atom[I]
-							if(polychromic_entry)
-								if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
-									polychromic.connect_helmet(I,i[LOADOUT_COLOR])
-								polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
-								I.update_icon()
-					else
-						//handle non-polychromic items (they only have one color)
-						I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
+	if(!(chosen_gear && chosen_gear.len))
+		return
+	if(!ishuman(M))//no silicons allowed
+		return
+	for(var/i in chosen_gear)
+		if(!islist(i))
+			continue
+		var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
+		if(!ispath(G, /datum/gear))
+			continue
+		var/cat = initial(G.category)
+		var/subcat = initial(G.subcategory)
+		var/gname = initial(G.name)
+		if(!GLOB.loadout_items[cat] || !GLOB.loadout_items[cat][subcat])
+			continue
+		G = GLOB.loadout_items[cat][subcat][gname]
+		if(!G)
+			continue
+		var/permitted = TRUE
+		if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && M.mind && !(M.mind.assigned_role in G.restricted_roles))
+			permitted = FALSE
+		if(G.donoritem && !G.donator_ckey_check(the_mob.client.ckey))
+			permitted = FALSE
+		if(!G.handle_post_equip)
+			permitted = FALSE
+		if(!permitted)
+			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
+			if(i[LOADOUT_IS_HEIRLOOM] && heirloomer && G.handle_post_equip)
+				to_chat(M, "<span class='warning'>Вы не смогли взять с собой свой любимый предмет, [G.name], из-за ограничений вашей профессии или других проблем, но у вас была и другая семейная ценность, поэтому вы прихватили её!</span>")
+			// BLUEMOON END
+			continue
+		var/obj/item/I = new G.path
+		if(QDELETED(I))
+			continue
+		if(islist(i[LOADOUT_COLOR]) && length(i[LOADOUT_COLOR])) //handle loadout colors
+			//handle polychromic items
+			if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
+				var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
+				if(polychromic && istype(polychromic))
+					var/list/polychromic_entry = polychromic.colors_by_atom[I]
+					if(polychromic_entry)
+						if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
+							polychromic.connect_helmet(I,i[LOADOUT_COLOR])
+						polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
 						I.update_icon()
-				//when inputting the data it's already sanitized
-				if(i[LOADOUT_CUSTOM_NAME])
-					var/custom_name = i[LOADOUT_CUSTOM_NAME]
-					I.name = custom_name
-				if(i[LOADOUT_CUSTOM_DESCRIPTION])
-					var/custom_description = i[LOADOUT_CUSTOM_DESCRIPTION]
-					I.desc = custom_description
-				if(i["loadout_custom_tagname"]) //for collars with tagnames
-					var/custom_tagname = i["loadout_custom_tagname"]
-					var/obj/item/clothing/neck/petcollar/collar = I
-					collar.tagname = custom_tagname
-					collar.name = "[initial(collar.name)] - [collar.tagname]"
-			if(!M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+			else
+				//handle non-polychromic items (they only have one color)
+				I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
+				I.update_icon()
+		//when inputting the data it's already sanitized
+		if(i[LOADOUT_CUSTOM_NAME])
+			I.name = i[LOADOUT_CUSTOM_NAME]
+		if(i[LOADOUT_CUSTOM_DESCRIPTION])
+			I.desc = i[LOADOUT_CUSTOM_DESCRIPTION]
+		if(isclothing(I) && islist(i["loadout_examtooltip"]))
+			I:custom_examine_tooltip = list(i["loadout_examtooltip"][1], i["loadout_examtooltip"][2])
+		if(i["loadout_custom_tagname"]) //for collars with tagnames
+			var/obj/item/clothing/neck/petcollar/collar = I
+			if(istype(collar))
+				collar.tagname = i["loadout_custom_tagname"]
+				collar.name = "[initial(collar.name)] - [collar.tagname]"
+
+		var/already_equiped = FALSE
+		if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
+			var/obj/item/clothing/accessory/A = I
+			var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)
+			if(istype(wear))
+				already_equiped = wear.attach_accessory(A, M, FALSE)
+		// BLUEMOON ADD — если включена замена одежды, снимаем стандартную перед экипировкой лодаутной
+		if(!already_equiped && replace_clothing && G.slot)
+			var/obj/item/existing = M.get_item_by_slot(G.slot)
+			if(existing)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								old_cloth.attach_accessory(AC, M, TRUE)
+				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
+				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
-					var/mob/living/carbon/C = M
-					var/obj/item/storage/backpack/B = C.back
-					if(!B || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
-						if(can_drop)
-							I.forceMove(get_turf(C))
-						else
-							qdel(I)
-				else if(!M.equip_to_slot_if_possible(I, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // Otherwise, try to put it in the backpack
+					var/mob/living/carbon/RC = M
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
+					if(RB)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								var/list/temp_items = LAZYCOPY(M.held_items)
+								for(var/obj/item/item_in_hand in temp_items)
+									if(M.temporarilyRemoveItemFromInventory(item_in_hand))
+										SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
+					else if(!can_drop)
+						qdel(existing)
+				else if(!can_drop)
+					qdel(existing)
+		// BLUEMOON ADD END
+		if(!already_equiped && !M.equip_to_slot_if_possible(I, G.slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // If the job's dresscode compliant, try to put it in its slot, first
+			if(iscarbon(M))
+				var/mob/living/carbon/C = M
+				var/obj/item/storage/backpack/B = C.back
+				if(!B || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
 					if(can_drop)
-						I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
+						I.forceMove(get_turf(C))
 					else
 						qdel(I)
-			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
-			if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
-				I.item_flags |= FAMILY_HEIRLOOM
-				M.mind.assigned_heirloom = I
-				if(!i[LOADOUT_CUSTOM_NAME])
-					var/list/family_name = splittext(M.real_name, " ")
+			else if(!M.equip_to_slot_if_possible(I, ITEM_SLOT_BACKPACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)) // Otherwise, try to put it in the backpack
+				if(can_drop)
+					I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
+				else
+					qdel(I)
+		// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
+		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
+			I.item_flags |= FAMILY_HEIRLOOM
+			if(M.mind)
+				M.mind.set_assigned_heirloom(I)
+			if(!i[LOADOUT_CUSTOM_NAME])
+				var/list/family_name = splittext(M.real_name, " ")
+				if(length(family_name))
 					I.name = "\improper [family_name[family_name.len]] family [I.name]"
-			// Эффект при спавне
+		// Эффект при спавне
+		if(!QDELETED(I))
 			G.on_spawn(M, I)
-			// BLUEMOON ADD END
+		// BLUEMOON ADD END
+
+	M.update_inv_wear_id() // Фикс не отображения стикеров и карточек из лодаута
+
+	// Переоформление пермитов, если у нас была загрузка из префов
+	var/obj/item/clothing/under/U = M.get_item_by_slot(ITEM_SLOT_ICLOTHING)
+	if(istype(U))
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
+			if(permit.first_inited && permit.owner_name == M.real_name)
+				continue
+			permit.bind_to_user(M, TRUE)
 
 /datum/controller/subsystem/job/proc/FreeRole(rank)
 	if(!rank)
@@ -970,8 +1132,7 @@ SUBSYSTEM_DEF(job)
 ////////////////////////////
 /datum/controller/subsystem/job/proc/get_all_heads()
 	. = list()
-	for(var/i in GLOB.mob_list)
-		var/mob/player = i
+	for(var/mob/player as anything in GLOB.mob_list)
 		if(player.mind && (player.mind.assigned_role in GLOB.command_positions))
 			. |= player.mind
 
@@ -1006,8 +1167,8 @@ SUBSYSTEM_DEF(job)
 	if(!tgt_job.department_head[1])
 		return
 	var/boss_title = tgt_job.department_head[1]
-	var/obj/item/pda/target_pda
-	for(var/obj/item/pda/check_pda in GLOB.PDAs)
+	var/obj/item/modular_computer/pda/target_pda
+	for(var/obj/item/modular_computer/pda/check_pda in GLOB.PDAs)
 		if(check_pda.ownjob == boss_title)
 			target_pda = check_pda
 			break

@@ -106,7 +106,7 @@
 				for(var/J in 1 to components_of_type.len)
 					var/datum/component/C = components_of_type[J]
 					if(C.type != our_type) //but not over other exact matches
-						components_of_type.Insert(J, I)
+						components_of_type.Insert(J, src)
 						inserted = TRUE
 						break
 				if(!inserted)
@@ -124,18 +124,25 @@
 /datum/component/proc/_RemoveFromParent()
 	var/datum/P = parent
 	var/list/dc = P.datum_components
-	for(var/I in _GetInverseTypeList())
-		var/list/components_of_type = dc[I]
-		if(length(components_of_type))	//
-			var/list/subtracted = components_of_type - src
-			if(subtracted.len == 1)	//only 1 guy left
-				dc[I] = subtracted[1]	//make him special
-			else
-				dc[I] = subtracted
-		else	//just us
-			dc -= I
-	if(!dc.len)
-		P.datum_components = null
+	// datum_components бывает уже пуст: турф сменился/умер раньше нас, а компонент
+	// доезжает сюда позже (wet_floor из очереди SSwet_floors). Без гарда "bad index"
+	// ронял Destroy посреди пути: UnregisterFromParent не отрабатывал, и сигналы
+	// COMSIG_TURF_* оставались вешаться на удалённый компонент.
+	if(dc)
+		for(var/I in _GetInverseTypeList())
+			var/list/components_of_type = dc[I]
+			if(length(components_of_type))	//
+				var/list/subtracted = components_of_type - src
+				if(!subtracted.len)
+					dc -= I
+				else if(subtracted.len == 1)	//only 1 guy left
+					dc[I] = subtracted[1]	//make him special
+				else
+					dc[I] = subtracted
+			else	//just us
+				dc -= I
+		if(!dc.len)
+			P.datum_components = null
 
 	UnregisterFromParent()
 
@@ -219,6 +226,8 @@
   * * sig_typeor_types Signal string key or list of signal keys to stop listening to specifically
   */
 /datum/proc/UnregisterSignal(datum/target, sig_type_or_types)
+	if(!target)
+		return
 	var/list/lookup = target.comp_lookup
 	if(!signal_procs || !signal_procs[target] || !lookup)
 		return
@@ -308,17 +317,37 @@
 	var/target = comp_lookup[sigtype]
 	if(!length(target))
 		var/datum/C = target
-		if(!C.signal_enabled)
+		if(!istype(C) || !C.signal_enabled)
 			return NONE
-		var/proctype = C.signal_procs[src][sigtype]
-		return NONE | CallAsync(C, proctype, arguments)
+		var/list/src_procs = C.signal_procs[src]
+		if(!src_procs)
+			return NONE
+		var/proctype = src_procs[sigtype]
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			return NONE
+		// Signals are synchronous: return flags and lifecycle cleanup must be
+		// observable before the emitter continues or finishes Destroy().
+		return NONE | call(C, proctype)(arglist(arguments))
 	. = NONE
+	// Snapshot both receiver and proc before invoking anything. A receiver may
+	// unregister itself or another receiver; mutating comp_lookup mid-iteration
+	// must not make the remaining cleanup handlers miss this final signal.
+	var/list/queued_calls = list()
 	for(var/I in target)
 		var/datum/C = I
-		if(!C.signal_enabled)
+		if(!istype(C) || !C.signal_enabled)
 			continue
-		var/proctype = C.signal_procs[src][sigtype]
-		. |= CallAsync(C, proctype, arguments)
+		var/list/src_procs = C.signal_procs[src]
+		if(!src_procs)
+			continue
+		var/proctype = src_procs[sigtype]
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			continue
+		queued_calls.Add(C, proctype)
+	for(var/i in 1 to length(queued_calls) step 2)
+		. |= call(queued_calls[i], queued_calls[i + 1])(arglist(arguments))
 
 // The type arg is casted so initial works, you shouldn't be passing a real instance into this
 /**
@@ -349,19 +378,18 @@
   */
 /datum/proc/GetExactComponent(datum/component/c_type)
 	RETURN_TYPE(c_type)
-	if(initial(c_type.dupe_mode) == COMPONENT_DUPE_ALLOWED || initial(c_type.dupe_mode) == COMPONENT_DUPE_SELECTIVE)
+	var/initial_type_mode = initial(c_type.dupe_mode)
+	if(initial_type_mode == COMPONENT_DUPE_ALLOWED || initial_type_mode == COMPONENT_DUPE_SELECTIVE)
 		stack_trace("GetComponent was called to get a component of which multiple copies could be on an object. This can easily break and should be changed. Type: \[[c_type]\]")
-	var/list/dc = datum_components
-	if(!dc)
+	var/list/all_components = datum_components
+	if(!all_components)
 		return null
-	var/datum/component/C = dc[c_type]
-	if(C)
-		if(length(C))
-			C = C[1]
-		if(C.type == c_type)
-			return C
+	var/datum/component/potential_component
+	if(length(all_components))
+		potential_component = all_components[c_type]
+	if(potential_component?.type == c_type)
+		return potential_component
 	return null
-
 /**
   * Get all components of a given type that are attached to this datum
   *
@@ -427,6 +455,8 @@
 						old_comp.InheritComponent(arglist(arguments))
 					else
 						old_comp.InheritComponent(new_comp, TRUE)
+						qdel(new_comp)
+						new_comp = null
 				if(COMPONENT_DUPE_SELECTIVE)
 					var/list/arguments = raw_args.Copy()
 					arguments[1] = new_comp

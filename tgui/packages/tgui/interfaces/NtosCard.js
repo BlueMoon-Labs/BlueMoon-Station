@@ -1,15 +1,15 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Input, NoticeBox, Section, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 import { AccessList } from './common/AccessList';
 
-export const NtosCard = (props, context) => {
+export const NtosCard = (props) => {
   return (
     <NtosWindow
-      width={450}
-      height={520}
+      width={500}
+      height={530}
       resizable>
       <NtosWindow.Content overflow="auto">
         <NtosCardContent />
@@ -18,25 +18,34 @@ export const NtosCard = (props, context) => {
   );
 };
 
-export const NtosCardContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useLocalState(context, 'tab', 1);
+export const NtosCardContent = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useState(1);
   const {
     authenticated,
     regions = [],
     access_on_card = [],
     jobs = {},
     id_rank,
+    id_custom_job,
     id_owner,
+    has_main_id,
     has_id,
     have_printer,
     have_id_slot,
     id_name,
+    minor,
   } = data;
   const [
     selectedDepartment,
     setSelectedDepartment,
-  ] = useLocalState(context, 'department', Object.keys(jobs)[0]);
+  ] = useLocalState('department', Object.keys(jobs)[0]);
+
+  // Для id_custom_job
+  const serverCustom = id_custom_job || '';
+  const [customDraft, setCustomDraft] = useState(serverCustom);
+  const [isEditingCustom, setIsEditingCustom] = useState(false);
+
   if (!have_id_slot) {
     return (
       <NoticeBox>
@@ -45,8 +54,11 @@ export const NtosCardContent = (props, context) => {
     );
   }
   const departmentJobs = jobs[selectedDepartment] || [];
+
+  // что показываем в кнопке/инпуте
+  const customValue = isEditingCustom ? customDraft : serverCustom;
   return (
-    <Fragment>
+    <>
       <Section
         title={has_id && authenticated
           ? (
@@ -59,26 +71,31 @@ export const NtosCardContent = (props, context) => {
           )
           : (id_owner || 'No Card Inserted')}
         buttons={(
-          <Fragment>
+          <>
             <Button
               icon="print"
               content="Print"
               disabled={!have_printer || !has_id}
               onClick={() => act('PRG_print')} />
             <Button
-              icon={authenticated ? "sign-out-alt" : "sign-in-alt"}
-              content={authenticated ? "Log Out" : "Log In"}
-              color={authenticated ? "bad" : "good"}
-              onClick={() => {
-                act(authenticated ? 'PRG_logout' : 'PRG_authenticate');
-              }} />
-          </Fragment>
+              icon={authenticated ? "angles-right" : "exclamation-triangle"}
+              disabled={!has_main_id}
+              content={authenticated ? "Authorized" : "No Access"}
+              color={authenticated ? "good" : "bad"}
+            />
+            <Button
+              icon="eject"
+              tooltip={has_main_id ? "Eject ID" : "Insert ID"}
+              color={has_main_id && "good"}
+              tooltipPosition="bottom-start"
+              onClick={() => act('PRG_eject', { name: "MainID" })} />
+          </>
         )}>
         <Button
           fluid
           icon="eject"
           content={id_name}
-          onClick={() => act('PRG_eject')} />
+          onClick={() => act('PRG_eject', { name: "SecondID" })} />
       </Section>
       {(!!has_id && !!authenticated) && (
         <Box>
@@ -108,27 +125,60 @@ export const NtosCardContent = (props, context) => {
               })}
               denyDep={dep => act('PRG_denyregion', {
                 region: dep,
-              })} />
+              })}
+              resetButton={() => act('PRG_reset_access')}
+            />
           )}
           {tab === 2 && (
             <Section
               title={id_rank}
-              buttons={(
-                <Button.Confirm
-                  icon="exclamation-triangle"
-                  content="Terminate"
-                  color="bad"
-                  onClick={() => act('PRG_terminate')} />
-              )}>
-              <Button.Input
+              buttons={
+                <>
+                  <Button.Confirm
+                    icon="person-circle-minus"
+                    content="Demote"
+                    color="orange"
+                    onClick={() => act('PRG_demote')} />
+                  {!minor && (
+                    <Button.Confirm
+                      icon="exclamation-triangle"
+                      content="Terminate"
+                      color="bad"
+                      onClick={() => act('PRG_terminate')} />
+                  )}
+                </>}
+            >
+              {/* <Button.Input
                 fluid
                 content="Custom..."
+                placeholder={id_custom_job}
                 onCommit={(e, value) => act('PRG_assign', {
                   assign_target: 'Custom',
                   custom_name: value,
-                })} />
-              <Flex>
-                <Flex.Item>
+                })} />*/}
+              <Button.Input
+                fluid
+                content="Custom..."
+                currentValue={customValue}
+                onInput={(_e, value) => {
+                  if (!isEditingCustom) {
+                    // при старте редактирования подтянуть текущее серверное значение
+                    setIsEditingCustom(true);
+                    setCustomDraft(serverCustom);
+                  }
+                  setCustomDraft(value);
+                }}
+                onCommit={(_e, value) => {
+                  setIsEditingCustom(false);
+                  act('PRG_assign', {
+                    assign_target: 'Custom',
+                    custom_name: value,
+                  });
+                }}
+              />
+
+              <Flex md={2}>
+                <Flex.Item mr={2}>
                   <Tabs vertical>
                     {Object.keys(jobs).map(department => (
                       <Tabs.Tab
@@ -140,7 +190,7 @@ export const NtosCardContent = (props, context) => {
                     ))}
                   </Tabs>
                 </Flex.Item>
-                <Flex.Item grow={1}>
+                <Flex.Item grow={1} minWidth={0}>
                   {departmentJobs.map(job => (
                     <Button
                       fluid
@@ -156,6 +206,6 @@ export const NtosCardContent = (props, context) => {
           )}
         </Box>
       )}
-    </Fragment>
+    </>
   );
 };

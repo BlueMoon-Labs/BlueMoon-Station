@@ -15,6 +15,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/chief_medical_officer/turtleneck
 	desc = "It's a turtleneck worn by those with the experience to be \"Chief Medical Officer\". It provides minor biological protection, for an officer with a superior sense of style and practicality."
@@ -41,6 +42,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/virologist
 	desc = "It's made of a special fiber that gives special protection against biohazards. It has a virologist rank stripe on it."
@@ -59,6 +61,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/chemist
 	desc = "It's made of a special fiber that gives special protection against biohazards. It has a chemist rank stripe on it."
@@ -77,6 +80,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/paramedic
 	desc = "It's made of a special fiber that provides minor protection against biohazards. It has a white cross on the chest denoting that the wearer is a trained paramedic."
@@ -108,6 +112,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/paramedic/skirt/light
 	desc = "It's made of a special fiber that provides minor protection against biohazards. It has a dark blue cross on the chest denoting that the wearer is a trained paramedic."
@@ -118,12 +123,14 @@
 	name = "nurse's suit"
 	icon_state = "nursesuit"
 	item_state = "w_suit"
+	mob_overlay_icon = 'icons/mob/clothing/uniform.dmi'
 	permeability_coefficient = 0.5
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 10, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
 	body_parts_covered = CHEST|GROIN|ARMS
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/medical/doctor
 	desc = "It's made of a special fiber that provides minor protection against biohazards. It has a cross on the chest denoting that the wearer is trained medical personnel."
@@ -170,3 +177,4 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER

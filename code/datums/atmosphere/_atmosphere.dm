@@ -66,3 +66,4 @@
 		gas_string_builder += "[id]=[gasmix.get_moles(id)]"
 	gas_string_builder += "TEMP=[gasmix.return_temperature()]"
 	gas_string = gas_string_builder.Join(";")
+	qdel(gasmix)

@@ -1,14 +1,15 @@
 // Pistol Magazines
 
 /obj/item/ammo_box/magazine/e45/e45_extended
-	name = "Extended Enforcer magazine"
+	name = "Extended Enforcer magazine (.45 Rubber)"
+	desc = "An extended Mk. 58 magazine."
 	icon = 'modular_splurt/icons/obj/ammo.dmi'
 	icon_state = "enforcer-ext"
 	ammo_type = /obj/item/ammo_casing/c45
 	caliber = ".45"
-	desc = "An extended Mk. 58 magazine."
 	max_ammo = 12
 	w_class = WEIGHT_CLASS_SMALL
+	custom_materials = list(/datum/material/iron = 12000)
 
 /obj/item/ammo_box/magazine/e45/e45_extended/update_icon()
 	..()
@@ -18,6 +19,49 @@
 	name = "Extended Enforcer magazine"
 	desc = "An extended Mk. 58 magazine."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 1200)
+
+/obj/item/ammo_box/magazine/e45/e45_extended/lethal
+	name = "Extended Enforcer magazine (.45 Lethal)"
+	desc = "An extended Mk. 58 magazine. Loaded with lethal rounds."
+	ammo_type = /obj/item/ammo_casing/c45/lethal
+
+/obj/item/ammo_box/magazine/e45/e45_extended/hydra
+	name = "Extended Enforcer magazine (.45 Hydra)"
+	desc = "An extended Mk. 58 magazine. Loaded with Hydra-shock."
+	ammo_type = /obj/item/ammo_casing/c45/hydra
+
+/obj/item/ammo_box/magazine/e45/e45_extended/taser
+	name = "Extended Enforcer magazine (.45 Taser)"
+	desc = "An extended Mk. 58 magazine. Loaded with taser rounds."
+	ammo_type = /obj/item/ammo_casing/c45/taser
+
+/obj/item/ammo_box/magazine/e45/e45_extended/trac
+	name = "Extended Enforcer magazine (.45 Tracking)"
+	desc = "An extended Mk. 58 magazine. Loaded with trac rounds."
+	ammo_type = /obj/item/ammo_casing/c45/trac
+
+/obj/item/ammo_box/magazine/e45/e45_extended/hotshot
+	name = "Extended Enforcer magazine (.45 Hotshot)"
+	desc = "An extended Mk. 58 magazine. Loaded with Hotshot rounds."
+	ammo_type = /obj/item/ammo_casing/c45/hotshot
+
+/obj/item/ammo_box/magazine/e45/e45_extended/ion
+	name = "Extended Enforcer magazine (.45 Ion)"
+	desc = "An extended Mk. 58 magazine. Loaded with Ion rounds."
+	ammo_type = /obj/item/ammo_casing/c45/ion
+
+/obj/item/ammo_box/magazine/e45/e45_extended/laser
+	name = "Extended Enforcer magazine (.45 Laser)"
+	desc = "An extended Mk. 58 magazine. Loaded with Laser rounds."
+	ammo_type = /obj/item/ammo_casing/c45/laser
+
+/obj/item/ammo_box/magazine/e45/e45_extended/stun
+	name = "Extended Enforcer magazine (.45 Stun)"
+	desc = "An extended Mk. 58 magazine. Loaded with Stun rounds."
+	ammo_type = /obj/item/ammo_casing/c45/stun
+
+///////////////////// DRUM /////////////////////
 
 /obj/item/ammo_box/magazine/e45/e45_drum
 	name = "Drum Enforcer magazine (.45 Rubber)"
@@ -28,6 +72,7 @@
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	max_ammo = 28
 	w_class = WEIGHT_CLASS_NORMAL
+	custom_materials = list(/datum/material/iron = 30000)
 
 /obj/item/ammo_box/magazine/e45/e45_drum/update_icon()
 	..()
@@ -37,6 +82,7 @@
 	name = "Drum Enforcer magazine"
 	desc = "A drum Mk. 58 magazine, mostly known for it jams."
 	start_empty = 1
+	custom_materials = list(/datum/material/iron = 17000)
 
 /obj/item/ammo_box/magazine/e45/e45_drum/lethal
 	name = "Enforcer drum (.45 Lethal)"
@@ -77,3 +123,15 @@
 	name = "Enforcer drum (.45 Stun)"
 	desc = "A Mk. 58 drum. Loaded with Stun rounds."
 	ammo_type = /obj/item/ammo_casing/c45/stun
+
+///////////////////// DATUM DESIGN /////////////////////
+
+/datum/design/c9mm_box
+	name = "Ammo Box (9mm)"
+	desc = "A box of ammo containing 30 rounds of nine mil' caliber."
+	id = "c9mm_box"
+	build_type =  PROTOLATHE
+	materials = list(/datum/material/iron = 30000)
+	build_path = /obj/item/ammo_box/c9mm
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE

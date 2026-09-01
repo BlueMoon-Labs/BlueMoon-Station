@@ -32,7 +32,7 @@
 
 /datum/chemical_reaction/sterilizine
 	name = "Sterilizine"
-	id = "sterilizine"
+	id = /datum/reagent/space_cleaner/sterilizine
 	results = list(/datum/reagent/space_cleaner/sterilizine = 3)
 	required_reagents = list(/datum/reagent/consumable/ethanol = 1, /datum/reagent/medicine/charcoal = 1, /datum/reagent/chlorine = 1)
 
@@ -74,13 +74,13 @@
 
 /datum/chemical_reaction/sodiumchloride
 	name = "Sodium Chloride"
-	id = "sodiumchloride"
+	id = /datum/reagent/consumable/sodiumchloride
 	results = list(/datum/reagent/consumable/sodiumchloride = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/sodium = 1, /datum/reagent/chlorine = 1)
 
 /datum/chemical_reaction/preservahyde
 	name = "Preservahyde"
-	id = "preservahyde"
+	id = /datum/reagent/preservahyde
 	results = list(/datum/reagent/preservahyde = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/toxin/formaldehyde = 1, /datum/reagent/bromine = 1)
 
@@ -305,6 +305,17 @@
 	level_min = 2
 	level_max = 4
 
+/datum/chemical_reaction/mix_virus/mix_virus_2/on_reaction(datum/reagents/holder, multiplier)
+	var/datum/reagent/blood/B = locate(/datum/reagent/blood) in holder.reagent_list
+	if(!B || !islist(B.data))
+		return
+	var/datum/disease/advance/D = locate(/datum/disease/advance) in B.data["viruses"]
+	if(D)
+		for(var/i in 1 to min(multiplier, 5))
+			D.Evolve(level_min, level_max)
+		return
+	holder.add_reagent(B.type, multiplier, null, holder.chem_temp)
+
 /datum/chemical_reaction/mix_virus/mix_virus_2/synth
 	id = "mixvirus2_synth"
 	required_catalysts = list(/datum/reagent/blood/synthetics = 1)
@@ -460,7 +471,7 @@
 
 /datum/chemical_reaction/surfactant
 	name = "Foam surfactant"
-	id = "foam surfactant"
+	id = /datum/reagent/fluorosurfactant
 	results = list(/datum/reagent/fluorosurfactant = 5)
 	required_reagents = list(/datum/reagent/fluorine = 2, /datum/reagent/carbon = 2, /datum/reagent/toxin/acid = 1)
 
@@ -889,6 +900,17 @@
 	required_reagents = list(/datum/reagent/cellulose = 1)
 	required_temp = 512
 
+//////////////////////////////////// EggYollk ///////////////////////////////////////////
+
+/datum/chemical_reaction/eggyollk
+	name = "Egg Yollk"
+	id = /datum/reagent/consumable/eggyolk
+	results = list(/datum/reagent/consumable/eggyolk = 3)
+	required_reagents = list(/datum/reagent/blood = 1, /datum/reagent/medicine/synthflesh = 1, /datum/reagent/consumable/sugar = 1)
+
+/datum/chemical_reaction/eggyollk/synth
+	id = "EggYollk_2"
+	required_reagents = list(/datum/reagent/blood/synthetics = 1, /datum/reagent/medicine/synthflesh = 1, /datum/reagent/consumable/sugar = 1)
 //Nerdy card shit
 
 /datum/chemical_reaction/card_powder/blue

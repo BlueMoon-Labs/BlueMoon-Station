@@ -32,96 +32,7 @@
 	total_mass = TOTAL_MASS_TINY_ITEM
 
 
-/*
- * Balloons
- */
-/obj/item/toy/balloon
-	name = "water balloon"
-	desc = "A translucent balloon. There's nothing in it."
-	icon = 'icons/obj/toys/toy.dmi'
-	icon_state = "waterballoon-e"
-	item_state = "balloon-empty"
-
-
-/obj/item/toy/balloon/Initialize(mapload)
-	. = ..()
-	create_reagents(10)
-
-/obj/item/toy/balloon/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/update_icon_updates_onmob)
-
-/obj/item/toy/balloon/attack(mob/living/carbon/human/M, mob/user)
-	return
-
-/obj/item/toy/balloon/afterattack(atom/A as mob|obj, mob/user, proximity)
-	. = ..()
-	if(!proximity)
-		return
-	if (istype(A, /obj/structure/reagent_dispensers))
-		var/obj/structure/reagent_dispensers/RD = A
-		if(RD.reagents.total_volume <= 0)
-			to_chat(user, "<span class='warning'>[RD] is empty.</span>")
-		else if(reagents.total_volume >= 10)
-			to_chat(user, "<span class='warning'>[src] is full.</span>")
-		else
-			A.reagents.trans_to(src, 10)
-			to_chat(user, "<span class='notice'>You fill the balloon with the contents of [A].</span>")
-			desc = "A translucent balloon with some form of liquid sloshing around in it."
-			update_icon()
-
-/obj/item/toy/balloon/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/reagent_containers/glass))
-		if(I.reagents)
-			if(I.reagents.total_volume <= 0)
-				to_chat(user, "<span class='warning'>[I] is empty.</span>")
-			else if(reagents.total_volume >= 10)
-				to_chat(user, "<span class='warning'>[src] is full.</span>")
-			else
-				desc = "A translucent balloon with some form of liquid sloshing around in it."
-				to_chat(user, "<span class='notice'>You fill the balloon with the contents of [I].</span>")
-				I.reagents.trans_to(src, 10)
-				update_icon()
-	else if(I.get_sharpness())
-		balloon_burst()
-	else
-		return ..()
-
-/obj/item/toy/balloon/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(!..()) //was it caught by a mob?
-		balloon_burst(hit_atom)
-
-/obj/item/toy/balloon/proc/balloon_burst(atom/AT)
-	if(reagents.total_volume >= 1)
-		var/turf/T
-		if(AT)
-			T = get_turf(AT)
-		else
-			T = get_turf(src)
-		T.visible_message("<span class='danger'>[src] bursts!</span>","<span class='italics'>You hear a pop and a splash.</span>")
-		reagents.reaction(T)
-		for(var/atom/A in T)
-			reagents.reaction(A)
-		icon_state = "burst"
-		qdel(src)
-
-/obj/item/toy/balloon/update_icon_state()
-	if(src.reagents.total_volume >= 1)
-		icon_state = "waterballoon"
-		item_state = "balloon"
-	else
-		icon_state = "waterballoon-e"
-		item_state = "balloon-empty"
-
-/obj/item/toy/syndicateballoon
-	name = "syndicate balloon"
-	desc = "There is a tag on the back that reads \"FUK NT!11!\"."
-	icon = 'icons/obj/items_and_weapons.dmi'
-	icon_state = "syndballoon"
-	item_state = "syndballoon"
-	lefthand_file = 'icons/mob/inhands/antag/balloons_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/balloons_righthand.dmi'
-	w_class = WEIGHT_CLASS_BULKY
+// Balloons — see toy_balloons.dm
 
 /*
  * Fake singularity
@@ -463,7 +374,9 @@
 	throwforce = 0
 	throw_speed = 3
 	throw_range = 5
-
+	block_parry_data = /datum/block_parry_data/chair //Раньше он наследовал dualsaber, теперь стул, что честно т.к занимает две руки.
+	block_chance = 50
+	can_reflect = FALSE
 	attack_verb = list("attacked", "struck", "hit")
 	total_mass_on = TOTAL_MASS_TOY_SWORD
 	slowdown_wielded = 0
@@ -475,8 +388,11 @@
 /obj/item/dualsaber/hypereutactic/toy/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	return BLOCK_NONE
 
+/obj/item/dualsaber/hypereutactic/toy/directional_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return, override_direction)
+	return BLOCK_NONE
+
 /obj/item/dualsaber/hypereutactic/toy/rainbow
-	name = "\improper Hyper-Euclidean Reciprocating Trigonometric Zweihander"
+	name = "\improper Hyper-Euclidean Reciprocating Trigonometrc Zweihander"
 	desc = "A custom-built toy with fancy rainbow lights built-in."
 	hacked = TRUE
 
@@ -744,395 +660,6 @@
 	phomeme = "griffin"
 
 /*
-|| A Deck of Cards for playing various games of chance ||
-*/
-
-
-
-/obj/item/toy/cards
-	resistance_flags = FLAMMABLE
-	max_integrity = 50
-	var/parentdeck = null
-	var/deckstyle = "nanotrasen"
-	var/card_hitsound = null
-	var/card_force = 0
-	var/card_throwforce = 0
-	var/card_throw_speed = 3
-	var/card_throw_range = 7
-	var/list/card_attack_verb = list("attacked")
-
-/obj/item/toy/cards/examine()
-	. = ..()
-	. += "<span class='notice'>Лежащие на столе карты можно взять с большего расстояния.</span>"
-
-/obj/item/toy/cards/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] is slitting [user.ru_ego()] wrists with \the [src]! It looks like [user.ru_who()] [user.p_have()] a crummy hand!</span>")
-	playsound(src, 'sound/items/cardshuffle.ogg', 50, 1)
-	return BRUTELOSS
-
-/obj/item/toy/cards/proc/apply_card_vars(obj/item/toy/cards/newobj, obj/item/toy/cards/sourceobj) // Applies variables for supporting multiple types of card deck
-	if(!istype(sourceobj))
-		return
-
-/obj/item/toy/cards/deck
-	name = "deck of cards"
-	desc = "A deck of space-grade playing cards."
-	icon = 'icons/obj/toys/toy.dmi'
-	deckstyle = "nanotrasen"
-	icon_state = "deck_nanotrasen_full"
-	w_class = WEIGHT_CLASS_SMALL
-	var/cooldown = 0
-	var/obj/machinery/computer/holodeck/holo = null // Holodeck cards should not be infinite
-	var/list/cards = list()
-	var/original_size = 52
-
-/obj/item/toy/cards/deck/Initialize(mapload)
-	. = ..()
-	populate_deck()
-
-///Generates all the cards within the deck.
-/obj/item/toy/cards/deck/proc/populate_deck()
-	icon_state = "deck_[deckstyle]_full"
-	for(var/suit in list("Hearts", "Spades", "Clubs", "Diamonds"))
-		cards += "Ace of [suit]"
-		for(var/i in 2 to 10)
-			cards += "[i] of [suit]"
-		for(var/person in list("Jack", "Queen", "King"))
-			cards += "[person] of [suit]"
-
-//ATTACK HAND NOT CALLING PARENT
-/obj/item/toy/cards/deck/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-	draw_card(user)
-
-/obj/item/toy/cards/deck/proc/draw_card(mob/user)
-	if(user.lying)
-		return
-	var/choice = null
-	if(cards.len == 0)
-		to_chat(user, "<span class='warning'>There are no more cards to draw!</span>")
-		return
-	var/obj/item/toy/cards/singlecard/H = new/obj/item/toy/cards/singlecard(user.loc)
-	if(holo)
-		holo.spawned += H // track them leaving the holodeck
-	choice = popleft(cards)
-	H.cardname = choice
-	H.parentdeck = src
-	var/O = src
-	H.apply_card_vars(H,O)
-	H.pickup(user)
-	user.put_in_hands(H)
-	playsound(src, 'sound/items/carddraw.ogg', 50, 1)
-	user.visible_message("[user] draws a card from the deck.", "<span class='notice'>You draw a card from the deck.</span>")
-	update_icon()
-
-/obj/item/toy/cards/deck/update_icon_state()
-	switch(LAZYLEN(cards))
-		if(27 to INFINITY)
-			icon_state = "deck_[deckstyle]_full"
-		if(11 to 27)
-			icon_state = "deck_[deckstyle]_half"
-		if(1 to 11)
-			icon_state = "deck_[deckstyle]_low"
-		else
-			icon_state = "deck_[deckstyle]_empty"
-	return ..()
-
-/obj/item/toy/cards/deck/attack_self(mob/user)
-	if(cooldown < world.time - 50)
-		cards = shuffle(cards)
-		playsound(src, 'sound/items/cardshuffle.ogg', 50, 1)
-		user.visible_message("[user] shuffles the deck.", "<span class='notice'>You shuffle the deck.</span>")
-		cooldown = world.time
-
-/obj/item/toy/cards/deck/attackby(obj/item/I, mob/living/user, params)
-	if(istype(I, /obj/item/toy/cards/singlecard))
-		var/obj/item/toy/cards/singlecard/SC = I
-		if(SC.parentdeck == src)
-			if(!user.temporarilyRemoveItemFromInventory(SC))
-				to_chat(user, "<span class='warning'>The card is stuck to your hand, you can't add it to the deck!</span>")
-				return
-			cards += SC.cardname
-			user.visible_message("[user] adds a card to the bottom of the deck.","<span class='notice'>You add the card to the bottom of the deck.</span>")
-			qdel(SC)
-		else
-			to_chat(user, "<span class='warning'>You can't mix cards from other decks!</span>")
-		update_icon()
-	else if(istype(I, /obj/item/toy/cards/cardhand))
-		var/obj/item/toy/cards/cardhand/CH = I
-		if(CH.parentdeck == src)
-			if(!user.temporarilyRemoveItemFromInventory(CH))
-				to_chat(user, "<span class='warning'>The hand of cards is stuck to your hand, you can't add it to the deck!</span>")
-				return
-			cards += CH.currenthand
-			user.visible_message("[user] puts [user.ru_ego()] hand of cards in the deck.", "<span class='notice'>You put the hand of cards in the deck.</span>")
-			qdel(CH)
-		else
-			to_chat(user, "<span class='warning'>You can't mix cards from other decks!</span>")
-		update_icon()
-	else
-		return ..()
-
-/obj/item/toy/cards/deck/MouseDrop(atom/over_object)
-	. = ..()
-	var/mob/living/M = usr
-	if(!istype(M) || usr.incapacitated() || usr.lying)
-		return
-	if(Adjacent(usr))
-		if(over_object == M && loc != M)
-			M.put_in_hands(src)
-			to_chat(usr, "<span class='notice'>You pick up the deck.</span>")
-
-		else if(istype(over_object, /atom/movable/screen/inventory/hand))
-			var/atom/movable/screen/inventory/hand/H = over_object
-			if(M.putItemFromInventoryInHandIfPossible(src, H.held_index))
-				to_chat(usr, "<span class='notice'>You pick up the deck.</span>")
-
-	else
-		to_chat(usr, "<span class='warning'>You can't reach it from here!</span>")
-
-
-/obj/item/toy/cards/Adjacent(var/atom/neighbor, var/recurse = 1)
-	if(isturf(src.loc) && locate(/obj/structure/table) in src.loc)
-		for(var/obj/structure/table/T in orange(src, 1))
-			if(T.Adjacent(neighbor))
-				return TRUE
-	. = ..()
-
-/obj/item/toy/cards/cardhand
-	name = "hand of cards"
-	desc = "A number of cards not in a deck, customarily held in ones hand."
-	icon = 'icons/obj/toys/toy.dmi'
-	icon_state = "nanotrasen_hand2"
-	w_class = WEIGHT_CLASS_TINY
-	var/list/currenthand = list()
-	var/choice = null
-
-/obj/item/toy/cards/cardhand/attack_self(mob/user)
-	var/list/handradial = list()
-	interact(user)
-
-	for(var/t in currenthand)
-		handradial[t] = image(icon = src.icon, icon_state = "sc_[t]_[deckstyle]")
-
-	if(usr.stat || !ishuman(usr))
-		return
-	var/mob/living/carbon/human/cardUser = usr
-	if(!(cardUser.mobility_flags & MOBILITY_USE))
-		return
-	var/O = src
-	var/choice = show_radial_menu(usr,src, handradial, custom_check = CALLBACK(src, PROC_REF(check_menu), user), radius = 36, require_near = TRUE)
-	if(!choice)
-		return FALSE
-	var/obj/item/toy/cards/singlecard/C = new/obj/item/toy/cards/singlecard(cardUser.loc)
-	currenthand -= choice
-	handradial -= choice
-	C.parentdeck = parentdeck
-	C.cardname = choice
-	C.apply_card_vars(C,O)
-	C.pickup(cardUser)
-	cardUser.put_in_hands(C)
-	cardUser.visible_message("<span class='notice'>[cardUser] draws a card from [cardUser.ru_ego()] hand.</span>", "<span class='notice'>You take the [C.cardname] from your hand.</span>")
-
-	interact(cardUser)
-	if(length(currenthand) == 1)
-		var/obj/item/toy/cards/singlecard/N = new/obj/item/toy/cards/singlecard(loc)
-		N.parentdeck = parentdeck
-		N.cardname = currenthand[1]
-		N.apply_card_vars(N,O)
-		qdel(src)
-		N.pickup(cardUser)
-		cardUser.put_in_hands(N)
-		to_chat(cardUser, "<span class='notice'>You also take [currenthand[1]] and hold it.</span>")
-		return
-
-	update_sprite()
-
-/obj/item/toy/cards/cardhand/attackby(obj/item/toy/cards/singlecard/C, mob/living/user, params)
-	if(istype(C))
-		if(C.parentdeck == src.parentdeck)
-			src.currenthand += C.cardname
-			user.visible_message("<span class='notice'>[user] adds a card to [user.ru_ego()] hand.</span>", "<span class='notice'>You add the [C.cardname] to your hand.</span>")
-			qdel(C)
-			interact(user)
-			update_sprite(src)
-		else
-			to_chat(user, "<span class='warning'>You can't mix cards from other decks!</span>")
-	else
-		return ..()
-
-/obj/item/toy/cards/cardhand/apply_card_vars(obj/item/toy/cards/newobj,obj/item/toy/cards/sourceobj)
-	..()
-	newobj.deckstyle = sourceobj.deckstyle
-	update_sprite()
-	newobj.card_hitsound = sourceobj.card_hitsound
-	newobj.card_force = sourceobj.card_force
-	newobj.card_throwforce = sourceobj.card_throwforce
-	newobj.card_throw_speed = sourceobj.card_throw_speed
-	newobj.card_throw_range = sourceobj.card_throw_range
-	newobj.card_attack_verb = sourceobj.card_attack_verb
-	newobj.resistance_flags = sourceobj.resistance_flags
-
-/**
-  * check_menu: Checks if we are allowed to interact with a radial menu
-  *
-  * Arguments:
-  * * user The mob interacting with a menu
-  */
-/obj/item/toy/cards/cardhand/proc/check_menu(mob/living/user)
-	if(!istype(user))
-		return FALSE
-	if(user.incapacitated())
-		return FALSE
-	return TRUE
-
-/**
-  * This proc updates the sprite for when you create a hand of cards
-  */
-/obj/item/toy/cards/cardhand/proc/update_sprite()
-	cut_overlays()
-	var/overlay_cards = currenthand.len
-
-	if(deckstyle && currenthand.len)
-		if(currenthand.len > 3)
-			icon_state = "[deckstyle]_hand[currenthand.len - 3 < 5 ? "[currenthand.len - 3]" : "5"]"
-		else
-			icon_state = ""
-	var/k = overlay_cards <= 2 ? 1 : overlay_cards - 2
-	for(var/i in k to overlay_cards)
-		var/card_overlay = image(icon=src.icon,icon_state="sc_[currenthand[i]]_[deckstyle]",pixel_x=(1-i+k)*3,pixel_y=(1-i+k)*3)
-		add_overlay(card_overlay)
-
-/obj/item/toy/cards/singlecard
-	name = "card"
-	desc = "A card"
-	icon = 'icons/obj/toys/toy.dmi'
-	icon_state = "singlecard_down_nanotrasen"
-	w_class = WEIGHT_CLASS_TINY
-	var/cardname = null
-	var/flipped = 0
-	pixel_x = -5
-
-
-/obj/item/toy/cards/singlecard/examine(mob/user)
-	. = ..()
-	if(ishuman(user))
-		var/mob/living/carbon/human/cardUser = user
-		if(cardUser.is_holding(src))
-			cardUser.visible_message("[cardUser] checks [cardUser.ru_ego()] card.", "<span class='notice'>The card reads: [cardname].</span>")
-		. += span_notice("[span_bold("Alt-Click")] to flip [src].")
-
-// to prevent exposing holder's card when examining them
-/obj/item/toy/cards/singlecard/get_examine_string(mob/user)
-	if(istype(user) && ismob(loc) && !user.is_holding(src) && flipped)
-		return " a card"
-	return ..()
-
-/obj/item/toy/cards/singlecard/AltClick(mob/user)
-	. = ..()
-	Flip()
-
-/obj/item/toy/cards/singlecard/verb/Flip()
-	set name = "Flip Card"
-	set category = "Object"
-	set src in range(2)
-	if(!ishuman(usr) || !usr.canUseTopic(src, BE_CLOSE))
-		return
-	if(!flipped)
-		src.flipped = 1
-		if (cardname)
-			src.icon_state = "sc_[cardname]_[deckstyle]"
-			src.name = src.cardname
-		else
-			src.icon_state = "sc_Ace of Spades_[deckstyle]"
-			src.name = "What Card"
-		src.pixel_x = 5
-	else if(flipped)
-		src.flipped = 0
-		src.icon_state = "singlecard_down_[deckstyle]"
-		src.name = "card"
-		src.pixel_x = -5
-
-/obj/item/toy/cards/singlecard/attackby(obj/item/I, mob/living/user, params)
-	if(istype(I, /obj/item/toy/cards/singlecard/))
-		var/obj/item/toy/cards/singlecard/C = I
-		if(C.parentdeck == src.parentdeck)
-			var/obj/item/toy/cards/cardhand/H = new/obj/item/toy/cards/cardhand(user.loc)
-			H.currenthand += src.cardname
-			H.currenthand += C.cardname
-			H.parentdeck = C.parentdeck
-			H.apply_card_vars(H,C)
-			qdel(C)
-			var/turf = isturf(src.loc) ? src.loc : null
-			qdel(src)
-			if(src.flipped && turf)
-				to_chat(user, "<span class='notice'>You combine the [C.cardname] and the [src.cardname].</span>")
-				H.pixel_x = src.pixel_x
-				H.pixel_y = src.pixel_y
-				H.forceMove(turf)
-			else
-				to_chat(user, "<span class='notice'>You combine the [C.cardname] and the [src.cardname] into a hand.</span>")
-				H.pickup(user)
-				user.put_in_active_hand(H)
-		else
-			to_chat(user, "<span class='warning'>You can't mix cards from other decks!</span>")
-
-	if(istype(I, /obj/item/toy/cards/cardhand/))
-		var/obj/item/toy/cards/cardhand/H = I
-		if(H.parentdeck == parentdeck)
-			H.currenthand += cardname
-			user.visible_message("[user] adds a card to [user.ru_ego()] hand.", "<span class='notice'>You add the [cardname] to your hand.</span>")
-			qdel(src)
-			H.interact(user)
-		else
-			to_chat(user, "<span class='warning'>You can't mix cards from other decks!</span>")
-	else
-		return ..()
-
-/obj/item/toy/cards/singlecard/attack_self(mob/living/user)
-	. = ..()
-	if(.)
-		return
-	if(!ishuman(user))
-		return
-	if(!CHECK_MOBILITY(user, MOBILITY_USE))
-		return
-	Flip()
-
-/obj/item/toy/cards/singlecard/apply_card_vars(obj/item/toy/cards/singlecard/newobj,obj/item/toy/cards/sourceobj)
-	..()
-	newobj.deckstyle = sourceobj.deckstyle
-	newobj.icon_state = "singlecard_down_[deckstyle]" // Without this the card is invisible until flipped. It's an ugly hack, but it works.
-	newobj.card_hitsound = sourceobj.card_hitsound
-	newobj.hitsound = newobj.card_hitsound
-	newobj.card_force = sourceobj.card_force
-	newobj.force = newobj.card_force
-	newobj.card_throwforce = sourceobj.card_throwforce
-	newobj.throwforce = newobj.card_throwforce
-	newobj.card_throw_speed = sourceobj.card_throw_speed
-	newobj.throw_speed = newobj.card_throw_speed
-	newobj.card_throw_range = sourceobj.card_throw_range
-	newobj.throw_range = newobj.card_throw_range
-	newobj.card_attack_verb = sourceobj.card_attack_verb
-	newobj.attack_verb = newobj.card_attack_verb
-
-/*
-|| Syndicate playing cards, for pretending you're Gambit and playing poker for the nuke disk. ||
-*/
-
-/obj/item/toy/cards/deck/syndicate
-	name = "suspicious looking deck of cards"
-	desc = "A deck of space-grade playing cards. They seem unusually rigid."
-	icon_state = "deck_syndicate_full"
-	deckstyle = "syndicate"
-	card_hitsound = 'sound/weapons/bladeslice.ogg'
-	card_force = 5
-	card_throwforce = 10
-	card_throw_speed = 3
-	card_throw_range = 7
-	card_attack_verb = list("attacked", "sliced", "diced", "slashed", "cut")
-	resistance_flags = NONE
-
-/*
  * Fake nuke
  */
 
@@ -1145,19 +672,36 @@
 	var/cooldown = 0
 
 /obj/item/toy/nuke/attack_self(mob/user)
-	if (cooldown < world.time)
-		cooldown = world.time + 1800 //3 minutes
-		user.visible_message("<span class='warning'>[user] presses a button on [src].</span>", "<span class='notice'>You activate [src], it plays a loud noise!</span>", "<span class='italics'>You hear the click of a button.</span>")
-		sleep(5)
+	if(obj_flags & EMAGGED && cooldown < world.time)
+		cooldown = world.time + 1800 // 3 minutes
+		user.visible_message(span_warning("[user] presses a button on [src]."), span_notice("You activate [src], it plays a loud noise!"), span_hear("You hear the click of a button."))
+		sleep(0.5 SECONDS)
 		icon_state = "nuketoy"
 		playsound(src, 'sound/machines/alarm.ogg', 100, 0)
-		sleep(135)
+		sleep(14 SECONDS)
+		user.visible_message(span_alert("[src] violently explodes!"))
+		explosion(src, light_impact_range = 1)
+		qdel(src)
+	else if(cooldown < world.time)
+		cooldown = world.time + 1800 // 3 minutes
+		user.visible_message(span_warning("[user] presses a button on [src]."), span_notice("You activate [src], it plays a loud noise!"), span_hear("You hear the click of a button."))
+		sleep(0.5 SECONDS)
+		icon_state = "nuketoy"
+		playsound(src, 'sound/machines/alarm.ogg', 100, 0)
+		sleep(13.5 SECONDS)
 		icon_state = "nuketoycool"
 		sleep(cooldown - world.time)
 		icon_state = "nuketoyidle"
 	else
 		var/timeleft = (cooldown - world.time)
-		to_chat(user, "<span class='alert'>Nothing happens, and '</span>[round(timeleft/10)]<span class='alert'>' appears on a small display.</span>")
+		to_chat(user, span_alert("Nothing happens, and '[round(timeleft/10)]' appears on a small display."))
+
+/obj/item/toy/nuke/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	balloon_alert(user, "explosive simulation enabled")
+	obj_flags |= EMAGGED
+	return TRUE
 
 /*
  * Fake meteor
@@ -1170,12 +714,21 @@
 	icon_state = "minimeteor"
 	w_class = WEIGHT_CLASS_SMALL
 
+/obj/item/toy/minimeteor/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	to_chat(user, span_warning("You short circuit whatever electronics exist inside. The \"meteor\" suddenly feels a lot heavier...?"))
+	obj_flags |= EMAGGED
+	return TRUE
+
 /obj/item/toy/minimeteor/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	playsound(src, 'sound/effects/meteorimpact.ogg', 40, TRUE)
+	for(var/mob/M in urange(10, src))
+		if(!M.stat && !isAI(M))
+			shake_camera(M, 3, 1)
+	if(obj_flags & EMAGGED)
+		explosion(src, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 1)
 	if(!..())
-		playsound(src, 'sound/effects/meteorimpact.ogg', 40, 1)
-		for(var/mob/M in urange(10, src))
-			if(!M.stat && !isAI(M))
-				shake_camera(M, 3, 1)
 		qdel(src)
 
 /*

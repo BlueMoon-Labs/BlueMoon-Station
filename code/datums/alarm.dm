@@ -68,6 +68,10 @@
 ///Clears an alarm from any interested listeners
 /datum/alarm_handler/proc/clear_alarm(alarm_type, use_as_source_atom)
 	SIGNAL_HANDLER
+	//горячий путь: здоровый APC/air alarm зовёт clear каждый фаер, при этом
+	//свой хэндлер обычно ничего не рассылал - не ходим в get_area впустую
+	if(!sent_alarms[alarm_type])
+		return FALSE
 	if(!use_as_source_atom)
 		use_as_source_atom = source_atom
 	if(!use_as_source_atom)
@@ -196,4 +200,5 @@
 		for(var/area_name as anything in alarms_of_type)
 			var/list/alarm_packet = alarms_of_type[area_name]
 			var/list/cameras = alarm_packet[2]
-			cameras -= source // REF FOUND AND CLEARED BOYSSSS
+			if(islist(cameras))
+				cameras -= source // REF FOUND AND CLEARED BOYSSSS

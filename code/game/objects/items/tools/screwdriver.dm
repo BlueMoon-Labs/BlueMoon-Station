@@ -7,7 +7,7 @@
 	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	flags_1 = CONDUCT_1
-	slot_flags = ITEM_SLOT_BELT
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
 	item_flags = SURGICAL_TOOL
 	force = 5
 	w_class = WEIGHT_CLASS_TINY
@@ -128,6 +128,7 @@
 	desc = "A simple powered hand drill. It's fitted with a screw bit."
 	icon_state = "drill_screw"
 	item_state = "drill"
+	slot_flags = ITEM_SLOT_BELT
 	lefthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_righthand.dmi'
 	custom_materials = list(/datum/material/iron=150,/datum/material/silver=50,/datum/material/titanium=25) //done for balance reasons, making them high value for research, but harder to get
@@ -138,9 +139,12 @@
 	throw_range = 3//it's heavier than a screw driver/wrench, so it does more damage, but can't be thrown as far
 	attack_verb = list("drilled", "screwed", "jabbed","whacked")
 	hitsound = 'sound/items/drill_hit.ogg'
-	usesound = 'sound/items/drill_use.ogg'
+	usesound = list('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg')
 	toolspeed = 0.25
 	random_color = FALSE
+
+/obj/item/screwdriver/power/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
 
 /obj/item/screwdriver/power/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is putting [src] to [user.ru_ego()] temple. It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -159,7 +163,7 @@
 	icon = 'icons/obj/items_cyborg.dmi'
 	icon_state = "screwdriver_cyborg"
 	hitsound = 'sound/items/drill_hit.ogg'
-	usesound = 'sound/items/drill_use.ogg'
+	usesound = list('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg')
 	toolspeed = 0.5
 	random_color = FALSE
 
@@ -167,7 +171,7 @@
 	name = "advanced screwdriver"
 	desc = "A classy silver screwdriver with an alien alloy tip, it works almost as well as the real thing."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "screwdriver_a"
+	icon_state = "adv_screwdriver"
 	item_state = "screwdriver_nuke"
 	usesound = 'sound/items/pshoom.ogg'
 	toolspeed = 0.2
@@ -175,11 +179,10 @@
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
-			RESKIN_ICON_STATE = "screwdriver_a_black",
+			RESKIN_ICON_STATE = "adv_screwdriver_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "screwdriver_a",
+			RESKIN_ICON_STATE = "adv_screwdriver",
 		)
 	)
 

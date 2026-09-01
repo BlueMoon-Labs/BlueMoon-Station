@@ -4,11 +4,15 @@
  * @license MIT
  */
 
+import { useState } from 'react';
+
 import { useLocalState } from '../backend';
 import { Flex, Section, Tabs } from '../components';
 import { Pane, Window } from '../layouts';
 
-const r = require.context('../stories', false, /\.stories\.js$/);
+const storyModules = import.meta.glob('../stories/*.stories.js', {
+  eager: true,
+});
 
 /**
  * @returns {{
@@ -18,12 +22,14 @@ const r = require.context('../stories', false, /\.stories\.js$/);
  *   },
  * }[]}
  */
-const getStories = () => r.keys().map(path => r(path));
+const getStories = () => Object.keys(storyModules)
+  .sort()
+  .map(path => storyModules[path]);
 
-export const KitchenSink = (props, context) => {
+export const KitchenSink = (props) => {
   const { panel } = props;
-  const [theme] = useLocalState(context, 'kitchenSinkTheme');
-  const [pageIndex, setPageIndex] = useLocalState(context, 'pageIndex', 0);
+  const [theme] = useLocalState('kitchenSinkTheme');
+  const [pageIndex, setPageIndex] = useState(0);
   const stories = getStories();
   const story = stories[pageIndex];
   const Layout = panel ? Pane : Window;

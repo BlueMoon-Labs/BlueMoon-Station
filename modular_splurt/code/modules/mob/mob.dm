@@ -1,5 +1,3 @@
-#define PROTOLOCK_ALL_ACCESS CONFIG_GET(flag/protolock_all_access)
-
 /mob/living/carbon/human
 	///This player has been standing still for very long and are probably roleplaying. They won't use up nutrition/thirst until they start moving again.
 	var/insanelycomfy = FALSE
@@ -8,23 +6,6 @@
 	. = ..()
 	create_player_panel()
 
-/mob/Destroy()
-	QDEL_NULL(mob_panel)
-	. = ..()
-
-//pixelshift overrides
-/mob/northshift()
-	pixel_shift(NORTH)
-
-/mob/southshift()
-	pixel_shift(SOUTH)
-
-/mob/eastshift()
-	pixel_shift(EAST)
-
-/mob/westshift()
-	pixel_shift(WEST)
-
 /mob/verb/tilt_left()
 	set hidden = TRUE
 	if(!canface() || is_tilted < -45)
@@ -32,12 +13,24 @@
 	transform = transform.Turn(-1)
 	is_tilted--
 
+/mob/living/tilt_left()
+	. = ..()
+	if(!.)
+		return
+	update_small_sprite()
+
 /mob/verb/tilt_right()
 	set hidden = TRUE
 	if(!canface() || is_tilted > 45)
 		return FALSE
 	transform = transform.Turn(1)
 	is_tilted++
+
+/mob/living/tilt_right()
+	. = ..()
+	if(!.)
+		return
+	update_small_sprite()
 
 /mob/proc/has_spell(spelltype)
 	if (!mind)
@@ -98,12 +91,6 @@
 
 	// All checks passed
 	return TRUE
-
-//Makes the protolocks able to be disabled
-/mob/can_use_production(obj/machinery/machine_target)
-	if(PROTOLOCK_ALL_ACCESS)
-		return TRUE
-	. = ..()
 
 /mob/on_item_dropped(obj/item/I)
 	SEND_SIGNAL(src, COMSIG_MOB_ITEM_DROPPED, I) //SPLURT edit

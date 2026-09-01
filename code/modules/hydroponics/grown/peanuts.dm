@@ -18,8 +18,10 @@
 	filling_color = "#C4AE7A"
 	bitesize = 100
 	foodtype = VEGETABLES
-	dried_type = /obj/item/reagent_containers/food/snacks/roasted_peanuts
 	cooked_type = /obj/item/reagent_containers/food/snacks/roasted_peanuts
+
+/obj/item/reagent_containers/food/snacks/grown/peanut/make_dryable()
+	AddElement(/datum/element/dryable, /obj/item/reagent_containers/food/snacks/roasted_peanuts)
 
 /obj/item/reagent_containers/food/snacks/roasted_peanuts
 	name = "roasted peanuts"

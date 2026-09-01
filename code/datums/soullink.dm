@@ -5,13 +5,14 @@
 	var/list/sharedSoullinks //soullinks we are a/the sharer of
 
 /mob/living/Destroy()
-	for(var/s in ownedSoullinks)
-		var/datum/soullink/S = s
+	for(var/datum/soullink/S in ownedSoullinks)
 		S.ownerDies(FALSE)
-		qdel(s) //If the owner is destroy()'d, the soullink is destroy()'d
+		if(!QDELETED(S))
+			qdel(S) //If the owner is destroy()'d, the soullink is destroy()'d
 	ownedSoullinks = null
-	for(var/s in sharedSoullinks)
-		var/datum/soullink/S = s
+	for(var/datum/soullink/S in sharedSoullinks)
+		if(QDELETED(S))
+			continue
 		S.sharerDies(FALSE)
 		S.removeSoulsharer(src) //If a sharer is destroy()'d, they are simply removed
 	sharedSoullinks = null

@@ -1,163 +1,465 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Icon, LabeledList, Section, Table } from '../components';
+import { Box, Button, Collapsible, Icon, Input, LabeledList, Section, Table, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-const erpTagColor = {
-  'Unset': 'label',
-  'Top': 'red',
-  'Top-Pref': 'red',
-  'Submissive Top': 'teal',
-  'Bottom': 'blue',
-  'Bottom-Pref': 'blue',
-  'Dominant Bottom': 'orange',
-  'Switch': 'yellow',
-  'No ERP': 'black',
+// Muted/pastel colors for ERP tag row backgrounds
+const erpTagRowColor = {
+  'Unset': null,
+  'Top': 'rgba(255, 80, 80, 0.15)',
+  'Top-Pref': 'rgba(255, 80, 80, 0.10)',
+  'Submissive Top': 'rgba(80, 200, 200, 0.15)',
+  'Bottom': 'rgba(80, 130, 255, 0.15)',
+  'Bottom-Pref': 'rgba(80, 130, 255, 0.10)',
+  'Dominant Bottom': 'rgba(255, 165, 50, 0.15)',
+  'Switch': 'rgba(255, 220, 50, 0.12)',
+  'No ERP': 'rgba(100, 100, 100, 0.15)',
 };
 
-export const CharacterDirectory = (props, context) => {
-  const { act, data } = useBackend(context);
+// Text colors for ERP tag labels
+const erpTagTextColor = {
+  'Unset': 'label',
+  'Top': '#ff6666',
+  'Top-Pref': '#ff8888',
+  'Submissive Top': '#55cccc',
+  'Bottom': '#6699ff',
+  'Bottom-Pref': '#88aaff',
+  'Dominant Bottom': '#ffaa44',
+  'Switch': '#ddcc44',
+  'No ERP': '#999999',
+};
 
-  const { personalVisibility, personalTag, personalErpTag, prefsOnly } = data;
+// Text colors for Yes/Ask/No preference tags
+const prefTagTextColor = {
+  'Yes': '#55dd55',
+  'Ask': '#66aaff',
+  'No': '#ff6666',
+};
 
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+// Text colors for gender tags
+const genderTagTextColor = {
+  'Female': '#ff88cc',
+  'Futa': '#cc77ff',
+  'Male': '#66aaff',
+  'MtF': '#ffaadd',
+  'FtM': '#88bbff',
+  'N/B': '#aaddaa',
+  'Unset': 'label',
+};
 
-  const [overwritePrefs, setOverwritePrefs] = useLocalState(context, 'overwritePrefs', prefsOnly);
+export const CharacterDirectory = (props) => {
+  const { act, data } = useBackend();
+
+  const {
+    personalVisibility,
+    personalTag,
+    personalErpTag,
+    personalNonconTag,
+    personalNonconInherited,
+    personalGenderTag,
+    personalGenderAuto,
+    prefsOnly,
+  } = data;
+
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+
+  const [overwritePrefs, setOverwritePrefs] = useState(true);
 
   return (
-    <Window width={640} height={480} resizeable>
+    <Window width={940} height={560} resizeable>
       <Window.Content scrollable>
         {(overlay && <ViewCharacter />) || (
-          <Fragment>
-            <Section
-              title="Controls"
-              buttons={
-                <Fragment>
-                  <Box color="label" inline>
-                    Save to current preferences slot:&nbsp;
-                  </Box>
-                  <Button
-                    icon={overwritePrefs ? 'toggle-on' : 'toggle-off'}
-                    selected={overwritePrefs}
-                    content={overwritePrefs ? 'On' : 'Off'}
-                    onClick={() => prefsOnly ? act('noMind', { overwrite_prefs: overwritePrefs }) : setOverwritePrefs(!overwritePrefs)}
-                  />
-                </Fragment>
-              }>
+          <>
+            <Section title="Настройки">
               <LabeledList>
-                <LabeledList.Item label="Visibility">
+                <LabeledList.Item label="Видимость">
                   <Button
                     fluid
-                    content={personalVisibility ? 'Shown' : 'Not Shown'}
+                    icon={personalVisibility ? 'eye' : 'eye-slash'}
+                    content={personalVisibility ? 'Показан' : 'Скрыт'}
+                    color={personalVisibility ? 'green' : 'grey'}
                     onClick={() => act('setVisible', { overwrite_prefs: overwritePrefs })}
                   />
                 </LabeledList.Item>
-                <LabeledList.Item label="Vore Tag">
+                <LabeledList.Item label="Объявление">
                   <Button
                     fluid
-                    content={personalTag}
-                    onClick={() => act('setTag', { overwrite_prefs: overwritePrefs })}
+                    icon="pen"
+                    content="Редактировать"
+                    onClick={() => act('editAd', { overwrite_prefs: overwritePrefs })}
                   />
-                </LabeledList.Item>
-                <LabeledList.Item label="ERP Tag">
-                  <Button
-                    fluid
-                    content={personalErpTag}
-                    onClick={() => act('setErpTag', { overwrite_prefs: overwritePrefs })}
-                  />
-                </LabeledList.Item>
-                <LabeledList.Item label="Advertisement">
-                  <Button fluid content="Edit Ad" onClick={() => act('editAd', { overwrite_prefs: overwritePrefs })} />
                 </LabeledList.Item>
               </LabeledList>
             </Section>
+            <Collapsible title="Теги персонажа" open={false}>
+              <Section>
+                <LabeledList>
+                  <LabeledList.Item label="Сохранить в текущий слот">
+                    <Button
+                      icon={overwritePrefs ? 'toggle-on' : 'toggle-off'}
+                      selected={overwritePrefs}
+                      content={overwritePrefs ? 'Вкл' : 'Выкл'}
+                      onClick={() => prefsOnly ? act('noMind', { overwrite_prefs: overwritePrefs }) : setOverwritePrefs(!overwritePrefs)}
+                    />
+                  </LabeledList.Item>
+                  <LabeledList.Divider />
+                  <LabeledList.Item label="Пол">
+                    <Button
+                      fluid
+                      content={personalGenderTag !== 'Unset' ? personalGenderTag : `↑ ${personalGenderAuto}`}
+                      onClick={() => act('setGenderTag', { overwrite_prefs: overwritePrefs })}
+                    />
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Vore тег">
+                    <Button
+                      fluid
+                      content={personalTag}
+                      onClick={() => act('setTag', { overwrite_prefs: overwritePrefs })}
+                    />
+                  </LabeledList.Item>
+                  <LabeledList.Item label="ERP тег">
+                    <Button
+                      fluid
+                      content={personalErpTag}
+                      color={erpTagTextColor[personalErpTag] ? null : undefined}
+                      onClick={() => act('setErpTag', { overwrite_prefs: overwritePrefs })}
+                    />
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Изнасилование">
+                    <Tooltip content={personalNonconInherited ? 'Значение из настроек персонажа. Кликните, чтобы задать переопределение для библиотеки.' : 'Переопределено в библиотеке. Кликните, чтобы изменить или сбросить наследование.'}>
+
+                      <PrefTagButton
+                        value={personalNonconTag}
+                        inherited={personalNonconInherited}
+                        onClick={() => act('setNonconTag')}
+                      />
+                    </Tooltip>
+                  </LabeledList.Item>
+                </LabeledList>
+              </Section>
+            </Collapsible>
             <CharacterDirectoryList />
-          </Fragment>
+          </>
         )}
       </Window.Content>
     </Window>
   );
 };
 
-const ViewCharacter = (props, context) => {
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+const PrefTagButton = (props) => {
+  const { value, inherited, onClick } = props;
+  const color = value === 'Yes' ? 'green' : value === 'Ask' ? 'blue' : value === 'No' ? 'red' : 'grey';
+  return (
+    <Button
+      fluid
+      content={inherited ? `↑ ${value || 'Не задано'}` : (value || 'Не задано')}
+      color={color}
+      onClick={onClick}
+    />
+  );
+};
+
+const ViewCharacter = (props) => {
+  const { act, data } = useBackend();
+  const { directory_notes } = data;
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+
+  const prefTags = [
+    { name: 'Изнасилование', value: overlay.noncon_tag },
+    { name: 'Грязный секс', value: overlay.unholy_tag },
+    { name: 'Очень грязный секс', value: overlay.unholy_hard_tag },
+    { name: 'Жестокий секс', value: overlay.extreme_tag },
+    { name: 'Очень жестокий секс', value: overlay.extreme_harm_tag },
+  ];
+
+  const genderDisplay = overlay.gender_tag || 'Unset';
+
+  const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
+  const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
+  const currentLink = headshots[safeIdx];
+  const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
+  const mediaStyle = {
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
+  };
 
   return (
     <Section
       title={overlay.name}
-      buttons={<Button icon="arrow-left" content="Back" onClick={() => setOverlay(null)} />}>
-      <Section level={2} title="Species">
-        <Box>{overlay.species}</Box>
+      buttons={<Button icon="arrow-left" content="Назад" onClick={() => setOverlay(null)} />}>
+      {headshots.length > 0 && (
+        <Section level={2} title="Арт" textAlign="center">
+          <Box mb={1}>
+            {isVideo ? (
+              <video
+                src={currentLink}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={mediaStyle}
+              />
+            ) : (
+              <img
+                src={currentLink}
+                style={mediaStyle}
+              />
+            )}
+          </Box>
+          {headshots.length > 1 && (
+            <Box>
+              <Button
+                icon="arrow-left"
+                onClick={() => setSelectedHeadshot((safeIdx + headshots.length - 1) % headshots.length)}
+              />
+              <Box inline mx={1} bold>{safeIdx + 1} / {headshots.length}</Box>
+              <Button
+                icon="arrow-right"
+                onClick={() => setSelectedHeadshot((safeIdx + 1) % headshots.length)}
+              />
+            </Box>
+          )}
+        </Section>
+      )}
+      <Section level={2} title="Информация">
+        <LabeledList>
+          <LabeledList.Item label="Раса">{overlay.species}</LabeledList.Item>
+          <LabeledList.Item label="Пол">
+            <Box inline bold color={genderTagTextColor[genderDisplay] || 'label'}>
+              {genderDisplay}
+            </Box>
+          </LabeledList.Item>
+          <LabeledList.Item label="Vore тег">{overlay.tag}</LabeledList.Item>
+          <LabeledList.Item label="ERP тег">
+            <Box inline bold color={erpTagTextColor[overlay.erptag] || 'label'}>
+              {overlay.erptag}
+            </Box>
+          </LabeledList.Item>
+          {prefTags.map((tag) => (
+            <LabeledList.Item key={tag.name} label={tag.name}>
+              <Box
+                inline
+                bold
+                color={prefTagTextColor[tag.value] || 'label'}>
+                {tag.value || 'Не задано'}
+              </Box>
+            </LabeledList.Item>
+          ))}
+        </LabeledList>
       </Section>
-      <Section level={2} title="Vore Tag">
-        <Box>{overlay.tag}</Box>
-      </Section>
-      <Section level={2} title="ERP Tag">
-        <Box p={1} backgroundColor={erpTagColor[overlay.erptag]}>
-          {overlay.erptag}
+      <Section level={2} title="Объявление">
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
+          {overlay.character_ad || 'Не задано.'}
         </Box>
       </Section>
-      <Section level={2} title="Character Ad">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
-          {overlay.character_ad || 'Unset.'}
+      <Section level={2} title="OOC Заметки">
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
+          {overlay.ooc_notes || 'Не задано.'}
         </Box>
       </Section>
-      <Section level={2} title="OOC Notes">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
-          {overlay.ooc_notes || 'Unset.'}
+      <Section level={2} title="Описание">
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
+          {overlay.flavor_text || 'Не задано.'}
         </Box>
       </Section>
-      <Section level={2} title="Flavor Text">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
-          {overlay.flavor_text || 'Unset.'}
+      <Section
+        level={2}
+        title="Личная заметка"
+        buttons={
+          <Button
+            icon="pen"
+            content="Редактировать"
+            onClick={() => act('editNote', { target_ckey: overlay.ckey })}
+          />
+        }>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
+          {(directory_notes && directory_notes[overlay.ckey]) || 'Нет заметки.'}
         </Box>
       </Section>
     </Section>
   );
 };
 
-const CharacterDirectoryList = (props, context) => {
-  const { act, data } = useBackend(context);
+const CharacterDirectoryList = (props) => {
+  const { act, data } = useBackend();
 
-  const { directory, canOrbit } = data;
+  const { directory, canOrbit, directory_notes } = data;
 
-  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', 'name');
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [sortId, _setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState('sortOrder', 'name');
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [tagFilters, setTagFilters] = useLocalState('tagFilters', {});
+  const [showFilters, setShowFilters] = useLocalState('showFilters', false);
+
+  const toggleTagFilter = (tag) => {
+    const current = tagFilters[tag];
+    let next;
+    if (!current) { next = 'Yes'; }
+    else if (current === 'Yes') { next = 'Ask'; }
+    else if (current === 'Ask') { next = 'No'; }
+    else { next = null; }
+    if (next) {
+      setTagFilters({ ...tagFilters, [tag]: next });
+    } else {
+      const { [tag]: _, ...rest } = tagFilters;
+      setTagFilters(rest);
+    }
+  };
+
+  const filteredDirectory = (directory || []).filter((character) => {
+    if (searchText && !character.name.toLowerCase().includes(searchText.toLowerCase())) {
+      return false;
+    }
+    for (const [tagName, filterValue] of Object.entries(tagFilters)) {
+      if (character[tagName] !== filterValue) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const activeFilterCount = Object.keys(tagFilters).length;
 
   return (
-    <Section title="Directory" buttons={<Button icon="sync" content="Refresh" onClick={() => act('refresh')} />}>
+    <Section title="Каталог" buttons={
+      <>
+        <Input
+          width="180px"
+          placeholder="Поиск по имени..."
+          value={searchText}
+          onInput={(e, value) => setSearchText(value)}
+        />
+        <Button icon="filter" color={activeFilterCount > 0 ? 'green' : 'transparent'} ml={1}
+          tooltip="Фильтр по тегам"
+          onClick={() => setShowFilters(!showFilters)} />
+        {activeFilterCount > 0 && (
+          <Button icon="times" color="red" ml={1}
+            tooltip="Сбросить фильтры"
+            onClick={() => setTagFilters({})} />
+        )}
+        <Button icon="sync" content="Обновить" ml={1} onClick={() => act('refresh')} />
+      </>
+    }>
+      {showFilters && (
+        <Box mb={1}>
+          {[
+            ['noncon_tag', 'Non-Con'],
+            ['unholy_tag', 'Unholy'],
+            ['unholy_hard_tag', 'Ex. Unholy'],
+            ['extreme_tag', 'Extreme'],
+            ['extreme_harm_tag', 'Ex.Harm'],
+          ].map(([tag, label]) => {
+            const active = tagFilters[tag];
+            return (
+              <Button
+                key={tag}
+                compact
+                fontSize="0.7rem"
+                mr={0.5}
+                color={active
+                  ? (active === 'Yes' ? 'green' : active === 'Ask' ? 'blue' : 'red')
+                  : 'transparent'}
+                icon={active ? 'check-circle' : 'circle'}
+                onClick={() => toggleTagFilter(tag)}>
+                {label}: {active || 'All'}
+              </Button>
+            );
+          })}
+        </Box>
+      )}
       <Table>
         <Table.Row bold>
           <SortButton id="name">Name</SortButton>
           <SortButton id="species">Species</SortButton>
-          <SortButton id="tag">Vore Tag</SortButton>
-          <SortButton id="erptag">ERP Tag</SortButton>
+          <SortButton id="gender_tag">Gender</SortButton>
+          <SortButton id="tag">Vore</SortButton>
+          <SortButton id="erptag">ERP</SortButton>
+          <SortButton id="noncon_tag">Non-Con</SortButton>
+          <SortButton id="unholy_tag">Unholy</SortButton>
+          <SortButton id="unholy_hard_tag">Unh.Hard</SortButton>
+          <SortButton id="extreme_tag">Extreme</SortButton>
+          <SortButton id="extreme_harm_tag">Ex. Harm</SortButton>
           <Table.Cell collapsing textAlign="right">
-            Advertisement
+            Ad
           </Table.Cell>
         </Table.Row>
-        {directory
+        {filteredDirectory
           .sort((a, b) => {
             const i = sortOrder ? 1 : -1;
             return a[sortId].localeCompare(b[sortId]) * i;
           })
           .map((character, i) => (
-            <Table.Row key={i} backgroundColor={erpTagColor[character.erptag]}>
+            <Table.Row
+              key={i}
+              style={{
+                backgroundColor: erpTagRowColor[character.erptag] || 'transparent',
+              }}>
               <Table.Cell p={1}>
-                {canOrbit ? <Button color={erpTagColor[character.erptag]} icon="ghost" tooltip="Orbit" content={character.name} onClick={() => act("orbit", { ref: character.ref })} /> : character.name}
+                {canOrbit ? (
+                  <Button
+                    color="transparent"
+                    icon="ghost"
+                    tooltip={directory_notes && directory_notes[character.ckey]
+                      ? directory_notes[character.ckey]
+                      : "Следовать"}
+                    tooltipPosition="right"
+                    content={character.name}
+                    onClick={() => act("orbit", { ref: character.ref })}
+                  />
+                ) : directory_notes && directory_notes[character.ckey] ? (
+                  <Tooltip content={directory_notes[character.ckey]} position="right">
+                    <span>{character.name}</span>
+                  </Tooltip>
+                ) : character.name}
               </Table.Cell>
               <Table.Cell>{character.species}</Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={genderTagTextColor[character.gender_tag]}>
+                  {character.gender_tag}
+                </Box>
+              </Table.Cell>
               <Table.Cell>{character.tag}</Table.Cell>
-              <Table.Cell>{character.erptag}</Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={erpTagTextColor[character.erptag]}>
+                  {character.erptag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.noncon_tag]}>
+                  {character.noncon_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.unholy_tag]}>
+                  {character.unholy_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.unholy_hard_tag]}>
+                  {character.unholy_hard_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.extreme_tag]}>
+                  {character.extreme_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.extreme_harm_tag]}>
+                  {character.extreme_harm_tag}
+                </Box>
+              </Table.Cell>
               <Table.Cell collapsing textAlign="right">
                 <Button
                   onClick={() => setOverlay(character)}
                   color="transparent"
                   icon="sticky-note"
                   mr={1}
-                  content="View"
+                  content="Открыть"
                 />
               </Table.Cell>
             </Table.Row>
@@ -167,14 +469,14 @@ const CharacterDirectoryList = (props, context) => {
   );
 };
 
-const SortButton = (props, context) => {
-  const { act, data } = useBackend(context);
+const SortButton = (props) => {
+  const { act, data } = useBackend();
 
   const { id, children } = props;
 
   // Hey, same keys mean same data~
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', 'name');
+  const [sortId, setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'name');
 
   return (
     <Table.Cell collapsing>

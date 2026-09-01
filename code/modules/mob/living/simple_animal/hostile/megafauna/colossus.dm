@@ -24,8 +24,8 @@ Difficulty: Very Hard
 /mob/living/simple_animal/hostile/megafauna/colossus
 	name = "colossus"
 	desc = "A monstrous creature protected by heavy shielding."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	attack_verb_continuous = "judges"
 	attack_verb_simple = "judge"
 	attack_sound = 'sound/magic/clockwork/ratvar_attack.ogg'
@@ -54,6 +54,7 @@ Difficulty: Very Hard
 	butcher_results = list(/obj/item/stack/ore/diamond = 5, /obj/item/stack/sheet/sinew = 5, /obj/item/stack/sheet/animalhide/ashdrake = 10, /obj/item/stack/sheet/bone = 30)
 	deathmessage = "disintegrates, leaving a glowing core in its wake."
 	death_sound = 'sound/magic/demon_dies.ogg'
+	sharpness = SHARP_POINTY
 
 /mob/living/simple_animal/hostile/megafauna/colossus/devour(mob/living/L)
 	visible_message("<span class='colossus'>[src] disintegrates [L]!</span>")
@@ -144,13 +145,21 @@ Difficulty: Very Hard
 	visible_message("<span class='colossus'>\"<b>Die.</b>\"</span>")
 
 	sleep(10)
+	if(QDELETED(src) || !isturf(loc))
+		return
 	INVOKE_ASYNC(src, PROC_REF(spiral_shoot))
 	INVOKE_ASYNC(src, PROC_REF(spiral_shoot), TRUE)
 
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/spiral_shoot(negative = FALSE, counter_start = 8)
+	if(QDELETED(src) || !isturf(loc))
+		return
 	var/turf/start_turf = get_step(src, pick(GLOB.alldirs))
+	if(!start_turf)
+		return
 	var/counter = counter_start
 	for(var/i in 1 to 80)
+		if(QDELETED(src) || !isturf(loc))
+			return
 		if(negative)
 			counter--
 		else
@@ -164,15 +173,20 @@ Difficulty: Very Hard
 		sleep(1)
 
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/shoot_projectile(turf/marker, set_angle)
+	if(QDELETED(src))
+		return FALSE
 	if(!isnum(set_angle) && (!marker || marker == loc))
-		return
+		return FALSE
 	var/turf/startloc = get_turf(src)
+	if(!startloc)
+		return FALSE
 	var/obj/item/projectile/P = new /obj/item/projectile/colossus(startloc)
 	P.preparePixelProjectile(marker, startloc)
 	P.firer = src
 	if(target)
 		P.original = target
 	P.fire(set_angle)
+	return TRUE
 
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/random_shots()
 	var/turf/U = get_turf(src)
@@ -212,7 +226,7 @@ Difficulty: Very Hard
 /obj/item/projectile/colossus
 	name ="death bolt"
 	icon_state= "chronobolt"
-	damage = 25
+	damage = 35
 	armour_penetration = 100
 	pixels_per_second = TILES_TO_PIXELS(5)
 	eyeblur = 0
@@ -676,7 +690,7 @@ GLOBAL_VAR(blackbox_smartfridge)
 	activation_sound = 'sound/magic/timeparadox2.ogg'
 	var/static/list/banned_items_typecache = typecacheof(list(/obj/item/storage, /obj/item/implant, /obj/item/implanter, \
 	/obj/item/disk/nuclear, /obj/item/projectile, /obj/item/spellbook, /obj/item/inteq, /obj/item/syndicate_uplink, /obj/item/syndicate_uplink_high, \
-	/obj/item/dice/d20/fate, /obj/item/wisp_lantern))
+	/obj/item/wisp_lantern, /obj/item/card/mining_point_card))
 
 /obj/machinery/anomalous_crystal/refresher/ActivationReaction(mob/user, method)
 	if(..())
@@ -734,6 +748,7 @@ GLOBAL_VAR(blackbox_smartfridge)
 	START_PROCESSING(SSobj, src)
 
 /obj/structure/closet/stasis/Entered(atom/A)
+	. = ..() //родитель ведёт important_recursive_contents (слух/клиент внутри шкафа)
 	if(isliving(A) && holder_animal)
 		var/mob/living/L = A
 		L.mob_transforming = 1

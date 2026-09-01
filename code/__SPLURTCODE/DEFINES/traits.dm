@@ -14,6 +14,7 @@
 #define TRAIT_GFLUID_DETECT				"genital_fluid_detect"
 #define TRAIT_ASHRESISTANCE				"ash_resistance"
 #define TRAIT_TOUGHT					"tought"
+#define TRAIT_TOUGHT_DAMAGE				10 // При изменении, поменять desc у /datum/quirk/tough и /datum/mutation/human/bm/tough
 
 // Hyperstation traits
 #define TRAIT_PHARMA            		"hepatic_pharmacokinesis"
@@ -49,6 +50,7 @@
 #define TRAIT_RESTORATIVE_METABOLISM	"restorative_metabolism"
 #define TRAIT_KISS_SLUT					"kiss_slut"
 #define TRAIT_HYDRA_HEADS				"hydrahead" //Hydra head port.
+#define TRAIT_WADDLING					"trait_waddling"
 
 // Chastity traits
 #define TRAIT_CHASTENED_ANUS "chastened_anus"

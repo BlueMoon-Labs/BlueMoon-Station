@@ -79,8 +79,8 @@
 	//Type path of item to go in left hand
 	var/r_hand = null
 
-	/// Any clothing accessory item
-	var/accessory = null
+	/// Any clothing accessory item path or list of types
+	var/list/accessory = list()
 
 	/// Internals box. Will be inserted at the start of backpack_contents
 	var/box
@@ -212,12 +212,16 @@
 	if(!l_hand && isvox(H))
 		H.put_in_l_hand(new /obj/item/tank/internals/emergency_nitrogen)
 
-	if(accessory)
-		var/obj/item/clothing/under/U = H.w_uniform
-		if(U)
-			U.attach_accessory(new accessory(H), H)
-		else
-			WARNING("Unable to equip accessory [accessory] in outfit [name]. No uniform present!")
+	if(islist(accessory) && accessory.len)
+		for(var/accessory_type in accessory)
+			var/obj/item/clothing/accessory/A = new accessory_type(H)
+			if(!istype(A)) // why??
+				H.equip_to_slot_or_del(A, ITEM_SLOT_BACKPACK, TRUE)
+				continue
+
+			var/obj/item/clothing/wear = H.get_item_by_slot(A.accessory_slot)
+			if(!(wear && wear.attach_accessory(A, H)))
+				H.equip_to_slot_or_del(A, ITEM_SLOT_BACKPACK, TRUE)
 
 	if(l_hand)
 		H.put_in_l_hand(new l_hand(H))
@@ -265,17 +269,33 @@
 	if(!visualsOnly)
 		apply_fingerprints(H)
 		if(internals_slot)
-			H.internal = H.get_item_by_slot(internals_slot)
+			//в слоте может лежать что угодно (кастомные админские аутфиты задают
+			//internals_slot вручную) - в internal пускаем только баллон, иначе дыхание
+			//каждый тик падает на remove_air_volume()
+			//старый источник тоже сбрасываем: до этой проверки слот перезаписывался безусловно,
+			//и аутфит, снявший с моба баллон, оставлял бы H.internal висеть на удалённом предмете
+			H.internal = null
+			var/obj/item/tank/internals_tank = H.get_item_by_slot(internals_slot)
+			if(istype(internals_tank))
+				H.internal = internals_tank
 			H.update_action_buttons_icon()
 		if(implants)
 			for(var/implant_type in implants)
 				var/obj/item/implant/I = new implant_type(H)
 				I.implant(H, null, TRUE)
 
-		if (cybernetic_implants)
+		if(cybernetic_implants)
 			for (var/cybernetic_implant_type in cybernetic_implants)
 				var/obj/item/organ/C = new cybernetic_implant_type()
-				C.Insert(H)
+				C.Insert(H, TRUE, FALSE)
+
+		// Активируем пермиты
+		if(istype(H.w_uniform, /obj/item/clothing/under))
+			var/obj/item/clothing/under/U = H.w_uniform
+			for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
+				if(permit.first_inited)
+					continue
+				permit.bind_to_user(H, TRUE)
 
 	H.update_body()
 	return TRUE

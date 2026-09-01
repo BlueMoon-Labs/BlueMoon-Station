@@ -4,6 +4,8 @@
 	SStgui.on_logout(src)
 	unset_machine()
 	remove_from_player_list()
+	//спатиал-грид: моб без клиента больше не числится в CLIENTS-канале
+	clear_important_client_contents()
 	..()
 
 	if(loc)

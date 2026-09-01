@@ -191,7 +191,8 @@
 				M.powerlevel = new_powerlevel
 				if(i != 1)
 					step_away(M, get_turf(src))
-				M.Friends = Friends.Copy()
+				for(var/mob/living/friend as anything in Friends)
+					M.add_friend(friend, Friends[friend])
 				babies += M
 				M.mutation_chance = clamp(mutation_chance+(rand(5,-5)),0,100)
 				SSblackbox.record_feedback("tally", "slime_babies_born", 1, M.colour)

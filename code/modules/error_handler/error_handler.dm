@@ -22,6 +22,9 @@ GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 	else if(copytext(E.name,1,18) == "Out of resources!")//18 == length() of that string + 1
 		log_world("BYOND out of memory. Restarting")
 		log_game("BYOND out of memory. Restarting")
+		// Ровно та смерть, ради которой чёрный ящик и заведён. Reboot() ниже пометил бы файл
+		// штатным завершением, поэтому причину надо записать ДО него: она же запрещает метку.
+		mc_state_note_death("BYOND: Out of resources! - процессу не хватило памяти")
 		TgsEndProcess()
 		Reboot(reason = 1)
 		return ..()
@@ -127,8 +130,12 @@ GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 
 #ifdef UNIT_TESTS
 	if(GLOB.current_test)
-		//good day, sir
-		GLOB.current_test.Fail("[main_line]\n[desclines.Join("\n")]", file = E.file, line = E.line)
+		if(GLOB.current_test.runtime_allowed(E))
+			// Ожидаемая канарейка теста: не валим тест и не портим clean_run-счётчик.
+			GLOB.total_runtimes--
+		else
+			//good day, sir
+			GLOB.current_test.Fail("[main_line]\n[desclines.Join("\n")]", file = E.file, line = E.line)
 #endif
 
 

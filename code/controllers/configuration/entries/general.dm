@@ -264,6 +264,8 @@
 /datum/config_entry/flag/nightshift_toggle_public_requires_auth
 	default = TRUE
 
+/datum/config_entry/flag/dynamic_starlight_cycle
+
 /datum/config_entry/flag/randomize_shift_time
 
 /datum/config_entry/flag/shift_time_realtime
@@ -299,7 +301,15 @@
 
 ///Initial loadout points
 /datum/config_entry/number/initial_gear_points
-	default = 16
+	default = 12
+
+///Subscriber extra loadout points
+/datum/config_entry/number/subscriber_extra_gear_points
+	default = 4
+
+///Sponsor extra loadout points
+/datum/config_entry/number/sponsor_extra_gear_points
+	default = 8
 
 /**
   * Enables the FoV component, which hides objects and mobs behind the parent from their sight, unless they turn around, duh.
@@ -322,7 +332,7 @@
 
 //adds a set amount to any injury rolls on a limb using get_damage() multiplied by this number
 /datum/config_entry/number/wound_damage_multiplier
-	default = 0.333
+	default = 0.4
 	min_val = 0
 	integer = FALSE
 
@@ -335,10 +345,105 @@
 	default = 0
 	min_val = 0
 
+/datum/config_entry/number/gc_harddel_budget_min_ms
+	default = GC_HARDDEL_BUDGET_MIN_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_budget_max_ms
+	default = GC_HARDDEL_BUDGET_MAX_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_hold_max_per_fire
+	default = GC_HARDDEL_HOLD_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_max_per_fire
+	default = GC_HARDDEL_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_recover_threshold
+	default = GC_HARDDEL_RECOVER_THRESHOLD
+	min_val = 0
+
+/datum/config_entry/number/gc_harddel_target_q3_delta_per_second
+	default = GC_HARDDEL_TARGET_Q3_DELTA_PER_SECOND
+	integer = FALSE
+	max_val = 0
+
+/datum/config_entry/number/gc_harddel_mode_hysteresis_samples
+	default = GC_HARDDEL_MODE_HYSTERESIS_SAMPLES
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_overflow_threshold
+	default = GC_HARDDEL_OVERFLOW_THRESHOLD
+	min_val = 0
+
+/datum/config_entry/number/gc_harddel_overflow_budget_max_ms
+	default = GC_HARDDEL_OVERFLOW_BUDGET_MAX_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_overflow_max_per_fire
+	default = GC_HARDDEL_OVERFLOW_MAX_PER_FIRE
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_lobby_budget_ms
+	default = GC_HARDDEL_LOBBY_BUDGET_MS
+	min_val = 1
+
+/datum/config_entry/number/gc_harddel_lobby_max_per_fire
+	default = GC_HARDDEL_LOBBY_MAX_PER_FIRE
+	min_val = 1
+
+/// Режим авто-скана ссылок при GC-фейлах: 0 = выкл, 1 = только помеченные типы, 2 = все warnfail.
+/datum/config_entry/number/gc_reftrack_mode
+	default = GC_REFTRACK_OFF
+	min_val = 0
+	max_val = 2
+
+/// Уводить раунд на эвакуацию, когда адресное пространство подходит к потолку. Выключение
+/// не делает раунды длиннее - оно возвращает молчаливую смерть процесса вместо экрана итогов.
+/datum/config_entry/flag/memory_pressure_evac
+	default = TRUE
+
+/// Сколько расчётных минут до потолка адресного пространства считать точкой невозврата.
+/// Вызов шаттла, перелёт и подсчёт итогов - это порядка десяти минут; остальное запас на то,
+/// что скорость роста оценивается по получасовому окну и отстаёт от разгона.
+/datum/config_entry/number/memory_pressure_evac_lead_minutes
+	default = 40
+	min_val = 5
+
+/// Минимальный интервал между авто-сканами ссылок, в секундах.
+/datum/config_entry/number/gc_reftrack_autoscan_cooldown_seconds
+	default = 30
+	min_val = 0
+
+/// Максимум авто-сканов ссылок за раунд.
+/datum/config_entry/number/gc_reftrack_autoscan_max_per_round
+	default = GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND
+	min_val = 0
+
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
-/datum/config_entry/flag/dynamic_config_enabled
+/// Sleeping edges: осевшие пары соседних турфов пропускают compare/share по
+/// ревизиям смесей. A/B: giant-hall нейтрален в пределах шума, осевшая комната
+/// -22% на турф-цикл - профиль затяжных разгермов (раунды 9906/9915). Выключить
+/// на живом мире можно строкой "ATMOS_SLEEPING_EDGES 0" - кэши сбрасываются сами.
+/datum/config_entry/flag/atmos_sleeping_edges
+	default = TRUE
+
+/// Turf-to-turf heat conduction through solids (superconduction). Registration
+/// starts only above MINIMUM_TEMPERATURE_START_SUPERCONDUCTION, so a station at
+/// room temperature pays one variable read per active turf.
+/datum/config_entry/flag/atmos_heat_enabled
+	default = TRUE
+
+/// Multiplier for how often SSair fires. 1 = default cadence, 2 = twice as often, so gas
+/// moves twice as fast for roughly twice the CPU. Applied through SSair.set_atmos_speed().
+/datum/config_entry/number/atmos_speed_multiplier
+	default = 1
+	min_val = 1
+	max_val = 20
 
 /datum/config_entry/flag/station_name_needs_approval
 
@@ -353,6 +458,8 @@
 
 /datum/config_entry/number/commendation_percent_poll
 	integer = FALSE
+	/// Fraction of joined players polled for end-of-round hearts when the shuttle leaves (0 disables).
+	default = 0.1
 
 /datum/config_entry/str_list/randomizing_station_name_message
 	default = list()
@@ -361,3 +468,17 @@
 
 /// Gives the ability to send players a maptext popup.
 /datum/config_entry/flag/popup_admin_pm
+
+/**
+ * Tgui ui_act payloads larger than 2kb are split into chunks (~512 url-encoded bytes each).
+ * This flag is the maximum chunk count the server accepts per payload (e.g. multiline text
+ * with JSON pasted into TextInputModal). Default 64 was too low for large circuit saves.
+ */
+/datum/config_entry/number/tgui_max_chunk_count
+	default = 2048
+
+/// Онлайн, при котором SSlag_switch автоматически включает меры снижения
+/// нагрузки (с 20-секундным окном вето для админов). 0 = автовключение выключено.
+/datum/config_entry/number/auto_lag_switch_pop
+	default = 0
+	min_val = 0

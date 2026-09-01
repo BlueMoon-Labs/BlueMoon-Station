@@ -2,58 +2,66 @@
 
 /// Creates a radial menu from which the user chooses parts of the suit to deploy/retract. Repeats until all parts are extended or retracted.
 /obj/item/mod/control/proc/choose_deploy(mob/user)
-	if(!length(mod_parts))
-		return
 	var/list/display_names = list()
 	var/list/items = list()
-	for(var/obj/item/piece as anything in mod_parts)
-		display_names[piece.name] = REF(piece)
-		var/image/piece_image = image(icon = piece.icon, icon_state = piece.icon_state)
-		items += list(piece.name = piece_image)
+	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
+		display_names[piece.name] = piece
+		var/image/piece_image = image(
+			icon = piece.icon,
+			icon_state = piece.icon_state
+		)
+		items[piece.name] = piece_image
 	var/pick = show_radial_menu(user, src, items, custom_check = FALSE, require_near = TRUE, tooltips = TRUE)
 	if(!pick)
 		return
-	var/part_reference = display_names[pick]
-	var/obj/item/part = locate(part_reference) in mod_parts
+	var/obj/item/part = display_names[pick]
+
 	if(!istype(part) || user.incapacitated())
 		return
-	if((active || activating) && part != helmet)  //BM added an exception for a helmet
-		balloon_alert(user, "deactivate the suit first!")
-		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return
-	var/parts_to_check = mod_parts - part
-	if(part.loc == src)
+	// Из alist вычитается КЛЮЧ, а не значение, поэтому прежнее `mod_parts - part`
+	// не исключало выбранную часть и она попадала в проверку остальных.
+	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
+	if(part.loc != user)
 		deploy(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc != src)
+			if(piece.loc == user)
 				continue
 			choose_deploy(user)
 			break
 	else
 		conceal(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc == src)
+			if(piece.loc != user)
 				continue
 			choose_deploy(user)
 			break
 
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
-	var/obj/item/piece = part
-	if(piece == gauntlets && wearer.gloves)
-		gauntlets.overslot = wearer.gloves
-		wearer.transferItemToLoc(gauntlets.overslot, gauntlets, force = TRUE)
-	if(piece == boots && wearer.shoes)
-		boots.overslot = wearer.shoes
-		wearer.transferItemToLoc(boots.overslot, boots, force = TRUE)
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
+	var/obj/item/clothing/mod_part/piece = part
+	var/obj/item/item_in_slot
+	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
+		item_in_slot = wearer.s_store
+	if(!piece.conseal_to_overslot()) //скрывает одежду внутрь переменной элемента МОДа
+		balloon_alert(wearer, "ОШИБКА")
+		return to_chat(wearer, span_alertwarning("У вас не получилось развернуть поверх вашей текущей одежды элемент МОДа."))
+
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		ADD_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 		if(!user)
+			piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 			return TRUE
 		wearer.visible_message(span_notice("[wearer]'s [piece] deploy[piece.p_s()] with a mechanical hiss."),
-			span_notice("[piece] deploy[piece.p_s()] with a mechanical hiss."),
-			span_hear("You hear a mechanical hiss."))
+			span_notice("[piece] разворачивается[piece.p_s()] с механическим шипением."),
+			span_hear("Вы слышите механическое шипение."))
 		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		if(item_in_slot)
+			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
+		if(need_to_conseal && is_active() && all_parts_deployed())
+			update_hardlight()
+		piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 		return TRUE
 	else if(piece.loc != src)
 		if(!user)
@@ -67,25 +75,23 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
-/// Retract a part of the suit from the user
-/obj/item/mod/control/proc/conceal(mob/user, part)
-	var/obj/item/piece = part
-	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
-	if(wearer)
-		wearer.transferItemToLoc(piece, src, force = TRUE)
-	if(piece == gauntlets)
-		gauntlets.show_overslot()
-	if(piece == boots)
-		boots.show_overslot()
+/obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
+	if(is_welded() && !force)
+		return balloon_alert(user, "Заварено!")
+	var/obj/item/clothing/mod_part/piece = part
+	wearer.transferItemToLoc(piece, null, TRUE)
+	piece.equip_item_from_overslot()
 	if(!user)
 		return
 	wearer.visible_message(span_notice("[wearer]'s [piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
 		span_notice("[piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
 		span_hear("You hear a mechanical hiss."))
+	remove_hardlight()
+	piece.toggle_all_linked_modules(MODPART_CONSEALED)
 	playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
-/// Starts the activation sequence, where parts of the suit activate one by one until the whole suit is on
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
+	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
@@ -94,131 +100,86 @@
 	if(!force_deactivate && (SEND_SIGNAL(src, COMSIG_MOD_ACTIVATE, user) & MOD_CANCEL_ACTIVATE))
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
-	for(var/obj/item/part as anything in mod_parts)
-		if(!force_deactivate && part.loc == src && part != helmet)  //BM added an exception for a helmet
-			balloon_alert(user, "deploy all parts first!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
 	if(!cell?.charge && !force_deactivate)
 		balloon_alert(user, "suit not powered!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
-	if(open && !force_deactivate)
+	if(is_open() && !force_deactivate)
 		balloon_alert(user, "close the suit panel!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
-	if(activating)
+	if(is_activating())
 		if(!force_deactivate)
-			balloon_alert(user, "suit already [active ? "shutting down" : "starting up"]!")
+			balloon_alert(user, "suit already [is_active() ? "shutting down" : "starting up"]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	for(var/obj/item/mod/module/module as anything in modules)
 		if(!module.active || module.allowed_inactive)
 			continue
 		module.on_deactivation()
-	activating = TRUE
-	to_chat(wearer, span_notice("MODsuit [active ? "shutting down" : "starting up"]."))
+	ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+	if(is_active())
+		remove_hardlight()
+	to_chat(wearer, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
 	if(ai)
-		to_chat(ai, span_notice("MODsuit [active ? "shutting down" : "starting up"]."))
+		to_chat(ai, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
 
 	if(force_deactivate)
-		seal_part(boots, seal = FALSE)
-		seal_part(gauntlets, seal = FALSE)
-		seal_part(chestplate,seal =  FALSE)
-		seal_part(helmet, seal = FALSE)
+		for(var/index in mod_parts)
+			if(index == MOD_PART_CELL)
+				continue
+			var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+			MOD_PART.seal_part(seal = FALSE)
+			conceal(user, MOD_PART)
 		finish_activation(on = FALSE)
-		activating = FALSE
-		to_chat(wearer, span_notice("Systems shut down. Parts unsealed. Goodbye, [wearer]."))
+		DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+		send_modsuit_message(wearer, "ОТКЛЮЧЕНИЕ", "Systems shut down. Parts unsealed. Goodbye, [wearer].")
 		if(ai)
-			to_chat(ai, span_notice("<b>SYSTEMS DEACTIVATED. GOODBYE: \"[ai]\"</b>"))
+			send_modsuit_message(ai, "ОТКЛЮЧЕНИЕ", "<b>СИСТЕМЫ ДЕАКТИВИРОВАНЫ. ПРОЩАЙТЕ: \"[ai]\"</b>")
 		playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 		return TRUE
-
+	for(var/index in mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+		if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
+			to_chat(wearer, span_notice("[MOD_PART.name] [is_active() ? pick(MOD_PART.unseal_message) : pick(MOD_PART.seal_message)]."))
+			playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+			MOD_PART.seal_part(seal = !is_active())
+		else
+			return toggle_activate_fail()
 	if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-		to_chat(wearer, span_notice("[boots] [active ? "relax their grip on your legs" : "seal around your feet"]."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		seal_part(boots, seal = !active)
-	else
-		return toggle_activate_fail()
-	if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-		to_chat(wearer, span_notice("[gauntlets] [active ? "become loose around your fingers" : "tighten around your fingers and wrists"]."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		seal_part(gauntlets, seal = !active)
-	else
-		return toggle_activate_fail()
-	if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-		to_chat(wearer, span_notice("[chestplate] [active ? "releases your chest" : "cinches tightly against your chest"]."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		seal_part(chestplate,seal =  !active)
-	else
-		return toggle_activate_fail()
-	if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-		to_chat(wearer, span_notice("[helmet] hisses [active ? "open" : "closed"]."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		seal_part(helmet, seal = !active)
-	else
-		return toggle_activate_fail()
-	if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-		to_chat(wearer, span_notice("Systems [active ? "shut down. Parts unsealed. Goodbye" : "started up. Parts sealed. Welcome"], [wearer]."))
+		send_modsuit_message(wearer, "СИСТЕМНОЕ ОПОВЕЩЕНИЕ", "Systems [is_active() ? "shut down. Parts unsealed. Goodbye" : "started up. Parts sealed. Welcome"], [wearer].")
 		if(ai)
-			to_chat(ai, span_notice("<b>SYSTEMS [active ? "DEACTIVATED. GOODBYE" : "ACTIVATED. WELCOME"]: \"[ai]\"</b>"))
-		finish_activation(on = !active)
-		if(active)
+			to_chat(ai, span_notice("<b>SYSTEMS [is_active() ? "DEACTIVATED. GOODBYE" : "ACTIVATED. WELCOME"]: \"[ai]\"</b>"))
+		finish_activation(on = !is_active())
+		if(is_active())
 			playsound(src, 'sound/machines/synth_yes.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 			SEND_SOUND(wearer, sound('sound/mecha/nominal.ogg',volume=50))
 		else
 			playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 	else
 		return toggle_activate_fail()
-	activating = FALSE
+	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 	return TRUE
 
 /obj/item/mod/control/proc/toggle_activate_fail()
-	seal_part(boots, seal = active)
-	seal_part(gauntlets, seal = active)
-	seal_part(chestplate,seal =  active)
-	seal_part(helmet, seal = active)
-	to_chat(wearer, span_warning("[active ? "Shut down" : "Start up"] cancelled."))
-	finish_activation(on = active)
-	activating = FALSE
+	for(var/index in mod_parts)
+		if(index == MOD_PART_CELL)
+			continue
+		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+		MOD_PART.seal_part(TRUE)
+	to_chat(wearer, span_warning("[is_active() ? "Shut down" : "Start up"] cancelled."))
+	finish_activation(on = is_active())
+	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 	return FALSE
 
-///Seals or unseals the given part
-/obj/item/mod/control/proc/seal_part(obj/item/clothing/part, seal)
-	if(seal)
-		part.clothing_flags |= part.visor_flags
-		part.flags_inv |= part.visor_flags_inv
-		part.flags_cover |= part.visor_flags_cover
-		part.heat_protection = initial(part.heat_protection)
-		part.cold_protection = initial(part.cold_protection)
-	else
-		part.flags_cover &= ~part.visor_flags_cover
-		part.flags_inv &= ~part.visor_flags_inv
-		part.clothing_flags &= ~part.visor_flags
-		part.heat_protection = NONE
-		part.cold_protection = NONE
-	part.icon_state = "[skin]-[initial(part.icon_state)][seal ? "-sealed" : ""]"
-	part.item_state = "[skin]-[initial(part.item_state)][seal ? "-sealed" : ""]"
-	if(part == boots)
-		wearer.update_inv_shoes()
-	if(part == gauntlets)
-		wearer.update_inv_gloves()
-	if(part == chestplate)
-		wearer.update_inv_wear_suit()
-		wearer.update_inv_w_uniform()
-	if(part == helmet)
-		if(seal)
-			helmet.alternate_worn_layer = null
-		else
-			helmet.alternate_worn_layer = helmet.alternate_layer
-		wearer.update_inv_head()
-		wearer.update_inv_wear_mask()
-		wearer.update_hair()
-
-/// Finishes the suit's activation, starts processing
 /obj/item/mod/control/proc/finish_activation(on)
-	active = on
-	if(active)
+	if(on == TRUE)
+		ENABLE_BITFIELD(status_flags, MOD_ACTIVE)
+	else
+		DISABLE_BITFIELD(status_flags, MOD_ACTIVE)
+	if(is_active())
 		for(var/obj/item/mod/module/module as anything in modules)
 			module.on_suit_activation()
 		START_PROCESSING(SSobj, src)
@@ -226,24 +187,30 @@
 		for(var/obj/item/mod/module/module as anything in modules)
 			module.on_suit_deactivation()
 		STOP_PROCESSING(SSobj, src)
+	if(on == TRUE && all_parts_deployed())
+		update_hardlight()
 	update_speed()
 	update_icon_state()
-	wearer.update_inv_back()
+
+	// Костюм деактивируют и без носителя (разбор, крио, force_deactivate).
+	wearer?.update_inv_back()
 
 /obj/item/mod/control/update_icon_state()
-	icon_state = "[skin]-control[active ? "-sealed" : ""]"
+	icon_state = "[skin]-control[is_active() ? "-sealed" : ""]"
 	return ..()
 
-/// Quickly deploys all the suit parts and if successful, seals them and turns on the suit. Intended mostly for outfits.
 /obj/item/mod/control/proc/quick_activation()
 	var/seal = TRUE
-	for(var/obj/item/part as anything in mod_parts)
+	// `as anything in mod_parts` отдавал КЛЮЧИ alist (числа 1-5) и передавал их в
+	// deploy() под видом частей - развёртывание костюма из аутфита не работало.
+	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
 		if(!deploy(null, part))
 			seal = FALSE
 	if(!seal)
 		return
-	for(var/obj/item/part as anything in mod_parts)
-		seal_part(part, seal = TRUE)
+	// Слот батареи тоже лежит в mod_parts, а seal_part() у неё нет.
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+		part.seal_part(TRUE)
 	finish_activation(on = TRUE)
 
 /obj/item/mod/control/proc/has_wearer()

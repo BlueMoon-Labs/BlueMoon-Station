@@ -7,6 +7,9 @@
 	burst_size = 3
 	fire_delay = 2
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT, SELECT_FULLY_AUTOMATIC)
+	tactical_reload = TRUE
+	load_sound = 'sound/weapons/autoguninsert.ogg'
+	lock_back_sound = null
 
 /obj/item/gun/ballistic/automatic/proto
 	name = "\improper Nanotrasen Saber SMG"
@@ -14,11 +17,14 @@
 	icon_state = "saber"
 	fire_sound = "sound/weapons/gunshot_smg_alt.ogg"
 	mag_type = /obj/item/ammo_box/magazine/smgm9mm
-	pin = null
-	burst_size = 1
-
-/obj/item/gun/ballistic/automatic/proto/unrestricted
 	pin = /obj/item/firing_pin
+	burst_size = 1
+	fire_delay = 1
+
+/obj/item/gun/ballistic/automatic/proto/suppressed/Initialize(mapload)
+	. = ..()
+	var/obj/item/suppressor/S = new(src)
+	install_suppressor(S)
 
 /obj/item/gun/ballistic/automatic/update_overlays()
 	. = ..()
@@ -29,32 +35,8 @@
 			. += "[initial(icon_state)]burst"
 
 /obj/item/gun/ballistic/automatic/update_icon_state()
-	icon_state = "[initial(icon_state)][magazine ? "-[magazine.max_ammo]" : ""][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""]"
-
-/obj/item/gun/ballistic/automatic/attackby(obj/item/A, mob/user, params)
-	. = ..()
-	if(.)
-		return
-	if(istype(A, /obj/item/ammo_box/magazine))
-		var/obj/item/ammo_box/magazine/AM = A
-		if(istype(AM, mag_type))
-			var/obj/item/ammo_box/magazine/oldmag = magazine
-			if(user.transferItemToLoc(AM, src))
-				magazine = AM
-				if(oldmag)
-					to_chat(user, "<span class='notice'>You perform a tactical reload on \the [src], replacing the magazine.</span>")
-					oldmag.forceMove(get_turf(src.loc))
-					oldmag.update_icon()
-				else
-					to_chat(user, "<span class='notice'>You insert the magazine into \the [src].</span>")
-
-				playsound(user, 'sound/weapons/autoguninsert.ogg', 60, 1)
-				chamber_round()
-				A.update_icon()
-				update_icon()
-				return TRUE
-			else
-				to_chat(user, "<span class='warning'>You cannot seem to get \the [src] out of your hands!</span>")
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][magazine ? "-[magazine.max_ammo]" : ""][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""]"
 
 /obj/item/gun/ballistic/automatic/can_shoot()
 	return get_ammo()
@@ -114,6 +96,9 @@
 	automatic_burst_overlay = FALSE
 	pin = /obj/item/firing_pin/alert_level
 
+/obj/item/gun/ballistic/automatic/wt550/standart
+	pin = /obj/item/firing_pin
+
 /obj/item/gun/ballistic/automatic/wt550/afterattack()
 	. = ..()
 	empty_alarm()
@@ -125,8 +110,9 @@
 // BLUEMOON ADD END
 
 /obj/item/gun/ballistic/automatic/wt550/update_icon_state()
-	icon_state = "wt550[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 20) /4, 1)*4]" : "-0"]" //Sprites only support up to 20.
-	item_state = "wt550[magazine ? "" : "e"]" // BLUEMOON ADD enabling unused nomag sprite
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 20) /4, 1)*4]" : null]" //Sprites only support up to 20.
+	item_state = "[initial(item_state)][magazine ? "" : "e"]" // BLUEMOON ADD enabling unused nomag sprite
 
 /obj/item/gun/ballistic/automatic/mini_uzi
 	name = "\improper Type U3 Uzi"
@@ -139,7 +125,7 @@
 
 /obj/item/gun/ballistic/automatic/m90
 	name = "\improper M-90gl Carbine"
-	desc = "A three-round burst 5.56 toploading carbine, designated 'M-90gl'. Has an attached underbarrel grenade launcher which can be toggled on and off."
+	desc = "A three-round burst 5.56 toploading carbine, designated 'M-90gl'. Has an attached underbarrel grenade launcher. Right-click to fire the grenade launcher."
 	icon_state = "m90"
 	item_state = "m90"
 	mag_type = /obj/item/ammo_box/magazine/m556
@@ -151,32 +137,35 @@
 	burst_shot_delay = 2
 	pin = /obj/item/firing_pin/implant/pindicate
 
+/obj/item/gun/ballistic/automatic/m90/unrestricted
+	pin = /obj/item/firing_pin
+
 /obj/item/gun/ballistic/automatic/m90/Initialize(mapload)
 	. = ..()
 	underbarrel = new /obj/item/gun/ballistic/revolver/grenadelauncher(src)
 	update_icon()
 
-/obj/item/gun/ballistic/automatic/m90/unrestricted
-	pin = /obj/item/firing_pin
+/obj/item/gun/ballistic/automatic/m90/Destroy()
+	QDEL_NULL(underbarrel)
+	return ..()
 
 /obj/item/gun/ballistic/automatic/m90/unrestricted/Initialize(mapload)
 	. = ..()
+	QDEL_NULL(underbarrel)
 	underbarrel = new /obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted(src)
 	update_icon()
 
-/obj/item/gun/ballistic/automatic/m90/afterattack(atom/target, mob/living/user, flag, params)
-	if(select == 2)
-		underbarrel.afterattack(target, user, flag, params)
-	else
-		. = ..()
-		return
+/obj/item/gun/ballistic/automatic/m90/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
 /obj/item/gun/ballistic/automatic/m90/attackby(obj/item/A, mob/user, params)
-	if(istype(A, /obj/item/ammo_casing))
-		if(istype(A, underbarrel.magazine.ammo_type))
-			underbarrel.attack_self()
-			underbarrel.attackby(A, user, params)
-	else
-		..()
+	if(istype(A, /obj/item/ammo_casing) && underbarrel?.magazine && istype(A, underbarrel.magazine.ammo_type))
+		return underbarrel.attackby(A, user, params)
+	return ..()
+
 /obj/item/gun/ballistic/automatic/m90/update_overlays()
 	. = ..()
 	switch(select)
@@ -184,8 +173,6 @@
 			. += "[initial(icon_state)]semi"
 		if(1)
 			. += "[initial(icon_state)]burst"
-		if(2)
-			. += "[initial(icon_state)]gren"
 
 /obj/item/gun/ballistic/automatic/m90/update_icon_state()
 	icon_state = "[initial(icon_state)][magazine ? "" : "-e"]"
@@ -196,14 +183,11 @@
 		if(0)
 			select = 1
 			burst_size = initial(burst_size)
-			to_chat(user, "<span class='notice'>You switch to [burst_size]-rnd burst.</span>")
+			to_chat(user, span_notice("You switch to [burst_size]-rnd burst."))
 		if(1)
-			select = 2
-			to_chat(user, "<span class='notice'>You switch to grenades.</span>")
-		if(2)
 			select = 0
 			burst_size = 1
-			to_chat(user, "<span class='notice'>You switch to semi-auto.</span>")
+			to_chat(user, span_notice("You switch to semi-auto."))
 	playsound(user, 'sound/weapons/empty.ogg', 100, 1)
 	update_icon()
 	return
@@ -403,6 +387,9 @@
 	desc = "An illegally modified .50 cal sniper rifle with suppression compatibility. Quickscoping still doesn't work."
 	pin = /obj/item/firing_pin/implant/pindicate
 
+/obj/item/gun/ballistic/automatic/sniper_rifle/unrestricted
+	pin = /obj/item/firing_pin
+
 // Old Semi-Auto Rifle //
 
 /obj/item/gun/ballistic/automatic/surplus
@@ -413,7 +400,7 @@
 	fire_sound = 'sound/weapons/rifleshot.ogg'
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/m10mm/rifle
-	fire_delay = 10
+	fire_delay = 3
 	burst_size = 1
 	can_unsuppress = TRUE
 	can_suppress = TRUE
@@ -445,7 +432,7 @@
 	casing_ejector = FALSE
 
 /obj/item/gun/ballistic/automatic/laser/update_icon_state()
-	icon_state = "oldrifle[magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
+	icon_state = "[initial(icon_state)][magazine ? "-[CEILING(get_ammo(0)/4, 1)*4]" : ""]"
 
 /obj/item/gun/ballistic/automatic/laser/lasgun
 	name = "Thilium Boarding Lascarbine"
@@ -457,12 +444,11 @@
 	automatic_burst_overlay = FALSE
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
-	fire_delay = 3 // BLUEMOON CHANGE Снижаем скорострельность лазгана в автоматическом режиме
-	can_suppress = FALSE
+	fire_delay = 3
 	burst_size = 1
 	actions_types = list()
 	fire_sound = 'sound/weapons/lasgun.ogg'
 	casing_ejector = FALSE
 
 /obj/item/gun/ballistic/automatic/laser/lasgun/update_icon_state()
-	icon_state = "boarding"
+	icon_state = initial(icon_state)

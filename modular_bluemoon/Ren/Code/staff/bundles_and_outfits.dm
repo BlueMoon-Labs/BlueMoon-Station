@@ -50,7 +50,10 @@
 	new /obj/item/crowbar/brown(src)
 	new /obj/item/wirecutters/brown(src)
 	new /obj/item/multitool(src)
-	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
+	if(prob(10))
+		new /obj/item/clothing/gloves/tackler/combat/insulated(src)
+	else
+		new /obj/item/clothing/gloves/combat(src)
 
 /obj/item/storage/toolbox/inteq/cooler/PopulateContents()
 	new /obj/item/screwdriver/power/inteq(src)
@@ -61,12 +64,12 @@
 	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
 // 7. Хирургические сумки В аплинке интекью
 /obj/item/storage/backpack/duffelbag/syndie/inteq/surgery/PopulateContents()
-	new /obj/item/scalpel(src)
-	new /obj/item/hemostat(src)
-	new /obj/item/retractor(src)
-	new /obj/item/circular_saw(src)
+	new /obj/item/scalpel/upgraded_t2(src)
+	new /obj/item/hemostat/upgraded_t2(src)
+	new /obj/item/retractor/upgraded_t2(src)
+	new /obj/item/circular_saw/upgraded_t2(src)
+	new /obj/item/cautery/upgraded_t2(src)
 	new /obj/item/surgicaldrill(src)
-	new /obj/item/cautery(src)
 	new /obj/item/bonesetter(src)
 	new /obj/item/blood_filter(src)
 	new /obj/item/surgical_drapes(src)
@@ -103,7 +106,8 @@
 	new /obj/item/storage/box/survival/security/radio(src)
 	new /obj/item/gun/ballistic/automatic/shotgun/aa12(src)
 	for(var/i in 1 to 3)
-		new /obj/item/ammo_box/magazine/aa12/small(src)
+		new /obj/item/ammo_box/magazine/aa12(src)
+	new /obj/item/ammo_box/magazine/aa12/drum(src)
 	new /obj/item/storage/belt/utility/syndicate(src)
 	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
 
@@ -151,6 +155,8 @@
 /obj/item/storage/box/inteq_kit/revolver/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/inteq(src)
 	new /obj/item/ammo_box/a357(src)
+	new /obj/item/ammo_box/a357/ap(src)
+	new /obj/item/ammo_box/a357/dumdum(src)
 // 12. Дверные мины. В аплинке интекью
 /obj/item/storage/box/inteq_kit/doorgoboom/PopulateContents()
 	for(var/i in 1 to 5)
@@ -218,3 +224,27 @@
 	r_pocket = /obj/item/kitchen/knife/combat/survival/knuckledagger
 	id = /obj/item/card/id/away/ftu
 	backpack_contents = list(/obj/item/storage/box/survival/security/radio)
+
+/obj/item/storage/belt/military/assault/ftu_rev
+	name = "FTU revolutionary assault belt"
+	desc = "Тактический разгрузочный пояс, набитый магазинами к FAL."
+
+/obj/item/storage/belt/military/assault/ftu_rev/PopulateContents()
+	for(var/i in 1 to 6)
+		new /obj/item/ammo_box/magazine/fal(src)
+
+/datum/outfit/ftu/revolutionary
+	name = "FTU Revolutionary"
+	uniform = /obj/item/clothing/under/inteq/tactical_gorka
+	neck = /obj/item/clothing/neck/cloak/ftu
+	back = /obj/item/storage/backpack
+	belt = /obj/item/storage/belt/military/assault/ftu_rev
+	suit = /obj/item/clothing/suit/space/hardsuit/security/ftu
+	r_hand = /obj/item/gun/ballistic/automatic/fal
+	backpack_contents = list(
+		/obj/item/storage/box/survival/security/radio = 1,
+		/obj/item/chameleon = 1,
+		/obj/item/storage/firstaid/brute = 1,
+		/obj/item/storage/firstaid/fire = 1,
+		/obj/item/pinpointer/crew/centcom = 1,
+	)

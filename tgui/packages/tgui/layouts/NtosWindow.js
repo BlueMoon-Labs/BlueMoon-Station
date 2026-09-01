@@ -9,15 +9,15 @@ import { useBackend } from '../backend';
 import { Box, Button } from '../components';
 import { Window } from './Window';
 
-export const NtosWindow = (props, context) => {
+export const NtosWindow = (props) => {
+  const { act, data } = useBackend();
   const {
     title,
     width = 575,
     height = 700,
-    theme = 'ntos',
+    theme: themeProp,
     children,
   } = props;
-  const { act, data } = useBackend(context);
   const {
     PC_device_theme,
     PC_batteryicon,
@@ -30,6 +30,7 @@ export const NtosWindow = (props, context) => {
     PC_showexitprogram,
     TABLET_show_pen_eject,
   } = data;
+  const theme = themeProp || PC_device_theme || 'ntos';
   return (
     <Window
       title={title}

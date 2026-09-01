@@ -3,10 +3,10 @@
 
 /obj/machinery/atmospherics/pipe/simple
 	icon = 'icons/obj/atmospherics/pipes/simple.dmi'
-	icon_state = "pipe11-2"
+	icon_state = "pipe11-3"
 
 	name = "pipe"
-	desc = "A one meter section of regular pipe."
+	desc = "Метр отрезка обыкновенной трубы."
 
 	dir = SOUTH
 	initialize_directions = SOUTH|NORTH

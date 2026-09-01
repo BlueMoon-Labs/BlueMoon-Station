@@ -51,6 +51,9 @@ GLOBAL_VAR_INIT(cmp_field, "name")
 /proc/cmp_timer(datum/timedevent/a, datum/timedevent/b)
 	return a.timeToRun - b.timeToRun
 
+/proc/cmp_chatmessage(datum/chatmessage/a, datum/chatmessage/b)
+	return a.scheduled_destruction - b.scheduled_destruction
+
 /proc/cmp_clientcolour_priority(datum/client_colour/A, datum/client_colour/B)
 	return B.priority - A.priority
 

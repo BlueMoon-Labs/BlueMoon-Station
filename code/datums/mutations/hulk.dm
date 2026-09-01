@@ -66,3 +66,49 @@
 		message = "[replacetext(message, ".", "!")]!!"
 	wrapped_message[1] = message
 	return COMPONENT_UPPERCASE_SPEECH
+
+/// Superhuman Hulk - усиленная версия Hulk для Medieval Warlords
+/datum/mutation/human/hulk/superhuman
+	name = "Hulk (Super)"
+	desc = "An extreme mutation that grants incredible strength and durability. The holder becomes nearly unstoppable."
+	quality = POSITIVE
+	locked = TRUE
+	difficulty = 20
+	text_gain_indication = "<span class='notice'>Your muscles swell with incredible power!</span>"
+	health_req = 0
+	instability = 0
+
+/datum/mutation/human/hulk/superhuman/on_acquiring(mob/living/carbon/human/owner)
+	. = ..()  // Вызываем родительский on_acquiring - он добавляет все трейты
+	if(.)
+		return
+
+	// Убираем TRAIT_CHUNKYFINGERS, унаследованный от базового hulk
+	// Это позволяет варлорду стрелять из пушек
+	REMOVE_TRAIT(owner, TRAIT_CHUNKYFINGERS, TRAIT_HULK)
+
+	// Увеличиваем максимальное здоровье на 50%
+	owner.maxHealth *= 1.5
+	owner.health *= 1.5
+
+	// Уменьшаем получаемый урон через species модификаторы
+	var/datum/species/S = owner.dna.species
+	if(S)
+		S.brutemod *= 0.7
+		S.burnmod *= 0.7
+
+/datum/mutation/human/hulk/superhuman/on_life()
+	// Superhuman не теряет мутацию при низком здоровье
+	// В отличие от обычного hulk который отключается при health < 0
+	return
+
+/datum/mutation/human/hulk/superhuman/on_losing(mob/living/carbon/human/owner)
+	// НЕ убираем трейты - они остаются навсегда
+	// Только возвращаем здоровье и модификаторы к норме
+	owner.maxHealth /= 1.5
+	owner.health /= 1.5
+
+	var/datum/species/S = owner.dna.species
+	if(S)
+		S.brutemod /= 0.7
+		S.burnmod /= 0.7

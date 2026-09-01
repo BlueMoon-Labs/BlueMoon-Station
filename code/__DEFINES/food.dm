@@ -31,7 +31,11 @@
 ///Venue reagent requirement
 #define VENUE_BAR_MINIMUM_REAGENTS 10
 
-#define IS_EDIBLE(O) (O.GetComponent(/datum/component/edible))
+#define IS_EDIBLE(O) (O.GetComponent(/datum/component/edible) || istype(O, /obj/item/reagent_containers/food/snacks))
+
+///Food trash flags
+#define FOOD_TRASH_POPABLE (1<<0)
+#define FOOD_TRASH_OPENABLE (1<<1)
 
 ///Amount of reagents you start with on crafted food excluding the used parts
 #define CRAFTED_FOOD_BASE_REAGENT_MODIFIER 0.7

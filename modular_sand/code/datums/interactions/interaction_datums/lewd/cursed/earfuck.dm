@@ -20,9 +20,14 @@
 	write_log_user = "earsocket fucked"
 	write_log_target = "had their earsocket fucked by"
 
-/datum/interaction/lewd/earfuck/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/earfuck/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
-
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_EARS))
 		message = "[pick(
 			"долбится в ушную раковину \the <b>[partner]</b>.",
@@ -46,8 +51,8 @@
 		user.set_is_fucking(partner, CUM_TARGET_EARS, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/champ1.ogg',
-												'modular_sand/sound/interactions/champ2.ogg'), 50, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(interaction_flags))
+												'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(interaction_flags), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_EARS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
 	partner.handle_post_sex(LOW_LUST, null, user)

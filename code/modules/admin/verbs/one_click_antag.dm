@@ -26,6 +26,7 @@
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=centcom'>Make CentCom Response Team (Requires Ghosts)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=abductors'>Make Abductor Team (Requires Ghosts)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=revenant'>Make Revenant (Requires Ghost)</a><br>
+		<a href='?src=[REF(src)];[HrefToken()];makeAntag=massshooter'>Make Mass Shooter (Requires Ghost)</a><br>
 		"}
 	//<a href='?src=[REF(src)];[HrefToken()];makeAntag=qareen'>Make Qareen (Requires Ghost)</a><br> 	Temporary removed. - Gardelin0
 
@@ -252,88 +253,91 @@
 
 	return FALSE
 
+#define MIN_AGENTS_REQ 3
+#define MAX_AGENTS_REQ 5
+
 /datum/admins/proc/makeNukeTeam()
+	. = FALSE
 	var/datum/game_mode/nuclear/temp = new
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp, minimum_required = MAX_AGENTS_REQ)
 	var/list/mob/chosen = list()
 	var/mob/theghost = null
 
-	if(candidates.len)
-		var/numagents = 5
-		var/agentcount = 0
+	if(!candidates.len)
+		return
+	var/agentcount = 0
 
-		for(var/i = 0, i<numagents,i++)
-			shuffle_inplace(candidates) //More shuffles means more randoms
-			for(var/mob/j in candidates)
-				if(!j || !j.client)
-					candidates.Remove(j)
-					continue
+	for(var/i = 0, i < MAX_AGENTS_REQ, i++)
+		shuffle_inplace(candidates) //More shuffles means more randoms
+		for(var/mob/j in candidates)
+			if(!j || !j.client)
+				candidates.Remove(j)
+				continue
 
-				theghost = j
-				candidates.Remove(theghost)
-				chosen += theghost
-				agentcount++
-				break
-		//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
-		if(agentcount < 3)
-			return FALSE
+			theghost = j
+			candidates.Remove(theghost)
+			chosen += theghost
+			agentcount++
+			break
+	//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
+	if(agentcount < MIN_AGENTS_REQ)
+		return
 
-		//Let's find the spawn locations
-		var/leader_chosen = FALSE
-		var/datum/team/nuclear/nuke_team
-		for(var/mob/c in chosen)
-			var/mob/living/carbon/human/new_character=makeBody(c)
-			if(!leader_chosen)
-				leader_chosen = TRUE
-				var/datum/antagonist/nukeop/N = new_character.mind.add_antag_datum(/datum/antagonist/nukeop/leader)
-				nuke_team = N.nuke_team
-			else
-				new_character.mind.add_antag_datum(/datum/antagonist/nukeop,nuke_team)
-		return TRUE
-	else
-		return FALSE
+	//Let's find the spawn locations
+	var/leader_chosen = FALSE
+	var/datum/team/nuclear/nuke_team
+	for(var/mob/c in chosen)
+		var/mob/living/carbon/human/new_character=makeBody(c)
+		if(!leader_chosen)
+			leader_chosen = TRUE
+			var/datum/antagonist/nukeop/N = new_character.mind.add_antag_datum(/datum/antagonist/nukeop/leader)
+			nuke_team = N.nuke_team
+		else
+			new_character.mind.add_antag_datum(/datum/antagonist/nukeop,nuke_team)
+	return TRUE
 
 /datum/admins/proc/makeSyndicateTeam()
+	. = FALSE
 	var/datum/game_mode/nuclear/temp = new
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for a nuke team being sent in?", ROLE_OPERATIVE, temp, minimum_required = MAX_AGENTS_REQ)
 	var/list/mob/chosen = list()
 	var/mob/theghost = null
 
-	if(candidates.len)
-		var/numagents = 5
-		var/agentcount = 0
+	if(!candidates.len)
+		return
+	var/agentcount = 0
 
-		for(var/i = 0, i<numagents,i++)
-			shuffle_inplace(candidates) //More shuffles means more randoms
-			for(var/mob/j in candidates)
-				if(!j || !j.client)
-					candidates.Remove(j)
-					continue
+	for(var/i = 0, i < MAX_AGENTS_REQ,i++)
+		shuffle_inplace(candidates) //More shuffles means more randoms
+		for(var/mob/j in candidates)
+			if(!j || !j.client)
+				candidates.Remove(j)
+				continue
 
-				theghost = j
-				candidates.Remove(theghost)
-				chosen += theghost
-				agentcount++
-				break
-		//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
-		if(agentcount < 3)
-			return 0
+			theghost = j
+			candidates.Remove(theghost)
+			chosen += theghost
+			agentcount++
+			break
+	//Making sure we have atleast 3 Nuke agents, because less than that is kinda bad
+	if(agentcount < MIN_AGENTS_REQ)
+		return
 
-		//Let's find the spawn locations
-		var/leader_chosen = FALSE
-		var/datum/team/nuclear/nuke_team
-		for(var/mob/c in chosen)
-			var/mob/living/carbon/human/new_character=makeBody(c)
-			if(!leader_chosen)
-				leader_chosen = TRUE
-				var/datum/antagonist/syndicate_op/N = new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op/leader)
-				nuke_team = N.nuke_team
-			else
-				new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op,nuke_team)
-		return 1
-	else
-		return 0
+	//Let's find the spawn locations
+	var/leader_chosen = FALSE
+	var/datum/team/nuclear/nuke_team
+	for(var/mob/c in chosen)
+		var/mob/living/carbon/human/new_character=makeBody(c)
+		if(!leader_chosen)
+			leader_chosen = TRUE
+			var/datum/antagonist/syndicate_op/N = new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op/leader)
+			nuke_team = N.nuke_team
+		else
+			new_character.mind.add_antag_datum(/datum/antagonist/syndicate_op,nuke_team)
+	return TRUE
 
+#undef MIN_AGENTS_REQ
+#undef MAX_AGENTS_REQ
 
 //Abductors
 ///datum/admins/proc/makeAbductorTeam()
@@ -368,6 +372,7 @@
 		newtemplate = text2path(newtemplate)
 	newtemplate = new newtemplate
 	.["mainsettings"]["teamsize"]["value"] = newtemplate.teamsize
+	.["mainsettings"]["maxteamsize"]["value"] = newtemplate.maxteamsize
 	.["mainsettings"]["mission"]["value"] = newtemplate.mission
 	.["mainsettings"]["polldesc"]["value"] = newtemplate.polldesc
 	.["mainsettings"]["ertphrase"]["value"] = newtemplate.ertphrase
@@ -433,7 +438,8 @@
 		"preview_callback" = CALLBACK(src, PROC_REF(makeERTPreviewIcon)),
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = ertemplate.teamsize),
+		"teamsize" = list("desc" = "Мин. кол-во бойцов", "type" = "number", "value" = ertemplate.teamsize),
+		"maxteamsize" = list("desc" = "Макс. кол-во бойцов", "type" = "number", "value" = ertemplate.maxteamsize),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = ertemplate.mission),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -460,6 +466,11 @@
 			ertemplate = new templtype
 
 		ertemplate.teamsize = prefs["teamsize"]["value"]
+		ertemplate.maxteamsize = prefs["maxteamsize"]["value"]
+		if(!isnum(ertemplate.maxteamsize) || ertemplate.maxteamsize < 1)
+			ertemplate.maxteamsize = max(ertemplate.teamsize, 1)
+		if(ertemplate.maxteamsize < ertemplate.teamsize)
+			ertemplate.maxteamsize = ertemplate.teamsize
 		ertemplate.mission = prefs["mission"]["value"]
 		ertemplate.polldesc = prefs["polldesc"]["value"]
 		ertemplate.ertphrase = prefs["ertphrase"]["value"]
@@ -470,11 +481,13 @@
 		if(ertemplate.notify_players)
 			priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
-		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null)
+		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
+		var/team_name = ertemplate.polldesc || ertemplate.rename_team || ertemplate.code
+		message_admins("Выбрано игроков: [candidates.len], для [team_name], минимум: [ertemplate.teamsize], максимум: [ertemplate.maxteamsize]")
 		var/teamSpawned = FALSE
 		if(candidates.len > 0)
 			//Pick the (un)lucky players
-			var/numagents = min(ertemplate.teamsize,candidates.len)
+			var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 			//Create team
 			var/datum/team/ert/ert_team = new ertemplate.team

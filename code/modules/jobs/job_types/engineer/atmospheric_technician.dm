@@ -10,14 +10,28 @@
 	selection_color = "#ff9b3d"
 	exp_requirements = 60
 	exp_type = EXP_TYPE_CREW
+	alt_titles = list(
+		"Apprentice Atmospheric Technician", //Стажер выше, для удобства
+		"Anal Plumber",
+		"Atmos Plumber",
+		"Atmos-Slut",
+		"Atmospheric Engineer",
+		"Atmospherics Specialist",
+		"Atmospherics Master",
+		"Buttplug",
+		"Disposals Technician",
+		"Emergency Fire Technician",
+		"Firefighter",
+		"Life Support Specialist"
+		)
 
 	outfit = /datum/outfit/job/atmos
 	plasma_outfit = /datum/outfit/plasmaman/atmospherics
 
 	access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
-									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_ATMOSPHERICS, ACCESS_MAINT_TUNNELS, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_ENGINE,
-									ACCESS_ENGINE_EQUIP, ACCESS_EMERGENCY_STORAGE, ACCESS_CONSTRUCTION, ACCESS_MINERAL_STOREROOM)
+									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_ENGINEERING)
+	minimal_access = list(ACCESS_ATMOSPHERICS, ACCESS_MAINT_TUNNELS, ACCESS_TECH_STORAGE, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_ENGINE,
+									ACCESS_ENGINE_EQUIP, ACCESS_EMERGENCY_STORAGE, ACCESS_CONSTRUCTION, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_ENGINEERING)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_ENG
 	bounty_types = CIV_JOB_ENG
@@ -39,7 +53,7 @@
 	jobtype = /datum/job/atmos
 
 	belt = /obj/item/storage/belt/utility/atmostech
-	l_pocket = /obj/item/pda/atmos
+	l_pocket = /obj/item/modular_computer/pda/atmos
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/atmospheric_technician
 	r_pocket = /obj/item/analyzer
@@ -49,14 +63,14 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/atmospheric
 	box = /obj/item/storage/box/survival/engineer
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1)
 
 /datum/outfit/job/atmos/syndicate
 	name = "Syndicate  Atmospheric Technician"
 	jobtype = /datum/job/atmos
 
 	belt = /obj/item/storage/belt/utility/atmostech
-	//l_pocket = /obj/item/pda/syndicate/no_deto
+	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/engineer/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
@@ -64,12 +78,14 @@
 	gloves = /obj/item/clothing/gloves/combat
 	head = /obj/item/clothing/head/hardhat/red/upgraded
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/atmospheric
 	satchel = /obj/item/storage/backpack/satchel/atmospheric
 	duffelbag = /obj/item/storage/backpack/duffelbag/atmospheric
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/atmos/rig
 	name = "Atmospheric Technician (Hardsuit)"

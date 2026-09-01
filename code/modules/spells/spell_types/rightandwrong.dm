@@ -37,7 +37,7 @@ GLOBAL_LIST_INIT(summoned_guns, list(
 	/obj/item/gun/energy/kinetic_accelerator,
 	/obj/item/gun/energy/plasmacutter/adv,
 	/obj/item/gun/energy/wormhole_projector,
-	/obj/item/gun/ballistic/automatic/wt550,
+	/obj/item/gun/ballistic/automatic/wt550/standart,
 	/obj/item/gun/ballistic/automatic/shotgun/bulldog,
 	/obj/item/gun/ballistic/revolver/grenadelauncher,
 	/obj/item/gun/ballistic/revolver/golden,
@@ -171,19 +171,12 @@ GLOBAL_VAR_INIT(summon_magic_triggered, FALSE)
 			give_guns(H)
 
 /proc/summonevents()
-	if(!SSevents.wizardmode)
-		SSevents.frequency_lower = 600									//1 minute lower bound
-		SSevents.frequency_upper = 3000									//5 minutes upper bound
-		SSevents.toggleWizardmode()
-		SSevents.reschedule()
+	if(!SSdirector.wizardmode)
+		SSdirector.toggle_wizardmode()
 
 	else 																//Speed it up
-		SSevents.frequency_upper -= 600	//The upper bound falls a minute each time, making the AVERAGE time between events lessen
-		if(SSevents.frequency_upper < SSevents.frequency_lower) //Sanity
-			SSevents.frequency_upper = SSevents.frequency_lower
-
-		SSevents.reschedule()
-		message_admins("Summon Events intensifies, events will now occur every [SSevents.frequency_lower / 600] to [SSevents.frequency_upper / 600] minutes.")
+		SSdirector.next_wizard_beat = 0
+		message_admins("Summon Events intensifies!")
 		log_game("Summon Events was increased!")
 
 #undef SPECIALIST_MAGIC_PROB

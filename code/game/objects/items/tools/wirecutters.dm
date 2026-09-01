@@ -130,10 +130,12 @@
 	lefthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_righthand.dmi'
 	custom_materials = list(/datum/material/iron=150,/datum/material/silver=50,/datum/material/titanium=25)
-
 	usesound = 'sound/items/jaws_cut.ogg'
 	toolspeed = 0.25
 	random_color = FALSE
+
+/obj/item/wirecutters/power/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
 
 /obj/item/wirecutters/power/syndicate
 	name = "Syndicate jaws of life"
@@ -142,6 +144,15 @@
 	icon_state = "jaws_syndie_cutter"
 	item_state = "jawsoflife"
 	toolspeed = 0.20
+
+// Fix of sprite change
+/obj/item/wirecutters/power/syndicate/attack_self(mob/user)
+	playsound(get_turf(user), 'sound/items/change_jaws.ogg', 50, 1)
+	var/obj/item/crowbar/power/syndicate/pryjaws = new /obj/item/crowbar/power/syndicate(drop_location())
+	pryjaws.name = name
+	to_chat(user, "<span class='notice'>You attach the pry jaws to [src].</span>")
+	qdel(src)
+	user.put_in_active_hand(pryjaws)
 
 /obj/item/wirecutters/power/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is wrapping \the [src] around [user.ru_ego()] neck. It looks like [user.ru_who()] trying to rip [user.ru_ego()] head off!</span>")
@@ -183,17 +194,16 @@
 	name = "advanced wirecutters"
 	desc = "A set of reproduction alien wirecutters, they have a silver handle with an exceedingly sharp blade."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "cutters"
+	icon_state = "adv_cutters"
 	toolspeed = 0.2
 	random_color = FALSE
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
-			RESKIN_ICON_STATE = "cutters_black",
+			RESKIN_ICON_STATE = "adv_cutters_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "cutters",
+			RESKIN_ICON_STATE = "adv_cutters",
 		)
 	)
 

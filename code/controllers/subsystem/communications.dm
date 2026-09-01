@@ -23,10 +23,10 @@ SUBSYSTEM_DEF(communications)
 		return FALSE
 	if(is_silicon)
 		//minor_announce(html_decode(input),"[user.name] объявляет:")
-		priority_announce(html_decode(input), "[user.name] объявляет:", 'sound/announcer/ai_tone.ogg', "AI", has_important_message = TRUE)
+		priority_announce(html_decode(input), "[user.name] объявляет:", 'sound/announcer/ai_tone.ogg', "Silicon", has_important_message = TRUE)
 		COOLDOWN_START(src, silicon_message_cooldown, COMMUNICATION_COOLDOWN_AI)
 	else
-		priority_announce(html_decode(user.treat_message(input)), "[user.name] объявляет:", 'sound/misc/announce.ogg', "Captain", has_important_message = TRUE)
+		priority_announce(html_decode(user.treat_message(input)), "[user.name] объявляет:", 'sound/misc/announce.ogg', "CommunicationsConsole", has_important_message = TRUE)
 		COOLDOWN_START(src, nonsilicon_message_cooldown, COMMUNICATION_COOLDOWN)
 	user.log_talk(input, LOG_SAY, tag="priority announcement")
 	message_admins("[ADMIN_LOOKUPFLW(user)] has made a priority announcement.")
@@ -40,7 +40,7 @@ SUBSYSTEM_DEF(communications)
  * * user - Mob who called the meeting
  */
 /datum/controller/subsystem/communications/proc/can_make_emergency_meeting(mob/living/user)
-	if(!(SSevents.holidays && SSevents.holidays[APRIL_FOOLS]))
+	if(!(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]))
 		return FALSE
 	else if(COOLDOWN_FINISHED(src, emergency_meeting_cooldown))
 		return TRUE
@@ -64,7 +64,9 @@ SUBSYSTEM_DEF(communications)
 	message_admins("[ADMIN_LOOKUPFLW(user)] has called an emergency meeting.")
 
 /datum/controller/subsystem/communications/proc/send_message(datum/comm_message/sending, print = FALSE, unique = FALSE)
-	for(var/obj/machinery/computer/communications/C in GLOB.machines)
+	// Типизированный реестр вместо istype-обхода ВСЕХ машин станции (тысячи объектов
+	// ради пары комм-консолей - заметный кусок 404мс send_intercept на проде).
+	for(var/obj/machinery/computer/communications/C as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/communications))
 		if(!(C.machine_stat & (BROKEN|NOPOWER)) && is_station_level(C.z))
 			if(unique)
 				C.add_message(sending)

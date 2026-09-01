@@ -16,6 +16,7 @@
 	var/container_flags = APTFT_ALTCLICK|APTFT_VERB //the container item flags
 	var/container_HP = 2
 	var/cached_icon
+	var/consume_sound = null
 
 /obj/item/reagent_containers/Initialize(mapload, vol)
 	. = ..()
@@ -29,13 +30,21 @@
 		var/list/data = list("donor"=null,"viruses"=list(F),"blood_DNA"="REPLICATED", "bloodcolor" = BLOOD_COLOR_SYNTHETIC, "blood_type"="SY","resistances"=null,"trace_chem"=null,"mind"=null,"ckey"=null,"gender"=null,"real_name"=null,"cloneable"=null,"factions"=null)
 		reagents.add_reagent(/datum/reagent/blood, disease_amount, data)
 	add_initial_reagents()
+	register_context()
 
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
 	if(length(possible_transfer_amounts) > 1)
-		. += "Currently transferring [amount_per_transfer_from_this] units per use."
+		. += "В данный момент используется [amount_per_transfer_from_this] u за раз."
 		if(container_flags & APTFT_ALTCLICK && user.Adjacent(src))
-			. += "<span class='notice'>Alt-click it to set its transfer amount.</span>"
+			. += "<span class='notice'>Alt-click для настройки объёмов использования.</span>"
+
+/obj/item/reagent_containers/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(is_refillable() && istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Отжать швабру")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Отжать швабру")
 
 /obj/item/reagent_containers/AltClick(mob/user)
 	. = ..()
@@ -47,27 +56,29 @@
 	set name = "Set Transfer Amount"
 	set category = "Object"
 	set waitfor = FALSE
-	var/N = input("Amount per transfer from this:","[src]") as null|anything in possible_transfer_amounts
+	var/N = input("Объём переливания:","[src]") as null|anything in possible_transfer_amounts
 	if(N)
 		amount_per_transfer_from_this = N
-		to_chat(usr, "<span class='notice'>[src]'s transfer amount is now [amount_per_transfer_from_this] units.</span>")
+		to_chat(usr, "<span class='notice'>[src] теперь переливает [amount_per_transfer_from_this]u за раз.</span>")
 
 /obj/item/reagent_containers/proc/add_initial_reagents()
 	if(list_reagents)
 		reagents.add_reagent_list(list_reagents)
 
 /obj/item/reagent_containers/attack_self(mob/user)
-	if(possible_transfer_amounts.len)
-		var/i=0
-		for(var/A in possible_transfer_amounts)
-			i++
-			if(A == amount_per_transfer_from_this)
-				if(i<possible_transfer_amounts.len)
-					amount_per_transfer_from_this = possible_transfer_amounts[i+1]
-				else
-					amount_per_transfer_from_this = possible_transfer_amounts[1]
-				balloon_alert(user, "Transferring [amount_per_transfer_from_this]u")
-				return
+	if(!possible_transfer_amounts.len)
+		return ..()
+
+	var/i=0
+	for(var/A in possible_transfer_amounts)
+		i++
+		if(A == amount_per_transfer_from_this)
+			if(i<possible_transfer_amounts.len)
+				amount_per_transfer_from_this = possible_transfer_amounts[i+1]
+			else
+				amount_per_transfer_from_this = possible_transfer_amounts[1]
+			balloon_alert(user, "Transferring [amount_per_transfer_from_this]u")
+			return
 
 /obj/item/reagent_containers/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(user.a_intent == INTENT_HARM)
@@ -122,8 +133,10 @@
 	var/mob/thrown_by = thrownby?.resolve()
 
 	if(ismob(target) && target.reagents)
+		var/splash_multiplier = 1
 		if(thrown)
-			reagents.total_volume *= rand(5,10) * 0.1 //Not all of it makes contact with the target
+			splash_multiplier = rand(5,10) * 0.1 //Not all of it makes contact with the target
+			reagents.total_volume *= splash_multiplier
 		var/mob/M = target
 		var/R = reagents.log_list()
 		target.visible_message("<span class='danger'>[M] has been splashed with something!</span>", \
@@ -135,7 +148,15 @@
 			var/turf/AT = get_turf(thrown_by)
 			throwerstring = " THROWN BY [key_name(thrown_by)] at [AT] (AREACOORD(AT)]"
 		log_reagent("SPLASH: [src] mob SplashReagents() onto [key_name(target)] at [TT] ([AREACOORD(TT)])[throwerstring] - [R]")
-		reagents.reaction(target, TOUCH)
+		if(ishuman(target))
+			var/mob/living/carbon/human/H = target
+			var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(thrown_by?.zone_selected))
+			reagents.reaction(M, TOUCH, affected_bodypart = affecting)
+		else
+			reagents.reaction(M, TOUCH)
+		//LIQUIDS ADD - spill the rest of the liquid on the floor
+		if(TT)
+			TT.add_liquid_from_reagents(reagents, reagent_multiplier = (1 - splash_multiplier))
 		reagents.clear_reagents()
 		playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
 
@@ -146,6 +167,10 @@
 
 	else
 		if(isturf(target) && reagents.reagent_list.len && thrown_by)
+			//LIQUIDS ADD - liquid spills on non-mobs
+			var/turf/target_turf = target
+			if(target_turf.can_liquid_spill_on_hit())
+				target_turf.add_liquid_from_reagents(reagents, thrown_from = src, thrown_to = target)
 			log_combat(thrown_by, target, "splashed (thrown) [english_list(reagents.reagent_list)]", "in [AREACOORD(target)]")
 			log_game("[key_name(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [AREACOORD(target)].")
 			message_admins("[ADMIN_LOOKUPFLW(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [ADMIN_VERBOSEJMP(target)].")
@@ -244,3 +269,37 @@
 	update_icon()
 	if(prob(25))
 		visible_message("<span class='notice'>[icon2html(src, viewers(DEFAULT_MESSAGE_RANGE, src))] [src]'s is damaged by [cause] and begins to deform!</span>")
+
+// Remove liquids from a turf using a reagent container.
+/obj/item/reagent_containers/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	if(user.combat_mode)
+		return FALSE
+
+	if(!user.Adjacent(target_turf))
+		return FALSE
+
+	if(liquids.fire_state) //Use an extinguisher first
+		to_chat(user, span_warning("You can't scoop up anything while it's on fire!"))
+		return TRUE
+
+	if(liquids.height == 1)
+		to_chat(user, span_warning("The puddle is too shallow to scoop anything up!"))
+		return TRUE
+
+	var/free_space = reagents.maximum_volume - reagents.total_volume
+	if(free_space <= 0)
+		to_chat(user, span_warning("You can't fit any more liquids inside [src]!"))
+		return TRUE
+
+	var/desired_transfer = amount_per_transfer_from_this
+	if(desired_transfer > free_space)
+		desired_transfer = free_space
+
+	var/datum/reagents/tempr = liquids.take_reagents_flat(desired_transfer)
+	var/transfered_amount = tempr.trans_to(reagents, tempr.total_volume)
+	qdel(tempr)
+	if(!transfered_amount)
+		return
+	to_chat(user, span_notice("You scoop up around [transfered_amount] units of liquids with [src]."))
+	user.changeNext_move(CLICK_CD_MELEE)
+	return TRUE

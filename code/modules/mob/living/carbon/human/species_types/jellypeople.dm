@@ -10,7 +10,12 @@
 	mutantstomach = /obj/item/organ/stomach/slime
 	mutantliver = /obj/item/organ/liver/slime
 	mutant_brain = /obj/item/organ/brain/slime
-	mutant_bodyparts = list("mcolor" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
+	//Маркинги (а вместе с ними и татуировки-маркинги) и вторичные цвета обязаны
+	//быть у ВСЕЙ семьи желе, а не только у раундстартового подвида. Зелёный
+	//экстракт перекидывает игрока между подвидами (slime/luminescent/stargazer),
+	//и без этих ключей update_limb() просто переставал собирать body_markings_list,
+	//то есть смена подвида стирала с тела всю кастомизацию.
+	mutant_bodyparts = list("mcolor" = "FFFFFF", "mcolor2" = "FFFFFF", "mcolor3" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_body_markings" = "Plain", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
 	inherent_traits = list(TRAIT_TOXINLOVER)
 	meat = /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/slime
 	gib_types = list(/obj/effect/gibspawner/slime, /obj/effect/gibspawner/slime/bodypartless)
@@ -169,7 +174,7 @@
 			to_chat(H, "<span class='notice'>You feel very bloated!</span>")
 	else if(H.nutrition >= NUTRITION_LEVEL_WELL_FED)
 		H.adjust_integration_blood(3)
-		H.nutrition -= 2.5
+		H.adjust_nutrition(-2.5)
 
 	..()
 
@@ -418,7 +423,9 @@
 	default_color = "00FFFF"
 	species_traits = list(MUTCOLORS,EYECOLOR,HAIR,FACEHAIR,HAS_FLESH)
 	inherent_traits = list(TRAIT_TOXINLOVER)
-	mutant_bodyparts = list("mcolor" = "FFFFFF", "mcolor2" = "FFFFFF","mcolor3" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_body_markings" = "Plain", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
+	//mutant_bodyparts наследуется от /datum/species/jelly - список там ровно тот же.
+	//Дублировать его здесь нельзя: именно расхождение этих двух списков и стирало
+	//маркинги при смене подвида зелёным экстрактом.
 	say_mod = "says"
 	hair_color = "mutcolor"
 	hair_alpha = 160 //a notch brighter so it blends better.
@@ -595,7 +602,12 @@
 	if(species.current_extract)
 		species.extract_cooldown = world.time + 100
 		var/cooldown = species.current_extract.activate(H, species, activation_type)
-		species.extract_cooldown = world.time + cooldown
+		// Ветка activate() может не вернуть ничего, а "world.time + null" в DM равно
+		// world.time - то есть кулдаун обнулялся и кнопка жалась без остановки. Так жёлтый
+		// экстракт и выглядел сломанным: вместо эффекта сыпалось "Your glow is already enhanced!".
+		// В этом случае оставляем предварительные 10 секунд, выставленные строкой выше.
+		if(cooldown)
+			species.extract_cooldown = world.time + cooldown
 
 /datum/action/innate/use_extract/major
 	name = "Extract Major Activation"

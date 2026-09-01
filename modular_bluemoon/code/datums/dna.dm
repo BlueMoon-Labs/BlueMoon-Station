@@ -4,8 +4,11 @@
 
 	//new size detected
 	holder.resize = features["body_size"] / old_size
-	holder.maptext_height = 32 * features["body_size"] // Adjust runechat height
+	// Округление обязательное: коробка maptext стоит клиенту объявленный размер навсегда,
+	// а дробная высота вида 43.84 даёт свою поверхность каждому шагу ресайза.
+	holder.maptext_height = round(32 * features["body_size"]) // Adjust runechat height
 	holder.update_transform()
+	holder.update_body(FALSE, TRUE)
 
 	//Handle the small icon
 	var/HSize = get_size(holder) //переменная для взятого размера holder

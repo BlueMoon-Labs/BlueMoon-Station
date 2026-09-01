@@ -1,29 +1,34 @@
-/client/verb/mentorhelp(msg as text)
+/client/var/mentorhelptimerid = 0
+
+/client/proc/give_mentorhelp_verb()
+	add_verb(src, /client/verb/mentorhelp)
+	deltimer(mentorhelptimerid)
+	mentorhelptimerid = 0
+
+/client/verb/mentorhelp(msg as text|null)
 	set category = "Mentor"
 	set name = "Mentorhelp"
 
-	//clean the input msg
-	if(!msg)
+	if(GLOB.say_disabled)
+		to_chat(usr, "<span class='danger'>Речь отключена администратором.</span>")
 		return
 
-	//remove out mentorhelp verb temporarily to prevent spamming of mentors.
-	remove_verb(src, /client/verb/mentorhelp)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(add_verb), src, /client/verb/mentorhelp), 30 SECONDS)
-
-	msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
-	if(!msg || !mob)
+	if(msg)
+		msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
+		if(!msg || !mob)
+			return
+		if(GLOB.mentor_tickets?.CKey2Ticket(ckey))
+			to_chat(src, "<span class='warning'>У вас уже есть открытый ментор-тикет.</span>")
+			return
+		new /datum/mentor_ticket(msg, src, FALSE)
 		return
 
-	var/show_char = CONFIG_GET(flag/mentors_mobname_only)
-	var/mentor_msg = "<span class='mentornotice'><b><font color='purple'>MENTORHELP:</b> <b>[key_name_mentor(src, 1, 0, 1, show_char)]</b>: [msg]</font></span>"
-	log_mentor("MENTORHELP: [key_name_mentor(src, 0, 0, 0, 0)]: [msg]")
+	if(prefs.muted & MUTE_ADMINHELP)
+		to_chat(src, "<span class='danger'>Вы не можете отправлять менторхелпы (Мут).</span>")
+		return
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		SEND_SOUND(X, 'sound/items/bikehorn.ogg')
-		to_chat(X, mentor_msg)
-
-	to_chat(src, "<span class='mentornotice'><font color='purple'>PM to-<b>Mentors</b>: [msg]</font></span>")
-	return
+	var/datum/player_ticket_panel/panel = new(src)
+	panel.ui_interact(usr)
 
 /proc/get_mentor_counts()
 	. = list("total" = 0, "afk" = 0, "present" = 0)
@@ -35,7 +40,7 @@
 		else
 			.["present"]++
 
-/proc/key_name_mentor(var/whom, var/include_link = null, var/include_name = 0, var/include_follow = 0, var/char_name_only = 0)
+/proc/key_name_mentor(whom, include_link = null, include_follow = TRUE, char_name_only = TRUE)
 	var/mob/M
 	var/client/C
 	var/key
@@ -68,17 +73,15 @@
 
 	if(key)
 		if(include_link)
-			if(CONFIG_GET(flag/mentors_mobname_only))
-				. += "<a href='?_src_=mentor;mentor_msg=[REF(M)];[MentorHrefToken(TRUE)]'>"
-			else
-				. += "<a href='?_src_=mentor;mentor_msg=[ckey];[MentorHrefToken(TRUE)]'>"
+			var/link = CONFIG_GET(flag/mentors_mobname_only) ? REF(M) : ckey
+			. += "<a href='?_src_=mentor;mentor_msg=[link];[MentorHrefToken(TRUE)]'>"
 
-		if(C && C.holder && C.holder.fakekey)
+		if(C?.holder?.fakekey)
 			. += "Administrator"
 		else if (char_name_only && CONFIG_GET(flag/mentors_mobname_only))
-			if(istype(C.mob,/mob/dead/new_player) || istype(C.mob, /mob/dead/observer)) //If they're in the lobby or observing, display their ckey
+			if(istype(C?.mob,/mob/dead/new_player)) //If they're in the lobby, display their ckey
 				. += key
-			else if(C && C.mob) //If they're playing/in the round, only show the mob name
+			else if(C?.mob) //If they're playing/in the round, only show the mob name
 				. += C.mob.name
 			else //If for some reason neither of those are applicable and they're mentorhelping, show ckey
 				. += key

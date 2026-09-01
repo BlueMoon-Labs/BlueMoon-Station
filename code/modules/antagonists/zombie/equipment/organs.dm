@@ -1,0 +1,105 @@
+/obj/item/organ/zombie_infection
+	name = "Festering Ooze"
+	desc = "A black web of pus and viscera."
+	zone = BODY_ZONE_HEAD
+	slot = ORGAN_SLOT_ZOMBIE
+	icon_state = "blacktumor"
+	var/causes_damage = TRUE
+	var/datum/species/old_species = /datum/species/human
+	var/living_transformation_time = 30
+	var/converts_living = FALSE
+
+	var/revive_time_min = 450
+	var/revive_time_max = 700
+	var/timer_id
+
+/obj/item/organ/zombie_infection/Initialize(mapload)
+	. = ..()
+	if(iscarbon(loc))
+		Insert(loc)
+	GLOB.zombie_infection_list += src
+
+/obj/item/organ/zombie_infection/Destroy()
+	GLOB.zombie_infection_list -= src
+	. = ..()
+
+/obj/item/organ/zombie_infection/Insert(mob/living/carbon/organ_owner, special, drop_if_replaced)
+	. = ..()
+	RegisterSignal(organ_owner, COMSIG_LIVING_DEATH, PROC_REF(organ_owner_died))
+	START_PROCESSING(SSobj, src)
+
+/obj/item/organ/zombie_infection/Remove(special)
+	. = ..()
+	var/mob/living/carbon/removed_from = .
+	UnregisterSignal(removed_from, COMSIG_LIVING_DEATH)
+	STOP_PROCESSING(SSobj, src)
+	deltimer(timer_id)
+	if(!QDELETED(removed_from))
+		removed_from.mind?.remove_antag_datum(/datum/antagonist/zombie)
+		if(iszombie(removed_from) && old_species)
+			removed_from.set_species(old_species)
+
+/obj/item/organ/zombie_infection/proc/organ_owner_died(mob/living/carbon/source, gibbed)
+	SIGNAL_HANDLER
+	if(iszombie(source))
+		qdel(src) // Congrats you somehow died so hard you stopped being a zombie
+
+/obj/item/organ/zombie_infection/on_find(mob/living/finder)
+	to_chat(finder, span_warning("Inside the head is a disgusting black \
+		web of pus and viscera, bound tightly around the brain like some \
+		biological harness."))
+
+/obj/item/organ/zombie_infection/process(seconds_per_tick, times_fired)
+	if(!owner)
+		STOP_PROCESSING(SSobj, src)
+		return
+	if(!(src in owner.internal_organs))
+		INVOKE_ASYNC(src, PROC_REF(Remove), FALSE)
+	if(owner.mob_biotypes & MOB_MINERAL)//does not process in inorganic things
+		return
+	if (causes_damage && !iszombie(owner) && owner.stat != DEAD)
+		owner.adjustToxLoss(1 * seconds_per_tick, forced = TRUE)
+		owner.adjustOrganLoss(ORGAN_SLOT_BRAIN, 1)
+		if (SPT_PROB(5, seconds_per_tick))
+			to_chat(owner, span_danger("Мне плоховато..."))
+	if(timer_id || !owner.getorgan(/obj/item/organ/brain))
+		return
+	if(owner.stat != DEAD && !converts_living)
+		return
+	if(!iszombie(owner))
+		to_chat(owner, "<span class='cultlarge'>Кажется, ваше сердце остановилось... однако что-то здесь не так! \
+		Жизнь не желает покидать вашу оболочку... что-то поддерживает вашу жизнь и это что-то вызывает у вас непреодолимый голод. \
+		Ничего, даже смерть, не сможет убить вас!</span>")
+	var/revive_time = rand(revive_time_min, revive_time_max)
+	var/flags = TIMER_STOPPABLE
+	timer_id = addtimer(CALLBACK(src, PROC_REF(zombify)), revive_time, flags)
+
+/obj/item/organ/zombie_infection/proc/zombify()
+	timer_id = null
+
+	if(!converts_living && owner.stat != DEAD)
+		return
+
+	if(!iszombie(owner))
+		old_species = owner.dna.species.type
+		owner.set_species(/datum/species/zombie/infectious)
+		owner.mind?.add_antag_datum(/datum/antagonist/zombie)
+
+	var/stand_up = (owner.stat == DEAD) || (owner.stat == UNCONSCIOUS)
+
+	//Fully heal the zombie's damage the first time they rise
+	owner.setToxLoss(0, 0)
+	owner.setOxyLoss(0, 0)
+	owner.heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE)
+
+	if(!owner.revive())
+		return
+
+	owner.visible_message("<span class='danger'>[owner] suddenly convulses, as [owner.p_they()][stand_up ? " stagger to [owner.p_their()] feet and" : ""] gain a ravenous hunger in [owner.p_their()] eyes!</span>", "<span class='alien'>You HUNGER!</span>")
+
+	playsound(owner, 'sound/hallucinations/far_noise.ogg', 50, 1)
+	owner.do_jitter_animation(living_transformation_time)
+	owner.Stun(living_transformation_time)
+
+/obj/item/organ/zombie_infection/nodamage
+	causes_damage = FALSE

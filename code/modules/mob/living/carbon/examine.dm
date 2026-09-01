@@ -40,10 +40,15 @@
 			disabled += BP
 		missing -= BP.body_zone
 		for(var/obj/item/I in BP.embedded_objects)
-			if(I.isEmbedHarmless())
-				msg += "<B>[t_He] \a [icon2html(I, user)] [I] врезался в [t_his] [BP.ru_name_v]!</B>\n"
+			var/datum/component/embedded/embed = get_embedded_component(src, I, BP)
+			if(!I.isEmbedHarmless())
+				msg += "<B>[t_He] \a [icon2html(I, user)] [I] застрял в [t_his] [BP.ru_name_v]!</B>"
 			else
-				msg += "<B>[t_He] \a [icon2html(I, user)] [I] застрял в [t_his] [BP.ru_name_v]!</B>\n"
+				msg += "<B>[t_He] \a [icon2html(I, user)] [I] врезался в [t_his] [BP.ru_name_v]!</B>"
+			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
+			if(embed?.can_be_ripped_by(user))
+				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
+			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/W = i
 			msg += "[W.get_examine_description(user)]\n"
@@ -159,25 +164,18 @@
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .)
 
 /mob/living/carbon/examine_more(mob/user)
-	. = list()
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE_MORE, user, .)
+	. = ..()
+	if(!LAZYLEN(all_scars))
+		return
 	var/list/visible_scars
-	if(all_scars)
-		for(var/i in all_scars)
-			var/datum/scar/S = i
-			if(S.is_visible(user))
-				LAZYADD(visible_scars, S)
+	for(var/i in all_scars)
+		var/datum/scar/S = i
+		if(S.is_visible(user))
+			LAZYADD(visible_scars, S)
 
 	if(visible_scars)
-		var/msg = list("<span class='notice'><i>Вы осматриваете [src] получше, и замечаете...</i></span>")
 		for(var/i in visible_scars)
 			var/datum/scar/S = i
 			var/scar_text = S.get_examine_description(user)
 			if(scar_text)
-				msg += "[scar_text]"
-		. += msg
-
-	if(!LAZYLEN(.)) // lol ..length
-		return list("<span class='notice'><i>Вы осматриваете - [src] - получше, но более не находите ничего интересного...</i></span>")
-
-	return
+				. += "[scar_text]"

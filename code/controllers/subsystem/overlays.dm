@@ -137,14 +137,6 @@ SUBSYSTEM_DEF(overlays)
 
 // Debug procs
 
-/atom
-	/// List of overlay "keys" (info about the appearance) -> mutable versions of static appearances
-	/// Drawn from the overlays list
-	var/list/realized_overlays
-	/// List of underlay "keys" (info about the appearance) -> mutable versions of static appearances
-	/// Drawn from the underlays list
-	var/list/realized_underlays
-
 /image
 	/// List of overlay "keys" (info about the appearance) -> mutable versions of static appearances
 	/// Drawn from the overlays list
@@ -152,11 +144,6 @@ SUBSYSTEM_DEF(overlays)
 	/// List of underlay "keys" (info about the appearance) -> mutable versions of static appearances
 	/// Drawn from the underlays list
 	var/list/realized_underlays
-
-/// Takes the atoms's existing overlays and underlays, and makes them mutable so they can be properly vv'd in the realized_overlays/underlays list
-/atom/proc/realize_overlays()
-	realized_overlays = realize_appearance_queue(overlays)
-	realized_underlays = realize_appearance_queue(underlays)
 
 /// Takes the image's existing overlays, and makes them mutable so they can be properly vv'd in the realized_overlays list
 /image/proc/realize_overlays()

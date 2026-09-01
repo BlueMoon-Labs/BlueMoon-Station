@@ -62,7 +62,7 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/trinary/filter/update_icon_nopipes()
-	var/on_state = on && nodes[1] && nodes[2] && nodes[3] && is_operational()
+	var/on_state = on && nodes[1] && nodes[2] && nodes[3] && is_operational
 	icon_state = "filter_[on_state ? "on" : "off"][flipped ? "_f" : ""]"
 
 /obj/machinery/atmospherics/components/trinary/filter/power_change()
@@ -73,33 +73,48 @@
 
 /obj/machinery/atmospherics/components/trinary/filter/process_atmos()
 	..()
-	if(!on || !(nodes[1] && nodes[2] && nodes[3]) || !is_operational())
+	if(!on || !(nodes[1] && nodes[2] && nodes[3]) || !is_operational)
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
 	var/datum/gas_mixture/air2 = airs[2]
 	var/datum/gas_mixture/air3 = airs[3]
 
-	var/input_starting_pressure = air1.return_pressure()
-
-	if((input_starting_pressure < 0.01))
+	if(!air1 || !air2 || !air3 || air1.return_temperature() <= 0 || air1.return_volume() <= 0)
 		return
 
-	//Calculate necessary moles to transfer using PV=nRT
+	var/transfer_ratio = transfer_rate / air1.return_volume()
+	if(transfer_ratio <= 0)
+		return
 
-	var/transfer_ratio = transfer_rate/air1.return_volume()
+	var/side_output_full = air2.return_pressure() >= MAX_OUTPUT_PRESSURE
+	var/main_output_full = air3.return_pressure() >= MAX_OUTPUT_PRESSURE
+	if(side_output_full && main_output_full)
+		return
 
-	//Actually transfer the gas
+	var/datum/gas_mixture/removed = air1.remove_ratio(min(1, transfer_ratio))
+	if(!removed || !removed.total_moles())
+		return
 
-	if(transfer_ratio > 0)
+	if(filter_type)
+		var/list/target_filter
+		if(filter_type in GLOB.gas_data.groups)
+			target_filter = GLOB.gas_data.groups[filter_type]
+		else
+			target_filter = list(filter_type)
 
-		if(filter_type && air2.return_pressure() <= 9000)
-			if(filter_type in GLOB.gas_data.groups)
-				air1.scrub_into(air2, transfer_ratio, GLOB.gas_data.groups[filter_type])
+		if(length(target_filter))
+			var/datum/gas_mixture/filtered_out = new
+			removed.scrub_into(filtered_out, 1, target_filter)
+			if(side_output_full)
+				air1.merge(filtered_out)
 			else
-				air1.scrub_into(air2, transfer_ratio, list(filter_type))
-		if(air3.return_pressure() <= 9000)
-			air1.transfer_ratio_to(air3, transfer_ratio)
+				air2.merge(filtered_out)
+
+	if(main_output_full)
+		air1.merge(removed)
+	else
+		air3.merge(removed)
 
 	update_parents()
 
@@ -112,6 +127,9 @@
 	if(!ui)
 		ui = new(user, src, "AtmosFilter", name)
 		ui.open()
+
+/obj/machinery/atmospherics/components/trinary/filter/ui_port_labels()
+	return list("Вход", "Фильтрат", "Выход")
 
 /obj/machinery/atmospherics/components/trinary/filter/ui_data()
 	var/data = list()
@@ -126,6 +144,7 @@
 			data["filter_types"] += list(list("name" = GLOB.gas_data.names[id], "id" = id, "selected" = (id == filter_type)))
 	for(var/group in GLOB.gas_data.groups)
 		data["filter_types"] += list(list("name" = group, "id" = group, "selected" = (group == filter_type)))
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/trinary/filter/ui_act(action, params)
@@ -157,16 +176,24 @@
 			filter_type = null
 			var/filter_name = "nothing"
 			var/gas = params["mode"]
-			if(gas in GLOB.gas_data.names)
-				filter_type = gas
-				filter_name	= GLOB.gas_data.names[gas]
+			if(islist(gas))
+				gas = null
+			if(!istext(gas))
+				gas = null
+			if(!isnull(gas) && gas != "")
+				if(!isnull(GLOB.gas_data.names[gas]))
+					filter_type = gas
+					filter_name = GLOB.gas_data.names[gas]
+				else if(!isnull(GLOB.gas_data.groups[gas]))
+					filter_type = gas
+					filter_name = gas
 			investigate_log("was set to filter [filter_name] by [key_name(usr)]", INVESTIGATE_ATMOS)
 			. = TRUE
 	update_icon()
 
 /obj/machinery/atmospherics/components/trinary/filter/can_unwrench(mob/user)
 	. = ..()
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 
@@ -175,9 +202,17 @@
 /obj/machinery/atmospherics/components/trinary/filter/layer1
 	piping_layer = 1
 	icon_state = "filter_off_map-1"
-/obj/machinery/atmospherics/components/trinary/filter/layer3
-	piping_layer = 3
-	icon_state = "filter_off_map-3"
+
+/obj/machinery/atmospherics/components/trinary/filter/layer2
+	piping_layer = 2
+	icon_state = "filter_off_map-2"
+/obj/machinery/atmospherics/components/trinary/filter/layer4
+	piping_layer = 4
+	icon_state = "filter_off_map-4"
+
+/obj/machinery/atmospherics/components/trinary/filter/layer5
+	piping_layer = 5
+	icon_state = "filter_off_map-5"
 
 /obj/machinery/atmospherics/components/trinary/filter/on
 	on = TRUE
@@ -186,9 +221,17 @@
 /obj/machinery/atmospherics/components/trinary/filter/on/layer1
 	piping_layer = 1
 	icon_state = "filter_on_map-1"
-/obj/machinery/atmospherics/components/trinary/filter/on/layer3
-	piping_layer = 3
-	icon_state = "filter_on_map-3"
+
+/obj/machinery/atmospherics/components/trinary/filter/on/layer2
+	piping_layer = 2
+	icon_state = "filter_on_map-2"
+/obj/machinery/atmospherics/components/trinary/filter/on/layer4
+	piping_layer = 4
+	icon_state = "filter_on_map-4"
+
+/obj/machinery/atmospherics/components/trinary/filter/on/layer5
+	piping_layer = 5
+	icon_state = "filter_on_map-5"
 
 /obj/machinery/atmospherics/components/trinary/filter/flipped
 	icon_state = "filter_off_f"
@@ -197,9 +240,17 @@
 /obj/machinery/atmospherics/components/trinary/filter/flipped/layer1
 	piping_layer = 1
 	icon_state = "filter_off_f_map-1"
-/obj/machinery/atmospherics/components/trinary/filter/flipped/layer3
-	piping_layer = 3
-	icon_state = "filter_off_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/filter/flipped/layer2
+	piping_layer = 2
+	icon_state = "filter_off_f_map-2"
+/obj/machinery/atmospherics/components/trinary/filter/flipped/layer4
+	piping_layer = 4
+	icon_state = "filter_off_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/filter/flipped/layer5
+	piping_layer = 5
+	icon_state = "filter_off_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/filter/flipped/on
 	on = TRUE
@@ -208,9 +259,17 @@
 /obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer1
 	piping_layer = 1
 	icon_state = "filter_on_f_map-1"
-/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer3
-	piping_layer = 3
-	icon_state = "filter_on_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer2
+	piping_layer = 2
+	icon_state = "filter_on_f_map-2"
+/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer4
+	piping_layer = 4
+	icon_state = "filter_on_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/filter/flipped/on/layer5
+	piping_layer = 5
+	icon_state = "filter_on_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/filter/atmos //Used for atmos waste loops
 	on = TRUE

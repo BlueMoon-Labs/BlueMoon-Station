@@ -189,9 +189,10 @@
 		return
 	COOLDOWN_START(src, thank_time_cooldown, 6 SECONDS)
 	var/obj/vehicle/sealed/car/clowncar/clown_car = vehicle_entered_target
-	var/mob/living/carbon/human/clown = pick(clown_car.return_drivers())
-	if(!clown)
+	var/list/drivers = clown_car.return_drivers()
+	if(!LAZYLEN(drivers))
 		return
+	var/mob/living/carbon/human/clown = pick(clown_car.return_drivers())
 	owner.say("Thank you for the fun ride, [clown.name]!")
 	clown_car.increment_thanks_counter()
 

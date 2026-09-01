@@ -1,3 +1,9 @@
+/obj/effect/decal/cleanable/Destroy()
+	lose_cleanbot_targetable()
+	blood_DNA = null
+	GLOB.cleanable_decals -= src
+	return ..()
+
 /obj/effect/decal/cleanable
 	gender = PLURAL
 	layer = ABOVE_NORMAL_TURF_LAYER
@@ -16,6 +22,7 @@
 
 /obj/effect/decal/cleanable/Initialize(mapload, list/datum/disease/diseases)
 	. = ..()
+	GLOB.cleanable_decals += src
 	LAZYINITLIST(blood_DNA) //Kinda needed
 	if (random_icon_states && (icon_state == initial(icon_state)) && length(random_icon_states) > 0)
 		icon_state = pick(random_icon_states)
@@ -34,7 +41,12 @@
 		if(LAZYLEN(diseases_to_add))
 			AddComponent(/datum/component/infective, diseases_to_add)
 
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, _AddElement), list(/datum/element/beauty, beauty)), 0)
+	// Прямое добавление как у tg: нулевой таймер на каждую декаль давал залп из
+	// 2000+ addtimer одним тиком при загрузке дебриса персистенса (TIMER BURST 9746).
+	if(beauty)
+		AddElement(/datum/element/beauty, beauty)
+	if(isturf(loc))
+		become_cleanbot_targetable()
 
 /**
  * A data list is passed into this.
@@ -76,6 +88,22 @@
 			to_chat(user, "<span class='notice'>You heat [name] with [W]!</span>")
 	else
 		return ..()
+
+// BLUEMOON ADD START: puddle-created decals are capped at LIQUID_DECAL_CAP units,
+// so scooping them can't duplicate a liquid puddle into an exploit.
+/obj/effect/decal/cleanable/proc/cap_liquid_reagents()
+	if(!reagents || !reagents.total_volume)
+		return
+	var/excess = reagents.total_volume - LIQUID_DECAL_CAP
+	if(excess <= 0)
+		return
+	for(var/datum/reagent/R in reagents.reagent_list)
+		var/remove_amount = min(R.volume, excess)
+		reagents.remove_reagent(R.type, remove_amount)
+		excess -= remove_amount
+		if(excess <= 0)
+			break
+// BLUEMOON ADD END
 
 /obj/effect/decal/cleanable/ex_act(severity, target, origin)
 	if(reagents)

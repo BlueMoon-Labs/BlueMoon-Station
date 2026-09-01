@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, Collapsible, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const StaffWho = (props, context) => {
-  const { data } = useBackend(context);
+export const StaffWho = (props) => {
+  const { data } = useBackend();
   const { base_data, admin_additional, admin_stealthed_additional } = data;
 
   const total_admins = mergeArrays(
@@ -30,7 +30,7 @@ export const StaffWho = (props, context) => {
   );
 };
 
-const FilterCategories = (props, context) => {
+const FilterCategories = (props) => {
   const { categories, total_admins } = props;
 
   return categories.map((category) => {
@@ -47,7 +47,7 @@ const FilterCategories = (props, context) => {
   });
 };
 
-const StaffWhoCollapsible = (props, context) => {
+const StaffWhoCollapsible = (props) => {
   const { title, color, children } = props;
   return (
     <Collapsible title={title} color={color} open>
@@ -56,7 +56,7 @@ const StaffWhoCollapsible = (props, context) => {
   );
 };
 
-const CategoryDropDown = (props, context) => {
+const CategoryDropDown = (props) => {
   const { category, category_admins } = props;
   return (
     <StaffWhoCollapsible
@@ -68,7 +68,7 @@ const CategoryDropDown = (props, context) => {
   );
 };
 
-const FilterAdmins = (props, context) => {
+const FilterAdmins = (props) => {
   const { category_admins } = props;
 
   return category_admins.map((adminObj) => {
@@ -77,15 +77,15 @@ const FilterAdmins = (props, context) => {
   });
 };
 
-const GetAdminInfo = (props, context) => {
+const GetAdminInfo = (props) => {
   const { ckey, special_color, special_text, text, color } = props;
   return (
     <Button
       color={'transparent'}
       style={{
-        'border-color': color || '#2185d0',
-        'border-style': 'solid',
-        'border-width': '1px',
+        borderColor: color || '#2185d0',
+        borderStyle: 'solid',
+        borderWidth: '1px',
         color: color || 'white',
       }}
       tooltip={text}

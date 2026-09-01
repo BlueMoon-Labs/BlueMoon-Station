@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from "../backend";
+import { useState } from 'react';
+
+import { useBackend } from "../backend";
 import {
   Box,
   Button,
@@ -10,8 +12,8 @@ import {
 } from '../components';
 import { Window } from '../layouts';
 
-export const Who = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Who = (props) => {
+  const { act, data } = useBackend();
   const {
     base_data,
     player_additional,
@@ -25,7 +27,7 @@ export const Who = (props, context) => {
     player_stealthed_additional?.total_players,
   );
 
-  const [searchQuery, setSearchQuery] = useLocalState(context, "searchQuery", "");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const searchPlayers = () =>
     total_players.filter((playerObj) => isMatch(playerObj, searchQuery));
@@ -97,7 +99,7 @@ export const Who = (props, context) => {
   );
 };
 
-const WhoCollapsible = (props, context) => {
+const WhoCollapsible = (props) => {
   const { title, color, children } = props;
   return (
     <Collapsible title={title} color={color} open>
@@ -106,7 +108,7 @@ const WhoCollapsible = (props, context) => {
   );
 };
 
-const GetAddInfo = (props, context) => {
+const GetAddInfo = (props) => {
   const { content, color, text } = props;
 
   return (
@@ -126,7 +128,7 @@ const GetAddInfo = (props, context) => {
   );
 };
 
-const FilterPlayers = (props, context) => {
+const FilterPlayers = (props) => {
   const { players_to_filter } = props;
 
   return players_to_filter.map((clientObj) => {
@@ -135,8 +137,8 @@ const FilterPlayers = (props, context) => {
   });
 };
 
-const GetPlayerInfo = (props, context) => {
-  const { act } = useBackend(context);
+const GetPlayerInfo = (props) => {
+  const { act } = useBackend();
   const { ckey, text, color, ckey_color } = props;
 
   return (

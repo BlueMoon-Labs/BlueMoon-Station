@@ -26,8 +26,16 @@
 
 	var/list/datum/brain_trauma/traumas = list()
 
-/obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0,no_id_transfer = FALSE, drop_if_replaced = TRUE)
-	..()
+/obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0, no_id_transfer = FALSE, drop_if_replaced = TRUE)
+	// Аргументы родителю пересобираются, а не пробрасываются как есть: третий позиционный
+	// у него - drop_if_replaced, а у мозга - no_id_transfer, поэтому голый ..() отдавал ему
+	// FALSE, и старый мозг не выпадал на пол, а удалялся вместе с brainmob, унося разум
+	// владельца безвозвратно.
+	. = ..(C, special, drop_if_replaced)
+	// Родитель отказал (не карбон, либо мозг уже стоит в этом теле) - тело нам не принадлежит,
+	// и переименование, QDEL_NULL(brainmob) и перенос разума выполнять нельзя.
+	if(!.)
+		return
 
 	name = "brain"
 
@@ -36,6 +44,9 @@
 			to_chat(brainmob, "<span class = danger>You can't feel your body! You're still just a brain!</span>")
 		forceMove(C)
 		C.update_hair()
+		//Remove() обнулил owner траум - без восстановления они навсегда
+		//рантаймят в on_life (Cannot read null.status_traits) у живого тела
+		reattach_traumas()
 		return
 
 	if(brainmob)
@@ -49,10 +60,7 @@
 
 		QDEL_NULL(brainmob)
 
-	for(var/X in traumas)
-		var/datum/brain_trauma/BT = X
-		BT.owner = owner
-		BT.on_gain()
+	reattach_traumas()
 	if(damage > BRAIN_DAMAGE_MILD)
 		var/datum/skill_modifier/S
 		ADD_SKILL_MODIFIER_BODY(/datum/skill_modifier/brain_damage, null, C, S)
@@ -77,6 +85,15 @@
 		REMOVE_SKILL_MODIFIER_BODY(/datum/skill_modifier/brain_damage, null, C)
 		REMOVE_SKILL_MODIFIER_BODY(/datum/skill_modifier/heavy_brain_damage, null, C)
 		C.update_hair()
+
+///Возвращает траумам владельца после вставки мозга: Remove() всегда обнуляет их owner
+/obj/item/organ/brain/proc/reattach_traumas()
+	for(var/X in traumas)
+		var/datum/brain_trauma/BT = X
+		if(BT.owner == owner)
+			continue
+		BT.owner = owner
+		BT.on_gain()
 
 /obj/item/organ/brain/proc/transfer_identity(mob/living/L)
 	name = "[L.name]'s brain"

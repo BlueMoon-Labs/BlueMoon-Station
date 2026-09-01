@@ -20,7 +20,10 @@
 	name = "chimeric eyes"
 	desc = "These eyes seem to have incredible sensitivity to bright light, offset by basic night vision. It seems that they are actively used by their owner. Almost a perfection for combatants, but won't save them from being harmed without proper protection."
 	see_in_dark = 8
-	flash_protect = -2 //new eyes to balance the ones they had - shadow eyes.
+	flash_protect = -2
+	low_light_cutoff = list(5, 15, 10)
+	medium_light_cutoff = list(10, 30, 20)
+	high_light_cutoff = list(20, 50, 35)
 
 /datum/species/mammal/xenochimera/on_species_gain(mob/living/carbon/human/C, datum/species/old_species, pref_load)
 	. = ..() // BLUEMOON ADD - явная ошибка, этой штуки не было
@@ -33,6 +36,10 @@
 	//If they're KO'd/dead, or reviving, they're probably not thinking a lot about much of anything.
 	//if(!H.stat || !(H.revive_ready == REVIVING_NOW || H.revive_ready == REVIVING_DONE))
 	//	handle_feralness(H)
+
+	// External healing must release a regenerating body once it recovers from its starting state.
+	if(H.chimera_regeneration_recovered())
+		H.cancel_chimera_regeneration()
 
 	//While regenerating
 	if(H.revive_ready == REVIVING_NOW || H.revive_ready == REVIVING_DONE)
@@ -50,13 +57,16 @@
 
 	//Cold/pressure effects when not regenerating
 	else
-		var/datum/gas_mixture/environment = H.loc.return_air()
-		var/pressure2 = environment.return_pressure()
-		var/adjusted_pressure2 = H.calculate_affecting_pressure(pressure2)
+		//loc бывает null (моб в нульспейсе посреди трансформации/телепорта), а
+		//return_air() на null валил Life ксенохимеры каждые 2 секунды
+		var/datum/gas_mixture/environment = H.loc?.return_air()
+		if(environment)
+			var/pressure2 = environment.return_pressure()
+			var/adjusted_pressure2 = H.calculate_affecting_pressure(pressure2)
 
-		//Very low pressure damage
-		if(adjusted_pressure2 <= 20)
-			H.take_overall_damage(LOW_PRESSURE_DAMAGE, 0)
+			//Very low pressure damage
+			if(adjusted_pressure2 <= 20)
+				H.take_overall_damage(LOW_PRESSURE_DAMAGE, 0)
 
 
 		//Cold hurts and gives them pain messages, eventually weakening and paralysing, but doesn't damage or trigger feral.
@@ -112,6 +122,27 @@
 /mob/living/carbon/human
 	var/revive_ready = REVIVING_READY	// Only used for creatures that have the xenochimera regen ability, so far.
 	var/revive_finished = 0				// Only used for xenochimera regen, allows us to find out when the regen will finish.
+	var/revive_started_stat
+
+/mob/living/carbon/human/proc/chimera_regeneration_recovered()
+	if(isnull(revive_started_stat) || !(revive_ready == REVIVING_NOW || revive_ready == REVIVING_DONE))
+		return FALSE
+	if(revive_started_stat == DEAD)
+		return stat != DEAD
+	return revive_started_stat != CONSCIOUS && stat == CONSCIOUS
+
+/mob/living/carbon/human/proc/cancel_chimera_regeneration()
+	if(!chimera_regeneration_recovered())
+		return FALSE
+	revive_started_stat = null
+	revive_ready = REVIVING_READY
+	revive_finished = 0
+	verbs -= /mob/living/carbon/human/proc/hatch
+	clear_alert("regen")
+	clear_alert("hatch")
+	SetParalyzed(0)
+	to_chat(src, "<span class='notice'>Your body recovers before reconstruction finishes, interrupting the process and freeing you.</span>")
+	return TRUE
 
 /mob/living/carbon/human/proc/chimera_regenerate()
 	//If they're already regenerating
@@ -141,15 +172,16 @@
 
 		//Scary spawnerization.
 		revive_ready = REVIVING_NOW
+		revive_started_stat = stat
 		revive_finished = (world.time + time SECONDS) // When do we finish reviving? Allows us to find out when we're done, called by the alert currently.
+		var/expected_finish = revive_finished
 		throw_alert("regen", /atom/movable/screen/alert/xenochimera/reconstitution)
 		spawn(time SECONDS)
+			if(QDELETED(src) || revive_ready != REVIVING_NOW || revive_finished != expected_finish || revive_started_stat != DEAD)
+				return
 			// check to see if they've been fixed by outside forces in the meantime such as defibbing
 			if(stat != DEAD)
-				to_chat(src, "<span class='notice'>Your body has recovered from its ordeal, ready to regenerate itself again.</span>")
-				revive_ready = REVIVING_READY //reset their cooldown
-				clear_alert("regen")
-				throw_alert("hatch", /atom/movable/screen/alert/xenochimera/readytohatch)
+				cancel_chimera_regeneration()
 
 			// Was dead, still dead.
 			else
@@ -166,9 +198,13 @@
 
 		//Waiting for regen after being alive
 		revive_ready = REVIVING_NOW
+		revive_started_stat = stat
 		revive_finished = (world.time + time SECONDS) // When do we finish reviving? Allows us to find out when we're done, called by the alert currently.
+		var/expected_finish = revive_finished
 		throw_alert("regen", /atom/movable/screen/alert/xenochimera/reconstitution)
 		spawn(time SECONDS)
+			if(QDELETED(src) || revive_ready != REVIVING_NOW || revive_finished != expected_finish)
+				return
 
 			//Slightly different flavour messages
 			if(stat != DEAD || nutrition > 0)
@@ -197,8 +233,8 @@
 		if(stat == DEAD)
 
 			//Reviving from ded takes extra nutrition - if it isn't provided from outside sources, it comes from you
-			if(!nutrition > 0)
-				nutrition=nutrition * 0.75
+			if(nutrition > 0)
+				adjust_nutrition(-nutrition * 0.25)
 			chimera_hatch()
 
 			visible_message("<span class='warning'><p><font size=4>The former corpse staggers to its feet, all its former wounds having vanished...</font></p></span>") //Bloody hell...
@@ -209,7 +245,7 @@
 		else
 			chimera_hatch()
 
-			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell... How beautiful! 
+			visible_message("<span class='warning'><p><font size=4>[src] rises to \his feet.</font></p></span>") //Bloody hell... How beautiful!
 			clear_alert("hatch")
 
 /mob/living/carbon/human/proc/chimera_hatch()
@@ -219,12 +255,16 @@
 	var/old_nutrition = nutrition
 	var/uninjured=quickcheckuninjured()
 	//I did have special snowflake code, but this is easier.
-	revive()
+	revive(full_heal = TRUE)
 	cure_husk()
+
+	for(var/obj/item/organ/O in internal_organs)
+		if(!(O.organ_flags & ORGAN_SYNTHETIC))
+			O.setOrganDamage(O.maxHealth * 0.2) // 20% повреждение органов при возраждении за ксенохимерку
 
 
 	if(!uninjured)
-		nutrition = old_nutrition * 0.5
+		set_nutrition(old_nutrition * 0.5)
 		//Drop everything
 		for(var/obj/item/W in src)
 			dropItemToGround(W, 1)
@@ -235,13 +275,14 @@
 		visible_message("<span class='danger'><p><font size=4>The lifeless husk of [src] bursts open, revealing a new, intact copy in the pool of viscera.</font></p></span>") //Bloody hell...
 
 	else //lower cost for doing a quick cosmetic revive
-		nutrition = old_nutrition * 0.9
+		set_nutrition(old_nutrition * 0.9)
 
 	//Unfreeze some things
 	//does_not_breathe = FALSE
 	//update_canmove()
 	//weakened = 2
 	SetParalyzed(0)
+	revive_started_stat = null
 	revive_ready = world.time + 10 MINUTES //set the cooldown CHOMPEdit: Reduced this to 10 minutes, you're playing with fire if you're reviving that often.
 
 

@@ -12,6 +12,7 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 	var/next_announce = 0
 	var/max_dist = 150
 	verb_say = "states coldly"
+	speech_span = SPAN_TELEMETRY
 	var/list/message_log = list()
 
 /obj/machinery/doppler_array/Initialize(mapload)
@@ -165,10 +166,10 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 	else
 		if(powered() && anchored)
 			icon_state = initial(icon_state)
-			machine_stat &= ~NOPOWER
+			set_machine_stat(machine_stat & ~NOPOWER)
 		else
 			icon_state = "[initial(icon_state)]-off"
-			machine_stat |= NOPOWER
+			set_machine_stat(machine_stat | NOPOWER)
 
 //Portable version, built into EOD equipment. It simply provides an explosion's three damage levels.
 /obj/machinery/doppler_array/integrated

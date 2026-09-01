@@ -76,19 +76,22 @@
 /obj/item/stock_parts/cell/proc/irradiate(datum/component/radioactive/Comp)
 	AddComponent(/datum/component/radioactive, 0, src, 0)
 	Comp = GetComponent(/datum/component/radioactive)
-	Comp.strength = round(rad_strength*(charge < maxcharge ? 1 : 0.5), 0.5) // Округляем к ближайшей целой половине
+	Comp.set_strength(round(rad_strength*(charge < maxcharge ? 1 : 0.5), 0.5)) // Округляем к ближайшей целой половине
 
 /obj/item/stock_parts/cell/update_overlays()
 	. = ..()
 	if(grown_battery)
 		. += image('icons/obj/power.dmi', "grown_wires")
 		return
-	if(!has_charge_overlay || charge < 0.01)
+	var/charge_percent = percent() // Если это неочевидно, расчёт вызывается один раз здесь для юза во всех последующих участках этого прока
+	if(!has_charge_overlay || charge_percent < 1)
 		return
-	else if(charge/maxcharge >=0.995)
+	if(charge_percent >= 98)
 		. += "cell-o2"
-	else
+	else if(charge_percent >= 6)
 		. += "cell-o1"
+	else
+		. += "cell-o1_blink"
 
 /obj/item/stock_parts/cell/proc/percent()		// return % charge of cell
 	return 100*charge/maxcharge
@@ -258,6 +261,28 @@
 	name = "pulse pistol power cell"
 	maxcharge = 2000
 
+/obj/item/stock_parts/cell/crystal_cell
+	name = "crystal power cell"
+	desc = "A very high power cell made from crystallized plasma."
+	icon_state = "crystal_cell"
+	maxcharge = 50000
+	chargerate = 0
+	has_charge_overlay = FALSE
+	custom_materials = null
+	grind_results = null
+
+/obj/item/stock_parts/cell/crystal_ultra_cell
+	name = "crystal ultra power cell"
+	desc = "An ultra-high capacity transdimensional cell grown in a crystallizer from exotic gases."
+	icon_state = "crystalUltraCell"
+	maxcharge = 100000 // 100 MJ
+	chargerate = 1600 // 2x vortex self-recharge / recharger rate
+	self_recharge = 1
+	rating = 7
+	has_charge_overlay = FALSE
+	custom_materials = null
+	grind_results = null
+
 /obj/item/stock_parts/cell/high
 	name = "high-capacity power cell"
 	icon_state = "hcell"
@@ -277,6 +302,14 @@
 
 /obj/item/stock_parts/cell/high/empty
 	start_charged = FALSE
+
+/obj/item/stock_parts/cell/thermal
+	name = "thermal power cell"
+	icon_state = "hcell"
+	charging_icon = "hcell_in"
+	maxcharge = 7500 // 6 thermal nanite shots (6 x 1250)
+	custom_materials = list(/datum/material/glass=60)
+	chargerate = 1500
 
 /obj/item/stock_parts/cell/super
 	name = "super-capacity power cell"
@@ -360,6 +393,7 @@
 	custom_materials = null
 	rating = 5 //self-recharge makes these desirable
 	self_recharge = 1 // Infused slime cores self-recharge, over time
+	chargerate = 500
 
 /obj/item/stock_parts/cell/emproof
 	name = "\improper EMP-proof cell"
@@ -396,7 +430,7 @@
 /obj/item/stock_parts/cell/emergency_light
 	name = "miniature power cell"
 	desc = "A tiny power cell with a very low power capacity. Used in light fixtures to power them in the event of an outage."
-	maxcharge = 120 //Emergency lights use 0.2 W per tick, meaning ~10 minutes of emergency power from a cell
+	maxcharge = 120 //Emergency lights drain 5 W per process tick, meaning ~30 seconds of emergency power from a cell
 	custom_materials = list(/datum/material/glass = 20)
 	w_class = WEIGHT_CLASS_TINY
 

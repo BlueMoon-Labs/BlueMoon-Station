@@ -108,17 +108,17 @@
 	src.frequency = frequency
 	src.language = language
 	virt = speaker
-	var/datum/language/lang_instance = GLOB.language_datum_instances[language]
+	var/datum/language/lang_instance = language ? GLOB.language_datum_instances[language] : null
 	data = list(
-		"name" = speaker.name,
-		"job" = speaker.job,
+		"name" = speaker?.name,
+		"job" = speaker?.job,
 		"message" = message,
 		"compression" = rand(35, 65),
-		"language" = lang_instance.name,
+		"language" = lang_instance?.name,
 		"spans" = spans
 	)
 	var/turf/T = get_turf(source)
-	levels = list(T.z)
+	levels = T ? list(T.z) : list(0)
 
 /datum/signal/subspace/vocal/copy()
 	var/datum/signal/subspace/vocal/copy = new(source, frequency, virt, language)
@@ -150,18 +150,20 @@
 
 			// Syndicate radios can hear all well-known radio channels
 			if (num2text(frequency) in GLOB.reverseradiochannels)
+				var/list/radio_z = list(0) // reusable single-element list to avoid allocating new lists per radio
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_SYNDICATE]"])
-					if(R.can_receive(FREQ_SYNDICATE, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_SYNDICATE, radio_z))
 						radios |= R
 
-			if (num2text(frequency) in GLOB.reverseradiochannels)
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_INTEQ]"])
-					if(R.can_receive(FREQ_INTEQ, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_INTEQ, radio_z))
 						radios |= R
 
-			if (num2text(frequency) in GLOB.reverseradiochannels)
 				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_PIRATE]"])
-					if(R.can_receive(FREQ_PIRATE, list(R.z)))
+					radio_z[1] = R.z
+					if(R.can_receive(FREQ_PIRATE, radio_z))
 						radios |= R
 
 		if (TRANSMISSION_RADIO)

@@ -1,7 +1,7 @@
 import { NtosWindow } from '../layouts';
 import { CargoContent } from './Cargo.js';
 
-export const NtosCargo = (props, context) => {
+export const NtosCargo = (props) => {
   return (
     <NtosWindow
       width={800}

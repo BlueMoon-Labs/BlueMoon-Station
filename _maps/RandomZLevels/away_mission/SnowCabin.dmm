@@ -1014,9 +1014,9 @@
 /area/awaymission/cabin/snowforest/sovietsurface)
 "dm" = (
 /obj/structure/table/reinforced,
-/obj/item/pda/syndicate{
-	background_color = "#0039A6";
-	default_cartridge = /obj/item/cartridge/virus/mime;
+/obj/item/modular_computer/pda/syndicate{
+	pda_color = "#0039A6";
+	inserted_disk = /obj/item/cartridge/virus/mime;
 	desc = "A portable microcomputer by Thinktronic Systems, LTD. Seems like it may have useful information on it.";
 	name = "soviet PDA";
 	note = "<b>TRANSLATED TO GALACTIC COMMON:</b><br>My partner has left to help those Nanotrasen fucks three days ago. They said that a distress signal came from down south and they had to check it out. How fucking long does it take to investigate a mining outpost? Either those Nanotrasen fuckers betrayed us or something really did go wrong. Either way, I'm leaving before this becomes an issue for me and anyone else here. That dumb idiot."
@@ -5167,9 +5167,9 @@
 /area/awaymission/cabin/caves)
 "nb" = (
 /obj/effect/turf_decal/weather/snow,
-/obj/item/pda/syndicate{
-	background_color = "#0039A6";
-	default_cartridge = /obj/item/cartridge/virus/clown;
+/obj/item/modular_computer/pda/syndicate{
+	pda_color = "#0039A6";
+	inserted_disk = /obj/item/cartridge/virus/clown;
 	desc = "A portable microcomputer by Thinktronic Systems, LTD. Seems like it may have useful information on it.";
 	name = "soviet PDA";
 	note = "<b>TRANSLATED TO GALACTIC COMMON:</b><br>DO NOT GO SOUTH."

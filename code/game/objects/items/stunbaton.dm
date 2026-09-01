@@ -30,6 +30,9 @@
 	var/status_duration = 3 SECONDS //how long our status effects last for otherwise
 	COOLDOWN_DECLARE(shove_cooldown)
 
+	var/hit_sound = 'sound/weapons/egloves.ogg'
+	var/turn_on_sound = "sparks"
+
 /obj/item/melee/baton/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Right click attack while in combat mode to knockdown, but only once per [cooldown_duration / 10] seconds.</span>"
@@ -88,7 +91,7 @@
 	if(turned_on != new_status)
 		turned_on = new_status
 		if(!silent)
-			playsound(loc, "sparks", 75, 1, -1)
+			playsound(loc, turn_on_sound, 75, 1, -1)
 		if(turned_on)
 			START_PROCESSING(SSobj, src)
 		else
@@ -100,11 +103,11 @@
 
 /obj/item/melee/baton/update_icon_state()
 	if(turned_on)
-		icon_state = "[initial(name)]_active"
+		icon_state = "[initial(icon_state)]_active"
 	else if(!cell)
-		icon_state = "[initial(name)]_nocell"
+		icon_state = "[initial(icon_state)]_nocell"
 	else
-		icon_state = "[initial(name)]"
+		icon_state = "[initial(icon_state)]"
 
 /obj/item/melee/baton/examine(mob/user)
 	. = ..()
@@ -265,7 +268,7 @@
 								"<span class='userdanger'>[user] has [shoved ? "brutally stunnned" : "stunned"] you with [src]!</span>")
 		log_combat(user, L, shoved ? "stunned and attempted knockdown" : "stunned")
 
-	playsound(loc, 'sound/weapons/egloves.ogg', 50, 1, -1)
+	playsound(loc, hit_sound, 50, 1, -1)
 
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L
@@ -349,7 +352,7 @@
 /obj/item/melee/baton/cattleprod
 	name = "stunprod"
 	desc = "An improvised stun baton."
-	icon_state = "stunprod_nocell"
+	icon_state = "stunprod"
 	item_state = "prod"
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'

@@ -7,9 +7,10 @@
 	var/shockdamage = 20
 	var/explosive = FLUX_EXPLOSIVE
 
-/obj/effect/anomaly/flux/Initialize(mapload, new_lifespan, drops_core = TRUE, explosive = FLUX_EXPLOSIVE)
+/obj/effect/anomaly/flux/Initialize(mapload, new_lifespan, _explosive)
 	. = ..()
-	src.explosive = explosive
+	if(!isnull(_explosive))
+		explosive = _explosive
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
 	)
@@ -53,10 +54,6 @@
 /obj/effect/anomaly/flux/minor
 	explosive = FLUX_NO_EXPLOSION
 
-// We need to override the default arguments here to achieve the desired effect
-/obj/effect/anomaly/flux/minor/Initialize(mapload, new_lifespan, drops_core = FALSE, explosive = FLUX_NO_EXPLOSION)
-	return ..()
-
 ///Bigger, meaner, immortal flux anomaly
 /obj/effect/anomaly/flux/big
 	immortal = TRUE
@@ -70,7 +67,7 @@
 	///the zappy flags
 	var/zap_flags = ZAP_GENERATES_POWER | ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE
 
-/obj/effect/anomaly/flux/big/Initialize(mapload, new_lifespan, drops_core)
+/obj/effect/anomaly/flux/big/Initialize(mapload, new_lifespan)
 	. = ..()
 
 	transform *= 3

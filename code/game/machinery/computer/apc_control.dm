@@ -1,5 +1,6 @@
 /obj/machinery/computer/apc_control
 	name = "power flow control console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Used to remotely control the flow of power to different parts of the station."
 	icon_screen = "solar"
 	icon_keyboard = "power_key"

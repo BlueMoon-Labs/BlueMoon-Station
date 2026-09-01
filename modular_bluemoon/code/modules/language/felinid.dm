@@ -13,3 +13,4 @@
 	icon_state = "felinid"
 	default_priority = 90
 	restricted = FALSE
+	spans = list(SPAN_FELINSPEAK)

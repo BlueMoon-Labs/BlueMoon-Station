@@ -50,6 +50,7 @@
 	icon_state = "generic"
 	layer = BELOW_OBJ_LAYER
 	density = TRUE
+	shadow_weight = 0.45
 	verb_say = "beeps"
 	verb_ask = "beeps"
 	verb_exclaim = "beeps"
@@ -330,7 +331,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 		R.custom_price = initial(temp.custom_price)
 		R.custom_premium_price = initial(temp.custom_premium_price)
 		// R.age_restricted = initial(temp.age_restricted)
-		// R.colorable = !!(initial(temp.greyscale_config) && initial(temp.greyscale_colors) && (initial(temp.flags_1) & IS_PLAYER_COLORABLE_1))
+		// R.colorable = !!(initial(temp.greyscale_config) && initial(temp.greyscale_colors))
 		recordlist += R
 
 /**
@@ -741,7 +742,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/vending),
+		get_asset_datum(/datum/asset/spritesheet_batched/vending),
 	)
 
 /obj/machinery/vending/ui_interact(mob/user, datum/tgui/ui)

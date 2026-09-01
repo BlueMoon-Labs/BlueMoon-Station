@@ -402,6 +402,7 @@
 					/obj/item/clothing/gloves/color/black = 2,
 					/obj/item/clothing/head/soft/purple = 2,
 					/obj/item/broom = 2,
+					/obj/item/wirebrush = 2,
 					/obj/item/paint/paint_remover = 2,
 					/obj/item/melee/flyswatter = 2,
 					/obj/item/flashlight = 2,
@@ -713,7 +714,7 @@
 		/obj/item/clothing/under/rank/centcom/officer = 3,
 		/obj/item/clothing/under/rank/centcom/officer_alt = 3,
 		/obj/item/clothing/under/rank/centcom/commander = 3,
-		/obj/item/clothing/glasses/eyepatch = 3,
+		/obj/item/clothing/glasses/cover/eyepatch = 3,
 		/obj/item/storage/box/syndie_kit/centcom_costume = 2,
 		/obj/item/mod/control/pre_equipped/corporate = 2,
 	)

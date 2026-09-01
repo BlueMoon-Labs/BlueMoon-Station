@@ -20,7 +20,7 @@ Bonus
 	name = "Choking"
 	desc = "The virus causes inflammation of the host's air conduits, leading to intermittent choking."
 	stealth = -3
-	resistance = -2
+	resistance = 0
 	stage_speed = -2
 	transmittable = -2
 	level = 3
@@ -92,7 +92,7 @@ Bonus
 	name = "Acute respiratory distress syndrome"
 	desc = "The virus causes shrinking of the host's lungs, causing severe asphyxiation. May also lead to heart attacks."
 	stealth = -2
-	resistance = -0
+	resistance = 2
 	stage_speed = -1
 	transmittable = -2
 	level = 7

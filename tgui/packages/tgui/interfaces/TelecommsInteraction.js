@@ -10,8 +10,8 @@ import { Button, Input, LabeledList, NoticeBox, NumberInput, Section } from '../
 import { RADIO_CHANNELS } from '../constants';
 import { Window } from '../layouts';
 
-export const TelecommsInteraction = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TelecommsInteraction = (props) => {
+  const { act, data } = useBackend();
   const {
     notice = "",
     multitool = false,
@@ -215,7 +215,7 @@ export const TelecommsInteraction = (props, context) => {
                             'remove': thing,
                           })}>
                           {valid ? (
-                            <span style={`color: ${valid.color}`}>
+                            <span style={{ color: valid.color }}>
                               {`${thing} (${valid.name})`}
                             </span>
                           ) : (

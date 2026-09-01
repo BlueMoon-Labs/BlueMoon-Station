@@ -62,4 +62,56 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
-//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////
+//T2 хирург. инструменты//
+/////////////////////////
+
+/datum/design/scalpel_upgraded
+	name = "Vibration Scalpel"
+	desc = "Вибрационный скальпель с улучшенными показателями остроты."
+	id = "scalpel_upgraded"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/glass = 1000, /datum/material/silver = 750, /datum/material/titanium = 750)
+	build_path = /obj/item/scalpel/upgraded_t2
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/circularsaw_upgraded
+	name = "Oscillating Surgical Saw"
+	desc = "Вибрационная пила, абсолютно безопасная для пациента."
+	id = "circularsaw_upgraded"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2500, /datum/material/glass = 1500, /datum/material/titanium = 1000)
+	build_path = /obj/item/circular_saw/upgraded_t2
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/retractor_upgraded
+	name = "Titanium Retractor"
+	desc = "Особо крепкие зажимы с пружиной из титана. Надёжность на новом уровне."
+	id = "retractor_upgraded"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/glass = 500, /datum/material/titanium = 750)
+	build_path = /obj/item/retractor/upgraded_t2
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/hemostat_upgraded
+	name = "Silvered Hemostat"
+	desc = "Сделанный из серебра - абсолютно стерильные условия! "
+	id = "hemostat_upgraded"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/glass = 500, /datum/material/silver = 750)
+	build_path = /obj/item/hemostat/upgraded_t2
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/cautery_upgraded
+	name = "High Heat Cautery"
+	desc = "Прижигатель с плазменным питанием: осторожно, особенно горячо."
+	id = "cautery_upgraded"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1500, /datum/material/glass = 500, /datum/material/plasma = 1000)
+	build_path = /obj/item/cautery/upgraded_t2
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE

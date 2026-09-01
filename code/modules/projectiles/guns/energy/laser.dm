@@ -8,6 +8,7 @@
 	ammo_type = list(/obj/item/ammo_casing/energy/lasergun)
 	ammo_x_offset = 1
 	shaded_charge = 1
+	burst_size = 2
 
 /obj/item/gun/energy/laser/pindicate
 	pin = /obj/item/firing_pin/implant/pindicate

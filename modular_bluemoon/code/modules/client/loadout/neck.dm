@@ -31,7 +31,7 @@
 /datum/gear/neck/poly_cape
 	name = "polychromic cape"
 	path = /obj/item/clothing/neck/cloak/poly_cape
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#0d8dc0", "#ffffff", "#ffe600")
 	item_icon_state = "poly_cape-1"
 
@@ -42,3 +42,27 @@
 /datum/gear/neck/scarf/cow
 	name = "Holly's Scarf"
 	path = /obj/item/clothing/neck/scarf/cow
+
+/datum/gear/neck/scarf/christmas
+	name = "Christmas Scarf"
+	path = /obj/item/clothing/neck/scarf/christmas
+
+/datum/gear/neck/sergal_raincoat
+	name = "Sergal raincoat"
+	path = /obj/item/clothing/neck/bm/sergal_raincoat
+
+/datum/gear/neck/sergal_women_cape
+	name = "Sergal women's cape"
+	path = /obj/item/clothing/neck/bm/sergal_women_cape
+
+/datum/gear/neck/sergal_purple_cape
+	name = "Sergal purple cape"
+	path = /obj/item/clothing/neck/bm/sergal_purple_cape
+
+/datum/gear/neck/sergal_metal_chain
+	name = "Sergal metal chain"
+	path = /obj/item/clothing/neck/bm/sergal_metal_chain
+
+/datum/gear/neck/aristocratic_uniform_cape
+	name = "Aristocratic uniform cape"
+	path = /obj/item/clothing/neck/bm/aristocratic_uniform_cape

@@ -1,9 +1,9 @@
 /obj/item/reagent_containers/glass/beaker/ultimate
 	name = "ultimate beaker"
-	desc = "An ultimate beaker, made by extrapolating on bluespace technology \
-		with dark matter combined. Can hold up to \
-		900 units! And can withstand reagents of an extreme pH, \
-		\nLiterally a chemist's dream."
+	desc = "Ультиматичная мензурка, созданная экстраполяцией блюспейс-технологии \
+		через тёмную материю. Может держать до \
+		900 u! Также способна держать вещества экстремальных значений pH, \
+		\nМечта любого химика."
 	icon = 'modular_sand/icons/obj/chemical.dmi'
 	icon_state = "beakerultimate"
 	custom_materials = list(/datum/material/glass = 5000, /datum/material/plasma = 3000, /datum/material/diamond = 1000, /datum/material/bluespace = 1000)

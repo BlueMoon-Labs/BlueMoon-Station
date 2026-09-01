@@ -1,10 +1,10 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Grid, LabeledList, NoticeBox, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 
-export const NaniteChamberControl = (props, context) => {
+export const NaniteChamberControl = (props) => {
   return (
     <Window
       width={380}
@@ -17,8 +17,8 @@ export const NaniteChamberControl = (props, context) => {
   );
 };
 
-export const NaniteChamberControlContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteChamberControlContent = (props) => {
+  const { act, data } = useBackend();
   const {
     status_msg,
     locked,
@@ -52,7 +52,7 @@ export const NaniteChamberControlContent = (props, context) => {
           onClick={() => act('toggle_lock')} />
       )}>
       {!has_nanites ? (
-        <Fragment>
+        <>
           <Box
             bold
             color="bad"
@@ -71,9 +71,9 @@ export const NaniteChamberControlContent = (props, context) => {
             fontSize="30px"
             lineHeight="50px"
             onClick={() => act('nanite_injection')} />
-        </Fragment>
+        </>
       ) : (
-        <Fragment>
+        <>
           <Section
             title="Status"
             level={2}
@@ -274,7 +274,7 @@ export const NaniteChamberControlContent = (props, context) => {
               );
             })}
           </Section>
-        </Fragment>
+        </>
       )}
     </Section>
   );

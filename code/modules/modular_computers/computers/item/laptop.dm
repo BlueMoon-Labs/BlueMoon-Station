@@ -29,11 +29,10 @@
 	. += "<span class='notice'>Ctrl+Shift-click to [screen_on ? "close" : "open"] it.</span>"
 	var/obj/item/computer_hardware/card_slot/card_slot = all_components[MC_CARD]
 	var/obj/item/computer_hardware/card_slot/card_slot2 = all_components[MC_CARD2]
-	if(card_slot || card_slot2)
-		if(card_slot.stored_card)
-			. += "<span class='notice'>\The [src] has \a [card_slot] with an id inside, Alt-click to remove the id.</span>"
-		if(card_slot2.stored_card)
-			. += "<span class='notice'>\The [src] has \a [card_slot2] with an id inside, Alt-click to remove the id.</span>"
+	if(card_slot?.stored_card)
+		. += "<span class='notice'>\The [src] has \a [card_slot] with an id inside, Alt-click to remove the id.</span>"
+	if(card_slot2?.stored_card)
+		. += "<span class='notice'>\The [src] has \a [card_slot2] with an id inside, Alt-click to remove the id.</span>"
 
 /obj/item/modular_computer/laptop/Initialize(mapload)
 	. = ..()

@@ -20,7 +20,7 @@
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/blob
 
 /mob/living/simple_animal/hostile/blob/update_icons()
-	if(overmind)
+	if(overmind?.blobstrain)
 		add_atom_colour(overmind.blobstrain.color, FIXED_COLOUR_PRIORITY)
 	else
 		remove_atom_colour(FIXED_COLOUR_PRIORITY)
@@ -34,7 +34,7 @@
 	if(stat != DEAD && health < maxHealth)
 		for(var/i in 1 to 2)
 			var/obj/effect/temp_visual/heal/H = new /obj/effect/temp_visual/heal(get_turf(src)) //hello yes you are being healed
-			if(overmind)
+			if(overmind?.blobstrain)
 				H.color = overmind.blobstrain.complementary_color
 			else
 				H.color = "#000000"
@@ -55,7 +55,7 @@
 /mob/living/simple_animal/hostile/blob/Process_Spacemove(movement_dir = 0)
 	for(var/obj/structure/blob/B in range(1, src))
 		return TRUE
-	return ..()
+	return ..(movement_dir)
 
 /mob/living/simple_animal/hostile/blob/proc/blob_chat(msg)
 	var/spanned_message = say_quote(msg)
@@ -114,11 +114,21 @@
 	if(factory && z != factory.z)
 		death()
 
+///Приказ оверлорда "сбор у точки" (Rally Spores). Мигрированная спора
+///получает точку как combat contact - контроллер переводит её в SEARCH-марш
+///к месту сбора, а цель по дороге она захватит собственным восприятием.
+/mob/living/simple_animal/hostile/blob/blobspore/proc/receive_rally_order(turf/rally_turf)
+	if(!rally_turf)
+		return
+	LoseTarget()
+	ai_controller?.receive_combat_contact(null, rally_turf, AI_CONTACT_ALLY)
+
 /mob/living/simple_animal/hostile/blob/blobspore/proc/Zombify(mob/living/carbon/human/H)
 	is_zombie = 1
 	if(H.wear_suit)
 		var/obj/item/clothing/suit/armor/A = H.wear_suit
-		maxHealth += A.armor.melee //That zombie's got armor, I want armor!
+		if(A.armor)
+			maxHealth += A.armor.getRating(MELEE)
 	maxHealth += 120
 	health = maxHealth
 	name = "blob zombie"
@@ -171,14 +181,14 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/blob/blobspore/update_icons()
-	if(overmind)
+	if(overmind?.blobstrain)
 		add_atom_colour(overmind.blobstrain.complementary_color, FIXED_COLOUR_PRIORITY)
 	else
 		remove_atom_colour(FIXED_COLOUR_PRIORITY)
 	if(is_zombie)
 		copy_overlays(oldguy, TRUE)
 		var/mutable_appearance/blob_head_overlay = mutable_appearance('icons/mob/blob.dmi', "blob_head")
-		if(overmind)
+		if(overmind?.blobstrain)
 			blob_head_overlay.color = overmind.blobstrain.complementary_color
 		color = initial(color)//looks better.
 		add_overlay(blob_head_overlay)
@@ -250,14 +260,14 @@
 		if(locate(/obj/structure/blob/core) in blobs_in_area)
 			adjustHealth(-maxHealth*0.1)
 			var/obj/effect/temp_visual/heal/H = new /obj/effect/temp_visual/heal(get_turf(src)) //hello yes you are being healed
-			if(overmind)
+			if(overmind?.blobstrain)
 				H.color = overmind.blobstrain.complementary_color
 			else
 				H.color = "#000000"
 		if(locate(/obj/structure/blob/node) in blobs_in_area)
 			adjustHealth(-maxHealth*0.05)
 			var/obj/effect/temp_visual/heal/H = new /obj/effect/temp_visual/heal(get_turf(src))
-			if(overmind)
+			if(overmind?.blobstrain)
 				H.color = overmind.blobstrain.complementary_color
 			else
 				H.color = "#000000"
@@ -266,7 +276,7 @@
 			adjustHealth(maxHealth*0.025) //take 2.5% of max health as damage when not near the blob or if the naut has no factory, 5% if both
 		var/image/I = new('icons/mob/blob.dmi', src, "nautdamage", MOB_LAYER+0.01)
 		I.appearance_flags = RESET_COLOR
-		if(overmind)
+		if(overmind?.blobstrain)
 			I.color = overmind.blobstrain.complementary_color
 		flick_overlay_view(I, src, 8)
 
@@ -286,7 +296,7 @@
 
 /mob/living/simple_animal/hostile/blob/blobbernaut/update_icons()
 	..()
-	if(overmind) //if we have an overmind, we're doing chemical reactions instead of pure damage
+	if(overmind?.blobstrain) //if we have an overmind, we're doing chemical reactions instead of pure damage
 		melee_damage_lower = initial(melee_damage_lower) * 0.5
 		melee_damage_upper = initial(melee_damage_lower) * 0.5
 		attack_verb_continuous = overmind.blobstrain.blobbernaut_message

@@ -22,18 +22,15 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	hud_type = /datum/hud/ghost
 	movement_type = GROUND | FLYING
 	var/can_reenter_corpse
-	var/datum/hud/living/carbon/hud = null // hud
 	var/bootime = 0
 	var/started_as_observer //This variable is set to 1 when you enter the game as an observer.
 							//If you died in the game and are a ghsot - this will remain as null.
 							//Note that this is not a reliable way to determine if admins started as observers, since they change mobs a lot.
-	var/atom/movable/following = null
 	var/fun_verbs = 0
 	var/image/ghostimage_default = null //this mobs ghost image without accessories and dirs
 	var/image/ghostimage_simple = null //this mob with the simple white ghost sprite
 	var/ghostvision = 1 //is the ghost able to see things humans can't?
 	var/mob/observetarget = null	//The target mob that the ghost is observing. Used as a reference in logout()
-	var/ghost_hud_enabled = 1 //did this ghost disable the on-screen HUD?
 	var/data_huds_on = 0 //Are data HUDs currently enabled?
 	var/health_scan = FALSE //Are health scans currently enabled?
 	var/list/datahuds = list(DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC_ADVANCED) //list of data HUDs shown to ghosts.
@@ -153,23 +150,62 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/old_color = color
 	color = "#960000"
 	animate(src, color = old_color, time = 10, flags = ANIMATION_PARALLEL)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/ratvar_act()
 	var/old_color = color
 	color = "#FAE48C"
 	animate(src, color = old_color, time = 10, flags = ANIMATION_PARALLEL)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/Destroy()
+	// Initialize() starts an infinite floating animation. End it with a real
+	// zero-time animation so BYOND releases its internal reference on qdel.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	//BLUEMOON ADD проверяем клиента на все болячки и ссылаем его в лобби при наличии его в госте или удаляем сикей, чтобы при заходе его отправило в лобби (fix undeleting ghosts)
 	if(client)
 		transfer_to_lobby()
 	if(ckey)
 		ckey = null
 	//BLUEMOON ADD END
+
+	// Очищаем двустороннюю ссылку observetarget/observers (на случай если Logout не отработал)
+	if(observetarget)
+		var/mob/target = observetarget
+		observetarget = null
+		if(target.observers)
+			target.observers -= src
+			UNSETEMPTY(target.observers)
+
+	// Очищаем регистрацию z-уровня (на случай если Logout не вызвал update_z)
+	if(registered_z)
+		update_z(null)
+
 	if(data_huds_on)
 		remove_data_huds()
+
+	// Ghost accessories are mutable appearances kept in both dedicated vars and managed_overlays.
+	// Clear them explicitly before parent Destroy() to avoid lingering soft GC failures.
+	if(hair_overlay || facial_hair_overlay || managed_overlays)
+		cut_overlays()
+	hair_overlay = null
+	facial_hair_overlay = null
+	managed_overlays = null
+
+	var/image/departing_default = ghostimage_default
+	var/image/departing_simple = ghostimage_simple
+	// updateghostimages() removes using the current global ghost image lists, so once
+	// the departing images are removed from GLOB.ghost_images_* they would stay in
+	// other observer client.images unless we explicitly remove them first.
+	if(departing_default || departing_simple)
+		for(var/mob/dead/observer/O in GLOB.player_list)
+			if(!O.client)
+				continue
+			if(departing_default)
+				O.client.images -= departing_default
+			if(departing_simple)
+				O.client.images -= departing_simple
+
 	GLOB.ghost_images_default -= ghostimage_default
 	QDEL_NULL(ghostimage_default)
 
@@ -180,6 +216,13 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
+	// Обнуление mind ДО ..() съедало проверку `if(mind?.current == src)` в /mob/Destroy:
+	// родитель видел уже пустой mind и не звал set_current(null), так что mind.current
+	// навсегда указывал на удалённого обсервера. Разумы живут в SSticker.minds весь
+	// раунд - это ровно те хардделы гостов с одной ссылкой (раунд 9813, 10 штук).
+	if(mind?.current == src)
+		mind.set_current(null)
+	mind = null
 	return ..()
 
 /*
@@ -349,7 +392,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(stat == DEAD || sig_flags & COMPONENT_FREE_GHOSTING)
 		ghostize(1)
 	else
-		var/response = alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)","Are you sure you want to ghost?","Ghost","Stay in body")
+		var/response = tgui_alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)", "Are you sure you want to ghost?", list("Ghost", "Stay in body"))
 		if(response != "Ghost")
 			return	//didn't want to ghost after-all
 		if(istype(loc, /obj/machinery/cryopod))
@@ -385,32 +428,33 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(sig_flags & COMPONENT_FREE_GHOSTING)
 		ghostize(1)
 	else
-		var/response = alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)","Are you sure you want to ghost?","Ghost","Stay in body")
+		var/response = tgui_alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost whilst alive you won't be able to re-enter this round [penalty ? "or play ghost roles [penalty == CANT_REENTER_ROUND ? "until the round is over" : "for the next [DisplayTimeText(penalty)]"]" : ""]! You can't change your mind so choose wisely!!)", "Are you sure you want to ghost?", list("Ghost", "Stay in body"))
 		if(response != "Ghost")
 			return
 		ghostize(0, penalize = TRUE)
 
-/mob/dead/observer/Move(NewLoc, direct)
-	if (SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_MOVE, NewLoc) & COMPONENT_MOVABLE_BLOCK_PRE_MOVE)
-		return
+/mob/dead/observer/Move(NewLoc, direct, glide_size_override)
+	if(SEND_SIGNAL(src, COMSIG_MOVABLE_PRE_MOVE, NewLoc) & COMPONENT_MOVABLE_BLOCK_PRE_MOVE)
+		return FALSE
 	if(updatedir)
-		setDir(direct)//only update dir if we actually need it, so overlays won't spin on base sprites that don't have directions of their own
-	var/oldloc = loc
-
+		setDir(direct) //only update dir if we actually need it, so overlays won't spin on base sprites that don't have directions of their own
+	if(glide_size_override)
+		set_glide_size(glide_size_override)
 	if(NewLoc)
-		forceMove(NewLoc)
+		abstract_move(NewLoc)
 	else
-		forceMove(get_turf(src))  //Get out of closets and such as a ghost
+		// get_turf(src) handles getting out of closets/containers
+		var/turf/destination = get_turf(src)
 		if((direct & NORTH) && y < world.maxy)
-			y++
+			destination = get_step(destination, NORTH)
 		else if((direct & SOUTH) && y > 1)
-			y--
+			destination = get_step(destination, SOUTH)
 		if((direct & EAST) && x < world.maxx)
-			x++
+			destination = get_step(destination, EAST)
 		else if((direct & WEST) && x > 1)
-			x--
-
-	Moved(oldloc, direct)
+			destination = get_step(destination, WEST)
+		abstract_move(destination)
+	return TRUE
 
 /mob/dead/observer/verb/reenter_corpse()
 	set category = "Ghost"
@@ -427,9 +471,18 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "<span class='warning'>Another consciousness is in your body...It is resisting you.</span>")
 		return
 	client.view_size.setDefault(getScreenSize(client.prefs.widescreenpref))//Let's reset so people can't become allseeing gods
-	transfer_ckey(mind.current, FALSE)
-	SStgui.on_transfer(src, mind.current) // Transfer NanoUIs.
-	mind.current.client.init_verbs()
+	return do_reenter_corpse()
+
+/// Ядро возврата в тело. Вербы проверяют входные условия, здесь только сам перенос.
+/mob/dead/observer/proc/do_reenter_corpse()
+	// После transfer_ckey() Logout() призрака ставит spawn(0) qdel(src), который успевает
+	// сработать до возврата сюда: Destroy() зануляет mind. Поэтому тело кешируем заранее,
+	// tgui переносим до переноса ключа (как в tg), а src после переноса не трогаем.
+	var/mob/living/body = mind.current
+	SStgui.on_transfer(src, body) // Transfer NanoUIs.
+	transfer_ckey(body, FALSE)
+	body.client?.init_verbs()
+	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures; no-op, если Logout уже удалил призрака
 	return TRUE
 
 /mob/dead/observer/verb/stay_dead()
@@ -438,17 +491,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	if(!client)
 		return
 	if(!can_reenter_corpse)
-		to_chat(usr, "<span class='warning'>You're already stuck out of your body!</span>")
+		to_chat(usr, span_warning("Вы уже не можете быть реанимированы!"))
 		return FALSE
 
-	var/response = alert(src, "Are you sure you want to prevent (almost) all means of resuscitation? This cannot be undone. THIS WILL ALSO STOP YOU FROM RESPAWNING!!!","Are you sure you want to stay dead and never respawn?","Да","Нет")
+	var/response = tgui_alert(src, "Вы уверены, что хотите предотвратить (почти) все способы реанимации? Действие невозможно отменить.","Вы уверены, что хотите остаться мертвым?", list("Да","Нет"))
 
-	if(response != "Да")
+	if(response != "Да" || QDELETED(src) || QDELETED(client))
 		return
 
 	can_reenter_corpse = FALSE
 	client.prefs?.dnr_triggered = TRUE
-	to_chat(src, "You can no longer be brought back into your body or respawn.")
+	to_chat(src, span_userdanger("Вы больше не сможете быть реанимированы!"))
 	return TRUE
 
 /mob/dead/observer/proc/notify_cloning(var/message, var/sound, var/atom/source, flashwindow = TRUE)
@@ -591,9 +644,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		var/list/views = list()
 		for(var/i in 7 to max_view)
 			views |= i
-		var/new_view = input("Choose your new view", "Modify view range", 0) as null|anything in views
+		// tgui вместо нативного input: BYOND держит нативный промпт (и фрейм с ним)
+		// до ответа даже после дисконнекта - брошенный диалог вечно пинит призрака
+		var/new_view = tgui_input_list(src, "Choose your new view", "Modify view range", views)
 		if(new_view)
-			client.view_size.setTo(clamp(new_view, 7, max_view) - 7)
+			client?.view_size.setTo(clamp(new_view, 7, max_view) - 7)
 	else
 		client.view_size.resetToDefault()
 
@@ -630,11 +685,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/verb/toggle_ghostsee()
 	set name = "Toggle Ghost Vision"
-	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts"
+	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts."
 	set category = "Ghost"
 	ghostvision = !(ghostvision)
 	update_sight()
-	to_chat(usr, "You [(ghostvision?"now":"no longer")] have ghost vision.")
+	to_chat(usr, span_notice("You [(ghostvision?"now":"no longer")] have ghost vision."))
+
+/mob/dead/observer/verb/toggle_self_sprite()
+	set name = "Toggle Ghost Sprite"
+	set desc = "Делает ваш спрайт прозрачным (остальные все еще будут видеть вашего призрака)."
+	set category = "Ghost"
+
+	var/const/key_name = "self_ghost_invisible"
+	var/msg
+	if(!remove_alt_appearance(key_name))
+		var/image/I = image(loc = src)
+		I.appearance = mutable_appearance()
+		I.override = TRUE
+		add_alt_appearance(/datum/atom_hud/alternate_appearance/basic, key_name, I)
+		msg = "Ваш спрайт стал прозрачным для вас, но остальные все ещё будут его видеть."
+	else
+		msg = "Вы снова видите свой спрайт."
+	to_chat(usr, span_notice(msg))
 
 /mob/dead/observer/verb/toggle_darkness()
 	set name = "Toggle Darkness"
@@ -651,8 +723,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	update_sight()
 
-/mob/dead/observer/update_sight()
-	if(client)
+/mob/dead/observer/update_sight(forced = TRUE)
+	if(client?.prefs)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 
 	if (!ghostvision)
@@ -706,9 +778,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		if(!(L in GLOB.player_list) && !L.mind)
 			possessible += L
 
-	var/mob/living/target = input("Your new life begins today!", "Possess Mob", null, null) as null|anything in possessible
+	var/mob/living/target = tgui_input_list(src, "Your new life begins today!", "Possess Mob", possessible)
 
-	if(!target)
+	if(!target || QDELETED(target))
 		return FALSE
 
 	if(ismegafauna(target))
@@ -716,7 +788,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return FALSE
 
 	if(can_reenter_corpse && mind && mind.current)
-		if(alert(src, "Your soul is still tied to your former life as [mind.current.name], if you go forward there is no going back to that life. Are you sure you wish to continue?", "Move On", "Yes", "No") == "No")
+		if(tgui_alert(src, "Your soul is still tied to your former life as [mind.current.name], if you go forward there is no going back to that life. Are you sure you wish to continue?", "Move On", list("Yes", "No")) != "Yes")
 			return FALSE
 	if(target.key)
 		to_chat(src, "<span class='warning'>Someone has taken this body while you were choosing!</span>")
@@ -765,9 +837,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	..()
 	if(usr == src)
 		if(href_list["follow"])
-			var/atom/movable/target = locate(href_list["follow"])
-			if(istype(target) && (target != src))
+			var/atom/movable/target = ghost_follow_resolve(href_list["follow"], href_list["follow_token"])
+			if(target && (target != src))
 				ManualFollow(target)
+				return
+			// Координатный запасной путь есть только у FOLLOW_OR_TURF_LINK - ему падать
+			// ниже, в ветку x/y/z. У голого FOLLOW_LINK запасного пути нет, и раньше
+			// клик по протухшей ссылке просто НИЧЕГО не делал: ни следования, ни строки
+			// в чат. Так на проде и выглядела "рандомная невозможность орбититься по
+			// ссылкам" - жалоба раунда 10127 (27.08.2026).
+			if(!href_list["x"] || !href_list["y"] || !href_list["z"])
+				to_chat(src, span_warning("Цель этой ссылки больше не существует. Актуальный список - в меню орбиты (Orbit)."))
 				return
 		if(href_list["x"] && href_list["y"] && href_list["z"])
 			var/tx = text2num(href_list["x"])
@@ -850,7 +930,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	update_icon()
 
-/mob/dead/observer/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/dead/observer/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	return IsAdminGhost(usr)
 
 /mob/dead/observer/is_literate()
@@ -874,13 +954,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				remove_verb(src, /mob/dead/observer/verb/possess)
 
 /mob/dead/observer/reset_perspective(atom/A)
-	if(client)
-		if(ismob(client.eye) && (client.eye != src))
-			var/mob/target = client.eye
-			observetarget = null
-			if(target.observers)
-				target.observers -= src
-				UNSETEMPTY(target.observers)
+	// Отвязываемся по observetarget, а не по client.eye. Прежнее условие требовало, чтобы
+	// eye всё ещё был мобом и не был нами самими, а к моменту сброса вида eye мог уже уехать
+	// на турф, на самого госта или обнулиться - тогда прежняя цель навсегда оставалась с
+	// записью о нас в observers. observetarget - единственная авторитетная запись о связи,
+	// и снимать её надо независимо от наличия клиента.
+	if(observetarget)
+		var/mob/previous_target = observetarget
+		observetarget = null
+		if(previous_target.observers)
+			previous_target.observers -= src
+			UNSETEMPTY(previous_target.observers)
 	if(..())
 		if(hud_used)
 			client.clear_screen()
@@ -896,7 +980,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	var/eye_name = null
 
-	eye_name = input("Please, select a player!", "Observe", null, null) as null|anything in creatures
+	eye_name = tgui_input_list(src, "Please, select a player!", "Observe", creatures)
 
 	if (!eye_name)
 		return
@@ -904,8 +988,19 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	do_observe(creatures[eye_name])
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
+	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,
+	// которую не снимет ни reset_perspective, ни Logout, ни Destroy.
+	if(mob_eye == src)
+		return
 	//Istype so we filter out points of interest that are not mobs
 	if(client && mob_eye && istype(mob_eye))
+		// Отвязка от прошлой цели: путь toggle_observe зовёт do_observe без
+		// reset_perspective, иначе мы навечно остаёмся в observers старой цели.
+		if(observetarget && observetarget != mob_eye)
+			// Канарейка как у tg: любой путь, попавший сюда, раньше стрэндил госта
+			// в observers старой цели (класс утечек обсерверов). Лечим, но логируем.
+			stack_trace("do_observe у [src] при уже занятой цели (была: [observetarget], новая: [mob_eye])")
+			reset_perspective(null)
 		client.eye = mob_eye
 		if(mob_eye.hud_used)
 			client.clear_screen()
@@ -996,25 +1091,82 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	spawners_menu.ui_interact(src)
 
-/mob/dead/observer/verb/game_info()
-	set name = "Game info"
-	set desc = "Shows various info relating to the game mode, antagonists etc."
-	set category = "Ghost"
-	if(!started_as_observer && can_reenter_corpse)
-		to_chat(src, "You cannot see this info unless you are an observer or you've chosen Do Not Resuscitate!")
-		return
-	var/list/stuff = list("[SSticker.mode.name]")
-	stuff += "Antagonists:\n"
-	for(var/datum/antagonist/A in GLOB.antagonists)
-		if(A.owner)
-			stuff += "[A.owner] the [A.name]"
-	var/ghost_info = SSticker.mode.ghost_info()
-	if(ghost_info)
-		stuff += ghost_info
-	to_chat(src,stuff.Join("\n"))
-
 /mob/proc/can_admin_interact()
 	return FALSE
 
 /mob/dead/observer/can_admin_interact()
 	return check_rights(R_ADMIN, 0)
+
+
+/**
+ * Годится ли атом на конце ссылки (F) в качестве цели слежения.
+ *
+ * ЗАЧЕМ. Ссылка (F) уезжает в чат текстом и живёт там до конца раунда, а REF() внутри неё -
+ * это индекс в таблице BYOND, который переиспользуется, как только атом удалён. Поэтому
+ * протухшая ссылка не просто "не находит цель": locate() честно отдаёт ТО, ЧТО заняло слот,
+ * а прежняя проверка istype(target, /atom/movable) пропускала дальше что угодно - включая
+ * служебные атомы вроде объекта освещения, которых на карте сотни тысяч и которые в этом
+ * билде массово создаются и удаляются при сносе и подъёме света отложенных z-уровней
+ * (раунд 10127: 29 сносов и 32 подъёма, около 1.4 млн созданий и удалений за смену).
+ *
+ * ismob() отсекает весь служебный движимый хлам за одну проверку типа, а немобовые цели у
+ * FOLLOW_LINK единичны и все либо зарегистрированы как POI, либо являются ориентирами карты.
+ *
+ * ЭТО ЗАПАСНОЙ ПУТЬ. Основной - токен идентичности ниже: проверка типа пропускает ДРУГОГО
+ * моба, занявшего освободившийся слот, и сюда доходят только ссылки без токена.
+ */
+/proc/ghost_follow_target_valid(atom/movable/target)
+	if(QDELETED(target))
+		return FALSE
+	if(ismob(target))
+		return TRUE
+	if(target in GLOB.poi_list)
+		return TRUE
+	return istype(target, /obj/effect/landmark)
+
+/**
+ * Монотонный счётчик токенов идентичности. Значения НЕ переиспользуются - в этом весь смысл.
+ *
+ * Проверка типа выше отсекает служебный хлам, занявший переиспользованный слот, но не
+ * отличает исходную цель от ДРУГОГО моба, занявшего тот же слот: обоим ismob() говорит "да".
+ * Токен отличает, потому что счётчик никогда не выдаёт значение дважды: совпадение токена -
+ * это доказательство, что перед нами ровно тот атом, для которого ссылка была построена.
+ */
+GLOBAL_VAR_INIT(follow_token_serial, 0)
+
+/**
+ * Токен идентичности цели слежения, выдаётся лениво.
+ *
+ * Слот переменной платится только атомами, на которых ссылка (F) или строка меню орбиты
+ * реально строилась, - у остальных вар объявлен, но не записан, и места не занимает
+ * (см. модель блока переменных инстанса BYOND).
+ */
+/atom/movable/var/follow_token = 0
+
+/atom/movable/proc/get_follow_token()
+	if(!follow_token)
+		follow_token = ++GLOB.follow_token_serial
+	return follow_token
+
+/// Пара "ссылка + токен" для href слежения. Цель вычисляется РОВНО один раз: макросы
+/// FOLLOW_LINK и FOLLOW_OR_TURF_LINK подставляют сюда своё выражение-аргумент.
+/proc/follow_href_params(atom/movable/target)
+	if(!istype(target))
+		return "follow=[REF(target)]"
+	return "follow=[REF(target)];follow_token=[target.get_follow_token()]"
+
+/**
+ * Достаёт цель слежения из href-а и доказывает, что это ТА САМАЯ цель.
+ *
+ * Токен в ссылке есть - решает только он: не совпал, значит слот переиспользован, и
+ * следовать некуда. Токена нет (старая ссылка из чата, пережившая перезапуск раунда, или
+ * немовабельная цель) - остаётся прежняя проверка по типу, то есть не хуже, чем было.
+ */
+/proc/ghost_follow_resolve(target_ref, token)
+	var/atom/movable/target = locate(target_ref)
+	if(!istype(target) || QDELETED(target))
+		return null
+	var/expected_token = text2num(token)
+	if(expected_token)
+		return target.follow_token == expected_token ? target : null
+	return ghost_follow_target_valid(target) ? target : null

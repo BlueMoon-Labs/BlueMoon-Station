@@ -4,7 +4,7 @@
 	icon = 'icons/mob/robots.dmi'
 	icon_state = "robot"
 	bubble_icon = "robot"
-	var/obj/item/pda/ai/aiPDA
+	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/flash_protect = FALSE
 
 /mob/living/silicon/robot/get_cell()
@@ -16,6 +16,7 @@
 	spark_system.attach(src)
 
 	set_wires(new /datum/wires/robot(src))
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT) // manipulators are good enough to strip and search
 	AddElement(/datum/element/empprotection, EMP_PROTECT_WIRES)
 	// AddElement(/datum/element/ridable, /datum/component/riding/creature/cyborg)
 	RegisterSignal(src, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(charge))
@@ -32,10 +33,8 @@
 	ident = rand(1, 999)
 
 	if(!shell)
-		aiPDA = new/obj/item/pda/ai(src)
-		aiPDA.owner = real_name
-		aiPDA.ownjob = "Cyborg"
-		aiPDA.name = real_name + " ([aiPDA.ownjob])"
+		aiPDA = new/obj/item/modular_computer/pda/silicon(src)
+		aiPDA.imprint_id(real_name, "Cyborg")
 
 	previous_health = health
 
@@ -102,18 +101,24 @@
 /mob/living/silicon/robot/proc/create_modularInterface()
 	if(!modularInterface)
 		modularInterface = new /obj/item/modular_computer/tablet/integrated(src)
+		modularInterface.saved_identification = real_name
+		modularInterface.saved_job = designation || "Cyborg"
 	modularInterface.layer = ABOVE_HUD_PLANE
 	modularInterface.plane = ABOVE_HUD_PLANE
 
 /mob/living/silicon/robot/Destroy()
+	QDEL_NULL(profile)
 	if(connected_ai)
 		set_connected_ai(null)
 	if(shell)
 		GLOB.available_ai_shells -= src
 	QDEL_NULL(modularInterface)
 	QDEL_NULL(wires)
+	module_active = null
+	for(var/i in 1 to held_items.len)
+		held_items[i] = null
 	QDEL_NULL(module)
-	QDEL_NULL(eye_lights)
+	eye_lights = null
 	QDEL_NULL(inv1)
 	QDEL_NULL(inv2)
 	QDEL_NULL(inv3)
@@ -130,11 +135,7 @@
 
 /mob/living/silicon/robot/Topic(href, href_list)
 	. = ..()
-	// BLUEMOON ADD START - профиль для боргов
 	if(href_list["cyborg_profile"])
-		ui_interact(usr)
-	// BLUEMOON ADD END
-	if(href_list["character_profile"])
 		if(!profile)
 			profile = new(src)
 		profile.ui_interact(usr)
@@ -143,32 +144,6 @@
 		alert_control.ui_interact(src)
 
 	return
-
-// BLUEMOON ADD START - профиль для боргов
-// Да, это проклято и должно быть перенесено в отдельный датум, но...
-/mob/living/silicon/robot/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "CyborgProfile", "Профиль юнита [src]")
-		ui.open()
-
-/mob/living/silicon/robot/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
-	. = ..()
-	var/data[0]
-	if(!src || !istype(src))
-		return
-	data["silicon_flavor_text"] = mind?.silicon_flavor_text || ""
-	data["oocnotes"] = mind?.ooc_notes || ""
-	data["vore_tag"] = client?.prefs?.vorepref || "No"
-	data["erp_tag"] = client?.prefs?.erppref || "No"
-	data["mob_tag"] = client?.prefs?.mobsexpref || "No"
-	data["nc_tag"] = client?.prefs?.nonconpref || "No"
-	data["unholy_tag"] = client?.prefs?.unholypref || "No"
-	data["extreme_tag"] = client?.prefs?.extremepref || "No"
-	data["very_extreme_tag"] = client?.prefs?.extremeharm || "No"
-
-	return data
-// BLUEMOON ADD END
 
 /mob/living/silicon/robot/proc/pick_module()
 	if(module.type != /obj/item/robot_module)
@@ -198,10 +173,6 @@
 
 	module.transform_to(modulelist[input_module])
 
-	// Добавляем видимость проводки инженерным киборгам
-	if(istype(module, /obj/item/robot_module/engineering) || istype(module, /obj/item/robot_module/saboteur))
-		ADD_TRAIT(src, TRAIT_KNOW_ENGI_WIRES, JOB_TRAIT)
-
 /mob/living/silicon/robot/proc/updatename(client/C)
 	if(shell)
 		return
@@ -222,6 +193,11 @@
 	name = real_name
 	if(!QDELETED(builtInCamera))
 		builtInCamera.c_tag = real_name	//update the camera name too
+	if(aiPDA && !shell)
+		aiPDA.imprint_id(real_name, aiPDA.saved_job)
+	if(modularInterface)
+		modularInterface.saved_identification = real_name
+		modularInterface.saved_job = designation || "Cyborg"
 
 /mob/living/silicon/robot/proc/get_standard_name()
 	return "[(designation ? "[designation] " : "")][mmi.braintype]-[ident]"
@@ -234,14 +210,30 @@
 		return //won't work if dead
 	alert_control.ui_interact(src)
 
-/mob/living/silicon/robot/proc/ionpulse()
+/**
+ * Ионные двигатели борга. `charge = FALSE` отвечает "потянем ли", ничего не тратя.
+ *
+ * Заряд снимался на каждый вызов, а зовут их за один шаг дважды - с ручного пути и с
+ * ньютоновского - плюс на каждую проверку неподвижности из do_after. Расход выходил вдвое
+ * с лишним против заявленного; та же болезнь, что и у джетпаков.
+ */
+/mob/living/silicon/robot/proc/ionpulse(charge = TRUE)
 	if(!ionpulse_on)
+		return
+
+	// Ячейку у борга вынимают на ходу, а сюда заходят с каждой проверки Process_Spacemove -
+	// без этого дальше был бы рантайм на каждом тике.
+	if(!cell)
 		return
 
 	if(cell.charge <= 10)
 		toggle_ionpulse()
 		return
 
+	if(!charge || last_ionpulse_time == world.time)
+		return TRUE
+
+	last_ionpulse_time = world.time
 	cell.charge -= 10
 	return TRUE
 
@@ -455,7 +447,7 @@
 /mob/living/silicon/robot/verb/unlock_own_cover()
 	set category = "Robot Commands"
 	set name = "Unlock Cover"
-	set desc = "Unlocks your own cover if it is locked. You can not lock it again. A human will have to lock it for you."
+	set desc = "Разблокирует вашу крышку, если она заблокирована. Вы не сможете заблокировать её снова. Человек должен будет заблокировать её за вас."
 	if(stat == DEAD)
 		return //won't work if dead
 	if(locked)
@@ -584,7 +576,7 @@
 
 /mob/living/silicon/robot/verb/set_automatic_say_channel() //Borg version of setting the radio for autosay messages.
 	set name = "Set Auto Announce Mode"
-	set desc = "Modify the default radio setting for stating your laws."
+	set desc = "Изменить настройки радио по умолчанию для оглашения ваших законов."
 	set category = "Robot Commands"
 
 	if(usr.stat == DEAD)
@@ -637,9 +629,6 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
-		for(var/i in 1 to 2)
-			var/obj/item/assembly/flash/handheld/borgeye = new(drop_to)
-			borgeye.burn_out()
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)
@@ -728,7 +717,7 @@
 	. = ..()
 	radio = new /obj/item/radio/borg/syndicate(src)
 	laws = new /datum/ai_laws/syndicate_override()
-	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5)
+	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5, TIMER_DELETE_ME)
 
 /mob/living/silicon/robot/modules/syndicate/create_modularInterface()
 	if(!modularInterface)
@@ -780,13 +769,20 @@
 	set_module = /obj/item/robot_module/syndicate/inteq
 	cell = /obj/item/stock_parts/cell/hyper
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/syndbot
-	upgrades = list(/obj/item/borg/upgrade/vtec)
 
 /mob/living/silicon/robot/modules/inteq/Initialize(mapload)
 	. = ..()
 	radio = new /obj/item/radio/borg/inteq(src)
 	laws = new /datum/ai_laws/inteq_override()
-	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5)
+	// upgrades stores installed objects, never type paths. A type path here used
+	// to reach qdel() during robot teardown and also meant the advertised VTEC
+	// was never activated.
+	var/obj/item/borg/upgrade/vtec/preinstalled_vtec = new(src)
+	if(!preinstalled_vtec.activate(src, src))
+		qdel(preinstalled_vtec)
+	else
+		add_to_upgrades(preinstalled_vtec)
+	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5, TIMER_DELETE_ME)
 
 /mob/living/silicon/robot/modules/inteq/create_modularInterface()
 	if(!modularInterface)
@@ -865,12 +861,14 @@
 		if(DISCONNECT) //Tampering with the wires
 			to_chat(connected_ai, "<br><br><span class='notice'>NOTICE - Remote telemetry lost with [name].</span><br>")
 
-/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/silicon/robot/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(stat || locked_down || low_power_mode)
-		to_chat(src, "<span class='warning'>You can't do that right now!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>You are too far away!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>You are too far away!</span>")
 		return FALSE
 	return TRUE
 
@@ -903,7 +901,7 @@
 
 	previous_health = health
 
-/mob/living/silicon/robot/update_sight()
+/mob/living/silicon/robot/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -945,6 +943,9 @@
 
 	if(see_override)
 		see_invisible = see_override
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+		sight = initial(sight)
 	sync_lighting_plane_alpha()
 
 /mob/living/silicon/robot/update_stat()
@@ -983,8 +984,7 @@
 	if(!QDELETED(builtInCamera))
 		builtInCamera.c_tag = real_name
 	if(aiPDA && !shell)
-		aiPDA.owner = newname
-		aiPDA.name = newname + " (" + aiPDA.ownjob + ")"
+		aiPDA.imprint_id(newname, aiPDA.saved_job)
 	custom_name = newname
 
 
@@ -998,14 +998,20 @@
 	module.transform_to(/obj/item/robot_module)
 
 	// Remove upgrades.
-	for(var/obj/item/borg/upgrade/I in upgrades)
-		I.deactivate(src)
-		I.forceMove(get_turf(src))
+	// forceMove() сам поднимает COMSIG_MOVABLE_MOVED -> remove_from_upgrades(), а тот
+	// уже зовёт deactivate() и вычищает апгрейд из upgrades. Свой вызов deactivate()
+	// здесь давал второй проход по спискам модуля - см. "list index out of bounds"
+	// у xwelding/rped в прод-раунде 10150. Идём по копии: обработчик правит upgrades.
+	for(var/obj/item/borg/upgrade/upgrade as anything in upgrades.Copy())
+		upgrade.forceMove(get_turf(src))
 
 	upgrades.Cut()
 
 	vtec = 0
 	vtec_disabled = FALSE
+	vtec_expire = 0
+	vtec_drain = 0
+	vtec_cooldown_until = 0
 	ionpulse = FALSE
 	revert_shell()
 
@@ -1098,7 +1104,10 @@
 ///Called when an upgrade is moved outside the robot. So don't call this directly, use forceMove etc.
 /mob/living/silicon/robot/proc/remove_from_upgrades(obj/item/borg/upgrade/old_upgrade)
 	SIGNAL_HANDLER
-	if(loc == src)
+	// Проверять надо loc переехавшего апгрейда, а не свой: у моба loc это турф,
+	// и условие никогда не выполнялось - апгрейд снимался даже при перемещении
+	// внутри киборга.
+	if(old_upgrade.loc == src)
 		return
 	old_upgrade.deactivate(src)
 	upgrades -= old_upgrade
@@ -1182,7 +1191,7 @@
 
 /datum/action/innate/undeployment
 	name = "Disconnect from shell"
-	desc = "Stop controlling your shell and resume normal core operations."
+	desc = "Прекратить управление оболочкой и возобновить нормальные операции ядра."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_core"
 	required_mobility_flags = NONE
@@ -1196,8 +1205,8 @@
 	return TRUE
 
 /datum/action/innate/custom_holoform
-	name = "Select Custom Holoform"
-	desc = "Select one of your existing avatars to use as a holoform."
+	name = "Выбор облика"
+	desc = "Выбрать один из существующих аватаров для использования в качестве голоформы."
 	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
 	button_icon_state = "custom_holoform"
 	required_mobility_flags = NONE
@@ -1212,12 +1221,13 @@
 		if(istype(S, /mob/living/silicon/pai))
 			var/mob/living/silicon/pai/P = S
 			P.chassis = "custom"
+			P.update_icon()
 		else if(istype(S, /mob/living/silicon/ai))
 			var/mob/living/silicon/ai/A = S
 			if(A.client?.prefs?.custom_holoform_icon)
 				A.holo_icon = A.client.prefs.get_filtered_holoform(HOLOFORM_FILTER_AI)
 			else
-				A.holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"))
+				A.holo_icon = getHologramIcon(icon('icons/mob/AI.dmi', "female"))
 
 	return TRUE
 
@@ -1226,6 +1236,7 @@
 
 	if(!deployed || !mind || !mainframe)
 		return
+	mainframe.UnregisterSignal(src, COMSIG_LIVING_DEATH)
 	mainframe.redeploy_action.Grant(mainframe)
 	mainframe.redeploy_action.last_used_shell = src
 	mind.transfer_to(mainframe)
@@ -1304,6 +1315,28 @@
 		var/mob/unbuckle_me_now = i
 		unbuckle_mob(unbuckle_me_now, FALSE)
 
+/mob/living/silicon/robot/proc/camera_remove(drop_assembly = FALSE)
+	if(QDELETED(builtInCamera))
+		return
+
+	if(drop_assembly)
+		var/cyborg_turf_loc = get_turf(src)
+		new /obj/item/wallframe/camera (cyborg_turf_loc)
+		new /obj/item/stack/cable_coil(cyborg_turf_loc, 2)
+	QDEL_NULL(builtInCamera)
+
+/mob/living/silicon/robot/proc/camera_restore()
+	if(!QDELETED(builtInCamera) || scrambledcodes)
+		return
+
+	builtInCamera = new (src)
+	builtInCamera.c_tag = real_name
+	builtInCamera.network = list("ss13")
+	builtInCamera.internal_light = FALSE
+
+	if(wires?.is_cut(WIRE_CAMERA))
+		builtInCamera.toggle_cam(src, 0)
+
 /mob/living/silicon/robot/proc/TryConnectToAI(mob/living/silicon/ai/connect_to)
 	set_connected_ai(connect_to || select_active_ai_with_fewest_borgs(z))
 	if(connected_ai)
@@ -1328,44 +1361,54 @@
 	if(repairs)
 		heal_bodypart_damage(repairs, repairs - 1)
 
+/**
+ * Позы отдыха, у которых на текущем шасси реально есть спрайт: подпись в меню -> суффикс icon_state.
+ *
+ * update_rest_icon() присваивает "[cyborg_base_icon]-[resting_state]" вслепую, поэтому
+ * поза без спрайта делала борга целиком невидимым (Ratge и Belly up - как раз такая пара).
+ */
+/mob/living/silicon/robot/proc/available_rest_styles()
+	///подпись в меню -> суффикс icon_state, спрайт зовётся "базовая_иконка-суффикс"
+	var/static/list/base_styles = list(
+		"Лежать" = "rest",
+		"Сидеть" = "sit",
+		"Пузом кверху" = "bellyup",
+	)
+	///дополнительные позы модулей с drakerest
+	var/static/list/drake_styles = list(
+		"Дремать" = "rest_deep",
+		"Лежать, виляя" = "rest_alt",
+		"Сидеть, виляя" = "sit_alt",
+	)
+
+	. = list()
+	if(!module)
+		return
+
+	var/list/candidates = base_styles.Copy()
+	if(module.drakerest)
+		candidates += drake_styles
+
+	var/list/available_states = icon_states(icon)
+	for(var/pose_name in candidates)
+		if("[module.cyborg_base_icon]-[candidates[pose_name]]" in available_states)
+			.[pose_name] = candidates[pose_name]
+
 /mob/living/silicon/robot/proc/rest_style()
 	set name = "Switch Rest Style"
 	set category = "Robot Commands"
-	set desc = "Select your resting pose."
-	sitting = 0
-	bellyup = 0
-	deep_rest = 0		//DarkSer request by Gardelin0
-	wag_rest = 0		//DarkSer request by Gardelin0
-	wag_sit = 0			//DarkSer request by Gardelin0
+	set desc = "Выбрать позу отдыха."
 
-	if(module.drakerest == TRUE)	//DarkSer request by Gardelin0
-		var/choice_drake = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up", "Napping", "Resting Wag", "Sitting Wag"))
-		switch(choice_drake)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-			if("Napping")
-				deep_rest = 1
-			if("Resting Wag")
-				wag_rest = 1
-			if("Sitting Wag")
-				wag_sit = 1
-		update_icons()
-	if(module.drakerest == FALSE)
-		var/choice = tgui_alert(usr, "Select resting pose", "Pose", list("Resting", "Sitting", "Belly up"))
-		switch(choice)
-			if("Resting")
-				update_icons()
-				return FALSE
-			if("Sitting")
-				sitting = 1
-			if("Belly up")
-				bellyup = 1
-		update_icons()
+	var/list/poses = available_rest_styles()
+	if(!length(poses))
+		to_chat(src, span_warning("У этого шасси нет ни одной позы отдыха."))
+		return
+
+	var/choice = tgui_input_list(usr, "Выберите позу отдыха", "Поза", poses)
+	if(!choice || !poses[choice])
+		return
+	resting_state = poses[choice]
+	update_icons()
 
 /mob/living/silicon/robot/verb/viewmanifest()
 	set category = "Robot Commands"
@@ -1412,19 +1455,35 @@
 	if(program)
 		program.force_full_update()
 
-/mob/living/silicon/robot/get_tooltip_data()
-	var/t_He = ru_who(TRUE)
-	var/t_is = p_are()
-	. = list()
-	var/borg_type = module ? module : "Default"
-//This isn't even used normally, but if that ever changes, just uncomment this
-/*	var/obj/item/borg_chameleon/chameleon = locate() in src
+/// Проверка на инженерную маскировку
+/mob/living/silicon/robot/proc/chameleon_module()
+	var/obj/item/borg_chameleon/chameleon = locate() in src
 	if(!chameleon)
 		chameleon = locate() in src.module
 	if(chameleon?.active)
-		borg_type = "Engineering"
-*/
-	. += "[t_He] [t_is] a [borg_type] unit"
+		return TRUE
+	else
+		return FALSE
+
+/// Проверка на модуль антагролей
+/mob/living/silicon/robot/proc/check_allegiance()
+	if(chameleon_module())
+		return
+
+	if(module.type in GLOB.syndicate_cyborg_modules)
+		return " синдикатовского производства"
+	if(module.type in GLOB.inteq_cyborg_modules)
+		return " принадлежности InteQ"
+	if(module.type in GLOB.spider_cyborg_modules)
+		return " Паучьего Клана"
+
+/mob/living/silicon/robot/get_tooltip_data()
+	. = list()
+	var/borg_type = module ? module.name : "стандартный"
+	if(chameleon_module())
+		borg_type = "инженерный"
+
+	. += "Это [vocabulary_to_ru(GLOB.borgmodule_ru_adjective, borg_type)] киборг[check_allegiance()]"
 	if(activity)
 		. += activity
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, usr, .)

@@ -196,6 +196,31 @@
 	dangerous = TRUE
 	contraband = TRUE
 
+/datum/supply_pack/engine/crystallizer
+	name = "Crystallizer Board"
+	desc = "Плата для сборки кристаллярия — машины для кристаллизации и отверждения газов. Компоненты и трубы в комплект не входят."
+	cost = 4000
+	contains = list(/obj/item/circuitboard/machine/crystallizer)
+	crate_name = "crystallizer board crate"
+
+/datum/supply_pack/engine/hfr
+	name = "Hypertorus Fusion Reactor Kit"
+	desc = "Набор для сборки реактора термоядерного синтеза (ХФР). Содержит ядро, четыре угловых блока, порты подачи топлива и модулятора, отвода отходов и интерфейс. Разместите боксы в сетке 3x3 и активируйте мультитулом на ядре. Требуется доступ СЕ."
+	cost = 15000
+	access = ACCESS_CE
+	contains = list(/obj/item/hfr_box/core,
+					/obj/item/hfr_box/corner,
+					/obj/item/hfr_box/corner,
+					/obj/item/hfr_box/corner,
+					/obj/item/hfr_box/corner,
+					/obj/item/hfr_box/body/fuel_input,
+					/obj/item/hfr_box/body/moderator_input,
+					/obj/item/hfr_box/body/waste_output,
+					/obj/item/hfr_box/body/interface)
+	crate_name = "Hypertorus Fusion Reactor Kit"
+	crate_type = /obj/structure/closet/crate/secure/engineering
+	dangerous = TRUE
+
 /datum/supply_pack/engine/reactor
 	name = "RMBK Nuclear Reactor Kit" // (not) a toy
 	desc = "Содержит реакторный маяк и 3 реакторных пульта. Урановые стержни в комплект не входят."

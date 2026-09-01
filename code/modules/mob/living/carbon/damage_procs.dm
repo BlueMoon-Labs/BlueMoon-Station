@@ -73,7 +73,7 @@
 	if(amount > 0)
 		take_overall_damage(amount, 0, 0, updating_health)
 	else
-		heal_overall_damage(abs(amount), 0, 0, only_robotic, only_organic, updating_health)
+		heal_overall_damage(abs(amount), 0, 0, only_robotic, only_organic, updating_health, forced)
 	return amount
 
 /mob/living/carbon/adjustFireLoss(amount, updating_health = TRUE, forced = FALSE, only_robotic = FALSE, only_organic = TRUE)
@@ -84,7 +84,7 @@
 	if(amount > 0)
 		take_overall_damage(0, amount, 0, updating_health)
 	else
-		heal_overall_damage(0, abs(amount), 0, only_robotic, only_organic, updating_health)
+		heal_overall_damage(0, abs(amount), 0, only_robotic, only_organic, updating_health, forced)
 	return amount
 
 
@@ -98,7 +98,23 @@
 			blood_volume = min((blood_volume - (3 * amount)), blood_cap)	//5x was too much, this is punishing enough.
 		else
 			blood_volume = min((blood_volume - amount), blood_cap)
-	return ..()
+	var/tox_incoming = amount
+	. = ..()
+	if(!isnum(.) || stat == DEAD || tox_incoming <= 0)
+		return .
+	var/new_tox = getToxLoss(TOX_OMNI)
+	if(world.time < next_tox_vomit)
+		return .
+	if(new_tox >= 60)
+		vomit(30, blood = TRUE, stun = TRUE, distance = 3, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	else if(new_tox >= 40)
+		vomit(20, blood = FALSE, stun = TRUE, distance = 2, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	else if(new_tox >= 20)
+		vomit(10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = TRUE)
+		next_tox_vomit = world.time + (12 SECONDS)
+	return .
 
 /mob/living/carbon/getStaminaLoss()
 	. = 0
@@ -217,7 +233,7 @@
 		update_damage_overlays()
 
 //Heal MANY bodyparts, in random order
-/mob/living/carbon/heal_overall_damage(brute = 0, burn = 0, stamina = 0, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE)
+/mob/living/carbon/heal_overall_damage(brute = 0, burn = 0, stamina = 0, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
 	var/list/obj/item/bodypart/parts = get_damaged_bodyparts(brute, burn, stamina)
 
 	var/update = NONE
@@ -228,7 +244,7 @@
 		var/burn_was = picked.burn_dam
 		var/stamina_was = picked.stamina_dam
 
-		update |= picked.heal_damage(brute, burn, stamina, only_robotic, only_organic, FALSE)
+		update |= picked.heal_damage(brute, burn, stamina, only_robotic, only_organic, FALSE, forced = forced)
 
 		brute = round(brute - (brute_was - picked.brute_dam), DAMAGE_PRECISION)
 		burn = round(burn - (burn_was - picked.burn_dam), DAMAGE_PRECISION)

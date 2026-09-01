@@ -41,6 +41,7 @@
 	create_reagents(100, INJECTABLE | DRAWABLE)
 
 /obj/item/slime_extract/on_grind()
+	..()
 	if(Uses)
 		grind_results[/datum/reagent/toxin/slimejelly] = 20
 
@@ -254,6 +255,7 @@
 			species.update_glow(user, 5)
 			addtimer(CALLBACK(species, TYPE_PROC_REF(/datum/species/jelly/luminescent, update_glow), user, LUMINESCENT_DEFAULT_GLOW), 600)
 			to_chat(user, "<span class='notice'>You start glowing brighter.</span>")
+			return 600 //кулдаун по длительности самого свечения, иначе ветка возвращала null
 
 		if(SLIME_ACTIVATE_MAJOR)
 			user.visible_message("<span class='warning'>[user]'s skin starts flashing intermittently...</span>", "<span class='warning'>Your skin starts flashing intermittently...</span>")
@@ -458,7 +460,10 @@
 				return
 			to_chat(user, "<span class='notice'>You feel your skin harden and become more resistant.</span>")
 			species.armor += 25
-			addtimer(CALLBACK(src, PROC_REF(reset_armor), species), 1200)
+			// BLUEMOON ADD START - BRC второй бакет для адамантьевого экстракта
+			user.brc_mitigation += 30
+			// BLUEMOON ADD END
+			addtimer(CALLBACK(src, PROC_REF(reset_armor), species, user), 1200)
 			return 450
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -469,9 +474,13 @@
 				return
 			to_chat(user, "<span class='notice'>You stop feeding [src], and your body returns to its slimelike state.</span>")
 
-/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species)
+/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species, mob/living/M)
 	if(istype(species))
 		species.armor -= 25
+	// BLUEMOON ADD START
+	if(isliving(M) && !QDELETED(M))
+		M.brc_mitigation = max(0, M.brc_mitigation - 30)
+	// BLUEMOON ADD END
 
 /obj/item/slime_extract/bluespace
 	name = "bluespace slime extract"
@@ -836,19 +845,19 @@
 
 /obj/item/slimepotion/speed
 	name = "slime speed potion"
-	desc = "A potent chemical mix that will remove the slowdown from any item."
+	desc = "Мощная химическая смесь, которая уберет замедление с любого предмета."
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "potred"
 
 /obj/item/slimepotion/speed/afterattack(obj/C, mob/user)
 	. = ..()
 	if(!istype(C))
-		to_chat(user, "<span class='warning'>The potion can only be used on items or vehicles!</span>")
+		to_chat(user, "<span class='warning'>Зелье применимо только на предметы и транспорт!</span>")
 		return
 	if(isitem(C))
 		var/obj/item/I = C
 		if(I.slowdown <= 0 || I.obj_flags & IMMUTABLE_SLOW)
-			to_chat(user, "<span class='warning'>The [C] can't be made any faster!</span>")
+			to_chat(user, "<span class='warning'>С замедлением [C] нельзя что-либо сделать!</span>")
 			return ..()
 		I.slowdown = 0
 
@@ -857,11 +866,11 @@
 		var/datum/component/riding/R = V.GetComponent(/datum/component/riding)
 		if(R)
 			if(R.vehicle_move_delay <= 1 )
-				to_chat(user, "<span class='warning'>The [C] can't be made any faster!</span>")
+				to_chat(user, "<span class='warning'>С замедлением [C] нельзя что-либо сделать!</span>")
 				return ..()
 			R.vehicle_move_delay = 1
 
-	to_chat(user, "<span class='notice'>You slather the red gunk over the [C], making it faster.</span>")
+	to_chat(user, "<span class='notice'>Вы размазали зелье по поверхности [C], делая предмет легче и быстрее.</span>")
 	C.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 	C.add_atom_colour("#FF0000", FIXED_COLOUR_PRIORITY)
 	qdel(src)

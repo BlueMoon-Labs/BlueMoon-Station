@@ -20,3 +20,4 @@
 	icon_state = "clussy_outfit"
 	item_state = "clussy_outfit"
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER

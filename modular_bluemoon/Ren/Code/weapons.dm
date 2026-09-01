@@ -47,7 +47,7 @@
 /obj/item/gun/energy/pulse/pistol/inteq
 	name = "Melter"
 	desc = "<span class='danger'>Не направлять рабочую часть на органику</span>"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	icon_state = "melter"
 	charge_delay = 4
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/melter, /obj/item/ammo_casing/energy/laser/melter/destroy)
@@ -60,13 +60,13 @@
 
 /obj/item/ammo_casing/energy/laser/melter
 	projectile_type = /obj/item/projectile/beam/melter
-	e_cost = 1400
+	e_cost = 1200
 	select_name = "Kill"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
 /obj/item/ammo_casing/energy/laser/melter/destroy
 	projectile_type = /obj/item/projectile/beam/melter/destroy
-	e_cost = 5000
+	e_cost = 4000
 	select_name = "MELT"
 	fire_sound = 'modular_bluemoon/Ren/Sound/Melter.ogg'
 
@@ -97,7 +97,7 @@
 	desc = "Энергетический пистолет довольно старого образца. Создан для использования спецслужбами Солнечной Федерации, но со временем был замещён более удачными образцами. Выглядит сильно модернизированным."
 	icon_state = "canceller"
 	item_state = "canceller"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler)
@@ -109,29 +109,29 @@
 	burst_shot_delay = 2
 
 /// AA12
-/obj/item/ammo_box/magazine/aa12/small
+/obj/item/ammo_box/magazine/aa12
 	name = "AA12 magazine (12g buckshot)"
 	desc = "Здоровый коробчатый магазин для патрон 12 калибра"
 	icon_state = "mag-aa-small"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 8
 
-/obj/item/ammo_box/magazine/aa12/small/update_icon()
+/obj/item/ammo_box/magazine/aa12/update_icon()
 	..()
 	icon_state = "mag-aa-small-[ammo_count() ? "1" : "0"]"
 
-/obj/item/ammo_box/magazine/aa12
+/obj/item/ammo_box/magazine/aa12/drum
 	name = "AA12 drum magazine (12g buckshot)"
 	desc = "Здоровый барабанный магазин для патрон 12 калибра"
 	icon_state = "mag-aa"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = "shotgun"
 	max_ammo = 20
 
-/obj/item/ammo_box/magazine/aa12/update_icon()
+/obj/item/ammo_box/magazine/aa12/drum/update_icon()
 	..()
 	icon_state = "mag-aa-[ammo_count() ? "1" : "0"]"
 
@@ -142,11 +142,11 @@
 	item_state = "minotaur"
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file =  'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 2
-	mag_type = /obj/item/ammo_box/magazine/aa12/small
+	mag_type = /obj/item/ammo_box/magazine/aa12
 	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
 	automatic_burst_overlay = FALSE
 	can_suppress = FALSE
@@ -174,18 +174,8 @@
 	return
 
 //Огнемёт крутой
-/obj/item/projectile/bullet/incendiary/m2a100
-	name = "Fire"
-	damage = 7
-	fire_stacks = 10
-	damage_type = BURN
-	icon_state = ""
-	hitsound_wall = ""
-	projectile_piercing = PASSMOB
-	range = 15
-
 /obj/item/ammo_casing/energy/laser/m2a100
-	projectile_type = /obj/item/projectile/bullet/incendiary/m2a100
+	projectile_type = /obj/item/projectile/bullet/flamethrower
 	pellets = 6
 	variance = 35
 	e_cost = 50
@@ -199,7 +189,7 @@
 	item_state = "m240_0"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/m2a100)
 	attack_verb = list("attacked", "bumped", "hited")
 	force = 12
@@ -350,7 +340,7 @@
 	desc = "Ammo for KS23."
 	id = "ammo_ks23"
 	build_type = AUTOLATHE
-	materials = list(/datum/material/iron = 28000)
+	materials = list(/datum/material/iron = 42000)
 	build_path = /obj/item/ammo_box/slug23
 	category = list("Imported")
 
@@ -369,6 +359,87 @@
 	id = "ammo_ks23_rsh"
 	build_path = /obj/item/ammo_box/rubbershot23
 
+/obj/item/disk/design_disk/adv/ammo/makarov
+	name = "Makarov Ammo Design Disk"
+	desc = "Вставь в автолат, чтобы печатать магазины 10мм для пистолета Макарова."
+
+/obj/item/disk/design_disk/adv/ammo/makarov/Initialize(mapload)
+	. = ..()
+	var/datum/design/ammo_makarov_mag/M = new
+	var/datum/design/ammo_makarov_mag/ap/A = new
+	var/datum/design/ammo_makarov_mag/hp/H = new
+	var/datum/design/ammo_makarov_mag/fire/F = new
+	blueprints[1] = M
+	blueprints[2] = A
+	blueprints[3] = H
+	blueprints[4] = F
+
+/datum/design/ammo_makarov_mag
+	name = "pistol magazine (10mm)"
+	desc = "A gun magazine."
+	id = "ammo_makarov_mag"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 6000)
+	build_path = /obj/item/ammo_box/magazine/m10mm
+	category = list("Imported")
+
+/datum/design/ammo_makarov_mag/ap
+	name = "pistol magazine (10mm AP)"
+	desc = "A gun magazine. Loaded with rounds which penetrate armour, but are less effective against normal targets."
+	id = "ammo_makarov_mag_ap"
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 6500)
+	build_path = /obj/item/ammo_box/magazine/m10mm/ap
+
+/datum/design/ammo_makarov_mag/hp
+	name = "pistol magazine (10mm HP)"
+	desc = "A gun magazine. Loaded with hollow-point rounds, extremely effective against unarmored targets, but nearly useless against protective clothing."
+	id = "ammo_makarov_mag_hp"
+	materials = list(/datum/material/iron = 7500, /datum/material/glass = 5000)
+	build_path = /obj/item/ammo_box/magazine/m10mm/hp
+
+/datum/design/ammo_makarov_mag/fire
+	name = "pistol magazine (10mm incendiary)"
+	desc = "A gun magazine. Loaded with rounds which ignite the target."
+	id = "ammo_makarov_mag_fire"
+	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/m10mm/fire
+
+/obj/item/disk/design_disk/adv/ammo/stechkin
+	name = "Stechkin Ammo Design Disk"
+	desc = "Вставь в автолат, чтобы печатать магазины 9мм для пистолета Стечкина."
+
+/obj/item/disk/design_disk/adv/ammo/stechkin/Initialize(mapload)
+	. = ..()
+	var/datum/design/ammo_stechkin_mag/S = new
+	var/datum/design/ammo_stechkin_mag/ap/A = new
+	var/datum/design/ammo_stechkin_mag/inc/I = new
+	blueprints[1] = S
+	blueprints[2] = A
+	blueprints[3] = I
+
+/datum/design/ammo_stechkin_mag
+	name = "pistol magazine (9mm)"
+	desc = "A gun magazine."
+	id = "ammo_stechkin_mag"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm
+	category = list("Imported")
+
+/datum/design/ammo_stechkin_mag/ap
+	name = "pistol magazine (9mm AP)"
+	desc = "A gun magazine. Loaded with rounds which penetrate armour."
+	id = "ammo_stechkin_mag_ap"
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 6500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm/ap
+
+/datum/design/ammo_stechkin_mag/inc
+	name = "pistol magazine (9mm incendiary)"
+	desc = "A gun magazine. Loaded with rounds which ignite the target."
+	id = "ammo_stechkin_mag_inc"
+	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm/inc
+
 ///Дорожный знак
 /obj/item/spear/stop
 	name = "Stop sign"
@@ -384,6 +455,7 @@
 	sharpness = SHARP_NONE
 	hitsound = 'modular_bluemoon/Ren/Sound/metal.ogg'
 	attack_verb = list("attacked", "slam", "jabbed", "torn", "gored")
+	unique_reskin = null
 
 /obj/item/spear/electrospear/ComponentInitialize()
 	. = ..()

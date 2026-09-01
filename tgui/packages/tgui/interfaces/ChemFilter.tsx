@@ -1,7 +1,7 @@
 import { useBackend } from '../backend';
-import { Button, Stack, Section } from '../components';
-import { Window } from '../layouts';
+import { Button, Section, Stack } from '../components';
 import { CSS_COLORS } from '../constants';
+import { Window } from '../layouts';
 
 type Data = {
   left?: string[];
@@ -14,8 +14,8 @@ type Props = {
   buttonColor: (typeof CSS_COLORS)[number];
 };
 
-export const ChemFilterPane = (props: Props, context) => {
-  const { act } = useBackend(context);
+export const ChemFilterPane = (props: Props) => {
+  const { act } = useBackend();
   const { title, list, buttonColor } = props;
   const titleKey = title.toLowerCase();
 
@@ -44,8 +44,8 @@ export const ChemFilterPane = (props: Props, context) => {
   );
 };
 
-export const ChemFilter = (props, context) => {
-  const { data } = useBackend<Data>(context);
+export const ChemFilter = (props) => {
+  const { data } = useBackend<Data>();
   const { left = [], right = [] } = data;
 
   return (

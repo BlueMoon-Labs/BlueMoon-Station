@@ -108,6 +108,8 @@
 	SHOULD_NOT_SLEEP(TRUE)
 	//SHOULD_CALL_PARENT(TRUE)
 
+	if(machine_sleeping) // re-home the static stand-in draw: this fires on area entry too, where machine_stat may not flip
+		update_sleep_static_power()
 	if(machine_stat & BROKEN)
 		return
 	if(powered(power_channel))
@@ -153,7 +155,7 @@
 	if(istype(W, /obj/item/stack/cable_coil))
 		var/obj/item/stack/cable_coil/coil = W
 		var/turf/T = user.loc
-		if(T.intact || !isfloorturf(T))
+		if((T.turf_flags & TURF_INTACT) || !isfloorturf(T))
 			return
 		if(get_dist(src, user) > 1)
 			return
@@ -251,32 +253,36 @@
 
 //remove the old powernet and replace it with a new one throughout the network.
 /proc/propagate_network(obj/O, datum/powernet/PN)
+	//ассоц-списки вместо `|=` (tg-схема): `|=` сканирует весь worklist на каждую
+	//вставку - O(n^2) на станционной сетке, ассоц-проверка ключа за O(1).
+	//Взрыв с резкой магистрали давал >1с одного propagate именно на этом.
 	var/list/worklist = list()
 	var/list/found_machines = list()
 	var/index = 1
 	var/obj/P = null
 
-	worklist+=O //start propagating from the passed object
+	worklist[O] = TRUE //start propagating from the passed object
 
-	while(index<=worklist.len) //until we've exhausted all power objects
+	while(index <= length(worklist)) //until we've exhausted all power objects
 		P = worklist[index] //get the next power object found
 		index++
 
-		if( istype(P, /obj/structure/cable))
+		if(istype(P, /obj/structure/cable))
 			var/obj/structure/cable/C = P
 			if(C.powernet != PN) //add it to the powernet, if it isn't already there
 				PN.add_cable(C)
-			worklist |= C.get_connections() //get adjacents power objects, with or without a powernet
+			for(var/obj/connection as anything in C.get_connections()) //get adjacents power objects, with or without a powernet
+				if(!worklist[connection])
+					worklist[connection] = TRUE
 
 		else if(P.anchored && istype(P, /obj/machinery/power))
-			var/obj/machinery/power/M = P
-			found_machines |= M //we wait until the powernet is fully propagates to connect the machines
+			found_machines[P] = TRUE //we wait until the powernet is fully propagates to connect the machines
 
 		else
 			continue
 
 	//now that the powernet is set, connect found machines to it
-	for(var/obj/machinery/power/PM in found_machines)
+	for(var/obj/machinery/power/PM as anything in found_machines)
 		if(!PM.connect_to_network()) //couldn't find a node on its turf...
 			PM.disconnect_from_network() //... so disconnect if already on a powernet
 
@@ -396,7 +402,24 @@
 	return null
 
 /area/proc/get_apc()
-	var/target = base_area ? base_area : src
-	for(var/obj/machinery/power/apc/APC in GLOB.apcs_list)
-		if(APC.area == target)
+	var/area/target = base_area ? base_area : src
+	var/list/linked_areas = target.sub_areas
+	var/obj/machinery/power/apc/APC = target.power_apc
+	if(APC && !QDELETED(APC))
+		var/area/apc_area = APC.area
+		if(apc_area == target || linked_areas?.Find(apc_area))
+			if(apc_area != target)
+				APC.area = target
+				APC.update_nightshift_auth_requirement()
+			return APC
+	target.power_apc = null
+	for(APC in GLOB.apcs_list)
+		if(QDELETED(APC))
+			continue
+		var/area/apc_area = APC.area
+		if(apc_area == target || linked_areas?.Find(apc_area))
+			if(apc_area != target)
+				APC.area = target
+				APC.update_nightshift_auth_requirement()
+			target.power_apc = APC
 			return APC

@@ -1,4 +1,6 @@
 #define CHEMICAL_QUANTISATION_LEVEL 0.001
+/// Какая доля содержимого ёмкости уходит в дым на каждый реагент при "кислоте в воду"
+#define ACID_WATER_SMOKE_DIVISOR 5
 
 /proc/build_chemical_reagent_list()
 	//Chemical Reagents - Initialises all /datum/reagent into a list indexed by reagent id
@@ -521,8 +523,14 @@
 					else
 						if(cached_my_atom.type == C.required_container)
 							matching_container = 1
+					// Пропускаем ЭТОТ рецепт, а не весь разбор. Здесь был return, и он обрывал
+					// handle_reactions() целиком, теряя уже собранные possible_reactions:
+					// индекс рецептов строится по ПЕРВОМУ реагенту (см. break выше), поэтому
+					// достаточно сахара в теле - и на /datum/chemical_reaction/food/caramel
+					// (mob_react = FALSE) внутримобная химия умирала вся сразу. Так же и с
+					// водой (dough), кровью (synthmeat), salglu (coagulant_weak).
 					if (isliving(cached_my_atom) && !C.mob_react) //Makes it so certain chemical reactions don't occur in mobs
-						return
+						continue
 					if(!C.required_other)
 						matching_other = 1
 
@@ -877,7 +885,7 @@
 	pH = REAGENT_NORMAL_PH
 	return FALSE
 
-/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0)
+/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0, affected_bodypart)
 	var/react_type
 	if(isliving(A))
 		react_type = "LIVING"
@@ -896,10 +904,11 @@
 		switch(react_type)
 			if("LIVING")
 				var/touch_protection = 0
+				var/bodypart = affected_bodypart
 				if(method == VAPOR)
 					var/mob/living/L = A
 					touch_protection = L.get_permeability_protection()
-				R.reaction_mob(A, method, R.volume * volume_modifier, show_message, touch_protection)
+				R.reaction_mob(A, method, R.volume * volume_modifier, show_message, touch_protection, affected_bodypart = bodypart)
 			if("TURF")
 				R.reaction_turf(A, R.volume * volume_modifier, show_message, from_gas)
 			if("OBJ")
@@ -946,11 +955,32 @@
 			var/turf/T = get_turf(my_atom)
 			var/datum/reagents/R = new/datum/reagents(3000)
 			R.add_reagent(/datum/reagent/fermi/fermiAcid, amount)
-			for (var/datum/reagent/reagentgas in reagent_list)
-				R.add_reagent(reagentgas, amount/5)
-				remove_reagent(reagentgas, amount/5)
+			// .type, а не сам датум: add_reagent/remove_reagent ищут по тип-пути в
+			// GLOB.chemical_reagents_list, а экземпляр туда не попадает никогда. В прод-логе
+			// это выглядело как "attempted to add a reagent called 'Hydrogen' which doesn't
+			// exist" - в сообщение уезжало name датума. По факту дым получал только кислоту,
+			// а содержимое ёмкости не расходовалось вовсе.
+			// Снапшот: remove_reagent правит reagent_list, по которому мы идём.
+			var/portion_target = amount / ACID_WATER_SMOKE_DIVISOR
+			for (var/datum/reagent/reagentgas as anything in reagent_list.Copy())
+				// Слитый в ноль реагент del_reagent() успевает qdel-нуть прямо посреди обхода.
+				if(QDELETED(reagentgas))
+					continue
+				// Берём столько, сколько реально есть в ёмкости и сколько влезет в дым: раньше
+				// дым получал полную долю, а remove_reagent снимал clamp по доступному объёму -
+				// разница появлялась в облаке из ниоткуда.
+				var/portion = min(portion_target, reagentgas.volume, R.maximum_volume - R.total_volume)
+				if(portion < CHEMICAL_QUANTISATION_LEVEL)
+					continue
+				// no_react: у R нет my_atom, а pH от кислоты нулевой, поэтому вода из ёмкости
+				// повторно влетала в эту же ветку - каскад вложенных облаков дыма и записей в
+				// блэкбокс. safety: handle_reactions() на src посреди обхода qdel-ит элементы
+				// снапшота, и в add_reagent уезжал тип уже удалённого датума.
+				if(R.add_reagent(reagentgas.type, portion, no_react = TRUE))
+					remove_reagent(reagentgas.type, portion, safety = TRUE)
 			s.set_up(R, clamp(amount/10, 0, 2), T)
 			s.start()
+			qdel(R)
 			return FALSE
 
 	if(!pH)
@@ -1057,7 +1087,7 @@
 		var/datum/reagent/R = A
 		if (R.type == reagent)
 			//In practice this is really confusing and players feel like it randomly melts their beakers, but I'm not sure how else to handle it. We'll see how it goes and I can remove this if it confuses people.
-			if(!ignore_pH)
+			if(!ignore_pH && total_volume > 0)
 				//if (((pH > R.pH) && (pH <= 7)) || ((pH < R.pH) && (pH >= 7)))
 				pH = (((pH - R.pH) / total_volume) * amount) + pH
 			if(istype(my_atom, /obj/item/reagent_containers/))

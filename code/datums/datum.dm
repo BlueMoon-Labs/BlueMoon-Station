@@ -58,14 +58,12 @@
 	var/list/cooldowns
 	var/tmp/unique_datum_id = null
 
-#ifdef REFERENCE_TRACKING
-	var/running_find_references
+	/// Метка последнего прохода рефтрекера по этому датуму (защита от повторного обхода).
 	var/last_find_references = 0
 	#ifdef REFERENCE_TRACKING_DEBUG
 	///Stores info about where refs are found, used for sanity checks and testing
 	var/list/found_refs
 	#endif
-#endif
 
 #ifdef DATUMVAR_DEBUGGING_MODE
 	var/list/cached_vars
@@ -89,6 +87,11 @@
  *
  * Return an appropriate [QDEL_HINT][QDEL_HINT_QUEUE] to modify handling of your deletion;
  * in most cases this is [QDEL_HINT_QUEUE].
+ * Useful non-default hints:
+ * * [QDEL_HINT_SOFTFAIL_ALERT] for objects that should raise an alert if they miss the normal softcheck window.
+ *   The legacy alias [QDEL_HINT_QUICKDEL] still exists for compatibility, but it does not use a special fast timeout.
+ * * [QDEL_HINT_SLOWDESTROY] for objects whose cleanup is expected to miss softcheck while they fan out into more qdels.
+ * * [QDEL_HINT_HARDDEL] or [QDEL_HINT_HARDDEL_NOW] when soft GC is known to be impossible or undesirable.
  *
  * The base case is responsible for doing the following
  * * Erasing timers pointing to this datum
@@ -99,6 +102,17 @@
  */
 /datum/proc/Destroy(force=FALSE, ...)
 	SHOULD_CALL_PARENT(TRUE)
+	#ifdef DATUM_CENSUS
+	// Атомы сюда доходят наравне со всеми (Destroy() у них общий), и отсеивать их здесь
+	// нечем - istype на каждом из полутора миллионов qdel стоил бы дороже самого счётчика.
+	// Отсев делает отчёт: он перебирает ключи datum_census_created, куда атом не попадает
+	// вовсе, см. code/datums/datum_census.dm.
+	var/list/census_destroyed = datum_census_destroyed
+	if(!census_destroyed)
+		census_destroyed = list()
+		datum_census_destroyed = census_destroyed
+	census_destroyed[type] += 1
+	#endif
 	tag = null
 	datum_flags &= ~DF_USE_TAG //In case something tries to REF us
 	weak_reference = null	//ensure prompt GCing of weakref.
@@ -111,10 +125,8 @@
 			continue
 		qdel(timer)
 
-	#ifdef REFERENCE_TRACKING
 	#ifdef REFERENCE_TRACKING_DEBUG
 	found_refs = null
-	#endif
 	#endif
 
 	//BEGIN: ECS SHIT
@@ -139,10 +151,13 @@
 			if(length(comps))
 				for(var/i in comps)
 					var/datum/component/comp = i
+					if(!comp)
+						continue
 					comp.UnregisterSignal(src, sig)
 			else
 				var/datum/component/comp = comps
-				comp.UnregisterSignal(src, sig)
+				if(comp)
+					comp.UnregisterSignal(src, sig)
 		comp_lookup = lookup = null
 
 	for(var/target in signal_procs)

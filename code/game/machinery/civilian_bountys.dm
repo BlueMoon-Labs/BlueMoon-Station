@@ -5,6 +5,8 @@
 	name = "civilian bounty pad"
 	desc = "A machine designed to send civilian bounty targets to centcom."
 	layer = TABLE_LAYER
+	warmup_time = 3 SECONDS
+	circuit = /obj/item/circuitboard/machine/bountypad
 
 ///Computer for assigning new civilian bounties, and sending bounties for collection.
 /obj/machinery/computer/piratepad_control/civilian
@@ -13,7 +15,9 @@
 	status_report = "Ready for delivery."
 	icon_screen = "civ_bounty"
 	icon_keyboard = "id_key"
-	warmup_time = 3 SECONDS
+	circuit = /obj/item/circuitboard/computer/bountypad
+	//Родитель неразрушаем ради антагонистов, а станционный пульт наград ломается как обычная машина.
+	resistance_flags = NONE
 	var/obj/item/card/id/inserted_scan_id
 
 /obj/machinery/computer/piratepad_control/civilian/Initialize()
@@ -119,19 +123,38 @@
 	if(!pot_acc.account_job)
 		to_chat(usr, "<span class='warning'>The console smartly rejects your ID card, as it lacks a job assignment!</span>")
 		return FALSE
-	var/list/datum/bounty/crumbs = list(random_bounty(pot_acc.account_job.bounty_types), // We want to offer 2 (Три) bounties from their appropriate job catagories
-										random_bounty(pot_acc.account_job.bounty_types),
-										random_bounty(pot_acc.account_job.bounty_types),
-										random_bounty(CIV_JOB_BASIC), // and 1 (Два) guarenteed assistant bounty if the other 2 suck.
-										random_bounty(CIV_JOB_BASIC))
+	var/list/datum/bounty/crumbs = list()
+	append_random_bounties(crumbs, pot_acc.account_job.bounty_types, 3) // We want to offer 3 bounties from their appropriate job categories.
+	append_random_bounties(crumbs, CIV_JOB_BASIC, 2) // And 2 guaranteed assistant bounties if the others suck.
+	if(!LAZYLEN(crumbs))
+		to_chat(usr, "<span class='warning'>The console fails to assemble a valid bounty list. Try again in a moment.</span>")
+		return FALSE
 	pot_acc.bounty_timer = world.time
 	pot_acc.bounties = crumbs
+
+/obj/machinery/computer/piratepad_control/civilian/proc/append_random_bounties(list/datum/bounty/target_list, bounty_type, amount)
+	if(!target_list || amount <= 0)
+		return
+	var/target_length = length(target_list) + amount
+	var/max_attempts = max(amount * 4, amount)
+	var/attempts = 0
+	while(length(target_list) < target_length && attempts < max_attempts)
+		var/datum/bounty/new_bounty = random_bounty(bounty_type)
+		if(new_bounty)
+			target_list += new_bounty
+		attempts++
 
 /obj/machinery/computer/piratepad_control/civilian/proc/pick_bounty(choice)
 	if(!inserted_scan_id?.registered_account)
 		playsound(loc, 'sound/machines/synth_no.ogg', 40 , TRUE)
 		return
-	inserted_scan_id.registered_account.civilian_bounty = inserted_scan_id.registered_account.bounties[choice]
+	var/list/bounties = inserted_scan_id.registered_account.bounties
+	if(!LAZYLEN(bounties) || choice < 1 || choice > length(bounties))
+		return
+	var/datum/bounty/chosen_bounty = bounties[choice]
+	if(!chosen_bounty)
+		return
+	inserted_scan_id.registered_account.civilian_bounty = chosen_bounty
 	inserted_scan_id.registered_account.bounties = null
 	return inserted_scan_id.registered_account.civilian_bounty
 
@@ -152,26 +175,30 @@
 	data["sending"] = sending
 	data["status_report"] = status_report
 	data["id_inserted"] = inserted_scan_id
+	data["picking"] = FALSE
 	if(inserted_scan_id && inserted_scan_id.registered_account)
 		if(inserted_scan_id.registered_account.civilian_bounty)
 			data["id_bounty_name"] = inserted_scan_id.registered_account.civilian_bounty.name
 			data["id_bounty_info"] = inserted_scan_id.registered_account.civilian_bounty.description
 			data["id_bounty_num"] = inserted_scan_id.registered_account.bounty_num()
 			data["id_bounty_value"] = (inserted_scan_id.registered_account.civilian_bounty.reward) * (CIV_BOUNTY_SPLIT/100)
-		if(inserted_scan_id.registered_account.bounties)
-			data["picking"] = TRUE
-			data["id_bounty_names"] = list(inserted_scan_id.registered_account.bounties[1].name,
-											inserted_scan_id.registered_account.bounties[2].name,
-											inserted_scan_id.registered_account.bounties[3].name,
-											inserted_scan_id.registered_account.bounties[4].name,
-											inserted_scan_id.registered_account.bounties[5].name)
-			data["id_bounty_values"] = list(inserted_scan_id.registered_account.bounties[1].reward * (CIV_BOUNTY_SPLIT/100),
-											inserted_scan_id.registered_account.bounties[2].reward * (CIV_BOUNTY_SPLIT/100),
-											inserted_scan_id.registered_account.bounties[3].reward * (CIV_BOUNTY_SPLIT/100),
-											inserted_scan_id.registered_account.bounties[4].reward * (CIV_BOUNTY_SPLIT/100),
-											inserted_scan_id.registered_account.bounties[5].reward * (CIV_BOUNTY_SPLIT/100))
-		else
-			data["picking"] = FALSE
+		var/list/datum/bounty/available_bounties = inserted_scan_id.registered_account.bounties
+		if(LAZYLEN(available_bounties))
+			var/list/bounty_names = list()
+			var/list/bounty_values = list()
+			var/list/bounty_indexes = list()
+			for(var/i in 1 to length(available_bounties))
+				var/datum/bounty/bounty_option = available_bounties[i]
+				if(!bounty_option)
+					continue
+				bounty_names += bounty_option.name
+				bounty_values += bounty_option.reward * (CIV_BOUNTY_SPLIT/100)
+				bounty_indexes += i
+			if(LAZYLEN(bounty_names))
+				data["picking"] = TRUE
+				data["id_bounty_names"] = bounty_names
+				data["id_bounty_values"] = bounty_values
+				data["id_bounty_indexes"] = bounty_indexes
 	return data
 
 /obj/machinery/computer/piratepad_control/civilian/ui_act(action, params)
@@ -280,7 +307,10 @@
 	radio.recalculateChannels()
 
 /obj/item/bounty_cube/Destroy()
+	STOP_PROCESSING(SSobj, src) // парный к START_PROCESSING в set_up
 	QDEL_NULL(radio)
+	bounty_handler_account = null
+	bounty_holder_account = null
 	. = ..()
 
 /obj/item/bounty_cube/examine()
@@ -305,7 +335,7 @@
 	bounty_value = my_bounty.reward
 	bounty_name = my_bounty.name
 	bounty_holder = holder_id.registered_name
-	bounty_holder_job = holder_id.assignment
+	bounty_holder_job = holder_id.get_assignment_name()
 	bounty_holder_account = holder_id.registered_account
 	name = "\improper [bounty_value] cr [name]"
 	desc += " The sales tag indicates it was <i>[bounty_holder] ([bounty_holder_job])</i>'s reward for completing the <i>[bounty_name]</i> bounty."

@@ -11,6 +11,7 @@
 	tail_state = "none"
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони
 
 /obj/item/clothing/suit/armor/Initialize(mapload)
 	. = ..()
@@ -41,7 +42,20 @@
 	icon_state = "armoralt"
 	item_state = "armoralt"
 	blood_overlay_type = "armor"
+	clothing_flags = THICKMATERIAL
 	dog_fashion = /datum/dog_fashion/back
+	brc_mitigation_bonus = 10  // BLUEMOON ADD - стандартная броня СБ лучше держит свой калибр
+
+/obj/item/clothing/suit/armor/vest/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/armor/vest/dropped(mob/user)
+	. = ..()
+	if(brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+// BLUEMOON ADD END
 
 /obj/item/clothing/suit/armor/vest/alt
 	desc = "A Type I armored vest that provides decent protection against most types of damage."
@@ -90,6 +104,7 @@
 	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 70, ACID = 90, WOUND = 20)
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	heat_protection = CHEST|GROIN|LEGS|ARMS
+	clothing_flags = THICKMATERIAL
 	strip_delay = 80
 
 /obj/item/clothing/suit/armor/hos/navyblue
@@ -140,36 +155,12 @@
 	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
 	storage.max_items = 5
 
-//Commander
-/obj/item/clothing/suit/armor/hos/command
-	name = "Emergency Response Team commander Armor"
-	desc = "A set of armor worn by the commander of a Nanotrasen Emergency Response Team. Has blue highlights."
-	icon_state = "ertarmor_cmd"
-	item_state = "armor"
-
-//Security
-/obj/item/clothing/suit/armor/hos/security
-	name = "Emergency Response Team security Armor"
-	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
-	icon_state = "ertarmor_sec"
-
-//Engineer
-/obj/item/clothing/suit/armor/hos/engineer
-	name = "Emergency Response Team engineer Armor"
-	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
-	icon_state = "ertarmor_eng"
-
-//Medical
-/obj/item/clothing/suit/armor/hos/medical
-	name = "Emergency Response Team medical Armor"
-	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
-	icon_state = "ertarmor_med"
-
-//Janitorial
-/obj/item/clothing/suit/armor/hos/janitor
-	name = "Emergency Response Team janitor Armor"
-	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
-	icon_state = "ertarmor_jan"
+/obj/item/clothing/suit/armor/hos/platecarrier/makeshift
+	name = "makeshift plate carrier"
+	desc = "A hand-sown combat rig made from armor vests and security belts. Trades some protection for utility."
+	body_parts_covered = CHEST|GROIN|ARMS
+	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	strip_delay = 60
 
 /obj/item/clothing/suit/armor/vest/warden
 	name = "Warden's Jacket"
@@ -281,6 +272,9 @@
 			RESKIN_ITEM_STATE = "riot"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/riot/wm
 	icon_state = "riot-wm"
@@ -305,6 +299,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
 	strip_delay = 70
 	equip_delay_other = 50
+	clothing_flags = THICKMATERIAL
 	mutantrace_variation = STYLE_DIGITIGRADE
 	unique_reskin = list(
 		"Basic" = list(
@@ -316,6 +311,9 @@
 			RESKIN_ITEM_STATE = "armor"
 		),
 	)
+	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
+																"Virgo - Synthetic Feline (Inverted)", "Virgo - Synthetic Wolf", "Virgo - Synthetic Wolf (Inverted)"),
+									)
 
 /obj/item/clothing/suit/armor/bulletproof/wm
 	icon_state = "bulletproof-wm"
@@ -398,6 +396,23 @@
 	desc = "A classic suit of plate armour, highly effective at stopping melee attacks."
 	icon_state = "knight_green"
 	item_state = "knight_green"
+	armor = list(MELEE = 80, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
+	slowdown = 0.5
+	flags_inv = HIDEGLOVES|HIDESHOES
+	allowed = list(
+		/obj/item/banner,
+		/obj/item/claymore/shortsword,
+		/obj/item/nullrod,
+		/obj/item/spear,
+		/obj/item/gun/ballistic/bow,
+		/obj/item/gun/magic
+	)
+
+/obj/item/clothing/suit/armor/riot/knight/Initialize(mapload)
+	allowed = GLOB.security_vest_allowed.Copy()
+	for(var/type in typecacheof(list(/obj/item/claymore, /obj/item/nullrod/claymore)))
+		allowed[type] = TRUE
+	. = ..()
 
 /obj/item/clothing/suit/armor/riot/knight/yellow
 	icon_state = "knight_yellow"
@@ -416,8 +431,34 @@
 	desc = "A classic suit of armour, able to be made from many different materials."
 	icon_state = "knight_greyscale"
 	item_state = "knight_greyscale"
-	armor = list(MELEE = 35, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 10, RAD = 10, FIRE = 40, ACID = 40,  WOUND = 15)
 	material_flags = MATERIAL_ADD_PREFIX | MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS //Can change color and add prefix
+
+/obj/item/clothing/suit/armor/vest/knight/military
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
+	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
+	councilmen that wish to flaunt their opulence towards the unwashed masses."
+	icon_state = "military"
+	dog_fashion = null
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	allowed = list(
+		/obj/item/banner,
+		/obj/item/claymore/shortsword,
+		/obj/item/nullrod,
+		/obj/item/spear,
+		/obj/item/gun/ballistic/bow
+	)
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/armor/riot/knight/warlord
+	name = "Golden Plate Armor"
+	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
+	icon_state = "warlord"
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	w_class = WEIGHT_CLASS_BULKY
+	clothing_flags = THICKMATERIAL
+	slowdown = 0.5
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/vest/durathread
 	name = "makeshift vest"
@@ -428,6 +469,7 @@
 	equip_delay_other = 40
 	max_integrity = 200
 	resistance_flags = FLAMMABLE
+	clothing_flags = null
 	armor = list(MELEE = 20, BULLET = 10, LASER = 30, ENERGY = 20, BOMB = 15, BIO = 0, RAD = 0, FIRE = 40, ACID = 50, WOUND = 10)
 
 /obj/item/clothing/suit/armor/vest/russian
@@ -467,8 +509,45 @@
 	//armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
 
 /obj/item/clothing/suit/armor/vest/russian_coat/liquidator
-	name = "Костюм Ликвидатора"
+	name = "Liquidator Suit"
 	desc = "Костюм, используемый для борьбы со всяким дерьмом."
 	icon_state = "sov_offcoat"
 	item_state = "sov_offcoat"
 	//armor = list(MELEE = 25, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 20, BIO = 50, RAD = 50, FIRE = -10, ACID = 50,  WOUND = 10)
+
+/obj/item/clothing/suit/armor/vest/russian_coat/liquidator/Initialize(mapload)
+	. = ..()
+	allowed += list(/obj/item/broom/liquidator)
+
+// Elder Atmosian — риг легендарного атмос-теха
+/obj/item/clothing/suit/armor/elder_atmosian
+	name = "\improper Elder Atmosian Armor"
+	desc = "Вершина атмос-экипировки: дорогая огнезащитная броня, усиленная металлическим водородом. Полная защита от огня и газов без тяжёлого замедления. В слот костюма можно повесить металл-водородный топор."
+	icon = 'modular_bluemoon/icons/obj/clothing/suits/armor.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suits/armor.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/suits/armor_digi.dmi'
+	taur_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/suits/armor_teshari.dmi'
+	icon_state = "h2armor"
+	item_state = null
+	material_flags = MATERIAL_ADD_PREFIX | MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS
+	armor = list(MELEE = 50, BULLET = 45, LASER = 55, ENERGY = 55, BOMB = 95, BIO = 100, RAD = 100, FIRE = 100, ACID = 90, WOUND = 30)
+	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	gas_transfer_coefficient = 0.01
+	permeability_coefficient = 0.01
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAUR
+	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
+	strip_delay = 60
+	equip_delay_other = 60
+	resistance_flags = FIRE_PROOF
+
+/obj/item/clothing/suit/armor/elder_atmosian/Initialize(mapload)
+	. = ..()
+	allowed = islist(allowed) ? allowed.Copy() : list()
+	allowed += list(
+		/obj/item/fireaxe,
+		/obj/item/tank,
+	)

@@ -6,7 +6,7 @@
  * @license MIT
  */
 
-import { classes, pureComponentHooks } from 'common/react';
+import { classes } from 'common/react';
 
 import { Box } from './Box';
 
@@ -51,8 +51,6 @@ export const Icon = props => {
       {...rest} />
   );
 };
-
-Icon.defaultHooks = pureComponentHooks;
 
 export const IconStack = props => {
   const {

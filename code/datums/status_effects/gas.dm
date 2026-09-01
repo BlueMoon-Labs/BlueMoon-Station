@@ -45,3 +45,17 @@
 /datum/status_effect/freon/watcher
 	duration = 8
 	can_melt = FALSE
+
+/datum/status_effect/hypernob_protection
+	id = "hypernob_protection"
+	duration = 10 SECONDS
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+
+/datum/status_effect/hypernob_protection/on_apply()
+	ADD_TRAIT(owner, TRAIT_NOFIRE, type)
+	return ..()
+
+/datum/status_effect/hypernob_protection/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_NOFIRE, type)
+	return ..()

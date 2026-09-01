@@ -2,7 +2,7 @@
 
 /datum/action/cooldown/bloodsucker/cloak
 	name = "Cloak of Darkness"
-	desc = "Blend into the shadows and become invisible to the untrained eye. Movement is slowed in brightly lit areas, and you cannot dissapear while mortals watch you."
+	desc = "Растворитесь в тени и станьте невидимым для неопытного глаза. В ярко освещенных местах движение замедляется, и вы не сможете исчезнуть на глазах у смертных."
 	button_icon_state = "power_cloak"
 	bloodcost = 10
 	cooldown_time = 100
@@ -20,7 +20,7 @@
 		return
 	// must have nobody around to see the cloak
 	for(var/mob/living/M in fov_viewers(9, owner) - owner)
-		to_chat(owner, "<span class='warning'>You may only vanish into the shadows unseen.</span>")
+		to_chat(owner, "<span class='warning'>Вы можете раствориться в тени, только когда на вас не смотрят.</span>")
 		return FALSE
 	return TRUE
 
@@ -56,7 +56,7 @@
 	if (!..())
 		return FALSE
 	if(user.stat == !CONSCIOUS) // Must be CONSCIOUS
-		to_chat(owner, "<span class='warning'>Your cloak failed due to you falling unconcious! </span>")
+		to_chat(owner, "<span class='warning'>Ваш плащ тьмы спал из-за того, что вы потеряли сознание! </span>")
 		return FALSE
 	return TRUE
 

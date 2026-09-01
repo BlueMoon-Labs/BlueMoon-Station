@@ -31,6 +31,11 @@
 
 	switch(channel)
 		if(TELEPORT_CHANNEL_BLUESPACE)
+			// Космическая погода: интерфаза схлопывает канал целиком, шторм расшатывает
+			// точность. Вне явления обе величины нейтральны и ничего не меняют.
+			if(GLOB.bluespace_teleport_blocked && !forced)
+				return FALSE
+			precision += GLOB.bluespace_teleport_noise
 			//BLUEMOON CHANGE телепортация с БСоХом ломает БСоХ, а не лицо персонажа
 			if(istype(teleatom, /obj/item/storage/backpack/holding))
 				var/obj/item/storage/backpack/holding/BH = teleatom

@@ -1,3 +1,12 @@
+/// Окно, за которое пачка изменений биндов схлопывается в одну перестройку макросов.
+/// Меню настроек клавиш зовёт ensure_keys_set() на КАЖДОЕ изменение, а перестройка -
+/// это winget (ожидание ответа скина) плюс сотни winset: пять правок подряд стоили
+/// пять полных проходов.
+#define MACRO_ASSERT_COALESCE_DELAY (0.5 SECONDS)
+
+/// Таймер отложенной перестройки макросов, чтобы верб "Fix Keybindings" мог его снять.
+/client/var/macro_assert_timer
+
 /datum/proc/key_down(key, client/user, full_key) // Called when a key is pressed down initially
 	SHOULD_CALL_PARENT(TRUE)
 	SHOULD_NOT_SLEEP(TRUE)
@@ -21,7 +30,7 @@
 		return
 	to_chat(src, "<span class='danger'>Force-reasserting all macros.</span>")
 	last_macro_fix = world.time
-	full_macro_assert()
+	full_macro_assert(immediate = TRUE)	// нажали "почини макросы" - чиним сейчас, а не через полсекунды
 
 // removes all the existing macros
 /client/proc/erase_all_macros(datum/preferences/prefs_override = prefs)
@@ -33,7 +42,7 @@
 		set_text = set_text.Join(";")
 	else
 		set_text = prefs_override.hotkeys? "[SKIN_MACROSET_HOTKEYS].*" : "[SKIN_MACROSET_CLASSIC_INPUT].*;[SKIN_MACROSET_CLASSIC_HOTKEYS].*"
-	var/list/macro_set = params2list(winget(src, "[set_text]", "command"))
+	var/list/macro_set = params2list(tracked_winget(src, "[set_text]", "command"))
 	for(var/k in 1 to length(macro_set))
 		var/list/split_name = splittext(macro_set[k], ".")
 		var/macro_name = "[split_name[1]].[split_name[2]]" // [3] is "command"
@@ -59,11 +68,33 @@
 	if(SSinput.initialized)
 		full_macro_assert(prefs_override)
 
-/client/proc/full_macro_assert(datum/preferences/prefs_override = prefs)
-	INVOKE_ASYNC(src, PROC_REF(do_full_macro_assert), prefs_override)		// winget sleeps.
+/**
+ * Просит перестроить макросы.
+ *
+ * По умолчанию перестройка откладывается и склеивается: одинаковые вызовы за окно
+ * MACRO_ASSERT_COALESCE_DELAY дают один проход (TIMER_UNIQUE|TIMER_OVERRIDE).
+ * immediate = TRUE обходит склейку - это для верба "Fix Keybindings", где игрок ждёт
+ * результата прямо сейчас.
+ */
+/client/proc/full_macro_assert(datum/preferences/prefs_override = prefs, immediate = FALSE)
+	if(immediate)
+		if(macro_assert_timer)
+			deltimer(macro_assert_timer)
+			macro_assert_timer = null
+		INVOKE_ASYNC(src, PROC_REF(do_full_macro_assert), prefs_override)		// winget sleeps.
+		return
+	macro_assert_timer = addtimer(CALLBACK(src, PROC_REF(do_full_macro_assert), prefs_override), MACRO_ASSERT_COALESCE_DELAY, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
 
 // TODO: OVERHAUL ALL OF THIS AGAIN. While this works this is flatout horrid with the "use list but also don't use lists" crap. I hate my life.
 /client/proc/do_full_macro_assert(datum/preferences/prefs_override = prefs)
+	macro_assert_timer = null
+	// Ensure macrosets exist before trying to erase them (prevents "Element hotkeys not found" on first connect)
+	if(prefs_override?.hotkeys)
+		winclone(src, "default", SKIN_MACROSET_HOTKEYS)
+	else
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_INPUT)
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_HOTKEYS)
+
 	// First, wipe
 	erase_all_macros(prefs_override)
 
@@ -104,7 +135,8 @@
 				var/list/the_set = macrosets[macroset]
 				the_set[actual] = command
 				for(var/i in overriding)
-					the_set[i] = NONSENSICAL_VERB
+					if(!the_set[i])
+						the_set[i] = NONSENSICAL_VERB
 	else
 		// For classic mode, we just directly set things because BYOND is so jank why do we even bother?
 		// What we want is to force Ctrl on for all keybinds without Ctrl or Alt set, to preserve old behavior
@@ -130,11 +162,38 @@
 				var/list/the_set = macrosets[macroset]
 				the_set[actual] = command
 
+	// A +UP event can disappear when DreamSeeker loses application focus. Movement
+	// repeat macros renew a short server lease, bounding that failure instead of
+	// trusting keys_held forever. Do this after explicit clientside macros so a
+	// special binding keeps precedence over movement fallback.
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_HOTKEYS], movement_keys, TRUE)
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_HOTKEYS], movement_keys, TRUE)
+	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_INPUT], movement_keys, FALSE)
+
 	// Lastly, set the actual macros.
 	for(var/macroset in macrosets)
 		apply_macro_set(macroset, macrosets[macroset])
 	// Finally, set hotkeys.
 	set_hotkeys_preference(prefs_override)
+
+/// Adds repeat keepalives and matching releases without replacing explicit macros.
+/// Hotkey macrosets can fall through to Any for the initial press; classic input
+/// may repeat only keys that already have an explicit KeyDown there, so letters
+/// remain typeable. Explicit +UP is required because DreamSeeker 516 can fail to
+/// route a release through Any+UP after a key-specific +REP macro matched it.
+/proc/keybindings_add_movement_repeat_macros(list/macroset, list/movement_keys, allow_any_fallback)
+	if(!macroset || !movement_keys)
+		return
+	for(var/key as anything in movement_keys)
+		var/keydown_command = "\"KeyDown [key]\""
+		var/existing_command = macroset[key]
+		if(existing_command && existing_command != keydown_command)
+			continue
+		if(!allow_any_fallback && !existing_command)
+			continue
+		macroset["[key]+REP"] = "\"KeyRepeat [key]\""
+		if(!macroset["[key]+UP"])
+			macroset["[key]+UP"] = "\"KeyUp [key]\""
 
 /proc/keybind_modifier_permutation(key, alt = FALSE, ctrl = FALSE, shift = FALSE, self = TRUE)
 	var/list/permutations = list()
@@ -187,15 +246,19 @@
 					movement_keys[key] = SOUTH
 				else
 					var/datum/keybinding/KB = GLOB.keybindings_by_name[kb_name]
-					if(!KB.clientside)
+					var/clientside_verb = (prefs && !(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
+					if(!clientside_verb)
 						continue
-					.[key] = KB.clientside
+					clientside_verb = replacetext_char(clientside_verb, " ", "-")
+					.[key] = clientside_verb
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()
-	for(var/key in keys_held)
+	for(var/key in keys_held.Copy())
 		keyUp(key)
 
 	// //In case one got stuck and the previous loop didn't clean it, somehow.
 	// for(var/key in key_combos_held)
 	// 	keyUp(key_combos_held[key])
+
+#undef MACRO_ASSERT_COALESCE_DELAY

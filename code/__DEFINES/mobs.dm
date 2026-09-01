@@ -5,6 +5,7 @@
 // Ready states at roundstart for mob/dead/new_player
 #define PLAYER_NOT_READY 0
 #define PLAYER_READY_TO_PLAY 1
+#define PLAYER_READY_TO_OBSERVE 2
 
 // movement intent defines for the m_intent var
 #define MOVE_INTENT_WALK "walk"
@@ -14,12 +15,12 @@
 #define BLOOD_VOLUME_MAX_LETHAL		2150
 #define BLOOD_VOLUME_EXCESS			2100
 #define BLOOD_VOLUME_MAXIMUM		2000
-#define BLOOD_VOLUME_SLIME_SPLIT	1120
-#define BLOOD_VOLUME_NORMAL			560
-#define BLOOD_VOLUME_SAFE			475
-#define BLOOD_VOLUME_OKAY			336
-#define BLOOD_VOLUME_BAD			224
-#define BLOOD_VOLUME_SURVIVE		122
+#define BLOOD_VOLUME_SLIME_SPLIT	1680
+#define BLOOD_VOLUME_NORMAL			840
+#define BLOOD_VOLUME_SAFE			712
+#define BLOOD_VOLUME_OKAY			504
+#define BLOOD_VOLUME_BAD			336
+#define BLOOD_VOLUME_SURVIVE		183
 
 // Sizes of mobs, used by mob/living/var/mob_size
 #define MOB_SIZE_TINY 0
@@ -73,13 +74,14 @@
 #define BODYPART_DISABLED_WOUND 3
 
 #define DEFAULT_BODYPART_ICON 'icons/mob/human_parts.dmi'
-#define DEFAULT_BODYPART_ICON_ORGANIC 'modular_bluemoon/icons/mob/species_legs.dmi' // BLUEMOON CHANGES - was 'icons/mob/human_parts_greyscale.dmi'
+#define DEFAULT_BODYPART_ICON_ORGANIC 'modular_bluemoon/icons/mob/human/species.dmi' // BLUEMOON CHANGES - was 'icons/mob/human_parts_greyscale.dmi'
 #define DEFAULT_BODYPART_ICON_ROBOTIC 'icons/mob/augmentation/augments.dmi'
 
-#define MONKEY_BODYPART "monkey"
-#define ALIEN_BODYPART  "alien"
-#define LARVA_BODYPART  "larva"
-#define DEVIL_BODYPART  "devil"
+#define MONKEY_BODYPART  "monkey"
+#define ALIEN_BODYPART   "alien"
+#define LARVA_BODYPART   "larva"
+#define DEVIL_BODYPART   "devil"
+#define WENDIGO_BODYPART "wendigo"
 /*see __DEFINES/inventory.dm for bodypart bitflag defines*/
 
 // Health/damage defines for carbon mobs
@@ -201,6 +203,12 @@
 // Slime extract crossing. Controls how many extracts is required to feed to a slime to core-cross.
 #define SLIME_EXTRACT_CROSSING_REQUIRED 10
 
+// How long a slime waits before re-scanning view() for prey after a scan that found no targets.
+// Keeps idle pens from paying a full view(7) scan every Life tick.
+#define SLIME_HUNT_SCAN_COOLDOWN (4 SECONDS)
+/// world.time gate between aimless wander steps of a slime with no target and no leader.
+#define SLIME_WANDER_COOLDOWN (4 SECONDS)
+
 // Slime commands defines
 #define SLIME_FRIENDSHIP_FOLLOW 			3 // Min friendship to order it to follow
 #define SLIME_FRIENDSHIP_STOPEAT 			5 // Min friendship to order it to stop eating someone
@@ -226,6 +234,12 @@
 #define AI_OFF		3
 #define AI_Z_OFF	4
 
+/// Distance within which a player must be for NPC AI to remain active
+#define NEARBY_PLAYER_DISTANCE 15
+
+/// Distance within which a player must be for full Life() processing of clientless mobs
+#define NEARBY_LIVING_DISTANCE 20
+
 // determines if a mob can smash through it
 #define ENVIRONMENT_SMASH_NONE		  0
 #define ENVIRONMENT_SMASH_STRUCTURES (1<<0)	// crates, lockers, ect
@@ -239,6 +253,10 @@
 #define SLIDE_ICE			 (1<<4)
 #define SLIP_WHEN_CRAWLING	 (1<<5)	// clown planet ruin amongst others
 #define SLIP_WHEN_JOGGING	 (1<<6)	// slips prevented by walking are also dodged if the mob is nor sprinting or fatigued... unless this flag is on.
+// BLUEMOON ADD - скольжение не глохнет на 4 тайлах: жертва улетает, пока не во что-то не врежется
+#define SLIDE_INTO_SPACE	 (1<<7)
+/// На сколько тайлов вперёд планирует траекторию скольжение с SLIDE_INTO_SPACE
+#define SLIDE_INTO_SPACE_RANGE 14
 
 
 #define MAX_CHICKENS 50
@@ -301,7 +319,7 @@
 // MINOR TWEAKS/MISC
 #define AGE_MIN					18	// youngest a character can be // CITADEL EDIT - 17 --> 18
 #define AGE_MAX					85	// oldest a character can be randomly generated
-#define AGE_MAX_INPUT			85	// oldest a character's age can be manually set
+#define AGE_MAX_INPUT			16777216 // oldest a character's age can be manually set
 #define WIZARD_AGE_MIN			30	// youngest a wizard can be
 #define APPRENTICE_AGE_MIN		29	// youngest an apprentice can be
 #define SHOES_SLOWDOWN			 0	// How much shoes slow you down by default. Negative values speed you up
@@ -411,3 +429,9 @@
 #define STATUS_UPDATE_NEARSIGHTED 64
 #define STATUS_UPDATE_NONE 0
 #define STATUS_UPDATE_ALL (~0)
+
+// Pain statuses
+#define PAIN_NO 0 // painkillers or robot
+#define PAIN_LOW 1 // TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD
+#define PAIN_MEDIUM 2 // drunkenness
+#define PAIN_FULL 3

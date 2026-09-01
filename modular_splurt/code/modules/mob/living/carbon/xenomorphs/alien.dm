@@ -11,14 +11,6 @@
 	AddElement(/datum/element/flavor_text, _name = "OOC Notes", _addendum = "Put information on ERP/vore/lewd-related preferences here. THIS SHOULD NOT CONTAIN REGULAR FLAVORTEXT!!", _save_key = "ooc_notes", _examine_no_preview = TRUE)
 	. = ..()
 
-/mob/living/carbon/alien/humanoid/royal/queen
-	var/eggsac = TRUE
-
-/mob/living/carbon/alien/humanoid/royal/queen/create_internal_organs()
-	if(!eggsac)
-		internal_organs -=  /obj/item/organ/alien/eggsac
-	..()
-
 /mob/living/carbon/alien/humanoid/royal/queen/station
 	eggsac = FALSE
 

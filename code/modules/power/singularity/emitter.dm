@@ -37,6 +37,13 @@
 	var/obj/item/gun/energy/gun
 	var/list/gun_properties
 	var/mode = 0
+	/// Supermatter hitscan: set during P.fire() when the beam strikes a crystal this shot.
+	var/obj/machinery/power/supermatter_crystal/last_shot_hit_sm
+	/// Слабые ссылки на кристаллы, у которых мы зарегистрировали попадание луча.
+	/// Снимать регистрацию нужно ровно с них: обход range(20) - это 41x41 тайл с их
+	/// содержимым на КАЖДЫЙ выстрел мимо кристалла (профиль SSMachines раунда 9860:
+	/// до 4.4мс за один process() эмиттера).
+	var/list/datum/weakref/registered_supermatters
 
 	// The following 3 vars are mostly for the prototype
 	var/manual = FALSE
@@ -109,6 +116,7 @@
 		message_admins("Emitter deleted at [ADMIN_VERBOSEJMP(T)]")
 		log_game("Emitter deleted at [AREACOORD(T)]")
 		investigate_log("<font color='red'>deleted</font> at [AREACOORD(T)]", INVESTIGATE_SINGULO)
+	clear_supermatter_beam_registrations()
 	QDEL_NULL(sparks)
 	QDEL_NULL(wires)
 	return ..()
@@ -129,6 +137,7 @@
 		if(!locked && allow_switch_interact)
 			if(active == TRUE)
 				active = FALSE
+				clear_supermatter_beam_registrations()
 				to_chat(user, "<span class='notice'>You turn off [src].</span>")
 			else
 				active = TRUE
@@ -162,8 +171,14 @@
 	if(machine_stat & (BROKEN))
 		return
 	if(state != EMITTER_WELDED || (!powernet && active_power_usage))
-		active = FALSE
-		update_icon()
+		// Незаваренный (или обесточенный) эмиттер сидит в этой ветке весь раунд.
+		// Перерисовывать его иконку каждый проход SSmachines незачем: при active = FALSE
+		// update_icon_state() всегда выдаёт initial(icon_state), а все настоящие смены
+		// состояния (панель, питание, поломка) дёргают update_icon() сами.
+		if(active)
+			clear_supermatter_beam_registrations()
+			active = FALSE
+			update_icon()
 		return
 	if(active == TRUE)
 		if(!active_power_usage || surplus() >= active_power_usage)
@@ -176,6 +191,7 @@
 			if(powered)
 				powered = FALSE
 				update_icon()
+				clear_supermatter_beam_registrations()
 				investigate_log("lost power and turned <font color='red'>OFF</font> at [AREACOORD(src)]", INVESTIGATE_SINGULO)
 				log_game("Emitter lost power in [AREACOORD(src)]")
 			return
@@ -206,12 +222,19 @@
 		sparks.start()
 	P.firer = user ? user : src
 	P.fired_from = src
+	last_shot_hit_sm = null
 	if(last_projectile_params)
 		P.p_x = last_projectile_params[2]
 		P.p_y = last_projectile_params[3]
 		P.fire(last_projectile_params[1])
 	else
 		P.fire(dir2angle(dir))
+	if(is_supermatter_beam_emitter(src))
+		if(last_shot_hit_sm)
+			register_supermatter_beam_hit(last_shot_hit_sm)
+		else
+			clear_supermatter_beam_registrations()
+		last_shot_hit_sm = null
 	if(!manual)
 		last_shot = world.time
 		if(shot_number < 3)
@@ -221,6 +244,28 @@
 			fire_delay = rand(minimum_fire_delay,maximum_fire_delay)
 			shot_number = 0
 	return P
+
+/// Registers a beam hit on the given crystal and remembers it, so the matching
+/// unregistration does not have to sweep the map looking for crystals.
+/obj/machinery/power/emitter/proc/register_supermatter_beam_hit(obj/machinery/power/supermatter_crystal/crystal)
+	crystal.register_emitter_beam_hit(src)
+	var/datum/weakref/crystal_ref = WEAKREF(crystal)
+	if(!crystal_ref)
+		return
+	if(registered_supermatters?.Find(crystal_ref))
+		return
+	LAZYADD(registered_supermatters, crystal_ref)
+
+/// Clears supermatter beam-hit tracking for this emitter on every crystal it registered with.
+/obj/machinery/power/emitter/proc/clear_supermatter_beam_registrations()
+	last_shot_hit_sm = null
+	var/list/datum/weakref/stale_registrations = registered_supermatters
+	registered_supermatters = null
+	for(var/datum/weakref/crystal_ref as anything in stale_registrations)
+		var/obj/machinery/power/supermatter_crystal/crystal = crystal_ref.resolve()
+		if(!crystal)
+			continue
+		crystal.unregister_emitter_beam_hit(src)
 
 /obj/machinery/power/emitter/can_be_unfasten_wrench(mob/user, silent)
 	if(active)

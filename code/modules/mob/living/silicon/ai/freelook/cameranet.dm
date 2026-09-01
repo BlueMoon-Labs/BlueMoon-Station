@@ -7,7 +7,7 @@
 GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 /datum/cameranet
-	var/name = "Camera Net" // Name to show for VV and stat()
+	var/name = "Camera Net" // Name to show in VV.
 
 	// The cameras on the map, no matter if they work or not. Updated in obj/machinery/camera.dm by New() and Del().
 	var/list/cameras = list()
@@ -15,27 +15,74 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 	var/list/chunks = list()
 	var/ready = 0
 
-	// The object used for the clickable stat() button.
-	var/obj/effect/statclick/statclick
+	/// Ленивый кэш "имя сети -> ассоц c_tag -> камера": консоли/баг/SecurEye
+	/// раньше пересобирали и перефильтровывали ВЕСЬ cameras на каждый
+	/// ui_static_data и каждый клик переключения камеры. null = кэш сброшен,
+	/// пересоберётся при следующем запросе (см. invalidate_camera_cache).
+	var/list/camera_lookup_by_network
+	/// world.time сборки кэша: c_tag/network мутируют в десятках мест
+	/// (переименование боргов и т.п.), все не перехватить - TTL страхует
+	var/camera_lookup_built_at = -1
 
-	// The objects used in vis_contents of obscured turfs
-	var/list/vis_contents_objects
-	var/obj/effect/overlay/camera_static/vis_contents_opaque
-	var/obj/effect/overlay/camera_static/vis_contents_transparent
-	// The image given to the effect in vis_contents on AI clients
-	var/image/obscured
-	var/image/obscured_transparent
+	/// Шаблон образа камерной статики: клонируется на каждый скрытый от камер
+	/// турф, копия уезжает в client.images только тому, кто смотрит через
+	/// камерную сеть. Раньше статика жила в vis_contents самого турфа - два
+	/// движимых объекта на каждом непросматриваемом турфе, которые SendMaps
+	/// обходил для КАЖДОГО клиента на карте, а не только для ИИ.
+	var/image/static_template
+	/// То же, но прозрачный для мыши. Достаётся наблюдателям с
+	/// USE_STATIC_TRANSPARENT (детектор ИИ в мультитуле): там статику видит
+	/// живой человек, и блокировать ему клики по миру нельзя.
+	var/image/static_template_transparent
 
 /datum/cameranet/New()
-	vis_contents_opaque = new /obj/effect/overlay/camera_static()
-	vis_contents_transparent = new /obj/effect/overlay/camera_static/transparent()
-	vis_contents_objects = list(vis_contents_opaque, vis_contents_transparent)
+	static_template = new /image('icons/effects/cameravis.dmi')
+	static_template.layer = CAMERA_STATIC_LAYER
+	static_template.plane = CAMERA_STATIC_PLANE
+	// RESET_* обязательны: образ висит на настоящем турфе и без них унаследовал
+	// бы его цвет, прозрачность и трансформацию (раньше он висел на нейтральном
+	// объекте-подложке, которому наследовать было нечего)
+	static_template.appearance_flags = RESET_TRANSFORM | RESET_ALPHA | RESET_COLOR | KEEP_APART | TILE_BOUND
+	static_template.mouse_opacity = MOUSE_OPACITY_ICON
 
-	obscured = new('icons/effects/cameravis.dmi', vis_contents_opaque, null, CAMERA_STATIC_LAYER)
-	obscured.plane = CAMERA_STATIC_PLANE
+	static_template_transparent = new /image(static_template)
+	static_template_transparent.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-	obscured_transparent = new('icons/effects/cameravis.dmi', vis_contents_transparent, null, CAMERA_STATIC_LAYER)
-	obscured_transparent.plane = CAMERA_STATIC_PLANE
+/// Создать образ статики, привязанный к скрытому турфу.
+/datum/cameranet/proc/make_static_image(turf/target, use_static = USE_STATIC_OPAQUE)
+	var/image/static_image = new(use_static == USE_STATIC_TRANSPARENT ? static_template_transparent : static_template)
+	static_image.loc = target
+	return static_image
+
+/// Сбросить кэш сетей камер. Зовётся из хуков жизненного цикла камеры:
+/// Initialize/Destroy, EMP (сеть обнуляется и восстанавливается),
+/// connect_to_shuttle (переименование сети), сборка камеры (network+c_tag).
+/datum/cameranet/proc/invalidate_camera_cache()
+	camera_lookup_by_network = null
+
+/// Ассоц-список "c_tag -> камера" для сети network_name (null, если сеть пуста).
+/// Списки в кэше общие - вызывающим их мутировать нельзя.
+/datum/cameranet/proc/get_cameras_by_network(network_name)
+	if(isnull(camera_lookup_by_network) || world.time - camera_lookup_built_at > 30 SECONDS)
+		build_camera_lookup()
+	return camera_lookup_by_network[network_name]
+
+/datum/cameranet/proc/build_camera_lookup()
+	camera_lookup_by_network = list()
+	camera_lookup_built_at = world.time
+	for(var/obj/machinery/camera/C as anything in cameras)
+		if(!C.network)
+			stack_trace("Camera in a cameranet has no camera network")
+			continue
+		if(!islist(C.network))
+			stack_trace("Camera in a cameranet has a non-list camera network")
+			continue
+		for(var/network_name in C.network)
+			var/list/network_cameras = camera_lookup_by_network[network_name]
+			if(!network_cameras)
+				network_cameras = list()
+				camera_lookup_by_network[network_name] = network_cameras
+			network_cameras["[C.c_tag]"] = C
 
 // Checks if a chunk has been Generated in x, y, z.
 /datum/cameranet/proc/chunkGenerated(x, y, z)
@@ -55,23 +102,17 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 // Updates what the aiEye can see. It is recommended you use this when the aiEye moves or it's location is set.
 
+/// C, other_eyes и use_static остались ради вызывающих: статику теперь выдаёт
+/// каждый чанк сам, персонально глазу, а режим статики глаз знает про себя сам.
 /datum/cameranet/proc/visibility(list/moved_eyes, client/C, list/other_eyes, use_static = USE_STATIC_OPAQUE)
 	if(!islist(moved_eyes))
 		moved_eyes = moved_eyes ? list(moved_eyes) : list()
-	if(islist(other_eyes))
-		other_eyes = (other_eyes - moved_eyes)
-	else
-		other_eyes = list()
 
-	if(C)
-		switch(use_static)
-			if(USE_STATIC_TRANSPARENT)
-				C.images += obscured_transparent
-			if(USE_STATIC_OPAQUE)
-				C.images += obscured
+	for(var/mob/camera/aiEye/eye as anything in moved_eyes)
+		//смотрящий мог смениться (реконнект ИИ, новый пользователь консоли):
+		//чанки в visibleCameraChunks остались, а images нового клиента пусты
+		eye.sync_camera_static()
 
-	for(var/V in moved_eyes)
-		var/mob/camera/aiEye/eye = V
 		var/list/visibleChunks = list()
 		if(eye.loc)
 			// 0xf = 15
@@ -89,22 +130,11 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 		var/list/remove = eye.visibleCameraChunks - visibleChunks
 		var/list/add = visibleChunks - eye.visibleCameraChunks
 
-		for(var/chunk in remove)
-			var/datum/camerachunk/c = chunk
-			c.remove(eye, FALSE)
+		for(var/datum/camerachunk/chunk as anything in remove)
+			chunk.remove(eye)
 
-		for(var/chunk in add)
-			var/datum/camerachunk/c = chunk
-			c.add(eye)
-
-		if(!eye.visibleCameraChunks.len)
-			var/client/client = eye.GetViewerClient()
-			if(client)
-				switch(eye.use_static)
-					if(USE_STATIC_TRANSPARENT)
-						client.images -= GLOB.cameranet.obscured_transparent
-					if(USE_STATIC_OPAQUE)
-						client.images -= GLOB.cameranet.obscured
+		for(var/datum/camerachunk/chunk as anything in add)
+			chunk.add(eye)
 
 // Updates the chunks that the turf is located in. Use this when obstacles are destroyed or	when doors open.
 
@@ -148,6 +178,11 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 	var/turf/T = get_turf(c)
 	if(T)
+		//камера добавилась/убралась/переключилась - её собственный кэш видимости протух
+		if(choice != 2 && istype(c, /obj/machinery/camera))
+			var/obj/machinery/camera/changed_camera = c
+			changed_camera.mark_visibility_dirty()
+
 		var/x1 = max(0, T.x - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
 		var/y1 = max(0, T.y - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
 		var/x2 = min(world.maxx, T.x + (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
@@ -162,6 +197,13 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 					else if(choice == 1)
 						// You can't have the same camera in the list twice.
 						chunk.cameras |= c
+					else
+						//изменение видимости в точке T (дверь/стена/непрозрачный объект):
+						//протухают только камеры, чью зону оно могло задеть - остальные
+						//переживут апдейт чанка на кэше
+						for(var/obj/machinery/camera/chunk_camera as anything in chunk.cameras)
+							if(chunk_camera && get_dist(chunk_camera, T) <= chunk_camera.view_range)
+								chunk_camera.mark_visibility_dirty()
 					chunk.hasChanged()
 
 // Will check if a mob is on a viewable turf. Returns 1 if it is, otherwise returns 0.
@@ -179,26 +221,3 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 		if(chunk.visibleTurfs[position])
 			return TRUE
 	return FALSE
-
-/datum/cameranet/proc/stat_entry()
-	if(!statclick)
-		statclick = new/obj/effect/statclick/debug(null, "Initializing...", src)
-
-	stat(name, statclick.update("Cameras: [GLOB.cameranet.cameras.len] | Chunks: [GLOB.cameranet.chunks.len]"))
-
-/obj/effect/overlay/camera_static
-	name = "static"
-	icon = null
-	icon_state = null
-	anchored = TRUE  // should only appear in vis_contents, but to be safe
-	appearance_flags = RESET_TRANSFORM | TILE_BOUND
-	// this combination makes the static block clicks to everything below it,
-	// without appearing in the right-click menu for non-AI clients
-	mouse_opacity = MOUSE_OPACITY_ICON
-	invisibility = INVISIBILITY_ABSTRACT
-
-	layer = CAMERA_STATIC_LAYER
-	plane = CAMERA_STATIC_PLANE
-
-/obj/effect/overlay/camera_static/transparent
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT

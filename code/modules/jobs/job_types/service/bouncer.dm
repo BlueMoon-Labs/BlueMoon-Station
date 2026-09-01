@@ -13,8 +13,8 @@
 	outfit = /datum/outfit/job/bouncer
 	plasma_outfit = /datum/outfit/plasmaman/bar
 
-	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_BAR, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_BAR, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_SRV
 	bounty_types = CIV_JOB_DRINK
@@ -28,20 +28,22 @@
 	)
 
 	alt_titles = list(
-		"Bodyguard",
-		"Hired Muscle",
-		"Service Guard",
 		"Barmaid Sentinel",
+		"Bodyguard",
+		"Cocksucker",
+		"Doorman",
+		"Doorwoman",
+		"Hired Muscle",
+		"Public Defender",
+		"Service Guard",
 		"Slapper",
-		"Cocksucker"
 		)
 
 /////////////////////////////
 
-/obj/item/pda/bouncer
+/obj/item/modular_computer/pda/bouncer
 	name = "bouncer PDA"
 	icon_state = "pda-bartender"
-	default_cartridge = /obj/item/cartridge/bartender //BLUEMOON EDIT Uncomment
 	inserted_item = /obj/item/pen/fountain
 
 /datum/outfit/job/bouncer
@@ -49,19 +51,19 @@
 	jobtype = /datum/job/bouncer
 
 	glasses = /obj/item/clothing/glasses/sunglasses
-	belt = /obj/item/pda/bouncer
+	belt = /obj/item/modular_computer/pda/bouncer
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/syndicate/tacticool
 	//suit =
 	backpack_contents = list(/obj/item/reagent_containers/spray/pepper=1, /obj/item/gun/energy/civilian=1, /obj/item/restraints/legcuffs/bola/energy=1, /obj/item/restraints/handcuffs/cable/zipties=2, /obj/item/choice_beacon/bouncer=1)
 	shoes = /obj/item/clothing/shoes/jackboots
-	accessory = /obj/item/clothing/accessory/permit/special/bouncer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bouncer)
 
 /datum/outfit/job/bouncer/syndicate
 	name = "Syndicate Bouncer"
 	jobtype = /datum/job/bouncer
 
-	belt = /obj/item/pda/bouncer
+	belt = /obj/item/modular_computer/pda/bouncer
 
 	glasses = /obj/item/clothing/glasses/sunglasses
 	ears = /obj/item/radio/headset/headset_srv
@@ -69,19 +71,21 @@
 	//suit =
 	shoes = /obj/item/clothing/shoes/jackboots
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/bouncer
+	accessory = list(/obj/item/clothing/accessory/permit/special/bouncer, /obj/item/clothing/accessory/permit/special/syndie_station)
 
-	backpack_contents = list(/obj/item/reagent_containers/spray/pepper=1, /obj/item/restraints/handcuffs/cable/zipties=2, /obj/item/choice_beacon/copgun=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/reagent_containers/spray/pepper=1, /obj/item/restraints/handcuffs/cable/zipties=2, /obj/item/choice_beacon/copgun=1,/obj/item/syndicate_uplink/station=1)
 
 //BLUEMOON ADD
 /datum/martial_art/krav_maga/restricted/bouncer
-	name = "Krav Maga (bouncer edition)"
+	name = "Krav Maga (Bouncer edition)"
 	valid_areas = list(/area/service/bar/atrium, /area/service/bar)
+	resist_grab_chance = 40
 
 /obj/item/choice_beacon/bouncer
 	name = "personal weapon beacon"
@@ -109,11 +113,7 @@
 	desc = "A storage case for a Mk. 58 Enforcer. Peace through power!"
 
 /obj/item/storage/secure/briefcase/bouncer/e45_box/PopulateContents()
-	var/obj/item/gun/ballistic/automatic/pistol/enforcer/pistol = new /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag(src)
-	var/pin_type = initial(/obj/item/gun/ballistic/automatic/pistol/enforcer::pin)
-	if(pin_type)
-		QDEL_NULL(pistol.pin)
-		pistol.pin = new pin_type(pistol) // Нет никого смысла ограничивать пистолет баунсеру на синий код, это не СБ
+	new /obj/item/gun/ballistic/automatic/pistol/enforcer/nomag(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)

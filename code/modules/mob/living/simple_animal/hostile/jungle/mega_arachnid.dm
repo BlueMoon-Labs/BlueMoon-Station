@@ -48,6 +48,41 @@
 	..()
 	alpha = 50
 
+// ===== Адаптер-профиль =====
+// BiologicalLife продолжает крутить легаси-переменные застенчивости
+// (retreat/minimum_distance и альфу невидимости) - band_sync зеркалирует их в
+// блэкборд каждым планом, и кайт контроллера дышит вместе с Life: пока снаряд
+// на кулдауне и жертва не покалечена, арахнид держит дистанцию 9, иначе
+// жмёт вплотную. Снаряд-силок и милишка - делегация OpenFire/AttackingTarget.
+
+///Скирмишер с живым кайт-бандом и милишкой, когда сам решил сблизиться
+/datum/ai_controller/hostile_adapter/ranged_skirmisher/mega_arachnid
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/mega_arachnid_band_sync,
+		/datum/ai_planning_subtree/maintain_distance,
+		/datum/ai_planning_subtree/ranged_skirmish,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_melee_when_cornered,
+	)
+
+///Зеркало легаси-банда: retreat выставлен - кайтимся, снят - жмём вплотную
+/datum/ai_planning_subtree/mega_arachnid_band_sync
+
+/datum/ai_planning_subtree/mega_arachnid_band_sync/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/jungle/mega_arachnid/spider = controller.pawn
+	if(!istype(spider))
+		return
+	if(spider.retreat_distance)
+		controller.blackboard[BB_AI_MIN_DISTANCE] = spider.retreat_distance
+		controller.blackboard[BB_AI_MAX_DISTANCE] = max(spider.minimum_distance, spider.retreat_distance + 2)
+	else
+		//легаси-бой: преследование вплотную (walk_to с minimum_distance 0)
+		controller.blackboard[BB_AI_MIN_DISTANCE] = 1
+		controller.blackboard[BB_AI_MAX_DISTANCE] = max(spider.minimum_distance, 1)
+
 /obj/item/projectile/mega_arachnid
 	name = "flesh snare"
 	nodamage = 1

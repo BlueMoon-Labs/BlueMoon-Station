@@ -615,7 +615,7 @@
 /turf/open/floor/plasteel/smooth/large,
 /area/shuttle/ftu_trade)
 "Sw" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /obj/structure/grille,
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor{
@@ -671,7 +671,7 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/ftu_trade)
 "Vp" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /obj/structure/grille,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "nee";
@@ -768,6 +768,16 @@
 /obj/structure/filingcabinet,
 /turf/open/floor/wood/wood_large,
 /area/shuttle/ftu_trade)
+"ZR" = (
+/obj/machinery/button/door{
+	id = "tew2";
+	name = "Cargo Blast Door Toggle";
+	req_access_txt = "208";
+	pixel_x = -32;
+	pixel_y = -32
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/ftu_trade)
 
 (1,1,1) = {"
 BV
@@ -856,7 +866,7 @@ md
 md
 md
 md
-md
+ZR
 Vp
 MX
 QD

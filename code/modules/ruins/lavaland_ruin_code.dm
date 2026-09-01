@@ -159,6 +159,8 @@
 	id = /obj/item/card/id/syndicate/advanced/ds/lavaland/researcher
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/anchor, /obj/item/implant/deathrattle/deepspacecrew)
 
+	accessory = list(/obj/item/clothing/accessory/permit/special/deep_space_syndicate)
+
 /datum/outfit/lavaland_syndicate/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	H.faction |= ROLE_SYNDICATE
 

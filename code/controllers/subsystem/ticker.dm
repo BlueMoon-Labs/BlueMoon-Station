@@ -52,7 +52,7 @@ SUBSYSTEM_DEF(ticker)
 	var/queue_delay = 0
 	var/list/queued_players = list()		//used for join queues when the server exceeds the hard population cap
 
-	var/maprotatechecked = 0
+	var/maprotatechecked = FALSE
 
 	var/news_report
 
@@ -185,14 +185,13 @@ SUBSYSTEM_DEF(ticker)
 				window_flash(C, ignorepref = TRUE) //let them know lobby has opened up.
 			to_chat(world, "<span class='boldnotice'>Добро пожаловать на [station_name()]!</span>")
 			if(!SSpersistence.CheckGracefulEnding())
-				send2chat(new /datum/tgs_message_content("Производится реролл карты в связи с крашем сервера..."), CONFIG_GET(string/chat_announce_new_game))
+				// Чёрный ящик МК прошлого запуска, если он остался: пометка о крахе без него
+				// говорит только то, что мир умер, а не то, на чём именно.
+				var/crash_note = GLOB.mc_state_previous_summary ? "\n```\n[GLOB.mc_state_previous_summary]\n```" : ""
+				send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/chat_reboot_role)]> | Производится реролл карты в связи с крашем сервера...[crash_note]"), CONFIG_GET(string/chat_announce_new_game))
 			else
 				send2chat(new /datum/tgs_message_content("Новый раунд начинается на [SSmapping.config.map_name], голосование за режим полным ходом!"), CONFIG_GET(string/chat_announce_new_game))
 			current_state = GAME_STATE_PREGAME
-			//SPLURT EDIT - Bring back old panel
-			//Everyone who wants to be an observer is now spawned
-			create_observers()
-			//SPLURT EDIT
 			SEND_SIGNAL(src, COMSIG_TICKER_ENTER_PREGAME)
 
 			fire()
@@ -201,27 +200,29 @@ SUBSYSTEM_DEF(ticker)
 			// BLUEMOON ADD START - воут за карту и перезагрузка сервера, если прошлый раунд окончился крашем
 			if(mapvote_restarter_in_progress)
 				return
+			#ifndef UNIT_TESTS
 			#ifndef LOWMEMORYMODE
 			if(!SSpersistence.CheckGracefulEnding())
 				SetTimeLeft(-1)
 				start_immediately = FALSE
 				mapvote_restarter_in_progress = TRUE
 				var/vote_type = CONFIG_GET(string/map_vote_type)
-				SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type)
+				SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
+			#endif
 			#endif
 			// BLUEMOON ADD END
 
 			//lobby stats for statpanels
 			if(isnull(timeLeft))
 				timeLeft = max(0,start_at - world.time)
-			totalPlayers = 0
-			totalPlayersReady = 0
-			for(var/mob/dead/new_player/player in GLOB.player_list)
-				++totalPlayers
-				if(player.ready == PLAYER_READY_TO_PLAY)
-					++totalPlayersReady
+			totalPlayers = length(GLOB.new_player_list)
+			var/readied = 0
+			for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+				if(np.ready)
+					readied++
+			totalPlayersReady = readied
 
 			if(start_immediately)
 				timeLeft = 0
@@ -249,9 +250,10 @@ SUBSYSTEM_DEF(ticker)
 				if(SSvote.mode && (SSvote.mode == "roundtype" || SSvote.mode == "dynamic" || SSvote.mode == "mode tiers"))
 					SSvote.result()
 					SSpersistence.SaveSavedVotes()
-					for(var/client/C in SSvote.voting)
-						C << browse(null, "window=vote;can_close=0")
-					SSvote.reset()
+					if(!SSvote.mode)
+						for(var/client/C in SSvote.voting)
+							C << browse(null, "window=vote;can_close=0")
+						SSvote.reset()
 				SEND_SIGNAL(src, COMSIG_TICKER_ENTER_SETTING_UP)
 				current_state = GAME_STATE_SETTING_UP
 				Master.SetRunLevel(RUNLEVEL_SETUP)
@@ -275,7 +277,7 @@ SUBSYSTEM_DEF(ticker)
 		if(GAME_STATE_PLAYING)
 			mode.process(wait * 0.1)
 			check_queue()
-			check_maprotate()
+			//check_maprotate()
 			scripture_states = scripture_unlock_alert(scripture_states)
 			//SSshuttle.autoEnd()
 
@@ -284,6 +286,7 @@ SUBSYSTEM_DEF(ticker)
 				toggle_ooc(TRUE) // Turn it on
 				toggle_aooc(TRUE) // Turn it on
 				toggle_dooc(TRUE)
+				check_maprotate()
 				declare_completion(force_ending)
 				Master.SetRunLevel(RUNLEVEL_POSTGAME)
 
@@ -339,13 +342,32 @@ SUBSYSTEM_DEF(ticker)
 
 	CHECK_TICK
 	GLOB.start_landmarks_list = shuffle(GLOB.start_landmarks_list) //Shuffle the order of spawn points so they dont always predictably spawn bottom-up and right-to-left
-	create_characters() //Create player characters
-	collect_minds()
-	equip_characters()
+	// Порядок стадий менять нельзя: экипировка ждёт созданных персонажей, манифест -
+	// экипированных, перенос ключей - записанных в манифест. Уступать тик между
+	// стадиями и внутри них - можно, каждая стадия сама по себе атомарной не является.
+	// Цена раздачи тел по стадиям - см. ticker_handoff_probe.dm. Прибор подключения меряет
+	// лобби, а поклиентская машинерия карты BYOND аллоцируется здесь, на переносе ключа.
+	var/datum/roundstart_handoff_probe/handoff_probe = new
+	var/created = create_characters() //Create player characters
+	handoff_probe.mark("create", created)
+	CHECK_TICK
+	var/collected = collect_minds()
+	handoff_probe.mark("collect", collected)
+	CHECK_TICK
+	var/equipped = equip_characters()
+	handoff_probe.mark("equip", equipped)
+	CHECK_TICK
 
 	GLOB.data_core.manifest()
+	handoff_probe.mark("manifest")
+	CHECK_TICK
 
-	transfer_characters()	//transfer keys to the new mobs
+	var/list/transferred = transfer_characters()	//transfer keys to the new mobs
+	handoff_probe.mark("transfer", length(transferred))
+	CHECK_TICK
+	show_roundstart_splashes(transferred)
+	handoff_probe.mark("splash", length(transferred))
+	handoff_probe.finish(length(transferred))
 
 	for(var/I in round_start_events)
 		var/datum/callback/cb = I
@@ -358,18 +380,25 @@ SUBSYSTEM_DEF(ticker)
 
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	round_start_time = world.time
+	// Состояние переводим ДО блокирующей записи в базу и рассылки на весь мир: пока оно
+	// оставалось SETTING_UP, лобби уже показывало кнопку входа, а ядро вход отбивало -
+	// каждый клик уходил в message_admins. Окно было около двенадцати секунд.
+	current_state = GAME_STATE_PLAYING
 	SSdbcore.SetRoundStart()
 
 	to_chat(world, "<span class='notice'><B>Welcome to [station_name()], enjoy your stay!</B></span>")
-	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
+	// Приветствие смены - такое же объявление командования, как и остальные (его и озвучивает
+	// диктор из SSstation.announcer), поэтому оно обязано уважать тумблер звука объявлений.
+	// Раньше тут был SEND_SOUND(world, ...) - мимо всех настроек. Аудитория остаётся прежней:
+	// GLOB.clients, то есть лобби тоже слышит; единственная разница - учёт префов.
+	send_announcement_sound(SSstation.announcer.get_rand_welcome_sound(), "announcements", GLOB.clients)
 
-	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
 
-	if(SSevents.holidays)
+	if(SSholidays.holidays)
 		to_chat(world, "<span class='notice'>and...</span>")
-		for(var/holidayname in SSevents.holidays)
-			var/datum/holiday/holiday = SSevents.holidays[holidayname]
+		for(var/holidayname in SSholidays.holidays)
+			var/datum/holiday/holiday = SSholidays.holidays[holidayname]
 			to_chat(world, "<h4>[holiday.greet()]</h4>")
 
 	PostSetup()
@@ -402,11 +431,16 @@ SUBSYSTEM_DEF(ticker)
 	var/list/allmins = adm["present"]
 	send2adminchat("Server", "Round [GLOB.round_id ? "#[GLOB.round_id]:" : "of"] [hide_mode ? "secret":"[GLOB.master_mode]"] has started[allmins.len ? ".":" with no active admins online!"]")
 	if(CONFIG_GET(string/new_round_ping))
-		send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!"), CONFIG_GET(string/chat_announce_new_game))
+		// Один запрос TGS-моста вместо залпа: каждый send2chat - синхронный round-trip
+		// до хоста TGS (world.Export в его хендлере), и пачка пингов ровно в момент
+		// роундстарта складывала эти блоки мира в один общий фриз.
+		var/role_pings
 		if(GLOB.master_mode == "Extended")
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
 		else
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
+		var/round_ping_message = "<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!\n[role_pings] | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"
+		send2chat(new /datum/tgs_message_content(round_ping_message), CONFIG_GET(string/chat_announce_new_game))
 	setup_done = TRUE
 
 	for(var/i in GLOB.start_landmarks_list)
@@ -439,70 +473,130 @@ SUBSYSTEM_DEF(ticker)
 		if(epi)
 			explosion(epi, 512, 0, 0, 0, TRUE, TRUE, 0, TRUE)
 
+// Все четыре стадии ниже уступают тик после каждого игрока. Обход списка в DM идёт
+// по снапшоту, снятому на входе в цикл, и снапшот переживает сон - выпавший из
+// GLOB.player_list игрок из обхода не исчезает и соседей за собой не утаскивает.
+// Обратная сторона та же: за время сна игрок успевает отключиться, а его моб - уйти
+// в qdel, поэтому валидность проверяется заново на каждой итерации. Один рантайм на
+// мёртвой ссылке обрывает стадию для всех, кто стоит в списке дальше.
+/// Возвращает число игроков, которым стадия реально сделала работу - знаменатель цены
+/// стадии в приборе раздачи тел (ticker_handoff_probe.dm). Считать по GLOB.player_list
+/// снаружи нельзя: каждая стадия отсеивает своих (не готов, без разума, без клиента).
 /datum/controller/subsystem/ticker/proc/create_characters()
+	. = 0
 	for(var/mob/dead/new_player/player in GLOB.player_list)
-		if(player.ready == PLAYER_READY_TO_PLAY && player.mind)
-			GLOB.joined_player_list += player.ckey
-			player.create_character(FALSE)
-			if(player.new_character && player.client && player.client.prefs) // we cannot afford a runtime, ever
-				LAZYOR(player.client.prefs.slots_joined_as, player.client.prefs.default_slot)
-				LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
-			else
-				stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
-		else if(!(player.client?.prefs.toggles & TG_PLAYER_PANEL))
-			player.new_player_panel()
 		CHECK_TICK
+		if(QDELETED(player) || player.ready != PLAYER_READY_TO_PLAY || !player.mind)
+			continue
+		// create_character разыменует client.prefs без проверок - без клиента туда нельзя
+		if(!player.client)
+			continue
+		GLOB.joined_player_list += player.ckey
+		player.create_character(FALSE)
+		if(player.new_character && player.client && player.client.prefs) // we cannot afford a runtime, ever
+			.++
+			LAZYOR(player.client.prefs.slots_joined_as, player.client.prefs.default_slot)
+			LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
+		else
+			stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
 
+/// Возвращает число собранных разумов - см. create_characters().
 /datum/controller/subsystem/ticker/proc/collect_minds()
+	. = 0
 	for(var/mob/dead/new_player/P in GLOB.player_list)
-		if(P.new_character && P.new_character.mind)
-			SSticker.minds += P.new_character.mind
 		CHECK_TICK
+		if(QDELETED(P))
+			continue
+		var/mob/living/character = P.new_character
+		if(QDELETED(character) || !character.mind)
+			continue
+		SSticker.minds += character.mind
+		.++
 
 
+/// Возвращает число экипированных персонажей - см. create_characters().
 /datum/controller/subsystem/ticker/proc/equip_characters()
+	. = 0
 	var/captainless=1
 	for(var/mob/dead/new_player/N in GLOB.player_list)
-		var/mob/living/carbon/human/player = N.new_character
-		if(istype(player) && player.mind && player.mind.assigned_role)
-			var/datum/job/J = SSjob.GetJob(player.mind.assigned_role)
-			if(J)
-				J.standard_assign_skills(player.mind)
-			if(player.mind.assigned_role == "Captain")
-				captainless=0
-			if(player.mind.assigned_role != player.mind.special_role)
-				SSjob.EquipRank(N, player.mind.assigned_role, 0)
-				if(CONFIG_GET(flag/roundstart_traits) && ishuman(N.new_character))
-					SSquirks.AssignQuirks(N.new_character, N.client, TRUE, TRUE, SSjob.GetJob(player.mind.assigned_role), FALSE, N)
-				//sandstorm change
-				if(ishuman(N.new_character))
-					SSlanguage.AssignLanguage(N.new_character, N.client)
-				//
-			N.client.prefs.post_copy_to(player)
 		CHECK_TICK
+		if(QDELETED(N))
+			continue
+		var/mob/living/carbon/human/player = N.new_character
+		if(!istype(player) || QDELETED(player) || !player.mind || !player.mind.assigned_role)
+			continue
+		var/datum/job/J = SSjob.GetJob(player.mind.assigned_role)
+		if(J)
+			J.standard_assign_skills(player.mind)
+		if(player.mind.assigned_role == "Captain")
+			captainless=0
+		if(player.mind.assigned_role != player.mind.special_role)
+			SSjob.EquipRank(N, player.mind.assigned_role, 0)
+			if(CONFIG_GET(flag/roundstart_traits) && ishuman(N.new_character))
+				SSquirks.AssignQuirks(N.new_character, N.client, TRUE, TRUE, SSjob.GetJob(player.mind.assigned_role), FALSE, N)
+			//sandstorm change
+			if(ishuman(N.new_character))
+				SSlanguage.AssignLanguage(N.new_character, N.client)
+			//
+		// Экипировка отвязана от клиента, а вот post_copy_to без префов не имеет смысла:
+		// отвалившийся игрок доедет до конца стадии, но уже без обращения к пустоте
+		N.client?.prefs?.post_copy_to(player)
+		.++
 	if(captainless)
 		for(var/mob/dead/new_player/N in GLOB.player_list)
-			if(N.new_character)
-				to_chat(N, "Captainship not forced on anyone.")
 			CHECK_TICK
+			if(QDELETED(N) || !N.new_character)
+				continue
+			to_chat(N, "Captainship not forced on anyone.")
 
+/// Возвращает СПИСОК тел, чьи ключи доехали: его же берёт следующим проходом заставка, а
+/// его длина идёт знаменателем в прибор раздачи тел (см. create_characters()).
 /datum/controller/subsystem/ticker/proc/transfer_characters()
 	var/list/livings = list()
+	// Единственная стадия старта раунда, которая шла вообще без уступки тика: перенос
+	// ключа, qdel лобби-моба, сплеш-экран и init_verbs на каждого из девяноста игроков
+	// уходили одним неразрывным куском. Снапшот обхода делает qdel по ходу цикла
+	// безопасным, но после сна лобби-моб может быть удалён уже без нашего участия.
+	// Сплеш с тех пор уехал отдельным проходом в show_roundstart_splashes().
 	for(var/mob/dead/new_player/player in GLOB.mob_list)
+		CHECK_TICK
+		if(QDELETED(player))
+			continue
 		var/mob/living = player.transfer_character()
-		if(living)
-			qdel(player)
-			living.mob_transforming = TRUE
-			if(living.client)
-				if (living.client.prefs && living.client.prefs.auto_ooc)
-					if (living.client.prefs.chat_toggles & CHAT_OOC)
-						living.client.prefs.chat_toggles ^= CHAT_OOC
-				var/atom/movable/screen/splash/S = new(null, living.client, TRUE)
-				S.Fade(TRUE)
-				living.client.init_verbs()
-			livings += living
+		if(!living)
+			continue
+		qdel(player)
+		living.mob_transforming = TRUE
+		if(living.client)
+			if (living.client.prefs && living.client.prefs.auto_ooc)
+				if (living.client.prefs.chat_toggles & CHAT_OOC)
+					living.client.prefs.chat_toggles ^= CHAT_OOC
+			living.client.init_verbs()
+		livings += living
 	if(livings.len)
 		addtimer(CALLBACK(src, PROC_REF(release_characters), livings), 30, TIMER_CLIENT_TIME)
+	return livings
+
+/**
+ * Заставка поверх экрана на время разморозки тела.
+ *
+ * Вынесена из transfer_characters() отдельным проходом, чтобы прибор раздачи тел мерил её
+ * сам по себе. Она ставит каждому клиенту на экран SStitle.icon - ту самую заставку,
+ * которая в раунде 10108 разворачивалась в непрерывный блок на 500 МБ, - и делает это всем
+ * ста с лишним игрокам разом, ровно в то окно, где VmSize раунда 10121 прыгнул на 666 МБ
+ * без единого нового инстанса.
+ *
+ * Для игрока порядок не меняется: тело он уже получил, а разморозка (release_characters)
+ * всё равно ждёт таймера на три секунды - сплеш успевает и появиться, и погаснуть внутри
+ * прежнего окна.
+ */
+/datum/controller/subsystem/ticker/proc/show_roundstart_splashes(list/livings)
+	for(var/mob/living/character as anything in livings)
+		CHECK_TICK
+		if(QDELETED(character) || !character.client)
+			continue
+		var/atom/movable/screen/splash/splash = new(null, character.client, TRUE)
+		splash.Fade(TRUE)
 
 /datum/controller/subsystem/ticker/proc/release_characters(list/livings)
 	for(var/I in livings)
@@ -548,23 +642,23 @@ SUBSYSTEM_DEF(ticker)
 			queue_delay = 0
 
 /datum/controller/subsystem/ticker/proc/check_maprotate()
-	if (!CONFIG_GET(flag/maprotation))
+	if(!CONFIG_GET(flag/maprotation))
 		return
-	if (SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_ESCAPE || SSshuttle.canRecall())
-		return
-	if (maprotatechecked)
+	//if(SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_ESCAPE || SSshuttle.canRecall())
+	//	return
+	if(maprotatechecked)
 		return
 
-	maprotatechecked = 1
+	maprotatechecked = TRUE
 
 	//map rotate chance defaults to 75% of the length of the round (in minutes)
-	if (!prob((world.time/600)*CONFIG_GET(number/maprotatechancedelta)) && CONFIG_GET(flag/tgstyle_maprotation))
+	if(!prob((world.time/600)*CONFIG_GET(number/maprotatechancedelta)) && CONFIG_GET(flag/tgstyle_maprotation))
 		return
 	if(CONFIG_GET(flag/tgstyle_maprotation))
 		INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, maprotate))
 	else
 		var/vote_type = CONFIG_GET(string/map_vote_type)
-		SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type)
+		SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 
 /datum/controller/subsystem/ticker/proc/HasRoundStarted()
 	return current_state >= GAME_STATE_PLAYING
@@ -579,9 +673,9 @@ SUBSYSTEM_DEF(ticker)
 		SSticker.modevoted = TRUE
 		var/dynamic = CONFIG_GET(flag/dynamic_voting)
 		if(dynamic)
-			SSvote.initiate_vote("dynamic", "server", display = NONE, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
+			SSvote.initiate_vote("dynamic", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
 		else
-			SSvote.initiate_vote("roundtype", "server", display = NONE, votesystem = PLURALITY_VOTING, forced=TRUE, \
+			SSvote.initiate_vote("roundtype", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = PLURALITY_VOTING, forced=TRUE, \
 			vote_time = SSticker.GetTimeLeft() - ROUNDTYPE_VOTE_END_PENALTY) //BLUEMOON CHANGE, WAS vote_time = (CONFIG_GET(flag/modetier_voting) ? 1 MINUTES : 20 MINUTES))
 
 /datum/controller/subsystem/ticker/Recover()
@@ -633,7 +727,7 @@ SUBSYSTEM_DEF(ticker)
 
 /datum/controller/subsystem/ticker/proc/send_news_report()
 	var/news_message
-	var/news_source = "Новости Пакта Синие Луны"
+	var/news_source = "Новости ПАКТа Синие Луны"
 	switch(news_report)
 		if(NUKE_SYNDICATE_BASE)
 			news_message = "Во время недавней попытки Рейдерского Захвата [station_name()] со стороны ИнтеКью, станции удалось уничтожить отряд тяжело вооружённых Террористов."
@@ -679,7 +773,7 @@ SUBSYSTEM_DEF(ticker)
 		if(SHUTTLE_HIJACK)
 			news_message = "Во время плановой эвакуации на аварийном шаттле [station_name()] были повреждены навигационные протоколы и он сбился с курса, но вскоре был восстановлен, а все сотрудники были благополучно эвакуированы и сейчас наслаждаются отдыхом."
 		if(GANG_OPERATING)
-			news_message = "Пакт хотел бы заявить, что любые слухи об организации преступного сообщества на станциях типа [station_name()] являются ложью и не подлежат подражанию."
+			news_message = "ПАКТ хотел бы заявить, что любые слухи об организации преступного сообщества на станциях типа [station_name()] являются ложью и не подлежат подражанию."
 		if(GANG_DESTROYED)
 			news_message = "Экипаж [station_name()] благодарит полицейский департамент Звездной Коалиции за оперативное устранение незначительной террористической угрозы для станции."
 
@@ -805,6 +899,9 @@ SUBSYSTEM_DEF(ticker)
 		'sound/roundend/gandon.ogg',
 		'sound/roundend/approachingbaystation.ogg'\
 		)
+
+	if(SSmetadollars?.metadollar_burn_round_notice)
+		to_chat(world, span_boldannounce("[SSmetadollars.metadollar_burn_round_notice]"))
 
 	SEND_SOUND(world, sound(round_end_sound))
 	text2file(login_music, "data/last_round_lobby_music.txt")

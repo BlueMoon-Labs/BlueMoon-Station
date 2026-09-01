@@ -1,7 +1,7 @@
 SUBSYSTEM_DEF(spacedrift)
 	name = "Space Drift"
 	priority = FIRE_PRIORITY_SPACEDRIFT
-	wait = 5
+	wait = 2 // гранулярность старта дрейфа: при 5 первый шаг откладывался до 0.25с
 	flags = SS_NO_INIT|SS_KEEP_TIMING
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
@@ -19,6 +19,7 @@ SUBSYSTEM_DEF(spacedrift)
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
+	var/cached_time = world.time
 
 	while (currentrun.len)
 		var/atom/movable/AM = currentrun[currentrun.len]
@@ -29,7 +30,14 @@ SUBSYSTEM_DEF(spacedrift)
 				return
 			continue
 
-		if (AM.inertia_next_move > world.time)
+		if (AM.inertia_next_move > cached_time)
+			if (MC_TICK_CHECK)
+				return
+			continue
+
+		if (HAS_TRAIT(AM, TRAIT_HYPERSPACED))
+			AM.inertia_dir = 0
+			processing -= AM
 			if (MC_TICK_CHECK)
 				return
 			continue
@@ -50,7 +58,7 @@ SUBSYSTEM_DEF(spacedrift)
 		AM.set_glide_size(DELAY_TO_GLIDE_SIZE(AM.inertia_move_delay), FALSE)
 		step(AM, AM.inertia_dir)
 		AM.inertia_moving = FALSE
-		AM.inertia_next_move = world.time + AM.inertia_move_delay
+		AM.inertia_next_move = cached_time + AM.inertia_move_delay
 		if (AM.loc == old_loc)
 			AM.inertia_dir = 0
 

@@ -13,6 +13,7 @@
 	icon_state = "bed"
 	icon = 'icons/obj/objects.dmi'
 	anchored = TRUE
+	shadow_weight = 0.1
 	can_buckle = TRUE
 	buckle_lying = TRUE
 	resistance_flags = FLAMMABLE
@@ -25,7 +26,7 @@
 /obj/structure/bed/examine(mob/user)
 	. = ..()
 	if(bolts)
-		. += "<span class='notice'>It's held together by a couple of <b>bolts</b>.</span>"
+		. += "<span class='notice'>Держится на парочке <b>болтов</b>.</span>"
 
 /obj/structure/bed/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -54,9 +55,11 @@
 		return ..()
 
 /obj/structure/bed/post_buckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(TRUE)
 
 /obj/structure/bed/double/post_unbuckle_mob(mob/living/target)
+	. = ..()
 	target.pixel_y = target.get_standard_pixel_y_offset(FALSE)
 
 /*
@@ -64,7 +67,7 @@
  */
 /obj/structure/bed/roller
 	name = "Roller bed"
-	desc = "A collapsed roller bed that can be carried around."
+	desc = "Складываемая каталка, пригодная к ручной переноске."
 	icon = 'icons/obj/rollerbed.dmi'
 	icon_state = "down"
 	anchored = FALSE

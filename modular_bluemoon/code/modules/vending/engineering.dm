@@ -20,6 +20,7 @@
 		/obj/item/wirecutters = 12,
 		/obj/item/multitool = 12,
 		/obj/item/wrench = 12,
+		/obj/item/wrench/bolter = 4,
 		/obj/item/t_scanner = 12,
 		/obj/item/stock_parts/cell = 8,
 		/obj/item/weldingtool = 8,

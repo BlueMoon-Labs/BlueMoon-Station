@@ -17,29 +17,33 @@
 	req_admin_notify = 1
 	custom_spawn_text = "представитель NanoTrasen - должностное лицо, назначенное напрямую Центральным Командованием. Представитель контролирует соблюдение рабочих стандартов и космического закона во всех отделах на станции, консультирует и взаимодействует с главами отделов, а также следит за работой юристов (агентов внутренних дел), отдавая им напрямую приказы и исполняя их прошения. Авторизация увольнений глав, обеспечение связи с ЦК и организация судов аналогично входят в перечень его работ. Представитель ни в коем случае не должен выполнять работу СБ."
 	alt_titles = list(
-		"Syndicate Representative",
+		"Syndicate Advisor", //Синди выше, для удобства
+		"Syndicate Representative", //Синди выше, для удобства
+		"Syndicate Whore", //Синди выше, для удобства
+		"Syndicate Slut",
+		"Commissar",
 		"Judge",
 		"Magistrate",
-		"Prosecutor",
+		"NanoTrasen Advisor",
 		"NanoTrasen Consultant",
-		"Syndicate Advisor",
-		"Netorare",
-		"Commissar",
-		"Political Officer",
+		"NanoTrasen Diplomat",
+		"NanoTrasen Whore",
 		"NanoTrasen Slut",
-		"Syndicate Slut",
+		"Netorare",
+		"Political Officer",
+		"Revizor"
 		)
 
 	outfit = /datum/outfit/job/ntr
 	plasma_outfit = /datum/outfit/plasmaman/bar
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_HOP, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_CAPTAIN, ACCESS_BLUESHIELD, ACCESS_LAWYER, ACCESS_BAR, ACCESS_JANITOR, ACCESS_KITCHEN, ACCESS_HYDROPONICS)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_HOP, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_CAPTAIN, ACCESS_BLUESHIELD, ACCESS_LAWYER, ACCESS_BAR, ACCESS_JANITOR, ACCESS_KITCHEN, ACCESS_HYDROPONICS)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_HOP, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_CAPTAIN, ACCESS_BLUESHIELD, ACCESS_LAWYER, ACCESS_BAR, ACCESS_JANITOR, ACCESS_KITCHEN, ACCESS_HYDROPONICS, ACCESS_KEYCARD_AUTH, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_HOP, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_CAPTAIN, ACCESS_BLUESHIELD, ACCESS_LAWYER, ACCESS_BAR, ACCESS_JANITOR, ACCESS_KITCHEN, ACCESS_HYDROPONICS, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
 
-	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_FENCER)
+	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_FENCER, TRAIT_DISK_VERIFIER)
 
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/illiterate)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/illiterate, /datum/quirk/onelife)
 
 	display_order = JOB_DISPLAY_ORDER_NTR
 	departments = DEPARTMENT_BITFLAG_LAW
@@ -50,9 +54,8 @@
 		/obj/item/book/manual/wiki/security_space_law
 	)
 
-/obj/item/pda/heads/ntr
+/obj/item/modular_computer/pda/heads/ntr
 	name = "NanoTrasen Representative PDA"
-	default_cartridge = /obj/item/cartridge/hos
 	icon_state = "pda-ntr"
 
 /obj/item/clothing/suit/armor/ntr
@@ -98,7 +101,7 @@
 	name = "NanoTrasen Representative"
 	jobtype = /datum/job/ntr
 
-	belt = /obj/item/pda/heads/ntr
+	belt = /obj/item/modular_computer/pda/heads/ntr
 	id = /obj/item/card/id/silver
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/color/black
@@ -107,7 +110,8 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	r_pocket = /obj/item/clothing/accessory/lawyers_badge
+	l_pocket = /obj/item/pen/fourcolor/ntr
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 
 	backpack = /obj/item/storage/backpack/captain/ntr //BLUEMOON add
 	satchel = /obj/item/storage/backpack/satchel/cap/ntr //BLUEMOON add
@@ -115,19 +119,19 @@
 
 	chameleon_extras = /obj/item/stamp/law
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/pen/fourcolor/ntr)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1)
 
 	box = /obj/item/storage/box/survival/command
 
 	implants = list(/obj/item/implant/mindshield)
 
-	accessory = /obj/item/clothing/accessory/permit/special/representative
+	accessory = list(/obj/item/clothing/accessory/permit/special/representative, /obj/item/clothing/accessory/lawyers_badge)
 
 /datum/outfit/job/ntr/syndicate
 	name = "Syndicate Representative"
 	jobtype = /datum/job/ntr
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/combat
@@ -136,18 +140,17 @@
 	suit = /obj/item/clothing/suit/armor/ntr
 	head = /obj/item/clothing/head/beret/sec/ntr
 	shoes = /obj/item/clothing/shoes/laceup/ntr
-	l_pocket = /obj/item/melee/classic_baton/telescopic
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/representative
+	accessory = list(/obj/item/clothing/accessory/permit/special/representative, /obj/item/clothing/accessory/permit/special/syndie_station)
 
-	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/syndicate_uplink=1, /obj/item/pen/fourcolor/ntr)
+	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1, /obj/item/pen/fourcolor/ntr, /obj/item/melee/classic_baton/telescopic, /obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/job/ntr/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
-
 	H.typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/law

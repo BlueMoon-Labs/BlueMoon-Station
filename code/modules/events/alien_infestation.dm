@@ -1,11 +1,28 @@
 /datum/round_event_control/alien_infestation
 	name = "Alien Infestation"
 	typepath = /datum/round_event/ghost_role/alien_infestation
-	weight = 20
-	min_players = 40
+	weight = 4
+	// На типичных 30-40 тяжёлый трек гост-пула состоял из одного мага: порог 40 открывал
+	// улей только на пиковом онлайне. 35 не дожал (медиум-экипаж в логах 9766-9775 = 22-33,
+	// улей не выпал ни разу) - 30 открывает пиковый медиум и весь хард.
+	min_players = 30
 	max_occurrences = 1
-	dynamic_should_hijack = TRUE
+	// Единственный 0-гейтный heavy: в харде копилка могла залочить улей до 20-й минуты.
+	// 25 мин - позже лёгкой волны (20), раньше основной (30), как у ниндзя.
+	earliest_start = 25 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 15
+	// Улей стартует с 1-2 личинок и разгоняется полчаса: 45 сразу съедала бы всю
+	// антаг-цель медиума (30 попа * 1.5) и глушила пул при пустом вент-крабе.
+	// Разросшийся улей докрутит множитель активности директора сам.
+	intensity = 30
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
+	intensity_linger = 45 MINUTES // улей растёт заметно дольше спавнера
+	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
+	family = "xenomorph" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "A xenomorph larva spawns on a random vent."
 
 /datum/round_event/ghost_role/alien_infestation

@@ -4,7 +4,7 @@
 	illustration = "id"
 
 /obj/item/storage/box/deviant_kit/lust/PopulateContents()
-	new /obj/item/card/id/lust(src)
+	new /obj/item/card_sticker/lust(src)
 	new /obj/item/clothing/accessory/permit/special/deviant/lust(src)
 
 /obj/item/storage/box/deviant_kit/heresy
@@ -13,9 +13,8 @@
 	illustration = "id"
 
 /obj/item/storage/box/deviant_kit/heresy/PopulateContents()
-	new /obj/item/card/id/heresy(src)
-	if (GLOB.round_type == ROUNDTYPE_EXTENDED)
-		new /obj/item/clothing/accessory/permit/special/deviant/heresey(src)
+	new /obj/item/card_sticker/heresy(src)
+	new /obj/item/clothing/accessory/permit/special/deviant/heresey(src)
 
 /obj/item/storage/box/deviant_kit/agony
 	name = "Ravenheart Resident kit"
@@ -23,17 +22,9 @@
 	illustration = "id"
 
 /obj/item/storage/box/deviant_kit/agony/PopulateContents()
-	new /obj/item/card/id/agony(src)
+	new /obj/item/card_sticker/agony(src)
 	new /obj/item/clothing/accessory/permit/special/deviant/agony(src)
 
-/obj/item/storage/box/deviant_kit/muck
-	name = "Muck activity kit"
-	desc = "Жрать гавно."
-	illustration = "id"
-
-/obj/item/storage/box/deviant_kit/muck/PopulateContents()
-	new /obj/item/card/id/muck(src)
-	new /obj/item/clothing/accessory/permit/special/deviant/muck(src)
 
 /obj/item/storage/box/raven_box
 	name = "dark red box"
@@ -67,4 +58,123 @@
 	new	/obj/item/clothing/accessory/permit/deviant/lust(src)
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
-	new	/obj/item/clothing/accessory/permit/deviant/muck(src)
+	new	/obj/item/clothing/accessory/permit/deviant/lust(src)
+
+/obj/item/storage/box/service_permits
+	name = "box of service permits"
+	desc = "Has permits for new service employees."
+	illustration = "id"
+
+/obj/item/storage/box/service_permits/PopulateContents()
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bartender(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+
+/obj/item/storage/box/metashop/holoparasite_kit
+	name = "holoparasite kit"
+	desc = "Коробка с инжектором голопаразита и разрешением на его ношение."
+	illustration = "syringe"
+
+/obj/item/storage/box/metashop/holoparasite_kit/PopulateContents()
+	new /obj/item/guardiancreator/tech/choose/traitor(src)
+	new /obj/item/clothing/accessory/permit/special/holoparasite(src)
+
+///////////////////////////////// SHRIMP /////////////////////////////////////
+// Упаковка креветок с ЦК: лоток на 8 креветок, запаянный в пищевую плёнку.
+#define SHRIMP_PACK_CAPACITY 8
+#define SHRIMP_UNWRAP_SOUND_VOLUME 50
+
+/obj/item/storage/box/shrimp_pack
+	name = "vacuum-packed shrimp"
+	desc = "Небольшой лоток с креветками, плотно завернутыми в пищевую пленку. Разверните пленку, держа ее в руке."
+	icon = 'modular_bluemoon/icons/obj/food/shrimp_pack.dmi'
+	icon_state = "shrimp_pack"
+	foldable = null
+	illustration = null
+	appearance_flags = KEEP_TOGETHER
+	var/wrapped = TRUE
+	var/static/list/shrimp_offsets = list(
+		list(0, 3),  list(5, 1), list(10, 3), list(15, 1),
+		list(0, -4), list(5, -6), list(10, -4), list(15, -6),
+	)
+
+/obj/item/storage/box/shrimp_pack/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/storage_component = GetComponent(/datum/component/storage)
+	storage_component.max_items = SHRIMP_PACK_CAPACITY
+	storage_component.can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/meat/rawshrimp))
+	storage_component.locked = TRUE
+
+/obj/item/storage/box/shrimp_pack/PopulateContents()
+	for(var/i in 1 to SHRIMP_PACK_CAPACITY)
+		new /obj/item/reagent_containers/food/snacks/meat/rawshrimp(src)
+	update_icon()
+
+/obj/item/storage/box/shrimp_pack/attack_self(mob/user)
+	if(!wrapped)
+		return ..()
+
+	var/unwrap_time = 5 SECONDS
+	if(user.mind && (user.mind.assigned_role == "Cook"))
+		unwrap_time = 1 SECONDS
+
+	balloon_alert(user, "распаковка...")
+	if(!do_after(user, unwrap_time, src))
+		return
+	if(!wrapped)
+		return
+
+	wrapped = FALSE
+	var/datum/component/storage/storage_component = GetComponent(/datum/component/storage)
+	storage_component.locked = FALSE
+	playsound(loc, 'sound/items/poster_ripped.ogg', vol = SHRIMP_UNWRAP_SOUND_VOLUME, vary = TRUE)
+	new /obj/effect/decal/cleanable/generic(get_turf(user))
+	user.visible_message(span_notice("[user] распаковывает [src]."), span_notice("Вы распаковали [src]."))
+	update_icon()
+
+/obj/item/storage/box/shrimp_pack/update_icon_state()
+	if(wrapped)
+		icon_state = "shrimp_pack"
+		name = "vacuum-packed shrimp"
+		desc = "Небольшой лоток с креветками, плотно завернутыми в пищевую пленку. Разверните пленку, держа ее в руке."
+	else if(length(contents))
+		icon_state = "shrimpbox_top"
+		name = "tray of shrimp"
+		desc = "Открытый лоток со свежими креветками."
+	else
+		icon_state = "shrimpbox_top"
+		name = "empty tray"
+		desc = "Пустой лоток из-под креветок."
+
+/obj/item/storage/box/shrimp_pack/update_overlays()
+	. = ..()
+
+	if(wrapped)
+		return
+
+	var/index = 1
+	for(var/obj/item/reagent_containers/food/snacks/meat/rawshrimp/shrimp in contents)
+		if(index > SHRIMP_PACK_CAPACITY)
+			break
+		if(!istype(shrimp))
+			continue
+		var/list/offset = shrimp_offsets[index]
+		. += image(icon = initial(icon), icon_state = "shrimp_inbox", pixel_x = offset[1], pixel_y = offset[2])
+		index++
+
+	. += image(icon = initial(icon), icon_state = "shrimpbox_inner")
+
+/obj/structure/closet/secure_closet/freezer/fridge/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/closet/secure_closet/freezer/fridge/LateInitialize()
+	. = ..()
+	new /obj/item/storage/box/shrimp_pack(src)
+
+#undef SHRIMP_PACK_CAPACITY
+#undef SHRIMP_UNWRAP_SOUND_VOLUME

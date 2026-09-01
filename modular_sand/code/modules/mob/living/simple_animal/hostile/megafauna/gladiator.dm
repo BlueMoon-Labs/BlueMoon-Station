@@ -24,9 +24,8 @@ They deal 35 brute (armor is considered).
 	death_sound = 'modular_sand/sound/effects/gladiatordeathsound.ogg'
 	deathmessage = "gets discombobulated and fucking dies."
 	rapid_melee = 1
-	melee_queue_distance = 2
-	melee_damage_lower = 35
-	melee_damage_upper = 35
+	melee_damage_lower = 45
+	melee_damage_upper = 45
 	speed = 1
 	move_to_delay = 2.25
 	wander = FALSE
@@ -34,12 +33,16 @@ They deal 35 brute (armor is considered).
 	ranged = 1
 	ranged_cooldown_time = 30
 	minimum_distance = 1
-	health = 1500
-	maxHealth = 1500
+	health = 1900
+	maxHealth = 1900
 	movement_type = GROUND
 	weather_immunities = list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE)
+	peaceful = TRUE
 	var/phase = 1
-	var/list/introduced = list() //Basically all the mobs which the gladiator has already introduced himself to.
+	/// REF-keyed weakrefs to mobs already greeted. Keeping the mobs themselves
+	/// here pins every nearby combatant; checking resolve() also handles BYOND
+	/// reusing a deleted mob's REF for a new datum.
+	var/list/introduced = list()
 	var/speen = FALSE
 	var/speenrange = 4
 	var/obj/savedloot = null
@@ -51,6 +54,20 @@ They deal 35 brute (armor is considered).
 	var/move_to_charge = 1.5
 	loot = list(/obj/structure/closet/crate/necropolis/gladiator)
 	crusher_loot = list(/obj/structure/closet/crate/necropolis/gladiator/crusher)
+	sharpness = SHARP_EDGED
+
+/mob/living/simple_animal/hostile/megafauna/gladiator/MeleeAction(patience = TRUE)
+	var/old_melee_damage_lower = melee_damage_lower
+	var/old_melee_damage_upper = melee_damage_upper
+
+	if(target && ishuman(target) && is_species(target, /datum/species/lizard/ashwalker))
+		melee_damage_lower *= 2
+		melee_damage_upper *= 2
+
+	. = ..(patience)
+
+	melee_damage_lower = old_melee_damage_lower
+	melee_damage_upper = old_melee_damage_upper
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/ComponentInitialize()
 	. = ..()
@@ -70,11 +87,16 @@ They deal 35 brute (armor is considered).
 	. = ..()
 	internal = new /obj/item/gps/internal/gladiator(src)
 
+/mob/living/simple_animal/hostile/megafauna/gladiator/Destroy()
+	introduced = null
+	return ..()
+
 /mob/living/simple_animal/hostile/megafauna/gladiator/Life()
 	. = ..()
 	if(!wander)
 		for(var/mob/living/M in view(4, src))
-			if(!(M in introduced) && (stat != DEAD))
+			var/datum/weakref/known_mob = introduced[REF(M)]
+			if(known_mob?.resolve() != M && (stat != DEAD))
 				introduction(M)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/apply_damage(damage = 0,damagetype = BRUTE, def_zone = null, blocked = FALSE, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE) //skyrat edit
@@ -97,7 +119,7 @@ They deal 35 brute (armor is considered).
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/introduction(mob/living/target)
 	if(src == target)
-		introduced += src
+		introduced[REF(src)] = WEAKREF(src)
 		return
 	if(ishuman(target))
 		var/mob/living/carbon/human/H = target
@@ -133,12 +155,12 @@ They deal 35 brute (armor is considered).
 									"You're not invited. Get out.")
 			message = pick(messages)
 
-		introduced |= H
+		introduced[REF(H)] = WEAKREF(H)
 		say(message, language = language)
 
 	else
 		say("You are not welcome into the necropolisss.")
-		introduced |= target
+		introduced[REF(target)] = WEAKREF(target)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/Move(atom/newloc, dir, step_x, step_y)
 	if(speen || stunned)
@@ -275,7 +297,7 @@ They deal 35 brute (armor is considered).
 			for(var/mob/living/M in U)
 				if(!faction_check(faction, M.faction) && !(M in hit_things))
 					playsound(src, 'sound/weapons/slash.ogg', 75, 0)
-					if(M.apply_damage(40, BRUTE, BODY_ZONE_CHEST, M.run_armor_check(BODY_ZONE_CHEST), null, null, CANT_WOUND))
+					if(M.apply_damage(52, BRUTE, BODY_ZONE_CHEST, M.run_armor_check(BODY_ZONE_CHEST), null, null, CANT_WOUND))
 						visible_message("<span class = 'userdanger'>[src] slashes [M] with his spinning zweihander!</span>")
 					else
 						visible_message("<span class = 'userdanger'>[src]'s spinning zweihander is stopped by [M]!</span>")
@@ -309,12 +331,17 @@ They deal 35 brute (armor is considered).
 	stunned = FALSE
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/teleport(atom/target)
+	if(QDELETED(src) || !isturf(loc) || QDELETED(target) || !get_turf(target))
+		return FALSE
 	var/turf/T = get_step(target, -target.dir)
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	sleep(4)
+	if(QDELETED(src) || !isturf(loc) || QDELETED(target) || !get_turf(target))
+		return FALSE
 	if(!ischasm(T) && !(/mob/living in T))
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		forceMove(T)
+		return TRUE
 	else
 		var/list/possiblelocs = (view(3, target) - view(1, target))
 		for(var/atom/A in possiblelocs)
@@ -327,19 +354,21 @@ They deal 35 brute (armor is considered).
 			T = pick(possiblelocs)
 			new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 			forceMove(T)
+			return TRUE
+	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/AttackingTarget()
 	. = ..()
 	if(speen || stunned)
 		return FALSE
-	if(charging)
+	if(charging && target)
 		Bump(target)
-	if(. && prob(5 * phase))
+	if(. && target && prob(5 * phase))
 		teleport(target)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/boneappletea(atom/target)
 	var/obj/item/kitchen/knife/combat/bone/boned = new /obj/item/kitchen/knife/combat/bone(get_turf(src))
-	boned.throwforce = 35
+	boned.throwforce = 45
 	playsound(src, 'sound/weapons/fwoosh.wav', 60, 0)
 	boned.throw_at(target, 7, 3, src)
 	QDEL_IN(boned, 30)
@@ -348,6 +377,8 @@ They deal 35 brute (armor is considered).
 	if(world.time < ranged_cooldown)
 		return FALSE
 	if(speen || stunned || charging)
+		return FALSE
+	if(QDELETED(target) || !get_turf(target))
 		return FALSE
 	ranged_cooldown = world.time
 	switch(phase)
@@ -394,7 +425,7 @@ They deal 35 brute (armor is considered).
 /obj/effect/step_trigger/gladiator/Trigger(atom/movable/A)
 	if(isliving(A))
 		var/mob/living/bruh = A
-		glady.enemies |= bruh
+		glady.add_enemy(bruh)
 		glady.GiveTarget(bruh)
 		for(var/obj/effect/step_trigger/gladiator/glad in view(7, src))
 			qdel(glad)

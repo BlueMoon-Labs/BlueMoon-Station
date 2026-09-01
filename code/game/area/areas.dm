@@ -81,6 +81,18 @@
 	var/list/cameras
 	var/list/firealarms
 	var/firedoors_last_closed_on = 0
+	/// Слушают ли пожарные шлюзы зоны собственные датчики температуры. Считается
+	/// из пожарных сигнализаций зоны: пока хоть одна из них детектит, детекция
+	/// включена. Провод детекции в сигнализации это и есть штатный способ
+	/// отключить автоматику в комнате, которую греют или морозят намеренно.
+	/// Зона без сигнализаций детектит всегда.
+	var/fire_detect = TRUE
+	/// Комната спроектирована горячей: камера сгорания, турбина. Жар в её турфах -
+	/// это работа комнаты, а не авария, и тепловую тревогу файрлока они не поднимают.
+	/// Отдельно от fire_detect намеренно: тот пересобирается по пожарным
+	/// сигнализациям зоны и мапленное значение затирает, а ещё агрегируется по ВСЕМ
+	/// зонам двери - створка на входе ослепла бы и со стороны коридора.
+	var/firelock_heat_exempt = FALSE
 
 
 	///This datum, if set, allows terrain generation behavior to be ran on Initialize()
@@ -153,6 +165,8 @@
   */
 	var/list/area/sub_areas //list of typepaths of the areas you wish to link here, will be replaced with a list of references on mapload.
 	var/area/base_area //The area we wish to use in place of src for certain actions such as APC area linking.
+	/// O(1) APC lookup for this area's power controller. Only authoritative on the base area.
+	var/obj/machinery/power/apc/power_apc
 
 	var/nightshift_public_area = NIGHTSHIFT_AREA_NONE		//considered a public area for nightshift
 
@@ -200,6 +214,9 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	// rather than waiting for atoms to initialize.
 	if (area_flags & UNIQUE_AREA)
 		GLOB.areas_by_type[type] = src
+	GLOB.all_areas += src
+	if(istype(src, /area/maintenance))
+		GLOB.maintenance_areas += src
 
 	alarm_manager = new(src) // just in case
 
@@ -270,6 +287,9 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 					continue
 				LAZYADD(sub_areas, A)
 				A.base_area = src
+				if(A.power_apc && !power_apc)
+					power_apc = A.power_apc
+				A.power_apc = null
 	else if(LAZYLEN(sub_areas))
 		WARNING("sub-areas are currently not supported for non-unique areas such as [src].")
 		sub_areas = null
@@ -283,6 +303,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(!base_area) //we don't want to run it twice.
 		power_change()		// all machines set to current power level, also updates icon
 	update_beauty()
+
+/area/proc/is_station_member()
+	var/area/root_area = base_area ? base_area : src
+	if(root_area.type in GLOB.the_station_areas)
+		return TRUE
+	for(var/area/linked_area as anything in root_area.sub_areas)
+		if(linked_area.type in GLOB.the_station_areas)
+			return TRUE
+	return FALSE
 
 /area/proc/RunGeneration()
 	if(map_generator)
@@ -327,6 +356,13 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Destroy()
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
+	GLOB.all_areas -= src
+	// Иначе список навсегда держит область (гарантированный харддел), а после
+	// принудительного del в нём остаётся null - валит get_area_turfs/dead_tele до конца раунда
+	GLOB.sortedAreas -= src
+	if(istype(src, /area/maintenance))
+		GLOB.maintenance_areas -= src
+	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)
 		base_area = null
@@ -352,6 +388,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		firedoors_last_closed_on = world.time
 		for(var/FD in firedoors)
 			var/obj/machinery/door/firedoor/D = FD
+			D.refresh_generic_alarm()
 			var/cont = !D.welded
 			if(cont && opening)	//don't open if adjacent area is on fire
 				for(var/I in D.affecting_areas)
@@ -360,6 +397,13 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				// Закрытие зоной - тоже работа автоматики, и открывать обратно
+				// обязана она же: собственной тревоги у такой двери нет, а
+				// пересчёт тревоги ходит только по фронту тревоги.
+				if(opening)
+					D.auto_closed = FALSE
+				else if(!D.density)
+					D.mark_auto_closed()
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))
@@ -415,7 +459,34 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	for(var/obj/machinery/door/door in get_sub_areas_contents(src))
 		close_and_lock_door(door)
 
+/// Пересобирает fire_detect по пожарным сигнализациям зоны и разносит вердикт
+/// по пожарным шлюзам. Зовётся при появлении, поломке и перещёлкивании провода
+/// детекции - то есть редко, поэтому шлюзы держат готовый ответ у себя, а не
+/// перебирают зоны на каждом замере воздуха.
+/area/proc/refresh_fire_detect()
+	var/new_state = TRUE
+	if(LAZYLEN(firealarms))
+		new_state = FALSE
+		for(var/obj/machinery/firealarm/alarm as anything in firealarms)
+			// Сломанную или обесточенную сигнализацию не считаем за выключенную
+			// детекцию: иначе разбить одну коробку на стене хватало бы, чтобы
+			// снять автоматику со всей комнаты. Нужен именно осознанный жест -
+			// перерезанный провод детекции или эмаг.
+			if(alarm.detecting && !(alarm.obj_flags & EMAGGED))
+				new_state = TRUE
+				break
+	if(new_state == fire_detect)
+		return
+	fire_detect = new_state
+	for(var/obj/machinery/door/firedoor/door as anything in firedoors)
+		door.refresh_fire_detection()
+
 /area/proc/set_fire_alarm_effects(boolean)
+	// Повторный взвод уже взведённой тревоги (burglaralert, декомп-тревога воздушного
+	// сенсора раз в секунду) - не событие: без этого выхода каждый вызов гонял
+	// update() по всем лампам зоны и по всем сигнализациям впустую.
+	if(fire == boolean)
+		return
 	fire = boolean
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	for(var/i in sub_areas)
@@ -427,8 +498,14 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		F.update_icon()
 	if(area_emergency_mode) //Fires are not legally allowed if the power is off
 		return
+	// Лампы при смене тревоги только перекрашиваются, и делать это надо молча:
+	// update() без silent играет light_on.ogg на каждой лампе зоны при каждом
+	// переключении в обе стороны. На пустой Delta (раунд 10060, ноль игроков)
+	// это был главный источник сотен /sound в секунду - 845 ламп на карте, и любая
+	// зона, качающаяся между firealert() и firereset(), выдавала 2 x ламп звуков
+	// за цикл. В tg у смены цвета по тревоге звука нет вовсе.
 	for(var/obj/machinery/light/L in get_sub_areas_contents(src))
-		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update))
+		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), TRUE, TRUE)
 
 /area/proc/updateicon()
 /**
@@ -480,16 +557,20 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 // called when power status changes
 
+/**
+ * Broadcasts the area's power state to everything that cares about it.
+ *
+ * Consumers subscribe to COMSIG_AREA_POWER_CHANGE themselves - machinery does so from
+ * /obj/machinery/Initialize() and re-points the subscription when it changes area. The old
+ * implementation instead scanned for subscribers on every call: either a recursive walk of the
+ * area's turf contents, or a get_area() sweep of GLOB.machines, whichever list was shorter. Both
+ * are O(station) work per power flip, and an APC booting a large area cost ~32ms of synchronous
+ * stall inside a timer callback (round 22.10.05: three such callbacks, SSTimer pinned at 40-80%
+ * of the tick for five seconds afterwards).
+ */
 /area/proc/power_change()
 	SHOULD_NOT_SLEEP(TRUE)
-	if(contents.len < GLOB.machines.len) // it would be faster to loop over contents
-		for(var/obj/machinery/M in src) // for each machine in the area
-			M.power_change() // reverify power status (to update icons etc.)
-	else // it would be faster to loop over the machines list
-		for(var/obj/machinery/M as anything in GLOB.machines) // for each machine
-			if(get_area(M) != src) // in the area
-				continue
-			M.power_change() // reverify power status (to update icons etc.)
+	SEND_SIGNAL(src, COMSIG_AREA_POWER_CHANGE)
 	for(var/area/A as anything in sub_areas)
 		A.power_light = power_light
 		A.power_equip = power_equip
@@ -526,6 +607,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			static_light += value
 		if(STATIC_ENVIRON)
 			static_environ += value
+	wake_parked_apc() // the standby baseline this area's APC parked on the powernet went stale
+
+///Ends the standby of this area's APC (see apc_park()): any change in what the area draws
+///invalidates the load it parked on the powernet.
+/area/proc/wake_parked_apc()
+	var/area/root_area = base_area || src
+	var/obj/machinery/power/apc/parked = root_area.power_apc
+	if(parked?.apc_parked)
+		parked.apc_unpark()
 
 /area/proc/clear_usage()
 	used_equip = 0
@@ -545,6 +635,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			used_light += amount
 		if(ENVIRON)
 			used_environ += amount
+	wake_parked_apc() // dynamic draw appeared: the APC must resume billing it per fire
 
 
 /**
@@ -569,7 +660,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		return
 
 	if(A && (A.has_gravity != has_gravity))
-		L.update_gravity(L.mob_has_gravity())
+		L.refresh_gravity()
 
 	if(!L.ckey)
 		return
@@ -581,7 +672,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		L.client.ambience_playing = 0
 		if(L.client && !L.client.ambience_playing)
 			L.client.ambience_playing = 1
-			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = 35, channel = CHANNEL_BUZZ))
+			var/buzz_vol = L.client?.prefs?.get_sound_volume("ship_ambience") || 35
+			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = buzz_vol, channel = CHANNEL_BUZZ))
 
 	if(!(L.client && (L.client.prefs.toggles & SOUND_AMBIENCE)))
 		return //General ambience check is below the ship ambience so one can play without the other

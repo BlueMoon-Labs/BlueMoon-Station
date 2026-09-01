@@ -32,6 +32,8 @@
 #define ROLE_BRAINWASHED			"brainwashed victim"
 #define ROLE_OVERTHROW				"syndicate mutineer"
 #define ROLE_SENTIENCE          	"sentience potion spawn"
+#define ROLE_SYNDICATE_MONKEY		"syndicate monkey agent"
+#define ROLE_MONKEY_HELMET			"monkey mind magnification helmet"
 #define ROLE_ANOMALY_GHOST 			"Ectoplasmic Anomaly Ghost"
 #define ROLE_MIND_TRANSFER          "mind transfer potion"
 #define ROLE_POSIBRAIN              "posibrain"
@@ -46,6 +48,7 @@
 #define ROLE_SLAVER					"Slaver"
 #define ROLE_SLAVER_LEADER			"Slave Master"
 #define ROLE_TERROR_SPIDER			"Terror Spider"
+#define ROLE_MASS_SHOOTER			"Mass Shooter"
 //#define ROLE_MONSTERHUNTER			"monster hunter" Disabled for now
 #define ROLE_GHOSTCAFE				"ghostcafe"
 #define ROLE_GHOSTROLE				"ghostrole"
@@ -69,7 +72,6 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_MALF,
 	ROLE_REV = /datum/game_mode/revolution,
 	ROLE_ALIEN,
-	ROLE_PAI,
 	ROLE_CULTIST = /datum/game_mode/cult,
 	ROLE_BLOB,
 	ROLE_NINJA,
@@ -81,14 +83,23 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_OVERTHROW = /datum/game_mode/overthrow,
 	ROLE_INTERNAL_AFFAIRS = /datum/game_mode/traitor/internal_affairs,
 	ROLE_SENTIENCE,
+	ROLE_SYNDICATE_MONKEY,
 	ROLE_HERETIC = /datum/game_mode/heretics,
 	ROLE_BLOODSUCKER = /datum/game_mode/bloodsucker,
 	ROLE_FAMILIES = /datum/game_mode/gang,
 	ROLE_SPACE_DRAGON,
 	ROLE_TERROR_SPIDER,
-	ROLE_SYNDICATE
+	ROLE_SYNDICATE,
+	ROLE_MASS_SHOOTER
 	//ROLE_MONSTERHUNTER Disabled for now
 ))
+
+// Приоритеты ролей антагониста в prefs.be_special. Выключенной роли в списке
+// просто нет, поэтому ANTAG_PRIORITY_DISABLED - это чисто транспортное значение
+// между UI и set_antag_preference(), в сам be_special оно никогда не попадает.
+#define ANTAG_PRIORITY_DISABLED	-1
+#define ANTAG_PRIORITY_HIGH		0
+#define ANTAG_PRIORITY_LOW		1
 
 //Job defines for what happens when you fail to qualify for any job during job selection
 #define BEOVERFLOW 	1

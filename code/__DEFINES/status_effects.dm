@@ -127,6 +127,8 @@
 
 #define STATUS_EFFECT_GAUNTLET_CONC /datum/status_effect/cgau_conc // it's a slowdown that really should only be applying to large simplemobs
 
+#define STATUS_EFFECT_BOLASNARED /datum/status_effect/bola_snared //the affected has been snared by bolas, causing risk to trip when moving
+
 /// shoves inflict this to indicate the next shove while this is in effect should disarm guns
 #define STATUS_EFFECT_OFF_BALANCE /datum/status_effect/off_balance
 
@@ -168,3 +170,6 @@
 #define STATUS_EFFECT_TERROR_REGEN /datum/status_effect/terror/regeneration   //over time healing, 125 HP within 25~ seconds
 
 #define STATUS_EFFECT_TERROR_FOOD_REGEN /datum/status_effect/terror/food_regen   //over time healing for mobs to gain full HP within 25~ seconds
+
+#define STATUS_EFFECT_GOOSE_VOMIT /datum/status_effect/goose_vomit
+#define STATUS_EFFECT_GOOSE_CHOKING /datum/status_effect/goose_choking

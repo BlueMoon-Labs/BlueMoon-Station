@@ -114,8 +114,8 @@
 
 /obj/machinery/shieldgen/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
-		if(!(machine_stat && BROKEN))
-			machine_stat |= BROKEN
+		if(!(machine_stat & BROKEN))
+			set_machine_stat(machine_stat | BROKEN)
 			locked = pick(0,1)
 			update_icon()
 
@@ -161,7 +161,7 @@
 		to_chat(user, "<span class='notice'>You begin to replace the wires...</span>")
 		if(W.use_tool(src, user, 30, 1))
 			obj_integrity = max_integrity
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			to_chat(user, "<span class='notice'>Вы починили \the [src].</span>")
 			update_icon()
 

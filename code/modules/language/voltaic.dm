@@ -15,3 +15,4 @@
 	//SKYRAT CHANGE - language restriction
 	restricted = FALSE
 	//
+	spans = list(SPAN_ETHEREALVOICE)

@@ -85,6 +85,8 @@
 	a_intent = INTENT_HARM
 	speak_emote = list("telepathically cries")
 	attack_sound = 'sound/weapons/bladeslice.ogg'
+	retreat_distance = 3
+	minimum_distance = 5
 	stat_attack = UNCONSCIOUS
 	movement_type = FLYING
 	robust_searching = 1
@@ -94,6 +96,7 @@
 	search_objects = 1
 	wanted_objects = list(/obj/item/pen/survival, /obj/item/stack/ore/diamond)
 	field_of_vision_type = FOV_270_DEGREES //Obviously, it's one eyeball.
+	sharpness = SHARP_POINTY
 
 /mob/living/simple_animal/hostile/asteroid/basilisk/watcher/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))

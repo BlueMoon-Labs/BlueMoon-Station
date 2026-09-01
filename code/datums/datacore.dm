@@ -1,3 +1,11 @@
+/// Пауза между двумя фотографиями манифеста.
+///
+/// Величина выбрана из числа членов экипажа: сотня фотографий на роундстарте
+/// раскладывается примерно на три минуты. Меньше - и пик иконочных аллокаций снова
+/// попадает в окно массового входа, ради ухода из которого ритм и заведён; больше -
+/// и записи персонала слишком долго стоят с плейсхолдером.
+#define MANIFEST_PHOTO_QUEUE_INTERVAL (2 SECONDS)
+
 //TODO: someone please get rid of this shit
 /datum/datacore
 	var/list/medical = list()
@@ -8,6 +16,191 @@
 	var/securityCrimeCounter = 0
 	///This list tracks characters spawned in the world and cannot be modified in-game. Currently referenced by respawn_character().
 	var/list/locked = list()
+	/// Name-indexed lookups for O(1) record access by character name
+	var/list/medical_by_name = list()
+	var/list/security_by_name = list()
+	var/list/general_by_name = list()
+	/// ID-indexed lookups for O(1) record access by hex ID
+	var/list/medical_by_id = list()
+	var/list/security_by_id = list()
+	var/list/general_by_id = list()
+	var/list/locked_by_id = list()
+	/// Очередь отложенной генерации фото манифеста: list(weakref моба, prefs, роль, general-запись, locked-запись).
+	/// Фото - второй полный билд персонажа + два getFlatIcon, ему не место в синхронном тике латеджойна.
+	var/list/pending_photo_jobs = list()
+	/// TRUE, пока дренаж очереди фото уже заряжен таймером (один воркер, одна работа за срабатывание)
+	var/photo_queue_running = FALSE
+
+/// Ставит генерацию фото манифеста в очередь и будит воркера. Сама генерация - это
+/// второй полный билд персонажа (copy_to + экипировка джоба на манекене + два
+/// getFlatIcon), ей не место в синхронном тике латеджойна.
+/datum/datacore/proc/enqueue_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
+	pending_photo_jobs += list(list(WEAKREF(H), prefs, assigned_role, general_record, locked_record))
+	if(photo_queue_running)
+		return
+	photo_queue_running = TRUE
+	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
+
+/**
+ * Дренаж очереди фото: РОВНО ОДНА работа за срабатывание, следующая - через интервал.
+ *
+ * Раньше дренаж был циклом с CHECK_TICK, и это не то же самое. CHECK_TICK отдаёт тик,
+ * когда переполнен бюджет ТИКА, но памяти он не отдаёт ничего: сотня фотографий всё
+ * равно строилась подряд за считанные секунды. А строятся они ровно в шторме логинов,
+ * когда роундстарт разом заводит весь экипаж, - и это буквально стек падения раунда
+ * 10088 (23.08): `process_manifest_photo_queue` -> `generate_manifest_photo` ->
+ * `build_flat_multidir_icon` -> `getFlatIcon` -> рантайм в `/icon/New()`, после которого
+ * мир не написал больше ни строки. Умер он при 2923 МБ - в полутора гигабайтах от
+ * потолка адресного пространства, то есть не от исчерпания памяти, а от того, что
+ * крупная НЕПРЕРЫВНАЯ иконочная аллокация не нашла места в разодранной куче.
+ *
+ * Отсюда ритм: сотня фотографий растягивается на пару-тройку минут вместо секунд, пик
+ * иконочных аллокаций расходится по времени и уезжает из окна массового входа. Цена -
+ * запись персонала первые минуты стоит с плейсхолдером, чего никто не видит.
+ */
+/datum/datacore/proc/process_manifest_photo_queue()
+	// Флаг держится взведённым на всё время работы, а не снимается на входе: генерация
+	// фото уступает тик внутри себя, и на этом сне латеджойн успевает встать в очередь.
+	// Со снятым флагом он завёл бы ВТОРОГО воркера на ту же очередь.
+	photo_queue_running = TRUE
+	while(length(pending_photo_jobs))
+		var/list/job = pending_photo_jobs[1]
+		pending_photo_jobs.Cut(1, 2)
+		var/datum/weakref/mob_ref = job[1]
+		var/mob/living/carbon/human/H = mob_ref?.resolve()
+		// Работа по удалённому мобу не стоит ничего и интервала не заслуживает: снявшийся
+		// с роли игрок иначе держал бы очередь на секунду за каждую пустую запись.
+		if(QDELETED(H))
+			continue
+		generate_manifest_photo(H, job[2], job[3], job[4], job[5])
+		break
+	if(!length(pending_photo_jobs))
+		photo_queue_running = FALSE
+		return
+	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
+
+/// Снимает кадр для записей персонала. К моменту вызова настоящий моб уже полностью
+/// экипирован: и на роундстарте (equip_characters отрабатывает до manifest()), и на
+/// латеджойне (SSjob.EquipRank стоит до manifest_inject). Поэтому кадр снимается
+/// прямо с моба, а не с манекена: постройка манекена - это второй полный билд
+/// персонажа (copy_to с пересборкой конечностей и органов плюс экипировка аутфита
+/// джоба), в проде это 120-220 мс синхронно на каждое фото.
+///
+/// Манекен остаётся запасным путём: если моб лежит или невидим, снимать с него
+/// нечего, и лучше показать канонический аутфит должности, чем пустой кадр.
+/datum/datacore/proc/capture_record_photo(mob/living/carbon/human/H, assigned_role, datum/preferences/prefs, list/show_directions)
+	// no_anim: фотография в записи статична, а без флага getFlatIcon тянет все кадры
+	// анимации каждого оверлея - это самая дорогая часть съёмки.
+	if(!QDELETED(H) && H.body_position == STANDING_UP && H.alpha >= 255)
+		return build_flat_multidir_icon(H, show_directions, no_anim = TRUE, force_dir = TRUE)
+	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
+	return get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions, no_anim = TRUE)
+
+/// Собственно генерация фото: съёмка кадра с подменой плейсхолдеров в записях
+/// (general: два /obj/item/photo, locked: сырая иконка).
+/datum/datacore/proc/generate_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
+	var/static/list/show_directions = list(SOUTH, WEST)
+	var/icon/photo_icon = capture_record_photo(H, assigned_role, prefs, show_directions)
+	if(!photo_icon)
+		return
+	if(!QDELETED(general_record))
+		var/datum/picture/picture_front = new
+		picture_front.picture_name = "[H]"
+		picture_front.picture_desc = "This is [H]."
+		picture_front.picture_image = icon(photo_icon, dir = SOUTH)
+		var/datum/picture/picture_side = new
+		picture_side.picture_name = "[H]"
+		picture_side.picture_desc = "This is [H]."
+		picture_side.picture_image = icon(photo_icon, dir = WEST)
+		var/obj/item/photo/photo_front = general_record.fields["photo_front"]
+		if(istype(photo_front))
+			photo_front.set_picture(picture_front, TRUE, TRUE)
+		else
+			general_record.fields["photo_front"] = new /obj/item/photo(null, picture_front)
+		var/obj/item/photo/photo_side = general_record.fields["photo_side"]
+		if(istype(photo_side))
+			photo_side.set_picture(picture_side, TRUE, TRUE)
+		else
+			general_record.fields["photo_side"] = new /obj/item/photo(null, picture_side)
+	if(!QDELETED(locked_record))
+		locked_record.fields["image"] = photo_icon
+
+/// Registers a record in the appropriate index lists. Call after adding to medical/security/general lists.
+/datum/datacore/proc/register_record(datum/data/record/R, record_type)
+	var/rname = R.fields["name"]
+	var/rid = R.fields["id"]
+	switch(record_type)
+		if("general")
+			if(rname)
+				general_by_name[rname] = R
+			if(rid)
+				general_by_id[rid] = R
+		if("medical")
+			if(rname)
+				medical_by_name[rname] = R
+			if(rid)
+				medical_by_id[rid] = R
+		if("security")
+			if(rname)
+				security_by_name[rname] = R
+			if(rid)
+				security_by_id[rid] = R
+
+/// Reindexes a record after name or id change. Call with old values before the change.
+/datum/datacore/proc/reindex_record(datum/data/record/R, old_name, old_id)
+	// Remove old keys
+	if(old_name)
+		if(general_by_name[old_name] == R)
+			general_by_name -= old_name
+		if(medical_by_name[old_name] == R)
+			medical_by_name -= old_name
+		if(security_by_name[old_name] == R)
+			security_by_name -= old_name
+	if(old_id)
+		if(general_by_id[old_id] == R)
+			general_by_id -= old_id
+		if(medical_by_id[old_id] == R)
+			medical_by_id -= old_id
+		if(security_by_id[old_id] == R)
+			security_by_id -= old_id
+	// Insert new keys
+	var/new_name = R.fields["name"]
+	var/new_id = R.fields["id"]
+	if(new_name)
+		if(R in general)
+			general_by_name[new_name] = R
+		if(R in medical)
+			medical_by_name[new_name] = R
+		if(R in security)
+			security_by_name[new_name] = R
+	if(new_id)
+		if(R in general)
+			general_by_id[new_id] = R
+		if(R in medical)
+			medical_by_id[new_id] = R
+		if(R in security)
+			security_by_id[new_id] = R
+
+/// Removes all records (medical, security, general, locked) for a given name. Returns the rank from general record if found.
+/datum/datacore/proc/remove_records_by_name(target_name)
+	var/announce_rank = null
+	var/datum/data/record/gen = general_by_name[target_name]
+	if(gen)
+		announce_rank = gen.fields["rank"]
+		qdel(gen)
+	var/datum/data/record/med = medical_by_name[target_name]
+	if(med)
+		qdel(med)
+	var/datum/data/record/sec = security_by_name[target_name]
+	if(sec)
+		qdel(sec)
+	// Locked-записи индексируются по id, не по имени - ищем перебором.
+	// Без этого GLOB.data_core.locked бесконечно копит записи ушедших в крио,
+	// а каждая держит mind (скиллы, антаг-датумы, флэт-иконку).
+	for(var/datum/data/record/locked_record as anything in locked.Copy())
+		if(locked_record.fields["name"] == target_name)
+			qdel(locked_record)
+	return announce_rank
 
 /datum/data
 	var/name = "data"
@@ -17,14 +210,49 @@
 	var/list/fields = list()
 
 /datum/data/record/Destroy()
-	if(src in GLOB.data_core.medical)
-		GLOB.data_core.medical -= src
-	if(src in GLOB.data_core.security)
-		GLOB.data_core.security -= src
+	// Консоли кэшируют выбранную запись в active1/active2 и обнуляют их только в
+	// собственном Destroy - удалённая запись иначе висит на консоли вечно.
+	for(var/obj/machinery/computer/secure_data/sec_console in GLOB.machines)
+		if(sec_console.active1 == src)
+			sec_console.active1 = null
+		if(sec_console.active2 == src)
+			sec_console.active2 = null
+	for(var/obj/machinery/computer/med_data/med_console in GLOB.machines)
+		if(med_console.active1 == src)
+			med_console.active1 = null
+		if(med_console.active2 == src)
+			med_console.active2 = null
+	// Только general-запись владеет фотографиями. Security-запись после EMP
+	// может ссылаться на те же объекты и не должна удалять их из-под владельца.
 	if(src in GLOB.data_core.general)
-		GLOB.data_core.general -= src
-	if(src in GLOB.data_core.locked)
-		GLOB.data_core.locked -= src
+		var/obj/item/photo/photo_front = fields["photo_front"]
+		if(istype(photo_front))
+			qdel(photo_front)
+		var/obj/item/photo/photo_side = fields["photo_side"]
+		if(istype(photo_side))
+			qdel(photo_side)
+	var/record_name = fields["name"]
+	var/record_id = fields["id"]
+	if(record_name)
+		if(GLOB.data_core.medical_by_name[record_name] == src)
+			GLOB.data_core.medical_by_name -= record_name
+		if(GLOB.data_core.security_by_name[record_name] == src)
+			GLOB.data_core.security_by_name -= record_name
+		if(GLOB.data_core.general_by_name[record_name] == src)
+			GLOB.data_core.general_by_name -= record_name
+	if(record_id)
+		if(GLOB.data_core.medical_by_id[record_id] == src)
+			GLOB.data_core.medical_by_id -= record_id
+		if(GLOB.data_core.security_by_id[record_id] == src)
+			GLOB.data_core.security_by_id -= record_id
+		if(GLOB.data_core.general_by_id[record_id] == src)
+			GLOB.data_core.general_by_id -= record_id
+		if(GLOB.data_core.locked_by_id[record_id] == src)
+			GLOB.data_core.locked_by_id -= record_id
+	GLOB.data_core.medical -= src
+	GLOB.data_core.security -= src
+	GLOB.data_core.general -= src
+	GLOB.data_core.locked -= src
 	. = ..()
 
 /datum/data/crime
@@ -113,29 +341,40 @@
 
 // отдельная запись квирков когда они реально записаны
 /datum/datacore/proc/notes_traits_modify(mob/living/carbon/human/H)
-	var/datum/data/record/foundrecord = find_record("name", H.real_name, GLOB.data_core.medical)
+	var/datum/data/record/foundrecord = GLOB.data_core.medical_by_name[H.real_name]
 	if(foundrecord)
 		var/traits_dat = H.get_trait_string(TRUE)
 		if(!traits_dat)
 			return
 		else
-			foundrecord.fields["notes"] += "\n traits information as of shift start: [traits_dat]"
+			foundrecord.fields["notes"] += "\n информация о чертах на начало смены: [traits_dat]"
 // BLUEMOON ADD END
 
 /datum/datacore/proc/manifest()
+	// Обход списка идёт по снапшоту, снятому на входе в цикл, а CHECK_TICK усыпляет
+	// прок: к следующей итерации игрок мог отключиться, а его моб - уйти в qdel.
+	// Поэтому валидность проверяется заново на каждой итерации, иначе рантайм на
+	// N.client.prefs роняет манифест всем, кто стоит в списке дальше.
 	for(var/mob/dead/new_player/N in GLOB.player_list)
-		if(!N?.client)
-			continue
-		if(N.new_character)
-			log_manifest(N.ckey,N.new_character.mind,N.new_character)
-		if(ishuman(N.new_character))
-			manifest_inject(N.new_character, N.client, N.client.prefs)
 		CHECK_TICK
+		if(QDELETED(N) || !N.client)
+			continue
+		var/mob/living/character = N.new_character
+		if(QDELETED(character))
+			continue
+		log_manifest(N.ckey, character.mind, character)
+		if(ishuman(character) && N.client.prefs)
+			manifest_inject(character, N.client, N.client.prefs)
 
-/datum/datacore/proc/manifest_modify(name, assignment)
-	var/datum/data/record/foundrecord = find_record("name", name, GLOB.data_core.general)
+/datum/datacore/proc/manifest_modify(name, assignment, real_rank)
+	if(!name || !assignment && !real_rank)
+		return
+	var/datum/data/record/foundrecord = GLOB.data_core.general_by_name[name]
 	if(foundrecord)
-		foundrecord.fields["rank"] = assignment
+		if(assignment)
+			foundrecord.fields["rank"] = assignment
+		if(real_rank)
+			foundrecord.fields["real_rank"] = real_rank
 
 /datum/datacore/proc/get_manifest()
 	var/list/manifest_out = list()
@@ -153,7 +392,7 @@
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["rank"])
+		var/department_check = GetJobName(t.fields["real_rank"])
 		var/has_department = FALSE
 		for(var/department in departments)
 			var/list/jobs = departments[department]
@@ -205,14 +444,14 @@
 		.manifest tr.alt td {[monochrome?"border-top-width: 2px":"background-color: #DEF"]}
 	</style></head>
 	<table class="manifest" width='350px'>
-	<tr class='head'><th>Name</th><th>Rank</th></tr>
+	<tr class='head'><th>Имя</th><th>Должность</th></tr>
 	"}
 	var/even = 0
 	// sort mobs
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["rank"])
+		var/department_check = GetJobName(t.fields["real_rank"])
 		var/department = 0
 		if(department_check in GLOB.command_positions)
 			heads[name] = rank
@@ -303,31 +542,46 @@
 
 /datum/datacore/proc/manifest_inject(mob/living/carbon/human/H, client/C, datum/preferences/prefs)
 	set waitfor = FALSE
-	var/static/list/show_directions = list(SOUTH, WEST)
 	if(H.mind && (H.mind.assigned_role != H.mind.special_role)  && (H.mind.assigned_role != "Stowaway"))
 		var/assignment
+		var/real_rank
 		if(H.mind.assigned_role)
-			assignment = H.mind.assigned_role
+			real_rank = H.mind.assigned_role
 		else if(H.job)
-			assignment = H.job
+			real_rank = H.job
 		else
-			assignment = "Unassigned"
-		if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
-			assignment = C.prefs.alt_titles_preferences[assignment]
+			real_rank = "Unassigned"
+
+		// Берем название роли из карточки, с учетом наклеек и альт. названия
+		if(H.wear_id)
+			var/obj/item/card/id/id_card = H.wear_id.GetID()
+			if(istype(id_card))
+				assignment = id_card.get_assignment_name()
+		if(!assignment)
+			// Если не удалось, пробуем получить из префов
+			if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
+				assignment = C.prefs.alt_titles_preferences[assignment]
+			// Иначе берем стандартное название
+			else
+				assignment = real_rank
 
 		var/static/record_id_num = 1001
 		var/id = num2hex(record_id_num++,6)
 		if(!C)
 			C = H.client
-		var/image = get_id_photo(H, C, show_directions)
+		// Фото - самая дорогая часть латеджойна (второй полный билд персонажа + два
+		// getFlatIcon, 100-200мс синхронно): записи создаются сразу с плейсхолдером,
+		// настоящие фото доклеит отложенная очередь (enqueue в конце прока).
+		var/icon/placeholder_icon = icon('icons/effects/effects.dmi', "nothing")
+		var/image = placeholder_icon
 		var/datum/picture/pf = new
 		var/datum/picture/ps = new
 		pf.picture_name = "[H]"
 		ps.picture_name = "[H]"
 		pf.picture_desc = "This is [H]."
 		ps.picture_desc = "This is [H]."
-		pf.picture_image = icon(image, dir = SOUTH)
-		ps.picture_image = icon(image, dir = WEST)
+		pf.picture_image = icon(placeholder_icon, dir = SOUTH)
+		ps.picture_image = icon(placeholder_icon, dir = WEST)
 		var/obj/item/photo/photo_front = new(null, pf)
 		var/obj/item/photo/photo_side = new(null, ps)
 
@@ -337,7 +591,7 @@
 		G.fields["id"]			= id
 		G.fields["name"]		= H.real_name
 		G.fields["rank"]		= assignment
-		G.fields["real_rank"]	= GetJobName(assignment)
+		G.fields["real_rank"]	= GetJobName(real_rank)
 		G.fields["age"]			= H.age
 		G.fields["species"]		= H.dna.species.name
 		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
@@ -352,6 +606,8 @@
 		G.fields["photo_front"]	= photo_front
 		G.fields["photo_side"]	= photo_side
 		general += G
+		general_by_name[H.real_name] = G
+		general_by_id[id] = G
 
 		//Medical Record
 		var/datum/data/record/M = new()
@@ -369,12 +625,19 @@
 		M.fields["cdi_d"]		= "No diseases have been diagnosed at the moment."
 		M.fields["notes"]		= "[prefs.medical_records]"
 		medical += M
+		medical_by_name[H.real_name] = M
+		medical_by_id[id] = M
 
 		//Security Record
 		var/datum/data/record/S = new()
 		S.fields["id"]			= id
 		S.fields["name"]		= H.real_name
-		S.fields["criminal"]	= SEC_RECORD_STATUS_NONE
+		// BLUEMOON CHANGE START - Установление статуса заключенного
+		if(real_rank == "Prisoner")
+			S.fields["criminal"]	= SEC_RECORD_STATUS_INCARCERATED
+		else
+			S.fields["criminal"]	= SEC_RECORD_STATUS_NONE
+		// BLUEMOON CHANGE END
 		S.fields["mi_crim"]		= list()
 		S.fields["mi_crim_d"]	= list()
 		S.fields["ma_crim"]		= list()
@@ -387,13 +650,19 @@
 		// BLUEMOON ADD END
 		LAZYINITLIST(S.fields["comments"])
 		security += S
+		security_by_name[H.real_name] = S
+		security_by_id[id] = S
+		// BLUEMOON ADD START - Установление статуса заключенного
+		if(real_rank == "Prisoner")
+			H.sec_hud_set_security_status()
+		// BLUEMOON ADD END
 
 		//Locked Record
 		var/datum/data/record/L = new()
 		L.fields["id"]			= md5("[H.real_name][H.mind.assigned_role]")	//surely this should just be id, like the others?
 		L.fields["name"]		= H.real_name
 		L.fields["rank"] 		= assignment
-		L.fields["real_rank"]	= GetJobName(assignment)
+		L.fields["real_rank"]	= GetJobName(real_rank)
 		L.fields["age"]			= H.age
 		if(H.gender == MALE)
 			G.fields["gender"]  = "Male"
@@ -409,13 +678,15 @@
 		L.fields["image"]		= image
 		L.fields["mindref"]		= H.mind
 		locked += L
+		locked_by_id[L.fields["id"]] = L
+		enqueue_manifest_photo(H, C?.prefs || prefs, H.mind.assigned_role, G, L)
 	return
 
 /datum/datacore/proc/get_id_photo(mob/living/carbon/human/H, client/C, show_directions = list(SOUTH))
-	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
-	var/datum/preferences/P
+	if(!istype(H) || QDELETED(H) || !H.mind)
+		return icon('icons/effects/effects.dmi', "nothing")
 	if(!C)
 		C = H.client
-	if(C)
-		P = C.prefs
-	return get_flat_human_icon(null, J, P, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	return capture_record_photo(H, H.mind.assigned_role, C?.prefs, show_directions)
+
+#undef MANIFEST_PHOTO_QUEUE_INTERVAL

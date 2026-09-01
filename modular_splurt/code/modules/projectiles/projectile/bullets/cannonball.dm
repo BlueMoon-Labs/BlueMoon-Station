@@ -3,7 +3,6 @@
 	icon = 'modular_splurt/icons/obj/guns/projectiles.dmi'
 	icon_state = "cannonball"
 	damage = 110 //gets set to 100 before first mob impact.
-	movement_type = FLYING | PHASING
 	sharpness = NONE
 	wound_bonus = 15
 	dismemberment = 0
@@ -16,8 +15,8 @@
 /obj/item/projectile/bullet/cannonball/prehit_pierce(atom/A)
 	damage -= 10
 	if(damage < 40)
-		movement_type &= ~(PHASING)
-	return ..()
+		return PROJECTILE_PIERCE_NONE
+	return PROJECTILE_PIERCE_HIT
 
 /obj/item/projectile/bullet/cannonball/on_hit(atom/target, blocked = FALSE)
 	if(blocked == 100)

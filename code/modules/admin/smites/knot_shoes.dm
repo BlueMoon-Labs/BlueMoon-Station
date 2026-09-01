@@ -9,7 +9,8 @@
 		return
 	var/mob/living/carbon/dude = target
 	var/obj/item/clothing/shoes/sick_kicks = dude.shoes
-	if (!sick_kicks?.can_be_tied)
+	// МОД-ботинки лежат в том же слоте, но это /obj/item/clothing/mod_part/shoes - у них нет can_be_tied.
+	if (!istype(sick_kicks) || !sick_kicks.can_be_tied)
 		to_chat(user, span_warning("[dude] does not have knottable shoes!"), confidential = TRUE)
 		return
 	sick_kicks.adjust_laces(SHOES_KNOTTED)

@@ -1,27 +1,86 @@
 /mob/living/carbon
 	blood_volume = BLOOD_VOLUME_NORMAL
 	deathsound = list ('sound/voice/deathgasp1.ogg', 'sound/voice/deathgasp2.ogg')
+	/// Reused breath sample to avoid per-breath gas_mixture churn.
+	var/datum/gas_mixture/breath_buffer
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
+	var/static/next_carbon_life_periodic_phase = 0
+	// Carbon initialization may create other living mobs, so use a carbon-only
+	// sequence to keep breathing and organ work evenly distributed.
+	life_periodic_phase = next_carbon_life_periodic_phase ^ 1
+	next_carbon_life_periodic_phase++
 	create_reagents(1000, NONE, NO_REAGENTS_VALUE)
 	update_body_parts() //to update the carbon's new bodyparts appearance
 	GLOB.carbon_list += src
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
+	breath_buffer = new
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
 	. =  ..()
 
+	QDEL_NULL(small_sprite)
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
+	QDEL_LAZYLIST(all_wounds)
+	QDEL_LAZYLIST(all_scars)
 	QDEL_LIST(bodyparts)
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
-	remove_from_all_data_huds()
+	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	last_mind = null
 	GLOB.carbon_list -= src
+	//unequip при QDELING(моб) пропускается (см. /obj/item/Destroy), поэтому
+	//слот-вары отпускаем вручную - иначе зависший в GC моб пиннит экипировку
+	back = null
+	wear_mask = null
+	wear_neck = null
+	internal = null
+	head = null
+	handcuffed = null
+	legcuffed = null
+	//фантом items-галлюцинации живёт в nullspace и без qdel утёк бы насовсем
+	QDEL_NULL(halitem)
+
+/mob/living/carbon/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
+	. = ..()
+	if(!isnull(.))
+		return
+
+	// Активация имплантов в руке
+	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	if(!implant)
+		return
+	if(!implant.activate_allowed(user = src, silent = FALSE))
+		return FALSE
+	implant.ui_action_click(src)
+	return TRUE
+
+/mob/living/carbon/proc/get_breath_buffer()
+	if(!breath_buffer)
+		breath_buffer = new
+	return breath_buffer
+
+/// Used by glass shards and similar pickup edge hazards — suit/uniform glove coverage counts, not only the glove slot (e.g. space suits hide hands via HIDEGLOVES).
+/mob/living/carbon/proc/hands_unprotected_for_shard_pickup_damage()
+	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE))
+		return FALSE
+	var/obj/item/bodypart/hand_part = get_active_hand()
+	if(hand_part?.is_robotic_limb())
+		return FALSE
+	if(gloves)
+		return FALSE
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & HANDS))
+			return FALSE
+		if(H.w_uniform && (H.w_uniform.body_parts_covered & HANDS))
+			return FALSE
+	return TRUE
 
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)
@@ -41,9 +100,9 @@
 				playsound(user.loc, 'sound/effects/attackblob.ogg', 50, 1)
 
 				if(prob(src.getBruteLoss() - 50))
-					for(var/atom/movable/A in stomach_contents)
+					for(var/atom/movable/A in stomach_contents.Copy())
 						A.forceMove(drop_location())
-						stomach_contents.Remove(A)
+						remove_from_stomach(A)
 					src.gib()
 
 
@@ -229,15 +288,16 @@
 			verb_text = thrown_item.throw_verb
 	visible_message(span_danger("[src] [verb_text][plural_s(verb_text)] [thrown_thing][power_throw ? " really hard!" : "."]"), \
 					span_danger("You [verb_text] [thrown_thing][power_throw ? " really hard!" : "."]"))
-	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK)
+	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK, target = thrown_thing)
 	do_attack_animation(target, no_effect = 1)
 	var/extra_throw_range = 0 // HAS_TRAIT(src, TRAIT_THROWINGARM) ? 2 : 0
 	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
 	newtonian_move(get_dir(target, src))
 	thrown_thing.safe_throw_at(target, thrown_thing.throw_range + extra_throw_range, max(1,thrown_thing.throw_speed + power_throw), src, null, null, null, move_force, random_turn)
+	DelayNextAction(CLICK_CD_THROW)
 
 /mob/living/carbon/restrained(ignore_grab)
-	. = (handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
+	. = (HAS_TRAIT(src, TRAIT_RESTRAINED) || handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
 
 /mob/living/carbon/proc/canBeHandcuffed()
 	return FALSE
@@ -252,6 +312,19 @@
 		if(!I || I.loc != src) //no item, no limb, or item is not in limb or in the person anymore
 			return
 		SEND_SIGNAL(src, COMSIG_CARBON_EMBED_RIP, I, L)
+		return
+
+	if(href_list["remove_gauze"] && usr == src && usr.canUseTopic(src, BE_CLOSE))
+		var/obj/item/bodypart/L = locate(href_list["gauze_limb"]) in bodyparts
+		if(!L?.current_gauze)
+			return
+		var/obj/item/stack/medical/gauze/g = L.current_gauze
+		var/time_taken = g.self_delay
+		visible_message("<span class='notice'>[usr] начинает снимать [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы начинаете снимать [g] с вашей [L.ru_name_v]...</span>")
+		if(do_after(usr, time_taken, target = src))
+			if(L.current_gauze == g)
+				L.remove_gauze(usr)
+				visible_message("<span class='notice'>[usr] снимает [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы снимаете [g] с вашей [L.ru_name_v].</span>")
 		return
 
 /mob/living/carbon/fall(forced)
@@ -270,6 +343,8 @@
 	. = FALSE
 	if(!buckled)
 		return
+	if(istype(buckled, /obj/structure/bed/nest))
+		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
 		// too soon.
 		var/buckle_cd = 600
@@ -286,6 +361,13 @@
 		else
 			if(src && buckled)
 				to_chat(src, "<span class='warning'>Тебе не удалось выбраться!</span>")
+	else if(ishuman(buckled))
+		var/mob/living/carbon/human/H = buckled
+		var/datum/component/riding/human/riding_comp = H.GetComponent(/datum/component/riding/human)
+		if(riding_comp)
+			riding_comp.force_dismount(src, TRUE)
+		else
+			buckled.user_unbuckle_mob(src,src)
 	else
 		buckled.user_unbuckle_mob(src,src)
 
@@ -322,7 +404,7 @@
 	if(!cuff_break)
 		visible_message("<span class='warning'>[src] пытается сбросить [I]!</span>")
 		to_chat(src, "<span class='notice'>Ты пытаешься сбросить [I]... (Это займёт около [DisplayTimeText(breakouttime)]. Тебе не стоит делать лишних движений.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сбросить [I]!</span>")
@@ -331,7 +413,7 @@
 		breakouttime = 50
 		visible_message("<span class='warning'>[src] is trying to break [I]!</span>")
 		to_chat(src, "<span class='notice'>You attempt to break [I]... (This will take around 5 seconds and you need to stand still.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сломать [I]!</span>")
@@ -351,8 +433,7 @@
 		if (buckled && buckled.buckle_requires_restraints)
 			buckled.unbuckle_mob(src)
 		update_handcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -364,8 +445,7 @@
 		var/obj/item/W = legcuffed
 		legcuffed = null
 		update_inv_legcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -463,6 +543,98 @@
 		return FALSE
 	return ..()
 
+///////////////////////////////////////////////////////////////////////////
+// РАССЧЁТ ИЗМЕНЕНИЯ ГОЛОДА И ЖАЖДЫ, И ИЗМЕНЕНИЯ HUD ИЗ-ЗА ЭТОГО
+// Цепочка проков сначала сравнивает старое значение
+
+// Голод
+/mob/living/carbon/adjust_nutrition(change, max = INFINITY)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/set_nutrition(change)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/proc/get_nutrition_hud_level(value)
+	if(!hud_used)
+		return
+	switch(value)
+		if(NUTRITION_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+			return 1
+		if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_WELL_FED)
+			return 2
+		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+			return 3
+		if(-INFINITY to NUTRITION_LEVEL_STARVING)
+			return 4
+
+// Жажда
+/mob/living/carbon/adjust_thirst(change, max = INFINITY)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/set_thirst(change)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/proc/get_thirst_hud_level(value)
+	if(!hud_used)
+		return
+	if(HAS_TRAIT(src, TRAIT_NOTHIRST)) // Персонажи, которые не имеют жажды, вечно полные
+		return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+	switch(value)
+		if(THIRST_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+			return 1
+		if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_QUENCHED)
+			return 2
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			return 3
+		if(0 to THIRST_LEVEL_PARCHED)
+			return 4
+
+/// Уже переписанный Sandstorm прок обновления HUD, отвечающих за индикацию голода
+/mob/living/carbon/proc/update_hunger_and_thirst_hud(update_hunger, update_thirst, nutrition_level, thirst_level)
+	if(!client || !hud_used)
+		return
+
+	var/robotic_user = isrobotic(src)
+	if(update_hunger && (hud_used.hunger || hud_used.charge))
+		var/nutrition_prefix = robotic_user ? "charge" : "nutrition" // Тип стейта
+		var/nutrition_status = isnull(nutrition_level) ? get_nutrition_hud_level(nutrition) : nutrition_level
+		var/nutrition_state = "[nutrition_prefix][nutrition_status]"
+
+		if(robotic_user)
+			if(hud_used.charge.icon_state != nutrition_state)
+				hud_used.charge.icon_state = nutrition_state
+		else
+			if(hud_used.hunger.icon_state != nutrition_state)
+				hud_used.hunger.icon_state = nutrition_state
+
+	if(!robotic_user && update_thirst && hud_used.thirst)
+		var/thirst_status = isnull(thirst_level) ? get_thirst_hud_level(thirst) : thirst_level
+		var/thirst_state = "hydration[thirst_status]"
+		if(hud_used.thirst.icon_state != thirst_state)
+			hud_used.thirst.icon_state = thirst_state
+
+///////////////////////////////////////////////////////////////////////////
+
 /mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = FALSE, purge_ratio = 0.1)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER) && !force)
 		return TRUE
@@ -488,7 +660,7 @@
 				SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "vomit", /datum/mood_event/vomit)
 
 	if(stun)
-		Stun(80)
+		Stun(20)
 
 	playsound(get_turf(src), 'sound/effects/splat.ogg', 50, TRUE)
 	var/turf/T = get_turf(src)
@@ -510,10 +682,12 @@
 			break
 	return TRUE
 
-/mob/living/carbon/proc/spew_organ(power = 5, amt = 1)
+/mob/living/carbon/proc/spew_organ(power = 5, amt = 1, exclude_brain = FALSE)
 	var/list/spillable_organs = list()
 	for(var/A in internal_organs)
 		var/obj/item/organ/O = A
+		if(exclude_brain && istype(O, /obj/item/organ/brain))
+			continue
 		if(!(O.organ_flags & ORGAN_NO_DISMEMBERMENT))
 			spillable_organs += O
 	for(var/i in 1 to amt)
@@ -556,6 +730,7 @@
 		add_movespeed_modifier(/datum/movespeed_modifier/carbon_softcrit)
 	else
 		remove_movespeed_modifier(/datum/movespeed_modifier/carbon_softcrit)
+	SEND_SIGNAL(src, COMSIG_CARBON_UPDATEHEALTH)
 
 /mob/living/carbon/update_stamina()
 	var/total_health = getStaminaLoss()
@@ -565,17 +740,17 @@
 			set_resting(TRUE, FALSE, FALSE)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
 			combat_flags |= COMBAT_FLAG_HARD_STAMCRIT
-			filters += CIT_FILTER_STAMINACRIT
+			add_filter("staminacrit", 1, CIT_FILTER_STAMINACRIT)
 			update_mobility()
 	if((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && total_health <= STAMINA_CRIT_REMOVAL_THRESHOLD)
 		to_chat(src, "<span class='notice'>Вы больше не чувствуете себя так измотанно.</span>")
 		combat_flags &= ~(COMBAT_FLAG_HARD_STAMCRIT)
-		filters -= CIT_FILTER_STAMINACRIT
+		remove_filter("staminacrit")
 		update_mobility()
 	UpdateStaminaBuffer()
 	update_health_hud()
 
-/mob/living/carbon/update_sight()
+/mob/living/carbon/update_sight(forced = TRUE)
 	if(!client)
 		return
 	if(stat == DEAD)
@@ -586,6 +761,8 @@
 
 	sight = initial(sight)
 	lighting_alpha = initial(lighting_alpha)
+	lighting_cutoff = initial(lighting_cutoff)
+	var/list/color_cutoffs_accumulator
 	var/obj/item/organ/eyes/E = getorganslot(ORGAN_SLOT_EYES)
 	if(!E)
 		update_tint()
@@ -595,9 +772,15 @@
 		sight |= E.sight_flags
 		if(!isnull(E.lighting_alpha))
 			lighting_alpha = E.lighting_alpha
-		if(HAS_TRAIT(src, TRAIT_NIGHT_VISION))
-			lighting_alpha = min(LIGHTING_PLANE_ALPHA_NV_TRAIT, lighting_alpha)
-			see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
+		if(!isnull(E.lighting_cutoff))
+			lighting_cutoff = E.lighting_cutoff
+		if(!isnull(E.color_cutoffs))
+			color_cutoffs_accumulator = E.color_cutoffs?.Copy()
+
+	if(HAS_TRAIT(src, TRAIT_NIGHT_VISION))
+		lighting_alpha = min(LIGHTING_PLANE_ALPHA_NV_TRAIT, lighting_alpha)
+		see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_REAL_LOW)
 
 	if(client.eye && client.eye != src)
 		var/atom/A = client.eye
@@ -614,13 +797,21 @@
 			see_invisible = min(G.invis_view, see_invisible)
 		if(!isnull(G.lighting_alpha))
 			lighting_alpha = min(lighting_alpha, G.lighting_alpha)
-	if(head && istype(head, /obj/item/clothing/head))
+		if(!isnull(G.lighting_cutoff))
+			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
+		if(length(G.color_cutoffs))
+			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
+	if(head && istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
 		see_in_dark = max(H.darkness_view, see_in_dark)
 
 		if(!isnull(H.lighting_alpha))
 			lighting_alpha = min(lighting_alpha, H.lighting_alpha)
+		if(!isnull(H.lighting_cutoff))
+			lighting_cutoff = max(lighting_cutoff, H.lighting_cutoff)
+		if(length(H.color_cutoffs))
+			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, H.color_cutoffs) : H.color_cutoffs.Copy()
 	if(dna)
 		for(var/X in dna.mutations)
 			var/datum/mutation/M = X
@@ -631,21 +822,33 @@
 	if(HAS_TRAIT(src, TRAIT_TRUE_NIGHT_VISION))
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
 		see_in_dark = max(see_in_dark, 8)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_HIGH)
 
 	if(HAS_TRAIT(src, TRAIT_MESON_VISION))
 		sight |= SEE_TURFS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_MEDIUM)
 
 	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
 		sight |= SEE_MOBS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_MEDIUM)
+
+	if(HAS_TRAIT(src, TRAIT_MINOR_NIGHT_VISION))
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_LOW)
 
 	if(HAS_TRAIT(src, TRAIT_XRAY_VISION))
 		sight |= SEE_TURFS|SEE_MOBS|SEE_OBJS
 		see_in_dark = max(see_in_dark, 8)
 
+	lighting_color_cutoffs = color_cutoffs_accumulator
+
 	if(see_override)
 		see_invisible = see_override
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+		sight = initial(sight)
+
 	. = ..()
 
 
@@ -665,10 +868,10 @@
 
 /mob/living/carbon/proc/get_total_tint()
 	. = 0
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
-	if(wear_mask)
+	if(istype(wear_mask, /obj/item/clothing))
 		. += wear_mask.tint
 
 	var/obj/item/organ/eyes/E = getorganslot(ORGAN_SLOT_EYES)
@@ -786,6 +989,36 @@
 	else
 		clear_fullscreen("brute")
 
+	var/toxdamage = getToxLoss()
+	if(toxdamage)
+		var/severity = 0
+		switch(toxdamage)
+			if(5 to 15)
+				severity = 1
+			if(15 to 30)
+				severity = 2
+			if(30 to 45)
+				severity = 3
+			if(45 to 70)
+				severity = 4
+			if(70 to 85)
+				severity = 5
+			if(85 to INFINITY)
+				severity = 6
+		overlay_fullscreen("synthcorrupt", /atom/movable/screen/fullscreen/scaled/synthcorrupt, severity)
+	else
+		clear_fullscreen("synthcorrupt")
+
+	var/blood_effect_volume = blood_volume + integrating_blood
+	var/blood_threshold_high = BLOOD_VOLUME_OKAY * blood_ratio
+	var/blood_threshold_low = BLOOD_VOLUME_SURVIVE * blood_ratio
+	if(blood_effect_volume < blood_threshold_high)
+		var/blood_range = blood_threshold_high - blood_threshold_low
+		var/severity = clamp(round(10 * (1 - (blood_effect_volume - blood_threshold_low) / blood_range)), 1, 10)
+		overlay_fullscreen("bloodloss", /atom/movable/screen/fullscreen/scaled/bloodloss, severity)
+	else
+		clear_fullscreen("bloodloss")
+
 /mob/living/carbon/update_health_hud(shown_health_amount)
 	if(!client || !hud_used)
 		return
@@ -820,6 +1053,7 @@
 		if(health <= HEALTH_THRESHOLD_DEAD && !HAS_TRAIT(src, TRAIT_NODEATH))
 			death()
 			return
+		var/previous_stat = stat
 		if(IsUnconscious() || IsSleeping() || getOxyLoss() > 50 || (HAS_TRAIT(src, TRAIT_DEATHCOMA)) || (health <= HEALTH_THRESHOLD_FULLCRIT && !HAS_TRAIT(src, TRAIT_NOHARDCRIT)))
 			set_stat(UNCONSCIOUS)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
@@ -833,18 +1067,28 @@
 				set_stat(CONSCIOUS)
 			if(eye_blind <= 1)
 				adjust_blindness(-1)
-		update_mobility()
+		// The only mobility input this proc can have touched is `stat`. Stuns,
+		// grabs, resting, limbs and traits all refresh mobility from their own
+		// setters, and BiologicalLife keeps a once-per-tick catch-all — so a
+		// health change that left `stat` alone has nothing to recompute.
+		if(stat != previous_stat)
+			update_mobility()
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
-	update_hunger_and_thirst_hud()
 	med_hud_set_status()
 	..()
 
 /mob/living/carbon/proc/update_crit_status()
-	remove_filter("hardcrit")
-	if(health <= crit_threshold)
+	// Adding or removing a filter rebuilds the atom's entire filter list, so only
+	// touch it when the crit state actually flipped.
+	var/in_crit = (health <= crit_threshold)
+	if(in_crit == !!get_filter_index("hardcrit"))
+		return
+	if(in_crit)
 		add_filter("hardcrit", 2, BM_FILTER_HARDCRIT)
+	else
+		remove_filter("hardcrit")
 
 //called when we get cuffed/uncuffed
 /mob/living/carbon/proc/update_handcuffed()
@@ -931,7 +1175,10 @@
 		to_chat(user, "<span class='notice'>You retrieve some of [src]\'s internal organs!</span>")
 
 /mob/living/carbon/ExtinguishMob()
-	for(var/X in get_equipped_items())
+	var/list/items_to_check = get_equipped_items() + held_items
+	for(var/X in items_to_check)
+		if(!X)
+			continue
 		var/obj/item/I = X
 		var/datum/component/acid/acid = I.GetComponent(/datum/component/acid)
 		if(acid)
@@ -958,8 +1205,40 @@
 		C.visible_message("<span class='danger'>[src] devours [C]!</span>", \
 						"<span class='userdanger'>[src] devours you!</span>")
 		C.forceMove(src)
-		stomach_contents.Add(C)
+		add_to_stomach(C)
 		log_combat(src, C, "devoured")
+
+/**
+ * Кладёт объект в stomach_contents.
+ *
+ * Главная задача - не пускать в список уже мёртвых: /obj/effect/decal/Initialize
+ * отвечает INITIALIZE_HINT_QDEL на любой не-турф, поэтому декаль, созданная
+ * внутри моба (партийная граната сработала в руках, гибспаунер внутри карбона),
+ * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
+ * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
+ * одним тиком, каждое с одной внешней ссылкой.
+ *
+ * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
+ * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
+ * чужой обработчик у только что осмотренного и съеденного моба.
+ */
+/mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
+	if(QDELETED(swallowed) || (swallowed in stomach_contents))
+		return
+	stomach_contents += swallowed
+
+/// Снимает объект с желудка вручную (вытащили, срыгнули, передали другому мобу).
+/mob/living/carbon/proc/remove_from_stomach(atom/movable/swallowed)
+	if(!swallowed)
+		return
+	stomach_contents -= swallowed
+
+/// Догоняет содержимое, удалённое кем-то со стороны. Зовётся из handle_stomach(),
+/// то есть только для мобов, у которых в желудке реально что-то лежит.
+/mob/living/carbon/proc/prune_stomach_contents()
+	for(var/atom/movable/content as anything in stomach_contents.Copy())
+		if(QDELETED(content))
+			stomach_contents -= content
 
 /mob/living/carbon/proc/create_bodyparts()
 	var/l_arm_index_next = -1
@@ -1231,3 +1510,12 @@
 
 /mob/living/carbon/proc/functional_blood()
 	return blood_volume + integrating_blood
+
+/mob/living/carbon/has_pain(obj/item/bodypart/limb)
+	. = ..()
+	if(. == PAIN_NO)
+		return .
+	if(limb && limb.is_robotic_limb())
+		return PAIN_NO
+	if(. > PAIN_MEDIUM && drunkenness > 20)
+		return PAIN_MEDIUM

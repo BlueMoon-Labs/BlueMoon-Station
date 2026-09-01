@@ -10,6 +10,7 @@ obj/item/storage/belt/slut/ComponentInitialize()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.can_hold = typecacheof(list(
 		/obj/item/melee/baton,
 		/obj/item/melee/classic_baton,
@@ -38,3 +39,8 @@ obj/item/storage/belt/slut/ComponentInitialize()
 	icon_state = "cummerbund"
 	item_state = "cummerbund"
 
+/obj/item/storage/belt/cummerbund/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 4
+	STR.max_w_class = WEIGHT_CLASS_SMALL

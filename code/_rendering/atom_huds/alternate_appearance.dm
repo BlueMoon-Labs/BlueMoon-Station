@@ -1,23 +1,29 @@
 GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
-/atom
+/atom/movable
 	var/list/alternate_appearances
 
-/atom/proc/remove_alt_appearance(key)
-	if(alternate_appearances)
-		for(var/K in alternate_appearances)
-			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
-			if(AA.appearance_key == key)
-				AA.remove_from_hud(src)
-				break
+/atom/movable/proc/remove_alt_appearance(key)
+	if(!alternate_appearances)
+		return
+	var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[key]
+	if(AA?.appearance_key == key)
+		AA.remove_from_hud(src)
+		return TRUE
 
-/atom/proc/add_alt_appearance(type, key, ...)
+	for(var/K in alternate_appearances)
+		AA = alternate_appearances[K]
+		if(AA.appearance_key == key)
+			AA.remove_from_hud(src)
+			return TRUE
+
+/atom/movable/proc/add_alt_appearance(type, key, ...)
 	if(!type || !key)
 		return
 	if(alternate_appearances && alternate_appearances[key])
-		return
+		return alternate_appearances[key]
 	var/list/arguments = args.Copy(2)
-	new type(arglist(arguments))
+	return new type(arglist(arguments))
 
 /datum/atom_hud/alternate_appearance
 	var/appearance_key
@@ -38,13 +44,13 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 /datum/atom_hud/alternate_appearance/proc/mobShouldSee(mob/M)
 	return FALSE
 
-/datum/atom_hud/alternate_appearance/add_to_hud(atom/A, image/I)
+/datum/atom_hud/alternate_appearance/add_to_hud(atom/movable/A, image/I)
 	. = ..()
 	if(.)
 		LAZYINITLIST(A.alternate_appearances)
 		A.alternate_appearances[appearance_key] = src
 
-/datum/atom_hud/alternate_appearance/remove_from_hud(atom/A)
+/datum/atom_hud/alternate_appearance/remove_from_hud(atom/movable/A)
 	. = ..()
 	if(.)
 		LAZYREMOVE(A.alternate_appearances, appearance_key)
@@ -52,7 +58,9 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
 //an alternate appearance that attaches a single image to a single atom
 /datum/atom_hud/alternate_appearance/basic
-	var/atom/target
+	/// Атом, к которому привязана картинка. Движимый: всё семейство альтернативных
+	/// внешностей переехало на /atom/movable вместе с hud_list, и турфа здесь быть не может.
+	var/atom/movable/target
 	var/image/theImage
 	var/add_ghost_version = FALSE
 	var/ghost_appearance
@@ -76,14 +84,15 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	if(ghost_appearance)
 		QDEL_NULL(ghost_appearance)
 
-/datum/atom_hud/alternate_appearance/basic/add_to_hud(atom/A)
+/datum/atom_hud/alternate_appearance/basic/add_to_hud(atom/movable/A)
 	LAZYINITLIST(A.hud_list)
 	A.hud_list[appearance_key] = theImage
 	. = ..()
 
-/datum/atom_hud/alternate_appearance/basic/remove_from_hud(atom/A)
+/datum/atom_hud/alternate_appearance/basic/remove_from_hud(atom/movable/A)
 	. = ..()
-	A.hud_list -= appearance_key
+	if(islist(A.hud_list))
+		A.hud_list -= appearance_key
 	if(. && !QDELETED(src))
 		qdel(src)
 
@@ -182,3 +191,31 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
 
 /datum/atom_hud/alternate_appearance/basic/food_demands
+
+
+/datum/atom_hud/alternate_appearance/basic/small_sprite/proc/update_appearance()
+	if(QDELETED(theImage) || QDELETED(target))
+		return
+	theImage.icon = target.icon
+	theImage.icon_state = target.icon_state
+	theImage.layer = target.layer
+	theImage.pixel_x = target.pixel_x
+	theImage.pixel_y = target.pixel_y
+	theImage.appearance_flags = target.appearance_flags
+	theImage.overlays = target.overlays.Copy()
+	
+	if(!isliving(target))
+		return
+	
+	var/mob/living/M = target
+	
+	// matrix resize
+	var/matrix/ntransform = matrix(target.transform)
+	var/resize = 1/get_size(target)
+	ntransform.Scale(resize)
+	if(M.lying && M.rotate_on_lying)
+		ntransform.Translate(M.lying == 90 ? 16*(resize-1) : -(16*(resize-1)), 0) //Makes sure you stand on the tile no matter the size - sand
+	else
+		ntransform.Translate(0, 16*(resize-1)) //Makes sure you stand on the tile no matter the size - sand
+
+	theImage.transform = ntransform

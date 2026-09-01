@@ -54,6 +54,13 @@
 		if(M.vore_flags & ABSORBED)
 			M.Stun(5)
 
+	// Режим удержания не касается ни одного из четырёх звуков ниже, а SSbellies
+	// проходит по каждому животу раз в секунду: на удержании это четыре /sound в
+	// секунду на живот, построенных прямо в мусор. Ветка DM_HOLD в switch оставлена
+	// как была - она теперь недостижима, но остаётся верной, если этот выход уедет.
+	if(digest_mode == DM_HOLD)
+		return SSBELLIES_PROCESSED
+
 ////////////////////////// Sound vars /////////////////////////////
 	var/sound/prey_digest = sound(get_sfx("digest_prey"))
 	var/sound/prey_death = sound(get_sfx("death_prey"))

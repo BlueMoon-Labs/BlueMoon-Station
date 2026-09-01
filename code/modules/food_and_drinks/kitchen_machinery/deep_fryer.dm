@@ -23,7 +23,7 @@ God bless America.
 /obj/machinery/deepfryer
 	name = "deep fryer"
 	desc = "Deep fried <i>everything</i>."
-	icon = 'icons/obj/kitchen.dmi'
+	icon = 'icons/obj/machines/kitchen.dmi'
 	icon_state = "fryer_off"
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -35,6 +35,11 @@ God bless America.
 	var/fry_speed = 1 //How quickly we fry food
 	var/frying_fried //If the object has been fried; used for messages
 	var/frying_burnt //If the object has been burnt
+	var/grease_level = 0
+	/// The chance (%) of grease_level increase on process()
+	var/grease_increase_chance = 50
+	/// The amount of grease_level increase on process()
+	var/grease_increase_amount = 0.1
 	var/static/list/deepfry_blacklisted_items = typecacheof(list(
 		/obj/item/screwdriver,
 		/obj/item/crowbar,
@@ -58,9 +63,11 @@ God bless America.
 	component_parts += new /obj/item/stock_parts/micro_laser(null)
 	RefreshParts()
 	fry_loop = new(src, FALSE)
+	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, PROC_REF(on_cleaned))
 
 /obj/machinery/deepfryer/Destroy()
 	QDEL_NULL(fry_loop)
+	UnregisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT)
 	return ..()
 
 /obj/machinery/deepfryer/RefreshParts()
@@ -70,6 +77,11 @@ God bless America.
 	oil_use = initial(oil_use) - (oil_efficiency * 0.0095)
 	oil_use = max(oil_use, 0.001)
 	fry_speed = oil_efficiency
+
+/obj/machinery/deepfryer/update_overlays()
+	. = ..()
+	if(grease_level >= 1)
+		. += "fryer_greasy"
 
 /obj/machinery/deepfryer/examine(mob/user)
 	. = ..()
@@ -111,6 +123,7 @@ God bless America.
 		else if(!frying && user.transferItemToLoc(I, src))
 			frying = I
 			to_chat(user, "<span class='notice'>You put [I] into [src].</span>")
+			flick("fryer_start", src)
 			icon_state = "fryer_on"
 			fry_loop.start()
 
@@ -120,16 +133,19 @@ God bless America.
 	if(!C)
 		return
 	reagents.chem_temp = C.fry_temperature
-	if(frying)
-		reagents.trans_to(frying, oil_use, multiplier = fry_speed * 3) //Fried foods gain more of the reagent thanks to space magic
-		cook_time += fry_speed
-		if(cook_time >= 30 && !frying_fried)
-			frying_fried = TRUE //frying... frying... fried
-			playsound(src.loc, 'sound/machines/ding.ogg', 50, 1)
-			audible_message("<span class='notice'>[src] dings!</span>")
-		else if (cook_time >= 60 && !frying_burnt)
-			frying_burnt = TRUE
-			visible_message("<span class='warning'>[src] emits an acrid smell!</span>")
+	if(!frying)
+		return
+
+	reagents.trans_to(frying, oil_use, multiplier = fry_speed * 3) //Fried foods gain more of the reagent thanks to space magic
+	grease_level += prob(grease_increase_chance) * grease_increase_amount
+	cook_time += fry_speed
+	if(cook_time >= 30 && !frying_fried)
+		frying_fried = TRUE //frying... frying... fried
+		playsound(src.loc, 'sound/machines/ding.ogg', 50, 1)
+		audible_message("<span class='notice'>[src] dings!</span>")
+	else if (cook_time >= 60 && !frying_burnt)
+		frying_burnt = TRUE
+		visible_message("<span class='warning'>[src] emits an acrid smell!</span>")
 
 
 /obj/machinery/deepfryer/attack_ai(mob/user)
@@ -140,7 +156,9 @@ God bless America.
 		if(frying.loc == src)
 			to_chat(user, "<span class='notice'>You eject [frying] from [src].</span>")
 			frying.fry(cook_time)
+			flick("fryer_stop", src)
 			icon_state = "fryer_off"
+			update_appearance(UPDATE_OVERLAYS)
 			frying.forceMove(drop_location())
 			if(Adjacent(user) && !issilicon(user))
 				user.put_in_hands(frying)
@@ -164,3 +182,12 @@ God bless America.
 		C.DefaultCombatKnockdown(60)
 		user.DelayNextAction()
 	return ..()
+
+/obj/machinery/deepfryer/proc/on_cleaned(obj/source_component, obj/source)
+	SIGNAL_HANDLER
+
+	. = NONE
+
+	grease_level = 0
+	update_appearance(UPDATE_OVERLAYS)
+	. |= COMPONENT_CLEANED //|COMPONENT_CLEANED_GAIN_XP

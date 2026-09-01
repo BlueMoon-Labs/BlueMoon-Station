@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
 import { KEY_ENTER, KEY_ESCAPE, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_TAB } from '../../common/keycodes';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Autofocus, Box, Button, Flex, Section, Stack } from '../components';
 import { Window } from '../layouts';
 import { Loader } from './common/Loader';
@@ -17,8 +19,8 @@ type AlertModalData = {
 const KEY_DECREMENT = -1;
 const KEY_INCREMENT = 1;
 
-export const AlertModal = (_, context) => {
-  const { act, data } = useBackend<AlertModalData>(context);
+export const AlertModal = (_) => {
+  const { act, data } = useBackend<AlertModalData>();
   const {
     autofocus,
     buttons = [],
@@ -27,7 +29,7 @@ export const AlertModal = (_, context) => {
     timeout,
     title,
   } = data;
-  const [selected, setSelected] = useLocalState<number>(context, 'selected', 0);
+  const [selected, setSelected] = useState<number>(0);
   // Dynamically sets window dimensions
   const windowHeight
     = 115
@@ -49,19 +51,14 @@ export const AlertModal = (_, context) => {
       {!!timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(e) => {
-          const keyCode = window.event ? e.which : e.keyCode;
-          /**
-           * Simulate a click when pressing space or enter,
-           * allow keyboard navigation, override tab behavior
-           */
-          if (keyCode === KEY_SPACE || keyCode === KEY_ENTER) {
+          if (e.key === KEY_SPACE || e.key === KEY_ENTER) {
             act('choose', { choice: buttons[selected] });
-          } else if (keyCode === KEY_ESCAPE) {
+          } else if (e.key === KEY_ESCAPE) {
             act('cancel');
-          } else if (keyCode === KEY_LEFT) {
+          } else if (e.key === KEY_LEFT) {
             e.preventDefault();
             onKey(KEY_DECREMENT);
-          } else if (keyCode === KEY_TAB || keyCode === KEY_RIGHT) {
+          } else if (e.key === KEY_TAB || e.key === KEY_RIGHT) {
             e.preventDefault();
             onKey(KEY_INCREMENT);
           }
@@ -89,8 +86,8 @@ export const AlertModal = (_, context) => {
  * Technically this handles more than 2 buttons, but you
  * should just be using a list input in that case.
  */
-const ButtonDisplay = (props, context) => {
-  const { data } = useBackend<AlertModalData>(context);
+const ButtonDisplay = (props) => {
+  const { data } = useBackend<AlertModalData>();
   const { buttons = [], large_buttons, swapped_buttons } = data;
   const { selected } = props;
 
@@ -127,8 +124,8 @@ const ButtonDisplay = (props, context) => {
 /**
  * Displays a button with variable sizing.
  */
-const AlertButton = (props, context) => {
-  const { act, data } = useBackend<AlertModalData>(context);
+const AlertButton = (props) => {
+  const { act, data } = useBackend<AlertModalData>();
   const { large_buttons } = data;
   const { button, selected } = props;
   const buttonWidth = button.length > 7 ? button.length : 7;

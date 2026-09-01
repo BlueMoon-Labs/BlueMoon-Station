@@ -17,6 +17,23 @@
 #define MAGIC 	"magic"
 #define WOUND 	"wound"
 
+// BLUEMOON ADD START - BR (Bullet Rating) классы пробития для пуль.
+// Смысловые метки над armour_penetration — используются при назначении AP патронам.
+// BR0 = без пробития брони (резиновые пули, дробь)
+// BR1 = пистолетный класс (пробивает только самую лёгкую броню)
+// BR2 = PDW/промежуточный (шьёт жилет СБ, слаб по бронежилету)
+// BR3 = боевая винтовка (шьёт жилет и частично бронежилет)
+// BR4 = AP/усиленный (шьёт бронежилет, частично Джаггернаут)
+// BR5 = снайперский/крупнокалиберный (шьёт всё кроме топовой брони)
+// BR6 = противоматериальный (пробивает вообще всё)
+#define BULLET_BR0  0    // резина, дробь — нет пробития
+#define BULLET_BR1  10   // пистолеты, .45, 9mm
+#define BULLET_BR2  20   // PDW (4.6x30), 5.56 FMJ, 5.8mm FMJ
+#define BULLET_BR3  35   // 7.62x39 FMJ, SAW, AP для PDW
+#define BULLET_BR4  50   // AP патроны штурмовок, .50 базовый
+#define BULLET_BR5  65   // .50 снайпер, тяжёлые AP
+#define BULLET_BR6  100   // противоматериальный
+
 /proc/getArmor(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
 	. = locate(ARMORID)
 	if (!.)
@@ -106,20 +123,24 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 /datum/armor/proc/generate_new_with_modifiers(list/modifiers)
 	var/datum/armor/new_armor = new
 
-	var/all_keys = ARMOR_LIST_ALL()
+	var/list/all_keys = ARMOR_LIST_ALL()
 	if(ARMOR_ALL in modifiers)
 		var/modifier_all = modifiers[ARMOR_ALL]
 		if(!modifier_all)
 			return src
 		for(var/mod in all_keys)
 			new_armor.vars[mod] = vars[mod] + modifier_all
+		new_armor.tag = null // Don't put custom armor into locate() cache
 		return new_armor
 
+	for(var/mod in all_keys)
+		new_armor.vars[mod] = vars[mod]
 	for(var/modifier in modifiers)
 		if(modifier in all_keys)
-			new_armor.vars[modifier] = vars[modifier] + modifiers[modifier]
+			new_armor.vars[modifier] += modifiers[modifier]
 		else
 			stack_trace("Attempt to call generate_new_with_modifiers with illegal modifier '[modifier]'! Ignoring it")
+	new_armor.tag = null // Don't put custom armor into locate() cache
 	return new_armor
 
 /// Generate a brand new armor datum with the values given, if a value is not present it carries over
@@ -140,6 +161,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 			new_armor.vars[armor_rating] = values[armor_rating]
 		else
 			new_armor.vars[armor_rating] = vars[armor_rating]
+	new_armor.tag = null // Don't put custom armor into locate() cache
 	return new_armor
 
 /// Gets the rating of armor for the specified rating

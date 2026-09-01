@@ -5,7 +5,7 @@
 
 /datum/action/cooldown/bloodsucker/targeted/haste
 	name = "Immortal Haste"
-	desc = "Dash somewhere with supernatural speed. Those nearby may be knocked away, stunned, or left empty-handed."
+	desc = "Бросьтесь куда-нибудь со сверхъестественной скоростью. Те, кто находится поблизости, могут быть сбиты с ног, оглушены или остаться с пустыми руками."
 	button_icon_state = "power_speed"
 	bloodcost = 14
 	cooldown_time = 160
@@ -25,11 +25,11 @@
 	// Being Grabbed
 	if(owner.pulledby && owner.pulledby.grab_state >= GRAB_AGGRESSIVE)
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You're being grabbed!</span>")
+			to_chat(owner, "<span class='warning'>Вас схватили!</span>")
 		return FALSE
 	if(!owner.has_gravity(owner.loc)) //We dont want people to be able to use this to fly around in space
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You cant dash while floating!</span>")
+			to_chat(owner, "<span class='warning'>Вы не можете броситься вперед, пока левитируете!</span>")
 		return FALSE
 	return TRUE
 

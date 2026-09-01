@@ -15,6 +15,15 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
 
+	//дальний слух мёртвых ведёт dead-chat путь say() с префами, но потребители
+	//get_hearers_in_view (LOOC, его рунчат) находят слушателей только через грид,
+	//а до порта грида view() с турфа-источника видел призраков несмотря на
+	//invisibility. Пропуск родителя теряет общий хук - регистрируем слух сами;
+	//в CLIENTS-канал обсерверов с клиентом кладёт Login. new_player (flags_1 =
+	//NONE) сюда не попадает
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
+
 	prepare_huds()
 
 	if(length(CONFIG_GET(keyed_list/cross_server)))
@@ -91,7 +100,11 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 
 	var/client/hopper = client
 	to_chat(hopper, "<span class='notice'>Sending you to [pick].</span>")
-	new /atom/movable/screen/splash(null, src, hopper, FALSE)
+	//Заставка заводится с alpha 0 (visible = FALSE) и Fade() ей никто не зовёт,
+	//то есть удалять её было некому: каждый переход на другой сервер оставлял
+	//бессмертный экранный объект в client.screen.
+	var/atom/movable/screen/splash/hop_splash = new /atom/movable/screen/splash(null, src, hopper, FALSE)
+	QDEL_IN(hop_splash, 3 SECONDS)
 
 	mob_transforming = TRUE
 	sleep(2.9 SECONDS)	//let the animation play
@@ -111,6 +124,23 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		if (client)
 			if (new_z)
 				SSmobs.dead_players_by_zlevel[new_z] += src
+				// Счётчик простоя обнуляется ВСЕГДА, а не только при подъёме: посещение уже
+				// поднятого уровня иначе не оставляет следа между сканами сноса. См.
+				// SSlighting.note_zlevel_visit().
+				SSlighting.note_zlevel_visit(new_z)
+				// Ghosts get on-demand lighting init too: /mob/living/update_z does this for the living;
+				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
+				// living player arrives or background init crawls there.
+				//
+				// Но с ВЫДЕРЖКОЙ, а не сразу: подъём стоит десятки мегабайт, которых снос не
+				// вернёт, и триггер здесь - сам факт записи нового z, то есть любой пролёт.
+				// TIMER_UNIQUE|TIMER_OVERRIDE: аргумент входит в ключ уникальности, поэтому
+				// заявка на КАЖДЫЙ z своя, а метания туда-обратно между двумя уровнями
+				// перевзводят одну и ту же заявку вместо того, чтобы копить очередь.
+				// См. LIGHTING_GHOST_INIT_DEBOUNCE и ghost_ondemand_init_still_wanted().
+				if(should_ondemand_init_zlevel(new_z))
+					addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ondemand_init_zlevel_for_ghost), new_z), \
+						LIGHTING_GHOST_INIT_DEBOUNCE, TIMER_UNIQUE|TIMER_OVERRIDE)
 			registered_z = new_z
 		else
 			registered_z = null

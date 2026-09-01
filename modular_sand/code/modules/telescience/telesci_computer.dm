@@ -38,9 +38,10 @@
 /obj/machinery/computer/telescience/Initialize(mapload)
 	recalibrate()
 	. = ..()
+	if(mapload)
+		crystals = starting_crystals
 
 /obj/machinery/computer/telescience/Destroy()
-	eject()
 	if(inserted_gps)
 		inserted_gps.loc = loc
 		inserted_gps = null
@@ -49,11 +50,6 @@
 /obj/machinery/computer/telescience/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>There are [crystals ? crystals : "no"] bluespace crystal\s in the crystal slots.</span>"
-
-/obj/machinery/computer/telescience/Initialize(mapload)
-	. = ..()
-	if(mapload)
-		crystals = starting_crystals
 
 /obj/machinery/computer/telescience/attack_paw(mob/user)
 	to_chat(user, "<span class='warning'>You are too primitive to use this computer!</span>")
@@ -115,7 +111,7 @@
 	var/list/power_possible = list()
 	for(var/i = 1; i <= length(power_options); i++)
 		var/list/add = list()
-		if(crystals + telepad.efficiency < i)
+		if(!telepad || crystals + telepad.efficiency < i)
 			add += power_options[i]
 			add += TELESCI_POWER_UNAVAILABLE
 			power_possible += list(add)
@@ -138,6 +134,9 @@
 
 /obj/machinery/computer/telescience/ui_act(action, params)
 	if(..())
+		return
+	if(!telepad)
+		temp_msg = list("ERROR:", "No telepad linked.")
 		return
 	if(telepad.panel_open)
 		temp_msg = list("ERROR:", "Telepad undergoing physical maintenance operations.")

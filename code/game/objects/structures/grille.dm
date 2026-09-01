@@ -4,6 +4,7 @@
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "grille"
 	density = TRUE
+	shadow_weight = 0.05
 	anchored = TRUE
 	pass_flags_self = PASSGRILLE
 	flags_1 = CONDUCT_1
@@ -20,6 +21,10 @@
 	var/grille_type = null
 	var/broken_type = /obj/structure/grille/broken
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
+
+/obj/structure/grille/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 
 /obj/structure/grille/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
 	. = ..()
@@ -259,6 +264,12 @@
 		if(exposed_temperature > T0C + 1500)
 			take_damage(1, BURN, 0, 0)
 	..()
+
+/obj/structure/grille/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return !broken && exposed_temperature > (T0C + 1500)
+
+/obj/structure/grille/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(1, BURN, 0, 0)
 
 /obj/structure/grille/hitby(atom/movable/AM, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
 	if(isobj(AM))

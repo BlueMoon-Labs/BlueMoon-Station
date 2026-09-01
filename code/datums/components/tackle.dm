@@ -28,6 +28,8 @@
 	var/min_distance
 	///The throwdatum we're currently dealing with, if we need it
 	var/datum/thrownthing/tackle
+	///Таймер resetTackle: без deltimer в Destroy его CALLBACK держал бы компонент в SStimer
+	var/reset_timer_id
 
 /datum/component/tackler/Initialize(stamina_cost = 25, base_knockdown = 1 SECONDS, range = 4, speed = 1, skill_mod = 0, min_distance = min_distance)
 	if(!iscarbon(parent))
@@ -43,12 +45,14 @@
 	var/mob/living/carbon/P = parent
 	to_chat(P, "<span class='notice'>You are now able to launch tackles! You can do so by activating throw intent, and clicking on your target with an empty hand.</span>")
 	P.tackling = TRUE
-	addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
+	reset_timer_id = addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
 
 /datum/component/tackler/Destroy()
 	var/mob/living/carbon/P = parent
 	to_chat(P, "<span class='notice'>You can no longer tackle.</span>")
 	P.tackling = FALSE
+	deltimer(reset_timer_id)
+	tackle = null // thrownthing живёт в SSthrowing, компоненту его не qdel-ить
 	return ..()
 
 /datum/component/tackler/RegisterWithParent()
@@ -63,6 +67,15 @@
 /datum/component/tackler/proc/registerTackle(mob/living/carbon/user, datum/thrownthing/TT)
 	tackle = TT
 	tackle.thrower = user
+	// POST_THROW прилетает на ЛЮБОЙ бросок носителя (взрыв, чужой швырок), а resetTackle
+	// ставится только на настоящий такл - без этого сигнала завершённый SSthrowing'ом
+	// thrownthing зомби-ссылкой висел бы в tackle до следующего броска
+	RegisterSignal(TT, COMSIG_PARENT_QDELETING, PROC_REF(on_tackle_thrownthing_qdeleting))
+
+/datum/component/tackler/proc/on_tackle_thrownthing_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(tackle == source)
+		tackle = null
 
 ///See if we can tackle or not. If we can, leap!
 /datum/component/tackler/proc/checkTackle(mob/living/carbon/user, atom/A, params)
@@ -70,33 +83,42 @@
 		return
 
 	if(HAS_TRAIT(user, TRAIT_HULK))
-		to_chat(user, "<span class='warning'>You're too angry to remember how to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вы слишком злые, чтобы вспомнить, как выполнять захват!</span>")
+		return
+
+	if(IS_BOLA_ENSNARED(user))
+		to_chat(user, "<span class='warning'>Вы не можете хватать, если ваши ноги связаны!</span>")
+		return
+
+	if(IS_BEARTRAP_ENSNARED(user))
+		to_chat(user, "<span class='warning'>Вы не можете хватать, на вашей ноге капкан!</span>")
 		return
 
 	if(user.restrained())
-		to_chat(user, "<span class='warning'>You need free use of your hands to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вам нужны свободные руки, чтобы выполнить захват!</span>")
 		return
 
 	if(!(user.mobility_flags & MOBILITY_STAND))
-		to_chat(user, "<span class='warning'>You must be standing to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вы должны стоять, чтобы выполнить захват!</span>")
 		return
 
-	if(user.tackling)
-		to_chat(user, "<span class='warning'>You're not ready to tackle!</span>")
+	if(user.tackling || user.IsStun())
+		to_chat(user, "<span class='warning'>Вы ещё не готовы к захвату!</span>")
 		return
 
-	if(!user.mob_has_gravity() ||!user.loc.has_gravity() || isspaceturf(user.loc))
-		to_chat(user, "<span class='warning'>You can't find your footing without gravity!</span>")
+	if(!user.mob_has_gravity() || !user.loc.has_gravity() || isspaceturf(user.loc))
+		to_chat(user, "<span class='warning'>Вы не можете как следует устоять на ногах без гравитации!</span>")
 		return
 
 	if(user.has_status_effect(STATUS_EFFECT_TASED)) // can't tackle if you just got tased
-		to_chat(user, "<span class='warning'>You can't tackle while tased!</span>")
+		to_chat(user, "<span class='warning'>Вы не можете выполнять захват, пока вас шокируют!</span>")
 		return
+
 
 	var/left_paralysis = HAS_TRAIT(user, TRAIT_PARALYSIS_L_ARM)
 	var/right_paralysis = HAS_TRAIT(user, TRAIT_PARALYSIS_R_ARM)
 	if(left_paralysis && right_paralysis)
-		to_chat(user, "<span class='warning'>You can't tackle without the use of your arms!</span>")
+		to_chat(user, "<span class='warning'>Вы не можете выполнить захват без использования рук!</span>")
 
 	user.face_atom(A)
 
@@ -105,7 +127,7 @@
 		return
 
 	user.tackling = TRUE
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(checkObstacle))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(checkObstacle), TRUE)
 	playsound(user, 'sound/weapons/thudswoosh.ogg', 40, TRUE, -1)
 
 	var/leap_word = iscatperson(user) ? "pounce" : "leap" ///If cat, "pounce" instead of "leap".
@@ -121,7 +143,7 @@
 	user.adjustStaminaLoss(stamina_cost)
 	user.throw_at(A, range, speed, user, FALSE)
 	user.toggle_throw_mode()
-	addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
+	reset_timer_id = addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
 	return(COMSIG_MOB_CANCEL_CLICKON)
 
 /**
@@ -220,7 +242,9 @@
 			target.DefaultCombatKnockdown(20)
 			if(ishuman(target) && iscarbon(user))
 				target.grabbedby(user)
-				target.grippedby(user, instant = TRUE)
+				// start_pulling может не сработать (сверхтяж и т.д.) — grippedby без pull ломал grab_state и скорость.
+				if(user.pulling == target)
+					target.grippedby(user, instant = TRUE)
 
 	SEND_SIGNAL(user, COMSIG_CARBON_TACKLED, roll)
 	return COMPONENT_MOVABLE_IMPACT_FLIP_HITPUSH

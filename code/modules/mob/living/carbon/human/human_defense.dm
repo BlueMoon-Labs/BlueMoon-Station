@@ -30,9 +30,14 @@
 			continue
 		if(istype(bp, /obj/item/clothing))
 			var/obj/item/clothing/C = bp
-			if(C.body_parts_covered & def_zone.body_part && C.armor)
-				protection += C.armor.getRating(d_type)
-	protection += physiology.armor.getRating(d_type)
+			if(C.body_parts_covered & def_zone.body_part && istype(C.armor, /datum/armor))
+				var/rating = C.armor.getRating(d_type)
+				if(isnum(rating))
+					protection += rating
+	if(physiology?.armor)
+		var/phys_rating = physiology.armor.getRating(d_type)
+		if(isnum(phys_rating))
+			protection += phys_rating
 	return protection
 
 ///Get all the clothing on a specific body part
@@ -121,9 +126,9 @@
 			hulk_verb_continous = "pummels"
 			hulk_verb_simple = "pummel"
 		playsound(loc, user.dna.species.attack_sound, 25, 1, -1)
-		visible_message("<span class='danger'>[user] [hulk_verb_continous] [src]!</span>", \
-						"<span class='userdanger'>[user] [hulk_verb_continous] you!</span>", null, COMBAT_MESSAGE_RANGE, null, user,
-						"<span class='danger'>You [hulk_verb_simple] [src]!</span>")
+		visible_message(span_danger("[user] [hulk_verb_continous] [src]!"), \
+						span_userdanger("[user] [hulk_verb_continous] you!"), null, COMBAT_MESSAGE_RANGE, null, user,
+						span_danger("You [hulk_verb_simple] [src]!"))
 		apply_damage(15, BRUTE, wound_bonus=10)
 		return TRUE
 
@@ -150,16 +155,16 @@
 		var/obj/item/I = get_active_held_item()
 		if(I && dropItemToGround(I))
 			playsound(loc, 'sound/weapons/slash.ogg', 25, 1, -1)
-			visible_message("<span class='danger'>[M] разоружает [src]!</span>", \
-					"<span class='userdanger'>[M] разоружил вас!</span>", null, COMBAT_MESSAGE_RANGE, null, M,
-					"<span class='danger'>Вы разоружили [src]!</span>")
+			visible_message(span_danger("[M] разоружает [src]!"), \
+					span_userdanger("[M] разоружил вас!"), null, COMBAT_MESSAGE_RANGE, null, M,
+					span_danger("Вы разоружили [src]!"))
 		else if(!M.client || prob(5)) // only natural monkeys get to stun reliably, (they only do it occasionaly)
 			playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
 			DefaultCombatKnockdown(100)
 			log_combat(M, src, "tackled")
-			visible_message("<span class='danger'>[M] повалил [src]!</span>", \
-				"<span class='userdanger'>[M] повалил вас!</span>", null, COMBAT_MESSAGE_RANGE, null, M,
-				"<span class='danger'>Вы повалили [src]!</span>")
+			visible_message(span_danger("[M] повалил [src]!"), \
+				span_userdanger("[M] повалил вас!"), null, COMBAT_MESSAGE_RANGE, null, M,
+				span_danger("Вы повалили [src]!"))
 
 	if(M.limb_destroyer)
 		dismembering_strike(M, affecting.body_zone)
@@ -180,9 +185,9 @@
 		var/damage = prob(90) ? M.meleeSlashHumanPower : 0
 		if(!damage)
 			playsound(loc, 'sound/weapons/slashmiss.ogg', 50, 1, -1)
-			visible_message("<span class='danger'>[M] has lunged at [src]!</span>", \
-				"<span class='userdanger'>[M] has lunged at you!</span>", target = M, \
-				target_message = "<span class='danger'>You have lunged at [src]!</span>")
+			visible_message(span_danger("[M] has lunged at [src]!"), \
+				span_userdanger("[M] has lunged at you!"), target = M, \
+				target_message = span_danger("You have lunged at [src]!"))
 			return FALSE
 		var/obj/item/bodypart/affecting = get_bodypart(ran_zone(M.zone_selected))
 		if(!affecting)
@@ -190,9 +195,9 @@
 		var/armor_block = run_armor_check(affecting, MELEE, null, null,10)
 
 		playsound(loc, 'sound/weapons/slice.ogg', 25, 1, -1)
-		visible_message("<span class='danger'>[M] has slashed at [src]!</span>", \
-			"<span class='userdanger'>[M] has slashed at you!</span>", target = M, \
-			target_message = "<span class='danger'>You have slashed at [src]!</span>")
+		visible_message(span_danger("[M] has slashed at [src]!"), \
+			span_userdanger("[M] has slashed at you!"), target = M, \
+			target_message = span_danger("You have slashed at [src]!"))
 		log_combat(M, src, "attacked")
 		if(!dismembering_strike(M, M.zone_selected)) //Dismemberment successful
 			return TRUE
@@ -202,16 +207,16 @@
 		var/obj/item/I = get_active_held_item()
 		if(I && dropItemToGround(I))
 			playsound(loc, 'sound/weapons/slash.ogg', 25, 1, -1)
-			visible_message("<span class='danger'>[M] has disarmed [src]!</span>", \
-					"<span class='userdanger'>[M] has disarmed you!</span>", target = M, \
-					target_message = "<span class='danger'>You have disarmed [src]!</span>")
+			visible_message(span_danger("[M] has disarmed [src]!"), \
+					span_userdanger("[M] has disarmed you!"), target = M, \
+					target_message = span_danger("You have disarmed [src]!"))
 		else
 			playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
 			DefaultCombatKnockdown(M.meleeKnockdownPower)
 			log_combat(M, src, "tackled")
-			visible_message("<span class='danger'>[M] has tackled down [src]!</span>", \
-				"<span class='userdanger'>[M] has tackled you down!</span>", target = M, \
-				target_message = "<span class='danger'>You have tackled down [src]!</span>")
+			visible_message(span_danger("[M] has tackled down [src]!"), \
+				span_userdanger("[M] has tackled you down!"), target = M, \
+				target_message = span_danger("You have tackled down [src]!"))
 
 /mob/living/carbon/human/attack_larva(mob/living/carbon/alien/larva/L)
 	. = ..()
@@ -277,6 +282,9 @@
 	switch (severity)
 		if (EXPLODE_DEVASTATE)
 			if(bomb_armor < EXPLODE_GIB_THRESHOLD) //gibs the mob if their bomb armor is lower than EXPLODE_GIB_THRESHOLD
+				var/datum/explosion/exp_gib = origin
+				if(istype(exp_gib) && exp_gib.explosion_attacker && exp_gib.explosion_attacker != src)
+					log_combat(exp_gib.explosion_attacker, src, "gibbed with explosion", exp_gib.explosion_source)
 				for(var/I in contents)
 					var/atom/A = I
 					if(!QDELETED(A))
@@ -316,6 +324,10 @@
 			adjustStaminaLoss(brute_loss)
 
 	take_overall_damage(brute_loss,burn_loss)
+
+	var/datum/explosion/exp = origin
+	if(istype(exp) && exp.explosion_attacker && exp.explosion_attacker != src)
+		log_combat(exp.explosion_attacker, src, "exploded", exp.explosion_source, "наносит [brute_loss + burn_loss] урона")
 
 	//attempt to dismember bodyparts
 	if(severity <= 2 || !bomb_armor)
@@ -431,7 +443,7 @@
 		var/obj/item/clothing/chest_clothes = null
 		if(w_uniform)
 			chest_clothes = w_uniform
-		if(wear_suit)
+		if(wear_suit && (wear_suit.body_parts_covered & CHEST))
 			chest_clothes = wear_suit
 		if(chest_clothes)
 			if(!(chest_clothes.resistance_flags & UNACIDABLE))
@@ -457,10 +469,10 @@
 	//ARMS & HANDS//
 	if(!bodyzone_hit || bodyzone_hit == BODY_ZONE_L_ARM || bodyzone_hit == BODY_ZONE_R_ARM)
 		var/obj/item/clothing/arm_clothes = null
-		if(gloves)
-			arm_clothes = gloves
 		if(w_uniform && ((w_uniform.body_parts_covered & HANDS) || (w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = w_uniform
+		if(gloves && ((gloves.body_parts_covered & HANDS) || (gloves.body_parts_covered & ARMS)))
+			arm_clothes = gloves //gloves (incl. MOD gauntlets) are the outer layer over the uniform's arms
 		if(wear_suit && ((wear_suit.body_parts_covered & HANDS) || (wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = wear_suit
 
@@ -484,10 +496,10 @@
 	//LEGS & FEET//
 	if(!bodyzone_hit || bodyzone_hit == BODY_ZONE_L_LEG || bodyzone_hit == BODY_ZONE_R_LEG || bodyzone_hit == "feet")
 		var/obj/item/clothing/leg_clothes = null
-		if(shoes)
-			leg_clothes = shoes
 		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (w_uniform.body_parts_covered & LEGS))))
 			leg_clothes = w_uniform
+		if(shoes && ((shoes.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (shoes.body_parts_covered & LEGS))))
+			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
 		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (wear_suit.body_parts_covered & LEGS))))
 			leg_clothes = wear_suit
 		if(leg_clothes)
@@ -616,7 +628,7 @@
 					var/msg
 					switch(W.severity)
 						if(WOUND_SEVERITY_TRIVIAL)
-							msg = "<span class='danger'>Она страдает от [lowertext(W.ru_name_r)].</span>\n"
+							msg = span_danger("Она страдает от [lowertext(W.ru_name_r)].\n")
 						if(WOUND_SEVERITY_MODERATE)
 							msg = "<span class='warning'>Она страдает от [lowertext(W.ru_name_r)]!</span>\n"
 						if(WOUND_SEVERITY_SEVERE)
@@ -631,6 +643,9 @@
 					else
 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
 
+				if(LB.current_gauze)
+					to_send += "\n\t<a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+
 			for(var/t in missing)
 				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
 
@@ -642,7 +657,7 @@
 						bleeding_limbs += BP
 
 				var/num_bleeds = LAZYLEN(bleeding_limbs)
-				var/bleed_text = "<span class='danger'>У вас кровотечение в"
+				var/bleed_text = "У вас кровотечение в"
 				switch(num_bleeds)
 					if(1 to 2)
 						bleed_text += " [bleeding_limbs[1].ru_name_v][num_bleeds == 2 ? " and [bleeding_limbs[2].ru_name_v]" : ""]"
@@ -651,56 +666,87 @@
 							var/obj/item/bodypart/BP = bleeding_limbs[i]
 							bleed_text += " [BP.ru_name_v],"
 						bleed_text += " и [bleeding_limbs[num_bleeds].ru_name_v]"
-				bleed_text += "!</span>"
-				to_send += "\n[bleed_text]\n"
+				to_send += span_danger("\n[bleed_text]!\n")
+
+			var/robotic_user = isrobotic(src)
+
 			if(getStaminaLoss())
 				if(getStaminaLoss() > 30)
-					to_send += "<span class='info'>Вы полностью измотаны.</span>\n"
+					if(robotic_user)
+						to_send += span_info("Ресурс ваших сервоприводов исчерпан.\n")
+					else
+						to_send += span_info("Вы полностью измотаны.\n")
 				else
-					to_send += "<span class='info'>Вы чувствуете усталость.</span>\n"
+					if(robotic_user)
+						to_send += span_info("Вы чувствуете истощённость сервоприводных конденсаторов.\n")
+					else
+						to_send += span_info("Вы чувствуете усталость.\n")
 			if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-				if(toxloss)
-					if(toxloss > 10)
-						to_send += "<span class='danger'>Вам нехорошо.</span>\n"
-					else if(toxloss > 20)
-						to_send += "<span class='danger'>Вам становится очень плохо.</span>\n"
-					else if(toxloss > 40)
-						to_send += "<span class='danger'>Вы ощущаете тошноту!</span>\n"
-				if(oxyloss)
-					if(oxyloss > 10)
-						to_send += "<span class='danger'>У вас кружится голова.</span>\n"
-					else if(oxyloss > 20)
-						to_send += "<span class='danger'>У вас темнеет в глазах.</span>\n"
-					else if(oxyloss > 30)
-						to_send += "<span class='danger'>Вы задыхаетесь!</span>\n"
+				if(!robotic_user)
+					switch(toxloss)
+						if(10 to 19.99)
+							to_send += span_danger("Вы ощущаете тошноту.\n")
+						if(20 to 39.99)
+							to_send += span_danger("Вам становится очень плохо.\n")
+						if(40 to INFINITY)
+							to_send += span_danger("Вас складывает пополам и выворачивает наружу!\n")
+					switch(oxyloss)
+						if(10 to 19.99)
+							to_send += span_danger("У вас кружится голова.\n")
+						if(20 to 29.99)
+							to_send += span_danger("У вас темнеет в глазах.\n")
+						if(30 to INFINITY)
+							to_send += span_danger("Вы задыхаетесь!\n")
+				else
+					switch(toxloss)
+						if(10 to 19.99)
+							to_send += span_danger("Обнаружена коррозия контактов.\n")
+						if(20 to 39.99)
+							to_send += span_danger("Коррозия затронула глубины корпуса!\n")
+						if(40 to INFINITY)
+							to_send += span_danger("ВНИМАНИЕ: коррозия поразила позитронный мозг!\n")
 
-			switch(nutrition)
-				if(NUTRITION_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы объелись!</span>\n"
-				if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
-					to_send += "<span class='info'>Вы сыты!</span>\n"
-				if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
-					to_send += "<span class='info'>Вы не голодны.</span>\n"
-				if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
-					to_send += "<span class='info'>Вам бы перекусить.</span>\n"
-				if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-					to_send += "<span class='info'>У вас ощутимый голод.</span>\n"
-				if(0 to NUTRITION_LEVEL_STARVING)
-					to_send += "<span class='danger'>Вы голодаете!</span>\n"
-
-			switch(thirst)
-				if(THIRST_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы переполнены водой!</span>\n"
-				if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
-					to_send += "<span class='info'>Вы напились.</span>\n"
-				if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
-					to_send += "<span class='info'>Вы не испытываете жажду.</span>\n"
-				if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
-					to_send += "<span class='info'>Вам не помешало бы промочить горло.</span>\n"
-				if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
-					to_send += "<span class='danger'>Вы ощущаете жажду!</span>\n"
-				if(0 to THIRST_LEVEL_PARCHED)
-					to_send += "<span class='danger'>У вас обезвоживание!</span>\n"
+			if(!robotic_user)
+				switch(nutrition)
+					if(NUTRITION_LEVEL_FULL to INFINITY)
+						to_send += span_info("Вы объелись!\n")
+					if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+						to_send += span_info("Вы сыты!\n")
+					if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
+						to_send += span_info("Вы не голодны.\n")
+					if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
+						to_send += span_info("Вам бы перекусить.\n")
+					if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+						to_send += span_info("У вас ощутимый голод.\n")
+					if(0 to NUTRITION_LEVEL_STARVING)
+						to_send += span_danger("Вы голодаете!\n")
+				switch(thirst)
+					if(THIRST_LEVEL_FULL to INFINITY)
+						to_send += span_info("Вы переполнены водой!\n")
+					if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+						to_send += span_info("Вы напились.\n")
+					if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
+						to_send += span_info("Вы не испытываете жажду.\n")
+					if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
+						to_send += span_info("Вам не помешало бы промочить горло.\n")
+					if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+						to_send += span_danger("Вы ощущаете жажду!\n")
+					if(0 to THIRST_LEVEL_PARCHED)
+						to_send += span_danger("У вас обезвоживание!\n")
+			else
+				switch(nutrition)
+					if(NUTRITION_LEVEL_FULL to INFINITY)
+						to_send += span_info("Батарея переполнена энергией!\n")
+					if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+						to_send += span_info("Батарея полностью заряжена!\n")
+					if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
+						to_send += span_info("Статус заряда: средний.\n")
+					if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
+						to_send += span_info("Рекомендуется зарядить батарею.\n")
+					if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+						to_send += span_info("Статус заряда: низкий.\n")
+					if(0 to NUTRITION_LEVEL_STARVING)
+						to_send += span_danger("ВНИМАНИЕ: критически мало заряда!\n")
 
 			//TODO: Convert these messages into vague messages, thereby encouraging actual dignosis.
 			//Compiles then shows the list of damaged organs and broken organs
@@ -744,10 +790,10 @@
 						//damaged_plural = TRUE
 				for(var/D in damaged)
 					damaged_message += D
-				to_send += "\n<span class='info'>Ваш орган - [damaged_message] - повреждён.</span>"
+				to_send += span_info("<div style='margin-top:6px'>Ваш орган - [damaged_message] - повреждён.</div>")
 
 			if(roundstart_quirks.len)
-				to_send += "\n<span class='notice'>У вас есть следующие особенности: [get_trait_string()].</span>"
+				to_send += span_notice("<div style='margin-top:6px'>У вас есть следующие особенности: [get_trait_string()].</div>")
 			//SPLURT edit
 			for(var/obj/item/organ/genital/G in internal_organs)
 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_IMPOTENT))
@@ -857,7 +903,7 @@
 			var/msg
 			switch(W.severity)
 				if(WOUND_SEVERITY_TRIVIAL)
-					msg = "\t <span class='danger'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].</span>"
+					msg = span_danger("\t Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].")
 				if(WOUND_SEVERITY_MODERATE)
 					msg = "\t <span class='warning'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</span>"
 				if(WOUND_SEVERITY_SEVERE)
@@ -871,6 +917,9 @@
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+
+		if(LB.current_gauze)
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)
@@ -900,7 +949,7 @@
 		var/obj/item/clothing/chest_clothes = null
 		if(w_uniform)
 			chest_clothes = w_uniform
-		if(wear_suit)
+		if(wear_suit && (wear_suit.body_parts_covered & CHEST))
 			chest_clothes = wear_suit
 		if(chest_clothes)
 			torn_items += chest_clothes
@@ -908,10 +957,10 @@
 	//ARMS & HANDS//
 	if(!def_zone || def_zone == BODY_ZONE_L_ARM || def_zone == BODY_ZONE_R_ARM)
 		var/obj/item/clothing/arm_clothes = null
-		if(gloves)
-			arm_clothes = gloves
 		if(w_uniform && ((w_uniform.body_parts_covered & HANDS) || (w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = w_uniform
+		if(gloves && ((gloves.body_parts_covered & HANDS) || (gloves.body_parts_covered & ARMS)))
+			arm_clothes = gloves //gloves (incl. MOD gauntlets) are the outer layer over the uniform's arms
 		if(wear_suit && ((wear_suit.body_parts_covered & HANDS) || (wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = wear_suit
 		if(arm_clothes)
@@ -920,10 +969,10 @@
 	//LEGS & FEET//
 	if(!def_zone || def_zone == BODY_ZONE_L_LEG || def_zone == BODY_ZONE_R_LEG)
 		var/obj/item/clothing/leg_clothes = null
-		if(shoes)
-			leg_clothes = shoes
 		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (w_uniform.body_parts_covered & LEGS)))
 			leg_clothes = w_uniform
+		if(shoes && ((shoes.body_parts_covered & FEET) || (shoes.body_parts_covered & LEGS)))
+			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
 		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (wear_suit.body_parts_covered & LEGS)))
 			leg_clothes = wear_suit
 		if(leg_clothes)

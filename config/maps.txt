@@ -121,12 +121,6 @@ minplayers 70
 ##max_rounds_played 2
 endmap
 
-map 4nalstation
-minplayers 70
-##max_round_search_span 6
-##max_rounds_played 2
-endmap
-
 map icemoonstation
 minplayers 30
 endmap

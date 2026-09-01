@@ -27,6 +27,8 @@ GLOBAL_VAR(posibrain_notify_cooldown)
 	var/recharge_message = "<span class='warning'>The positronic brain isn't ready to activate again yet! Give it some time to recharge.</span>"
 	var/list/possible_names //If you leave this blank, it will use the global posibrain names
 	var/picked_name
+	/// Type датума антагониста для внесения в гостроли и т.д.
+	var/antagonist_datum
 
 /obj/item/mmi/posibrain/Initialize(mapload)
 	. = ..()
@@ -119,7 +121,7 @@ GLOBAL_VAR(posibrain_notify_cooldown)
 		if(!O.can_reenter_round())
 			return FALSE
 
-	var/posi_ask = alert("Become a [name]? (Warning, You can no longer be cloned, and all past lives will be forgotten!)","Are you positive?","Да","Нет")
+	var/posi_ask = alert("Стать [name]? (Предупреждение, вы больше не сможете быть клонированы, и все ваши прошлые жизни забудутся!)","Вы уверены?","Да","Нет")
 	if(posi_ask == "Нет" || QDELETED(src))
 		return
 	transfer_personality(user)
@@ -149,12 +151,14 @@ GLOBAL_VAR(posibrain_notify_cooldown)
 	if(QDELETED(brainmob))
 		return
 	if(is_occupied()) //Prevents hostile takeover if two ghosts get the prompt or link for the same brain.
-		to_chat(candidate, "<span class='warning'>This [name] was taken over before you could get to it! Perhaps it might be available later?</span>")
+		to_chat(candidate, span_warning("Этот [name] уже занят! Может быть, будет доступно позже?"))
 		return FALSE
 	if(candidate.mind && !isobserver(candidate))
 		candidate.mind.transfer_to(brainmob)
 	else
 		brainmob.ckey = candidate.ckey
+	if(antagonist_datum && brainmob.mind)
+		brainmob.mind.add_antag_datum(antagonist_datum)
 	name = "[initial(name)] ([brainmob.name])"
 	to_chat(brainmob, welcome_message)
 	brainmob.mind.assigned_role = new_role
@@ -201,6 +205,7 @@ GLOBAL_VAR(posibrain_notify_cooldown)
 	name = "Syndicate Positronic Brain"
 	desc = "Syndicate's own brand of Positronic Brain. It enforces laws designed to help Syndicate agents achieve their goals upon cyborgs and AIs created with it."
 	overrides_aicore_laws = TRUE
+	antagonist_datum = /datum/antagonist/ghost_role/ds2
 
 /obj/item/mmi/posibrain/syndie/Initialize(mapload)
 	. = ..()
@@ -211,6 +216,7 @@ GLOBAL_VAR(posibrain_notify_cooldown)
 	name = "InteQ Positronic Brain"
 	desc = "InteQ's own brand of Positronic Brain. It enforces laws designed to help InteQ Operative achieve their goals upon cyborgs and AIs created with it."
 	overrides_aicore_laws = TRUE
+	antagonist_datum = /datum/antagonist/ghost_role/inteq
 
 /obj/item/mmi/posibrain/inteq/Initialize(mapload)
 	. = ..()

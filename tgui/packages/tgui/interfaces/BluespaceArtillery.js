@@ -1,19 +1,40 @@
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, Section } from '../components';
+import { Box, Button, LabeledList, NoticeBox, Section, Slider } from '../components';
 import { Window } from '../layouts';
 
-export const BluespaceArtillery = (props, context) => {
-  const { act, data } = useBackend(context);
+const formatPower = (x) => {
+  if (x === null || x === undefined) return '—';
+  if (x >= 1e9) return (x / 1e9).toFixed(1) + ' GW';
+  if (x >= 1e6) return (x / 1e6).toFixed(1) + ' MW';
+  if (x >= 1e3) return (x / 1e3).toFixed(1) + ' kW';
+  return String(x) + ' W';
+};
+
+export const BluespaceArtillery = (props) => {
+  const { act, data } = useBackend();
   const {
     notice,
     connected,
     unlocked,
     target,
+    status,
+    capacitor_charge = 0,
+    target_capacitor_charge = 0,
+    max_capacitor_charge = 1,
+    powernet_power,
+    power_suck_cap,
   } = data;
+
+  const maxCap = Math.max(1, Number(max_capacitor_charge) || 0);
+  const targetCap = Math.min(maxCap, Math.max(0, Number(target_capacitor_charge) || 0));
+  const capCharge = Math.max(0, Number(capacitor_charge) || 0);
+  const powerStep = 1e6;
+
+  const canFire = connected && unlocked && target && status === 'SYSTEM READY';
   return (
     <Window
-      width={400}
-      height={220}>
+      width={600}
+      height={600}>
       <Window.Content>
         {!!notice && (
           <NoticeBox>
@@ -36,6 +57,61 @@ export const BluespaceArtillery = (props, context) => {
                 {target || 'No Target Set'}
               </Box>
             </Section>
+            <Section title="System Status">
+              <Box
+                color={
+                status === 'SYSTEM READY'
+                  ? 'green'
+                  : status === 'SYSTEM CHARGING CAPACITORS'
+                    ? 'average'
+                    : 'bad'
+                }
+                fontSize="25px"
+              >
+                {status || '—'}
+              </Box>
+            </Section>
+            <Section
+              title="Capacitor (power scales with charge)"
+              buttons={
+                <Button
+                  content="Charge Capacitors"
+                  icon="bolt"
+                  color="orange"
+                  disabled={status !== 'SYSTEM READY' && status !== 'SYSTEM POWER LOW'}
+                  onClick={() => act('charge')}
+                />
+              }
+            >
+              <LabeledList>
+                <LabeledList.Item label="Capacitor Charge">
+                  {formatPower(capCharge)}
+                </LabeledList.Item>
+                <LabeledList.Item label="Powernet">
+                  {formatPower(powernet_power !== null ? Number(powernet_power) : null)}
+                  {' '}(suck cap:{' '}
+                  {formatPower(power_suck_cap !== null ? Number(power_suck_cap) : null)})
+                </LabeledList.Item>
+                <LabeledList.Item label="Target charge">
+                  <Slider
+                    value={targetCap}
+                    fillValue={Math.min(capCharge, maxCap)}
+                    minValue={0}
+                    maxValue={maxCap}
+                    step={powerStep}
+                    stepPixelSize={2}
+                    suppressFlicker={500}
+                    format={(value) => formatPower(value)}
+                    onChange={(e, value) => {
+                      const v = Math.round(Number(value) / powerStep) * powerStep;
+                      act('capacitor_target_change', {
+                        capacitor_target: Math.min(maxCap, Math.max(0, v)),
+                      });
+                    }}
+                  />
+                </LabeledList.Item>
+              </LabeledList>
+            </Section>
             <Section>
               {unlocked ? (
                 <Box style={{ margin: 'auto' }}>
@@ -43,7 +119,7 @@ export const BluespaceArtillery = (props, context) => {
                     fluid
                     content="FIRE"
                     color="bad"
-                    disabled={!target}
+                    disabled={!canFire}
                     fontSize="30px"
                     textAlign="center"
                     lineHeight="46px"

@@ -5,8 +5,10 @@
 	whisper_verb = "gestures"
 	key = "9"
 	flags = TONGUELESS_SPEECH
+	visual_language = TRUE
 
 	syllables = list(".")
+	spans = list(SPAN_SIGNLANG)
 
 	icon_state = "ssl"
 	default_priority = 90

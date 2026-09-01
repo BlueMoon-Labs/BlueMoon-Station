@@ -1,6 +1,6 @@
 /mob/living/silicon/verb/clear_custom_holoform()
 	set name = "Clear Custom Holoform"
-	set desc = "Clear your current custom holoform"
+	set desc = "Сбросить текущую пользовательскую голоформу"
 	set category = "OOC"
 	if(!client.prefs)
 		to_chat(src, "<span class='boldwarning'>No preferences datum on your client, contact an admin/coder!</span>")
@@ -11,7 +11,7 @@
 
 /mob/living/silicon/verb/set_custom_holoform()
 	set name = "Set Custom Holoform"
-	set desc = "Set your custom holoform using your current preferences slot and a specified set of gear."
+	set desc = "Установить пользовательскую голоформу, используя текущий слот предпочтений и указанный набор экипировки."
 	if(!client.prefs)
 		to_chat(src, "<span class='boldwarning'>No preferences datum on your client, contact an admin/coder!</span>")
 		return

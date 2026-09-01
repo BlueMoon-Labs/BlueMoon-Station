@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { classes, pureComponentHooks } from 'common/react';
+import { classes } from 'common/react';
 
 import { computeBoxClassName, computeBoxProps } from './Box';
 
@@ -31,8 +31,6 @@ export const Table = props => {
   );
 };
 
-Table.defaultHooks = pureComponentHooks;
-
 export const TableRow = props => {
   const {
     className,
@@ -50,8 +48,6 @@ export const TableRow = props => {
       {...computeBoxProps(rest)} />
   );
 };
-
-TableRow.defaultHooks = pureComponentHooks;
 
 export const TableCell = props => {
   const {
@@ -72,8 +68,6 @@ export const TableCell = props => {
       {...computeBoxProps(rest)} />
   );
 };
-
-TableCell.defaultHooks = pureComponentHooks;
 
 Table.Row = TableRow;
 Table.Cell = TableCell;

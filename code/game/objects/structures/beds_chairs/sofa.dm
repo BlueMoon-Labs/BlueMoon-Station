@@ -19,6 +19,7 @@ path/corner/color_name {\
 	icon = 'icons/obj/sofa.dmi'
 	buildstackamount = 1
 	item_chair = null
+	lone_standing = FALSE
 	var/mutable_appearance/armrest
 
 /obj/structure/chair/sofa/Initialize(mapload)

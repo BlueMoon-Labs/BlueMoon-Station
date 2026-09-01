@@ -11,9 +11,55 @@ PROCESSING_SUBSYSTEM_DEF(weather)
 	runlevels = RUNLEVEL_GAME
 	var/list/eligible_zlevels = list()
 	var/list/next_hit_by_zlevel = list() //Used by barometers to know when the next storm is coming
+	/// Weather used to call one datum which synchronously walked every living mob.
+	/// Keep the active datum and its snapshot across MC resumes so the budget can
+	/// be checked between victims instead of after a whole population scan.
+	var/datum/weather/current_weather
+	var/list/current_weather_mobs = list()
 
-/datum/controller/subsystem/processing/weather/fire()
-	. = ..()		//Active weather is handled by . = ..() processing subsystem base fire().
+/datum/controller/subsystem/processing/weather/fire(resumed = FALSE)
+	var/slice_start_usage = TICK_USAGE
+	if(!resumed)
+		currentrun = processing.Copy()
+		current_weather = null
+		current_weather_mobs = list()
+		current_pass_cost_ms = 0
+	var/profiling = profile_armed
+
+	while(current_weather || length(currentrun))
+		if(!current_weather)
+			current_weather = currentrun[length(currentrun)]
+			currentrun.len--
+			if(QDELETED(current_weather) || current_weather.aesthetic || current_weather.stage != MAIN_STAGE)
+				current_weather = null
+				continue
+			current_weather_mobs = GLOB.mob_living_list.Copy()
+
+		// The stage may change while a long population scan is suspended.
+		if(QDELETED(current_weather) || current_weather.aesthetic || current_weather.stage != MAIN_STAGE)
+			current_weather = null
+			current_weather_mobs = list()
+			continue
+
+		while(length(current_weather_mobs))
+			var/mob/living/living_mob = current_weather_mobs[length(current_weather_mobs)]
+			current_weather_mobs.len--
+			if(!QDELETED(living_mob))
+				var/item_type
+				var/item_start_usage
+				if(profiling)
+					item_type = "[current_weather.type] -> [living_mob.type]"
+					item_start_usage = TICK_USAGE
+				if(current_weather.can_weather_act(living_mob))
+					current_weather.weather_act(living_mob)
+				if(profiling)
+					profile_note(item_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)))
+			if(MC_TICK_CHECK)
+				current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+				return
+
+		current_weather = null
+		current_weather_mobs = list()
 
 	// start random weather on relevant levels
 	for(var/z in eligible_zlevels)
@@ -24,6 +70,9 @@ PROCESSING_SUBSYSTEM_DEF(weather)
 		var/randTime = rand(3000, 6000)
 		addtimer(CALLBACK(src, PROC_REF(make_eligible), z, possible_weather), randTime + initial(W.weather_duration_upper), TIMER_UNIQUE) //Around 5-10 minutes between weathers
 		next_hit_by_zlevel["[z]"] = world.time + randTime + initial(W.telegraph_duration)
+
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(GLOB.mob_living_list))
 
 /datum/controller/subsystem/processing/weather/Initialize(start_timeofday)
 	for(var/V in subtypesof(/datum/weather))

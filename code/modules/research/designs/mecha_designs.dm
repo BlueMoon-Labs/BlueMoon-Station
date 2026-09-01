@@ -155,7 +155,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_seedscatter
 	name = "Exosuit Weapon (Melon Seed \"Scattershot\")"
@@ -166,7 +166,7 @@
 	materials = list(/datum/material/iron=10000, /datum/material/glass = 10000)
 	construction_time = 70
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_scattershot_ammo
 	name = "Scattershot Ammunition"
@@ -178,7 +178,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_carbine
 	name = "Exosuit Weapon (FNX-99 \"Hades\" Carbine)"
@@ -189,7 +189,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_carbine_ammo
 	name = "FNX-99 Carbine Ammunition"
@@ -201,7 +201,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_ion
 	name = "Exosuit Weapon (MKIV Ion Heavy Cannon)"
@@ -212,7 +212,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/silver=6000,/datum/material/uranium=2000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_tesla
 	name = "Exosuit Weapon (MKI Tesla Cannon)"
@@ -223,7 +223,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/silver=8000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_laser
 	name = "Exosuit Weapon (CH-PS \"Immolator\" Laser)"
@@ -234,7 +234,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_laser_heavy
 	name = "Exosuit Weapon (CH-LC \"Solaris\" Laser Cannon)"
@@ -245,7 +245,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_grenade_launcher
 	name = "Exosuit Weapon (SGL-6 Grenade Launcher)"
@@ -256,7 +256,7 @@
 	materials = list(/datum/material/iron=22000,/datum/material/gold=6000,/datum/material/silver=8000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/mech_grenade_launcher_ammo
 	name = "SGL-6 Grenade Launcher Ammunition"
@@ -268,7 +268,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/mech_missile_rack
 	name = "Exosuit Weapon (BRM-6 Missile Rack)"
@@ -279,7 +279,7 @@
 	materials = list(/datum/material/iron=22000,/datum/material/gold=6000,/datum/material/silver=8000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_missile_rack_ammo
 	name = "BRM-6 Missile Rack Ammunition"
@@ -291,7 +291,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/clusterbang_launcher
 	name = "Exosuit Module (SOB-3 Clusterbang Launcher)"
@@ -302,7 +302,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/gold=10000,/datum/material/uranium=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/clusterbang_launcher_ammo
 	name = "SOB-3 Clusterbang Launcher Ammunition"
@@ -314,7 +314,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/mech_wormhole_gen
 	name = "Exosuit Module (Localized Wormhole Generator)"
@@ -435,7 +435,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/mech_lmg
 	name = "Exosuit Weapon (\"Ultra AC 2\" LMG)"
@@ -446,7 +446,7 @@
 	materials = list(/datum/material/iron=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_lmg_ammo
 	name = "Ultra AC 2 Ammunition"
@@ -458,7 +458,7 @@
 	construction_time = 20
 	category = list("Exosuit Ammunition", "Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_sleeper
 	name = "Exosuit Medical Equipment (Mounted Sleeper)"
@@ -500,41 +500,51 @@
 	construction_time = 100
 	category = list("Exosuit Equipment")
 
+/datum/design/ripleyupgrade
+	name = "Ripley MK-II Conversion Kit"
+	desc = "A pressurized canopy attachment kit for an Autonomous Power Loader Unit \"Ripley\" MK-I mecha, to convert it to the slower, but space-worthy MK-II design. This kit cannot be removed, once applied."
+	id = "ripley_mk2_kit"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
+	materials = list(/datum/material/titanium=15000)
+	construction_time = 200
+	category = list("Exosuit Equipment")
+
 /datum/design/combat_mech_beacon
 	name = "Combat Mech Beacon"
-	desc = "Combat Mech Beacon"
+	desc = "Combat Mech Beacon."
 	id = "combat_mech_beacon"
 	build_type = PROTOLATHE
-	build_path = /obj/item/choice_beacon/pact_mecha
-	materials = list(/datum/material/iron=200000,/datum/material/gold=15000,/datum/material/uranium=15000, /datum/material/titanium=15000, /datum/material/diamond=15000)
+	build_path = /obj/item/choice_beacon/vehicle/pact/mech/combat
+	materials = list(/datum/material/iron=190100, /datum/material/glass=33670, /datum/material/gold=6000, /datum/material/silver=30000, /datum/material/uranium=25000, /datum/material/titanium=20000, /datum/material/diamond=20000)
 	construction_time = 20
-	category = list("Exosuit Modules")
+	category = list("Bluespace Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_RED
 
 /datum/design/combat_mech_beacon/medical
 	name = "Medical Mech Beacon"
-	desc = "Medical Mech Beacon"
+	desc = "Medical Mech Beacon."
 	id = "medical_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/medical
-	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENT_BITFLAG_SCIENCE
+	build_path = /obj/item/choice_beacon/vehicle/pact/mech/medical
+	materials = list(/datum/material/iron=175100, /datum/material/glass=36670, /datum/material/gold=8000, /datum/material/diamond=22000, /datum/material/titanium=10000, /datum/material/plasma=3000)
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/combat_mech_beacon/cargo
 	name = "Cargo Mech Beacon"
-	desc = "Cargo Mech Beacon"
+	desc = "Cargo Mech Beacon."
 	id = "cargo_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/cargo
-	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_CARGO | DEPARTMENT_BITFLAG_SCIENCE
+	build_path = /obj/item/choice_beacon/vehicle/pact/mech/cargo
+	materials = list(/datum/material/iron=180100, /datum/material/glass=15670, /datum/material/gold=2000, /datum/material/silver=23000, /datum/material/plasma=25000, /datum/material/diamond=6500, /datum/material/titanium=15000)
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/combat_mech_beacon/engineer
 	name = "Engineer Mech Beacon"
-	desc = "Engineer Mech Beacon"
+	desc = "Engineer Mech Beacon."
 	id = "engineer_mech_beacon"
-	build_path = /obj/item/choice_beacon/pact_mecha/engineer
-	materials = list(/datum/material/iron=200000,/datum/material/glass=25000, /datum/material/silver=25000)
-	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	build_path = /obj/item/choice_beacon/vehicle/pact/mech/engineer
+	materials = list(/datum/material/iron=180100, /datum/material/glass=12170, /datum/material/gold=22000, /datum/material/silver=23000, /datum/material/plasma=25000, /datum/material/diamond=6500)
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 	min_security_level = SEC_LEVEL_BLUE

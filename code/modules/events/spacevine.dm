@@ -1,29 +1,77 @@
 /datum/round_event_control/spacevine
 	name = "Spacevine"
 	typepath = /datum/round_event/spacevine
-	weight = 55
+	weight = 35 // был 55 - вдвое тяжелее любой аномалии, кудзу выпадал непропорционально часто
 	max_occurrences = 3
-	min_players = 25
+	min_players = 10
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
+	description = "Kudzu (spacevine) starts spreading in station hallways. May include dangerous mutations; flowering can spawn traps."
+	admin_setup = list(
+		/datum/event_admin_setup/set_location/spacevine,
+		/datum/event_admin_setup/input_number/spacevine_potency,
+		/datum/event_admin_setup/input_number/spacevine_production,
+	)
 
 /datum/round_event/spacevine
 	fakeable = FALSE
+	/// Admin override: spawn on this turf instead of a random hallway floor.
+	var/turf/override_turf
+	/// Potency (mutation frequency / power). Random if null.
+	var/potency
+	/// Production (spread tuning; lower is faster in our controller). Random if null.
+	var/production
 
 /datum/round_event/spacevine/start()
-	var/list/turfs = list() //list of all the empty floor turfs in the hallway areas
+	var/list/final_turf_candidates = list()
 
-	var/obj/structure/spacevine/SV = new()
+	if(override_turf)
+		var/obj/structure/spacevine/vine_override = new()
+		if(override_turf.Enter(vine_override))
+			final_turf_candidates += override_turf
+		else
+			message_admins("Spacevine event: admin-selected turf [override_turf] is invalid (dense, wall, or transparent). Falling back to a random hallway floor.")
+		qdel(vine_override)
 
-	for(var/area/hallway/A in world)
-		for(var/turf/F in A)
-			if(F.Enter(SV))
-				turfs += F
+	if(!length(final_turf_candidates))
+		var/list/floor_candidates = list()
+		for(var/area_type in typesof(/area/hallway))
+			var/area/hallway/HA = GLOB.areas_by_type[area_type]
+			if(!istype(HA))
+				continue
+			for(var/turf/open/floor/T in HA)
+				if(istransparentturf(T))
+					continue
+				floor_candidates += T
+		// Enter() is expensive on thousands of turfs; sample up to 100 like /tg/ vine_event.
+		var/obj/structure/spacevine/vine = new()
+		var/sample_count = min(100, length(floor_candidates))
+		var/list/fc = floor_candidates.Copy()
+		for(var/i in 1 to sample_count)
+			if(!length(fc))
+				break
+			var/turf/candidate = pick(fc)
+			fc -= candidate
+			if(candidate.Enter(vine))
+				final_turf_candidates += candidate
+		qdel(vine)
 
-	qdel(SV)
+	if(!length(final_turf_candidates))
+		return
 
-	if(turfs.len) //Pick a turf to spawn at if we can
-		var/turf/T = pick(turfs)
-		new /datum/spacevine_controller(T, list(pick(subtypesof(/datum/spacevine_mutation))), rand(30,100), rand(5,10), src) //spawn a controller at turf with randomized stats and a single random mutation
+	var/turf/floor = pick(final_turf_candidates)
+	var/list/selected_mutations = list()
+	if(prob(50))
+		var/mut_path = pick(subtypesof(/datum/spacevine_mutation))
+		if(mut_path)
+			selected_mutations += new mut_path
+
+	if(isnull(potency))
+		potency = rand(50, 100)
+	if(isnull(production))
+		production = rand(1, 4)
+
+	new /datum/spacevine_controller(floor, selected_mutations, potency, production, src)
 
 /datum/spacevine_mutation
 	var/name = ""
@@ -613,3 +661,35 @@
 		if(("vines" in M.faction) || ("plants" in M.faction))
 			return TRUE
 	return FALSE
+
+// --- Admin event setup (ported from /tg/ space_vines/vine_event.dm) ---
+
+/datum/event_admin_setup/set_location/spacevine
+	input_text = "Посадить kudzu на турф, где вы стоите?"
+
+/datum/event_admin_setup/set_location/spacevine/apply_to_event(datum/round_event/spacevine/event)
+	event.override_turf = chosen_turf
+
+/datum/event_admin_setup/input_number/spacevine_potency
+	input_text = "Потенциальность (частота и сила мутаций; типично 50–100)"
+	max_value = 100
+	min_value = 1
+
+/datum/event_admin_setup/input_number/spacevine_potency/prompt_admins()
+	default_value = rand(50, 100)
+	return ..()
+
+/datum/event_admin_setup/input_number/spacevine_potency/apply_to_event(datum/round_event/spacevine/event)
+	event.potency = chosen_value
+
+/datum/event_admin_setup/input_number/spacevine_production
+	input_text = "Производительность (для контроллера: 1 — быстрее распространение, 10 — медленнее)"
+	min_value = 1
+	max_value = 10
+
+/datum/event_admin_setup/input_number/spacevine_production/prompt_admins()
+	default_value = rand(1, 4)
+	return ..()
+
+/datum/event_admin_setup/input_number/spacevine_production/apply_to_event(datum/round_event/spacevine/event)
+	event.production = chosen_value

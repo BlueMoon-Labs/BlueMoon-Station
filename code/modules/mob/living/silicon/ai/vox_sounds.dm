@@ -7,6 +7,55 @@
 
 GLOBAL_LIST_INIT(vox_types, init_vox_list())
 
+/// Через сколько файлов уступать тик при разовом промере каталога.
+#define VOX_SIZE_SCAN_YIELD_EVERY 100
+/// Сколько ждать чужой промер, прежде чем взяться за него самому.
+#define VOX_SIZE_SCAN_WAIT_TIMEOUT (10 SECONDS)
+
+GLOBAL_VAR_INIT(vox_preload_bytes, 0)
+/// TRUE, пока промер каталога идёт. Скан спит на stoplag(), и без флага второй вызывающий
+/// видел ещё нулевой vox_preload_bytes и запускал полный обход второй раз.
+GLOBAL_VAR_INIT(vox_preload_scanning, FALSE)
+
+/// Суммарный вес каталога VOX в байтах. Считается один раз за раунд.
+///
+/// Каталог уходит каждому входящему клиенту целиком (см. /client/proc/send_resources),
+/// поэтому его размер меряют двое: бюджетный тест preload_size_budgets.dm и книга
+/// недатумных аллокаций. Мерить обязаны одинаково - раньше книга брала per-file
+/// length(file) и завышала впятеро: за раунд 10137 колонка ledger_rsc_bytes насчитала
+/// 10.8 ГБ там, где 239 входов по 8.95 МБ дают 2.1 ГБ, а 8.95 МБ - это и размер
+/// каталога на диске, и то, что видит бюджетный тест.
+/proc/get_vox_preload_bytes()
+	if(GLOB.vox_preload_bytes)
+		return GLOB.vox_preload_bytes
+	if(GLOB.vox_preload_scanning)
+		// Промер уже идёт: дожидаемся его результата вместо второго обхода каталога.
+		// Ждём с потолком: рантайм внутри скана оборвал бы прок, не сняв флаг, и голый
+		// UNTIL() повесил бы всех ждущих в stoplag() до конца раунда. По таймауту считаем сами.
+		var/deadline = world.time + VOX_SIZE_SCAN_WAIT_TIMEOUT
+		while(GLOB.vox_preload_scanning && world.time < deadline)
+			stoplag()
+		if(GLOB.vox_preload_bytes)
+			return GLOB.vox_preload_bytes
+	GLOB.vox_preload_scanning = TRUE
+	var/total_bytes = 0
+	var/counted = 0
+	for(var/vox_type in GLOB.vox_types)
+		var/list/word_to_file = GLOB.vox_types[vox_type]
+		for(var/word in word_to_file)
+			var/file = word_to_file[word]
+			if(!isfile(file))
+				continue
+			// file2text на бинарнике отдаёт latin-1 строку ровно в размер файла, и она
+			// живёт до следующей итерации: пик памяти - самый крупный клип (~50 КБ),
+			// а не весь каталог.
+			total_bytes += length(file2text(file))
+			counted++
+			if(!(counted % VOX_SIZE_SCAN_YIELD_EVERY))
+				stoplag()
+	GLOB.vox_preload_bytes = total_bytes
+	GLOB.vox_preload_scanning = FALSE
+	return total_bytes
 
 /proc/init_vox_list()
 	return list(
@@ -1910,54 +1959,56 @@ GLOBAL_LIST_INIT(vox_types, init_vox_list())
 		"." = 'modular_sand/sound/vox_military/_period.ogg'
 	),
 	//for vim
-	// :%s/\(\(.*\)\.ogg\)/"\2" = 'modular_bluemoon\/SmiLeY\/sounds\/vox_sounds_alliance\/\1',/g
+	// :%s/\(\(.*\)\.ogg\)/"\2" = 'modular_bluemoon\/sound\/voice\/vox_sounds_alliance\/\1',/g
 	"Alliance" = list(
-		"f_anticitizenreport_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_anticitizenreport_spkr.wav',
-		"f_anticivil1_5_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_anticivil1_5_spkr.wav',
-		"f_anticivilevidence_3_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_anticivilevidence_3_spkr.wav',
-		"f_capitalmalcompliance_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_capitalmalcompliance_spkr.wav',
-		"f_ceaseevasionlevelfive_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_ceaseevasionlevelfive_spkr.wav',
-		"f_citizenshiprevoked_6_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_citizenshiprevoked_6_spkr.wav',
-		"f_confirmcivilstatus_1_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_confirmcivilstatus_1_spkr.wav',
-		"f_evasionbehavior_2_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_evasionbehavior_2_spkr.wav',
-		"f_innactionisconspiracy_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_innactionisconspiracy_spkr.wav',
-		"f_localunrest_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_localunrest_spkr.wav',
-		"f_protectionresponse_1_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_protectionresponse_1_spkr.wav',
-		"f_protectionresponse_4_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_protectionresponse_4_spkr.wav',
-		"f_protectionresponse_5_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_protectionresponse_5_spkr.wav',
-		"f_rationunitsdeduct_3_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_rationunitsdeduct_3_spkr.wav',
-		"f_sociolevel1_4_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_sociolevel1_4_spkr.wav',
-		"f_trainstation_assemble_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_trainstation_assemble_spkr.wav',
-		"f_trainstation_assumepositions_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_trainstation_assumepositions_spkr.wav',
-		"f_trainstation_cooperation_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_trainstation_cooperation_spkr.wav',
-		"f_trainstation_inform_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_trainstation_inform_spkr.wav',
-		"f_trainstation_offworldrelocation_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_trainstation_offworldrelocation_spkr.wav',
-		"f_unrestprocedure1_spkr" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/f_unrestprocedure1_spkr.wav',
-		"fcitadel_1minutetosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_1minutetosingularity.wav',
-		"fcitadel_2minutestosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_2minutestosingularity.wav',
-		"fcitadel_3minutestosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_3minutestosingularity.wav',
-		"fcitadel_10sectosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_10sectosingularity.wav',
-		"fcitadel_15sectosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_15sectosingularity.wav',
-		"fcitadel_30sectosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_30sectosingularity.wav',
-		"fcitadel_45sectosingularity" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_45sectosingularity.wav',
-		"fcitadel_confiscating" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_confiscating.wav',
-		"fcitadel_confiscationfailure" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_confiscationfailure.wav',
-		"fcitadel_deploy" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_deploy.wav',
-		"fcitadel_transportsequence" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fcitadel_transportsequence.wav',
-		"fprison_airwatchdispatched" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_airwatchdispatched.wav',
-		"fprison_contactlostlandsea" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_contactlostlandsea.wav',
-		"fprison_containexogens" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_containexogens.wav',
-		"fprison_deployinb4" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_deployinb4.wav',
-		"fprison_deservicepoliticalconscripts" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_deservicepoliticalconscripts.wav',
-		"fprison_detectionsystemsout" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_detectionsystemsout.wav',
-		"fprison_dropforcesixandeight" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_dropforcesixandeight.wav',
-		"fprison_exogenbreach" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_exogenbreach.wav',
-		"fprison_freemanlocated" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_freemanlocated.wav',
-		"fprison_interfacebypass" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_interfacebypass.wav',
-		"fprison_missionfailurereminder" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_missionfailurereminder.wav',
-		"fprison_nonstandardexogen" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_nonstandardexogen.wav',
-		"fprison_perimeterrestrictors" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_perimeterrestrictors.wav',
-		"fprison_restrictorsdisengaged" = 'modular_bluemoon/SmiLeY/sounds/vox_sounds_alliance/fprison_restrictorsdisengaged.wav'
+		"f_anticitizenreport_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_anticitizenreport_spkr.wav',
+		"f_anticivil1_5_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_anticivil1_5_spkr.wav',
+		"f_anticivilevidence_3_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_anticivilevidence_3_spkr.wav',
+		"f_capitalmalcompliance_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_capitalmalcompliance_spkr.wav',
+		"f_ceaseevasionlevelfive_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_ceaseevasionlevelfive_spkr.wav',
+		"f_citizenshiprevoked_6_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_citizenshiprevoked_6_spkr.wav',
+		"f_confirmcivilstatus_1_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_confirmcivilstatus_1_spkr.wav',
+		"f_evasionbehavior_2_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_evasionbehavior_2_spkr.wav',
+		"f_innactionisconspiracy_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_innactionisconspiracy_spkr.wav',
+		"f_localunrest_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_localunrest_spkr.wav',
+		"f_protectionresponse_1_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_protectionresponse_1_spkr.wav',
+		"f_protectionresponse_4_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_protectionresponse_4_spkr.wav',
+		"f_protectionresponse_5_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_protectionresponse_5_spkr.wav',
+		"f_rationunitsdeduct_3_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_rationunitsdeduct_3_spkr.wav',
+		"f_sociolevel1_4_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_sociolevel1_4_spkr.wav',
+		"f_trainstation_assemble_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_trainstation_assemble_spkr.wav',
+		"f_trainstation_assumepositions_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_trainstation_assumepositions_spkr.wav',
+		"f_trainstation_cooperation_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_trainstation_cooperation_spkr.wav',
+		"f_trainstation_inform_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_trainstation_inform_spkr.wav',
+		"f_trainstation_offworldrelocation_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_trainstation_offworldrelocation_spkr.wav',
+		"f_unrestprocedure1_spkr" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/f_unrestprocedure1_spkr.wav',
+		"fcitadel_1minutetosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_1minutetosingularity.wav',
+		"fcitadel_2minutestosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_2minutestosingularity.wav',
+		"fcitadel_3minutestosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_3minutestosingularity.wav',
+		"fcitadel_10sectosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_10sectosingularity.wav',
+		"fcitadel_15sectosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_15sectosingularity.wav',
+		"fcitadel_30sectosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_30sectosingularity.wav',
+		"fcitadel_45sectosingularity" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_45sectosingularity.wav',
+		"fcitadel_confiscating" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_confiscating.wav',
+		"fcitadel_confiscationfailure" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_confiscationfailure.wav',
+		"fcitadel_deploy" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_deploy.wav',
+		"fcitadel_transportsequence" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fcitadel_transportsequence.wav',
+		"fprison_airwatchdispatched" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_airwatchdispatched.wav',
+		"fprison_contactlostlandsea" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_contactlostlandsea.wav',
+		"fprison_containexogens" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_containexogens.wav',
+		"fprison_deployinb4" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_deployinb4.wav',
+		"fprison_deservicepoliticalconscripts" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_deservicepoliticalconscripts.wav',
+		"fprison_detectionsystemsout" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_detectionsystemsout.wav',
+		"fprison_dropforcesixandeight" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_dropforcesixandeight.wav',
+		"fprison_exogenbreach" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_exogenbreach.wav',
+		"fprison_freemanlocated" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_freemanlocated.wav',
+		"fprison_interfacebypass" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_interfacebypass.wav',
+		"fprison_missionfailurereminder" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_missionfailurereminder.wav',
+		"fprison_nonstandardexogen" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_nonstandardexogen.wav',
+		"fprison_perimeterrestrictors" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_perimeterrestrictors.wav',
+		"fprison_restrictorsdisengaged" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_restrictorsdisengaged.wav'
 	)
 )
+#undef VOX_SIZE_SCAN_YIELD_EVERY
+#undef VOX_SIZE_SCAN_WAIT_TIMEOUT
 #endif

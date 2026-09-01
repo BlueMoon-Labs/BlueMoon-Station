@@ -22,6 +22,7 @@
 	. = ..()
 	stored_research = new /datum/techweb/specialized/autounlocking/biogenerator
 	create_reagents(1000)
+	RefreshParts() // BLUEMOON ADD - синхронизирует рецепт креветки, если femto-манипулятор стоит уже при спавне
 
 /obj/machinery/biogenerator/Destroy()
 	QDEL_NULL(beaker)
@@ -50,6 +51,14 @@
 	efficiency = E
 	productivity = P
 	max_items = max_storage
+	// BLUEMOON ADD START - рецепт креветки открывается только с T4-манипулятором
+	if(stored_research)
+		if(efficiency >= 4)
+			stored_research.add_design_by_id("shrimp")
+		else
+			stored_research.remove_design_by_id("shrimp")
+		update_static_data_for_all_viewers()
+	// BLUEMOON ADD END
 
 /obj/machinery/biogenerator/examine(mob/user)
 	. = ..()
@@ -69,23 +78,43 @@
 	else
 		icon_state = "biogen-work"
 
+// BLUEMOON ADD START
+/obj/machinery/biogenerator/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	default_unfasten_wrench(user, I)
+	return TRUE
+
+/obj/machinery/biogenerator/can_be_unfasten_wrench(mob/user, silent)
+	. = ..()
+	if(. == FAILED_UNFASTEN)
+		return .
+	if(!panel_open)
+		if(!silent)
+			to_chat(user, span_warning("Необходимо открутить панель!"))
+		return FAILED_UNFASTEN
+
+/obj/machinery/biogenerator/screwdriver_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(default_deconstruction_screwdriver(user, "biogen-empty-o", "biogen-empty", I))
+		if(beaker)
+			var/obj/item/reagent_containers/glass/B = beaker
+			B.forceMove(drop_location())
+			beaker = null
+		update_icon()
+		return TRUE
+
+/obj/machinery/biogenerator/crowbar_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(default_deconstruction_crowbar(I))
+		return TRUE
+// BLUEMOON ADD END
+
 /obj/machinery/biogenerator/attackby(obj/item/O, mob/user, params)
 	if(user.a_intent == INTENT_HARM)
 		return ..()
 
 	if(processing)
 		to_chat(user, "<span class='warning'>The biogenerator is currently processing.</span>")
-		return
-
-	if(default_deconstruction_screwdriver(user, "biogen-empty-o", "biogen-empty", O))
-		if(beaker)
-			var/obj/item/reagent_containers/glass/B = beaker
-			B.forceMove(drop_location())
-			beaker = null
-		update_icon()
-		return
-
-	if(default_deconstruction_crowbar(O))
 		return
 
 	if(istype(O, /obj/item/reagent_containers/glass))
@@ -255,7 +284,7 @@
 
 /obj/machinery/biogenerator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
 	)
 
 /obj/machinery/biogenerator/ui_interact(mob/user, datum/tgui/ui)
@@ -300,6 +329,10 @@
 				"cost" = ceil(D.materials[SSmaterials.GetMaterialRef(/datum/material/biomass)]/efficiency),
 			))
 		data["categories"] += list(cat)
+
+	// Крупные спрайты дизайнов интерфейс ужимает до тайла, для чего ему нужен их размер.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	data["design_sizes"] = design_sheet.oversized_icon_classes()
 
 	return data
 

@@ -1,10 +1,10 @@
 //This doesn't function like a "trap" in of itself, but obscures vision when active.
 /obj/structure/destructible/clockwork/trap/steam_vent
 	name = "steam vent"
-	desc = "Some wired slats embedded in the floor. They feel warm to the touch."
+	desc = "В пол вделаны несколько металлических планок. Они теплые на ощупь."
 	icon_state = "steam_vent_0"
-	clockwork_desc = "When active, these vents will billow out clouds of excess steam from Reebe, obscuring vision."
-	break_message = "<span class='warning'>The vent snaps and collapses!</span>"
+	clockwork_desc = "Когда они активны, эти вентиляционные отверстия выбрасывают из Риба облака избыточного пара, затрудняя обзор."
+	break_message = "<span class='warning'>Вентиляция лопается и обрушивается!</span>"
 	max_integrity = 100
 	density = FALSE
 

@@ -21,6 +21,11 @@
 		. += "<span class='info'>Alt-click to toggle identity concealment. It's currently <b>[flags_inv & HIDEFACE ? "on" : "off"]</b>.</span>"
 
 /obj/item/clothing/mask/gas/AltClick(mob/user)
+	if(face_hide_capable)
+		if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+			return ..()
+		toggle_face_hiding(user)
+		return TRUE
 	. = ..()
 	if(flavor_adjust && adjustmask(user, TRUE))
 		return TRUE
@@ -39,6 +44,12 @@
 	icon_state = "gas_cap"
 	item_state = "gasmask_captain"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
+
+/obj/item/clothing/mask/gas/atmos/captain/corporate
+	name = "\improper CentCom Gas Mask"
+	desc = "Oooh, gold and green. Fancy! This should help as you sit in your office."
+	icon_state = "gas_centcom"
+	item_state = "gasmask_centcom"
 
 /obj/item/clothing/mask/gas/glass
 	name = "Glass Gas Mask"
@@ -354,4 +365,13 @@
 	name = "Ranger Gasmask"
 	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
 	icon_state = "ranger_gasmask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	name = "Arctic PMC gasmask"
+	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
+	icon = 'icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	icon_state = "wypmcgasmask"
+	item_state = "wypmcgasmask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

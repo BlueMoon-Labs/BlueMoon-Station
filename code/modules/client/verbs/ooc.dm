@@ -1,9 +1,17 @@
 GLOBAL_VAR_INIT(OOC_COLOR, null)//If this is null, use the CSS for OOC. Otherwise, use a custom colour.
 GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
-/client/verb/ooc(msg as text)
+/client/verb/ooc()
 	set name = "OOC" //Gave this shit a shorter name so you only have to time out "ooc" rather than "ooc message" to use it --NeoFite
 	set category = "OOC"
+
+	var/vibe_check = SSdiscord?.check_login(usr)
+	if(isnull(vibe_check))
+		to_chat(usr, span_notice("The server is still starting up. Please wait... "))
+		return
+	else if(vibe_check == FALSE) //Dirty but I guess we gotta tell when the subsystem hasn't started
+		to_chat(usr, span_warning("You must link your discord account to your ckey in order to join the game. Join our <a style=\"color: #ff00ff;\" href=\"[CONFIG_GET(string/discordurl)]\">discord</a> and use the <span style=\"color: #ff00ff;\">[CONFIG_GET(string/discordbotcommandprefix)][CONFIG_GET(string/verification_command)]</span> command [CONFIG_GET(string/verification_channel) ? "as indicated in #[CONFIG_GET(string/verification_channel)] " : ""]. It won't take you more than two minutes :)<br>Ahelp or ask staff in the discord if this is an error."))
+		return
 
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
@@ -28,27 +36,32 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	if(QDELETED(src))
 		return
 
-	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
-	var/raw_msg = msg
+	var/message = ""
+	if(prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "OOC", "", MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		message = stripped_input(mob, "", "OOC")
 
-	if(!msg)
+	if(QDELETED(src) || !length(message))
 		return
 
-	GLOB.bot_ooc_sending_que += list(list("author" = holder && holder.fakekey ? holder.fakekey : key, "message" = msg))
+	var/raw_msg = message
 
-	msg = emoji_parse(msg)
+	GLOB.bot_ooc_sending_que += list(list("author" = holder && holder.fakekey ? holder.fakekey : key, "message" = message))
 
-	if((msg[1] in list(".",";",":","#")) || findtext_char(msg, "say", 1, 5))
+	message = emoji_parse(message)
+
+	if((message[1] in list(".",";",":","#")) || findtext_char(message, "say", 1, 5))
 		if(alert("Your message \"[raw_msg]\" looks like it was meant for in game communication, say it in OOC?", "Meant for OOC?", "No", "Yes") != "Yes")
 			return
 
 	if(!holder)
-		if(handle_spam_prevention(msg,MUTE_OOC))
+		if(handle_spam_prevention(message,MUTE_OOC))
 			return
-		if(findtext(msg, "byond://"))
+		if(findtext(message, "byond://"))
 			to_chat(src, "<B>Advertising other servers is not allowed.</B>")
-			log_admin("[key_name(src)] has attempted to advertise in OOC: [msg]")
-			message_admins("[key_name_admin(src)] has attempted to advertise in OOC: [msg]")
+			log_admin("[key_name(src)] has attempted to advertise in OOC: [message]")
+			message_admins("[key_name_admin(src)] has attempted to advertise in OOC: [message]")
 			return
 
 	if(!(prefs.chat_toggles & CHAT_OOC))
@@ -57,10 +70,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	mob.log_talk(raw_msg, LOG_OOC, tag="(OOC)")
 
-	var/keyname = key
-	if(prefs.unlock_content)
-		if(prefs.toggles & MEMBER_PUBLIC)
-			keyname = "<font color='[prefs.ooccolor ? prefs.ooccolor : GLOB.normal_ooc_colour]'>[icon2html('icons/obj/plushes.dmi', world, "plushie_nuke")][keyname]</font>"
+	var/keyname = get_ooc_keyname(src)
 
 	//The linkify span classes and linkify=TRUE below make ooc text get clickable chat href links if you pass in something resembling a url
 	for(var/client/C in GLOB.clients)
@@ -68,19 +78,19 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 			if(holder)
 				if(!holder.fakekey || C.holder)
 					if(check_rights_for(src, R_ADMIN))
-						to_chat(C, "<span class='adminooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span></font>")
+						to_chat(C, "<span class='adminooc'>[CONFIG_GET(flag/allow_admin_ooccolor) && prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? "<font color=[prefs.ooccolor]>" :"" ]<span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span></font>")
 					else
-						to_chat(C, "<span class='adminobserverooc'><span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[msg]</span></span>")
+						to_chat(C, "<span class='adminobserverooc'><span class='prefix'>OOC:</span> <EM>[keyname][holder.fakekey ? "/([holder.fakekey])" : ""]:</EM> <span class='message linkify'>[message]</span></span>")
 				else
 					if(GLOB.OOC_COLOR)
-						to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+						to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></b></font>")
 					else
-						to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[msg]</span></span>")
+						to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[holder.fakekey ? holder.fakekey : key]:</EM> <span class='message linkify'>[message]</span></span>")
 			else if(!(key in C.prefs.ignoring))
 				if(GLOB.OOC_COLOR)
-					to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></b></font>")
+					to_chat(C, "<font color='[GLOB.OOC_COLOR]'><b><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></b></font>")
 				else
-					to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[msg]</span></span>")
+					to_chat(C, "<span class='ooc'><span class='prefix'>OOC:</span> <EM>[keyname]:</EM> <span class='message linkify'>[message]</span></span>")
 
 /proc/toggle_ooc(toggle = null)
 	if(toggle != null) //if we're specifically en/disabling ooc
@@ -264,6 +274,12 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	SSticker.show_roundend_report(src, report_type = SERVER_LAST_ROUND)
 
+/// Сколько раз подряд уточнять положение сплиттера. Каждая итерация - это winget,
+/// то есть ожидание ответа скина клиента. По прод-логам сходимость почти всегда
+/// наступает за нулевую или первую итерацию, а недосошедшийся сплиттер - это лишь
+/// пара лишних пикселей у карты, за которые не стоит держать клиента на линии.
+#define FIT_VIEWPORT_MAX_CORRECTIONS 3
+
 /client/verb/fit_viewport()
 	set name = "Fit Viewport"
 	set category = "OOC"
@@ -274,31 +290,37 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	var/aspect_ratio = view_size[1] / view_size[2]
 
 	// Calculate desired pixel width using window size and aspect ratio
-	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
+	var/list/sizes = params2list(tracked_winget(src, "mainwindow.split;mapwindow", "size"))
 
-	// Client closed the window? Some other error? This is unexpected behaviour, let's
-	// CRASH with some info.
 	if(!sizes["mapwindow.size"])
-		CRASH("sizes does not contain mapwindow.size key. This means a winget failed to return what we wanted. --- sizes var: [sizes] --- sizes length: [length(sizes)]")
+		return
 
 	var/list/map_size = splittext(sizes["mapwindow.size"], "x")
 
-	// Looks like we expect mapwindow.size to be "ixj" where i and j are numbers.
-	// If we don't get our expected 2 outputs, let's give some useful error info.
 	if(length(map_size) != 2)
-		CRASH("map_size of incorrect length --- map_size var: [map_size] --- map_size length: [length(map_size)]")
+		return
 
 	var/height = text2num(map_size[2])
+	if(height <= 0)
+		return
 	var/desired_width = round(height * aspect_ratio)
 	if (text2num(map_size[1]) == desired_width)
 		// Nothing to do
 		return
 
+	if(!sizes["mainwindow.split.size"])
+		return
 	var/split_size = splittext(sizes["mainwindow.split.size"], "x")
+	if(length(split_size) != 2)
+		return
 	var/split_width = text2num(split_size[1])
+	if(split_width <= 300)
+		return
 
 	// Avoid auto-resizing the statpanel and chat into nothing.
 	desired_width = min(desired_width, split_width - 300)
+	if(desired_width <= 0)
+		return
 
 	// Calculate and apply a best estimate
 	// +4 pixels are for the width of the splitter's handle
@@ -307,9 +329,11 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Apply an ever-lowering offset until we finish or fail
 	var/delta
-	for(var/safety in 1 to 10)
-		var/after_size = winget(src, "mapwindow", "size")
+	for(var/safety in 1 to FIT_VIEWPORT_MAX_CORRECTIONS)
+		var/after_size = tracked_winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
+		if(length(map_size) != 2)
+			return
 		var/got_width = text2num(map_size[1])
 
 		if (got_width == desired_width)
@@ -325,8 +349,23 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		pct += delta
 		winset(src, "mainwindow.split", "splitter=[pct]")
 
+#undef FIT_VIEWPORT_MAX_CORRECTIONS
+
 /client/verb/fix_stat_panel()
 	set name = "Fix Stat Panel"
 	set hidden = TRUE
 
+	acquire_dpi()
+	normalize_ui_layout()
+	fit_viewport()
 	init_verbs()
+
+/client/verb/fix_ui_layout()
+	set name = "Fix UI Layout"
+	set category = "OOC"
+	set desc = "Reset splitters and pane layout for high-DPI safety."
+
+	acquire_dpi()
+	normalize_ui_layout()
+	fit_viewport()
+	to_chat(src, span_notice("UI layout has been reset to safe defaults."))

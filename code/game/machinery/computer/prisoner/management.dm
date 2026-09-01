@@ -1,6 +1,7 @@
 
 /obj/machinery/computer/prisoner/management
 	name = "Prisoner Management Console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Used to manage tracking implants placed inside criminals."
 	icon_screen = "explosive"
 	icon_keyboard = "security_key"
@@ -16,12 +17,12 @@
 	light_color = LIGHT_COLOR_RED
 
 /obj/machinery/computer/prisoner/management/New()
- 	GLOB.prisoncomputer_list += src
- 	return ..()
+	GLOB.prisoncomputer_list += src
+	return ..()
 
 /obj/machinery/computer/prisoner/management/Destroy()
- 	GLOB.prisoncomputer_list -= src
- 	return ..()
+	GLOB.prisoncomputer_list -= src
+	return ..()
 
 /obj/machinery/computer/prisoner/management/ui_interact(mob/user)
 	. = ..()

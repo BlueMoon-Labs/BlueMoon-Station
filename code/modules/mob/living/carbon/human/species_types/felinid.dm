@@ -10,6 +10,9 @@
 	mutantears = /obj/item/organ/ears/cat
 	mutanttail = /obj/item/organ/tail/cat
 
+	liked_food = JUNKFOOD | MEAT | SEAFOOD
+	disliked_food = GROSS | RAW
+
 	tail_type = "mam_tail"
 	wagging_type = "mam_waggingtail"
 	species_category = SPECIES_CATEGORY_FURRY

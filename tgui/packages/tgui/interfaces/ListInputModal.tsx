@@ -1,5 +1,7 @@
-import { KEY_A, KEY_DOWN, KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_Z } from '../../common/keycodes';
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { isAlphaKey, KEY_DOWN, KEY_ENTER, KEY_ESCAPE, KEY_UP } from '../../common/keycodes';
+import { useBackend } from '../backend';
 import { Button, Input, Section, Stack } from '../components';
 import { Window } from '../layouts';
 import { InputButtons } from './common/InputButtons';
@@ -14,8 +16,8 @@ type ListInputData = {
   title: string;
 };
 
-export const ListInputModal = (_, context) => {
-  const { act, data } = useBackend<ListInputData>(context);
+export const ListInputModal = (_) => {
+  const { act, data } = useBackend<ListInputData>();
   const {
     items = [],
     message = "",
@@ -24,24 +26,18 @@ export const ListInputModal = (_, context) => {
     timeout,
     title,
   } = data;
-  const [selected, setSelected] = useLocalState<number>(
-    context,
-    'selected',
+  const [selected, setSelected] = useState<number>(
     items.indexOf(init_value)
   );
-  const [searchBarVisible, setSearchBarVisible] = useLocalState<boolean>(
-    context,
-    'searchBarVisible',
+  const [searchBarVisible, setSearchBarVisible] = useState<boolean>(
     items.length > 9
   );
-  const [searchQuery, setSearchQuery] = useLocalState<string>(
-    context,
-    'searchQuery',
+  const [searchQuery, setSearchQuery] = useState<string>(
     ''
   );
   // User presses up or down on keyboard
   // Simulates clicking an item
-  const onArrowKey = (key: number) => {
+  const onArrowKey = (key: string) => {
     const len = filteredItems.length - 1;
     if (key === KEY_DOWN) {
       if (selected === null || selected === len) {
@@ -74,10 +70,9 @@ export const ListInputModal = (_, context) => {
     setSearchBarVisible(true);
   };
   // User presses a letter key with no searchbar visible
-  const onLetterSearch = (key: number) => {
-    const keyChar = String.fromCharCode(key);
+  const onLetterSearch = (key: string) => {
     const foundItem = items.find((item) => {
-      return item?.toLowerCase().startsWith(keyChar?.toLowerCase());
+      return item?.toLowerCase().startsWith(key.toLowerCase());
     });
     if (foundItem) {
       const foundIndex = items.indexOf(foundItem);
@@ -115,20 +110,19 @@ export const ListInputModal = (_, context) => {
       {timeout && <Loader value={timeout} />}
       <Window.Content
         onKeyDown={(event) => {
-          const keyCode = window.event ? event.which : event.keyCode;
-          if (keyCode === KEY_DOWN || keyCode === KEY_UP) {
+          if (event.key === KEY_DOWN || event.key === KEY_UP) {
             event.preventDefault();
-            onArrowKey(keyCode);
+            onArrowKey(event.key);
           }
-          if (keyCode === KEY_ENTER) {
+          if (event.key === KEY_ENTER) {
             event.preventDefault();
             act('submit', { entry: filteredItems[selected] });
           }
-          if (!searchBarVisible && keyCode >= KEY_A && keyCode <= KEY_Z) {
+          if (!searchBarVisible && isAlphaKey(event.key)) {
             event.preventDefault();
-            onLetterSearch(keyCode);
+            onLetterSearch(event.key);
           }
-          if (keyCode === KEY_ESCAPE) {
+          if (event.key === KEY_ESCAPE) {
             event.preventDefault();
             act('cancel');
           }
@@ -183,8 +177,8 @@ export const ListInputModal = (_, context) => {
  * Displays the list of selectable items.
  * If a search query is provided, filters the items.
  */
-const ListDisplay = (props, context) => {
-  const { act } = useBackend<ListInputData>(context);
+const ListDisplay = (props) => {
+  const { act } = useBackend<ListInputData>();
   const { filteredItems, onClick, onFocusSearch, searchBarVisible, selected }
     = props;
 
@@ -198,13 +192,12 @@ const ListDisplay = (props, context) => {
             id={index}
             key={index}
             onClick={() => onClick(index)}
-            onDblClick={(event) => {
+            onDoubleClick={(event) => {
               event.preventDefault();
               act('submit', { entry: filteredItems[selected] });
             }}
             onKeyDown={(event) => {
-              const keyCode = window.event ? event.which : event.keyCode;
-              if (searchBarVisible && keyCode >= KEY_A && keyCode <= KEY_Z) {
+              if (searchBarVisible && isAlphaKey(event.key)) {
                 event.preventDefault();
                 onFocusSearch();
               }
@@ -226,8 +219,8 @@ const ListDisplay = (props, context) => {
  * Renders a search bar input.
  * Closing the bar defaults input to an empty string.
  */
-const SearchBar = (props, context) => {
-  const { act } = useBackend<ListInputData>(context);
+const SearchBar = (props) => {
+  const { act } = useBackend<ListInputData>();
   const { filteredItems, onSearch, searchQuery, selected } = props;
 
   return (

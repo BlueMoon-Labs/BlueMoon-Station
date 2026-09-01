@@ -1,5 +1,5 @@
 import { perf } from 'common/perf';
-import { render } from 'inferno';
+import { createRoot } from 'react-dom/client';
 
 import { createLogger } from './logging';
 
@@ -23,9 +23,9 @@ export const createRenderer = getVNode => () => {
   perf.mark('render/start');
   // Start rendering
   if (!reactRoot) {
-    reactRoot = document.getElementById('react-root');
+    reactRoot = createRoot(document.getElementById('react-root'));
   }
-  render(getVNode(), reactRoot);
+  reactRoot.render(getVNode());
   perf.mark('render/finish');
   if (suspended) {
     return;

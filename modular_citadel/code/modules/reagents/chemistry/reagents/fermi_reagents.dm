@@ -89,19 +89,22 @@
 	var/obj/item/organ/tongue/T
 	can_synth = TRUE
 
-/datum/reagent/fermi/furranium/reaction_mob(mob/living/carbon/human/M, method=INJECT, reac_volume)
+/datum/reagent/fermi/furranium/reaction_mob(mob/living/carbon/human/M, method=INJECT, reac_volume, affected_bodypart)
 	if(method == INJECT)
 		var/turf/T = get_turf(M)
 		M.adjustOxyLoss(15)
 		M.DefaultCombatKnockdown(50)
 		M.Stun(50)
 		M.emote("cough")
-		var/obj/item/toy/plush/P = pick(subtypesof(/obj/item/toy/plush))
-		new P(T)
+		var/plush_type = pick(subtypesof(/obj/item/toy/plush))
+		var/obj/item/toy/plush/P = new plush_type(T)
+		if(!P)
+			return ..()
 		M.visible_message("<span class='warning'>[M] suddenly coughs up a [P.name]!</b></span>",\
 						"<span class='warning'>You feel a lump form in your throat, as you suddenly cough up what seems to be a hairball?</b></span>")
-		var/T2 = get_random_station_turf()
-		P.throw_at(T2, 8, 1)
+		var/turf/T2 = get_random_station_turf()
+		if(!QDELETED(P) && T2)
+			P.throw_at(T2, 8, 1)
 	..()
 
 /datum/reagent/fermi/furranium/on_mob_life(mob/living/carbon/M)
@@ -184,7 +187,7 @@
 		O.forceMove(new_shell)
 
 //Extra interaction for which spraying it on an existing sentient plushie aheals them, so they can be revived!
-/datum/reagent/fermi/plushmium/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/fermi/plushmium/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(istype(M, /mob/living/simple_animal/pet/plushie) && reac_volume >= 1)
 		M.revive(full_heal = 1, admin_revive = 1)
 
@@ -269,7 +272,7 @@
 	can_synth = FALSE
 	chemical_flags = REAGENT_ALL_PROCESS // BLUEMOON ADD - реагент должен взаимодействовать в том числе и с роботами
 
-/datum/reagent/fermi/fermiAcid/reaction_mob(mob/living/carbon/C, method)
+/datum/reagent/fermi/fermiAcid/reaction_mob(mob/living/carbon/C, method, affected_bodypart)
 	var/target = C.get_bodypart(BODY_ZONE_CHEST)
 	var/acidstr
 	if(!C.reagents.pH || C.reagents.pH >5)
@@ -489,7 +492,7 @@
 	log_reagent("FERMICHEM: [H] ckey: [H.key] has returned to normal")
 
 
-/datum/reagent/fermi/secretcatchem/reaction_mob(var/mob/living/L)
+/datum/reagent/fermi/secretcatchem/reaction_mob(var/mob/living/L, affected_bodypart)
 	if(istype(L, /mob/living/simple_animal/pet/cat/custom_cat) && cached_purity >= 0.85)
 		var/mob/living/simple_animal/pet/cat/custom_cat/catto = L
 		if(catto.origin)

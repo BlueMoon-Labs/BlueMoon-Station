@@ -7,7 +7,9 @@
 import * as keycodes from 'common/keycodes';
 
 import { globalEvents, KeyEvent } from './events';
+import { keyToByond } from './keyToByond';
 import { createLogger } from './logging';
+import { setupOrphanedKeyUpForwarding } from './orphanedKeyUp';
 
 const logger = createLogger('hotkeys');
 
@@ -15,7 +17,7 @@ const logger = createLogger('hotkeys');
 const byondMacros: Record<string, string> = {};
 
 // Default set of acquired keys, which will not be sent to BYOND.
-const hotKeysAcquired = [
+const hotKeysAcquired: string[] = [
   keycodes.KEY_ESCAPE,
   keycodes.KEY_ENTER,
   keycodes.KEY_SPACE,
@@ -33,37 +35,6 @@ const hotKeysAcquired = [
 const keyState: Record<string, boolean> = {};
 
 /**
- * Converts a browser keycode to BYOND keycode.
- */
-const keyCodeToByond = (keyCode: number) => {
-  if (keyCode === 16) return 'Shift';
-  if (keyCode === 17) return 'Ctrl';
-  if (keyCode === 18) return 'Alt';
-  if (keyCode === 33) return 'Northeast';
-  if (keyCode === 34) return 'Southeast';
-  if (keyCode === 35) return 'Southwest';
-  if (keyCode === 36) return 'Northwest';
-  if (keyCode === 37) return 'West';
-  if (keyCode === 38) return 'North';
-  if (keyCode === 39) return 'East';
-  if (keyCode === 40) return 'South';
-  if (keyCode === 45) return 'Insert';
-  if (keyCode === 46) return 'Delete';
-  if (keyCode >= 48 && keyCode <= 57 || keyCode >= 65 && keyCode <= 90) {
-    return String.fromCharCode(keyCode);
-  }
-  if (keyCode >= 96 && keyCode <= 105) {
-    return 'Numpad' + (keyCode - 96);
-  }
-  if (keyCode >= 112 && keyCode <= 123) {
-    return 'F' + (keyCode - 111);
-  }
-  if (keyCode === 188) return ',';
-  if (keyCode === 189) return '-';
-  if (keyCode === 190) return '.';
-};
-
-/**
  * Keyboard passthrough logic. This allows you to keep doing things
  * in game while the browser window is focused.
  */
@@ -74,17 +45,21 @@ const handlePassthrough = (key: KeyEvent) => {
     location.reload();
     return;
   }
-  // Prevent passthrough on Ctrl+F
+  // Open/toggle the FindBar on Ctrl+F
   if (keyString === 'Ctrl+F') {
+    if (key.isDown()) {
+      key.event.preventDefault();
+      globalEvents.emit('findbar-toggle');
+    }
     return;
   }
-  // NOTE: Alt modifier is pretty bad and sticky in IE11.
+  // NOTE: Alt modifier can be sticky and conflict-prone.
   if (key.event.defaultPrevented
       || key.isModifierKey()
-      || hotKeysAcquired.includes(key.code)) {
+      || hotKeysAcquired.includes(key.key)) {
     return;
   }
-  const byondKeyCode = keyCodeToByond(key.code);
+  const byondKeyCode = keyToByond(key);
   if (!byondKeyCode) {
     return;
   }
@@ -95,10 +70,14 @@ const handlePassthrough = (key: KeyEvent) => {
     return Byond.command(macro);
   }
   // KeyDown
-  if (key.isDown() && !keyState[byondKeyCode]) {
+  if (key.isDown()
+      && (!keyState[byondKeyCode] || key.event.repeat)) {
+    const wasHeld = keyState[byondKeyCode];
     keyState[byondKeyCode] = true;
-    const command = `KeyDown "${byondKeyCode}"`;
-    logger.debug(command);
+    const command = wasHeld
+      ? `KeyRepeat "${byondKeyCode}"`
+      : `KeyDown "${byondKeyCode}"`;
+    logger.debug(wasHeld ? `${command} (repeat)` : command);
     return Byond.command(command);
   }
   // KeyUp
@@ -114,15 +93,15 @@ const handlePassthrough = (key: KeyEvent) => {
  * Acquires a lock on the hotkey, which prevents it from being
  * passed through to BYOND.
  */
-export const acquireHotKey = (keyCode: number) => {
-  hotKeysAcquired.push(keyCode);
+export const acquireHotKey = (key: string) => {
+  hotKeysAcquired.push(key);
 };
 
 /**
  * Makes the hotkey available to BYOND again.
  */
-export const releaseHotKey = (keyCode: number) => {
-  const index = hotKeysAcquired.indexOf(keyCode);
+export const releaseHotKey = (key: string) => {
+  const index = hotKeysAcquired.indexOf(key);
   if (index >= 0) {
     hotKeysAcquired.splice(index, 1);
   }
@@ -178,7 +157,11 @@ export const setupHotKeys = () => {
   globalEvents.on('window-blur', () => {
     releaseHeldKeys();
   });
+  globalEvents.on('input-focus', () => {
+    releaseHeldKeys();
+  });
   globalEvents.on('key', (key: KeyEvent) => {
     handlePassthrough(key);
   });
+  setupOrphanedKeyUpForwarding();
 };

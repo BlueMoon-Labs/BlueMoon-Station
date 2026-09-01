@@ -45,12 +45,21 @@
 		/datum/language/modular_bluemoon/german, // BM German language
 		/datum/language/modular_bluemoon/vox, // BM Vox language
 		/datum/language/modular_bluemoon/felinid, // BM Felinid language
-		/datum/language/modular_splurt/avian, //SPLURT change - peep peep!
+		/datum/language/modular_bluemoon/skrell, // BM Skrell language
+		/datum/language/modular_splurt/avian, //SPLURT change - peep peep! язык тешари
 		/datum/language/old_codes, //Bluemoon change inteq
 		/datum/language/modular_bluemoon/acratarian, // BLUEMOON ADD - язык акрадоров
 		/datum/language/modular_bluemoon/cetria, // BLUEMOON ADD - язык кеткринов
 		/datum/language/modular_bluemoon/demonic, // BLUEMOON ADD - демонический
 		/datum/language/modular_splurt/nyanese, //SPLURT change - meow meow!
+		/datum/language/arachnid, // BLUEMOON ADD - рахнидский
+		/datum/language/voltaic, // BLUEMOON ADD - язык эфириалов
+		/datum/language/mushroom, // BLUEMOON ADD - язык гриболюдов
+		/datum/language/terrorspiders, // BLUEMOON ADD - язык террор-пауков 
+		/datum/language/xenocommon, // BLUEMOON ADD - ксенокоммон 
+		/datum/language/drone, // BLUEMOON ADD - язык дронов
+		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров
+		/datum/language/rootsong, // BLUEMOON ADD - язык дион
 	))
 	healing_factor = STANDARD_ORGAN_HEALING*5 //Fast!!
 	decay_factor = STANDARD_ORGAN_DECAY/2
@@ -96,7 +105,9 @@
 		owner.RegisterSignal(owner, COMSIG_MOB_SAY, TYPE_PROC_REF(/mob/living/carbon, handle_tongueless_speech))
 	return ..()
 
-/obj/item/organ/tongue/could_speak_language(language)
+/obj/item/organ/tongue/could_speak_language(datum/language/language)
+	if(!languages_possible)
+		return initial(language.flags) & TONGUELESS_SPEECH
 	return is_type_in_typecache(language, languages_possible)
 
 /obj/item/organ/tongue/lizard
@@ -143,6 +154,11 @@
 	taste_sensitivity = 25 // you eat vomit, this is a mercy
 	maxHealth = 80 //years of eatting trash has made your tongue strong
 	initial_accents = list(/datum/accent/fly)
+
+//fly tongue has initial_accents, so handle_speech fires - style insect chittering
+/obj/item/organ/tongue/fly/handle_speech(datum/source, list/speech_args)
+	speech_args[SPEECH_SPANS] |= SPAN_CHITVOICE
+	..()
 
 /obj/item/organ/tongue/abductor
 	name = "superlingual matrix"

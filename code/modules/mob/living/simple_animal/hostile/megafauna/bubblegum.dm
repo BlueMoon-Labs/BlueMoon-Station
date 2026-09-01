@@ -26,8 +26,8 @@ Difficulty: Hard
 /mob/living/simple_animal/hostile/megafauna/bubblegum
 	name = "bubblegum"
 	desc = "In what passes for a hierarchy among slaughter demons, this one is king."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	attack_verb_continuous = "rends"
 	attack_verb_simple = "rend"
 	attack_sound = 'sound/magic/demon_attack1.ogg'
@@ -38,9 +38,9 @@ Difficulty: Hard
 	friendly_verb_simple = "stare down"
 	icon = 'icons/mob/lavaland/96x96megafauna.dmi'
 	speak_emote = list("gurgles")
-	armour_penetration = 75
-	melee_damage_lower = 40
-	melee_damage_upper = 40
+	armour_penetration = 85
+	melee_damage_lower = 50
+	melee_damage_upper = 50
 	speed = 1
 	move_to_delay = 10
 	ranged_cooldown_time = 10
@@ -117,11 +117,6 @@ Difficulty: Hard
 		return
 	..()
 
-/mob/living/simple_animal/hostile/megafauna/bubblegum/Goto(target, delay, minimum_distance)
-	if(charging)
-		return
-	..()
-
 /mob/living/simple_animal/hostile/megafauna/bubblegum/Move()
 	if(!stat)
 		playsound(src.loc, 'sound/effects/meteorimpact.ogg', 200, 1, 2, 1)
@@ -152,8 +147,7 @@ Difficulty: Hard
 	animate(D, alpha = 0, color = "#FF0000", transform = matrix()*2, time = 5)
 	sleep(5)
 	throw_at(T, get_dist(src, T), 1, src, 0)
-	charging = 0
-	Goto(target, move_to_delay, minimum_distance)
+	charging = 0 //преследование возобновляет штатный мувер контроллера
 
 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/Bump(atom/A)
@@ -170,7 +164,7 @@ Difficulty: Hard
 	else if(isliving(hit_atom))
 		var/mob/living/L = hit_atom
 		L.visible_message("<span class='danger'>[src] slams into [L]!</span>", "<span class='userdanger'>[src] slams into you!</span>")
-		L.apply_damage(damage = 40, damagetype = BRUTE, sharpness = SHARP_NONE)
+		L.apply_damage(damage = 55, damagetype = BRUTE, sharpness = SHARP_NONE)
 		playsound(get_turf(L), 'sound/effects/meteorimpact.ogg', 100, 1)
 		shake_camera(L, 4, 3)
 		shake_camera(src, 2, 3)

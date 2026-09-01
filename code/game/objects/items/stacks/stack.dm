@@ -36,7 +36,7 @@
 	var/splint_factor
 	/// How much blood flow this stack can absorb if used as a bandage on a cut wound, note that absorption is how much we lower the flow rate, not the raw amount of blood we suck up
 	var/absorption_capacity
-	/// How quickly we lower the blood flow on a cut wound we're bandaging. Expected lifetime of this bandage in ticks is thus absorption_capacity/absorption_rate, or until the cut heals, whichever comes first
+	/// How quickly we lower the blood flow on a cut wound we're bandaging.
 	var/absorption_rate
 	/// Amount of matter for RCD
 	var/matter_amount = 0
@@ -110,9 +110,10 @@
 	for(var/i in 1 to length(grind_results)) //This should only call if it's ground, so no need to check if grind_results exists
 		grind_results[grind_results[i]] *= get_amount() //Gets the key at position i, then the reagent amount of that key, then multiplies it by stack size
 
-/obj/item/stack/grind_requirements()
+/obj/item/stack/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE)
 	if(is_cyborg)
-		to_chat(usr, "<span class='warning'>[src] is electronically synthesized in your chassis and can't be ground up!</span>")
+		if(!silent)
+			to_chat(usr, "<span class='warning'>[src] is electronically synthesized in your chassis and can't be ground up!</span>")
 		return
 	return TRUE
 
@@ -161,14 +162,14 @@
 		return
 	if(singular_name)
 		if(get_amount()>1)
-			. += "There are [get_amount()] [singular_name]\s in the stack."
+			. += "Здесь есть [get_amount()] [singular_name]\s."
 		else
-			. += "There is [get_amount()] [singular_name] in the stack."
+			. += "Осталась [get_amount()] [singular_name]."
 	else if(get_amount()>1)
-		. += "There are [get_amount()] in the stack."
+		. += "Здесь есть [get_amount()] шт."
 	else
-		. += "There is [get_amount()] in the stack."
-	. += "<span class='notice'>Alt-click to take a custom amount.</span>"
+		. += "Осталась [get_amount()] штука."
+	. += "<span class='notice'>Alt-click для выбора количества из стопки.</span>"
 
 /obj/item/stack/equipped(mob/user, slot)
 	. = ..()
@@ -233,10 +234,19 @@
 	return FALSE
 
 // BLUEMOON ADD START Не открыть список рецептов, если он пуст
-/obj/item/stack/attack_self(mob/user)
-	var/list/L = recursively_build_recipes(recipes)
-	if(L.len)
-		return ..()
+/obj/item/stack/ui_status(mob/user)
+	var/static/list/recipes_list_cache = list()
+
+	var/list/current_recipes_list = recipes_list_cache[type]
+	if(!current_recipes_list)
+		current_recipes_list = recursively_build_recipes(recipes)
+		recipes_list_cache[type] = current_recipes_list
+
+	if(!current_recipes_list.len)
+		return UI_CLOSE
+
+	return ..()
+
 // BLUEMOON ADD END
 
 /obj/item/stack/ui_state(mob/user)
@@ -599,11 +609,6 @@
 		fingerprintshidden = from.fingerprintshidden.Copy()
 	fingerprintslast = from.fingerprintslast
 	//TODO bloody overlay
-
-/obj/item/stack/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	. = ..()
-	if(istype(microwave_source) && microwave_source.dirty < 100)
-		microwave_source.dirty += amount
 
 /obj/item/stack/proc/prepare_estorage(obj/item/robot_module/module)
 	if(source)

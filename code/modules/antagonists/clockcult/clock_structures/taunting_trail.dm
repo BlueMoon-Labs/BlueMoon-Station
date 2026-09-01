@@ -1,8 +1,8 @@
 //Used by the Taunting Tirade scripture as a trail.
 /obj/structure/destructible/clockwork/taunting_trail
 	name = "strange smoke"
-	desc = "A cloud of purple smoke."
-	clockwork_desc = "A cloud of purple smoke that confuses and knocks down non-Servants that enter it."
+	desc = "Облако фиолетового дыма."
+	clockwork_desc = "Облако фиолетового дыма, которое сбивает с толку и сбивает с ног тех, кто не является Слугами."
 	gender = PLURAL
 	max_integrity = 5
 	density = TRUE

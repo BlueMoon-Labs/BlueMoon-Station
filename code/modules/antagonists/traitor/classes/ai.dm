@@ -3,6 +3,13 @@
 	threat = 20
 
 /datum/traitor_class/ai/forge_objectives(datum/antagonist/traitor/T)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+		var/datum/objective/protect/protect_objective = new
+		protect_objective.owner = T.owner
+		protect_objective.find_target()
+		T.add_objective(protect_objective)
+		return
+
 	var/objective_count = 0
 
 	if(prob(30))

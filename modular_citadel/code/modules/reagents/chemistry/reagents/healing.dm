@@ -103,7 +103,7 @@
 	color = "#FFDADA"
 	value = REAGENT_VALUE_COMMON
 
-/datum/reagent/synthtissue/reaction_mob(mob/living/M, method=TOUCH, reac_volume,show_message = 1)
+/datum/reagent/synthtissue/reaction_mob(mob/living/M, method=TOUCH, reac_volume,show_message = 1, affected_bodypart)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
 		var/healing_factor = (((data["grown_volume"] / 100) + 1)*reac_volume)

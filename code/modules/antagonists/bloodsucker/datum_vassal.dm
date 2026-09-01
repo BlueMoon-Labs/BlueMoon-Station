@@ -86,7 +86,7 @@
 		qdel(O)
 	objectives_given = list()
 	remove_thrall_eyes()
-	owner.current.remove_language(/datum/language/vampiric, TRUE, TRUE, LANGUAGE_VASSAL)
+	owner.current.remove_language(/datum/language/vampiric, source = LANGUAGE_VASSAL)
 	// Clear Antag HUD
 	update_vassal_icons_removed(owner.current)
 	owner.special_role = null // BLUEMOON ADD
@@ -95,7 +95,7 @@
 /datum/antagonist/vassal/greet()
 	to_chat(owner, "<span class='cult'>Вы теперь смертный слуга [master.owner.current], кровососущего вампира!</span>")
 	to_chat(owner, "<span class='boldannounce'>Сила бессмертной крови обязывает вас слушаться [master.owner.current.ru_ego()] во всём, даже жертвовать собой ради жизни вампира.<br>\
-			Вы не обязаны слушаться какого-либо другого кровососа, ведь только [master.owner.current] владеет вами. Законы Пакта теперь для вас ничто; только воля вашего хозяина или хозяйки превыше всего.<span>")
+			Вы не обязаны слушаться какого-либо другого кровососа, ведь только [master.owner.current] владеет вами. Законы ПАКТа теперь для вас ничто; только воля вашего хозяина или хозяйки превыше всего.<span>")
 	to_chat(owner, "<span class='userdanger'>Вы - антагонист! Не игнорируйте своего хоязина и тем более не действуйте против него!<span>") // BLUEMOON ADD
 
 	// Effects...

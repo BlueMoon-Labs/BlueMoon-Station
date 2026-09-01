@@ -13,7 +13,7 @@
 	custom_materials = list(/datum/material/glass=1000)
 	w_class = WEIGHT_CLASS_SMALL
 	grind_results = list(/datum/reagent/silicon = 20)
-	var/build_path = null
+	var/obj/build_path = null // ispath, это не реальный объект. Путь для удобства обращения к базовым переменным, вроде name
 	///determines if the circuit board originated from a vendor off station or not.
 	var/onstation = TRUE
 
@@ -97,4 +97,4 @@ micro-manipulator, console screen, beaker, Microlaser, matter bin, power cells.
 			if(!ispath(A))
 				continue
 			nice_list += list("[req_components[A]] [initial(A.name)]")
-		. += "<span class='notice'>Required components: [english_list(nice_list)].</span>"
+		. += span_notice("Требуемые компоненты: [english_list(nice_list)].")

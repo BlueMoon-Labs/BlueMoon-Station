@@ -3,7 +3,8 @@
 	caste = "s"
 	maxHealth = 180
 	health = 180
-	icon_state = "aliens"
+	icon = 'icons/Xeno/castes/sentinel.dmi'
+	icon_state = "Sentinel Walking"
 	meleeSlashHumanPower = 25
 
 /mob/living/carbon/alien/humanoid/sentinel/Initialize(mapload)

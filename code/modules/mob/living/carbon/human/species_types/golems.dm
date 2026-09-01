@@ -711,7 +711,7 @@
 	..()
 
 /datum/species/golem/cloth/check_roundstart_eligible()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		return TRUE
 	return ..()
 

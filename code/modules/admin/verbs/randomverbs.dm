@@ -371,7 +371,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		This isn't an exact science but it does the trick more often than not.*/
 		var/id = md5("[G_found.real_name][G_found.mind.assigned_role]")
 
-		record_found = find_record("id", id, GLOB.data_core.locked)
+		record_found = GLOB.data_core.locked_by_id[id]
 
 	if(record_found)//If they have a record we can determine a few things.
 		new_character.real_name = record_found.fields["name"]
@@ -403,7 +403,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 	//Two variables to properly announce later on.
 	var/admin = key_name_admin(src)
-	var/player_key = G_found.key
+	var/player_key = new_character.key // после transfer_ckey() ключ уже на новом персонаже, а призрак мог быть уничтожен
 
 	//Now for special roles and equipment.
 	var/datum/antagonist/traitor/traitordatum = new_character.mind.has_antag_datum(/datum/antagonist/traitor)
@@ -659,7 +659,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	log_admin("[key_name(src)] has changed the Central Command name to: [input]")
 
 /client/proc/cmd_admin_delete(atom/A as obj|mob|turf in world)
-	set category = "Admin"
+	set category = "Admin.Game"
 	set name = "Delete"
 
 	if(!check_rights(R_SPAWN|R_DEBUG))
@@ -790,7 +790,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Change View Range", "[view]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_call_shuttle()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Call Shuttle"
 
 	if(EMERGENCY_AT_LEAST_DOCKED)
@@ -810,7 +810,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	return
 
 /client/proc/admin_cancel_shuttle()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Cancel Shuttle"
 	if(!check_rights(0))
 		return
@@ -939,15 +939,31 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		return
 
 	var/level = input("Select security level to change to","Set Security Level") as null|anything in list("green","blue","orange","violet","amber","red","lambda","gamma","epsilon","delta")
-	if(level)
-		set_security_level(level)
+	if(!level)
+		return
+	var/secret_variant_override = null
+	if(level in list("violet", "amber", "red", "delta"))
+		var/choice = tgui_alert(usr, "Иконка и музыка на коммуникационных консолях:", "Set Security Level", list("Обычные", "Секретные", "Случайно (90% обычные)"))
+		if(!choice)
+			return
+		switch(choice)
+			if("Обычные")
+				secret_variant_override = FALSE
+			if("Секретные")
+				secret_variant_override = TRUE
+			if("Случайно (90% обычные)")
+				secret_variant_override = null
+	set_security_level(level, secret_variant_override, TRUE)
 
-		log_admin("[key_name(usr)] changed the security level to [level]")
-		message_admins("[key_name_admin(usr)] changed the security level to [level]")
-		SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Security Level [capitalize(level)]") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+	var/extra_log = ""
+	if(level in list("violet", "amber", "red", "delta"))
+		extra_log = isnull(secret_variant_override) ? " (вариант: случайный)" : (secret_variant_override ? " (вариант: секретный)" : " (вариант: обычный)")
+	log_admin("[key_name(usr)] changed the security level to [level][extra_log]")
+	message_admins("[key_name_admin(usr)] changed the security level to [level][extra_log]")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Security Level [capitalize(level)]") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_hostile_environment()
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 	set name = "Hostile Environment"
 
 	if(!check_rights(R_ADMIN))
@@ -991,7 +1007,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Nuke", "[N.timing]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/create_outfits()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set name = "Create Custom Outfit"
 
 	if(!check_rights(R_DEBUG))
@@ -1050,7 +1066,6 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	id_select += "</select>"
 
 	var/dat = {"
-	<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Create Outfit</title></head><body>
 	<form name="outfit" action="byond://?src=[REF(src)];[HrefToken()]" method="get">
 	<input type="hidden" name="src" value="[REF(src)]">
 	[HrefTokenFormField()]
@@ -1161,9 +1176,11 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	</table>
 	<br>
 	<input type="submit" value="Save">
-	</form></body></html>
+	</form>
 	"}
-	usr << browse(dat, "window=dressup;size=550x600")
+	var/datum/browser/popup = new(usr, "dressup", "Create Outfit", 550, 600)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /client/proc/toggle_combo_hud()
 	set category = "Admin.Game"
@@ -1178,7 +1195,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 	for(var/hudtype in list(DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC_ADVANCED, DATA_HUD_ANTAGTARGET)) // add data huds
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
 		(adding_hud) ? H.add_hud_to(usr) : H.remove_hud_from(usr)
-	for(var/datum/atom_hud/antag/H in GLOB.huds) // add antag huds
+	for(var/datum/atom_hud/antag/H in GLOB.all_huds) // add antag huds
 		(adding_hud) ? H.add_hud_to(usr) : H.remove_hud_from(usr)
 
 	if(prefs.toggles & COMBOHUD_LIGHTING)
@@ -1296,7 +1313,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 
 /client/proc/show_tip()
-	set category = "Admin"
+	set category = "Admin.Events"
 	set name = "Show Tip"
 	set desc = "Sends a tip (that you specify) to all players. After all \
 		you're the experienced player here."
@@ -1324,7 +1341,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 /client/proc/modify_goals()
 	set name = "Station Goals"
-	set category = "Admin.Events"
+	set category = "Admin.Shuttles"
 
 	if(!check_rights(R_ADMIN))
 		return
@@ -1339,7 +1356,9 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		<a href='?src=[REF(S)];[HrefToken()];remove=1'>Remove</a> | \
 		<a href='?src=[REF(S)];[HrefToken()];complete=1'>Toggle completion flag</a><br>"
 	dat += "<br><a href='?src=[REF(src)];[HrefToken()];add_station_goal=1'>Add New Goal</a>"
-	usr << browse(dat, "window=goals;size=400x400")
+	var/datum/browser/popup = new(usr, "goals", "Station Goals", 400, 400)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /client/proc/toggle_hub()
 	set category = "Server"
@@ -1534,11 +1553,11 @@ Traitors and the like can also be revived with the previous role mostly intact.
 		if(istype(L, /mob/living/simple_animal/hostile/megafauna/dragon))
 			continue
 		if(islist(flame_hit) && !flame_hit[L])
-			L.adjustFireLoss(40)
+			L.adjustFireLoss(55)
 			to_chat(L, "<span class='userdanger'>You're hit by the drake's fire breath!</span>")
 			flame_hit[L] = TRUE
 		else
-			L.adjustFireLoss(10) //if we've already hit them, do way less damage
+			L.adjustFireLoss(14)
 
 /datum/admins/proc/cmd_show_exp_panel(client/client_to_check)
 	if(!check_rights(R_ADMIN))

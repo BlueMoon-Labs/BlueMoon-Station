@@ -30,7 +30,7 @@
 /obj/machinery/magnetic_module/Initialize(mapload)
 	..()
 	var/turf/T = loc
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 	center = T
 	SSradio.add_object(src, freq, RADIO_MAGNETS)
 	return INITIALIZE_HINT_LATELOAD
@@ -259,8 +259,9 @@
 	dat += "Moving: <a href='?src=[REF(src)];operation=togglemoving'>[moving ? "Enabled":"Disabled"]</a>"
 
 
-	user << browse(dat, "window=magnet;size=400x500")
-	onclose(user, "magnet")
+	var/datum/browser/popup = new(user, "magnet", "Magnetic Controller", 400, 500)
+	popup.set_content(dat)
+	popup.open()
 
 /obj/machinery/magnetic_controller/Topic(href, href_list)
 	if(..())

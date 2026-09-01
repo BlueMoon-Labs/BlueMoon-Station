@@ -127,6 +127,8 @@
 	playsound(src, "sparks", 100, FALSE)
 
 /mob/living/simple_animal/bot/mulebot/update_icon()
+	if(QDELETED(src) || !wires)
+		return
 	if(open)
 		icon_state="[base_icon]-hatch"
 	else
@@ -704,11 +706,27 @@
 	else
 		return null
 
+/mob/living/simple_animal/bot/mulebot/remove_air_into(datum/gas_mixture/into, amount)
+	if(loc)
+		return loc.remove_air_into(into, amount)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
+
 /mob/living/simple_animal/bot/mulebot/remove_air_ratio(ratio)
 	if(loc)
 		return loc.remove_air_ratio(ratio)
 	else
 		return null
+
+/mob/living/simple_animal/bot/mulebot/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	if(loc)
+		return loc.remove_air_ratio_into(into, ratio)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
 
 /mob/living/simple_animal/bot/mulebot/do_resist()
 	. = ..()

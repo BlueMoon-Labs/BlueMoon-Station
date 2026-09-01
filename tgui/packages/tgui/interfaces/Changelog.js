@@ -1,7 +1,7 @@
 import { classes } from 'common/react';
 import dateformat from 'dateformat';
-import { Component, Fragment } from 'inferno';
 import yaml from 'js-yaml';
+import { Component, Fragment } from 'react';
 
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
@@ -17,27 +17,31 @@ import {
 import { Window } from '../layouts';
 
 const icons = {
+  add: { icon: 'check-circle', color: 'green' },
+  admin: { icon: 'user-shield', color: 'purple' },
+  balance: { icon: 'balance-scale-right', color: 'yellow' },
   bugfix: { icon: 'bug', color: 'green' },
-  wip: { icon: 'hammer', color: 'orange' },
-  tweak: { icon: 'wrench', color: 'green' },
-  soundadd: { icon: 'tg-sound-plus', color: 'green' },
-  sounddel: { icon: 'tg-sound-minus', color: 'red' },
-  rscdel: { icon: 'times-circle', color: 'red' },
-  rscadd: { icon: 'check-circle', color: 'green' },
+  code_imp: { icon: 'code', color: 'green' },
+  config: { icon: 'cogs', color: 'purple' },
+  expansion: { icon: 'check-circle', color: 'green' },
+  experiment: { icon: 'radiation', color: 'yellow' },
+  image: { icon: 'image', color: 'green' },
   imageadd: { icon: 'tg-image-plus', color: 'green' },
   imagedel: { icon: 'tg-image-minus', color: 'red' },
-  spellcheck: { icon: 'spell-check', color: 'green' },
-  experiment: { icon: 'radiation', color: 'yellow' },
-  tgs: { icon: 'toolbox', color: 'purple' },
-  balance: { icon: 'balance-scale-right', color: 'yellow' },
-  code_imp: { icon: 'code', color: 'green' },
-  refactor: { icon: 'tools', color: 'green' },
-  config: { icon: 'cogs', color: 'purple' },
-  admin: { icon: 'user-shield', color: 'purple' },
-  server: { icon: 'server', color: 'purple' },
-  expansion: { icon: 'check-circle', color: 'green' },
   qol: { icon: 'hand-holding-heart', color: 'green' },
+  refactor: { icon: 'tools', color: 'green' },
+  rscadd: { icon: 'check-circle', color: 'green' },
+  rscdel: { icon: 'times-circle', color: 'red' },
+  server: { icon: 'server', color: 'purple' },
+  sound: { icon: 'volume-high', color: 'green' },
+  soundadd: { icon: 'tg-sound-plus', color: 'green' },
+  sounddel: { icon: 'tg-sound-minus', color: 'red' },
+  spellcheck: { icon: 'spell-check', color: 'green' },
+  map: { icon: 'map', color: 'green' },
+  tgs: { icon: 'toolbox', color: 'purple' },
+  tweak: { icon: 'wrench', color: 'green' },
   unknown: { icon: 'info-circle', color: 'label' },
+  wip: { icon: 'hammer', color: 'orange' },
 };
 
 export class Changelog extends Component {
@@ -64,7 +68,7 @@ export class Changelog extends Component {
   }
 
   getData = (date, attemptNumber = 1) => {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const self = this;
     const maxAttempts = 6;
 
@@ -95,7 +99,7 @@ export class Changelog extends Component {
   };
 
   componentDidMount() {
-    const { data: { dates = [] } } = useBackend(this.context);
+    const { data: { dates = [] } } = useBackend();
 
     if (dates) {
       dates.forEach(
@@ -108,7 +112,7 @@ export class Changelog extends Component {
 
   render() {
     const { data, selectedDate, selectedIndex } = this.state;
-    const { data: { dates } } = useBackend(this.context);
+    const { data: { dates } } = useBackend();
     const { dateChoices } = this;
 
     const dateDropdown = dateChoices.length > 0 && (
@@ -121,14 +125,17 @@ export class Changelog extends Component {
             onClick={() => {
               const index = selectedIndex - 1;
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(dateChoices[index]);
-              window.scrollTo(
+              // Scroll in the setState callback: React applies state
+              // asynchronously, so the DOM must be measured after commit.
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: dateChoices[index],
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }} />
         </Stack.Item>
@@ -139,14 +146,15 @@ export class Changelog extends Component {
             onSelected={value => {
               const index = dateChoices.indexOf(value);
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(value);
-              window.scrollTo(
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: value,
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }}
             selected={selectedDate}
@@ -160,14 +168,15 @@ export class Changelog extends Component {
             onClick={() => {
               const index = selectedIndex + 1;
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(dateChoices[index]);
-              window.scrollTo(
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: dateChoices[index],
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }} />
         </Stack.Item>

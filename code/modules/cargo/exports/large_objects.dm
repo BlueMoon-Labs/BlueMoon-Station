@@ -170,13 +170,21 @@
 	cost = 10 //Base cost of canister. You get more for nice gases inside.
 	unit_name = "Gas Canister"
 	export_types = list(/obj/machinery/portable_atmospherics/canister)
+	/// Above this many moles in the canister, gas value is scaled down (TG-style overflow penalty)
+	var/canister_mole_threshold = 2000
+	var/canister_overflow_mult = 0.5
 
 /datum/export/large/gas_canister/get_cost(obj/O)
 	var/obj/machinery/portable_atmospherics/canister/C = O
 	var/worth = 10
 	var/list/gas_prices = GLOB.gas_data.prices
+	var/total_moles = C.air_contents.total_moles()
 	for(var/gas in C.air_contents.get_gases())
-		worth += C.air_contents.get_moles(gas)*gas_prices[gas]
+		var/moles = C.air_contents.get_moles(gas)
+		var/gas_worth = moles * (gas_prices[gas] || 0)
+		if(total_moles > canister_mole_threshold)
+			gas_worth *= canister_overflow_mult
+		worth += gas_worth
 	return worth
 
 

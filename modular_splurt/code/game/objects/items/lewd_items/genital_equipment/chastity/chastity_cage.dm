@@ -116,7 +116,7 @@
 	if(!equipment.holder_genital)
 		return FALSE
 
-	var/mob/living/carbon/human/H = istype(G) ? G.owner : G["wearer"]
+	var/mob/living/carbon/human/H = G.owner
 
 	var/obj/item/I = user.get_active_held_item()
 
@@ -159,6 +159,8 @@
 		return FALSE
 
 	var/mob/living/carbon/human/H = G.owner
+	if(!H)
+		return
 
 	DISABLE_BITFIELD(G.genital_flags, GENITAL_CHASTENED)
 	UnregisterSignal(H, COMSIG_MOB_UPDATE_GENITALS)

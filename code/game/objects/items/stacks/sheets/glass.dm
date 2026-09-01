@@ -15,6 +15,7 @@
 GLOBAL_LIST_INIT(glass_recipes, list ( \
 	new/datum/stack_recipe("directional window", /obj/structure/window/unanchored, time = 10, on_floor = TRUE, window_checks = TRUE), \
 	new/datum/stack_recipe("fulltile window", /obj/structure/window/fulltile/unanchored, 2, time = 20, on_floor = TRUE, window_checks = TRUE), \
+	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/glass, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS), \
 	new/datum/stack_recipe("shard", /obj/item/shard, 1), \
 	null, \
 	new/datum/stack_recipe_list("glass working bases", list( \
@@ -63,6 +64,9 @@ GLOBAL_LIST_INIT(glass_recipes, list ( \
 /obj/item/stack/sheet/glass/five
 	amount = 5
 
+/obj/item/stack/sheet/glass/twenty
+	amount = 20
+
 /obj/item/stack/sheet/glass/get_main_recipes()
 	. = ..()
 	. += GLOB.glass_recipes
@@ -72,7 +76,7 @@ GLOBAL_LIST_INIT(glass_recipes, list ( \
 	if(istype(W, /obj/item/stack/cable_coil))
 		var/obj/item/stack/cable_coil/CC = W
 		if (get_amount() < 1 || CC.get_amount() < 5)
-			to_chat(user, "<span class='warning>You need five lengths of coil and one sheet of glass to make wired glass!</span>")
+			to_chat(user, span_warning("You need five lengths of coil and one sheet of glass to make wired glass!"))
 			return
 		CC.use(5)
 		use(1)
@@ -171,6 +175,7 @@ GLOBAL_LIST_INIT(reinforced_glass_recipes, list ( \
 	point_value = 4
 	matter_amount = 6
 	shard_type = /obj/item/shard
+	tableVariant = /obj/structure/table/reinforced/rglass
 
 /obj/item/stack/sheet/rglass/attackby(obj/item/W, mob/user, params)
 	add_fingerprint(user)
@@ -228,6 +233,7 @@ GLOBAL_LIST_INIT(prglass_recipes, list ( \
 	point_value = 23
 	matter_amount = 8
 	shard_type = /obj/item/shard/plasma
+	tableVariant = /obj/structure/table/reinforced/plasmarglass
 
 /obj/item/stack/sheet/plasmarglass/get_main_recipes()
 	. = ..()
@@ -252,6 +258,7 @@ GLOBAL_LIST_INIT(titaniumglass_recipes, list(
 	resistance_flags = ACID_PROOF
 	merge_type = /obj/item/stack/sheet/titaniumglass
 	shard_type = /obj/item/shard
+	tableVariant = /obj/structure/table/reinforced/titaniumglass
 
 /obj/item/stack/sheet/titaniumglass/get_main_recipes()
 	. = ..()
@@ -276,6 +283,7 @@ GLOBAL_LIST_INIT(plastitaniumglass_recipes, list(
 	resistance_flags = ACID_PROOF
 	merge_type = /obj/item/stack/sheet/plastitaniumglass
 	shard_type = /obj/item/shard/plastitanium
+	tableVariant = /obj/structure/table/reinforced/plastitaniumglass
 
 /obj/item/stack/sheet/plastitaniumglass/fifty
 	amount = 50
@@ -393,17 +401,14 @@ GLOBAL_LIST_INIT(plastitaniumglass_recipes, list(
 		return
 	if(istype(A, /obj/item/storage))
 		return
-	var/hit_hand = ((user.active_hand_index % 2 == 0) ? "r_" : "l_") + "arm"
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(!H.gloves && !HAS_TRAIT(H, TRAIT_PIERCEIMMUNE)) // golems, etc
-			to_chat(H, "<span class='warning'>[src] cuts into your hand!</span>")
-			H.apply_damage(force*0.5, BRUTE, hit_hand)
-	else if(ismonkey(user))
-		var/mob/living/carbon/monkey/M = user
-		if(!HAS_TRAIT(M, TRAIT_PIERCEIMMUNE))
-			to_chat(M, "<span class='warning'>[src] cuts into your hand!</span>")
-			M.apply_damage(force*0.5, BRUTE, hit_hand)
+	if(!iscarbon(user))
+		return
+	var/mob/living/carbon/C = user
+	if(!C.hands_unprotected_for_shard_pickup_damage())
+		return
+	var/hit_hand = ((C.active_hand_index % 2 == 0) ? "r_" : "l_") + "arm"
+	to_chat(user, span_warning("[src] cuts into your hand!"))
+	C.apply_damage(force * 0.5, BRUTE, hit_hand)
 
 
 /obj/item/shard/attackby(obj/item/item, mob/user, params)

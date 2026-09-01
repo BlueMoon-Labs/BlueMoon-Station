@@ -148,7 +148,21 @@
 	var/chameleon_type = null
 	var/chameleon_name = "Item"
 
+	var/datum/callback/on_change
+
 	var/emp_timer
+
+/datum/action/item_action/chameleon/change/Destroy()
+	// ЭМИ-рандомизация оставляла экшен в SSprocessing: process() снимает его только
+	// по истечении emp_timer, а удалённый вместе с вещью экшен висел в processing вечно
+	STOP_PROCESSING(SSprocessing, src)
+	QDEL_NULL(on_change)
+	//вещь может пережить свой экшен: если она покинула инвентарь мимо dropped(),
+	//грант остаётся в mob.actions, и QDEL_LAZYLIST(actions) в mob/Destroy убивает
+	//экшен - отвязываемся, иначе вещь вечно держит удалённый датум
+	if(target && ("chameleon_action" in target.vars) && target.vars["chameleon_action"] == src)
+		target.vars["chameleon_action"] = null
+	return ..()
 
 /datum/action/item_action/chameleon/change/Grant(mob/M)
 	if(M && (owner != M))
@@ -209,44 +223,69 @@
 
 /datum/action/item_action/chameleon/change/proc/update_look(mob/user, obj/item/picked_item)
 	if(isliving(user))
-		var/mob/living/C = user
-		if(C.stat != CONSCIOUS)
+		var/mob/living/L = user
+		if(L.stat != CONSCIOUS)
 			return
 
 		update_item(picked_item)
 		var/obj/item/thing = target
 		thing.update_slot_icon()
+		if(iscarbon(user))
+			var/mob/living/carbon/C = user
+			if(C.head == target || C.wear_mask == target)
+				C.head_update(target, TRUE)
+
 	UpdateButtons()
 
 /datum/action/item_action/chameleon/change/proc/update_item(obj/item/picked_item)
 	var/obj/item/chameleon_item = target
+	if(!istype(chameleon_item))
+		return
 
-	chameleon_item.name = initial(picked_item.name)
-	chameleon_item.desc = initial(picked_item.desc)
+	if(!istype(chameleon_item, /obj/item/card/id)) // Не сбрасываем имя для карты
+		chameleon_item.name = initial(picked_item.name)
+		chameleon_item.desc = initial(picked_item.desc)
 	chameleon_item.icon_state = initial(picked_item.icon_state)
-	if(isitem(chameleon_item))
-		var/obj/item/I = chameleon_item
-		I.item_state = initial(picked_item.item_state)
-	var/obj/item/clothing/CL = chameleon_item
-	var/obj/item/clothing/PCL = new picked_item
-	if(istype(CL) && istype(PCL))
+	chameleon_item.item_state = initial(picked_item.item_state)
+	chameleon_item.icon = initial(picked_item.icon)
+	// Always copy variation flags — needed for digi/taur/muzzle worn sprites (also covers non-clothing slots).
+	chameleon_item.mutantrace_variation = initial(picked_item.mutantrace_variation)
+	if(ispath(picked_item, /obj/item/clothing) && istype(chameleon_item, /obj/item/clothing))
+		var/obj/item/clothing/CL = chameleon_item
+		var/obj/item/clothing/PCL = new picked_item
 		CL.flags_cover = PCL.flags_cover
 		CL.flags_inv = PCL.flags_inv
 		CL.mutantrace_variation = PCL.mutantrace_variation
 		CL.mob_overlay_icon = PCL.mob_overlay_icon
-		qdel(PCL)
-	chameleon_item.icon = initial(picked_item.icon)
+		CL.alternate_worn_layer = PCL.alternate_worn_layer
+		CL.anthro_mob_worn_overlay = PCL.anthro_mob_worn_overlay
+		CL.tail_suit_worn_overlay = PCL.tail_suit_worn_overlay
 
-/datum/action/item_action/chameleon/change/pda/update_item(obj/item/pda/picked_item)
-	if(!istype(target, /obj/item/pda))
+		if(istype(CL, /obj/item/clothing/under) && istype(PCL, /obj/item/clothing/under))
+			var/obj/item/clothing/under/CL_under = CL
+			var/obj/item/clothing/under/PCL_under = PCL
+			CL_under.fitted = PCL_under.fitted
+
+		if(istype(CL, /obj/item/clothing/suit))
+			var/obj/item/clothing/suit/CL_suit = CL
+			CL_suit.taur_types_icon_whitelist = initial(CL_suit.taur_types_icon_whitelist)
+			CL_suit.taur_mob_worn_overlay = initial(CL_suit.taur_mob_worn_overlay)
+			if(istype(PCL, /obj/item/clothing/suit))
+				var/obj/item/clothing/suit/PCL_suit = PCL
+				CL_suit.taur_types_icon_whitelist = PCL_suit.taur_types_icon_whitelist.Copy()
+				CL_suit.taur_mob_worn_overlay = PCL_suit.taur_mob_worn_overlay
+
+		qdel(PCL)
+	chameleon_item.update_icon()
+	on_change?.Invoke(picked_item)
+
+/datum/action/item_action/chameleon/change/pda/update_item(obj/item/modular_computer/pda/picked_item)
+	if(!istype(target, /obj/item/modular_computer/pda))
 		return ..()
-	var/obj/item/pda/P = target
+	var/obj/item/modular_computer/pda/P = target
 	P.name = initial(picked_item.name)
 	P.desc = initial(picked_item.desc)
 	P.icon_state = initial(picked_item.icon_state)
-	P.item_state = initial(picked_item.item_state)
-	P.overlays_offsets = initial(picked_item.overlays_offsets)
-	P.set_new_overlays()
 	P.update_icon()
 
 /datum/action/item_action/chameleon/change/Trigger()
@@ -611,27 +650,9 @@ CHAMELEON_CLOTHING_DEFINE(/obj/item/radio/headset/chameleon)
 	. = ..()
 	chameleon_action.emp_randomise(INFINITY)
 
-CHAMELEON_CLOTHING_DEFINE(/obj/item/pda/chameleon)
-	name = "PDA"
-	var/datum/action/item_action/chameleon/change/pda/chameleon_action
+CHAMELEON_CLOTHING_DEFINE(/obj/item/modular_computer/pda/chameleon)
 
-/obj/item/pda/chameleon/Initialize(mapload)
-	. = ..()
-	chameleon_action = new(src)
-	chameleon_action.chameleon_type = /obj/item/pda
-	chameleon_action.chameleon_name = "PDA"
-	chameleon_action.chameleon_blacklist = typecacheof(list(/obj/item/pda/heads, /obj/item/pda/ai, /obj/item/pda/ai/pai), only_root_path = TRUE)
-	chameleon_action.initialize_disguises()
-
-/obj/item/pda/chameleon/emp_act(severity)
-	. = ..()
-	if(. & EMP_PROTECT_SELF)
-		return
-	chameleon_action.emp_randomise()
-
-/obj/item/pda/chameleon/broken/Initialize(mapload)
-	. = ..()
-	chameleon_action.emp_randomise(INFINITY)
+// Chameleon PDA is now defined in role_tablet_presets.dm
 
 CHAMELEON_CLOTHING_DEFINE(/obj/item/stamp/chameleon)
 	var/datum/action/item_action/chameleon/change/chameleon_action
@@ -642,7 +663,14 @@ CHAMELEON_CLOTHING_DEFINE(/obj/item/stamp/chameleon)
 	chameleon_action.chameleon_type = /obj/item/stamp
 	chameleon_action.chameleon_name = "Stamp"
 	chameleon_action.chameleon_blacklist = typecacheof(/obj/item/stamp/machine, ignore_root_path = FALSE) // BLUEMOON EDIT - переработка анализаторов здоровья, новый штамп для автобумажек
+	chameleon_action.on_change = CALLBACK(src, PROC_REF(on_change))
 	chameleon_action.initialize_disguises()
+
+/obj/item/stamp/chameleon/proc/on_change(obj/item/stamp/picked_item)
+	if(!ispath(picked_item))
+		return
+	on_paper_icon_state = initial(picked_item.on_paper_icon_state)
+	dye_color = initial(picked_item.dye_color)
 
 /obj/item/stamp/chameleon/broken/Initialize(mapload)
 	. = ..()

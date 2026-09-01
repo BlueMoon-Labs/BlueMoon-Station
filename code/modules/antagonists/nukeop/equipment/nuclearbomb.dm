@@ -69,7 +69,7 @@
 
 /obj/machinery/nuclearbomb/selfdestruct/Initialize(mapload)
 	. = ..()
-	if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH] && prob(10))
+	if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH] && prob(10))
 		name = "station-wide gender-reveal terminal"
 		desc = "For when the whole sector deserves to know a gender. But of whom? Don't ask."
 
@@ -78,7 +78,7 @@
 
 /obj/machinery/nuclearbomb/syndicate/Initialize(mapload)
 	. = ..()
-	if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH] && prob(50))
+	if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH] && prob(50))
 		name = "tactical gender-reveal device"
 		desc = "\"But whose gender is it revealing?\" you ponder. Don't worry. That comes later."
 
@@ -158,6 +158,39 @@
 					deconstruction_state = NUKESTATE_PANEL_REMOVED
 					STOP_PROCESSING(SSobj, core)
 					update_icon()
+				return
+		if(NUKESTATE_CORE_REMOVED)
+			if(istype(I, /obj/item/nuke_core) && !istype(I, /obj/item/nuke_core/supermatter_sliver))
+				if(core)
+					return
+				to_chat(user, "<span class='notice'>You start placing the plutonium core back into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core)
+						return
+					if(!user.transferItemToLoc(I, src))
+						return
+					core = I
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You place the plutonium core back into [src].</span>")
+				return
+			if(istype(I, /obj/item/nuke_core_container))
+				var/obj/item/nuke_core_container/core_box = I
+				if(!core_box.core || istype(core_box.core, /obj/item/nuke_core/supermatter_sliver))
+					return
+				to_chat(user, "<span class='notice'>You start reinserting the plutonium core from [core_box] into [src]...</span>")
+				if(do_after(user, 50, target=src))
+					if(core || !core_box.core)
+						return
+					core = core_box.core
+					core_box.core.forceMove(src)
+					core_box.core = null
+					core_box.icon_state = "core_container_empty"
+					deconstruction_state = NUKESTATE_CORE_EXPOSED
+					START_PROCESSING(SSobj, core)
+					update_icon()
+					to_chat(user, "<span class='notice'>You reinsert the plutonium core from [core_box] into [src].</span>")
 				return
 	. = ..()
 
@@ -414,14 +447,18 @@
 	else
 		anchored = !anchored
 
+/// Returns syndicate nuke pinpointers to disk tracking — used after disarm/detonation paths where Destroy skips set_safety().
+/proc/revert_syndicate_nuke_pinpointers_disk()
+	for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
+		S.switch_mode_to(initial(S.mode))
+		S.alert = FALSE
+
 /obj/machinery/nuclearbomb/proc/set_safety()
 	safety = !safety
 	if(safety)
 		if(timing)
-			set_security_level(previous_level)
-			for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-				S.switch_mode_to(initial(S.mode))
-				S.alert = FALSE
+			set_security_level(previous_level, null, TRUE)
+			revert_syndicate_nuke_pinpointers_disk()
 		timing = FALSE
 		detonation_timer = null
 		countdown.stop()
@@ -441,10 +478,8 @@
 		set_security_level("delta")
 	else
 		detonation_timer = null
-		set_security_level(previous_level)
-		for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-			S.switch_mode_to(initial(S.mode))
-			S.alert = FALSE
+		set_security_level(previous_level, null, TRUE)
+		revert_syndicate_nuke_pinpointers_disk()
 		countdown.stop()
 	update_icon()
 
@@ -483,6 +518,7 @@
 	if(!core)
 		Cinematic(CINEMATIC_NUKE_NO_CORE,world)
 		SSticker.roundend_check_paused = FALSE
+		revert_syndicate_nuke_pinpointers_disk()
 		return
 
 	GLOB.enter_allowed = FALSE
@@ -509,6 +545,7 @@
 	SSticker.mode.OnNukeExplosion(off_station)
 	really_actually_explode(off_station)
 	SSticker.roundend_check_paused = FALSE
+	revert_syndicate_nuke_pinpointers_disk()
 
 /obj/machinery/nuclearbomb/proc/really_actually_explode(off_station)
 	Cinematic(get_cinematic_type(off_station),world,CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, station_explosion_detonation),src))
@@ -555,7 +592,7 @@
 		disarm()
 		return
 	if(is_station_level(bomb_location.z))
-		var/datum/round_event_control/E = locate(/datum/round_event_control/scrubber_overflow/beer) in SSevents.control
+		var/datum/round_event_control/E = locate(/datum/round_event_control/scrubber_overflow/beer) in SSdirector.event_controls()
 		if(E)
 			E.runEvent()
 		addtimer(CALLBACK(src, PROC_REF(really_actually_explode)), 110)
@@ -567,10 +604,8 @@
 	detonation_timer = null
 	exploding = FALSE
 	exploded = TRUE
-	set_security_level(previous_level)
-	for(var/obj/item/pinpointer/nuke/syndicate/S in GLOB.pinpointer_list)
-		S.switch_mode_to(initial(S.mode))
-		S.alert = FALSE
+	set_security_level(previous_level, null, TRUE)
+	revert_syndicate_nuke_pinpointers_disk()
 	countdown.stop()
 	update_icon()
 
@@ -582,6 +617,7 @@
 	var/datum/effect_system/foam_spread/foam = new
 	foam.set_up(200, get_turf(src), R)
 	foam.start()
+	qdel(R)
 	disarm()
 
 /obj/machinery/nuclearbomb/beer/really_actually_explode()
@@ -636,6 +672,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	var/fake = FALSE
+	var/stationloving = TRUE
 	var/turf/lastlocation
 	var/last_disk_move
 	var/process_tick = 0
@@ -651,7 +688,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/stationloving, !fake)
+	if(stationloving)
+		AddComponent(/datum/component/stationloving, !fake)
 
 /obj/item/disk/nuclear/process()
 	process_tick++
@@ -674,7 +712,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 			if(!(process_tick % 30))
 				visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
 		if(last_disk_move < world.time - 5000 && prob((world.time - 5000 - last_disk_move)*0.0001 / max(disk_comfort_level,1)))
-			var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSevents.control
+			var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
 			if(istype(loneop) && loneop.occurrences < loneop.max_occurrences)
 				loneop.weight += 1
 				if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1 && (CONFIG_GET(flag/admin_disk_inactive_msg))) //players count now
@@ -684,7 +722,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	else
 		lastlocation = newturf
 		last_disk_move = world.time
-		var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSevents.control
+		var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
 		if(istype(loneop) && loneop.occurrences < loneop.max_occurrences && prob(loneop.weight))
 			loneop.weight = max(loneop.weight - 1, 0)
 			if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1)
@@ -693,11 +731,15 @@ This is here to make the tiles around the station mininuke change when it's arme
 
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()
-	if(!fake)
-		return
+	if(isobserver(user) && fake)
+		. += span_notice("It's a fake! Nice job captain, ha-ha.")
 
-	if(isobserver(user) || HAS_TRAIT(user.mind, TRAIT_DISK_VERIFIER))
-		. += "<span class='warning'>The serial numbers on [src] are incorrect.</span>"
+/obj/item/disk/nuclear/examine_more(mob/user)
+	. = ..()
+	if(HAS_TRAIT(user?.mind, TRAIT_DISK_VERIFIER))
+		. += span_notice("The serial numbers on [src] are [fake ? "in" : ""]correct.")
+	else
+		. += span_notice("It has a serial number on it, but it doesn't mean anything to you.")
 
 /*
  * You can't accidentally eat the nuke disk, bro
@@ -749,3 +791,10 @@ This is here to make the tiles around the station mininuke change when it's arme
 /obj/item/disk/nuclear/fake/obvious
 	name = "cheap plastic imitation of the nuclear authentication disk"
 	desc = "How anyone could mistake this for the real thing is beyond you."
+	stationloving = FALSE
+	resistance_flags = NONE
+	armor = null
+
+/obj/item/disk/nuclear/fake/obvious/mail
+	name = "nuclearning auth disk"
+	desc = "Better keep this safe."

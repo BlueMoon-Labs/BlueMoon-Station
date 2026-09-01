@@ -63,6 +63,53 @@ Contains:
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE
 
+//Commander
+/obj/item/clothing/suit/space/swat/command
+	name = "Emergency Response Team commander Armor"
+	desc = "A set of armor worn by the commander of a Nanotrasen Emergency Response Team. Has blue highlights."
+	icon_state = "ertarmor_cmd"
+	item_state = "armor"
+	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+//Security
+/obj/item/clothing/suit/space/swat/security
+	name = "Emergency Response Team security Armor"
+	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
+	icon_state = "ertarmor_sec"
+	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+//Engineer
+/obj/item/clothing/suit/space/swat/engineer
+	name = "Emergency Response Team engineer Armor"
+	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
+	icon_state = "ertarmor_eng"
+	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+//Medical
+/obj/item/clothing/suit/space/swat/medical
+	name = "Emergency Response Team medical Armor"
+	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
+	icon_state = "ertarmor_med"
+	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
+
+//Janitorial
+/obj/item/clothing/suit/space/swat/janitor
+	name = "Emergency Response Team janitor Armor"
+	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
+	icon_state = "ertarmor_jan"
+	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/head/helmet/space/beret
 	name = "officer's beret"
 	desc = "An armored beret commonly used by special operations officers. Uses advanced force field technology to protect the head from space."
@@ -150,7 +197,7 @@ Contains:
 	desc = "A thick, space-proof tricorne from the royal Space Queen. It's lined with a layer of reflective kevlar."
 	icon_state = "pirate"
 	item_state = "pirate"
-	armor = list(MELEE = 30, BULLET = 50, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
+	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
 	flags_inv = HIDEHAIR
 	strip_delay = 40
 	equip_delay_other = 20
@@ -171,9 +218,9 @@ Contains:
 	item_state = "pirate"
 	w_class = WEIGHT_CLASS_NORMAL
 	flags_inv = 0
-	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/cover/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
 	slowdown = 0
-	armor = list(MELEE = 30, BULLET = 50, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
+	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
 	strip_delay = 40
 	equip_delay_other = 20
 	mutantrace_variation = STYLE_DIGITIGRADE
@@ -260,6 +307,7 @@ Contains:
 	item_state = "ert_medical"
 	tail_state = "ert-medical"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/med
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 // BLUEMOOD ADD medhuds for medical ERT hardhelmet
 /obj/item/clothing/head/helmet/space/hardsuit/ert/med/equipped(mob/living/carbon/human/user, slot)
@@ -415,27 +463,52 @@ Contains:
 	desc = "Spaceworthy and it looks like a space carp's head, smells like one too."
 	icon_state = "carp_helm"
 	item_state = "syndicate"
-	armor = list(MELEE = -20, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 75, FIRE = 60, ACID = 75, WOUND = 5)	//As whimpy as a space carp
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
 	brightness_on = 0 //luminosity when on
 	actions_types = list()
+	heat_protection = HEAD
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = NONE
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 
 /obj/item/clothing/head/helmet/space/hardsuit/carp/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, LOCKED_HELMET_TRAIT)
 
+/obj/item/clothing/head/helmet/space/hardsuit/carp/equipped(mob/living/carbon/human/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_HEAD)
+		user.faction |= "carp"
+
+/obj/item/clothing/head/helmet/space/hardsuit/carp/dropped(mob/living/carbon/human/user)
+	. = ..()
+	if(user.head == src)
+		user.faction -= "carp"
 
 /obj/item/clothing/suit/space/hardsuit/carp
 	name = "carp space suit"
-	desc = "A slimming piece of dubious space carp technology, you suspect it won't stand up to hand-to-hand blows."
+	desc = "A slimming piece of dubious space carp technology. Carp magic lets you walk freely through the void."
 	icon_state = "carp_suit"
 	item_state = "space_suit_syndicate"
-	tail_state = "wizard"
+	tail_state = "carp"
 	slowdown = 0	//Space carp magic, never stop believing
-	armor = list(MELEE = -20, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 75, FIRE = 60, ACID = 75, WOUND = 5) //As whimpy whimpy whoo
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
 	allowed = list(/obj/item/tank/internals, /obj/item/gun/ballistic/automatic/speargun)	//I'm giving you a hint here
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/carp
+	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE
+
+/obj/item/clothing/suit/space/hardsuit/carp/equipped(mob/living/carbon/human/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING)
+		ADD_TRAIT(user, TRAIT_SPACEWALK, CLOTHING_TRAIT)
+
+/obj/item/clothing/suit/space/hardsuit/carp/dropped(mob/living/carbon/human/user)
+	. = ..()
+	REMOVE_TRAIT(user, TRAIT_SPACEWALK, CLOTHING_TRAIT)
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal
 	name = "paranormal response unit helmet"
@@ -575,7 +648,7 @@ Contains:
 	item_state = "paramedic-eva"
 	tail_state = "paramed"
 	desc = "A deep blue space suit decorated with medical insignia to indicate that the wearer is trained emergency medical personnel."
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/roller)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/roller, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 /obj/item/clothing/head/helmet/space/eva/paramedic
 	name = "paramedic EVA helmet"

@@ -110,24 +110,31 @@
 	slowdown = SHOES_SLOWDOWN+1
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/shoes/clown
 	lace_time = 20 SECONDS // how the hell do these laces even work??
-	var/datum/component/waddle
 	var/enabled_waddle = TRUE
 
 /obj/item/clothing/shoes/clown_shoes/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
 
+/obj/item/clothing/shoes/clown_shoes/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Ctrl-click</b> to [enabled_waddle ? "disable" : "enable"] waddle dampeners.")
+
 /obj/item/clothing/shoes/clown_shoes/equipped(mob/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_FEET)
 		if(enabled_waddle)
-			waddle = user.AddComponent(/datum/component/waddling)
+			ADD_TRAIT(user, TRAIT_WADDLING, CLOTHING_TRAIT)
+			user.LoadComponent(/datum/component/waddling)
 		if(user.mind && HAS_TRAIT(user.mind, TRAIT_CLOWN_MENTALITY))
 			SEND_SIGNAL(user, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
 /obj/item/clothing/shoes/clown_shoes/dropped(mob/user)
 	. = ..()
-	QDEL_NULL(waddle)
+	REMOVE_TRAIT(user, TRAIT_WADDLING, CLOTHING_TRAIT)
+	if(!HAS_TRAIT(user, TRAIT_WADDLING))
+		var/datum/component/waddling = user.GetComponent(/datum/component/waddling)
+		waddling?.RemoveComponent()
 	if(user.mind && HAS_TRAIT(user.mind, TRAIT_CLOWN_MENTALITY))
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
 
@@ -171,6 +178,11 @@
 	desc = "Nanotrasen-issue Security combat boots for combat scenarios or combat situations. All combat, all the time."
 	icon_state = "jackboots_sec"
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 50) // BLUEMOON ADD no armor = applying bare wound bonus. These boots now are between CBRN and MOPP
+
+/obj/item/clothing/shoes/jackboots/black
+	name = "dark jackboots"
+	desc = "Nanotrasen-issue Security combat boots for combat scenarios or combat situations. These are fully black."
+	icon_state = "blackjack"
 
 /obj/item/clothing/shoes/jackboots/alliance
 	name = "Alliance Jackboots"
@@ -293,6 +305,8 @@
 	name = "jump boots"
 	desc = "A specialized pair of combat boots with a built-in propulsion system for rapid foward movement."
 	icon_state = "jetboots"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 	resistance_flags = FIRE_PROOF
 	cold_protection = FEET|LEGS
 	min_cold_protection_temperature = SHOES_MIN_TEMP_PROTECT
@@ -310,6 +324,14 @@
 	var/recharging_rate = 60 //default 6 seconds between each dash
 	var/recharging_time = 0 //time until next dash
 	var/jumping = FALSE //are we mid-jump?
+
+/// Награда кристаллизатора за нитрий. Более быстрый цикл ускорителя отличает её
+/// от шахтёрских прыжковых ботинок, но дальность рывка остаётся прежней.
+/obj/item/clothing/shoes/bhop/crystallizer
+	name = "nitrium impulse boots"
+	desc = "Прыжковые ботинки с нитриумным ускорителем. Они совершают такой же рывок, как шахтёрская модель, но восстанавливают импульс за четыре с половиной секунды вместо шести."
+	icon_state = "jetboots_nitrium"
+	recharging_rate = 45
 
 /obj/item/clothing/shoes/bhop/ui_action_click(mob/user, action)
 	if(!isliving(user))
@@ -384,7 +406,8 @@
 
 /obj/item/clothing/shoes/wheelys/dropped(mob/user)
 	if(wheelToggle)
-		W.unbuckle_mob(user)
+		if(W.is_occupant(user))
+			W.unbuckle_mob(user)
 		wheelToggle = FALSE
 	..()
 
@@ -469,8 +492,9 @@
 	desc = "Contrary to popular belief, these do not allow you to walk on walls. Through bluespace magic stolen from an organisation that hoards technology, they simply allow you to slip through the atoms that make up anything, but only while walking, for safety reasons. As well as this, they unfortunately cause minor breath loss as the majority of atoms in your lungs are sucked out into any solid object you walk through. Make sure not to overuse them."
 	icon_state = "walkboots"
 	var/walkcool = 0
-	var/wallcharges = 20
+	var/wallcharges = 6
 	var/newlocobject = null
+	var/recharge_timer = null
 
 /obj/item/clothing/shoes/timidcostume
 	name = "timid woman boots"
@@ -492,10 +516,24 @@
 	. = ..()
 	if(slot == ITEM_SLOT_FEET)
 		RegisterSignal(user, COMSIG_MOB_CLIENT_MOVE, PROC_REF(intercept_user_move))
+		recharge_timer = addtimer(CALLBACK(src, PROC_REF(recharge_charges)), 10 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
 
 /obj/item/clothing/shoes/wallwalkers/dropped(mob/user)
 	. = ..()
-	UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(user)
+		UnregisterSignal(user, COMSIG_MOB_CLIENT_MOVE)
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+
+/obj/item/clothing/shoes/wallwalkers/Destroy()
+	if(recharge_timer)
+		deltimer(recharge_timer)
+		recharge_timer = null
+	return ..()
+
+/obj/item/clothing/shoes/wallwalkers/proc/recharge_charges()
+	wallcharges = min(wallcharges + 1, 20)
 
 /obj/item/clothing/shoes/wallwalkers/attackby(obj/item/W, mob/user, params)
 	. = ..()
@@ -587,56 +625,64 @@
 	desc = "Excellent for when you need to do cool flashy flips."
 	icon_state = "phantom_shoes"
 	item_state = "phantom_shoes"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/saints
 	name = "saints sneakers"
 	desc = "Officially branded Saints sneakers. Incredibly valuable!"
 	icon_state = "saints_shoes"
 	item_state = "saints_shoes"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/morningstar
 	name = "morningstar boots"
 	desc = "The most expensive boots on this station. Wearing them dropped the value by about 50%."
 	icon_state = "morningstar_shoes"
 	item_state = "morningstar_shoes"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/deckers
 	name = "deckers rollerskates"
 	desc = "t3h c00L3st sh03z j00'LL 3v3r f1nd."
 	icon_state = "decker_shoes"
 	item_state = "decker_shoes"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/sybil_slickers
 	name = "sybil slickers shoes"
 	desc = "FOOTBALL! YEAH!"
 	icon_state = "sneakers_blue"
 	item_state = "sneakers_blue"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/basil_boys
 	name = "basil boys shoes"
 	desc = "FOOTBALL! YEAH!"
 	icon_state = "sneakers_red"
 	item_state = "sneakers_red"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/yakuza
 	name = "tojo clan shoes"
 	desc = "Steel-toed and intimidating."
 	icon_state = "MajimaShoes"
 	item_state = "MajimaShoes_worn"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/jackbros
 	name = "frosty boots"
 	desc = "For when you're stepping on up to the plate."
 	icon_state = "JackFrostShoes"
 	item_state = "JackFrostShoes_worn"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 
 /obj/item/clothing/shoes/ducky
 	name = "Rubber Ducky Shoes"

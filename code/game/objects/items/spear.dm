@@ -6,6 +6,7 @@
 	name = "spear"
 	desc = "A haphazardly-constructed yet still deadly weapon of ancient design."
 	force = 10
+	reach = 2
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	throwforce = 40
@@ -24,6 +25,14 @@
 	var/wielded = FALSE // track wielded status on item
 	wound_bonus = 6
 	bare_wound_bonus = 10
+	unique_reskin = list("Alt" = list(RESKIN_ICON_STATE = "spear_rock1"))
+
+/obj/item/spear/reskin_obj(mob/user)
+	if(current_skin == "Alt")
+		icon_prefix = "spear_rock"
+		var/datum/component/two_handed/TH = GetComponent(/datum/component/two_handed)
+		if(TH)
+			TH.icon_wielded= "[icon_prefix]1"
 
 /obj/item/spear/Initialize(mapload)
 	. = ..()
@@ -84,14 +93,23 @@
 		user.say("[war_cry]", forced="spear warcry")
 		explosive.prime()
 
-/obj/item/spear/grenade_prime_react(obj/item/grenade/nade) //Citadel edit, removes throw_impact because memes
+/obj/item/spear/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	. = ..()
+	if(.)
+		return // caught
+	if(!explosive)
+		return
+	// Thrown explosive lance detonates on living targets with the attached grenade's yield
+	if(isliving(hit_atom))
+		explosive.prime()
+
+/obj/item/spear/grenade_prime_react(obj/item/grenade/nade)
 	nade.forceMove(get_turf(src))
 	qdel(src)
 
 /obj/item/spear/AltClick(mob/user)
 	. = ..()
 	if(user.canUseTopic(src, BE_CLOSE))
-		..()
 		if(!explosive)
 			return
 		if(istype(user) && loc == user)
@@ -102,35 +120,52 @@
 
 /obj/item/spear/CheckParts(list/parts_list)
 	var/obj/item/shard/tip = locate() in parts_list
-	if(!tip)
-		return ..()
+	if(tip)
+		switch(tip.type)
+			if(/obj/item/shard/plasma)
+				force = 11
+				throwforce = 41
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plasmaglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				icon_prefix = "spearplasma"
+				AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=19, icon_wielded="[icon_prefix]1")
+			if(/obj/item/shard/titanium)
+				force = 13
+				throwforce = 43
+				throw_range = 8
+				throw_speed = 5
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/titaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				wound_bonus = 8
+				icon_prefix = "speartitanium"
+				AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=18, icon_wielded="[icon_prefix]1")
+			if(/obj/item/shard/plastitanium)
+				force = 13
+				throwforce = 43
+				throw_range = 9
+				throw_speed = 5
+				custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plastitaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
+				wound_bonus = 12
+				bare_wound_bonus = 10
+				icon_prefix = "spearplastitanium"
+				AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=20, icon_wielded="[icon_prefix]1")
+		parts_list -= tip
+		qdel(tip)
 
-	switch(tip.type)
-		if(/obj/item/shard/plasma)
-			force = 11
-			throwforce = 41
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plasmaglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			icon_prefix = "spearplasma"
-			AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=19, icon_wielded="[icon_prefix]1")
-		if(/obj/item/shard/titanium)
-			force = 13
-			throwforce = 43
-			throw_range = 8
-			throw_speed = 5
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/titaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			wound_bonus = 8
-			icon_prefix = "speartitanium"
-			AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=18, icon_wielded="[icon_prefix]1")
-		if(/obj/item/shard/plastitanium)
-			force = 13
-			throwforce = 43
-			throw_range = 9
-			throw_speed = 5
-			custom_materials = list(/datum/material/iron= HALF_SHEET_MATERIAL_AMOUNT, /datum/material/alloy/plastitaniumglass= HALF_SHEET_MATERIAL_AMOUNT * 2)
-			wound_bonus = 12
-			bare_wound_bonus = 10
-			icon_prefix = "spearplastitanium"
-			AddComponent(/datum/component/two_handed, force_unwielded=13, force_wielded=20, icon_wielded="[icon_prefix]1")
+	// Explosive Lance craft: spear + grenade → keep the source spear's stats, attach that grenade
+	var/obj/item/spear/lancePart = locate() in parts_list
+	if(lancePart)
+		throwforce = lancePart.throwforce
+		icon_prefix = lancePart.icon_prefix
+		wound_bonus = lancePart.wound_bonus
+		bare_wound_bonus = lancePart.bare_wound_bonus
+		armour_penetration = lancePart.armour_penetration
+		custom_materials = lancePart.custom_materials
+		var/datum/component/two_handed/TH = lancePart.GetComponent(/datum/component/two_handed)
+		if(TH)
+			AddComponent(/datum/component/two_handed, force_unwielded = TH.force_unwielded, force_wielded = TH.force_wielded, icon_wielded = "[icon_prefix]1")
+		parts_list -= lancePart
+		qdel(lancePart)
+
+	. = ..() // moves remaining parts (the grenade) into contents
 
 	var/obj/item/grenade/G = locate() in contents
 	if(G)
@@ -140,11 +175,7 @@
 		updateEmbedding()
 		desc = "A makeshift spear with \a [G] attached to it."
 	update_icon()
-
 	update_appearance()
-	parts_list -= tip
-	qdel(tip)
-	return ..()
 
 /obj/item/spear/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, quickstart, params)
 	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback)
@@ -165,6 +196,7 @@
 	throwforce = 40
 	throw_speed = 4
 	attack_verb = list("gored")
+	unique_reskin = null
 	var/clonechance = 50
 	var/clonedamage = 12
 	var/clonespeed = 0
@@ -203,7 +235,6 @@
 	force = 11
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
-	reach = 2
 	throwforce = 50
 	embedding = list("embedded_impact_pain_multiplier" = 3)
 	armour_penetration = 15				//Enhanced armor piercing
@@ -212,7 +243,43 @@
 	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
 	sharpness = SHARP_EDGED
 	icon_prefix = "bone_spear"
+	unique_reskin = null
 
 /obj/item/spear/bonespear/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=11, force_wielded=20, icon_wielded="[icon_prefix]1")
+
+/obj/item/spear/bonespear/Khasal	//An artifact of the Ashwalker tribe, one of a kind
+	icon_state = "bonemetal_spear0"
+	name = "Khasal"
+	desc = "A deadly spear that passes down through the tribe from Cycle to Cycle. Like its original wielder, it is forced to shed blood until the end of time."
+	force = 18
+	throwforce = 60
+	armour_penetration = 25				//Enhanced armor piercing
+	icon_prefix = "bonemetal_spear"
+
+/obj/item/spear/bonespear/Khasal/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=18, force_wielded=27, icon_wielded="[icon_prefix]1")
+
+/obj/item/spear/military
+	icon_state = "military_spear0"
+	base_icon_state = "military_spear0"
+	lefthand_file = 'icons/mob/inhands/weapons/polearms_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
+	icon_prefix = "military_spear"
+	name = "military javelin"
+	desc = "A stick with a seemingly blunt spearhead on its end. Looks like it might break bones easily."
+	attack_verb_continuous = list("attacks", "pokes", "jabs")
+	attack_verb_simple = list("attack", "poke", "jab")
+	force = 20
+	throwforce = 50
+	wound_bonus = 5
+	bare_wound_bonus = 25
+	throw_range = 9
+	throw_speed = 5
+	sharpness = NONE // we break bones instead of cutting flesh
+
+/obj/item/spear/military/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=20, force_wielded=30, icon_wielded="[icon_prefix]1")

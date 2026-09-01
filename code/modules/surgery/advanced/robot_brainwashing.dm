@@ -31,7 +31,7 @@
 	var/objective
 
 /datum/surgery_step/reprogram/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	objective = stripped_input(user, "Choose the objective to imprint on your victim's posibrain.", "Reprogramming", null, MAX_MESSAGE_LEN)
+	objective = tgui_input_text(user, "Выберите цель, которая отпечатается в сознании вашей жертвы.", "Reprogramming", "", MAX_MESSAGE_LEN, TRUE, TRUE)
 	if(!objective)
 		return -1
 	display_results(user, target, "<span class='notice'>You begin to reprogram [target]...</span>",
@@ -60,6 +60,7 @@
 			"<span class='warning'>[user] screws up, causing damage to the circuits!/span>",
 			"[user] completes the surgery on [target]'s posibrain.")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the posibrain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the posibrain you were working on is not there anymore.</span>")
 	return FALSE

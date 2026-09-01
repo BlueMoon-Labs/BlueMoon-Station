@@ -127,7 +127,7 @@
 
 	if(!current_wizard)
 		return
-	var/list/mob/candidates = pollCandidatesForMob("Do you want to play as Wizard Academy Defender?", ROLE_WIZARD, null, ROLE_WIZARD, 50, current_wizard)
+	var/list/mob/candidates = pollCandidatesForMob("Do you want to play as Wizard Academy Defender?", ROLE_WIZARD, null, ROLE_WIZARD, 50, current_wizard, priority_check = FALSE)
 
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
@@ -170,9 +170,34 @@
 	can_be_rigged = FALSE
 	var/reusable = 1
 	var/used = 0
+	var/wander_timer_id
+
+/obj/item/dice/d20/fate/Initialize(mapload)
+	. = ..()
+	GLOB.poi_list |= src
+
+/obj/item/dice/d20/fate/Destroy()
+	GLOB.poi_list -= src
+	if(wander_timer_id)
+		deltimer(wander_timer_id)
+		wander_timer_id = null
+	. = ..()
+
+/obj/item/dice/d20/fate/proc/teleport_to_random()
+	var/turf/target = get_random_station_turf()
+	if(target)
+		var/datum/effect_system/spark_spread/tele_sparks = new
+		tele_sparks.set_up(3, 1, src)
+		do_teleport(src, target, effectin = tele_sparks, effectout = tele_sparks, asoundin = 'sound/magic/blink.ogg', asoundout = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_MAGIC)
+		visible_message("<span class='warning'>[src] flickers and vanishes!</span>")
 
 /obj/item/dice/d20/fate/one_use
 	reusable = 0
+
+/obj/item/dice/d20/fate/one_use/effect(var/mob/living/carbon/human/user, roll)
+	. = ..()
+	new /obj/effect/decal/cleanable/ash(get_turf(src))
+	qdel(src)
 
 /obj/item/dice/d20/fate/diceroll(mob/user)
 	..()
@@ -184,6 +209,11 @@
 			effect(user,rigged)
 		else
 			effect(user,result)
+	if(QDELETED(src))
+		return
+	teleport_to_random()
+	if(!wander_timer_id)
+		wander_timer_id = addtimer(CALLBACK(src, PROC_REF(teleport_to_random)), 10 MINUTES, TIMER_LOOP | TIMER_STOPPABLE)
 
 /obj/item/dice/d20/fate/equipped(mob/user, slot)
 	if(!ishuman(user) || !user.mind || (user.mind in SSticker.mode.wizards))
@@ -266,12 +296,11 @@
 			var/mob/living/carbon/human/H = new(drop_location())
 			H.equipOutfit(/datum/outfit/butler)
 			var/datum/mind/servant_mind = new /datum/mind()
-			var/datum/antagonist/magic_servant/A = new
-			servant_mind.add_antag_datum(A)
-			A.setup_master(user)
 			servant_mind.transfer_to(H)
+			var/datum/antagonist/magic_servant/A = servant_mind.add_antag_datum(/datum/antagonist/magic_servant)
+			A?.setup_master(user)
 
-			var/list/mob/candidates = pollCandidatesForMob("Do you want to play as [user.real_name] Servant?", ROLE_WIZARD, null, ROLE_WIZARD, 50, H)
+			var/list/mob/candidates = pollCandidatesForMob("[user.real_name] ищет себе дворецкого. Хотите ли вы сыграть за него?", ROLE_WIZARD, null, ROLE_WIZARD, 20 SECONDS, H, priority_check = FALSE)
 			if(LAZYLEN(candidates))
 				var/mob/C = pick(candidates)
 				message_admins("[ADMIN_LOOKUPFLW(C)] was spawned as Dice Servant")
@@ -297,6 +326,9 @@
 		if(20)
 			//Free wizard!
 			user.mind.make_Wizard()
+			if(reusable)
+				new /obj/effect/decal/cleanable/ash(get_turf(src))
+				qdel(src)
 
 
 /datum/outfit/butler

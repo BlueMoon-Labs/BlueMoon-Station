@@ -8,7 +8,7 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	planetary_atmos = TRUE
 	slowdown = 1
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null //needs a splashing sound one day.
 
 	footstep = FOOTSTEP_WATER
@@ -48,6 +48,7 @@
 	baseturfs = /turf/open/water/safe/cooling_luiquid
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	initial_temperature = TCMB
+	temperature = TCMB
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	color = LIGHT_COLOR_DARK_BLUE

@@ -1,27 +1,44 @@
 /turf
-	var/dynamic_lighting = TRUE
 	luminosity           = 1
+	/// Производное состояние освещения турфа, см. TURF_HAS_OPAQUE_ATOM и
+	/// TURF_LIGHTING_CORNERS_INITIALISED в code/__DEFINES/turf_flags.dm.
+	var/tmp/lighting_flags = NONE
 
-	var/tmp/lighting_corners_initialised = FALSE
 
-	var/tmp/list/datum/light_source/affecting_lights       // List of light sources affecting this turf.
-	var/tmp/datum/lighting_object/lighting_object // Our lighting object.
+	var/tmp/atom/movable/lighting_object/lighting_object // Our lighting object.
 	var/tmp/datum/lighting_corner/lc_topleft
 	var/tmp/datum/lighting_corner/lc_topright
 	var/tmp/datum/lighting_corner/lc_bottomleft
 	var/tmp/datum/lighting_corner/lc_bottomright
-	var/tmp/has_opaque_atom = FALSE // Not to be confused with opacity, this will be TRUE if there's any opaque atom on the tile.
+	var/tmp/shadow_weight_sum = 0 // Accumulated shadow weight from non-opaque atoms with shadow_weight > 0. Clamped to 1.0.
+	var/tmp/cached_lumcount // Cached normalized brightness for get_lumcount() (null = dirty)
+	/// Lumcount от оверлейного света (/datum/component/overlay_lighting), поверх корнер-системы.
+	/// НЕ входит в cached_lumcount: меняется при движении источников без инвалидации кэша.
+	var/dynamic_lumcount = 0
 
 // counterclockwisse 0 to 360
 #define PROC_ON_CORNERS(operation) lc_topright?.##operation;lc_bottomright?.##operation;lc_bottomleft?.##operation;lc_topleft?.##operation
 
 // Causes any affecting light sources to be queued for a visibility update, for example a door got opened.
+// Derives the set of affecting lights from corner data instead of maintaining a per-turf list.
 /turf/proc/reconsider_lights()
-	var/datum/light_source/L
-	var/thing
-	for (thing in affecting_lights)
-		L = thing
-		L.vis_update()
+	var/list/done = list()
+	#define _RECONSIDER_CORNER(corner) \
+		if(corner) { \
+			for(var/datum/light_source/L in corner.affecting) { \
+				if(!done[L]) { \
+					done[L] = TRUE; \
+					if(get_dist(src, L.source_turf) < CEILING(L.light_range, 1)) { \
+						L.vis_update(); \
+					}; \
+				}; \
+			}; \
+		}
+	_RECONSIDER_CORNER(lc_topright)
+	_RECONSIDER_CORNER(lc_bottomright)
+	_RECONSIDER_CORNER(lc_bottomleft)
+	_RECONSIDER_CORNER(lc_topleft)
+	#undef _RECONSIDER_CORNER
 
 /turf/proc/lighting_clear_overlay()
 	if (lighting_object)
@@ -38,10 +55,10 @@
 	if (!IS_DYNAMIC_LIGHTING(our_area) && !light_sources)
 		return
 
-	if (!lighting_corners_initialised)
+	if (!(lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
 		generate_missing_corners()
 
-	new/datum/lighting_object(src)
+	new /atom/movable/lighting_object(src)
 
 	var/datum/light_source/S
 	var/i
@@ -64,14 +81,15 @@
 	if(!lighting_object)
 		return TRUE
 
-	var/totallums = (lc_topright? (lc_topright.lum_r + lc_topright.lum_g + lc_topright.lum_b) : 0) \
-	+ (lc_bottomright? (lc_bottomright.lum_r + lc_bottomright.lum_g + lc_bottomright.lum_b) : 0) \
-	+ (lc_bottomleft? (lc_bottomleft.lum_r + lc_bottomleft.lum_g + lc_bottomleft.lum_b) : 0) \
-	+ (lc_topleft? (lc_topleft.lum_r + lc_topleft.lum_g + lc_topleft.lum_b) : 0)
+	var/totallums = cached_lumcount
+	if(isnull(totallums))
+		totallums = ((lc_topright? (lc_topright.lum_r + lc_topright.lum_g + lc_topright.lum_b) : 0) \
+		+ (lc_bottomright? (lc_bottomright.lum_r + lc_bottomright.lum_g + lc_bottomright.lum_b) : 0) \
+		+ (lc_bottomleft? (lc_bottomleft.lum_r + lc_bottomleft.lum_g + lc_bottomleft.lum_b) : 0) \
+		+ (lc_topleft? (lc_topleft.lum_r + lc_topleft.lum_g + lc_topleft.lum_b) : 0)) / 12
+		cached_lumcount = totallums
 
-	totallums /= 12 // 4 corners, each with 3 channels, get the average.
-
-	totallums = (totallums - minlum) / (maxlum - minlum)
+	totallums = (totallums + dynamic_lumcount - minlum) / (maxlum - minlum)
 
 	return CLAMP01(totallums)
 
@@ -86,33 +104,142 @@
 	return !luminosity
 
 // Can't think of a good name, this proc will recalculate the has_opaque_atom variable.
+// Full contents scan — used when opacity changes (need to check all atoms for remaining opaque ones).
 /turf/proc/recalc_atom_opacity()
-	has_opaque_atom = opacity
-	if (!has_opaque_atom)
-		for (var/atom/A in src.contents) // Loop through every movable atom on our tile PLUS ourselves (we matter too...)
-			if (A.opacity)
-				has_opaque_atom = TRUE
+	var/old_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
+	var/old_weight = shadow_weight_sum
+	if(opacity)
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
+		shadow_weight_sum = 1
+	else
+		lighting_flags &= ~TURF_HAS_OPAQUE_ATOM
+		// Собственного веса у турфа нет: shadow_weight стоит на движимом, ни один тип турфа его
+		// не задавал, а слот на каждом турфе мира стоил мегабайты.
+		shadow_weight_sum = 0
+		for(var/atom/movable/A in src.contents)
+			if(A.opacity)
+				lighting_flags |= TURF_HAS_OPAQUE_ATOM
+				shadow_weight_sum = 1
 				break
+			if(A.shadow_weight > 0)
+				shadow_weight_sum += A.shadow_weight
+		shadow_weight_sum = min(shadow_weight_sum, 1) // Clamp to 1.0 max per turf
+	// During bulk operations (shuttle moves), skip per-turf corner propagation — batch recalc after
+	if(GLOB.lighting_defer_active)
+		return
+	// If opacity state changed, update light visibility AND contact shadows
+	if((lighting_flags & TURF_HAS_OPAQUE_ATOM) != old_opaque)
+		PROC_ON_CORNERS(recalc_opaque_neighbors())
+	// If only shadow weight changed (no opacity change), still update contact shadows
+	else if(abs(shadow_weight_sum - old_weight) > 0.01)
+		PROC_ON_CORNERS(recalc_opaque_neighbors())
+
+/// Incremental shadow weight adjustment — avoids full contents scan for non-opaque atom enter/exit.
+/// Only valid when the atom is NOT opaque (opaque changes must use recalc_atom_opacity).
+/turf/proc/adjust_shadow_weight(delta)
+	if(lighting_flags & TURF_HAS_OPAQUE_ATOM)
+		return // Opaque atom present = weight locked at 1.0, delta irrelevant
+	var/old_weight = shadow_weight_sum
+	shadow_weight_sum = clamp(shadow_weight_sum + delta, 0, 1)
+	if(GLOB.lighting_defer_active)
+		return
+	if(abs(shadow_weight_sum - old_weight) > 0.01)
+		PROC_ON_CORNERS(recalc_opaque_neighbors())
 
 /turf/Exited(atom/movable/Obj, atom/newloc)
 	. = ..()
 
-	if (Obj && Obj.opacity)
-		recalc_atom_opacity() // Make sure to do this before reconsider_lights(), incase we're on instant updates.
-		reconsider_lights()
+	if(Obj && !GLOB.lighting_defer_active)
+		if(Obj.opacity)
+			recalc_atom_opacity() // Make sure to do this before reconsider_lights(), incase we're on instant updates.
+			reconsider_lights()
+		else if(Obj.shadow_weight > 0)
+			adjust_shadow_weight(-Obj.shadow_weight)
 
-/turf/proc/change_area(var/area/old_area, var/area/new_area)
+/turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE, skip_machinery = FALSE)
+	// Handing a turf between areas (admin area editing, shuttle creation) never fires area
+	// Entered/Exited for what is standing on it, so machinery would go on listening to the area it
+	// left. Re-point it here - this is the only moment the swap is observable.
+	//
+	// skip_machinery = TRUE обязателен на пути перелёта шаттла. Там /area/onShuttleMove отдаёт
+	// СТАРЫЙ турф подстилающей области (обычно /area/space) ДО того, как содержимое переехало на
+	// новый турф - см. порядок MOVE_AREA перед MOVE_CONTENTS в /obj/docking_port/mobile/takeoff.
+	// Машинерия шаттла в этот момент ещё стоит на старом турфе, и без флага мы переподписывали её
+	// на космос и тут же гасили: power_light у /area/space равен FALSE. Вернуть подписку было
+	// уже нечем - содержимое переносится присваиванием loc, которое не рассылает областные
+	// Entered/Exited, поэтому on_enter_area() не срабатывал. Итог в проде: у шаттла пропадало
+	// электричество, свет не включался даже с полным APC, а выключатель света не работал вовсе.
+	// Подписку на пути шаттла восстанавливает /obj/machinery/afterShuttleMove().
+	if(old_area != new_area && !skip_machinery)
+		for(var/obj/machinery/machine in contents)
+			machine.register_power_change_area(new_area)
+			machine.on_area_swap(old_area, new_area)
+			// Каналы новой области отличаются от старой, а сигнала о смене питания по ней уже не будет -
+			// синхронизируем machine_stat сразу, как это делает on_enter_area().
+			machine.power_change()
 	if(SSlighting.initialized)
 		if (new_area.dynamic_lighting != old_area.dynamic_lighting)
 			if (new_area.dynamic_lighting)
 				lighting_build_overlay()
 			else
 				lighting_clear_overlay()
+		// Recalculate blended area profiles for this turf and its cardinal neighbors
+		// skip_blend = TRUE during bulk operations (shuttle moves) — batch recalc is done after
+		if(!skip_blend)
+			if(old_area.light_temperature != new_area.light_temperature || \
+			   old_area.light_contrast != new_area.light_contrast || \
+			   old_area.contact_shadow_multiplier != new_area.contact_shadow_multiplier || \
+			   old_area.ambient_light != new_area.ambient_light)
+				recalc_area_blend_region()
+
+/// Queues blended area profile recalculation on this turf and its cardinal neighbors.
+/// Called when a turf changes area or an area's lighting profile is modified.
+/// Actual recalculation is batched in SSlighting fire() Phase 0 to avoid O(n*5) spikes.
+/turf/proc/recalc_area_blend_region()
+	if(lighting_object)
+		GLOB.lighting_update_blends |= lighting_object
+		if(!lighting_object.needs_update)
+			lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += lighting_object
+	var/turf/neighbor
+	neighbor = get_step(src, NORTH)
+	if(neighbor?.lighting_object)
+		GLOB.lighting_update_blends |= neighbor.lighting_object
+		if(!neighbor.lighting_object.needs_update)
+			neighbor.lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += neighbor.lighting_object
+	neighbor = get_step(src, SOUTH)
+	if(neighbor?.lighting_object)
+		GLOB.lighting_update_blends |= neighbor.lighting_object
+		if(!neighbor.lighting_object.needs_update)
+			neighbor.lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += neighbor.lighting_object
+	neighbor = get_step(src, EAST)
+	if(neighbor?.lighting_object)
+		GLOB.lighting_update_blends |= neighbor.lighting_object
+		if(!neighbor.lighting_object.needs_update)
+			neighbor.lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += neighbor.lighting_object
+	neighbor = get_step(src, WEST)
+	if(neighbor?.lighting_object)
+		GLOB.lighting_update_blends |= neighbor.lighting_object
+		if(!neighbor.lighting_object.needs_update)
+			neighbor.lighting_object.needs_update = TRUE
+			GLOB.lighting_update_objects += neighbor.lighting_object
 
 /turf/proc/generate_missing_corners()
-	if (!IS_DYNAMIC_LIGHTING(src) && !light_sources)
+	if (!TURF_IS_DYNAMIC_LIGHTING(src) && !light_sources)
 		return
-	lighting_corners_initialised = TRUE
+	// Corners must never be qdel'd; if a ref is stale, allow recreation (avoids bad state during moves)
+	if(lc_topright && QDELETED(lc_topright))
+		lc_topright = null
+	if(lc_bottomright && QDELETED(lc_bottomright))
+		lc_bottomright = null
+	if(lc_bottomleft && QDELETED(lc_bottomleft))
+		lc_bottomleft = null
+	if(lc_topleft && QDELETED(lc_topleft))
+		lc_topleft = null
+	lighting_flags |= TURF_LIGHTING_CORNERS_INITIALISED
 	// counterclockwise from 0 to 360.
 	if(!lc_topright)
 		new /datum/lighting_corner(src, NORTHEAST)

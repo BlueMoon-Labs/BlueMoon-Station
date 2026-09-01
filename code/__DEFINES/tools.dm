@@ -5,6 +5,7 @@
 #define TOOL_WIRECUTTER 	"wirecutter"
 #define TOOL_WRENCH 		"wrench"
 #define TOOL_WELDER 		"welder"
+#define TOOL_RUSTSCRAPER	"rustscraper"
 #define TOOL_ANALYZER		"analyzer"
 #define TOOL_MINING			"mining"
 #define TOOL_SHOVEL			"shovel"
@@ -17,6 +18,7 @@
 #define TOOL_KNIFE 			"knife"
 #define TOOL_BLOODFILTER 	"bloodfilter"
 #define TOOL_ROLLINGPIN 	"rollingpin"
+#define TOOL_UNROLLINGPIN 	"unrollingpin"
 //Glasswork Tools
 #define TOOL_BLOW			"blowing_rod"
 #define TOOL_GLASS_CUT		"glasskit"

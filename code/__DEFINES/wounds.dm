@@ -15,6 +15,11 @@
 #define WOUND_SEVERITY_CRITICAL	3
 #define WOUND_SEVERITY_LOSS		4 // theoretical total limb loss, like dismemberment for cuts
 
+/// Bleed rate thresholds for wound bleeding overlays on the mob
+#define BLEED_OVERLAY_LOW 0.5
+#define BLEED_OVERLAY_MED 1.5
+#define BLEED_OVERLAY_GUSH 2.75
+
 /// any brute weapon/attack that doesn't have sharpness. rolls for blunt bone wounds
 #define WOUND_BLUNT		1
 /// any brute weapon/attack with sharpness = SHARP_EDGED. rolls for slash wounds
@@ -37,7 +42,7 @@
 #define CANT_WOUND -100
 
 // list in order of highest severity to lowest
-GLOBAL_LIST_INIT(global_wound_types, list(WOUND_BLUNT = list(/datum/wound/blunt/critical, /datum/wound/blunt/severe, /datum/wound/blunt/moderate),
+GLOBAL_LIST_INIT(global_wound_types, alist(WOUND_BLUNT = list(/datum/wound/blunt/critical, /datum/wound/blunt/severe, /datum/wound/blunt/moderate),
 		WOUND_SLASH = list(/datum/wound/slash/critical, /datum/wound/slash/severe, /datum/wound/slash/moderate),
 		WOUND_PIERCE = list(/datum/wound/pierce/critical, /datum/wound/pierce/severe, /datum/wound/pierce/moderate),
 		WOUND_BURN = list(/datum/wound/burn/critical, /datum/wound/burn/severe, /datum/wound/burn/moderate)

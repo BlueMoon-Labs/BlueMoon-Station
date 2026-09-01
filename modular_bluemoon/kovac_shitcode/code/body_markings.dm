@@ -60,6 +60,16 @@
 	icon_state = "tat_butterfly"
 	covered_limbs = list("Chest" =  MATRIX_RED)
 
+/datum/sprite_accessory/mam_body_markings/tattoo/face_camo_lines
+	name = "Face camouflage lines"
+	icon_state = "tat_camolines"
+	covered_limbs = list("Head" =  MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/tattoo/up_points
+	name = "Up points"
+	icon_state = "tat_uppoints"
+	covered_limbs = list("Left Arm" =  MATRIX_RED, "Right Arm" =  MATRIX_RED)
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /datum/sprite_accessory/tails/mam_tails/teshari
@@ -127,7 +137,7 @@
 /datum/sprite_accessory/hair/zoey/katara
 	name = "Katara"
 	icon_state = "hair_katara_s"
-	icon = 'modular_bluemoon/SmiLeY/icons/mob/hairs.dmi'
+	icon = 'modular_bluemoon/icons/mob/hairs.dmi'
 
 /datum/sprite_accessory/hair/zoey/katara/ponytail_80
 	name = "Ponytail 80s"

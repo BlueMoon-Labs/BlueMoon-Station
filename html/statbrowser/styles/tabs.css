@@ -1,0 +1,66 @@
+/* ===== Tab Bar ===== */
+#tab-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border);
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	padding: 0 2px;
+	min-height: 32px;
+}
+
+#tab-bar-spacer {
+	flex-grow: 1;
+	order: 9997;
+}
+
+.tab-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: var(--tab-padding-v, 6px) var(--tab-padding-h, 12px);
+	font-size: 12px;
+	font-family: var(--font-sans);
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	white-space: nowrap;
+	flex-shrink: 0;
+	transition: color 80ms, border-color 80ms, background 80ms;
+	outline: none;
+}
+.tab-btn:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+.tab-btn.active {
+	color: var(--text-primary);
+	border-bottom-color: var(--accent);
+}
+.tab-btn.tab-fav.active {
+	border-bottom-color: var(--fav-accent);
+}
+
+#tab-search-btn {
+	flex-shrink: 0;
+	order: 9998;
+	padding: var(--tab-padding-v, 6px) 8px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--text-secondary);
+	display: inline-flex;
+	align-items: center;
+}
+#tab-search-btn:hover { color: var(--text-primary); }
+#tab-search-btn svg { width: 14px; height: 14px; }
+
+/* ===== Content Area ===== */
+#spacer { height: 34px; }
+#statcontent { padding: 0; }

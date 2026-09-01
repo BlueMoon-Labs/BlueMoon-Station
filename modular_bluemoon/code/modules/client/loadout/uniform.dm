@@ -67,7 +67,7 @@
 /datum/gear/uniform/dress/polyevening
 	name = "Fancy evening dress dress"
 	path = /obj/item/clothing/under/dress/polychromic/evening
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#391D2B", "#F96C72")
 
 /datum/gear/uniform/dress/party
@@ -156,6 +156,11 @@
 	restricted_desc = "Brig Physician."
 	restricted_roles = list("Brig Physician")
 
+/datum/gear/uniform/catcrin_underarmor
+	name = "Catcrin underarmor unifrom"
+	path = /obj/item/clothing/under/catcrin_underarmor
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_GENERAL
+
 /datum/gear/uniform/ac_tanktopuni
 	name = "AC Tanktop Uniform"
 	path = /obj/item/clothing/under/rank/security/officer/ac
@@ -208,3 +213,36 @@
 	name = "SolFed Dress"
 	path = /obj/item/clothing/under/sol_dress
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_DRESSES
+
+
+/datum/gear/uniform/sergal_stylish_uniform
+	name = "Sergal stylish uniform"
+	path = /obj/item/clothing/under/bm/sergal_stylish_uniform
+
+/datum/gear/uniform/sergal_stylish_dress
+	name = "Sergal stylish dress"
+	path = /obj/item/clothing/under/bm/sergal_stylish_dress
+
+/datum/gear/uniform/sergal_brown_bib
+	name = "Sergal brown bib"
+	path = /obj/item/clothing/under/bm/sergal_brown_bib
+
+/datum/gear/uniform/sergal_blue_clothing
+	name = "Sergal blue clothing"
+	path = /obj/item/clothing/under/bm/sergal_blue_clothing
+
+/datum/gear/uniform/sergal_green_uniform
+	name = "Sergal green uniform"
+	path = /obj/item/clothing/under/bm/sergal_green_uniform
+
+/datum/gear/uniform/sergal_body_chain
+	name = "Sergal body chain"
+	path = /obj/item/clothing/under/bm/sergal_body_chain
+
+/datum/gear/uniform/sergal_gray_uniform
+	name = "Shigu clan kimono"
+	path = /obj/item/clothing/under/bm/sergal_gray_uniform
+
+/datum/gear/uniform/aristocratic_uniform
+	name = "Aristocratic uniform"
+	path = /obj/item/clothing/under/bm/aristocratic_uniform

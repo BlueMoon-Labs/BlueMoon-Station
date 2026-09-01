@@ -3,7 +3,7 @@
 /turf/closed/indestructible/abductor,
 /area/ruin/space/bluemoon/abductorcrush)
 "bt" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space/stormtrooper,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg2"
 	},
@@ -46,7 +46,7 @@
 /area/ruin/space/bluemoon/abductorcrush)
 "hb" = (
 /obj/structure/lattice,
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/space/basic,
 /area/space)
 "hV" = (
@@ -222,7 +222,7 @@
 	},
 /area/ruin/space/bluemoon/abductorcrush)
 "NR" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg3"
 	},

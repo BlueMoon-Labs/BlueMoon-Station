@@ -7,13 +7,13 @@
 	if(!.)
 		return
 	if(!ishuman(user)) // /datum/component/riding/human разработан для хуманов, поэтому не буду проверять растяжимость хрупко работающих механик
-		to_chat(user, span_warning("Тебе не получиться поднять это существо таким способом.")) // "я ограничен технологиями своего времени."
+		to_chat(user, span_warning("Тебе не получится поднять это существо таким способом.")) // "я ограничен технологиями своего времени."
 		return FALSE
 	if(user.incapacitated())
 		to_chat(user, span_warning("Ты сейчас не можешь это сделать."))
 		return FALSE
 	if(user.get_active_held_item())
-		to_chat(user, span_warning("Нужна свобдная рука."))
+		to_chat(user, span_warning("Нужна свободная рука."))
 		return FALSE
 
 /datum/interaction/carry/evaluate_target(mob/living/user, mob/living/target, silent)
@@ -23,7 +23,7 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(!is_type_in_typecache(target, H.can_ride_typecache))
-			to_chat(H, span_warning("Тебе не получиться поднять это существо таким способом."))
+			to_chat(H, span_warning("Тебе не получится поднять это существо таким способом."))
 			return FALSE
 	if((target.mob_weight > MOB_WEIGHT_NORMAL) && !(user.mob_weight > MOB_WEIGHT_NORMAL))
 		to_chat(user, span_warning("[target] слишком много весит."))
@@ -46,11 +46,11 @@
 	description = "Нести на руках лицом к лицу."
 	simple_message = "USER поднимает TARGET к себе на руки."
 
-/datum/interaction/carry/face_to_face/do_action(mob/living/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/face_to_face/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
-	if(!.)
+	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, 0, 1, 0, FALSE, "face_to_face")
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_FACE_TO_FACE, auto_by_type = TRUE)
 
 /datum/interaction/carry/princess
 	description = "Нести на руках как принцессу."
@@ -64,8 +64,8 @@
 		to_chat(user, span_warning("Одной свободной руки недостаточно для такого действия."))
 		return FALSE
 
-/datum/interaction/carry/princess/do_action(mob/living/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/princess/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
-	if(!.)
+	if(!. || !istype(user))
 		return
-	user.buckle_mob(target, TRUE, TRUE, 90, 2, 0, FALSE, "princess")
+	user.buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PRINCESS, auto_by_type = TRUE)

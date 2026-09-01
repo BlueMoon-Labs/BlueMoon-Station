@@ -10,15 +10,26 @@
 	var/close_pressure = ONE_ATMOSPHERE
 	pipe_state = "relief_valve-e"
 
+// No per-layer map sprite for this one, so the offset is spelled out instead.
 /obj/machinery/atmospherics/components/unary/relief_valve/layer1
-	piping_layer = PIPING_LAYER_MIN
-	pixel_x = -PIPING_LAYER_P_X
-	pixel_y = -PIPING_LAYER_P_Y
+	piping_layer = 1
+	pixel_x = (1 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (1 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
 
-/obj/machinery/atmospherics/components/unary/relief_valve/layer3
-	piping_layer = PIPING_LAYER_MAX
-	pixel_x = PIPING_LAYER_P_X
-	pixel_y = PIPING_LAYER_P_Y
+/obj/machinery/atmospherics/components/unary/relief_valve/layer2
+	piping_layer = 2
+	pixel_x = (2 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (2 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
+
+/obj/machinery/atmospherics/components/unary/relief_valve/layer4
+	piping_layer = 4
+	pixel_x = (4 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (4 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
+
+/obj/machinery/atmospherics/components/unary/relief_valve/layer5
+	piping_layer = 5
+	pixel_x = (5 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_X
+	pixel_y = (5 - PIPING_LAYER_DEFAULT) * PIPING_LAYER_P_Y
 
 /obj/machinery/atmospherics/components/unary/relief_valve/atmos
 	close_pressure = ONE_ATMOSPHERE * 2
@@ -29,7 +40,7 @@
 /obj/machinery/atmospherics/components/unary/relief_valve/update_icon_nopipes()
 	cut_overlays()
 
-	if(!nodes[1] || !opened || !is_operational())
+	if(!nodes[1] || !opened || !is_operational)
 		icon_state = "relief_valve-e"
 		return
 
@@ -38,7 +49,7 @@
 /obj/machinery/atmospherics/components/unary/relief_valve/process_atmos()
 	..()
 
-	if(!is_operational())
+	if(!is_operational)
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
@@ -51,12 +62,23 @@
 		update_icon_nopipes()
 	if(opened)
 		var/datum/gas_mixture/environment = loc.return_air()
+		if(!environment)
+			return
 		var/pressure_delta = abs(our_pressure - environment.return_pressure())
 		if(pressure_delta > 0.1)
-			equalize_all_gases_in_list(list(air_contents,environment))
-			air_update_turf()
-
-			update_parents()
+			var/active = FALSE
+			if(environment.gc_share)
+				if(our_pressure > environment.return_pressure())
+					var/total_volume = air_contents.return_volume() + environment.return_volume()
+					var/vent_fraction = total_volume > 0 ? clamp(environment.return_volume() / total_volume, 0, 1) : 0
+					if(vent_fraction > 0)
+						active = air_contents.vent_ratio(vent_fraction)
+			else
+				equalize_all_gases_in_list(list(air_contents,environment))
+				active = TRUE
+			if(active)
+				air_update_turf()
+				update_parents()
 
 /obj/machinery/atmospherics/components/unary/relief_valve/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -69,6 +91,12 @@
 	data["open_pressure"] = round(open_pressure)
 	data["close_pressure"] = round(close_pressure)
 	data["max_pressure"] = round(50*ONE_ATMOSPHERE)
+	// Клапан ловит уставки друг о друга, и панель должна показывать те же
+	// границы, что применяет ui_act: иначе введённое молча уезжает.
+	data["min_open_pressure"] = round(close_pressure)
+	data["max_close_pressure"] = round(open_pressure)
+	data["opened"] = opened
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/unary/relief_valve/ui_act(action, params)

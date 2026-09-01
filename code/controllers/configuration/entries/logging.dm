@@ -35,6 +35,10 @@
 /datum/config_entry/flag/log_mecha
 	default = TRUE
 
+/// log uplink data
+/datum/config_entry/flag/log_uplink
+	default = TRUE
+
 /// log virology data
 /datum/config_entry/flag/log_virus
 	default = TRUE
@@ -83,6 +87,13 @@
 /datum/config_entry/flag/log_econ
 	default = TRUE
 
+/// log per-reagent metabolism events (MOB ADD/DELETE/TRANSFER)
+/// Единственный логгер, который жил без гейта, и самый громкий: в прод-раунде 9832 это
+/// 1.6 МБ, из них две трети - пары add/delete курительной химии, которая пересоздаётся
+/// каждый тик метаболизма.
+/datum/config_entry/flag/log_reagents
+	default = FALSE
+
 /// log certain expliotable parrots and other such fun things in a JSON file of twitter valid phrases.
 /datum/config_entry/flag/log_twitter
 	default = TRUE
@@ -108,6 +119,14 @@
 /// forces log_href for tgui
 /datum/config_entry/flag/emergency_tgui_logging
 	default = FALSE
+
+/// mirrors tgui output to both browser channels (diagnostics only)
+/datum/config_entry/flag/emergency_tgui_mirror_output
+	default = FALSE
+
+/// DEV ONLY. Когда задан, tgui грузит бандлы с http://<ip>:3000 (dev hot-reload) вместо вшитых ассетов. В проде оставить пустым.
+/datum/config_entry/string/tgui_dev_server_ip
+	default = ""
 
 /// The "cooldown" time for each occurrence of a unique error
 /datum/config_entry/number/error_cooldown

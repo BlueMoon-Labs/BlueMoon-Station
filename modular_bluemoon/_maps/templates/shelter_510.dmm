@@ -45,7 +45,7 @@
 /turf/open/floor/wood,
 /area/survivalpod/nonpowered)
 "ah" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/survivalpod/nonpowered)
 "ai" = (
 /obj/structure/window/shuttle/survival_pod,
@@ -81,7 +81,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/survivalpod/nonpowered)
 "ao" = (
 /obj/structure/window/reinforced/tinted{
@@ -97,7 +97,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/survivalpod/nonpowered)
 "aq" = (
 /obj/structure/sign/painting/library,
@@ -145,7 +145,6 @@
 /obj/structure/window/reinforced/tinted{
 	dir = 1
 	},
-/obj/machinery/pool/controller,
 /turf/open/floor/wood,
 /area/survivalpod/nonpowered)
 "aA" = (
@@ -322,8 +321,7 @@
 /turf/open/floor/carpet/royalblack,
 /area/survivalpod/nonpowered)
 "bg" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/survivalpod/nonpowered)
 "bi" = (
 /obj/structure/chair/sofa/corp/corner{

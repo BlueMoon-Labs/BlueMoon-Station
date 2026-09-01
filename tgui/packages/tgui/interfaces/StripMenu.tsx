@@ -1,5 +1,6 @@
 import { range } from "common/collections";
 import { BooleanLike } from "common/react";
+import { ReactNode } from 'react';
 
 import { resolveAsset } from "../assets";
 import { useBackend } from "../backend";
@@ -23,7 +24,7 @@ const getGridSpotKey = (spot: [number, number]): GridSpotKey => {
 const CornerText = (props: {
   readonly align: "left" | "right";
   readonly children: string;
-}): JSX.Element => {
+}): ReactNode => {
   const { align, children } = props;
 
   return (
@@ -31,7 +32,7 @@ const CornerText = (props: {
       style={{
         position: "relative",
         left: align === "left" ? "2px" : "-2px",
-        "text-align": align,
+        textAlign: align,
         "text-shadow": "1px 1px 1px #555",
       }}
     >
@@ -91,7 +92,7 @@ const SLOTS: Record<
     displayName: string;
     gridSpot: GridSpotKey;
     image?: string;
-    additionalComponent?: JSX.Element;
+    additionalComponent?: ReactNode;
   }
 > = {
 
@@ -259,7 +260,7 @@ const SLOTS_LONG: Record<
     displayName: string;
     gridSpot: GridSpotKey;
     image?: string;
-    additionalComponent?: JSX.Element;
+    additionalComponent?: ReactNode;
   }
 > = {
 
@@ -448,6 +449,7 @@ type StripMenuItem =
           icon: string;
           name: string;
           alternate?: string;
+          interactable: boolean;
         }
       | {
           obscured: ObscuringLevel;
@@ -461,8 +463,8 @@ type StripMenuData = {
   long_strip_menu: boolean;
 };
 
-export const StripMenu = (props, context) => {
-  const { act, data } = useBackend<StripMenuData>(context);
+export const StripMenu = (props) => {
+  const { act, data } = useBackend<StripMenuData>();
 
   const gridSpots = new Map<GridSpotKey, string>();
   if (data.long_strip_menu) {
@@ -509,6 +511,7 @@ export const StripMenu = (props, context) => {
 
                   let content;
                   let tooltip;
+                  let interactable;
 
                   if (item === null) {
                     tooltip = slot.displayName;
@@ -520,17 +523,21 @@ export const StripMenu = (props, context) => {
                     content = (
                       <Box
                         as="img"
-                        src={`data:image/jpeg;base64,${item.icon}`}
+                        src={`data:image/png;base64,${item.icon}`}
                         height="100%"
                         width="100%"
                         style={{
-                          "-ms-interpolation-mode": "nearest-neighbor",
-                          "vertical-align": "middle",
+                          imageRendering: "pixelated",
+                          verticalAlign: "middle",
                         }}
                       />
                     );
 
                     tooltip = item.name;
+                    if(item.interactable) {
+                      interactable = item.interactable;
+                      tooltip = `${tooltip} (CAN USE ITEMS ON IT)`;
+                    }
                   } else if ("obscured" in item) {
                     content = (
                       <Icon
@@ -543,7 +550,7 @@ export const StripMenu = (props, context) => {
                         ml={0}
                         mt={1.3}
                         style={{
-                          "text-align": "center",
+                          textAlign: "center",
                           height: "100%",
                           width: "100%",
                         }}
@@ -579,7 +586,9 @@ export const StripMenu = (props, context) => {
                           style={{
                             background: item?.interacting
                               ? "hsl(39, 73%, 30%)"
-                              : undefined,
+                              : interactable
+                                ? "green"
+                                : undefined,
                             position: "relative",
                             width: "100%",
                             height: "100%",
@@ -615,7 +624,7 @@ export const StripMenu = (props, context) => {
                               position: "absolute",
                               bottom: 0,
                               right: 0,
-                              "z-index": 2,
+                              zIndex: 2,
                             }}
                           >
                             <Icon name={alternateAction.icon} />

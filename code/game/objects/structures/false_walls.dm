@@ -252,9 +252,19 @@
 	new /obj/structure/girder/displaced(loc)
 	qdel(src)
 
+/obj/structure/falsewall/plasma/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/structure/falsewall/plasma/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		burnbabyburn()
+
+/obj/structure/falsewall/plasma/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/falsewall/plasma/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	burnbabyburn()
 
 /obj/structure/falsewall/bananium
 	name = "bananium wall"
@@ -311,7 +321,7 @@
 	mineral = /obj/item/stack/sheet/mineral/titanium
 	walltype = /turf/closed/wall/mineral/titanium
 	smooth = SMOOTH_MORE
-	canSmoothWith = list(/turf/closed/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater)
+	canSmoothWith = list(/turf/closed/wall/mineral/titanium, /obj/structure/falsewall/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater)
 
 /obj/structure/falsewall/plastitanium
 	name = "wall"
@@ -321,7 +331,7 @@
 	mineral = /obj/item/stack/sheet/mineral/plastitanium
 	walltype = /turf/closed/wall/mineral/plastitanium
 	smooth = SMOOTH_MORE
-	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater)
+	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /obj/structure/falsewall/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater)
 
 /obj/structure/falsewall/brass
 	name = "clockwork wall"

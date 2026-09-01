@@ -1,19 +1,40 @@
 ////////////////////////////////
-/proc/message_admins(msg)
-	msg = "<span class=\"admin filter_adminlog\"><span class=\"prefix\">ADMIN LOG:</span> <span class=\"message linkify\">[msg]</span></span>"
-	to_chat(GLOB.admins, msg, confidential = TRUE)
+/proc/message_admins(msg, islog = TRUE, prefix, list/ignore_ckey)
+	if(!prefix)
+		prefix = islog ? "ADMIN LOG" : "ADMIN MESSAGE"
+	msg = "<span class=\"prefix\">[prefix]:</span> <span class=\"message linkify\">[msg]</span>"
+	if(islog)
+		msg = span_filter_adminlog(msg)
+	else
+		msg = span_message_to_admin(msg)
+
+	var/list/targets
+	if(LAZYLEN(ignore_ckey))
+		targets = list()
+		for(var/client/X in GLOB.admins)
+			if(X.key in ignore_ckey)
+				continue
+			targets += X
+	else
+		targets = GLOB.admins
+	to_chat(targets, msg, confidential = TRUE)
 
 /proc/relay_msg_admins(msg)
-	msg = "<span class=\"admin filter_adminlog\"><span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span></span>"
+	msg = span_filter_adminlog("<span class=\"prefix\">RELAY:</span> <span class=\"message linkify\">[msg]</span>")
 	to_chat(GLOB.admins, msg, confidential = TRUE)
 
+/* Это сейчас нигде не используется, раскоментите если нужно будет и чат фильтр в constants.js по поиску: MESSAGE_TYPE_DEBUG
 /proc/message_debug(msg)
 	log_world("DEBUG: [msg]")
-	msg = "<span class=\"admindebug\"><span class=\"prefix\">DEBUG:</span> <span class=\"message linkify\">[msg]</span></span>"
+	msg = span_admindebug("<span class=\"prefix\">DEBUG:</span> <span class=\"message linkify\">[msg]</span>")
 	to_chat(GLOB.admins,
 		html = msg,
 		confidential = TRUE)
+*/
 
+/proc/message_antigrif(msg)
+	msg = span_antigrif("ANTI-GRIEF:")+msg
+	message_admins(msg)
 ///////////////////////////////////////////////////////////////////////////////////////////////Panels
 
 /datum/admins/proc/show_player_panel(mob/M in GLOB.mob_list)
@@ -21,216 +42,7 @@
 	set name = "Show Player Panel"
 	set desc="Edit player (respawn, ban, heal, etc)"
 
-	// Based on client setting, use modern TGUI player panel instead
-	if(usr.client.prefs.use_new_playerpanel)
-		usr.client.holder.show_player_panel2(M)
-		return
-
-	if(!check_rights())
-		return
-
-	log_admin("[key_name(usr)] checked the individual player panel for [key_name(M)][isobserver(usr)?"":" while in game"].")
-
-	if(!M)
-		to_chat(usr, "<span class='warning'>You seem to be selecting a mob that doesn't exist anymore.</span>", confidential = TRUE)
-		return
-
-//ambition start
-	var/list/body = list("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>Options for [M.key]</title></head>")
-//ambition end
-	body += "<body>Options panel for <b>[M]</b>"
-	if(M.client)
-		body += " played by <b>[M.client]</b> "
-		body += "\[<A href='?_src_=holder;[HrefToken()];editrights=[(GLOB.admin_datums[M.client.ckey] || GLOB.deadmins[M.client.ckey]) ? "rank" : "add"];key=[M.key]'>[M.client.holder ? M.client.holder.rank : "Player"]</A>\]"
-		if(CONFIG_GET(flag/use_exp_tracking))
-			body += "\[<A href='?_src_=holder;[HrefToken()];getplaytimewindow=[REF(M)]'>" + M.client.get_exp_living() + "</a>\]"
-
-	if(isnewplayer(M))
-		body += " <B>Hasn't Entered Game</B> "
-	else
-		body += " \[<A href='?_src_=holder;[HrefToken()];revive=[REF(M)]'>Heal</A>\] "
-
-	if(M.client)
-		body += "<br>\[<b>First Seen:</b> [M.client.player_join_date]\]\[<b>Byond account registered on:</b> [M.client.account_join_date]\]"
-		body += "<br><br><b>CentCom Galactic Ban DB: </b> "
-		if(CONFIG_GET(string/centcom_ban_db))
-			body += "<a href='?_src_=holder;[HrefToken()];centcomlookup=[M.client.ckey]'>Search</a>"
-		else
-			body += "<i>Disabled</i>"
-		body += "<br><br><b>Show related accounts by:</b> "
-		body += "\[ <a href='?_src_=holder;[HrefToken()];showrelatedacc=cid;client=[REF(M.client)]'>CID</a> | "
-		body += "<a href='?_src_=holder;[HrefToken()];showrelatedacc=ip;client=[REF(M.client)]'>IP</a> \]"
-		var/rep = 0
-		rep += SSpersistence.antag_rep[M.ckey]
-		body += "<br><br>Antagonist reputation: [rep]"
-		body += "<br><a href='?_src_=holder;[HrefToken()];modantagrep=add;mob=[REF(M)]'>\[increase\]</a> "
-		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=subtract;mob=[REF(M)]'>\[decrease\]</a> "
-		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=set;mob=[REF(M)]'>\[set\]</a> "
-		body += "<a href='?_src_=holder;[HrefToken()];modantagrep=zero;mob=[REF(M)]'>\[zero\]</a>"
-		var/full_version = "Unknown"
-		if(M.client.byond_version)
-			full_version = "[M.client.byond_version].[M.client.byond_build ? M.client.byond_build : "xxx"]"
-		body += "<br>\[<b>Byond version:</b> [full_version]\]<br>"
-
-
-	body += "<br><br>\[ "
-	body += "<a href='?_src_=vars;[HrefToken()];Vars=[REF(M)]'>VV</a> - "
-	if(M.mind)
-		body += "<a href='?_src_=holder;[HrefToken()];traitor=[REF(M)]'>TP</a> - "
-		// body += "<a href='?_src_=holder;[HrefToken()];skill=[REF(M)]'>SKILLS</a> - "
-	else
-		body += "<a href='?_src_=holder;[HrefToken()];initmind=[REF(M)]'>Init Mind</a> - "
-	if (iscyborg(M))
-		body += "<a href='?_src_=holder;[HrefToken()];borgpanel=[REF(M)]'>BP</a> - "
-	body += "<a href='?priv_msg=[M.ckey]'>PM</a> - "
-	body += "<a href='?_src_=holder;[HrefToken()];subtlemessage=[REF(M)]'>SM</a> - "
-	body += "<a href='?_src_=holder;[HrefToken()];adminplayerobservefollow=[REF(M)]'>FLW</a> - "
-	//Default to client logs if available
-	var/source = LOGSRC_MOB
-	if(M.client)
-		source = LOGSRC_CLIENT
-	body += "<a href='?_src_=holder;[HrefToken()];individuallog=[REF(M)];log_src=[source]'>LOGS</a>\] <br>"
-
-	body += "<b>Mob type</b> = [M.type]<br><br>"
-
-	body += "<A href='?_src_=holder;[HrefToken()];boot2=[REF(M)]'>Kick</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];newban=[REF(M)]'>Ban</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];jobban2=[REF(M)]'>Jobban</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];appearanceban=[REF(M)]'>Identity Ban</A> | "
-	var/rm = REF(M)
-	if(jobban_isbanned(M, "OOC"))
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=OOC;jobban4=[rm]'><font color=red>OOCBan</font></A> | "
-	else
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=OOC;jobban4=[rm]'>OOCBan</A> | "
-	if(QDELETED(M) || QDELETED(usr))
-		return
-	if(jobban_isbanned(M, "emote"))
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=emote;jobban4=[rm]'><font color=red>EmoteBan</font></A> | "
-	else
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=emote;jobban4=[rm]'>Emoteban</A> | "
-	if(QDELETED(M) || QDELETED(usr))
-		return
-	if(jobban_isbanned(M, "pacifist"))
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=pacifist;jobban4=[rm]'><font color=red>PacifistBan</font></A> | "
-	else
-		body+= "<A href='?_src_=holder;[HrefToken()];jobban3=pacifist;jobban4=[rm]'>PacifistBan</A> | "
-
-
-	body += "<A href='?_src_=holder;[HrefToken()];showmessageckey=[M.ckey]'>Notes | Messages | Watchlist</A> "
-	if(M.client)
-		body += "| <A href='?_src_=holder;[HrefToken()];sendtoprison=[REF(M)]'>Prison</A> | "
-		body += "\ <A href='?_src_=holder;[HrefToken()];sendbacktolobby=[REF(M)]'>Send back to Lobby</A>"
-		var/muted = M.client.prefs.muted
-		body += "<br><b>Mute: </b> "
-		body += "\[<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_IC]'><font color='[(muted & MUTE_IC)?"red":"blue"]'>IC</font></a> | "
-		body += "<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_OOC]'><font color='[(muted & MUTE_OOC)?"red":"blue"]'>OOC</font></a> | "
-		body += "<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_PRAY]'><font color='[(muted & MUTE_PRAY)?"red":"blue"]'>PRAY</font></a> | "
-		body += "<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_ADMINHELP]'><font color='[(muted & MUTE_ADMINHELP)?"red":"blue"]'>ADMINHELP</font></a> | "
-		body += "<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_DEADCHAT]'><font color='[(muted & MUTE_DEADCHAT)?"red":"blue"]'>DEADCHAT</font></a>\]"
-		body += "(<A href='?_src_=holder;[HrefToken()];mute=[M.ckey];mute_type=[MUTE_ALL]'><font color='[(muted & MUTE_ALL)?"red":"blue"]'>toggle all</font></a>)"
-
-	body += "<br><br>"
-	body += "<A href='?_src_=holder;[HrefToken()];jumpto=[REF(M)]'><b>Jump to</b></A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];getmob=[REF(M)]'>Get</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];sendmob=[REF(M)]'>Send To</A>"
-
-	body += "<br><br>"
-	body += "<A href='?_src_=holder;[HrefToken()];traitor=[REF(M)]'>Traitor panel</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];narrateto=[REF(M)]'>Narrate to</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];subtlemessage=[REF(M)]'>Subtle message</A> | "
-	// body += "<A href='?_src_=holder;[HrefToken()];playsoundto=[REF(M)]'>Play sound to</A> | "
-	body += "<A href='?_src_=holder;[HrefToken()];languagemenu=[REF(M)]'>Language Menu</A>"
-//ambition start
-	if(M.mind)
-		body += " | <A href='?_src_=holder;[HrefToken()];ObjectiveRequest=[REF(M.mind)]'>Objective-Ambition Menu</A>"
-//ambition end
-
-	if (M.client)
-		if(!isnewplayer(M))
-			body += "<br><br>"
-			body += "<b>Transformation:</b>"
-			body += "<br>"
-
-			//Human
-			if(ishuman(M))
-				body += "<B>Human</B> | "
-			else
-				body += "<A href='?_src_=holder;[HrefToken()];humanone=[REF(M)]'>Humanize</A> | "
-
-			//Monkey
-			if(ismonkey(M))
-				body += "<B>Monkeyized</B> | "
-			else
-				body += "<A href='?_src_=holder;[HrefToken()];monkeyone=[REF(M)]'>Monkeyize</A> | "
-
-			//Corgi
-			if(iscorgi(M))
-				body += "<B>Corgized</B> | "
-			else
-				body += "<A href='?_src_=holder;[HrefToken()];corgione=[REF(M)]'>Corgize</A> | "
-
-			//AI / Cyborg
-			if(isAI(M))
-				body += "<B>Is an AI</B> "
-			else if(ishuman(M))
-				body += "<A href='?_src_=holder;[HrefToken()];makeai=[REF(M)]'>Make AI</A> | "
-				body += "<A href='?_src_=holder;[HrefToken()];makerobot=[REF(M)]'>Make Robot</A> | "
-				body += "<A href='?_src_=holder;[HrefToken()];makealien=[REF(M)]'>Make Alien</A> | "
-				body += "<A href='?_src_=holder;[HrefToken()];makeslime=[REF(M)]'>Make Slime</A> | "
-				body += "<A href='?_src_=holder;[HrefToken()];makeblob=[REF(M)]'>Make Blob</A> | "
-
-			//Simple Animals
-			if(isanimal(M))
-				body += "<A href='?_src_=holder;[HrefToken()];makeanimal=[REF(M)]'>Re-Animalize</A> | "
-			else
-				body += "<A href='?_src_=holder;[HrefToken()];makeanimal=[REF(M)]'>Animalize</A>"
-
-			body += "<br><br>"
-			body += "<b>Rudimentary transformation:</b><font size=2><br>These transformations only create a new mob type and copy stuff over. They do not take into account MMIs and similar mob-specific things. The buttons in 'Transformations' are preferred, when possible.</font><br>"
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=observer;mob=[REF(M)]'>Observer</A> | "
-			body += "\[ Alien: <A href='?_src_=holder;[HrefToken()];simplemake=drone;mob=[REF(M)]'>Drone</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=hunter;mob=[REF(M)]'>Hunter</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=sentinel;mob=[REF(M)]'>Sentinel</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=praetorian;mob=[REF(M)]'>Praetorian</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=queen;mob=[REF(M)]'>Queen</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=larva;mob=[REF(M)]'>Larva</A> \] "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=human;mob=[REF(M)]'>Human</A> "
-			body += "\[ slime: <A href='?_src_=holder;[HrefToken()];simplemake=slime;mob=[REF(M)]'>Baby</A>, "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=adultslime;mob=[REF(M)]'>Adult</A> \] "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=monkey;mob=[REF(M)]'>Monkey</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=robot;mob=[REF(M)]'>Cyborg</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=cat;mob=[REF(M)]'>Cat</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=runtime;mob=[REF(M)]'>Runtime</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=corgi;mob=[REF(M)]'>Corgi</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=ian;mob=[REF(M)]'>Ian</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=crab;mob=[REF(M)]'>Crab</A> | "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=coffee;mob=[REF(M)]'>Coffee</A> | "
-			body += "\[ Construct: <A href='?_src_=holder;[HrefToken()];simplemake=constructarmored;mob=[REF(M)]'>Juggernaut</A> , "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=constructbuilder;mob=[REF(M)]'>Artificer</A> , "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=constructwraith;mob=[REF(M)]'>Wraith</A> \] "
-			body += "<A href='?_src_=holder;[HrefToken()];simplemake=shade;mob=[REF(M)]'>Shade</A>"
-			body += "<br>"
-
-		body += "<br><br>"
-		body += "<b>Other actions:</b>"
-		body += "<br>"
-		body += "<A href='?_src_=holder;[HrefToken()];forcespeech=[REF(M)]'>Forcesay</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];tdome1=[REF(M)]'>Thunderdome 1</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];tdome2=[REF(M)]'>Thunderdome 2</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];tdomeadmin=[REF(M)]'>Thunderdome Admin</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];tdomeobserve=[REF(M)]'>Thunderdome Observer</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];makementor=[M.ckey]'>Make mentor</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];removementor=[M.ckey]'>Remove mentor</A> | "
-		body += "<A href='?_src_=holder;[HrefToken()];makeeligible=[REF(M)]'>Allow reentering round</A>"
-	body += "<br>"
-	body += "</body></html>"
-
-//ambition start
-	var/datum/browser/popup = new(usr, "adminplayeropts-[REF(M)]", "Player Panel", nwidth = 550, nheight = 515)
-	popup.set_content(body.Join())
-	popup.open()
-//ambition end
-	SSblackbox.record_feedback("tally", "admin_verb", 1, "Player Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+	usr.client.holder.show_player_panel2(M)
 
 /datum/admins/proc/access_news_network() //MARKER
 	set category = "Admin.Events"
@@ -436,8 +248,9 @@
 		else
 			dat+="I'm sorry to break your immersion. This shit's bugged. Report this bug to Agouri, polyxenitopalidou@gmail.com"
 
-	usr << browse(dat, "window=admincaster_main;size=400x600")
-	onclose(usr, "admincaster_main")
+	var/datum/browser/popup = new(usr, "admincaster_main", "Admin Newscaster", 400, 600)
+	popup.set_content(dat)
+	popup.open()
 
 /datum/admins/proc/Game()
 	if(!check_rights(0))
@@ -462,16 +275,15 @@
 		dat += "<a href='?src=[REF(src)];[HrefToken()];gamemode_panel=1'>(Game Mode Panel)</a><BR>"
 	dat += {"
 		<BR>
-		<A href='?src=[REF(src)];[HrefToken()];create_object=1'>Create Object</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];quick_create_object=1'>Quick Create Object</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];create_turf=1'>Create Turf</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];create_mob=1'>Create Mob</A><br>
+		<A href='?src=[REF(src)];[HrefToken()];spawn_panel=1'>Spawn Panel</A><br>
 		"}
 
 	if(marked_datum && istype(marked_datum, /atom))
 		dat += "<A href='?src=[REF(src)];[HrefToken()];dupe_marked_datum=1'>Duplicate Marked Datum</A><br>"
 
-	usr << browse(dat, "window=admin2;size=240x280")
+	var/datum/browser/popup = new(usr, "admin2", "Game Panel", 240, 280)
+	popup.set_content(dat)
+	popup.open(FALSE)
 	return
 
 /////////////////////////////////////////////////////////////////////////////////////////////////admins2.dm merge
@@ -705,6 +517,77 @@
 	world.update_status()
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Respawn", "[!new_nores ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/proc/admin_apply_global_nightshift_mode(mob/admin_user, mode)
+	if(!admin_user?.client?.holder)
+		return FALSE
+	if(!SSnightshift.apply_admin_mode(mode))
+		return FALSE
+	var/status = SSnightshift.get_admin_status_text()
+	log_admin("[key_name(admin_user)] set night shift to [mode]. [status]")
+	message_admins("[key_name_admin(admin_user)] set night shift to [mode]. [status]")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Night Shift", "[mode]"))
+	return TRUE
+
+/proc/admin_apply_solar_time_override(mob/admin_user, solar_time, clear_override = FALSE)
+	if(!admin_user?.client?.holder)
+		return FALSE
+	if(clear_override && !SSnightshift.admin_solar_time_override)
+		to_chat(admin_user, span_notice("Solar time override is not active."))
+		return FALSE
+	SSnightshift.apply_admin_solar_time_change(solar_time, clear_override)
+	var/status = SSnightshift.get_admin_status_text()
+	if(clear_override)
+		log_admin("[key_name(admin_user)] cleared the solar time override. [status]")
+		message_admins("[key_name_admin(admin_user)] cleared the solar time override. [status]")
+	else
+		var/set_time = seconds_to_clock(round(SSnightshift.normalize_admin_solar_time(solar_time) / 10))
+		log_admin("[key_name(admin_user)] set solar time to [set_time]. [status]")
+		message_admins("[key_name_admin(admin_user)] set solar time to [set_time]. [status]")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Solar Time")
+	return TRUE
+
+/datum/admins/proc/togglenightshift()
+	set category = "Server"
+	set desc = "Toggle night shift lighting"
+	set name = "Toggle Night Shift"
+	var/val = tgui_alert(usr, "Установить ночной режим освещения.\n[SSnightshift.get_admin_status_text()]", "Ночной Режим", list("Вкл", "Выкл", "Авто"))
+	if(!val)
+		return
+	admin_apply_global_nightshift_mode(usr, val)
+
+/datum/admins/proc/setsolartime()
+	set category = "Server"
+	set desc = "Set solar time for nightshift verification"
+	set name = "Set Solar Time"
+
+	var/status = SSnightshift.get_admin_status_text()
+	var/override_state = SSnightshift.admin_solar_time_override ? "Active" : "Inactive"
+	var/prompt = "[status]\nOverride: [override_state]"
+	var/choice = tgui_alert(usr, prompt, "Solar Time", list("Dawn", "Day", "Dusk", "Night", "Exact Time", "Clear Override", "Cancel"))
+	if(!choice || choice == "Cancel")
+		return
+	switch(choice)
+		if("Dawn")
+			admin_apply_solar_time_override(usr, 7 HOURS)
+		if("Day")
+			admin_apply_solar_time_override(usr, 12 HOURS)
+		if("Dusk")
+			admin_apply_solar_time_override(usr, 19 HOURS + 30 MINUTES)
+		if("Night")
+			admin_apply_solar_time_override(usr, 23 HOURS + 30 MINUTES)
+		if("Exact Time")
+			var/default_time = seconds_to_clock(round(SSnightshift.normalize_admin_solar_time(SOLAR_TIME(FALSE, world.time)) / 10))
+			var/raw_time = input(usr, "[prompt]\nВведите время в формате HH:MM или HH:MM:SS.", "Set Solar Time", default_time) as text|null
+			if(isnull(raw_time))
+				return
+			var/parsed_time = SSnightshift.parse_admin_solar_time_input(raw_time)
+			if(isnull(parsed_time))
+				to_chat(usr, span_warning("Invalid solar time. Use HH:MM or HH:MM:SS."))
+				return
+			admin_apply_solar_time_override(usr, parsed_time)
+		if("Clear Override")
+			admin_apply_solar_time_override(usr, null, TRUE)
+
 /datum/admins/proc/delay()
 	set category = "Server"
 	set desc="Delay the game start"
@@ -727,7 +610,7 @@
 		SSblackbox.record_feedback("tally", "admin_verb", 1, "Delay Game Start") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/unprison(mob/M in GLOB.mob_list)
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Unprison"
 	if (is_centcom_level(M.z))
 		SSjob.SendToLateJoin(M)
@@ -740,7 +623,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////ADMIN HELPER PROCS
 
 /datum/admins/proc/spawn_atom(object as text)
-	set category = "Debug"
+	set category = "Debug.5) Spawn"
 	set desc = "(atom path) Spawn an atom"
 	set name = "Spawn"
 
@@ -756,6 +639,9 @@
 	var/chosen = pick_closest_path(path)
 	if(!chosen)
 		return
+	if(bm_is_forbidden_admin_metadollar_spawn(chosen, usr) || bm_is_forbidden_admin_metashop_token_spawn(chosen))
+		to_chat(usr, span_warning("Метадоллары и антагонистические жетоны метамагазина запрещено спавнить через админский Spawn."))
+		return
 	var/turf/T = get_turf(usr)
 
 	if(ispath(chosen, /turf))
@@ -764,12 +650,13 @@
 		for(var/i in 1 to amount)
 			var/atom/A = new chosen(T)
 			A.flags_1 |= ADMIN_SPAWNED_1
+			bm_set_admin_spawner_if_metadollar(A, usr)
 
 	log_admin("[key_name(usr)] spawned [amount] x [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/podspawn_atom(object as text)
-	set category = "Debug"
+	set category = "Debug.5) Spawn"
 	set desc = "(atom path) Spawn an atom via supply drop"
 	set name = "Podspawn"
 
@@ -778,6 +665,9 @@
 
 	var/chosen = pick_closest_path(object)
 	if(!chosen)
+		return
+	if(bm_is_forbidden_admin_metadollar_spawn(chosen, usr) || bm_is_forbidden_admin_metashop_token_spawn(chosen))
+		to_chat(usr, span_warning("Метадоллары и антагонистические жетоны метамагазина запрещено спавнить через админский Spawn."))
 		return
 	var/turf/T = get_turf(usr)
 
@@ -788,13 +678,14 @@
 		var/obj/structure/closet/supplypod/centcompod/pod = new(pick(get_area_turfs(pod_storage_area))) //Lets just have it in the pod bay for a moment instead of runtiming
 		var/atom/A = new chosen(pod)
 		A.flags_1 |= ADMIN_SPAWNED_1
+		bm_set_admin_spawner_if_metadollar(A, usr)
 		new /obj/effect/pod_landingzone(T, pod)
 
 	log_admin("[key_name(usr)] pod-spawned [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Podspawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/spawn_cargo(object as text)
-	set category = "Debug"
+	set category = "Debug.5) Spawn"
 	set desc = "(atom path) Spawn a cargo crate"
 	set name = "Spawn Cargo"
 
@@ -812,7 +703,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Cargo") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/show_traitor_panel(mob/target_mob in GLOB.mob_list)
-	set category = "Admin"
+	set category = "Admin.Game"
 	set desc = "Edit mobs's memory and role"
 	set name = "Show Traitor Panel"
 	var/datum/mind/target_mind = target_mob.mind
@@ -827,7 +718,7 @@
 
 
 /datum/admins/proc/toggletintedweldhelmets()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set desc="Reduces view range when wearing welding helmets"
 	set name="Toggle tinted welding helmes"
 	GLOB.tinted_weldhelh = !( GLOB.tinted_weldhelh )
@@ -949,10 +840,12 @@
 		<br/>The threshold at which "round-ender" rulesets will stack. A value higher than 100 ensure this never happens. <br/>
 		"}
 
-	user << browse(dat, "window=dyn_mode_options;size=900x650")
+	var/datum/browser/popup = new(user, "dyn_mode_options", "Dynamic Mode Options", 900, 650)
+	popup.set_content(dat)
+	popup.open(FALSE)
 
 /datum/admins/proc/create_or_modify_area()
-	set category = "Debug"
+	set category = "Debug.6) Tweak"
 	set name = "Create or modify area"
 	create_area(usr)
 

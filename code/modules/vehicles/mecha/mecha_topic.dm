@@ -3,6 +3,42 @@
 ///// Rendering stats window ///////
 ////////////////////////////////////
 
+/// Пауза между тиками панели статистики, миллисекунды - значение уходит прямо в setTimeout.
+#define MECHA_STATS_UPDATE_INTERVAL 1000
+
+/**
+ * Таймер панели статистики.
+ *
+ * Раньше здесь стоял голый setInterval. Окно, открытое browse(), переживает нажатие на
+ * крестик: скин его прячет, но документ остаётся загружен и его JS продолжает работать -
+ * панель стучалась в Topic до конца раунда. Теперь цепочку перезаводит сервер: каждый
+ * ответ update_stats_panel() дёргает schedule_update() через byjax-колбэк, и стоит серверу
+ * замолчать, как опрос обрывается сам.
+ *
+ * window.on_mecha_update - необязательный крючок для подтипов (см. хонкер), вызывается
+ * ровно на тех тиках, которые сервер подтвердил.
+ */
+#define js_mecha_stats_ticker {"
+var mecha_update_timer = null;
+
+function schedule_update() {
+	stop_updates();
+	if(window.on_mecha_update) {
+		window.on_mecha_update();
+	}
+	mecha_update_timer = window.setTimeout(function(){
+		window.location = 'byond://?src=[REF(src)]&update_content=1';
+	}, [MECHA_STATS_UPDATE_INTERVAL]);
+}
+
+function stop_updates() {
+	if(mecha_update_timer) {
+		window.clearTimeout(mecha_update_timer);
+		mecha_update_timer = null;
+	}
+}
+"}
+
 /obj/vehicle/sealed/mecha/proc/get_stats_html(mob/user)
 	. = {"<html>
 			<head>
@@ -22,15 +58,11 @@
 				<script language='javascript' type='text/javascript'>
 					[js_byjax]
 					[js_dropdowns]
-					function SSticker() {
-						setInterval(function(){
-							window.location='byond://?src=[REF(src)]&update_content=1';
-						}, 1000);
-					}
+					[js_mecha_stats_ticker]
 
 					window.onload = function() {
 						dropdowns();
-						SSticker();
+						schedule_update();
 					}
 				</script>
 			</head>
@@ -89,18 +121,19 @@
 ///HTML for internal damage.
 /obj/vehicle/sealed/mecha/proc/report_internal_damage()
 	. = ""
-	var/list/dam_reports = list(
-		"[MECHA_INT_FIRE]" = "<span class='userdanger'>INTERNAL FIRE</span>",
-		"[MECHA_INT_TEMP_CONTROL]" = "<span class='userdanger'>LIFE SUPPORT SYSTEM MALFUNCTION</span>",
-		"[MECHA_INT_TANK_BREACH]" = "<span class='userdanger'>GAS TANK BREACH</span>",
-		"[MECHA_INT_CONTROL_LOST]" = "<span class='userdanger'>COORDINATION SYSTEM CALIBRATION FAILURE</span> - <a href='?src=[REF(src)];repair_int_control_lost=1'>Recalibrate</a>",
-		"[MECHA_INT_SHORT_CIRCUIT]" = "<span class='userdanger'>SHORT CIRCUIT</span>"
-								)
-	for(var/tflag in dam_reports)
-		var/intdamflag = text2num(tflag)
-		if(internal_damage & intdamflag)
-			. += dam_reports[tflag]
-			. += "<br />"
+	//Раньше на каждый вызов собирался ассоциативный список из пяти строк, который тут же
+	//разбирался обратно через text2num. Панель дёргает этот прок раз в секунду, поэтому
+	//проверяем флаги напрямую - порядок строк сохранён прежний
+	if(internal_damage & MECHA_INT_FIRE)
+		. += "<span class='userdanger'>INTERNAL FIRE</span><br />"
+	if(internal_damage & MECHA_INT_TEMP_CONTROL)
+		. += "<span class='userdanger'>LIFE SUPPORT SYSTEM MALFUNCTION</span><br />"
+	if(internal_damage & MECHA_INT_TANK_BREACH)
+		. += "<span class='userdanger'>GAS TANK BREACH</span><br />"
+	if(internal_damage & MECHA_INT_CONTROL_LOST)
+		. += "<span class='userdanger'>COORDINATION SYSTEM CALIBRATION FAILURE</span> - <a href='?src=[REF(src)];repair_int_control_lost=1'>Recalibrate</a><br />"
+	if(internal_damage & MECHA_INT_SHORT_CIRCUIT)
+		. += "<span class='userdanger'>SHORT CIRCUIT</span><br />"
 	if(return_pressure() > WARNING_HIGH_PRESSURE)
 		. += "<span class='userdanger'>DANGEROUSLY HIGH CABIN PRESSURE</span><br />"
 
@@ -183,11 +216,10 @@
 			continue //there's some strange access without a name
 		. += "[a_name] - <a href='?src=[REF(src)];add_req_access=[a];user=[REF(user)];id_card=[REF(id_card)]'>Add</a><br>"
 	. +={"<hr><a href='?src=[REF(src)];finish_req_access=1;user=[REF(user)]'>Lock ID panel</a><br>
-		<span class='danger'>(Warning! The ID upload panel can be unlocked only through Exosuit Interface.)</span>
-		</body>
-		</html>"}
-	user << browse(., "window=exosuit_add_access")
-	onclose(user, "exosuit_add_access")
+		<span class='danger'>(Warning! The ID upload panel can be unlocked only through Exosuit Interface.)</span>"}
+	var/datum/browser/popup = new(user, "exosuit_add_access", "Exosuit Access")
+	popup.set_content(.)
+	popup.open()
 
 
 /obj/vehicle/sealed/mecha/proc/output_maintenance_dialog(obj/item/card/id/id_card,mob/user)
@@ -228,7 +260,18 @@
 	if(!usr)
 		return
 
+	//Крестик на окне панели: сносим документ, иначе его таймер продолжит стучаться сюда
 	if(href_list["close"])
+		close_stats_panel(usr)
+		return
+
+	//Тик самообновления панели. Обязан идти ДО проверки на incapacitated: JS перевзводит
+	//таймер только из byjax-колбэка schedule_update, поэтому один тик, пришедший пока
+	//пилота оглушило или ослепило, обрывал всю цепочку до переоткрытия окна.
+	if(href_list["update_content"])
+		if(!(usr in occupants))
+			return
+		update_stats_panel(usr)
 		return
 
 	if(usr.incapacitated())
@@ -309,11 +352,10 @@
 			return
 
 	//Start of all internal topic stuff.
-	if(!locate(usr) in occupants)
-		return
-
-	if(href_list["update_content"])
-		send_byjax(usr,"exosuit.browser","content", get_stats_part())
+	//Было "!locate(usr) in occupants": по приоритету операторов это (!locate(usr)) in occupants,
+	//то есть проверка всегда давала ноль и не защищала ничего. occupants - ассоциативный
+	//список моб -> биты управления, так что искать надо самого вызывающего
+	if(!(usr in occupants))
 		return
 
 	//Selects the mech equipment/weapon.
@@ -349,7 +391,7 @@
 	//Changes the exosuit name.
 	if(href_list["change_name"])
 		var/userinput = stripped_input(usr, "Choose a new exosuit name.", "Rename exosuit", "", MAX_NAME_LEN)
-		if(!userinput || !locate(usr) in occupants || usr.incapacitated())
+		if(!userinput || !(usr in occupants) || usr.incapacitated())
 			return
 		name = userinput
 		return
@@ -415,6 +457,31 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Recalibrating coordination system...</span>")
 		log_message("Recalibration of coordination system started.", LOG_MECHA)
 		addtimer(CALLBACK(src, PROC_REF(stationary_repair), loc), 100, TIMER_UNIQUE)
+
+/**
+ * Отвечает на очередной тик панели статистики и заводит следующий.
+ *
+ * Пока сервер отвечает - цепочка таймеров живёт, замолчал - оборвалась. Поэтому окно
+ * того, кто уже вылез из меха, гасить не нужно: до этого прока оно просто не дойдёт
+ * (выше стоит проверка на пассажира) и замолчит само.
+ *
+ * Активно сносить документ надо ровно в одном случае: пассажир на месте, а окно закрыто
+ * крестиком. Скин тогда прячет окно, но JS внутри продолжает работать, и остановить его
+ * может только browse(null). Узнаём об этом через onclose() с ref на сам мех - он
+ * навешивается один раз при открытии окна (см. mech_view_stats/Trigger). Раньше onclose()
+ * дёргался отсюда каждый тик: лишний winset раз в секунду на каждую панель, а окно,
+ * закрытое в первую секунду, "close=1" так и не присылало.
+ */
+/obj/vehicle/sealed/mecha/proc/update_stats_panel(mob/user)
+	if(!user?.client)
+		return
+	send_byjax(user, "exosuit.browser", "content", get_stats_part(user), "schedule_update")
+
+///Сносит документ панели статистики - только так гаснет её JS-таймер.
+/obj/vehicle/sealed/mecha/proc/close_stats_panel(mob/user)
+	if(!user?.client)
+		return
+	user << browse(null, "window=exosuit")
 
 ///Repairs internal damage if the mech hasn't moved.
 /obj/vehicle/sealed/mecha/proc/stationary_repair(location)

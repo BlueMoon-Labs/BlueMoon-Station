@@ -56,7 +56,11 @@
 	var/turf/ai_waypoint //The end point of a bot's path, or the target location.
 	var/list/path = list() //List of turfs through which a bot 'steps' to reach the waypoint, associated with the path image, if there is one.
 	var/pathset = 0
-	var/list/ignore_list = list() //List of unreachable targets for an ignore-list enabled bot to ignore.
+	/// Недостижимые цели, которые бот пропускает. Ассоциативное множество REF -> TRUE,
+	/// а не плоский список: скан клинбота бьёт по нему сотнями кандидатов за проход, и
+	/// `in` по списку из 50 элементов - это линейный обход на каждого кандидата.
+	/// Порядок вставки DM сохраняет, поэтому вытеснение самого старого через Cut(1,2) работает.
+	var/list/ignore_list = list()
 	var/mode = BOT_IDLE //Standardizes the vars that indicate the bot is busy with its function.
 	var/tries = 0 //Number of times the bot tried and failed to move.
 	var/remote_disabled = 0 //If enabled, the AI cannot *Remotely* control a bot. It can still control it through cameras.
@@ -101,10 +105,25 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
+	var/patrol_emote = "Вход в режим патруля."
+	var/patrol_fail_emote = "Невозможно начать патруль."
 
-	//emotes/speech stuff
-	var/patrol_emote = "Engaging patrol mode."
-	var/patrol_fail_emote = "Unable to start patrol."
+	/// ЗАТЫЧКА пока не будут сделаны overlay версии лампочек ON/OFF для всех ботов. На момент комментария сделано для флурботов
+	var/overlay_system = FALSE
+
+/// Возвращает боту право салютовать. Отдельным проком, чтобы таймер салюта висел
+/// на самом боте и снимался вместе с ним.
+/mob/living/simple_animal/bot/proc/restore_salute()
+	can_salute = TRUE
+
+/mob/living/simple_animal/bot/proc/set_commissioned(new_value)
+	if(commissioned == new_value)
+		return
+	commissioned = new_value
+	if(commissioned)
+		GLOB.commissioned_bots += src
+	else
+		GLOB.commissioned_bots -= src
 
 /mob/living/simple_animal/bot/proc/get_mode()
 	if(client) //Player bots do not have modes, thus the override. Also an easy way for PDA users/AI to know when a bot is a player.
@@ -167,7 +186,7 @@
 
 	//Adds bot to the diagnostic HUD system
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_bothealth()
 	diag_hud_set_botstat()
@@ -192,6 +211,7 @@
 		QDEL_NULL(path_hud)
 		path_hud = null
 	GLOB.bots_list -= src
+	GLOB.commissioned_bots -= src
 	if(paicard)
 		ejectpai()
 	QDEL_NULL(Radio)
@@ -235,11 +255,11 @@
 	. = ..()
 	if(health < maxHealth)
 		if(health > maxHealth/3)
-			. += "[src]'s parts look loose."
+			. += span_warning("[src] выглядит разболтанным.")
 		else
-			. += "[src]'s parts look very loose!"
+			. += span_warning("[src] имеет пробоины в корпусе!")
 	else
-		. += "[src] is in pristine condition."
+		. += span_info("[src] в отличном состоянии.")
 
 /mob/living/simple_animal/bot/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
@@ -260,7 +280,9 @@
 	diag_hud_set_botmode()
 
 	if (ignorelistcleanuptimer % 300 == 0) // Every 300 actions, clean up the ignore list from old junk
-		for(var/ref in ignore_list)
+		// Копия обязательна: правка списка прямо в for() по нему пропускает каждый второй
+		// элемент, и половина протухших ссылок оставалась в списке навсегда.
+		for(var/ref in ignore_list.Copy())
 			var/atom/referredatom = locate(ref)
 			if (!referredatom || !istype(referredatom) || QDELETED(referredatom))
 				ignore_list -= ref
@@ -271,12 +293,18 @@
 	if(!on || client)
 		return
 
-	if(!commissioned && can_salute)
-		for(var/mob/living/simple_animal/bot/B in get_hearers_in_view(5, get_turf(src)))
-			if(B.commissioned)
-				visible_message("<b>[src]</b> performs an elaborate salute for [B]!")
+	if(!commissioned && can_salute && GLOB.commissioned_bots.len)
+		for(var/mob/living/simple_animal/bot/commissioned_bot as anything in GLOB.commissioned_bots)
+			if(commissioned_bot.z != z)
+				continue
+			if(get_dist(src, commissioned_bot) <= 5)
+				visible_message("<b>[src]</b> performs an elaborate salute for [commissioned_bot]!")
 				can_salute = FALSE
-				addtimer(VARSET_CALLBACK(src, can_salute, TRUE), salute_delay)
+				//Именно CALLBACK на src, а не VARSET_CALLBACK: у последнего object -
+				//это GLOBAL_PROC, поэтому таймер не попадает в bot.active_timers и
+				///datum/Destroy его не снимает. Бот висел бы у таймера в аргументах
+				//ещё минуту после qdel.
+				addtimer(CALLBACK(src, PROC_REF(restore_salute)), salute_delay)
 				break
 
 	switch(mode) //High-priority overrides are processed first. Bots can do nothing else while under direct command.
@@ -299,7 +327,7 @@
 	if(!topic_denied(user))
 		ui_interact(user)
 	else
-		to_chat(user, "<span class='warning'>[src]'s interface is not responding!</span>")
+		to_chat(user, "<span class='warning'>Интерфейс [src] не отвечает!</span>")
 
 /mob/living/simple_animal/bot/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -311,38 +339,38 @@
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(!locked)
 			open = !open
-			to_chat(user, "<span class='notice'>The maintenance panel is now [open ? "opened" : "closed"].</span>")
+			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
-			to_chat(user, "<span class='warning'>The maintenance panel is locked.</span>")
-	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))
+			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
+	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
-			to_chat(user, "Controls are now [locked ? "locked." : "unlocked."]")
+			to_chat(user, "Управление робота теперь [locked ? "заблокировано." : "разблокировано."]")
 		else
 			if(emagged)
-				to_chat(user, "<span class='danger'>ERROR</span>")
+				to_chat(user, "<span class='danger'>ОШИБКА</span>")
 			if(open)
-				to_chat(user, "<span class='warning'>Please close the access panel before locking it.</span>")
+				to_chat(user, "<span class='warning'>Пожалуйста, закройте панель доступа перед тем, как блокировать её.</span>")
 			else
 				to_chat(user, "<span class='warning'>Доступ запрещён.</span>")
 	else if(istype(W, /obj/item/paicard))
 		insertpai(user, W)
 	else if(W.tool_behaviour == TOOL_HEMOSTAT && paicard)
 		if(open)
-			to_chat(user, "<span class='warning'>Close the access panel before manipulating the personality slot!</span>")
+			to_chat(user, "<span class='warning'>Закройте панель доступа перед взаимодействием со слотом личности!</span>")
 		else
-			to_chat(user, "<span class='notice'>You attempt to pull [paicard] free...</span>")
+			to_chat(user, "<span class='notice'>Вы пытаетесь вытащить [paicard]...</span>")
 			if(do_after(user, 30, target = src))
 				if (paicard)
-					user.visible_message("<span class='notice'>[user] uses [W] to pull [paicard] out of [bot_name]!</span>","<span class='notice'>You pull [paicard] out of [bot_name] with [W].</span>")
+					user.visible_message("<span class='notice'>[user] использует [W], чтобы вытащить [paicard] из [bot_name]!</span>","<span class='notice'>You pull [paicard] out of [bot_name] with [W].</span>")
 					ejectpai(user)
 	else
 		if(W.tool_behaviour == TOOL_WELDER && user.a_intent != INTENT_HARM)
 			if(health >= maxHealth)
-				to_chat(user, "<span class='warning'>[src] does not need a repair!</span>")
+				to_chat(user, "<span class='warning'>[src] не требует ремонта!</span>")
 				return
 			if(!open)
-				to_chat(user, "<span class='warning'>Unable to repair with the maintenance panel closed!</span>")
+				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью тех-обслуживания!</span>")
 				return
 
 			if(W.use_tool(src, user, 0, volume=40))
@@ -368,19 +396,21 @@
 	new /obj/effect/temp_visual/emp(loc)
 	if(paicard)
 		paicard.emp_act(severity)
-		src.visible_message("[paicard] is flies out of [bot_name]!","<span class='warning'>You are forcefully ejected from [bot_name]!</span>")
+		src.visible_message("[paicard] вылетает из [bot_name]!","<span class='warning'>Вы были вытащены из [bot_name]!</span>")
 		ejectpai(0)
 	if(on)
 		turn_off()
-	spawn(3 * severity)
-		stat &= ~EMPED
-		if(was_on)
-			turn_on()
+	addtimer(CALLBACK(src, PROC_REF(recover_from_emp), was_on), 3 * severity, TIMER_DELETE_ME)
+
+/mob/living/simple_animal/bot/proc/recover_from_emp(was_on)
+	stat &= ~EMPED
+	if(was_on)
+		turn_on()
 
 /mob/living/simple_animal/bot/proc/set_custom_texts() //Superclass for setting hack texts. Appears only if a set is not given to a bot locally.
-	text_hack = "You hack [name]."
-	text_dehack = "You reset [name]."
-	text_dehack_fail = "You fail to reset [name]."
+	text_hack = "Вы взломали [name]."
+	text_dehack = "Вы сбросили [name] до заводскихи настроек."
+	text_dehack_fail = "Вы не можете сбросить настройки [name] до заводских..."
 
 /mob/living/simple_animal/bot/proc/speak(message,channel) //Pass a message to have the bot say() it. Pass a frequency to say it on the radio.
 	if((!on) || (!message))
@@ -408,9 +438,17 @@
 		Radio.talk_into(src, message, message_mode, spans, language)
 		return REDUCE_RANGE
 
+/// Выкладывает деталь бота на пол. Ждёт ТИППАТ: по нему делается new().
+/// Экземпляр тоже принимаем - иначе new() рантаймит и рвёт вызывающую цепочку,
+/// а вызывают этот прок в том числе из Destroy.
 /mob/living/simple_animal/bot/proc/drop_part(obj/item/drop_item, dropzone)
+	if(!ispath(drop_item))
+		var/atom/movable/existing_item = drop_item
+		if(istype(existing_item) && dropzone)
+			existing_item.forceMove(dropzone)
+		return existing_item
+
 	var/dropped_item = new drop_item(dropzone)
-	drop_item = null
 
 	if(istype(dropped_item, /obj/item/stock_parts/cell))
 		var/obj/item/stock_parts/cell/dropped_cell = dropped_item
@@ -438,7 +476,7 @@ Example usage: patient = scan(/mob/living/carbon/human, oldpatient, 1)
 The proc would return a human next to the bot to be set to the patient var.
 Pass the desired type path itself, declaring a temporary var beforehand is not required.
 */
-/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE)
+/mob/living/simple_animal/bot/proc/scan(scan_type, old_target, scan_range = DEFAULT_SCAN_RANGE, list/cached_view)
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
@@ -459,7 +497,9 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 				var/final_result = checkscan(deepscan,scan_type,old_target)
 				if(final_result)
 					return final_result
-	for (var/scan in shuffle(view(scan_range, src))-adjacent) //Search for something in range!
+	if(!cached_view)
+		cached_view = shuffle(view(scan_range, src))
+	for(var/scan in cached_view - adjacent) //Search for something in range!
 		var/final_result = checkscan(scan,scan_type,old_target)
 		if(final_result)
 			return final_result
@@ -467,7 +507,7 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 /mob/living/simple_animal/bot/proc/checkscan(scan, scan_type, old_target)
 	if(!istype(scan, scan_type)) //Check that the thing we found is the type we want!
 		return FALSE //If not, keep searching!
-	if( (REF(scan) in ignore_list) || (scan == old_target) ) //Filter for blacklisted elements, usually unreachable or previously processed oness
+	if(ignore_list[REF(scan)] || (scan == old_target)) //Filter for blacklisted elements, usually unreachable or previously processed oness
 		return FALSE
 
 	var/scan_result = process_scan(scan) //Some bots may require additional processing when a result is selected.
@@ -489,11 +529,12 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 
 
 /mob/living/simple_animal/bot/proc/add_to_ignore(subject)
-	if(ignore_list.len < 50) //This will help keep track of them, so the bot is always trying to reach a blocked spot.
-		ignore_list += REF(subject)
-	else  //If the list is full, insert newest, delete oldest.
+	var/subject_ref = REF(subject)
+	if(ignore_list[subject_ref]) //Already ignored, don't churn the eviction order for nothing.
+		return
+	if(ignore_list.len >= 50) //If the list is full, insert newest, delete oldest.
 		ignore_list.Cut(1,2)
-		ignore_list += REF(subject)
+	ignore_list[subject_ref] = TRUE //This will help keep track of them, so the bot is always trying to reach a blocked spot.
 
 /*
 Movement proc for stepping a bot through a path generated through A-star.
@@ -501,7 +542,11 @@ Pass a positive integer as an argument to override a bot's default speed.
 */
 /mob/living/simple_animal/bot/proc/bot_move(dest, move_speed)
 	if(!dest || !path || path.len == 0) //A-star failed or a path/destination was not set.
-		set_path(null)
+		// Keep empty paths as a plain list; avoid set_path(null) HUD work when there is nothing to clear.
+		if(length(path))
+			set_path(null)
+		else
+			path = list()
 		return FALSE
 	dest = get_turf(dest) //We must always compare turfs, so get the turf of the dest var if dest was originally something else.
 	var/turf/last_node = get_turf(path[path.len]) //This is the turf at the end of the path, it should be equal to dest.
@@ -592,7 +637,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 	set_path(null)
 	summon_target = null
 	pathset = 0
-	access_card.access = prev_access
+	//карты доступа у бота может не быть вовсе (catmedbot), а bot_reset зовётся
+	//в том числе из Logout() - там разыменование её роняло каждый выход
+	if(access_card)
+		access_card.access = prev_access
 	tries = 0
 	mode = BOT_IDLE
 	diag_hud_set_botstat()
@@ -607,10 +655,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 /mob/living/simple_animal/bot/proc/bot_patrol()
 	patrol_step()
-	spawn(5)
-		if(mode == BOT_PATROL)
-			patrol_step()
+	addtimer(CALLBACK(src, PROC_REF(deferred_patrol_step)), 5, TIMER_DELETE_ME)
 	return
+
+/mob/living/simple_animal/bot/proc/deferred_patrol_step()
+	if(mode == BOT_PATROL)
+		patrol_step()
 
 /mob/living/simple_animal/bot/proc/start_patrol()
 
@@ -659,16 +709,21 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 		var/moved = bot_move(patrol_target)//step_towards(src, next)	// attempt to move
 		if(!moved) //Couldn't proceed the next step of the path BOT_STEP_MAX_RETRIES times
-			spawn(2)
-				calc_path()
-				if(path.len == 0)
-					find_patrol_target()
-				tries = 0
+			addtimer(CALLBACK(src, PROC_REF(recalc_and_patrol)), 2, TIMER_DELETE_ME)
 
 	else	// no path, so calculate new one
 		mode = BOT_START_PATROL
 
 // finds the nearest beacon to self
+/mob/living/simple_animal/bot/proc/calc_path_start_patrol()
+	if(QDELETED(src))
+		return
+	calc_path()		// Find a route to it
+	if(path.len == 0)
+		patrol_target = null
+		return
+	mode = BOT_PATROL
+
 /mob/living/simple_animal/bot/proc/find_patrol_target()
 	nearest_beacon = null
 	new_destination = null
@@ -689,6 +744,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 			patrol_target = NB.loc //Get its location and set it as the target.
 			next_destination = NB.codes["next_patrol"] //Also get the name of the next beacon in line.
 			return TRUE
+
+/mob/living/simple_animal/bot/proc/recalc_and_patrol()
+	calc_path()
+	if(path.len == 0)
+		find_patrol_target()
+	tries = 0
 
 /mob/living/simple_animal/bot/proc/find_nearest_beacon()
 	for(var/obj/machinery/navbeacon/NB in GLOB.navbeacons["[z]"])
@@ -762,13 +823,21 @@ Pass a positive integer as an argument to override a bot's default speed.
 	check_bot_access()
 	set_path(get_path_to(src, patrol_target, 120, id=access_card, exclude=avoid))
 
+/mob/living/simple_animal/bot/proc/recalc_and_summon()
+	calc_summon_path()
+	tries = 0
+
 /mob/living/simple_animal/bot/proc/calc_summon_path(turf/avoid)
 	check_bot_access()
-	spawn()
-		set_path(get_path_to(src, summon_target, 150, id=access_card, exclude=avoid))
-		if(!path.len) //Cannot reach target. Give up and announce the issue.
-			speak("Summon command failed, destination unreachable.",radio_channel)
-			bot_reset()
+	INVOKE_ASYNC(src, PROC_REF(async_calc_summon_path), avoid)
+
+/mob/living/simple_animal/bot/proc/async_calc_summon_path(turf/avoid)
+	if(QDELETED(src))
+		return
+	set_path(get_path_to(src, summon_target, 150, id=access_card, exclude=avoid))
+	if(!path.len) //Cannot reach target. Give up and announce the issue.
+		speak("Summon command failed, destination unreachable.",radio_channel)
+		bot_reset()
 
 /mob/living/simple_animal/bot/proc/summon_step()
 
@@ -786,9 +855,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 
 		var/moved = bot_move(summon_target, 3)	// Move attempt
 		if(!moved)
-			spawn(2)
-				calc_summon_path()
-				tries = 0
+			addtimer(CALLBACK(src, PROC_REF(recalc_and_summon)), 2, TIMER_DELETE_ME)
 
 	else	// no path, so calculate new one
 		calc_summon_path()
@@ -825,8 +892,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 		return
 	switch(action)
 		if("power")
-			on = !on
-			update_appearance()
+			if(on)
+				turn_off()
+			else
+				turn_on()
 		if("maintenance")
 			open = !open
 		if("patrol")
@@ -862,7 +931,8 @@ Pass a positive integer as an argument to override a bot's default speed.
 	return
 
 /mob/living/simple_animal/bot/update_icon_state()
-	icon_state = "[initial(icon_state)][on]"
+	if(!overlay_system)
+		icon_state = "[initial(icon_state)][on]"
 
 // Machinery to simplify topic and access calls
 /obj/machinery/bot_core
@@ -875,6 +945,13 @@ Pass a positive integer as an argument to override a bot's default speed.
 	owner = loc
 	if(!istype(owner))
 		return INITIALIZE_HINT_QDEL
+
+//Бот в своём Destroy делает QDEL_NULL(bot_core), но обратной ссылки не рвал никто:
+//пока ядро не соберётся, оно держит бота, и любая задержка со сбором ядра
+//автоматически превращается в hard delete самого бота.
+/obj/machinery/bot_core/Destroy()
+	owner = null
+	return ..()
 
 /mob/living/simple_animal/bot/proc/topic_denied(mob/user) //Access check proc for bot topics! Remember to place in a bot's individual Topic if desired.
 	if(!user.canUseTopic(src))
@@ -963,15 +1040,22 @@ Pass a positive integer as an argument to override a bot's default speed.
 	path = newpath ? newpath : list()
 	if(!path_hud)
 		return
-	var/list/path_huds_watching_me = list(GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED])
-	if(path_hud)
-		path_huds_watching_me += path_hud
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	var/list/path_huds_watching_me = list()
+	var/datum/atom_hud/diagnostic_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
+	if(diagnostic_hud)
+		path_huds_watching_me += diagnostic_hud
+	path_huds_watching_me += path_hud
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.remove_from_hud(src)
 
-	var/list/path_images = hud_list[DIAG_PATH_HUD]
-	QDEL_LIST(path_images)
+	var/list/path_images = hud_list?[DIAG_PATH_HUD]
+	if(isnull(path_images))
+		path_images = list()
+		hud_list[DIAG_PATH_HUD] = path_images
+	else
+		QDEL_LIST(path_images)
 	if(newpath)
 		for(var/i in 1 to newpath.len)
 			var/turf/T = newpath[i]
@@ -1009,8 +1093,9 @@ Pass a positive integer as an argument to override a bot's default speed.
 			path[T] = I
 			path_images += I
 
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.add_to_hud(src)
 
 

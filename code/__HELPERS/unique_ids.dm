@@ -77,7 +77,7 @@ GLOBAL_LIST_EMPTY(uid_log)
   */
 /client/proc/uid_log()
 	set name = "View UID Log"
-	set category = "Debug"
+	set category = "Debug.2) Info"
 	set desc = "Shows the log of created UIDs this round"
 
 	if(!check_rights(R_DEBUG))
@@ -89,4 +89,6 @@ GLOBAL_LIST_EMPTY(uid_log)
 		text += "<li>[key] - [sorted[key]]</li>"
 
 	text += "</ul>"
-	usr << browse(text.Join(), "window=uidlog")
+	var/datum/browser/popup = new(usr, "uidlog", "UID Log")
+	popup.set_content(text.Join())
+	popup.open()

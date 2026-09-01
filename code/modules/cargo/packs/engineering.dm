@@ -121,7 +121,8 @@
 	desc = "Миазмы сбивают тебя с ног? Плазма в вентиляции? Освежите воздух с помощью этих двух совершенно новых скрубберов!"
 	cost = 3000
 	contains = list(/obj/machinery/portable_atmospherics/scrubber,
-					/obj/machinery/portable_atmospherics/scrubber)
+					/obj/machinery/portable_atmospherics/scrubber/pipe,
+					/obj/item/tank/internals/oxygen/empty)
 	crate_name = "portable scrubber crate"
 
 /datum/supply_pack/engineering/power
@@ -219,8 +220,6 @@
 	contains = list(/obj/item/circuitboard/computer/sat_control)
 	crate_name= "shield control board crate"
 
-//BLUEMOON ADD START - добовляю новые вещички
-
 /datum/supply_pack/engineering/advtools
 	name = "Advanced Engineering tools crate"
 	desc = "Нужно быстро что то починить, но учёные станции клюют носом? Engi-vend предостовляет эти продвинутые инструменты для таких случаев!"
@@ -231,4 +230,12 @@
 					/obj/item/weldingtool/experimental,
 					/obj/item/storage/belt/utility)
 	crate_name= "Advanced Engineering tools"
+	crate_type = /obj/structure/closet/crate/secure/engineering
+
+/datum/supply_pack/engineering/advtools
+	name = "Mini-Rapid-Light-Device (MRLD) crate"
+	desc = "Устройство, используемое для быстрого освещения местности. Заряжается железом, пласталью, стеклом или любым другим прессованным материалом."
+	cost = 2000
+	contains = list(/obj/item/construction/rld/mini)
+	crate_name= "Mini-Rapid-Light-Device (MRLD)"
 	crate_type = /obj/structure/closet/crate/secure/engineering

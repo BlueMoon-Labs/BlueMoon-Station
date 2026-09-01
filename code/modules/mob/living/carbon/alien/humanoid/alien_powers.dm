@@ -40,6 +40,8 @@ Doesn't work on other aliens/AI.*/
 		return "[plasma_cost]"
 
 /obj/effect/proc_holder/alien/proc/cost_check(check_turf = FALSE, mob/living/carbon/user, silent = FALSE)
+	if(!user || QDELETED(user))
+		return FALSE
 	if(user.stat)
 		if(!silent)
 			to_chat(user, "<span class='noticealien'>You must be conscious to do this.</span>")
@@ -338,8 +340,8 @@ Doesn't work on other aliens/AI.*/
 
 /obj/effect/proc_holder/alien/regurgitate/fire(mob/living/carbon/user)
 	if(user.stomach_contents.len)
-		for(var/atom/movable/A in user.stomach_contents)
-			user.stomach_contents.Remove(A)
+		for(var/atom/movable/A in user.stomach_contents.Copy())
+			user.remove_from_stomach(A)
 			A.forceMove(user.drop_location())
 			if(isliving(A))
 				var/mob/M = A

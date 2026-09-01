@@ -64,6 +64,11 @@
 		imp = new imp_type(src)
 	update_icon()
 
+/obj/item/implantcase/attack_self(mob/user)
+	. = ..()
+	if(!imp)
+		return
+	imp.attack_self(user)
 
 /obj/item/implantcase/tracking
 	name = "implant case - 'Tracking'"

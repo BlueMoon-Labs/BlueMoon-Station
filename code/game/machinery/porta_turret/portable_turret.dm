@@ -4,6 +4,11 @@
 #define POPUP_ANIM_TIME 5
 #define POPDOWN_ANIM_TIME 5 //Be sure to change the icon animation at the same time or it'll look bad
 
+/// How often process() re-scans the surroundings (view(), mechs, blobs) for new targets.
+/// Between scans it reuses the cached list — so it keeps shooting, but notices a fresh
+/// intruder up to this much later. SSmachines fires every 2 s, so this is "every other fire".
+#define TURRET_TARGET_SCAN_INTERVAL (4 SECONDS)
+
 #define TURRET_FLAG_SHOOT_ALL_REACT		(1<<0)	// The turret gets pissed off and shoots at people nearby (unless they have sec access!)
 #define TURRET_FLAG_AUTH_WEAPONS		(1<<1)	// Checks if it can shoot people that have a weapon they aren't authorized to have
 #define TURRET_FLAG_SHOOT_CRIMINALS		(1<<2)	// Checks if it can shoot people that are wanted
@@ -108,9 +113,13 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/mob/remote_controller
 	/// MISSING:
 	var/shot_stagger = 0
+	/// Cached result of the last scan_for_targets() call, reused on the fires in between scans.
+	var/list/cached_targets
+	COOLDOWN_DECLARE(target_scan_cooldown)
 
 /obj/machinery/porta_turret/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	if(!base)
 		base = src
 	update_icon()
@@ -128,6 +137,11 @@ DEFINE_BITFIELD(turret_flags, list(
 		underlays += base
 	if(!has_cover)
 		INVOKE_ASYNC(src, PROC_REF(popUp))
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		INVOKE_ASYNC(src, PROC_REF(deferred_aperture_skin))
+
+/obj/machinery/porta_turret/proc/deferred_aperture_skin()
+	apply_aperture_turret_skin(src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
 	var/current = on
@@ -251,6 +265,11 @@ DEFINE_BITFIELD(turret_flags, list(
 				return TRUE
 			else
 				to_chat(usr, "<span class='warning'>It has to be secured first!</span>")
+		if("ai_auth")
+			if(issilicon(usr) || IsAdminGhost(usr))
+				locked = !locked
+				update_icon()
+				return TRUE
 		if("authweapon")
 			turret_flags ^= TURRET_FLAG_AUTH_WEAPONS
 			return TRUE
@@ -341,8 +360,6 @@ DEFINE_BITFIELD(turret_flags, list(
 		else
 			to_chat(user, "<span class='alert'>Доступ запрещён.</span>")
 	else if(I.tool_behaviour == TOOL_MULTITOOL && !locked)
-		if(!multitool_check_buffer(user, I))
-			return
 		I.buffer = src
 		to_chat(user, "<span class='notice'>You add [src] to [I]'s buffer.</span>")
 	else
@@ -412,7 +429,7 @@ DEFINE_BITFIELD(turret_flags, list(
 
 /obj/machinery/porta_turret/welder_act(mob/living/user, obj/item/I)
 	. = TRUE
-	if(obj_integrity < max_integrity) //BLUEMOON EDIT: removed cover && since it broke the logic and considered the turret to be at 100% at all times. This bug is from 2021, hello. 
+	if(obj_integrity < max_integrity) //BLUEMOON EDIT: removed cover && since it broke the logic and considered the turret to be at 100% at all times. This bug is from 2021, hello.
 		if(!I.tool_start_check(user, amount=0))
 			return
 		user.visible_message("[user] чинит турель сваркой.", \
@@ -438,9 +455,44 @@ DEFINE_BITFIELD(turret_flags, list(
 	if(!on || (machine_stat & (NOPOWER|BROKEN)) || manual_control)
 		return PROCESS_KILL
 
+	// Nobody with a client on our z-level: view() can find nothing worth shooting and nobody
+	// would see us react. Keep ticking cheaply so we resume the moment somebody arrives.
+	var/turf/our_turf = get_turf(base || src)
+	if(our_turf && our_turf.z <= length(SSmobs.clients_by_zlevel) && !length(SSmobs.clients_by_zlevel[our_turf.z]))
+		if(!always_up)
+			popDown()
+		return
+
+	var/list/targets
+	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
+		targets = scan_for_targets()
+		cached_targets = targets.Copy() // tryToShootAt() mutates `targets`; keep an untouched cache
+		COOLDOWN_START(src, target_scan_cooldown, TURRET_TARGET_SCAN_INTERVAL)
+	else
+		// reuse the last scan; build a fresh, mutable list and drop anything deleted since then
+		targets = list()
+		for(var/atom/movable/candidate as anything in cached_targets)
+			if(!QDELETED(candidate))
+				targets += candidate
+
+	if(targets.len)
+		tryToShootAt(targets)
+	else if(!always_up)
+		popDown() // no valid targets, close the cover
+
+/// Scans the turret's surroundings (view(), mechs, blobs) for things it should shoot at and
+/// returns them as a list. Throttled by process() behind target_scan_cooldown — between scans
+/// process() reuses the cached result instead of calling this.
+/obj/machinery/porta_turret/proc/scan_for_targets()
 	var/list/targets = list()
 	for(var/mob/A in view(scan_range, base))
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
+			continue
+
+		// Линию до цели проверяем так же, как ветка про мехи ниже. view() отбирает по
+		// прозрачности, но не по проходимости для снаряда, поэтому турель бралась за цели,
+		// в которые физически не может попасть, и долбила по ним весь раунд.
+		if(!can_see(base, A, scan_range))
 			continue
 
 		if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)//if it's set to check for simple animals
@@ -493,18 +545,20 @@ DEFINE_BITFIELD(turret_flags, list(
 			var/obj/vehicle/sealed/mecha/mech = A
 			for(var/O in mech.occupants)
 				var/mob/living/occupant = O
-				if(!in_faction(occupant)) //If there is a user and they're not in our faction
+				if(in_faction(occupant))
+					continue
+				// assess_perp is human-only (get_id_name / records); non-humans use anomalous rules
+				if(ishuman(occupant))
 					if(assess_perp(occupant) >= 4)
 						targets += mech
+				else if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)
+					targets += mech
 
 	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
 		for(var/obj/structure/blob/B in view(scan_range, base))
 			targets += B
 
-	if(targets.len)
-		tryToShootAt(targets)
-	else if(!always_up)
-		popDown() // no valid targets, close the cover
+	return targets
 
 /obj/machinery/porta_turret/proc/randomize_shot_stagger()
 	shot_stagger = rand(0, min(2 SECONDS, round(shot_delay/3, world.tick_lag)))
@@ -577,8 +631,8 @@ DEFINE_BITFIELD(turret_flags, list(
 
 	if(turret_flags & TURRET_FLAG_SHOOT_CRIMINALS)	//if the turret can check the records, check if they are set to *Arrest* on records
 		var/perpname = perp.get_face_name(perp.get_id_name())
-		var/datum/data/record/R = find_record("name", perpname, GLOB.data_core.security)
-		if(!R || (R.fields["criminal"] == SEC_RECORD_STATUS_ARREST || SEC_RECORD_STATUS_EXECUTE || SEC_RECORD_STATUS_INCARCERATED))
+		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
+		if(!R || (R.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED)))
 			threatcount += 4
 
 	if((turret_flags & TURRET_FLAG_SHOOT_UNSHIELDED) && (!HAS_TRAIT(perp, TRAIT_MINDSHIELD)))
@@ -634,6 +688,20 @@ DEFINE_BITFIELD(turret_flags, list(
 				if(istype(closer) && !is_blocked_turf(closer) && T.Adjacent(closer))
 					T = closer
 					break
+		// Свободного соседнего турфа не нашлось - стрелять неоткуда. Прежний код всё равно
+		// рождал снаряд внутри стены, тот немедленно упирался в неё, и турель повторяла это
+		// каждый цикл: в прод-раунде 9830 один такой цикл дал 554 выстрела по одной цели с
+		// неизменившимся HP, а всего выстрелы турелей заняли 30.7% attack.log. Каждый ещё и
+		// платил playsound и записью в лог.
+		if(T.density)
+			return
+		// Свободный турф мог найтись с ДРУГОЙ стороны стены. Отбор цели проверяет видимость из
+		// самой турели (сквозь стекло/решётку она есть), а снаряд рождается на выбранном турфе -
+		// и если тот снаружи, снаряд до цели не доходит никогда. Прод-раунд 9832: турель
+		// хранилища away-базы 53 минуты стреляла из космоса по мобу внутри Vault - 800 выстрелов
+		// подряд с неизменным HP, 12% всего attack.log.
+		if(T != get_turf(src) && !can_see(T, target, scan_range))
+			return
 
 	update_icon()
 	var/obj/item/projectile/A
@@ -970,10 +1038,11 @@ DEFINE_BITFIELD(turret_flags, list(
 		return
 
 	if(control_area)
-		control_area = get_area_instance_from_text(control_area)
+		var/legacy_control_area = control_area
+		control_area = get_area_instance_from_text(legacy_control_area)
 		if(control_area == null)
 			control_area = get_area(src)
-			stack_trace("Bad control_area path for [src], [src.control_area]")
+			WARNING("Bad control_area path for [src]: [legacy_control_area]. Falling back to [control_area].")
 	else if(!control_area)
 		control_area = get_area(src)
 
@@ -992,8 +1061,6 @@ DEFINE_BITFIELD(turret_flags, list(
 		return
 
 	if(I.tool_behaviour == TOOL_MULTITOOL)
-		if(!multitool_check_buffer(user, I))
-			return
 		if(I.buffer && istype(I.buffer, /obj/machinery/porta_turret))
 			turrets |= I.buffer
 			to_chat(user, "<span class='notice'>You link \the [I.buffer] with \the [src].</span>")

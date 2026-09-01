@@ -8,12 +8,20 @@
 	spawn_positions = 2
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Cumtomime",
+		"Mimic",
+		"Mummer",
+		"Mute Entertainer",
+		"Pantomime",
+		"Sexy Mime"
+		)
 
 	outfit = /datum/outfit/job/mime
 	plasma_outfit = /datum/outfit/plasmaman/mime
 
-	access = list(ACCESS_THEATRE)
-	minimal_access = list(ACCESS_THEATRE)
+	access = list(ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_MINIMAL
 	paycheck_department = ACCOUNT_SRV
 
@@ -41,7 +49,7 @@
 	name = "Mime"
 	jobtype = /datum/job/mime
 
-	belt = /obj/item/pda/mime
+	belt = /obj/item/modular_computer/pda/mime
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/mime
 	mask = /obj/item/clothing/mask/gas/mime
@@ -57,7 +65,7 @@
 	name = "Syndicate Mime"
 	jobtype = /datum/job/mime
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/mime
@@ -65,7 +73,8 @@
 	gloves = /obj/item/clothing/gloves/color/white
 	head = /obj/item/clothing/head/frenchberet
 	suit = /obj/item/clothing/suit/suspenders
-	backpack_contents = list(/obj/item/reagent_containers/food/drinks/bottle/bottleofnothing=1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/reagent_containers/food/drinks/bottle/bottleofnothing=1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/job/mime/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()

@@ -1,4 +1,6 @@
-#define CATWALK_BELOW_OBJECTS list(/obj/structure/disposalpipe, /obj/structure/cable, /obj/machinery/atmospherics) // BLUEMOON ADD - catwalks_fix
+#define CATWALK_BELOW_OBJECTS list(/obj/structure/disposalpipe, /obj/structure/cable, /obj/machinery/atmospherics/pipe, \
+/obj/machinery/atmospherics/components/unary/vent_scrubber, /obj/machinery/atmospherics/components/unary/vent_pump, \
+/obj/machinery/navbeacon, /obj/machinery/power/terminal) // BLUEMOON ADD - catwalks_fix
 
 /**
  * ## catwalk flooring
@@ -18,23 +20,20 @@
 	barefootstep = FOOTSTEP_CATWALK
 	clawfootstep = FOOTSTEP_CATWALK
 	heavyfootstep = FOOTSTEP_CATWALK
-	intact = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_INTACT
 	var/covered = TRUE
 	var/catwalk_type = "maint"
-	plane = FLOOR_PLANE // BLUEMOON ADD - catwalks_fix - исправляем, что вокруг кэтволков есть AO
 
 	// BLUEMOON ADD START - catwalks_fix
 /turf/open/floor/catwalk_floor/Destroy()
 	for(var/atom/A in contents)
 		if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-			A.layer = initial(A.layer)
 			A.plane = initial(A.plane)
 	. = ..()
 	// BLUEMOON ADD END
 
 /turf/open/floor/catwalk_floor/Initialize(mapload)
 	. = ..()
-	layer = CATWALK_LAYER - 0.02 // BLUEMOON EDIT - catwalks_fix
 	update_icon(UPDATE_OVERLAYS)
 
 /turf/open/floor/catwalk_floor/update_overlays()
@@ -53,12 +52,10 @@
 	// BLUEMOON ADD START - catwalks_fix
 		for(var/atom/A in contents)
 			if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-				A.layer = CATWALK_LAYER - 0.01
-				A.plane = -8
+				A.plane = FLOOR_PLANE
 	else
 		for(var/atom/A in contents)
 			if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-				A.layer = initial(A.layer)
 				A.plane = initial(A.plane)
 	// BLUEMOON ADD END
 
@@ -73,7 +70,7 @@
 	if(covered)
 		user.balloon_alert(user, "remove cover first!")
 		return FALSE
-	return pry_tile(I, user)
+	return ((turf_flags & TURF_INTACT) && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : NONE
 
 //Reskins! More fitting with most of our tiles, and appear as a radial on the base type
 /turf/open/floor/catwalk_floor/iron

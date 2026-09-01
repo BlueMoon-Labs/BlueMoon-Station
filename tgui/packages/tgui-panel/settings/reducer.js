@@ -8,7 +8,7 @@ import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, upda
 import { FONTS, SETTINGS_TABS } from './constants';
 
 const initialState = {
-  version: 1,
+  version: 6,
   fontSize: 13,
   fontFamily: FONTS[0],
   lineHeight: 1.2,
@@ -16,8 +16,33 @@ const initialState = {
   adminMusicVolume: 0.5,
   highlightText: '',
   highlightColor: '#ffdd44',
+  highlightSoundEnabled: false,
   matchWord: false,
   matchCase: false,
+  chatStyle: 'classic',
+  chatAnimation: 'none',
+  chatBgColor: '',
+  chatTextColor: '',
+  chatAccentColor: '',
+  smoothScroll: false,
+  hoverEffect: false,
+  chatAnimSpeed: 'normal',
+  chatBgAnimation: 'none',
+  chatBgAnimOpacity: 0.5,
+  textGlow: 'none',
+  textGlowColor: '',
+  messageSpacing: 2,
+  fontWeight: 400,
+  letterSpacing: 0,
+  borderRadius: 8,
+  // Кастомизация стилей сообщений: { [styleId]: { color, disabled } }
+  styleOverrides: {},
+  spanAnimations: true,
+  // Timestamps & time dividers
+  enableTimestamps: false,
+  timestampFormat: 'hm',
+  enableTimeDividers: false,
+  timeDividerInterval: 300000,
   view: {
     visible: false,
     activeTab: SETTINGS_TABS[0].id,
@@ -37,10 +62,10 @@ export const settingsReducer = (state = initialState, action) => {
     if (!payload?.version) {
       return state;
     }
-    delete payload.view;
+    const { view, ...settings } = payload;
     return {
       ...state,
-      ...payload,
+      ...settings,
     };
   }
   if (type === toggleSettings.type) {

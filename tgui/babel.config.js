@@ -4,6 +4,27 @@
  * @license MIT
  */
 
+/**
+ * `import.meta.glob` is Vite-only syntax; under Jest the modules are
+ * CommonJS and `import.meta` is a parse error. Replace such calls with an
+ * empty object so modules that use them (routes, KitchenSink) stay loadable
+ * in tests.
+ */
+const importMetaGlobPlugin = ({ types: t }) => ({
+  visitor: {
+    CallExpression(path) {
+      const callee = path.node.callee;
+      if (
+        t.isMemberExpression(callee)
+        && t.isMetaProperty(callee.object)
+        && t.isIdentifier(callee.property, { name: 'glob' })
+      ) {
+        path.replaceWith(t.objectExpression([]));
+      }
+    },
+  },
+});
+
 const createBabelConfig = options => {
   const { mode, presets = [], plugins = [] } = options;
   return {
@@ -13,22 +34,22 @@ const createBabelConfig = options => {
       }],
       [require.resolve('@babel/preset-env'), {
         modules: 'commonjs',
-        useBuiltIns: 'entry',
-        corejs: '3',
         spec: false,
         loose: true,
-        targets: [],
+        targets: {
+          edge: '109',
+        },
+      }],
+      [require.resolve('@babel/preset-react'), {
+        runtime: 'automatic',
       }],
       ...presets,
     ],
+    // Class properties are native in the build target (Edge 109) and in the
+    // Node that runs Jest. A standalone class-properties plugin would also
+    // run before preset-typescript and choke on TS `declare` fields.
     plugins: [
-      [require.resolve('@babel/plugin-proposal-class-properties'), {
-        loose: true,
-      }],
-      require.resolve('@babel/plugin-transform-jscript'),
-      require.resolve('babel-plugin-inferno'),
-      require.resolve('babel-plugin-transform-remove-console'),
-      require.resolve('common/string.babel-plugin.cjs'),
+      ...(mode === 'test' ? [importMetaGlobPlugin] : []),
       ...plugins,
     ],
     compact: true,

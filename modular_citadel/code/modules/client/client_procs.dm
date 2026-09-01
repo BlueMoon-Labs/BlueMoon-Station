@@ -1,3 +1,14 @@
+#define UPLOAD_LIMIT_MUSIC 6485760 // 6 MiB — must match PERSONAL_MUSIC_BOX_MAX_FILE_SIZE
+
+// Personal music box uploads .ogg tracks larger than the default 512 KiB client limit.
+/client/AllowUpload(filename, filelength)
+	if(findtext(lowertext(filename), ".ogg", -4))
+		if(filelength > UPLOAD_LIMIT_MUSIC)
+			to_chat(src, "<font color='red'>Error: AllowUpload(): File Upload too large. Upload Limit: [UPLOAD_LIMIT_MUSIC / 1024]KiB.</font>")
+			return FALSE
+		return TRUE
+	return ..()
+
 /client/New()
 	. = ..()
 	mentor_datum_set()
@@ -36,6 +47,16 @@
 		mentor_datum.owner = src
 		add_mentor_verbs()
 		mentor_memo_output("Show")
+		// Дементор логин
+		if(prefs?.mentor_toggles & DEMENTOR_ON_LOGIN)
+			auto_dementor_on_login()
+
+/client/proc/auto_dementor_on_login()
+	remove_mentor_verbs()
+	if (/client/proc/mentor_unfollow in verbs)
+		mentor_unfollow()
+	GLOB.mentors -= src
+	add_verb(src, /client/proc/cmd_mentor_rementor)
 
 /client/proc/is_mentor() // admins are mentors too.
 	if(mentor_datum || check_rights_for(src, R_ADMIN)) //BLUEMOON EDIT: PLAYER RANKS
@@ -48,3 +69,5 @@
 
 	show_popup_menus = !show_popup_menus
 	to_chat(src, "<span class='notice'>The right-click context menu is now [show_popup_menus ? "enabled" : "disabled"].</span>")
+
+#undef UPLOAD_LIMIT_MUSIC

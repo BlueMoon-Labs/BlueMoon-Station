@@ -1,20 +1,43 @@
 /mob/living/Initialize(mapload)
 	. = ..()
+	var/static/next_life_stagger_phase = 0
+	life_stagger_phase = next_life_stagger_phase
+	// Mix higher bits into the default periodic bucket so work selected by the
+	// outer far-Life throttle does not stay permanently synchronized with it.
+	life_periodic_phase = next_life_stagger_phase ^ (next_life_stagger_phase >> 2)
+	next_life_stagger_phase++
 	if(unique_name)
 		name = "[name] ([rand(1, 1000)])"
 		real_name = name
 	var/datum/atom_hud/data/human/medical/advanced/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	medhud.add_to_hud(src)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	faction += "[REF(src)]"
 	stamina_buffer = INFINITY
 	UpdateStaminaBuffer()
 	GLOB.mob_living_list += src
+	if(stat != DEAD)
+		become_ai_targetable()
 
 /mob/living/prepare_huds()
 	..()
 	prepare_data_huds()
+
+/// Removes or restores med/sec/diag atom HUDs (floating icons) for admin invisimin stealth.
+/mob/living/proc/update_invisimin_data_huds(invisible)
+	if(invisible)
+		remove_from_all_data_huds()
+	else
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			H.prepare_data_huds()
+		else
+			var/datum/atom_hud/data/human/medical/advanced/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
+			medhud.add_to_hud(src)
+			for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
+				diag_hud.add_to_hud(src)
+			prepare_data_huds()
 
 /mob/living/proc/prepare_data_huds()
 	med_hud_set_health()
@@ -24,8 +47,12 @@
 	end_parry_sequence()
 	stop_active_blocking()
 	if(LAZYLEN(status_effects))
-		for(var/s in status_effects)
-			var/datum/status_effect/S = s
+		// Снимок обязателен: и qdel(S), и be_replaced() делают
+		// LAZYREMOVE(owner.status_effects, src), то есть правят список прямо в обходе
+		// по нему - индекс проматывается и каждый второй эффект пропускается.
+		// Пропущенный остаётся с owner на этом мобе, а моб остаётся с ним в
+		// status_effects: цикл ссылок, который BYOND не соберёт никогда
+		for(var/datum/status_effect/S as anything in status_effects.Copy())
 			if(S.on_remove_on_mob_delete) //the status effect calls on_remove when its mob is deleted
 				qdel(S)
 			else
@@ -37,10 +64,23 @@
 	QDEL_LIST_ASSOC_VAL(ability_actions)
 	QDEL_LIST(abilities)
 	QDEL_LIST(implants)
+	// Квирки держат владельца жёстко: quirk_holder плюс запись в SSquirks.quirk_objects.
+	// Снимались они только при явном снятии квирка и при переносе на другого моба, поэтому
+	// удаление тела (админская пересадка, госткафе, возврат в лобби) оставляло висеть и
+	// квирк, и моба - это был самый массовый класс харддела прод-раунда.
+	QDEL_LIST(roundstart_quirks)
+	// Тот же случай: /datum/surgery держит и target, и operated_bodypart, а снимался
+	// только при отрыве конечности. Один незакрытый датум операции = труп плюс его грудь.
+	QDEL_LIST(surgeries)
 	remove_from_all_data_huds()
 	cleanse_trait_datums()
+	QDEL_NULL(ai_controller)
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
+	//лейтджойнером может быть не только человек (ИИ, борг) - выписываем здесь,
+	//а не в human/Destroy, иначе список вечно держит удалённого моба
+	GLOB.latejoiners -= src
+	SSmobs.currentrun -= src
 	QDEL_LIST(diseases)
 	return ..()
 
@@ -50,6 +90,10 @@
 	return ..()
 
 /mob/living/proc/ZImpactDamage(turf/T, levels)
+	//LIQUIDS ADD - landing in liquids softens the fall
+	if(T.liquids && T.liquids.liquid_state >= LIQUID_STATE_WAIST)
+		Knockdown(2 SECONDS)
+		return
 	visible_message("<span class='danger'>[src] crashes into [T] with a sickening noise!</span>", \
 					"<span class='userdanger'>You crash into [T] with a sickening noise!</span>")
 	adjustBruteLoss((levels * 5) ** 1.5)
@@ -90,6 +134,15 @@
 
 	if(now_pushing)
 		return TRUE
+
+	//Two AI mobs of the same faction must not shove or swap through each other.
+	//The push made a mob-blocked step "succeed", hiding it from the movement
+	//layer's is_mob_only_blocked_step queue and leaving two shooters endlessly
+	//trading the same tile. A cleanly failed step lets that queue handle them.
+	if(ai_controller && !client && isliving(M))
+		var/mob/living/allied_ai = M
+		if(allied_ai.ai_controller && !allied_ai.client && faction_check_mob(allied_ai))
+			return TRUE
 
 	var/they_can_move = TRUE
 
@@ -362,8 +415,8 @@
 		log_combat(src, M, "grabbed", addition="passive grab")
 		if(!supress_message && !(iscarbon(AM) && HAS_TRAIT(src, TRAIT_STRONG_GRABBER)))
 			if((zone_selected == BODY_ZONE_PRECISE_GROIN) && has_tail() && M.has_tail())
-				visible_message("<span class='warning'>[src] coils [ru_ego()] tail with [M]'s, pulling [M.ru_na()] along!</span>", "You entwine tails with [M], pulling [M.ru_na()] along!", ignored_mobs = M)
-				M.show_message("<span class='warning'>[src] has entwined [ru_ego()] tail with yours, pulling you along!</span>", MSG_VISUAL, "<span class='warning'>You feel <b>something</b> coiling around your tail, pulling you along!</span>")
+				visible_message("<span class='warning'>[src] оборачивает свой хвост с хвостом [M], утягивая [M.ru_ego()] за собой!</span>", "Вы обернулись хвостиками с [M], утягивая [M.ru_ego()] за собой!", ignored_mobs = M)
+				M.show_message("<span class='warning'>[src] обернул[ru_a()] [ru_ego()] хвост с вашим, утягивая за собой!</span>", MSG_VISUAL, "<span class='warning'>Вы чувствуете как <b>что-то</b> окольцовывается вокруг вашего хвоста, утягивая за собой!</span>")
 
 			else // BLUEMOON CHANGES
 				visible_message("<span class='warning'>[src] has grabbed [M][(zone_selected == "l_arm" || zone_selected == "r_arm")? " by [M.ru_ego()] hands":" passively"]! [M.mob_weight > MOB_WEIGHT_NORMAL ? "Looks heavy." : ""]</span>",
@@ -584,6 +637,11 @@
 /mob/living/proc/can_inject(mob/user, error_msg, target_zone, penetrate_thick = FALSE, bypass_immunity = FALSE)
 	return TRUE
 
+// Syringe-specific gate. Non-human mobs don't have human clothing layers, so this is a
+// thin wrapper around can_inject() that only converts pierce_level to penetrate_thick.
+/mob/living/proc/can_inject_syringe(mob/user, error_msg, target_zone, pierce_level = SYRINGE_PIERCE_NONE)
+	return can_inject(user, error_msg, target_zone, pierce_level >= SYRINGE_PIERCE_ALL)
+
 /mob/living/is_injectable(allowmobs = TRUE)
 	return (allowmobs && reagents && can_inject())
 
@@ -649,7 +707,7 @@
 		clear_fullscreen("brute")
 
 //Proc used to resuscitate a mob, for full_heal see fully_heal()
-/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE)
 	SEND_SIGNAL(src, COMSIG_LIVING_REVIVE, full_heal, admin_revive)
 	if(excess_healing)
 		adjustOxyLoss(-excess_healing, updating_health = FALSE)
@@ -658,6 +716,7 @@
 	if(full_heal)
 		fully_heal(admin_revive)
 	if(stat == DEAD && can_be_revived()) //in some cases you can't revive (e.g. no brain)
+		REMOVE_TRAIT(src, TRAIT_VITALITY_MATRIX_CONSUMED, "vitality_matrix")
 		remove_from_dead_mob_list()
 		add_to_alive_mob_list()
 		suiciding = 0
@@ -669,6 +728,10 @@
 		update_sight()
 		clear_alert("not_enough_oxy")
 		reload_fullscreen()
+		if(post_revive_effects) // Эффект вспышки, спутанности и помутнённого зрения после возвращения с того света
+			adjust_blurriness(20)
+			Dizzy(20)
+			flash_act(override_blindness_check = 1, override_protection = 1, visual = 1, duration = rand(12, 15))
 		. = TRUE
 		if(excess_healing)
 			INVOKE_ASYNC(src, PROC_REF(emote), "gasp")
@@ -677,6 +740,10 @@
 			for(var/S in mind.spell_list)
 				var/obj/effect/proc_holder/spell/spell = S
 				spell.UpdateButton()
+
+		// Play a local revive sound for the revived mob with a small chance
+		if(prob(5))
+			SEND_SOUND(src, 'modular_bluemoon/sound/effects/re-zero.ogg')
 
 //proc used to remove all immobilisation effects + reset stamina
 /mob/living/proc/remove_CC(should_update_mobility = TRUE)
@@ -707,7 +774,7 @@
 	cure_blind()
 	cure_husk()
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -831,6 +898,10 @@
 	set name = "Resist"
 	set category = "IC"
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_resist)))
+
+///Proc version of the resist verb so SSverb_manager can defer it under load.
+/mob/living/proc/execute_resist()
 	if(!can_resist())
 		return
 
@@ -911,20 +982,22 @@
 	var/escchance
 	if(HAS_TRAIT(src, TRAIT_GARROTED))
 		escchance = 3
-	else
+	else if(istype(mind, /datum/mind) && istype(mind.martial_art, /datum/martial_art) && mind.martial_art.can_use(src))
+		escchance = mind.martial_art.resist_grab_chance
+	else // Обычно БИ будет всегда и "базовому" уже выставлено 30, фейлчек для ТЕОРЕТИЧЕСКИХ случаев отсутствия
 		escchance = 30
 	if(pulledby.grab_state > GRAB_PASSIVE)
 		if(CHECK_MOBILITY(src, MOBILITY_RESIST) && prob(escchance/pulledby.grab_state))
-			pulledby.visible_message("<span class='danger'>[src] has broken free of [pulledby]'s grip!</span>",
-				"<span class='danger'>[src] has broken free of your grip!</span>", target = src,
-				target_message = "<span class='danger'>You have broken free of [pulledby]'s grip!</span>")
+			pulledby.visible_message(span_danger("[src] вырывается из хватки [pulledby]!"),
+				span_danger("[src] вырывается из вашей хватки!"), target = src,
+				target_message = span_danger("Вы вырвались из хватки [pulledby]!"))
 			pulledby.stop_pulling()
 			return TRUE
 		else if(moving_resist && client) //we resisted by trying to move // this is a horrible system and whoever thought using client instead of mob is okay is not an okay person
 			client.move_delay = world.time + 20
-		pulledby.visible_message("<span class='danger'>[src] resists against [pulledby]'s grip!</span>",
-			"<span class='danger'>[src] resists against your grip!</span>", target = src,
-			target_message = "<span class='danger'>You resist against [pulledby]'s grip!</span>")
+		pulledby.visible_message(span_danger("[src] сопротивляется хватке [pulledby]!"),
+			span_danger("[src] сопротивляется вашей хватке!"), target = src,
+			target_message = span_danger("Вы сопротивляетесь хватке [pulledby]!"))
 	else
 		pulledby.stop_pulling()
 		return TRUE
@@ -1064,15 +1137,16 @@
 	else if(!src.mob_negates_gravity())
 		step_towards(src,S)
 
-/mob/living/proc/do_jitter_animation(jitteriness)
-	var/amplitude = min(4, (jitteriness/100) + 1)
-	var/pixel_x_diff = rand(-amplitude, amplitude)
-	var/pixel_y_diff = rand(-amplitude/3, amplitude/3)
-	var/final_pixel_x = get_standard_pixel_x_offset(lying)
-	var/final_pixel_y = get_standard_pixel_y_offset(lying)
-	animate(src, pixel_x = pixel_x_diff, pixel_y = pixel_y_diff , time = 2, loop = 6, flags = ANIMATION_PARALLEL | ANIMATION_RELATIVE)
-	animate(pixel_x = final_pixel_x , pixel_y = final_pixel_y , time = 2)
-	floating_need_update = TRUE
+/// Helper proc that causes the mob to do a jittering animation by jitter_amount.
+/mob/living/proc/do_jitter_animation(jitter_amount = 100)
+	// Целая амплитуда: rand() с дробными границами возвращает дробь, а каждое новое
+	// значение pixel_w/pixel_z - это новая запись в таблице аппирансов у каждого, кто
+	// видит моба, и живёт она у клиента до конца сессии. Целые дают девять пар на всех.
+	var/amplitude = round(min(4, (jitter_amount / 100) + 1))
+	var/pixel_w_diff = rand(-amplitude, amplitude)
+	var/pixel_z_diff = rand(-round(amplitude / 3), round(amplitude / 3))
+	animate(src, pixel_w = pixel_w_diff, pixel_z = pixel_z_diff , time = 0.2 SECONDS, loop = 6, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
+	animate(pixel_w = -pixel_w_diff , pixel_z = -pixel_z_diff , time = 0.2 SECONDS, flags = ANIMATION_RELATIVE)
 
 /mob/living/proc/get_temperature(datum/gas_mixture/environment)
 	var/loc_temp = environment ? environment.return_temperature() : T0C
@@ -1125,15 +1199,18 @@
 /mob/living/proc/harvest(mob/living/user) //used for extra objects etc. in butchering
 	return
 
-/mob/living/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/living/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	if(incapacitated())
-		to_chat(src, "<span class='warning'>Вы не можете этого сделать в нынешнем состоянии!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>Вы не можете этого сделать в нынешнем состоянии!</span>")
 		return FALSE
 	if(be_close && !in_range(M, src))
-		to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
+		if(!silent)
+			to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
 		return FALSE
-	if(!no_dextery)
-		to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
+	if(!no_dextery && !IsAdvancedToolUser()) // BLUEMOON EDIT - раньше проверка была инвертирована и отсекала вообще всех без флага NO_DEXTERY
+		if(!silent)
+			to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
 		return FALSE
 	return TRUE
 
@@ -1231,6 +1308,7 @@
 /mob/living/proc/IgniteMob()
 	if(fire_stacks > 0 && !on_fire)
 		on_fire = 1
+		wake_life() //горящему мобу handle_fire нужен каждый фаер, бакет снимаем
 		visible_message("<span class='warning'>[src] catches fire!</span>", \
 						"<span class='userdanger'>Вы горите!</span>")
 		new/obj/effect/dummy/lighting_obj/moblight/fire(src)
@@ -1521,3 +1599,55 @@
 	sterilize_power = 0
 	_sterilize_expire = 0
 	_sterilize_timer_id = null
+
+/**
+ * Универсальный прок для проверки наличия боли
+ * limb - Если боль нужно посчиать от отдельной конечности (Протезы не болят)
+ */
+/mob/proc/has_pain(obj/item/bodypart/limb)
+	return PAIN_NO
+
+/mob/living/has_pain(obj/item/bodypart/limb)
+	// Труп боли не чувствует. Гейт стоит именно здесь, потому что через has_pain()
+	// проходят все реакции тела на лечение (костный гель, вправление вывиха, наложение
+	// раны): без него мёртвому телу капал стамина-урон и уходили болевые эмоуты с
+	// сообщениями "вы чувствуете боль" - в чат уже отыгравшему смерть игроку.
+	if(stat == DEAD)
+		return PAIN_NO
+	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))
+		return PAIN_NO
+	else if(HAS_TRAIT(src, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD))
+		return PAIN_LOW
+	else if(reagents?.has_reagent(/datum/reagent/determination))
+		return PAIN_MEDIUM
+
+	return PAIN_FULL
+
+/**
+ * Прок для выбора эмоции боли
+ * realagony - TRUE повышает "максимальную эмоцию" боли до realagony
+ */
+/mob/proc/get_pain_emote(pain_level, realagony = FALSE)
+	if(!pain_level)
+		return ""
+	switch(pain_level)
+		if(PAIN_FULL)
+			return realagony ? "realagony" : pick("scream","pain")
+		if(PAIN_MEDIUM) // Позже заменить на шипит от боли, кривится от боли
+			return realagony ? "realagony" : pick("scream","pain")
+		if(PAIN_LOW)
+			return realagony ? pick("scream","pain") : "twitch"
+		else
+			return pick("scream","pain")
+
+/**
+ * Прок запускает эмоцию боли
+ * pain_level - Уровень боли полученный из has_pain()
+ * limb - Если не задан pain_level и боль нужно посчитать от отдельной конечности (Протезы не болят)
+ * realagony - TRUE повышает "максимальную эмоцию" боли до realagony
+ */
+/mob/proc/pain_emote(pain_level = null, obj/item/bodypart/limb, realagony = FALSE)
+	if(isnull(pain_level))
+		pain_level = has_pain(limb)
+
+	return emote(get_pain_emote(pain_level, realagony))

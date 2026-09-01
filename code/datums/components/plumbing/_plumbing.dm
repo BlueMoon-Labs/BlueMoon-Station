@@ -38,6 +38,12 @@
 	if(!demand_connects || !reagents)
 		STOP_PROCESSING(SSfluids, src)
 		return
+	//без единого подключения запрашивать не у кого: паркуемся, пока
+	//ductnet.add_plumber не разбудит (роундстартовые хим-машины без дактов
+	//иначе гоняют пустой request-цикл каждый фаер SSfluids весь раунд)
+	if(!length(ducts))
+		STOP_PROCESSING(SSfluids, src)
+		return
 	if(reagents.total_volume < reagents.maximum_volume)
 		for(var/D in GLOB.cardinals)
 			if(D & demand_connects)
@@ -206,6 +212,9 @@
 ///has one pipe input that only takes, example is manual output pipe
 /datum/component/plumbing/simple_demand
 	demand_connects = NORTH
+///accepts pipe connections from any direction (for limb grower, chem dispensers, etc.)
+/datum/component/plumbing/simple_demand/all_dirs
+	demand_connects = NORTH | SOUTH | EAST | WEST
 ///has one pipe output that only supplies. example is liquid pump and manual input pipe
 /datum/component/plumbing/simple_supply
 	supply_connects = NORTH

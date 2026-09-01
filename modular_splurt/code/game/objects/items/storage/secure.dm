@@ -5,14 +5,14 @@
 
 /obj/item/storage/secure/briefcase/hos/hos_e45_pack/PopulateContents()
 	new /obj/item/gun/ballistic/automatic/pistol/enforcerred(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum/lethal(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum/lethal(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
-	new /obj/item/ammo_box/magazine/e45/e45_drum/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended/lethal(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended/lethal(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended/taser(src)
+	new /obj/item/ammo_box/magazine/e45/e45_extended/taser(src)
 
 // Sec Officer Boxes
 
@@ -85,3 +85,13 @@
 	new /obj/item/clothing/accessory/permit(src)
 	new /obj/item/clothing/accessory/permit(src)
 	new /obj/item/clothing/accessory/permit(src)
+
+/obj/item/storage/secure/briefcase/hop_permits
+	name = "\improper \'Misc\' permits case"
+	desc = "A storage case for some permits."
+
+/obj/item/storage/secure/briefcase/hop_permits/PopulateContents()
+	new /obj/item/storage/box/service_permits(src)
+	new /obj/item/storage/box/service_permits(src)
+	new /obj/item/storage/box/deviants(src)
+	new /obj/item/storage/box/deviants(src)

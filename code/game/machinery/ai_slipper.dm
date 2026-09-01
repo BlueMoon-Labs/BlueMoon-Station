@@ -32,9 +32,9 @@
 		return
 	else
 		if(powered())
-			machine_stat &= ~NOPOWER
+			set_machine_stat(machine_stat & ~NOPOWER)
 		else
-			machine_stat |= NOPOWER
+			set_machine_stat(machine_stat | NOPOWER)
 		if((machine_stat & (NOPOWER|BROKEN)) || cooldown_time > world.time || !uses)
 			icon_state = "ai-slipper0"
 		else

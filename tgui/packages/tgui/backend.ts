@@ -11,10 +11,15 @@
  * @license MIT
  */
 
+import { defer } from 'common/defer';
 import { perf } from 'common/perf';
-import { createAction } from 'common/redux';
+import { createAction, globalStore } from 'common/redux';
 
-import { setupDrag } from './drag';
+import {
+  resetInitialGeometryReady,
+  setupDrag,
+  waitForInitialGeometryReady,
+} from './drag';
 import { focusMap } from './focus';
 import { createLogger } from './logging';
 import { resumeRenderer, suspendRenderer } from './renderer';
@@ -24,6 +29,16 @@ const logger = createLogger('backend');
 export const backendUpdate = createAction('backend/update');
 export const backendSetSharedState = createAction('backend/setSharedState');
 export const backendSuspendStart = createAction('backend/suspendStart');
+export const backendCreatePayloadQueue = createAction(
+  'backend/createPayloadQueue',
+);
+export const backendDequeuePayloadQueue = createAction(
+  'backend/dequeuePayloadQueue',
+);
+export const backendRemovePayloadQueue = createAction(
+  'backend/removePayloadQueue',
+);
+export const nextPayloadChunk = createAction('nextPayloadChunk');
 
 export const backendSuspendSuccess = () => ({
   type: 'backend/suspendSuccess',
@@ -36,6 +51,7 @@ const initialState = {
   config: {},
   data: {},
   shared: {},
+  outgoingPayloadQueues: {} as Record<string, string[]>,
   // Start as suspended
   suspended: Date.now(),
   suspending: false,
@@ -113,15 +129,58 @@ export const backendReducer = (state = initialState, action) => {
     };
   }
 
+  if (type === 'backend/createPayloadQueue') {
+    const { id, chunks } = payload;
+    const { outgoingPayloadQueues } = state;
+    return {
+      ...state,
+      outgoingPayloadQueues: {
+        ...outgoingPayloadQueues,
+        [id]: chunks,
+      },
+    };
+  }
+
+  if (type === 'backend/dequeuePayloadQueue') {
+    const { id } = payload;
+    const { outgoingPayloadQueues } = state;
+    const { [id]: targetQueue, ...otherQueues } = outgoingPayloadQueues;
+    const [_, ...rest] = targetQueue;
+    return {
+      ...state,
+      outgoingPayloadQueues: rest.length
+        ? {
+            ...otherQueues,
+            [id]: rest,
+          }
+        : otherQueues,
+    };
+  }
+
+  if (type === 'backend/removePayloadQueue') {
+    const { id } = payload;
+    const { outgoingPayloadQueues } = state;
+    const { [id]: _, ...otherQueues } = outgoingPayloadQueues;
+    return {
+      ...state,
+      outgoingPayloadQueues: otherQueues,
+    };
+  }
+
   return state;
 };
 
 export const backendMiddleware = store => {
+  // 516 migration: increased from 500ms; allows SIZE_APPLY_TIMEOUT_MS to complete
+  // before the fallback reveal fires, preventing fullscreen flash on slow servers.
+  const INITIAL_VISIBILITY_GATE_TIMEOUT = 2000;
   let fancyState;
   let suspendInterval;
 
   return next => action => {
-    const { suspended } = selectBackend(store.getState());
+    const { suspended, outgoingPayloadQueues } = selectBackend(
+      store.getState(),
+    );
     const { type, payload } = action;
 
     if (type === 'update') {
@@ -159,7 +218,7 @@ export const backendMiddleware = store => {
       Byond.winset(window.__windowId__, {
         'is-visible': false,
       });
-      setImmediate(() => focusMap());
+      defer(() => focusMap());
     }
 
     if (type === 'backend/update') {
@@ -181,30 +240,76 @@ export const backendMiddleware = store => {
 
     // Resume on incoming update
     if (type === 'backend/update' && suspended) {
+      resetInitialGeometryReady();
       // Show the payload
       logger.log('backend/update', payload);
       // Signal renderer that we have resumed
       resumeRenderer();
       // Setup drag
-      setupDrag();
+      setupDrag(payload.config?.window?.scale);
       // We schedule this for the next tick here because resizing and unhiding
       // during the same tick will flash with a white background.
-      setImmediate(() => {
+      defer(async () => {
         perf.mark('resume/start');
+        const revealReason = await Promise.race([
+          waitForInitialGeometryReady()
+            .then(() => 'geometryReady'),
+          new Promise<'timeout'>(resolve => {
+            setTimeout(() => resolve('timeout'), INITIAL_VISIBILITY_GATE_TIMEOUT);
+          }),
+        ]);
         // Doublecheck if we are not re-suspended.
         const { suspended } = selectBackend(store.getState());
         if (suspended) {
           return;
         }
+        logger.log('showing window after', revealReason);
         Byond.winset(window.__windowId__, {
           'is-visible': true,
         });
+        sendMessage({ type: 'visible' });
         perf.mark('resume/finish');
         if (process.env.NODE_ENV !== 'production') {
           logger.log('visible in',
             perf.measure('render/finish', 'resume/finish'));
         }
       });
+    }
+
+    if (type === 'oversizePayloadResponse') {
+      const { allow } = payload;
+      if (allow) {
+        store.dispatch(nextPayloadChunk(payload));
+      } else {
+        // Отказ раньше проходил совсем молча, и со стороны это выглядело как зависшее окно.
+        // Сервер сам сообщает игроку причину, а здесь оставляем след для отладки.
+        logger.error('server refused an oversized payload', payload);
+        store.dispatch(backendRemovePayloadQueue(payload));
+      }
+    }
+
+    if (type === 'payloadDropped') {
+      // Server timed out or rejected this payload — discard queue, stop sending
+      logger.error('server dropped an oversized payload mid-transfer', payload);
+      store.dispatch(backendRemovePayloadQueue(payload));
+    }
+
+    if (type === 'acknowlegePayloadChunk') {
+      store.dispatch(backendDequeuePayloadQueue(payload));
+      store.dispatch(nextPayloadChunk(payload));
+    }
+
+    if (type === 'nextPayloadChunk') {
+      const { id } = payload;
+      // Always read fresh state after any prior dispatches to get the updated queue
+      const { outgoingPayloadQueues: freshQueues } = selectBackend(store.getState());
+      if (freshQueues[id]?.length) {
+        const chunk = freshQueues[id][0];
+        sendMessage({
+          type: 'payloadChunk',
+          payload: { id, chunk },
+        });
+      }
     }
 
     return next(action);
@@ -230,6 +335,76 @@ export const sendMessage = (message: any = {}) => {
   Byond.topic(data);
 };
 
+const encodedLengthBinarySearch = (charSeq: string[], length: number) => {
+  const haystackLength = charSeq.length;
+  let high = haystackLength - 1;
+  let low = 0;
+  let mid = 0;
+  while (low < high) {
+    mid = Math.round((low + high) / 2);
+    const substringLength = encodeURIComponent(
+      charSeq.slice(0, mid).join(''),
+    ).length;
+    if (substringLength === length) {
+      break;
+    }
+    if (substringLength < length) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return mid;
+};
+
+/**
+ * Бюджет одного чанка в url-кодированных символах.
+ *
+ * Чанк едет внутри JSON, который затем кодируется в URL второй раз, поэтому 512 таких
+ * символов давали реальный URL всего около 840 при лимите 2048 - больше половины бюджета
+ * простаивало, а число раундтрипов было вдвое избыточным. Каждый чанк ждёт подтверждения
+ * сервера, так что на длинном тексте это прямо превращается в те самые задержки, из-за
+ * которых JSON интегральной сборки "не доезжал". 900 даёт URL около 1480 - запас к лимиту
+ * остаётся, а чанков почти вдвое меньше.
+ */
+const CHUNK_BUDGET = 900;
+
+const splitIntoChunks = (str: string): string[] => {
+  const charSeq = Array.from(str);
+  const length = charSeq.length;
+  const chunks: string[] = [];
+  let startIndex = 0;
+  let endIndex = CHUNK_BUDGET;
+  while (startIndex < length) {
+    const cut = charSeq.slice(
+      startIndex,
+      endIndex < length ? endIndex : undefined,
+    );
+    const cutString = cut.join('');
+    if (encodeURIComponent(cutString).length > CHUNK_BUDGET) {
+      const splitIndex = startIndex + encodedLengthBinarySearch(cut, CHUNK_BUDGET);
+      chunks.push(
+        charSeq
+          .slice(startIndex, splitIndex < length ? splitIndex : undefined)
+          .join(''),
+      );
+      startIndex = splitIndex;
+    } else {
+      chunks.push(cutString);
+      startIndex = endIndex;
+    }
+    endIndex = startIndex + CHUNK_BUDGET;
+  }
+  return chunks;
+};
+
+/**
+ * Debounce state for sendAct — guards against WebView2 duplicate delivery.
+ */
+let lastActTime = 0;
+let lastActKey = '';
+let actSequence = 0;
+
 /**
  * Sends an action to `ui_act` on `src_object` that this tgui window
  * is associated with.
@@ -243,9 +418,51 @@ export const sendAct = (action: string, payload: object = {}) => {
     logger.error(`Payload for act() must be an object, got this:`, payload);
     return;
   }
+  const stringifiedPayload = JSON.stringify(payload);
+  // Debounce identical act calls within 50ms (WebView2 double-delivery guard)
+  const now = Date.now();
+  const actKey = action + stringifiedPayload;
+  if (now - lastActTime < 50 && actKey === lastActKey) {
+    return;
+  }
+  lastActTime = now;
+  lastActKey = actKey;
+  const seq = ++actSequence;
+  // seq обязателен в расчёте: sendMessage добавляет его к тому же URL, и без него в окне
+  // шириной в восемь байт чанкование не включалось, хотя фактический URL уже переполнял
+  // лимит 2048 - сообщение молча уходило в XHR-фолбэк.
+  const urlSize = Object.entries({
+    type: 'act/' + action,
+    payload: stringifiedPayload,
+    seq,
+    tgui: 1,
+    window_id: window.__windowId__,
+  }).reduce(
+    (url, [key, value], i) =>
+      url +
+      `${i > 0 ? '&' : '?'}${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+    '',
+  ).length;
+  if (urlSize > 2048) {
+    const chunks: string[] = splitIntoChunks(stringifiedPayload);
+    const id = `${Date.now()}`;
+    (window as any).__store__?.dispatch(
+      backendCreatePayloadQueue({ id, chunks }),
+    );
+    sendMessage({
+      type: 'oversizedPayloadRequest',
+      payload: {
+        type: 'act/' + action,
+        id,
+        chunkCount: chunks.length,
+      },
+    });
+    return;
+  }
   sendMessage({
     type: 'act/' + action,
     payload,
+    seq,
   });
 };
 
@@ -273,6 +490,7 @@ type BackendState<TData> = {
   },
   data: TData,
   shared: Record<string, any>,
+  outgoingPayloadQueues: Record<string, any[]>,
   suspending: boolean,
   suspended: boolean,
 }
@@ -285,16 +503,13 @@ export const selectBackend = <TData>(state: any): BackendState<TData> => (
 );
 
 /**
- * A React hook (sort of) for getting tgui state and related functions.
+ * Gets the current tgui state and related functions.
  *
- * This is supposed to be replaced with a real React Hook, which can only
- * be used in functional components.
- *
- * You can make
+ * Reads straight from the global store, so unlike a real React hook
+ * it can be used anywhere, including class components.
  */
-export const useBackend = <TData>(context: any) => {
-  const { store } = context;
-  const state = selectBackend<TData>(store.getState());
+export const useBackend = <TData>() => {
+  const state = selectBackend<TData>(globalStore.getState());
   return {
     ...state,
     act: sendAct,
@@ -309,23 +524,24 @@ type StateWithSetter<T> = [T, (nextState: T) => void];
 /**
  * Allocates state on Redux store without sharing it with other clients.
  *
- * Use it when you want to have a stateful variable in your component
- * that persists between renders, but will be forgotten after you close
- * the UI.
+ * Legacy compatibility hook. Not a real React hook: it reads the global
+ * store, so it is legal anywhere (including class components), but its
+ * setter dispatches to the store and re-renders the ENTIRE app tree.
  *
- * It is a lot more performant than `setSharedState`.
+ * Prefer React `useState` in function components for new code. Keep
+ * `useLocalState` only when you need what the store gives you:
+ * - the same key read/written from several components (shared state),
+ * - state that survives component unmount/remount while the UI is open,
+ * - state access outside of function components.
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useLocalState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]
@@ -333,7 +549,7 @@ export const useLocalState = <T>(
   return [
     sharedState,
     nextState => {
-      store.dispatch(backendSetSharedState({
+      globalStore.dispatch(backendSetSharedState({
         key,
         nextState: (
           typeof nextState === 'function'
@@ -355,17 +571,14 @@ export const useLocalState = <T>(
  *
  * This makes creation of observable s
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useSharedState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]

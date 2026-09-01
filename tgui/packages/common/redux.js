@@ -82,8 +82,8 @@ export const applyMiddleware = (...middlewares) => {
  */
 export const combineReducers = reducersObj => {
   const keys = Object.keys(reducersObj);
-  let hasChanged = false;
   return (prevState = {}, action) => {
+    let hasChanged = false;
     const nextState = { ...prevState };
     for (let key of keys) {
       const reducer = reducersObj[key];
@@ -144,10 +144,22 @@ export const createAction = (type, prepare = null) => {
 // Implementation specific
 // --------------------------------------------------------
 
-export const useDispatch = context => {
-  return context.store.dispatch;
+/**
+ * The store of the current tgui application. Each bundle (tgui,
+ * tgui-panel) runs in its own browser window, so a single global
+ * reference per window is safe and removes the need to thread the
+ * store through legacy context.
+ */
+export let globalStore = null;
+
+export const setGlobalStore = store => {
+  globalStore = store;
 };
 
-export const useSelector = (context, selector) => {
-  return selector(context.store.getState());
+export const useDispatch = () => {
+  return globalStore.dispatch;
+};
+
+export const useSelector = selector => {
+  return selector(globalStore.getState());
 };

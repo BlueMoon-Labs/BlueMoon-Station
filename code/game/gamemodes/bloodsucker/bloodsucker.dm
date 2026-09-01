@@ -25,7 +25,7 @@
 	antag_flag = ROLE_BLOODSUCKER
 	false_report_weight = 1
 	chaos = 4
-	protected_jobs = list("Prisoner", "Shaft Miner",  "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") // BLUEMOON EDIT
+	protected_jobs = list("Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") // BLUEMOON EDIT
 	restricted_jobs = list("AI", "Cyborg", "Positronic Brain") // BLUEMOON EDIT
 	required_players = 2
 	required_enemies = 2

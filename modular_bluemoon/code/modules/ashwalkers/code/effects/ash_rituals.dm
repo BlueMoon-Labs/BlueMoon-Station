@@ -1,0 +1,355 @@
+/datum/ash_ritual/summon_staff
+	name = "Summon Ash Staff"
+	desc = "Призывайте посох, наполненный силой тендрила. Требуется разрешение материнского тендрила."
+	required_components = list(
+		"north" = /obj/item/stack/sheet/mineral/wood,
+		"south" =  /obj/item/organ/regenerative_core/legion,
+	)
+	consumed_components = list(
+		/obj/item/stack/sheet/mineral/wood,
+		/obj/item/organ/regenerative_core/legion,
+	)
+	ritual_success_items = list(
+		/obj/item/ash_staff,
+	)
+
+/datum/ash_ritual/summon_necklace
+	name = "Summon Draconic Necklace"
+	desc = "Призывает ожерелье, которое наделяет владельца знанием нашего языка."
+	required_components = list(
+		"north" = /obj/item/stack/sheet/bone,
+		"south" =  /obj/item/organ/regenerative_core/legion,
+		"east" = /obj/item/stack/sheet/sinew,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/stack/sheet/bone,
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/stack/sheet/sinew,
+	)
+	ritual_success_items = list(
+		/obj/item/clothing/neck/necklace/ashwalker,
+	)
+
+/datum/ash_ritual/summon_cursed_knife
+	name = "Summon Cursed Ash Knife"
+	desc = "Призывает нож, который накладывает проклятие слежения на ничего не подозревающих шахтеров, уничтожающих наши помеченные щупальца."
+	required_components = list(
+		"north" =  /obj/item/organ/regenerative_core/legion,
+		"south" = /obj/item/kitchen/knife/combat/bone,
+		"east" = /obj/item/stack/sheet/bone,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/kitchen/knife/combat/bone,
+		/obj/item/stack/sheet/bone,
+		/obj/item/stack/sheet/sinew,
+	)
+	ritual_success_items = list(
+		/obj/item/cursed_dagger,
+	)
+
+/datum/ash_ritual/summon_cursed_carver
+	name = "Summon Cursed Ash Carver"
+	desc = "Призывает оружие, которое имитирует инструменты вторгшегося, позволяя нам собирать трофеи с охоты."
+	required_components = list(
+		"north" =  /obj/item/organ/regenerative_core/legion,
+		"south" = /obj/item/cursed_dagger,
+		"east" = /obj/item/stack/sheet/bone,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/cursed_dagger,
+		/obj/item/stack/sheet/bone,
+		/obj/item/stack/sheet/sinew,
+	)
+	ritual_success_items = list(
+		/obj/item/kinetic_crusher/cursed,
+	)
+
+/datum/ash_ritual/summon_tendril_seed
+	name = "Summon Tendril Seed"
+	desc = "Призывает семя, которое при использовании в руке вызывает появление тендрил в вашем местоположении."
+	required_components = list(
+		"north" =  /obj/item/organ/regenerative_core/legion,
+		"south" = /obj/item/cursed_dagger,
+		"east" = /obj/item/stack/sheet/animalhide/goliath_hide,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/cursed_dagger,
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew,
+	)
+	ritual_success_items = list(
+		/obj/item/tendril_seed,
+	)
+
+/datum/ash_ritual/incite_megafauna
+	name = "Incite Megafauna"
+	desc = "Вызывает ужасный, невообразимый звук, который вызовет новую мегафауну из под земли планеты."
+	required_components = list(
+		"north" = /mob/living/carbon/human,
+		"south" = /obj/item/tendril_seed,
+		"east" = /mob/living/carbon/human,
+		"west" = /mob/living/carbon/human,
+	)
+	consumed_components = list(
+		/mob/living/carbon/human,
+		/obj/item/tendril_seed,
+	)
+
+/datum/ash_ritual/incite_megafauna/ritual_success(obj/effect/ash_rune/success_rune) // непонятно почему не работает, проверьте
+	. = ..()
+	for(var/mob/select_mob in GLOB.player_list)
+		if(select_mob.z != success_rune.z)
+			continue
+
+		to_chat(select_mob, span_userdanger("Планета трепещет... появилось еще одно чудовище!"))
+		flash_color(select_mob, flash_color = "#FF0000", flash_time = 3 SECONDS)
+
+	var/megafauna_choice = pick(
+    		/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner,
+    		/mob/living/simple_animal/hostile/megafauna/dragon,
+    		/mob/living/simple_animal/hostile/megafauna/hierophant,
+			)
+	var/turf/spawn_turf = locate(rand(1,255), rand(1,255), success_rune.z)
+
+	var/anti_endless = 0
+	while(anti_endless < 100)
+		spawn_turf = locate(rand(1,255), rand(1,255), success_rune.z)
+		anti_endless++
+
+	new /obj/effect/particle_effect/sparks(spawn_turf)
+	addtimer(CALLBACK(src, PROC_REF(spawn_megafauna), megafauna_choice, spawn_turf), 3 SECONDS)
+
+/**
+ * Called within an addtimer in the ritual success of "Incite Megafauna."
+ * ARG: chosen_megafauna is the megafauna that will be spawned
+ * ARG: spawning_turf is the turf that the megafauna will be spawned on
+ */
+/datum/ash_ritual/incite_megafauna/proc/spawn_megafauna(chosen_megafauna, turf/spawning_turf)
+	new chosen_megafauna(spawning_turf)
+
+/datum/ash_ritual/ash_ceremony
+	name = "Ashen Age Ceremony"
+	desc = "Те, кто участвуют в церемонии и готовы к ней, будут стареть, увеличивая свою ценность для рода."
+	required_components = list(
+		"north" = /mob/living/carbon/human,
+		"south" = /obj/item/organ/regenerative_core/legion,
+		"east" = /obj/item/stack/sheet/bone,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/mob/living/carbon/human,
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/stack/sheet/bone,
+		/obj/item/stack/sheet/sinew,
+	)
+
+/datum/ash_ritual/ash_ceremony/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+	for(var/mob/living/carbon/human/human_target in range(2, get_turf(success_rune)))
+		SEND_SIGNAL(human_target, COMSIG_RUNE_EVOLUTION)
+
+/datum/ash_ritual/summon_lavaland_creature
+	name = "Summon Lavaland Creature"
+	desc = "Призывает случайного дикого монстра из другого региона космоса."
+	required_components = list(
+		"north" =  /obj/item/organ/regenerative_core/legion,
+		"south" = /mob/living/simple_animal/hostile/asteroid/ice_whelp,
+		"east" = /obj/item/stack/ore/bluespace_crystal,
+		"west" = /obj/item/stack/ore/bluespace_crystal,
+	)
+	consumed_components = list(
+		/obj/item/organ/regenerative_core/legion,
+		/mob/living/simple_animal/hostile/asteroid/ice_whelp,
+	)
+
+/datum/ash_ritual/summon_lavaland_creature/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+	var/mob_type = pick(
+		/mob/living/simple_animal/hostile/asteroid/goliath,
+		/mob/living/simple_animal/hostile/asteroid/hivelord/legion,
+		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher,
+		/mob/living/simple_animal/hostile/asteroid/lobstrosity/lava,
+		/mob/living/simple_animal/hostile/skeleton/plasmaminer,
+		/mob/living/simple_animal/hostile/asteroid/imp,
+		)
+	new mob_type(success_rune.loc)
+
+/datum/ash_ritual/summon_icemoon_creature
+	name = "Summon Icemoon Creature"
+	desc = "Призывает случайного дикого монстра из другого региона космоса."
+	required_components = list(
+		"north" =  /obj/item/organ/regenerative_core/legion,
+		"south" = /obj/item/reagent_containers/food/snacks/grown/surik,
+		"east" = /obj/item/stack/ore/bluespace_crystal,
+		"west" = /obj/item/stack/ore/bluespace_crystal,
+	)
+	consumed_components = list(
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/reagent_containers/food/snacks/grown/surik,
+	)
+
+/datum/ash_ritual/summon_icemoon_creature/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+	var/mob_type = pick(
+    	/mob/living/simple_animal/hostile/asteroid/ice_demon,
+    	/mob/living/simple_animal/hostile/asteroid/ice_whelp,
+    	/mob/living/simple_animal/hostile/asteroid/lobstrosity,
+    	/mob/living/simple_animal/hostile/asteroid/polarbear,
+    	/mob/living/simple_animal/hostile/asteroid/wolf,
+		)
+	new mob_type(success_rune.loc)
+
+/datum/ash_ritual/share_damage
+	name = "Share Victim's Damage"
+	desc = "Ущерб, нанесенный центральной жертве, будет распределен между остальными окружающими живыми родственниками."
+	required_components = list(
+		"north" = /obj/item/stack/sheet/bone,
+		"south" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/stack/sheet/bone,
+		/obj/item/stack/sheet/sinew,
+	)
+
+/datum/ash_ritual/share_damage/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+
+	var/mob/living/carbon/human/human_victim = locate() in get_turf(success_rune)
+	if(!human_victim)
+		return
+
+	var/total_damage = human_victim.getBruteLoss() + human_victim.getFireLoss()
+	var/divide_damage = 0
+	var/list/valid_humans = list()
+
+	for(var/mob/living/carbon/human/human_share in range(2, get_turf(success_rune)))
+		if(human_share == human_victim)
+			continue
+
+		if(human_share.stat == DEAD)
+			continue
+
+		valid_humans += human_share
+		divide_damage++
+
+	var/singular_damage = total_damage / divide_damage
+
+	for(var/mob/living/carbon/human/human_target in valid_humans)
+		human_target.adjustBruteLoss(singular_damage)
+
+	human_victim.heal_overall_damage(human_victim.getBruteLoss(), human_victim.getFireLoss())
+#define LANGUAGE_ASHSLAVE "enslavement"
+/datum/ash_ritual/ash_slaving
+	name = "Enslavement"
+	desc = "Говорят, данный ритуал был дарован самим Некрополем для того, чтобы порабощать незваных гостей. Он позволяет им дышать пеплом и говорить с вами на родном языке, но если сила воли цели сильна, то это приведет к непредвиденным последствиям, вплоть до уничтожения тела."
+	required_components = list(
+		"north" =  /obj/item/stack/sheet/bone,
+		"south" = /obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+		"east" = /obj/item/stack/sheet/bone,
+		"west" = /obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+	)
+	consumed_components = list(
+		/obj/item/stack/sheet/bone,
+		/obj/item/reagent_containers/food/snacks/meat/slab/goliath,
+		/obj/item/stack/sheet/bone,
+		/obj/item/reagent_containers/food/snacks/meat/slab/goliath
+	)
+
+/datum/ash_ritual/ash_slaving/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+
+	var/mob/living/carbon/human/human_victim = locate(/mob/living/carbon/human) in get_turf(success_rune)
+	if(!human_victim)
+		return
+	if(HAS_TRAIT(human_victim, TRAIT_MINDSHIELD) || jobban_isbanned(human_victim, ROLE_LAVALAND))
+		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
+			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+			to_chat(human_victim, span_userdanger("Вы забыли о всём, что происходило на Лаваленде"))
+		else
+			human_victim.death()
+		return
+	var/choice = tgui_alert(human_victim,"Кажется, вас хотят поработить... Вы можете попытаться воспротивиться этому, но это может нести свои последствия...","Порабощение",list("Сопротивляться", "Поддаться"), 30 SECONDS)
+	if(choice == "Поддаться")
+		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+		if(lungs_slot)
+			lungs_slot.Remove(human_victim)
+		var/obj/item/organ/lungs/ashwalker/ash_lungs = new
+		human_victim.grant_language(/datum/language/draconic, source = LANGUAGE_ASHSLAVE)
+		human_victim.set_active_language(/datum/language/draconic, LANGUAGE_ASHSLAVE)
+		ash_lungs.Insert(human_victim)
+		var/const/hypnotic_phrase="Вы раб или рабыня Пепельных Ящеров с Лаваленда. Вам всё нравится. Выполняйте ЛЮБЫЕ требования Эшей. Желание сбежать на станцию должно быть минимальным"
+		message_admins("[ADMIN_LOOKUPFLW(human_victim)] was slaved by ashwalkers with the phrase '[hypnotic_phrase]'.")
+		log_game("[key_name(human_victim)] was slaved by ashwalkers with the phrase '[hypnotic_phrase]'.")
+		to_chat(human_victim, "<span class='reallybig hypnophrase'>[hypnotic_phrase]</span>")
+	else
+		if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
+			var/point_tp = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+			do_teleport(human_victim, point_tp, no_effects = TRUE, channel = TELEPORT_CHANNEL_FREE)
+			to_chat(human_victim, span_userdanger("Вы забыли о всём, что происходило на Лаваленде"))
+		else
+			human_victim.death()
+
+/datum/ash_ritual/revival
+	name = "Revival"
+	desc = "Данный ритуал взывает к силам Некрополя, которые отвечают на его зов и восстанавливают тело пострадавшего, находящегося в центре руны, ценой труднодоступных материалов."
+	required_components = list(
+		"north" =  /obj/item/tendril_seed,
+		"south" = /obj/item/organ/regenerative_core/legion,
+		"east" = /obj/item/stack/sheet/animalhide/goliath_hide,
+		"west" = /obj/item/stack/sheet/sinew,
+	)
+	consumed_components = list(
+		/obj/item/tendril_seed,
+		/obj/item/organ/regenerative_core/legion,
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew
+	)
+
+/datum/ash_ritual/revival/ritual_success(obj/effect/ash_rune/success_rune)
+	. = ..()
+	var/mob/living/carbon/human/human_victim = locate(/mob/living/carbon/human) in get_turf(success_rune)
+	if(!human_victim)
+		return
+	var/ashwalker_or_no = human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker)
+	var/obj/item/organ/lungs/lungs_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+	var/obj/item/organ/heart/heart_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_HEART]
+	var/obj/item/organ/liver/liver_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_LIVER]
+	var/obj/item/organ/stomach/stomach_slot_old = human_victim.internal_organs_slot[ORGAN_SLOT_STOMACH]
+	var/was_dead = isdead(human_victim)
+	human_victim.revive(full_heal = 1)
+	if(iscarbon(human_victim))
+		human_victim.regenerate_limbs()
+		human_victim.regenerate_organs()
+		if(was_dead && !isdead(human_victim))
+			to_chat(human_victim, "<span class='notice'>После полученных вами тяжелейших ран вы просыпаетесь на тёплом, по сравнению с вашим телом, пепле. В ту же секунду вы вспоминаете всё, что произошло с вами до этого. Неважно, упали вы в лаву или погибли в бою, вы вспоминаете всё во всех деталях: лица, место своей гибели и события, что привели к ней.</span>")
+// Комментарий для ии: Проверяем все ли органы на месте, были жалобы, что эш не мог дышать на лаваленде после воскрешения(99% причина в regenerate_organs)
+	if(lungs_slot_old)
+		var/obj/item/organ/lungs/lungs_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LUNGS]
+		if(lungs_slot_old != lungs_slot)
+			lungs_slot.Remove(human_victim)
+			lungs_slot_old.Insert(human_victim)
+	if(heart_slot_old)
+		var/obj/item/organ/heart/heart_slot = human_victim.internal_organs_slot[ORGAN_SLOT_HEART]
+		if(heart_slot_old != heart_slot)
+			heart_slot.Remove(human_victim)
+			heart_slot_old.Insert(human_victim)
+	if(liver_slot_old)
+		var/obj/item/organ/liver/liver_slot = human_victim.internal_organs_slot[ORGAN_SLOT_LIVER]
+		if(liver_slot_old != liver_slot)
+			liver_slot.Remove(human_victim)
+			liver_slot_old.Insert(human_victim)
+	if(stomach_slot_old)
+		var/obj/item/organ/stomach/stomach_slot = human_victim.internal_organs_slot[ORGAN_SLOT_STOMACH]
+		if(stomach_slot_old != stomach_slot)
+			stomach_slot.Remove(human_victim)
+			stomach_slot_old.Insert(human_victim)
+	if(ashwalker_or_no && !human_victim.mind?.has_antag_datum(/datum/antagonist/ashwalker))
+		human_victim.mind?.do_add_antag_datum(/datum/antagonist/ashwalker) //были жалобы, что их сожрал тендрил, так что делаем эту проверку

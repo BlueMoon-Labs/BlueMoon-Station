@@ -36,4 +36,13 @@
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
 
+/datum/design/borg_dominatrix
+	name = "Cyborg Upgrade (Dominatrix Module)"
+	id = "borg_dominatrix"
+	build_type = MECHFAB
+	build_path = /obj/item/borg/upgrade/dominatrix_module
+	materials = list(/datum/material/iron = 35000, /datum/material/glass = 10000)
+	construction_time = 12 SECONDS
+	category = list("Cyborg Upgrade Modules")
+
 /////////////////////////////////////////////////

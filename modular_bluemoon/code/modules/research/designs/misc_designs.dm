@@ -5,7 +5,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000)
 	build_path = /obj/item/roller
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/roller_heavy
@@ -15,7 +15,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 8000)
 	build_path = /obj/item/roller/heavy
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/roller_stasis
@@ -25,16 +25,17 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000, /datum/material/glass = 400, /datum/material/silver = 2000)
 	build_path = /obj/item/roller/stasis
-	category = list("Medical Designs")
+	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
-/datum/techweb_node/base/New()
-	var/extra_designs = list(
-		"heavy_roller_bed",
-		"normal_roller_bed"
-	)
-	LAZYADD(design_ids, extra_designs)
-	. = ..()
+/datum/design/nanite_protector
+	name = "Nanite Protector"
+	desc = "Экспериментальный инжектор, содержащий серую массу непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами. Использование более одного раза не несет эффекта."
+	id = "nanite_protector"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 600, /datum/material/glass = 200, /datum/material/plasma = 2000, /datum/material/silver = 1000, /datum/material/gold = 1000, /datum/material/diamond = 300)
+	build_path = /obj/item/reagent_containers/hypospray/medipen/nanite_protector
+	category = list("Medical Designs")
 
 /datum/design/blast_control
 	name = "Blast Door Controller"

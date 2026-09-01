@@ -2,12 +2,12 @@
 	icon = 'icons/obj/robotics.dmi'
 	icon_state = "fab-idle"
 	name = "exosuit fabricator"
-	desc = "Nothing is being built."
+	desc = "Ничего не производится."
 	density = TRUE
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 20
 	active_power_usage = 5000
-	req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE)
+	//req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE) // Лишнее, у хермитов нед доступа + платы все равно только в импринтере делаются
 	circuit = /obj/item/circuitboard/machine/mechfab
 	// processing_flags = START_PROCESSING_MANUALLY
 
@@ -63,17 +63,35 @@
 								"Cybernetics",
 								"Implants",
 								"Control Interfaces",
-								"Misc"
+								"Misc",
+								"Prosthetics",
+								"Savannah-Ivanov"
 								)
+	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины
+	var/deferred_sync_timer	// Отвечает за кд перед автосинхронизацией, и не даёт упёршимся в него же сигналам изучений потеряться *temp*
+	var/const/cooldown_say_time = 1.5 SECONDS
+
+	var/on_station = TRUE
+
+	vocal_bark_id = "bottalk1"
+	vocal_pitch = 1.3
+	vocal_speed = 6
+	vocal_volume = 20
 
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	stored_research = new
 	rmat = AddComponent(/datum/component/remote_materials, "mechfab", mapload && link_on_init, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
-
+	on_station = is_station_level(z) || is_mining_level(z)
 	RefreshParts() //Recalculating local material sizes if the fab isn't linked
+	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
+	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
 	return ..()
 
 /obj/machinery/mecha_part_fabricator/Destroy()
+	if(deferred_sync_timer)
+		deltimer(deferred_sync_timer)
+		deferred_sync_timer = null
+	UnregisterSignal(SSdcs, list(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE))
 	QDEL_NULL(stored_research)
 	rmat = null
 	return ..()
@@ -101,10 +119,11 @@
 	// Adjust the build time of any item currently being built.
 	if(being_built)
 		var/last_const_time = build_finish - build_start
-		var/new_const_time = get_construction_time_w_coeff(initial(being_built.construction_time))
-		var/const_time_left = build_finish - world.time
-		var/new_build_time = (new_const_time / last_const_time) * const_time_left
-		build_finish = world.time + new_build_time
+		if(last_const_time > 0)
+			var/new_const_time = get_construction_time_w_coeff(initial(being_built.construction_time))
+			var/const_time_left = build_finish - world.time
+			var/new_build_time = (new_const_time / last_const_time) * const_time_left
+			build_finish = world.time + new_build_time
 
 	update_static_data(usr)
 
@@ -349,6 +368,11 @@
 	if(!D)
 		return FALSE
 
+	if(!design_sec_level_check(D))
+		if(verbose)
+			say("Irrelevant security alert level to build design.")
+		return FALSE
+
 	var/datum/component/material_container/materials = rmat.mat_container
 	if (!materials)
 		if(verbose)
@@ -369,11 +393,18 @@
 	being_built = D
 	build_finish = world.time + get_construction_time_w_coeff(initial(D.construction_time))
 	build_start = world.time
-	desc = "It's building \a [D.name]."
+	desc = "Производится [D.name]."
 
 	rmat.silo_log(src, "built", -1, "[D.name]", build_materials)
 
 	return TRUE
+
+/obj/machinery/mecha_part_fabricator/proc/design_sec_level_check(datum/design/D)
+	. = TRUE
+	if(!D)
+		return
+	if(on_station && (GLOB.security_level < D.min_security_level || GLOB.security_level > D.max_security_level))
+		return FALSE
 
 /obj/machinery/mecha_part_fabricator/process()
 	// If there's a stored part to dispense due to an obstruction, try to dispense it.
@@ -421,7 +452,7 @@
 	var/turf/exit = get_step(src,(dir))
 	if(exit.density)
 		say("Error! Part outlet is obstructed.")
-		desc = "It's trying to dispense \a [D.name], but the part outlet is obstructed."
+		desc = "Пытается выдать [D.name], но выход для деталей заблокирован."
 		stored_part = I
 		return FALSE
 
@@ -487,16 +518,65 @@
   * Syncs machine with R&D servers.
   *
   * Requires an R&D Console visible within 7 tiles. Copies techweb research. Updates tgui's state data.
+  * ignore_timer - при значении TRUE синхронизирует дизайны в обход таймера
+  * is_silent - при значении TRUE пропускает say()
   */
-/obj/machinery/mecha_part_fabricator/proc/sync()
+/obj/machinery/mecha_part_fabricator/proc/sync(ignore_timer = FALSE, is_silent = FALSE)
+	if(!ignore_timer)
+		if(!COOLDOWN_FINISHED(src, cooldown_say))
+			return
+		COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+
 	for(var/obj/machinery/computer/rdconsole/RDC in orange(7,src))
 		RDC.stored_research.copy_research_to(stored_research)
-		update_static_data(usr)
-		say("Successfully synchronized with R&D server.")
+		update_static_data_for_all_viewers()
+		if(!is_silent)
+			say("Successfully synchronized with R&D server.")
 		return
 
-	say("Unable to connect to local R&D server.")
+	if(!is_silent)
+		say("Unable to connect to local R&D server.")
 	return
+
+/obj/machinery/mecha_part_fabricator/proc/on_node_unlocked(datum/source, node_id)	// Дизайны обновляются после изучения ноды на консоли
+	SIGNAL_HANDLER
+	if(deferred_sync_timer)	// Если мы всё ещё в кулдауне, не делаем ничего - нет необходимости
+		return
+	deferred_sync_timer = addtimer(CALLBACK(src, PROC_REF(perform_deferred_sync)), 1.5 SECONDS, TIMER_STOPPABLE)	// Синхронизация проводится после таймера, по совместительству очищая его и открывая гейт новым сигналам
+
+/obj/machinery/mecha_part_fabricator/proc/perform_deferred_sync()	// Временный фикс нагрузки сервера update_research() проками. Потом сделаю нормальный, минималистичный on_auto_sync для работы с единичными нодами
+	if(QDELETED(src))
+		return
+	deferred_sync_timer = null	// Проведение синхронизации происходит вместе с очисткой таймера
+	INVOKE_ASYNC(src, PROC_REF(sync), TRUE, TRUE)	// Асинк в качестве второй защиты от обсёра, надеюсь даже после 100+ нод этого будет достаточно
+
+/obj/machinery/mecha_part_fabricator/proc/on_research_batch_complete(datum/source, list/node_ids)	// Регистрация сигнала о завершении упаковки пакета ID-шек
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(handle_research_batch_complete), node_ids)
+
+/obj/machinery/mecha_part_fabricator/proc/handle_research_batch_complete(list/node_ids)
+	if(!stored_research || !LAZYLEN(stored_research.researched_designs))
+		return
+
+	var/list/new_designs = list()
+	for(var/node_id in node_ids)
+		var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)	// Проверка существования нод, привязанных к полученному ID
+		if(!node)
+			continue
+		for(var/design_id in node.design_ids)
+			var/datum/design/D = SSresearch.techweb_design_by_id(design_id)
+			if(!D || !(D.build_type & MECHFAB))	// Фильтрация полученных в пакете дизайнов по флагу MECHFAB
+				continue
+			if(!stored_research.researched_designs[D.id])
+				continue
+			new_designs |= D.id
+
+	var/added = length(new_designs)
+	if(!added)
+		return
+
+	sleep(rand(0, 2 SECONDS)) // Рандомный дилей перед уведомлением о получении дизайнов, уменьшает звуковую нагрузку (надеюсь)
+	say("Синхронизация с базой изучений. Количество новых чертежей: [added]")
 
 /**
   * Calculates the coefficient-modified resource cost of a single material component of a design's recipe.
@@ -521,7 +601,7 @@
 
 /obj/machinery/mecha_part_fabricator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/mecha_part_fabricator/ui_interact(mob/user, datum/tgui/ui)
@@ -541,23 +621,26 @@
 
 	for(var/v in stored_research.researched_designs)
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)
-		if(D.build_type & MECHFAB)
-			// This is for us.
-			var/list/part = output_part_info(D, TRUE)
+		if(!(D.build_type & MECHFAB))
+			continue // Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
+		if(!design_sec_level_check(D))
+			continue
+		// This is for us.
+		var/list/part = output_part_info(D, TRUE)
 
-			if(part["category_override"])
-				for(var/cat in part["category_override"])
-					buildable_parts[cat] += list(part)
-					if(!(cat in part_sets))
-						final_sets += cat
+		if(part["category_override"])
+			for(var/cat in part["category_override"])
+				buildable_parts[cat] += list(part)
+				if(!(cat in part_sets))
+					final_sets += cat
+			continue
+
+		for(var/cat in part_sets)
+			// Find all matching categories.
+			if(!(cat in D.category))
 				continue
 
-			for(var/cat in part_sets)
-				// Find all matching categories.
-				if(!(cat in D.category))
-					continue
-
-				buildable_parts[cat] += list(part)
+			buildable_parts[cat] += list(part)
 
 	data["partSets"] = final_sets
 	data["buildableParts"] = buildable_parts
@@ -591,14 +674,20 @@
 	return data
 
 /obj/machinery/mecha_part_fabricator/ui_act(action, var/list/params)
-	if(..())
-		return TRUE
+	. = ..()
+	if(.)
+		return
+	var/mob/living/user = usr
+	if(!istype(user))
+		return
+	if(!user.can_use_mechfab_topic(src, action))
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			say("В доступе отказано.")
+			playsound(loc, 'sound/machines/uplinkerror.ogg', 70, 0)
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+		return
 
 	. = TRUE
-
-	add_fingerprint(usr)
-	usr.set_machine(src)
-
 	switch(action)
 		if("sync_rnd")
 			// Sync with R&D Servers
@@ -686,10 +775,14 @@
 /obj/machinery/mecha_part_fabricator/proc/eject_sheets(eject_sheet, eject_amt)
 	var/datum/component/material_container/mat_container = rmat.mat_container
 	if (!mat_container)
-		say("No access to material storage, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("No access to material storage, please contact the quartermaster.")
 		return FALSE
 	if (rmat.on_hold())
-		say("Mineral access is on hold, please contact the quartermaster.")
+		if(COOLDOWN_FINISHED(src, cooldown_say))
+			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
+			say("Mineral access is on hold, please contact the quartermaster.")
 		return FALSE
 	var/count = mat_container.retrieve_sheets(text2num(eject_amt), eject_sheet, drop_location())
 	var/list/matlist = list()
@@ -730,6 +823,8 @@
 
 /obj/machinery/mecha_part_fabricator/maint
 	link_on_init = FALSE
+	req_access = null
 
 /obj/machinery/mecha_part_fabricator/offstation
 	link_on_init = FALSE
+	req_access = null

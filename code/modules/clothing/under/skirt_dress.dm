@@ -1,5 +1,6 @@
 /obj/item/clothing/under/dress
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/dress/skirt
 	name = "black skirt"
@@ -95,7 +96,6 @@
 	icon_state = "striped_dress"
 	item_state = "stripeddress"
 	body_parts_covered = CHEST|GROIN|ARMS
-	fitted = FEMALE_UNIFORM_FULL
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 
@@ -141,7 +141,12 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	unique_reskin = list(
+		"Glove" = list(
+			"icon_state" = "red_evening_gown_glove",
+			"name" = "red evening gown"
+		)
+	)
 
 /obj/item/clothing/under/dress/skirt/plaid
 	name = "red plaid skirt"
@@ -186,7 +191,6 @@
 	item_state = "bride_white"
 	can_adjust = FALSE
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/wedding/orange
 	name = "orange wedding dress"
@@ -194,7 +198,6 @@
 	icon_state = "bride_orange"
 	item_state = "bride_orange"
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/wedding/purple
 	name = "purple wedding dress"
@@ -202,7 +205,6 @@
 	icon_state = "bride_purple"
 	item_state = "bride_purple"
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/wedding/blue
 	name = "blue wedding dress"
@@ -210,7 +212,6 @@
 	icon_state = "bride_blue"
 	item_state = "bride_blue"
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/wedding/red
 	name = "red wedding dress"
@@ -218,7 +219,6 @@
 	icon_state = "bride_red"
 	item_state = "bride_red"
 	flags_inv = HIDESHOES //You can't see shoes under the gown
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/skirt/polychromic
 	name = "polychromic skirt"

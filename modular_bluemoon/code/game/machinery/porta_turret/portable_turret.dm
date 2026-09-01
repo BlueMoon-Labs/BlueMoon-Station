@@ -23,7 +23,7 @@
 /obj/machinery/porta_turret/inteq/setup()
 	return
 
-/obj/machinery/porta_turret/Inteq/assess_perp(mob/living/carbon/human/perp)
+/obj/machinery/porta_turret/inteq/assess_perp(mob/living/carbon/human/perp)
 	var/obj/item/card/id/target_card = perp.get_idcard(FALSE)
 	if(target_card && (ACCESS_INTEQ in target_card?.access) && istype(target_card, /obj/item/card/id/inteq))
 		if(istype(target_card, /obj/item/card/id/syndicate) || istype(target_card, /obj/item/card/id/syndicate/anyone) || istype(target_card, /obj/item/card/id/syndicate/nuke_leader))

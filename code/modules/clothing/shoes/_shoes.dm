@@ -89,6 +89,12 @@
 /obj/item/clothing/shoes/equipped(mob/user, slot)
 	. = ..()
 
+	//магботы/клокворк/боты МОДа отменяют гравитацию, а кэш гравитации в Life
+	//пересчитывается только при перемещении - обуться, не сходя с места, должно
+	//быть замечено сразу
+	if(negates_gravity())
+		user.refresh_gravity()
+
 	if(offset && (slot_flags & slot))
 		user.pixel_y += offset
 		worn_y_dimension -= (offset * 2)
@@ -106,9 +112,13 @@
 /obj/item/clothing/shoes/dropped(mob/user)
 	if(our_alert && (our_alert.owner == user))
 		user.clear_alert("shoealert")
+	// clear_alert qdel-ит алерт; висящая ссылка не давала ему собраться GC.
+	our_alert = null
 	if(offset && equipped_before_drop)
 		restore_offsets(user)
 	. = ..()
+	if(negates_gravity())
+		user.refresh_gravity()
 
 /obj/item/clothing/shoes/update_clothes_damaged_state()
 	..()
@@ -149,6 +159,7 @@
 	if(tied == SHOES_TIED)
 		if(our_guy)
 			our_guy.clear_alert("shoealert")
+		our_alert = null
 		UnregisterSignal(src, COMSIG_SHOES_STEP_ACTION)
 	else
 		if(tied == SHOES_UNTIED && our_guy && user == our_guy)

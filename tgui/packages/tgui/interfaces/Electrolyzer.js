@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
 
-export const Electrolyzer = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Electrolyzer = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       width={400}
@@ -33,12 +33,13 @@ export const Electrolyzer = (props, context) => {
               {data.hasPowercell && (
                 <ProgressBar
                   value={data.powerLevel / 100}
-                  content={data.powerLevel + '%'}
                   ranges={{
                     good: [0.6, Infinity],
                     average: [0.3, 0.6],
                     bad: [-Infinity, 0.3],
-                  }} />
+                  }}>
+                  {data.powerLevel + '%'}
+                </ProgressBar>
               ) || 'None'}
             </LabeledList.Item>
           </LabeledList>

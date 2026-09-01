@@ -2,7 +2,7 @@
 
 /datum/action/cooldown/bloodsucker/gohome
 	name = "Vanishing Act"
-	desc = "As dawn aproaches, disperse into mist and return directly to your Lair.<br><b>WARNING:</b> You will drop <b>ALL</b> of your possessions if observed by mortals."
+	desc = "С приближением рассвета, обращаетесь в туман и мгновенно возвращаетесь в своё логово.<br><b>ВНИМАНИЕ:</b> Если смертные вас увидят, вы уроните <b>ВСЕ</b> свои вещи."
 	button_icon_state = "power_gohome"
 	background_icon_state_on = "vamp_power_off_oneshot"		// Even though this never goes off.
 	background_icon_state_off = "vamp_power_off_oneshot"
@@ -26,7 +26,7 @@
 	var/datum/antagonist/bloodsucker/bloodsuckerdatum = owner.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
 	if(!istype(bloodsuckerdatum) || !bloodsuckerdatum.coffin)
 		if(display_error)
-			to_chat(owner, "<span class='warning'>Your coffin has been destroyed!</span>")
+			to_chat(owner, "<span class='warning'>Ваш гроб был уничтожен!</span>")
 		return FALSE
 	return TRUE
 
@@ -38,7 +38,7 @@
 	var/mob/living/carbon/user = owner
 	var/datum/antagonist/bloodsucker/bloodsuckerdatum = owner.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER)
 			// IMPORTANT: Check for lair at every step! It might get destroyed.
-	to_chat(user, "<span class='notice'>You focus on separating your consciousness from your physical form...</span>")
+	to_chat(user, "<span class='notice'>Вы фокусируетесь на отделении души и разума от физической оболочки...</span>")
 	// STEP ONE: Flicker Lights
 	flicker_lights(3, 20)
 	sleep(50)
@@ -51,7 +51,7 @@
 	// ( STEP TWO: Lights OFF? )
 	// CHECK: Still have Coffin?
 	if(!istype(bloodsuckerdatum) || !bloodsuckerdatum.coffin)
-		to_chat(user, "<span class='warning'>Your coffin has been destroyed! You no longer have a destination.</span>")
+		to_chat(user, "<span class='warning'>Ваш гроб был уничтожен! У вас больше нет пункта назначения.</span>")
 		return FALSE
 	if(!owner)
 		return

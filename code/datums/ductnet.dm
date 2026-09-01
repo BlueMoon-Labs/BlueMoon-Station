@@ -27,6 +27,8 @@
 		suppliers += P
 	else if(dir & P.demand_connects)
 		demanders += P
+		//демандер мог запарковаться без подключений - теперь есть у кого просить
+		START_PROCESSING(SSfluids, P)
 	return TRUE
 ///remove a plumber. we dont delete ourselves because ductnets dont persist through plumbing objects
 /datum/ductnet/proc/remove_plumber(datum/component/plumbing/P)

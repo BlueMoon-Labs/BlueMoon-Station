@@ -25,8 +25,8 @@ import { Box, Button, Flex, Icon, Section } from '../../components';
  * @param {object} _properties
  * @param {object} context
  */
-export const LoginScreen = (_properties, context) => {
-  const { act, data } = useBackend(context);
+export const LoginScreen = (_properties) => {
+  const { act, data } = useBackend();
   const {
     loginState,
     isAI,
@@ -34,7 +34,7 @@ export const LoginScreen = (_properties, context) => {
     isAdmin,
   } = data;
   return (
-    <Section title="Welcome" height="100%" stretchContents>
+    <Section title="Welcome" fill>
       <Flex height="100%" align="center" justify="center">
         <Flex.Item textAlign="center" mt="-2rem">
           <Box fontSize="1.5rem" bold>

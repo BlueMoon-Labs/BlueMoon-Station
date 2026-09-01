@@ -16,6 +16,7 @@
 	allowed_buildtypes = BIOAEGIS
 	console_link = FALSE
 	requires_console = FALSE
+	emag_only_access = FALSE
 
 /obj/item/circuitboard/machine/protolathe/bioaegis //Very experimental piece of tech, with heavy reliance on cutting-edge parts.
 	name = "Bio-organical Printer (Machine Board)"
@@ -28,6 +29,8 @@
 	icon = 'modular_bluemoon/icons/obj/machines/research.dmi'
 	icon_state = "protolathe-syn"
 	production_animation = "protolathe_n-syn"
+	req_one_access = list(ACCESS_SYNDICATE)
+	obj_flags = CAN_BE_HIT | EMAGGED
 	flags_1 = NODECONSTRUCT_1 //Should prevent any attempt to take t6 parts or something else. Same with chem dispensers in all honesty.
 
 /obj/item/circuitboard/machine/protolathe/bioaegis/syndicate //I make it so some tests/checks don't fuck up. You can't get it anyway without debug/spawn

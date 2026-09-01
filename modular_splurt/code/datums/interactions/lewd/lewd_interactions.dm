@@ -62,13 +62,21 @@
 					to_chat(user, "<span class='warning'>Для тебя это слишком.</span>")
 				return FALSE
 
+	if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+		var/client/cli = user.client
+		if(cli)
+			if(cli.prefs.unholyhardpref == "No")
+				if(!silent)
+					to_chat(user, "<span class='warning'>Ты не готов к такому уровню грязи.</span>")
+				return FALSE
+
 	var/user_require_penis_exposed = !!(required_from_user_exposed & INTERACTION_REQUIRE_PENIS)
 	var/user_require_penis_unexposed = !!(required_from_user_unexposed & INTERACTION_REQUIRE_PENIS)
-	if(user_require_penis_exposed || user_require_penis_unexposed)
+	if((user_require_penis_exposed || user_require_penis_unexposed) && !user.has_strapon())
 		var/obj/item/organ/genital/penis/penor = user.getorganslot(ORGAN_SLOT_PENIS)
 		if(CHECK_BITFIELD(penor?.genital_flags, GENITAL_CHASTENED))
 			if(!silent)
-				to_chat(user, "<span class='warning>You can't do anything with your [pick(GLOB.dick_nouns)] like this!")
+				to_chat(user, span_warning("You can't do anything with your [pick(GLOB.dick_nouns)] like this!"))
 			return FALSE
 
 	var/user_require_vagina_exposed = !!(required_from_user_exposed & INTERACTION_REQUIRE_VAGINA)
@@ -77,7 +85,7 @@
 		var/obj/item/organ/genital/vagina/puss = user.getorganslot(ORGAN_SLOT_VAGINA)
 		if(CHECK_BITFIELD(puss?.genital_flags, GENITAL_CHASTENED))
 			if(!silent)
-				to_chat(user, "<span class='warning>You can't do anything with your vagina like this!")
+				to_chat(user, span_warning("You can't do anything with your vagina like this!"))
 			return FALSE
 
 	var/user_require_anus_exposed = !!(required_from_user_exposed & INTERACTION_REQUIRE_ANUS)
@@ -87,12 +95,12 @@
 		if(holi)
 			if(CHECK_BITFIELD(holi?.genital_flags, GENITAL_CHASTENED))
 				if(!silent)
-					to_chat(user, "<span class='warning>You can't do anything with your [pick(GLOB.butt_nouns)] like this!")
+					to_chat(user, span_warning("You can't do anything with your [pick(GLOB.butt_nouns)] like this!"))
 				return FALSE
 		else
 			if(HAS_TRAIT(user, TRAIT_CHASTENED_ANUS))
 				if(!silent)
-					to_chat(user, "<span class='warning>You can't do anything with your [pick(GLOB.butt_nouns)] like this!")
+					to_chat(user, span_warning("You can't do anything with your [pick(GLOB.butt_nouns)] like this!"))
 				return FALSE
 	. = ..()
 
@@ -147,13 +155,21 @@
 					to_chat(user, "<span class='warning'>По какой-то причине ты передумал это делать с <b>[target]</b>.</span>")
 				return FALSE
 
+	if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+		var/client/cli = target.client
+		if(cli)
+			if(target.client.prefs.unholyhardpref == "No")
+				if(!silent)
+					to_chat(user, "<span class='warning'>Они не оценят такой уровень грязи.</span>")
+				return FALSE
+
 	var/target_require_penis_exposed = !!(required_from_target_exposed & INTERACTION_REQUIRE_PENIS)
 	var/target_require_penis_unexposed = !!(required_from_target_unexposed & INTERACTION_REQUIRE_PENIS)
-	if(target_require_penis_exposed || target_require_penis_unexposed)
+	if((target_require_penis_exposed || target_require_penis_unexposed) && !target.has_strapon())
 		var/obj/item/organ/genital/penis/penor = target.getorganslot(ORGAN_SLOT_PENIS)
 		if(CHECK_MULTIPLE_BITFIELDS(penor?.genital_flags, GENITAL_CHASTENED))
 			if(!silent)
-				to_chat(user, "<span class='warning>You can't do anything with their [pick(GLOB.dick_nouns)] like that!")
+				to_chat(user, span_warning("You can't do anything with their [pick(GLOB.dick_nouns)] like that!"))
 			return FALSE
 
 	var/target_require_vagina_exposed = !!(required_from_target_exposed & INTERACTION_REQUIRE_VAGINA)
@@ -162,7 +178,7 @@
 		var/obj/item/organ/genital/vagina/puss = target.getorganslot(ORGAN_SLOT_VAGINA)
 		if(CHECK_BITFIELD(puss?.genital_flags, GENITAL_CHASTENED))
 			if(!silent)
-				to_chat(user, "<span class='warning>You can't do anything with their vagina like this!")
+				to_chat(user, span_warning("You can't do anything with their vagina like this!"))
 			return FALSE
 
 	var/target_require_anus_exposed = !!(required_from_target_exposed & INTERACTION_REQUIRE_ANUS)
@@ -170,7 +186,7 @@
 	if(target_require_anus_exposed || target_require_anus_unexposed)
 		if(HAS_TRAIT(target, TRAIT_CHASTENED_ANUS))
 			if(!silent)
-				to_chat(user, "<span class='warning>You can't do anything with their [pick(GLOB.butt_nouns)] like this!")
+				to_chat(user, span_warning("You can't do anything with their [pick(GLOB.butt_nouns)] like this!"))
 			return FALSE
 	. = ..()
 

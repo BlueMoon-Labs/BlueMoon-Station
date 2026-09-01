@@ -47,9 +47,9 @@
 
 /obj/effect/landmark/xmastree/Initialize(mapload)
 	..()
-	if((FESTIVE_SEASON in SSevents.holidays) && festive_tree)
+	if((FESTIVE_SEASON in SSholidays.holidays) && festive_tree)
 		new christmas_tree(get_turf(src))
-	else if(((NEW_YEAR in SSevents.holidays) && christmas_tree) || ((CHRISTMAS in SSevents.holidays)  && christmas_tree))
+	else if(((NEW_YEAR in SSholidays.holidays) && christmas_tree) || ((CHRISTMAS in SSholidays.holidays)  && christmas_tree))
 		new festive_tree(get_turf(src))
 	return INITIALIZE_HINT_QDEL
 
@@ -78,7 +78,7 @@
 	priority_announce("Santa is coming to town!", "Unknown Transmission")
 
 /datum/round_event/santa/start()
-	var/list/candidates = pollGhostCandidates("Santa is coming to town! Do you want to be Santa?", poll_time=150)
+	var/list/candidates = pollGhostCandidates("Santa is coming to town! Do you want to be Santa?", poll_time=150, priority_check = FALSE)
 	if(LAZYLEN(candidates))
 		var/mob/C = pick(candidates)
 		santa = new /mob/living/carbon/human(pick(GLOB.blobstart))

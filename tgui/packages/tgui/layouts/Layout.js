@@ -22,13 +22,23 @@ export const Layout = props => {
         className={classes([
           'Layout',
           className,
-          ...computeBoxClassName(rest),
+          computeBoxClassName(rest),
         ])}
         {...computeBoxProps(rest)}>
         {children}
       </div>
     </div>
   );
+};
+
+// Stable identity ref callback, so React runs it once per mount,
+// not on every render. Returns a cleanup (React 19 ref cleanup API).
+const trackScrollableNode = node => {
+  if (!node) {
+    return;
+  }
+  addScrollableNode(node);
+  return () => removeScrollableNode(node);
 };
 
 const LayoutContent = props => {
@@ -40,21 +50,17 @@ const LayoutContent = props => {
   } = props;
   return (
     <div
+      ref={trackScrollableNode}
       className={classes([
         'Layout__content',
         scrollable && 'Layout__content--scrollable',
         className,
-        ...computeBoxClassName(rest),
+        computeBoxClassName(rest),
       ])}
       {...computeBoxProps(rest)}>
       {children}
     </div>
   );
-};
-
-LayoutContent.defaultHooks = {
-  onComponentDidMount: node => addScrollableNode(node),
-  onComponentWillUnmount: node => removeScrollableNode(node),
 };
 
 Layout.Content = LayoutContent;

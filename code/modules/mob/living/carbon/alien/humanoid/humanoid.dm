@@ -1,13 +1,14 @@
 /mob/living/carbon/alien/humanoid
 	name = "alien"
-	icon_state = "alien"
+	icon = 'icons/mob/alien.dmi'
+	icon_state = "alien_s"
 	pass_flags = PASSTABLE
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab/xeno = 5, /obj/item/stack/sheet/animalhide/xeno = 1)
 	possible_a_intents = list(INTENT_HELP, INTENT_DISARM, INTENT_GRAB, INTENT_HARM)
 	limb_destroyer = 1
 	hud_type = /datum/hud/alien
 	var/caste = ""
-	var/alt_icon = 'icons/mob/alienleap.dmi' //used to switch between the two alien icon files.
+	var/alt_icon = 'icons/mob/alien.dmi'
 	var/leap_on_click = 0
 	var/pounce_cooldown = 0
 	var/pounce_cooldown_time = 30
@@ -34,6 +35,7 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 	set_genital = new(null) //BLUEMOON ADD
 	AddAbility(regurg)
 	AddAbility(set_genital) //BLUEMOON ADD
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT) // adult xenomorphs have claws dexterous enough to undress prey
 	. = ..()
 
 /mob/living/carbon/alien/humanoid/Destroy()
@@ -94,9 +96,9 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 
 /mob/living/carbon/alien/humanoid/alien_evolve(mob/living/carbon/alien/humanoid/new_xeno)
 	drop_all_held_items()
-	for(var/atom/movable/A in stomach_contents)
-		stomach_contents.Remove(A)
-		new_xeno.stomach_contents.Add(A)
+	for(var/atom/movable/A in stomach_contents.Copy())
+		remove_from_stomach(A)
+		new_xeno.add_to_stomach(A)
 		A.forceMove(new_xeno)
 	..()
 

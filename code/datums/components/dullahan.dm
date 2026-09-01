@@ -38,8 +38,9 @@
 
 	// make sure you handle the tongue correctly, too!
 	var/obj/item/organ/tongue/T = H.getorganslot(ORGAN_SLOT_TONGUE)
-	T.Remove()
-	qdel(T)
+	if(T)
+		T.Remove()
+		qdel(T)
 
 	var/obj/item/organ/tongue/dullahan/new_tongue = new()
 	new_tongue.Insert(H)
@@ -56,6 +57,8 @@
 		qdel(head)
 
 	H.flags_1 &= ~(HEAR_1)
+	//и из HEARING-канала спатиал-грида: тело слышит только через голову
+	H.lose_hearing_sensitivity(INNATE_TRAIT)
 
 	RegisterSignal(dullahan_head, COMSIG_ATOM_HEARER_IN_VIEW, PROC_REF(include_owner))
 
@@ -103,10 +106,15 @@
 	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/dullahan_head/Destroy()
-	if(owner)
-		B.Remove()
-		B.forceMove(get_turf(src))
-		owner.gib()
+	var/mob/living/carbon/human/gib_target = owner
+	owner = null
+	if(gib_target && !QDELETED(gib_target))
+		if(B)
+			B.Remove()
+			B.forceMove(get_turf(src))
+		gib_target.gib()
+	else if(B)
+		QDEL_NULL(B)
 	. = ..()
 
 // update head sprite
@@ -175,8 +183,12 @@
 
 /datum/component/dullahan/Destroy()
 	UnregisterSignal(parent, COMSIG_LIVING_REGENERATE_LIMBS)
-	dullahan_head.owner = null
-	qdel(dullahan_head)
+	if(dullahan_head)
+		dullahan_head.owner = null
+		var/obj/item/dullahan_head/head = dullahan_head
+		dullahan_head = null
+		if(!QDELETED(head))
+			qdel(head)
 	REMOVE_TRAIT(parent, TRAIT_DULLAHAN, "dullahan_component")
 
 	// work out what organs to give them based on their species
@@ -192,15 +204,18 @@
 		H.regenerate_limb(BODY_ZONE_HEAD, TRUE)
 		H.reset_perspective(H)
 
-		old_brain.Remove(TRUE,TRUE)
-		QDEL_NULL(old_brain)
+		if(old_brain)
+			old_brain.Remove(TRUE, TRUE)
+			QDEL_NULL(old_brain)
 		new_brain.Insert(H, TRUE, TRUE)
 
-		old_eyes.Remove(TRUE,TRUE)
-		QDEL_NULL(old_eyes)
+		if(old_eyes)
+			old_eyes.Remove(TRUE, TRUE)
+			QDEL_NULL(old_eyes)
 		new_eyes.Insert(H, TRUE, TRUE)
 
-		old_tongue.Remove(TRUE,TRUE)
-		QDEL_NULL(old_tongue)
+		if(old_tongue)
+			old_tongue.Remove(TRUE, TRUE)
+			QDEL_NULL(old_tongue)
 		new_tongue.Insert(H, TRUE, TRUE)
 	. = ..()

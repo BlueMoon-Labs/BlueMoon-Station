@@ -3,22 +3,23 @@
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 50)
 	volume = 50
-	reagent_flags = OPENCONTAINER
+	reagent_flags = OPENCONTAINER|DUNKABLE
 	spillable = TRUE
 	resistance_flags = ACID_PROOF
 	container_HP = 2
 	var/gulp_size = 5
 	var/beingChugged = FALSE
 
+/obj/item/reagent_containers/glass/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/glass/attack(mob/M, mob/user, obj/target)
 	if(!canconsume(M, user))
 		return
 
-	if(!spillable)
-		return
-
 	if(!reagents || !reagents.total_volume)
-		to_chat(user, "<span class='warning'>[src] is empty!</span>")
+		to_chat(user, "<span class='warning'>Внутри [src] пусто!</span>")
 		return
 
 	var/gulp_amount = gulp_size
@@ -28,8 +29,11 @@
 		gulp_amount = H.self_gulp_size
 	if(istype(M))
 		if(user.a_intent == INTENT_HARM)
-			M.visible_message("<span class='danger'>[user] splashes the contents of [src] onto [M]!</span>", \
-							"<span class='userdanger'>[user] splashes the contents of [src] onto [M]!</span>")
+			if(!spillable)
+				to_chat(user, span_danger("Закупорено: не вылить!"))
+				return
+			M.visible_message("<span class='danger'>[user] выливает содержимое [src] на [M]!</span>", \
+							"<span class='userdanger'>[user] выливает содержимое [src] на [M]!</span>")
 			if(iscatperson(M))
 				M.emote("hiss")
 			var/R = reagents?.log_list()
@@ -37,7 +41,12 @@
 			if(isturf(target) && reagents.reagent_list.len && thrown_by)
 				log_combat(thrown_by, target, "splashed (thrown) [english_list(reagents.reagent_list)]")
 				message_admins("[ADMIN_LOOKUPFLW(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] at [ADMIN_VERBOSEJMP(target)].")
-			reagents.reaction(M, TOUCH)
+			if(ishuman(M))
+				var/mob/living/carbon/human/H = M
+				var/obj/item/bodypart/affecting = H.get_bodypart(check_zone(user.zone_selected))
+				reagents.reaction(M, TOUCH, affected_bodypart = affecting)
+			else
+				reagents.reaction(M, TOUCH)
 			log_combat(user, M, "splashed", R)
 			var/turf/UT = get_turf(user)
 			var/turf/MT = get_turf(M)
@@ -48,8 +57,8 @@
 			if(self_fed)
 				if(user.zone_selected == BODY_ZONE_PRECISE_MOUTH && !beingChugged)
 					beingChugged = TRUE
-					user.visible_message("<span class='notice'>[user] starts chugging [src].</span>", \
-						"<span class='notice'>You start chugging [src].</span>")
+					user.visible_message("<span class='notice'>[user] начинает выпивать залпом из [src].</span>", \
+						"<span class='notice'>Вы пьёте залпом из [src]...</span>")
 					if(!do_mob(user, M))
 						beingChugged = FALSE
 						return
@@ -57,16 +66,16 @@
 						beingChugged = FALSE
 						return
 					gulp_amount = 50
-					user.visible_message(span_notice("[user] chugs [src]."), \
-						span_notice("You chug [src]."))
+					user.visible_message(span_notice("[user] выпивает залпом из [src]."), \
+						span_notice("Вы отпили залпом содержимое [src]."))
 					beingChugged = FALSE
 				else
 					var/turf/T = get_turf(user)
-					to_chat(user, "<span class='notice'>You swallow a gulp of [src].</span>")
+					to_chat(user, "<span class='notice'>Вы отпили глоток из [src].</span>")
 					log_reagent("INGESTION: SELF: [key_name(user)] (loc [user.loc] at [AREACOORD(T)]) - [reagents.log_list()]")
 			else
-				M.visible_message("<span class='danger'>[user] attempts to feed something to [M].</span>", \
-							"<span class='userdanger'>[user] attempts to feed something to you.</span>")
+				M.visible_message("<span class='danger'>[user] пытается скормить что-то [M].</span>", \
+							"<span class='userdanger'>[user] пытается что-то вам скормить.</span>")
 				log_combat(user, M, "is attempting to feed", reagents.log_list())
 				if(!do_mob(user, M))
 					return
@@ -74,7 +83,7 @@
 					return // The drink might be empty after the delay, such as by spam-feeding
 				var/turf/UT = get_turf(user)		// telekenesis memes
 				var/turf/MT = get_turf(M)
-				M.visible_message("<span class='danger'>[user] feeds something to [M].</span>", "<span class='userdanger'>[user] feeds something to you.</span>")
+				M.visible_message("<span class='danger'>[user] кормит чем-то [M].</span>", "<span class='userdanger'>[user] кормит вас чем-то.</span>")
 				log_combat(user, M, "fed", reagents.log_list())
 				log_reagent("INGESTION: FED BY: [key_name(user)] (loc [user.loc] at [AREACOORD(UT)]) -> [key_name(M)] (loc [M.loc] at [AREACOORD(MT)]) - [reagents.log_list()]")
 			var/fraction = min(gulp_amount/reagents.total_volume, 1)
@@ -90,7 +99,7 @@
 
 	if(target.is_refillable()) //Something like a glass. Player probably wants to transfer TO it.
 		if(!reagents.total_volume)
-			to_chat(user, "<span class='warning'>[src] is empty!</span>")
+			to_chat(user, "<span class='warning'>Внутри [src] пусто!</span>")
 			return
 
 		if(target.reagents.holder_full())
@@ -98,11 +107,11 @@
 			return
 
 		var/trans = reagents.trans_to(target, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack transfer to")
-		to_chat(user, "<span class='notice'>You transfer [trans] unit\s of the solution to [target].</span>")
+		to_chat(user, "<span class='notice'>Вы перелили [trans] u веществ в [target].</span>")
 
 	else if(target.is_drainable()) //A dispenser. Transfer FROM it TO us.
 		if(!target.reagents.total_volume)
-			to_chat(user, "<span class='warning'>[target] is empty and can't be refilled!</span>")
+			to_chat(user, "<span class='warning'>[target] пуст и не может быть заправлен!</span>")
 			return
 
 		if(reagents.holder_full())
@@ -110,13 +119,25 @@
 			return
 
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack fill from")
-		to_chat(user, "<span class='notice'>You fill [src] with [trans] unit\s of the contents of [target].</span>")
+		to_chat(user, "<span class='notice'>Вы заполнили [src] на [trans] u содержимого [target].</span>")
 
-	else if(reagents.total_volume)
+	else if(reagents.total_volume && is_drainable() && spillable)
 		if(user.a_intent == INTENT_HARM)
-			user.visible_message("<span class='danger'>[user] splashes the contents of [src] onto [target]!</span>", \
-								"<span class='notice'>You splash the contents of [src] onto [target].</span>")
+			user.visible_message("<span class='danger'>[user] разливает содержимое [src] на [target]!</span>", \
+								"<span class='notice'>Вы вылили содержимое [src] на [target].</span>")
 			reagents.reaction(target, TOUCH)
+			var/turf/splash_turf = get_turf(target)
+			if(splash_turf && !istype(target, /obj/machinery/hydroponics))
+				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
+				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
+				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
+				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					var/datum/reagents/spill_copy = new(reagents.maximum_volume)
+					reagents.trans_to(spill_copy, reagents.total_volume, log = "reagentcontainer-glass pour spill")
+					addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
 			reagents.clear_reagents()
 
 /obj/item/reagent_containers/glass/attackby(obj/item/I, mob/user, params)
@@ -131,7 +152,7 @@
 			if(reagents.total_volume >= reagents.maximum_volume)
 				to_chat(user, "<span class='notice'>[src] is full.</span>")
 			else
-				to_chat(user, "<span class='notice'>You break [E] in [src].</span>")
+				to_chat(user, "<span class='notice'>Вы сломали скорлупу и вылили [E] в [src].</span>")
 				E.reagents.trans_to(src, E.reagents.total_volume, log = "reagentcontainer-glass break egg in")
 				qdel(E)
 			return
@@ -139,7 +160,7 @@
 
 /obj/item/reagent_containers/glass/beaker
 	name = "beaker"
-	desc = "A beaker. It can hold up to 60 units. Unable to withstand extreme pHes."
+	desc = "Мензурка. Может держать 60 u объёма. Не выдержит экстремальные алканно-кислотные значения pH."
 	icon = 'icons/obj/chemical.dmi'
 	volume = 60
 	icon_state = "beaker"
@@ -163,7 +184,7 @@
 	if(!cached_icon)
 		cached_icon = icon_state
 
-	if(reagents.total_volume)
+	if(reagents && reagents.total_volume)
 		var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "[cached_icon]10", color = mix_color_from_reagents(reagents.reagent_list))
 
 		var/percent = round((reagents.total_volume / volume) * 100)
@@ -186,12 +207,12 @@
 
 /obj/item/reagent_containers/glass/beaker/jar
 	name = "honey jar"
-	desc = "A jar for honey. It can hold up to 60 units of sweet delight. Unable to withstand reagents of an extreme pH."
+	desc = "Банка из под мёда, может держать до 60 u сладкого удовольствия. Плавится, если у вещества внутри радикальные значения pH."
 	icon_state = "honey"
 
 /obj/item/reagent_containers/glass/beaker/glass_dish
 	name = "glass dish"
-	desc = "A tiny glass dish. It can hold up to 3 units. Unable to withstand reagents of an extreme pH."
+	desc = "Стеклянное блюдце... В него можно налить до 3 u. Плавится, если у вещества внутри радикальные значения pH."
 	custom_materials = list(/datum/material/glass = 500)
 	icon_state = "glass_disk"
 	possible_transfer_amounts = list(0.1,0.5,0.75,1,2,3)
@@ -199,21 +220,21 @@
 
 /obj/item/reagent_containers/glass/beaker/flask/large
 	name = "large flask"
-	desc = "A large flask. It can hold up to 80 units. Unable to withstand reagents of an extreme pH."
+	desc = "Большая колба, объёмом в 80 u. Плавится, если у вещества внутри радикальные значения pH."
 	custom_materials = list(/datum/material/glass = 2500)
 	icon_state = "flasklarge"
 	volume = 80
 
 /obj/item/reagent_containers/glass/beaker/flask
 	name = "small flask"
-	desc = "A small flask. It can hold up to 40 units. Unable to withstand reagents of an extreme pH."
+	desc = "Малая колба, объёмом в 40 u. Плавится, если у вещества внутри радикальные значения pH."
 	custom_materials = list(/datum/material/glass = 1000)
 	icon_state = "flasksmall"
 	volume = 40
 
 /obj/item/reagent_containers/glass/beaker/flask/spouty
 	name = "flask with spout"
-	desc = "A flask with a spout! It can hold up to 120 units. Unable to withstand reagents of an extreme pH."
+	desc = "Колба с носиком! Объёмом в 120 u. Плавится, если у вещества внутри радикальные значения pH."
 	custom_materials = list(/datum/material/glass = 2500)
 	icon_state = "flaskspouty"
 	possible_transfer_amounts = list(1,2,3,4,5,10,15,20,25,30,50,100,120)
@@ -221,7 +242,7 @@
 
 /obj/item/reagent_containers/glass/beaker/large
 	name = "large beaker"
-	desc = "A large beaker. Can hold up to 120 units. Unable to withstand reagents of an extreme pH."
+	desc = "Большая мензурка, объёмом в 120 u. Плавится, если у вещества внутри радикальные значения pH."
 	icon_state = "beakerlarge"
 	custom_materials = list(/datum/material/glass=2500)
 	volume = 120
@@ -231,7 +252,7 @@
 
 /obj/item/reagent_containers/glass/beaker/plastic
 	name = "x-large beaker"
-	desc = "An extra-large beaker. Can hold up to 180 units. Is able to resist acid and alkaline solutions, but melts at 444 K."
+	desc = "Мензурка экстра-размера, объёмом в 180 u. Выдерживает кислотные и алканные растворы, но плавится при температуре 444 K."
 	icon_state = "beakerwhite"
 	custom_materials = list(/datum/material/glass=2500, /datum/material/plastic=3000)
 	volume = 180
@@ -242,7 +263,7 @@
 
 /obj/item/reagent_containers/glass/beaker/meta
 	name = "metamaterial beaker"
-	desc = "A large beaker. Can hold up to 240 units, and is able to withstand all chemical situations."
+	desc = "Особо большая мензурка из метаматериалов. Может держать до 240 u и стрессоустойчива к любым химическим задачам."
 	icon_state = "beakergold"
 	custom_materials = list(/datum/material/glass=2500, /datum/material/plastic=3000, /datum/material/gold=1000, /datum/material/titanium=1000)
 	volume = 240
@@ -252,8 +273,8 @@
 
 /obj/item/reagent_containers/glass/beaker/noreact
 	name = "cryostasis beaker"
-	desc = "A cryostasis beaker that allows for chemical storage without \
-		reactions. Can hold up to 50 units."
+	desc = "Криостазисная мензурка, позволяющая хранить реагенты \
+			без реакционного смешивания. Может держать до 50 u."
 	icon_state = "beakernoreact"
 	custom_materials = list(/datum/material/iron=3000)
 	reagent_flags = OPENCONTAINER | NO_REACT
@@ -264,9 +285,9 @@
 
 /obj/item/reagent_containers/glass/beaker/bluespace
 	name = "bluespace beaker"
-	desc = "A bluespace beaker, powered by experimental bluespace technology \
-		and Element Cuban combined with the Compound Pete. Can hold up to \
-		300 units. Unable to withstand reagents of an extreme pH."
+	desc = "Блюспейс-мензурка, улучшенная экспериментальной блюспейс-технологией \
+		и технологией Element Cuban в совокупности с технологией Compound Pete. \
+		Может держать до 300 u. Не выдержит вещества слишком высоких или низких значений pH."
 	icon_state = "beakerbluespace"
 	custom_materials = list(/datum/material/glass = 5000, /datum/material/plasma = 3000, /datum/material/diamond = 1000, /datum/material/bluespace = 1000)
 	volume = 300
@@ -304,7 +325,7 @@
 
 /obj/item/reagent_containers/glass/bucket
 	name = "bucket"
-	desc = "It's a bucket."
+	desc = "Это ведро."
 	icon = 'icons/obj/janitor.dmi'
 	icon_state = "bucket"
 	item_state = "bucket"
@@ -336,17 +357,34 @@
 	container_flags = APTFT_ALTCLICK|APTFT_VERB
 	container_HP = 1
 
+/obj/item/reagent_containers/glass/bucket/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить швабру")
+
 /obj/item/reagent_containers/glass/bucket/attackby(obj/O, mob/user, params)
 	if(istype(O, /obj/item/mop))
-		var/obj/item/mop/MOP = O
-		if(reagents.total_volume < 1)
-			to_chat(user, "<span class='warning'>[src] is out of water!</span>")
+		var/list/modifiers = params2list(params)
+		if(is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM)) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the bucket
+			if(O.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			if(reagents.total_volume >= reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[src] is full!</span>")
+				return
+			O.reagents.remove_all(O.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			O.reagents.trans_to(src, O.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [O] out into [src].</span>")
+			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
+		else if(reagents.total_volume < 1)
+			to_chat(user, "<span class='warning'>[src] не имеет воды!!</span>")
 		else
-			reagents.trans_to(O, MOP.mopcap, log = "reagentcontainer-bucket fill mop")
-			to_chat(user, "<span class='notice'>You wet [O] in [src].</span>")
+			reagents.trans_to(O, O.reagents.maximum_volume, log = "reagentcontainer-bucket fill mop")
+			to_chat(user, "<span class='notice'>Вы смочили [O] в [src].</span>")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
 	else if(isprox(O))
-		to_chat(user, "<span class='notice'>You add [O] to [src].</span>")
+		to_chat(user, "<span class='notice'>Вы добавили [O] в [src].</span>")
 		qdel(O)
 		qdel(src)
 		user.put_in_hands(new /obj/item/bot_assembly/cleanbot)
@@ -357,7 +395,7 @@
 	..()
 	if (slot == ITEM_SLOT_HEAD)
 		if(reagents.total_volume)
-			to_chat(user, "<span class='userdanger'>[src]'s contents spill all over you!</span>")
+			to_chat(user, "<span class='userdanger'>Содержимое [src] облило вас!</span>")
 			var/R = reagents.log_list()
 			log_reagent("SPLASH: [user] splashed [src] on their head via bucket/equipped(self, ITEM_SLOT_HEAD) - [R]")
 			reagents.reaction(user, TOUCH)
@@ -379,7 +417,7 @@
 
 /obj/item/reagent_containers/glass/bucket/wood
 	name = "wooden bucket"
-	desc = "It's a bucket made of wood."
+	desc = "Деревянное ведро... Сделанное из дерева."
 	icon_state = "bucket_wooden"
 	custom_materials = list(/datum/material/wood = MINERAL_MATERIAL_AMOUNT * 2)
 	slot_flags = NONE
@@ -387,7 +425,7 @@
 
 /obj/item/reagent_containers/glass/beaker/waterbottle
 	name = "bottle of water"
-	desc = "A bottle of water filled at an old Earth bottling facility."
+	desc = "Бутылка воды, наполненная на бутылочном предприятии с Терры."
 	icon = 'icons/obj/drinks.dmi'
 	icon_state = "smallbottle"
 	item_state = "bottle"
@@ -404,7 +442,8 @@
 	list_reagents = list()
 
 /obj/item/reagent_containers/glass/beaker/waterbottle/large
-	desc = "A fresh commercial-sized bottle of water."
+	name = "large bottle of water"
+	desc = "Новенькая бутылка воды потребительских размеров."
 	icon_state = "largebottle"
 	custom_materials = list(/datum/material/glass=0)
 	list_reagents = list(/datum/reagent/water = 100)
@@ -418,7 +457,7 @@
 
 /obj/item/reagent_containers/glass/beaker/waterbottle/wataur
 	name = "Bottled Wataur"
-	desc = "Finally, a bottle as proportionate as you."
+	desc = "Наконец, бутылка под ваши габариты."
 	icon = 'icons/obj/drinks.dmi'
 	icon_state = "wataur"
 	custom_materials = list(/datum/material/plastic=0)
@@ -437,14 +476,14 @@
 
 /obj/item/pestle
 	name = "pestle"
-	desc = "An ancient, simple tool used in conjunction with a mortar to grind or juice items."
+	desc = "Древний и простой инстрмент, используемый со ступой для растирания или выжимания вещей."
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "pestle"
 	force = 4
 
 /obj/item/reagent_containers/glass/mortar
 	name = "mortar"
-	desc = "A specially formed bowl of ancient design. It is possible to crush or juice items placed in it using a pestle; however the process, unlike modern methods, is slow and physically exhausting. Alt click to eject the item."
+	desc = "Особой формы чаша, стародавней задумки. В ней можно растирать или выжимать предметы с помощью пестика; процесс, впрочем, не по сегодняшним меркам утомителем. Alt-click для опустошения чаши."
 	icon_state = "mortar"
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 50)
@@ -458,7 +497,7 @@
 	if(grinded)
 		grinded.forceMove(drop_location())
 		grinded = null
-		to_chat(user, "<span class='notice'>You eject the item inside.</span>")
+		to_chat(user, "<span class='notice'>Вы вытащили предмет наружу.</span>")
 		return TRUE
 
 /obj/item/reagent_containers/glass/mortar/attackby(obj/item/I, mob/living/carbon/human/user)
@@ -466,33 +505,33 @@
 	if(istype(I,/obj/item/pestle))
 		if(grinded)
 			if(IS_STAMCRIT(user))
-				to_chat(user, "<span class='warning'>You are too tired to work!</span>")
+				to_chat(user, "<span class='warning'>Вы слишком устали!</span>")
 				return
-			to_chat(user, "<span class='notice'>You start grinding...</span>")
+			to_chat(user, "<span class='notice'>Вы стали перемалывать...</span>")
 			if((do_after(user, 25, target = src)) && grinded)
 				user.adjustStaminaLoss(20)
 				if(grinded.juice_results) //prioritize juicing
 					grinded.on_juice()
 					reagents.add_reagent_list(grinded.juice_results)
-					to_chat(user, "<span class='notice'>You juice [grinded] into a fine liquid.</span>")
+					to_chat(user, "<span class='notice'>Вы выдавили [grinded] в жидкую форму.</span>")
 					QDEL_NULL(grinded)
 					return
 				grinded.on_grind()
 				reagents.add_reagent_list(grinded.grind_results)
 				if(grinded.reagents) //food and pills
 					grinded.reagents.trans_to(src, grinded.reagents.total_volume, log = "mortar powdering")
-				to_chat(user, "<span class='notice'>You break [grinded] into powder.</span>")
+				to_chat(user, "<span class='notice'>Вы растолкли [grinded] в порошок.</span>")
 				QDEL_NULL(grinded)
 				return
 			return
 		else
-			to_chat(user, "<span class='warning'>There is nothing to grind!</span>")
+			to_chat(user, "<span class='warning'>Нечего размалывать!</span>")
 			return
 	if(grinded)
-		to_chat(user, "<span class='warning'>There is something inside already!</span>")
+		to_chat(user, "<span class='warning'>Что-то уже есть внутри!</span>")
 		return
 	if(I.juice_results || I.grind_results)
 		I.forceMove(src)
 		grinded = I
 		return
-	to_chat(user, "<span class='warning'>You can't grind this!</span>")
+	to_chat(user, "<span class='warning'>Вы не можете размолоть это!</span>")

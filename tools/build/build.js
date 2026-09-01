@@ -11,7 +11,9 @@
  */
 
 import fs from 'fs';
-import { DreamDaemon, DreamMaker } from './lib/byond.js';
+import path from 'path';
+import crypto from 'crypto';
+import { DreamDaemon, DreamMaker, getDmPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
 import Juke from './juke/index.js';
 
@@ -34,6 +36,10 @@ export const CiParameter = new Juke.Parameter({
   type: 'boolean',
 });
 
+export const UnitTestProfileParameter = new Juke.Parameter({
+  type: 'string',
+});
+
 export const DmMapsIncludeTarget = new Juke.Target({
   executes: async () => {
     const folders = [
@@ -50,8 +56,24 @@ export const DmMapsIncludeTarget = new Juke.Target({
   },
 });
 
+export const StatbrowserTarget = new Juke.Target({
+  inputs: [
+    'html/statbrowser/build.js',
+    'html/statbrowser/template.html',
+    'html/statbrowser/src/**/*.js',
+    'html/statbrowser/styles/**/*.css',
+  ],
+  outputs: [
+    'html/statbrowser.html',
+  ],
+  executes: async () => {
+    await Juke.exec('node', ['html/statbrowser/build.js']);
+  },
+});
+
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
+    StatbrowserTarget,
     get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
   ],
   inputs: [
@@ -61,6 +83,7 @@ export const DmTarget = new Juke.Target({
     'html/**',
     'icons/**',
     'interface/**',
+    'tgui/public/tgui.html',
     "modular_*/**", // BLUEMOON ADD
     `${DME_NAME}.dme`,
     'modular_citadel/**',
@@ -82,28 +105,111 @@ export const DmTarget = new Juke.Target({
   },
 });
 
-export const DmTestTarget = new Juke.Target({
+const UNIT_TEST_PROFILES = new Set(['all', 'hermetic', 'full-map']);
+
+const getUnitTestProfile = (get) => {
+  const profile = get(UnitTestProfileParameter) || 'all';
+  if (!UNIT_TEST_PROFILES.has(profile)) {
+    Juke.logger.error(`Unknown unit test profile '${profile}'. Expected all, hermetic, or full-map.`);
+    throw new Juke.ExitCode(1);
+  }
+  return profile;
+};
+
+const getUnitTestDefines = (get) => {
+  const profile = getUnitTestProfile(get);
+  const profileDefines = [];
+  if (profile === 'hermetic') {
+    profileDefines.push('LOWMEMORYMODE', 'UNIT_TEST_PROFILE_HERMETIC');
+  }
+  else if (profile === 'full-map') {
+    profileDefines.push('UNIT_TEST_PROFILE_FULL_MAP');
+  }
+  return [...new Set(['CBT', 'CIBUILDING', ...profileDefines, ...get(DefineParameter)])];
+};
+
+const getUnitTestArtifactBase = (get) => {
+  const profile = getUnitTestProfile(get);
+  const userDefines = get(DefineParameter);
+  if (profile === 'all' && userDefines.length === 0) {
+    return `${DME_NAME}.test`;
+  }
+  const signature = crypto
+    .createHash('sha256')
+    .update(JSON.stringify(getUnitTestDefines(get).slice().sort()))
+    .digest('hex')
+    .slice(0, 12);
+  return `${DME_NAME}.test.${profile}.${signature}`;
+};
+
+const getUnitTestLogDirectory = (get) => {
+  const profile = getUnitTestProfile(get);
+  return profile === 'all' ? 'ci' : `ci-${profile}`;
+};
+
+const dmTestInputs = [
+  '_maps/map_files/generic/**',
+  'code/**',
+  'goon/**',
+  'html/**',
+  'icons/**',
+  'interface/**',
+  'tgui/public/tgui.html',
+  'modular_*/**',
+  `${DME_NAME}.dme`,
+  'modular_citadel/**',
+  'modular_sand/**',
+  'tools/build/build.js',
+  'tools/build/lib/byond.js',
+];
+
+/** Compile a reusable unit-test DMB. The artifact name includes the profile
+ * and define set, while the compiler executable is an input so a BYOND update
+ * invalidates the cached output. */
+export const DmTestBuildTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
   dependsOn: ({ get }) => [
     get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
   ],
+  inputs: async () => [
+    ...dmTestInputs,
+    await getDmPath(),
+  ],
+  outputs: ({ get }) => {
+    const artifactBase = getUnitTestArtifactBase(get);
+    return [
+      `${artifactBase}.dme`,
+      `${artifactBase}.dmb`,
+      `${artifactBase}.rsc`,
+    ];
+  },
   executes: async ({ get }) => {
-    const defines = get(DefineParameter);
-    if (defines.length > 0) {
-      Juke.logger.info('Using defines:', defines.join(', '));
-    }
-    fs.copyFileSync(`${DME_NAME}.dme`, `${DME_NAME}.test.dme`);
-    await DreamMaker(`${DME_NAME}.test.dme`, {
-      defines: ['CBT', 'CIBUILDING', ...defines],
+    const artifactBase = getUnitTestArtifactBase(get);
+    const defines = getUnitTestDefines(get);
+    Juke.logger.info('Using unit test defines:', defines.join(', '));
+    fs.copyFileSync(`${DME_NAME}.dme`, `${artifactBase}.dme`);
+    await DreamMaker(`${artifactBase}.dme`, {
+      defines,
     });
-    Juke.rm('data/logs/ci', { recursive: true });
+  },
+});
+
+/** Run an already up-to-date unit-test DMB. This target intentionally has no
+ * outputs so each invocation runs the world, while dm-test-build is cached. */
+export const DmTestRunTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
+  dependsOn: [DmTestBuildTarget],
+  executes: async ({ get }) => {
+    const artifactBase = getUnitTestArtifactBase(get);
+    const logDirectory = getUnitTestLogDirectory(get);
+    Juke.rm(`data/logs/${logDirectory}`, { recursive: true });
     await DreamDaemon(
-      `${DME_NAME}.test.dmb`,
+      `${artifactBase}.dmb`,
       '-close', '-trusted', '-verbose',
-      '-params', 'log-directory=ci'
+      '-params', `log-directory=${logDirectory}`
     );
-    Juke.rm('*.test.*');
     try {
-      const cleanRun = fs.readFileSync('data/logs/ci/clean_run.lk', 'utf-8');
+      const cleanRun = fs.readFileSync(`data/logs/${logDirectory}/clean_run.lk`, 'utf-8');
       console.log(cleanRun);
     }
     catch (err) {
@@ -111,6 +217,12 @@ export const DmTestTarget = new Juke.Target({
       throw new Juke.ExitCode(1);
     }
   },
+});
+
+/** Backwards-compatible compile-and-run entrypoint. */
+export const DmTestTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
+  dependsOn: [DmTestRunTarget],
 });
 
 export const YarnTarget = new Juke.Target({
@@ -148,7 +260,9 @@ export const TguiTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   inputs: [
     'tgui/.yarn/install-target',
-    'tgui/webpack.config.js',
+    'tgui/vite.base.config.cjs',
+    'tgui/vite.tgui.config.cjs',
+    'tgui/vite.tgui-panel.config.cjs',
     'tgui/**/package.json',
     'tgui/packages/**/*.+(js|cjs|ts|tsx|scss)',
   ],
@@ -159,7 +273,8 @@ export const TguiTarget = new Juke.Target({
     'tgui/public/tgui-panel.bundle.js',
   ],
   executes: async () => {
-    await yarn('webpack-cli', '--mode=production');
+    await yarn('vite', 'build', '--mode=production', '--config', 'vite.tgui.config.cjs');
+    await yarn('vite', 'build', '--mode=production', '--config', 'vite.tgui-panel.config.cjs');
   },
 });
 
@@ -195,14 +310,15 @@ export const TguiLintTarget = new Juke.Target({
 export const TguiDevTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   executes: async ({ args }) => {
-    await yarn('node', 'packages/tgui-dev-server/index.js', ...args);
+    await yarn('run', 'tgui:dev', ...args);
   },
 });
 
 export const TguiAnalyzeTarget = new Juke.Target({
   dependsOn: [YarnTarget],
   executes: async () => {
-    await yarn('webpack-cli', '--mode=production', '--analyze');
+    await yarn('vite', 'build', '--mode=production', '--sourcemap', '--config', 'vite.tgui.config.cjs');
+    await yarn('vite', 'build', '--mode=production', '--sourcemap', '--config', 'vite.tgui-panel.config.cjs');
   },
 });
 
@@ -231,29 +347,45 @@ export const AllTarget = new Juke.Target({
 });
 
 /**
+ * Wrapper around Juke.rm that skips files locked by another process.
+ */
+const safeRm = (pattern, options) => {
+  try {
+    Juke.rm(pattern, options);
+  } catch (err) {
+    if (err.code === 'EBUSY' || err.code === 'EPERM') {
+      Juke.logger.warn(
+        `Cannot remove '${err.path || pattern}': file is busy or locked, skipping`
+      );
+    } else {
+      throw err;
+    }
+  }
+};
+
+/**
  * Removes the immediate build junk to produce clean builds.
  */
 export const CleanTarget = new Juke.Target({
   executes: async () => {
-    Juke.rm('*.dmb');
-    Juke.rm('*.rsc');
-    Juke.rm('*.mdme');
-    Juke.rm('*.mdme*');
-    Juke.rm('*.m.*');
-    Juke.rm('_maps/templates.dm');
-    Juke.rm('tgui/public/.tmp', { recursive: true });
-    Juke.rm('tgui/public/*.map');
-    Juke.rm('tgui/public/*.chunk.*');
-    Juke.rm('tgui/public/*.bundle.*');
-    Juke.rm('tgui/public/*.hot-update.*');
-    Juke.rm('tgui/packages/tgfont/dist', { recursive: true });
-    Juke.rm('tgui/.yarn/cache', { recursive: true });
-    Juke.rm('tgui/.yarn/unplugged', { recursive: true });
-    Juke.rm('tgui/.yarn/webpack', { recursive: true });
-    Juke.rm('tgui/.yarn/build-state.yml');
-    Juke.rm('tgui/.yarn/install-state.gz');
-    Juke.rm('tgui/.yarn/install-target');
-    Juke.rm('tgui/.pnp.*');
+    safeRm('*.dmb');
+    safeRm('*.rsc');
+    safeRm('*.mdme');
+    safeRm('*.mdme*');
+    safeRm('*.m.*');
+    safeRm('_maps/templates.dm');
+    safeRm('tgui/public/.tmp', { recursive: true });
+    safeRm('tgui/public/*.map');
+    safeRm('tgui/public/*.chunk.*');
+    safeRm('tgui/public/*.bundle.*');
+    safeRm('tgui/public/*.hot-update.*');
+    safeRm('tgui/packages/tgfont/dist', { recursive: true });
+    safeRm('tgui/.yarn/cache', { recursive: true });
+    safeRm('tgui/.yarn/unplugged', { recursive: true });
+    safeRm('tgui/.yarn/build-state.yml');
+    safeRm('tgui/.yarn/install-state.gz');
+    safeRm('tgui/.yarn/install-target');
+    safeRm('tgui/.pnp.*');
   },
 });
 
@@ -263,10 +395,43 @@ export const CleanTarget = new Juke.Target({
 export const DistCleanTarget = new Juke.Target({
   dependsOn: [CleanTarget],
   executes: async () => {
+    const bootstrapCacheDir = 'tools/bootstrap/.cache';
+
     Juke.logger.info('Cleaning up data/logs');
-    Juke.rm('data/logs', { recursive: true });
+    safeRm('data/logs', { recursive: true });
+
     Juke.logger.info('Cleaning up bootstrap cache');
-    Juke.rm('tools/bootstrap/.cache', { recursive: true });
+    if (!fs.existsSync(bootstrapCacheDir)) {
+      Juke.logger.info('Bootstrap cache directory not found, skipping');
+    }
+    else {
+      const cacheRealPath = fs.realpathSync(bootstrapCacheDir);
+      const nodeRealPath = fs.realpathSync(process.execPath);
+      const nodeRelativePath = path.relative(cacheRealPath, nodeRealPath);
+      const nodeRunsFromBootstrapCache = nodeRelativePath
+        && !nodeRelativePath.startsWith('..')
+        && !path.isAbsolute(nodeRelativePath);
+
+      if (!nodeRunsFromBootstrapCache) {
+        safeRm(bootstrapCacheDir, { recursive: true });
+      }
+      else {
+        const activeNodeDir = nodeRelativePath.split(path.sep)[0];
+        const entries = fs.readdirSync(bootstrapCacheDir);
+
+        for (const entry of entries) {
+          const isActiveNodeDir = process.platform === 'win32'
+            ? entry.toLowerCase() === activeNodeDir.toLowerCase()
+            : entry === activeNodeDir;
+          if (isActiveNodeDir) {
+            continue;
+          }
+
+          safeRm(path.posix.join(bootstrapCacheDir, entry), { recursive: true });
+        }
+      }
+    }
+
     Juke.logger.info('Cleaning up global yarn cache');
     await yarn('cache', 'clean', '--all');
   },

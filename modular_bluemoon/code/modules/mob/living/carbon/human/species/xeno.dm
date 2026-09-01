@@ -55,7 +55,7 @@
 		return FALSE
 
 	busy = TRUE
-	if(!do_after(user, 20 SECONDS, target = get_turf(user)))
+	if(!do_after(user, 2 SECONDS, target = get_turf(user)))
 		busy = FALSE
 		return
 	busy = FALSE
@@ -68,11 +68,13 @@
 	name = "weak resin wall"
 	desc = "Thick resin solidified into a wall. Looks pretty weak."
 	max_integrity = 50
+	canSmoothWith = list(/obj/structure/alien/resin/wall/weak, /obj/structure/alien/resin/membrane/weak)
 
 /obj/structure/alien/resin/membrane/weak
 	name = "weak resin membrane"
 	desc = "Resin just thin enough to let light pass through. Looks pretty weak."
 	max_integrity = 30
+	canSmoothWith = list(/obj/structure/alien/resin/wall/weak, /obj/structure/alien/resin/membrane/weak)
 
 /obj/structure/bed/nest/weak
 	name = "alien nest"

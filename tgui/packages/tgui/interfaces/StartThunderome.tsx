@@ -1,12 +1,11 @@
-import { useBackend, useLocalState } from '../backend';
-
-import { Box, Button, Dropdown, Flex, Section, NumberInput } from '../components';
+import { useBackend } from '../backend';
+import { Box, Button, Flex, NumberInput, PixelArtImage, Section } from '../components';
 import { Window } from '../layouts';
 
 const DEFAULT_TEAMSIZE = 3;
 
-export const StartThunderome = (props, context) => {
-  const { act, data } = useBackend(context);
+export const StartThunderome = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       title={"Start Thunderome"}
@@ -28,28 +27,22 @@ export const StartThunderome = (props, context) => {
             py={1.5}
             mt={2}
             icon="rocket"
-            onClick={(e) => act("start-thunderome")}/>
+            onClick={(e) => act("start-thunderome")} />
         </Flex.Item>
         </Flex>
       </Window.Content>
     </Window>
-  )
-}
+  );
+};
 
-const TeamSection = (props, context) => {
-  const { data, act } = useBackend(context);
+const TeamSection = (props) => {
+  const { data, act } = useBackend();
   const { teamNumber } = props;
   return (
     <Section title={`Команда ${teamNumber}`} textAlign="center">
-      <Box
-        as="img"
-        m={0}
-        mb={1}
-        src={`data:image/jpeg;base64,${data[`team_${teamNumber}`]["icon64"]}`}
-        width="100%"
-        style={{
-          '-ms-interpolation-mode': 'nearest-neighbor',
-        }} />
+      <Box m={0} mb={1}>
+        <PixelArtImage src={`data:image/png;base64,${data[`team_${teamNumber}`]["icon64"]}`} />
+      </Box>
       <Flex textAlign="right" align="center">
         <Flex.Item grow>
           Игроки:&nbsp;

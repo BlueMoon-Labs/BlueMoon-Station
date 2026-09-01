@@ -26,6 +26,101 @@
 	construction_time = 350
 	category = list("Cyborg")
 
+/datum/design/ipc_torso_chassis
+	name = "IPC Torso Chassis"
+	id = "ipc_torso_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/chest/robot/ipc
+	materials = list(/datum/material/iron=24000, /datum/material/glass=5000, /datum/material/silver=2000)
+	construction_time = 280
+	category = list("Cybernetics")
+
+/datum/design/ipc_head_chassis
+	name = "IPC Cranial Chassis"
+	id = "ipc_head_chassis"
+	build_type = MECHFAB
+	build_path = /obj/item/bodypart/head/robot/ipc
+	materials = list(/datum/material/iron=8000, /datum/material/glass=3000, /datum/material/gold=1000)
+	construction_time = 180
+	category = list("Cybernetics")
+
+/datum/design/ipc_stomach
+	name = "IPC power cell"
+	desc = "Модульная сборка батареи, построенная для корпуса IPC."
+	id = "ipc_stomach"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 300, /datum/material/silver = 500, /datum/material/gold = 400)
+	build_path = /obj/item/organ/stomach/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_heart
+	name = "IPC hydraulic pump"
+	desc = "Экранированный гидравлический насос, поддерживающий давление по всему корпусу IPC."
+	id = "ipc_heart"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 900, /datum/material/glass = 300, /datum/material/silver = 300)
+	build_path = /obj/item/organ/heart/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_lungs
+	name = "IPC cooling system"
+	desc = "Сборка терморегуляции, используемая для поддержания корпуса IPC в безопасных пределах."
+	id = "ipc_lungs"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 900, /datum/material/glass = 500, /datum/material/silver = 250)
+	build_path = /obj/item/organ/lungs/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_liver
+	name = "IPC reagent processor"
+	desc = "Сборка фильтрации и обработки реагентов для корпуса IPC."
+	id = "ipc_liver"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 800, /datum/material/glass = 300, /datum/material/gold = 200)
+	build_path = /obj/item/organ/liver/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_eyes
+	name = "IPC optical sensor array"
+	desc = "Парный оптический пакет для корпуса IPC."
+	id = "ipc_eyes"
+	build_type = MECHFAB
+	construction_time = 40
+	materials = list(/datum/material/iron = 500, /datum/material/glass = 1200, /datum/material/gold = 300)
+	build_path = /obj/item/organ/eyes/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_ears
+	name = "IPC audio sensor array"
+	desc = "Откалиброванный набор аудиоприёмников для корпуса IPC."
+	id = "ipc_ears"
+	build_type = MECHFAB
+	construction_time = 30
+	materials = list(/datum/material/iron = 400, /datum/material/glass = 700, /datum/material/silver = 200)
+	build_path = /obj/item/organ/ears/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/ipc_tongue
+	name = "IPC voice synthesizer"
+	desc = "Роботизированный вокализатор и излучатель закодированного аудио для тел IPC."
+	id = "ipc_tongue"
+	build_type = MECHFAB
+	construction_time = 30
+	materials = list(/datum/material/iron = 400, /datum/material/glass = 400, /datum/material/gold = 200)
+	build_path = /obj/item/organ/tongue/robot/ipc
+	category = list("Cybernetics")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/borg_l_arm
 	name = "Cyborg Left Arm"
 	id = "borg_l_arm"
@@ -200,7 +295,7 @@
 	materials = list(/datum/material/iron=20000)
 	construction_time = 100
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_torso
 	name = "Exosuit Torso (\"Gygax\")"
@@ -210,7 +305,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/glass=10000,/datum/material/diamond=2000)
 	construction_time = 300
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_head
 	name = "Exosuit Head (\"Gygax\")"
@@ -220,7 +315,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/glass=5000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_left_arm
 	name = "Exosuit Left Arm (\"Gygax\")"
@@ -230,7 +325,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=1000)
 	construction_time = 200
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_right_arm
 	name = "Exosuit Right Arm (\"Gygax\")"
@@ -240,7 +335,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=1000)
 	construction_time = 200
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_left_leg
 	name = "Exosuit Left Leg (\"Gygax\")"
@@ -250,7 +345,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_right_leg
 	name = "Exosuit Right Leg (\"Gygax\")"
@@ -260,7 +355,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/gygax_armor
 	name = "Exosuit Armor (\"Gygax\")"
@@ -270,7 +365,7 @@
 	materials = list(/datum/material/iron=15000,/datum/material/diamond=10000,/datum/material/titanium=10000)
 	construction_time = 600
 	category = list("Gygax")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 //Medical Gygax
 /datum/design/medigax_chassis
@@ -281,7 +376,7 @@
 	materials = list(/datum/material/iron=20000)
 	construction_time = 100
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_torso
 	name = "Exosuit Torso (\"Medical Gygax\")"
@@ -291,7 +386,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/glass=10000,/datum/material/diamond=2000)
 	construction_time = 300
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_head
 	name = "Exosuit Head (\"Medical Gygax\")"
@@ -301,7 +396,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/glass=5000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_left_arm
 	name = "Exosuit Left Arm (\"Medical Gygax\")"
@@ -311,7 +406,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=1000)
 	construction_time = 200
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_right_arm
 	name = "Exosuit Right Arm (\"Medical Gygax\")"
@@ -321,7 +416,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=1000)
 	construction_time = 200
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_left_leg
 	name = "Exosuit Left Leg (\"Medical Gygax\")"
@@ -331,7 +426,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_right_leg
 	name = "Exosuit Right Leg (\"Medical Gygax\")"
@@ -341,7 +436,7 @@
 	materials = list(/datum/material/iron=15000, /datum/material/diamond=2000)
 	construction_time = 200
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/medigax_armor
 	name = "Exosuit Armor (\"Medical Gygax\")"
@@ -351,7 +446,7 @@
 	materials = list(/datum/material/iron=15000,/datum/material/diamond=10000,/datum/material/titanium=10000)
 	construction_time = 600
 	category = list("Medical-Spec Gygax")
-	min_security_level = SEC_LEVEL_BLUE
+	//min_security_level = SEC_LEVEL_BLUE
 
 //Durand
 /datum/design/durand_chassis
@@ -362,7 +457,7 @@
 	materials = list(/datum/material/iron=25000)
 	construction_time = 100
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_torso
 	name = "Exosuit Torso (\"Durand\")"
@@ -372,7 +467,7 @@
 	materials = list(/datum/material/iron=25000,/datum/material/glass=10000,/datum/material/silver=10000)
 	construction_time = 300
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_head
 	name = "Exosuit Head (\"Durand\")"
@@ -382,7 +477,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/glass=15000,/datum/material/silver=2000)
 	construction_time = 200
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_left_arm
 	name = "Exosuit Left Arm (\"Durand\")"
@@ -392,7 +487,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/silver=4000)
 	construction_time = 200
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_right_arm
 	name = "Exosuit Right Arm (\"Durand\")"
@@ -402,7 +497,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/silver=4000)
 	construction_time = 200
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_left_leg
 	name = "Exosuit Left Leg (\"Durand\")"
@@ -412,7 +507,7 @@
 	materials = list(/datum/material/iron=15000,/datum/material/silver=4000)
 	construction_time = 200
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_right_leg
 	name = "Exosuit Right Leg (\"Durand\")"
@@ -422,7 +517,7 @@
 	materials = list(/datum/material/iron=15000,/datum/material/silver=4000)
 	construction_time = 200
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 /datum/design/durand_armor
 	name = "Exosuit Armor (\"Durand\")"
@@ -432,7 +527,7 @@
 	materials = list(/datum/material/iron=30000,/datum/material/uranium=25000,/datum/material/titanium=20000)
 	construction_time = 600
 	category = list("Durand")
-	min_security_level = SEC_LEVEL_AMBER
+	//min_security_level = SEC_LEVEL_AMBER
 
 //H.O.N.K
 /datum/design/honk_chassis
@@ -508,7 +603,7 @@
 	materials = list(/datum/material/iron=20000)
 	construction_time = 100
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_torso
 	name = "Exosuit Torso (\"Phazon\")"
@@ -518,7 +613,7 @@
 	materials = list(/datum/material/iron=35000,/datum/material/glass=10000,/datum/material/plasma=20000)
 	construction_time = 300
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_head
 	name = "Exosuit Head (\"Phazon\")"
@@ -528,7 +623,7 @@
 	materials = list(/datum/material/iron=15000,/datum/material/glass=5000,/datum/material/plasma=10000)
 	construction_time = 200
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_left_arm
 	name = "Exosuit Left Arm (\"Phazon\")"
@@ -538,7 +633,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/plasma=10000)
 	construction_time = 200
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_right_arm
 	name = "Exosuit Right Arm (\"Phazon\")"
@@ -548,7 +643,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/plasma=10000)
 	construction_time = 200
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_left_leg
 	name = "Exosuit Left Leg (\"Phazon\")"
@@ -558,7 +653,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/plasma=10000)
 	construction_time = 200
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_right_leg
 	name = "Exosuit Right Leg (\"Phazon\")"
@@ -568,7 +663,7 @@
 	materials = list(/datum/material/iron=20000,/datum/material/plasma=10000)
 	construction_time = 200
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/phazon_armor
 	name = "Exosuit Armor (\"Phazon\")"
@@ -578,7 +673,7 @@
 	materials = list(/datum/material/iron=25000,/datum/material/plasma=20000,/datum/material/titanium=20000)
 	construction_time = 300
 	category = list("Phazon")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 //Exosuit Equipment
 /datum/design/mech_hydraulic_clamp
@@ -693,6 +788,15 @@
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
 
+/datum/design/borg_upgrade_jukebox
+	name = "Cyborg Upgrade (JukeBox Modules)"
+	id = "borg_upgrade_jukebox"
+	build_type = MECHFAB
+	build_path = /obj/item/borg/upgrade/jukebox
+	materials = list(/datum/material/iron=80000 , /datum/material/glass=6000 , /datum/material/gold= 5000)
+	construction_time = 120
+	category = list("Cyborg Upgrade Modules")
+
 /datum/design/borg_upgrade_thrusters
 	name = "Cyborg Upgrade (Ion Thrusters)"
 	id = "borg_upgrade_thrusters"
@@ -746,7 +850,7 @@
 	materials = list(/datum/material/iron=10000,/datum/material/glass=15000,/datum/material/diamond = 10000)
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
-	min_security_level = SEC_LEVEL_RED
+	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/borg_transform_clown
 	name = "Cyborg Upgrade (Clown Module)"
@@ -888,7 +992,7 @@
 
 /datum/design/synthetic_flash
 	name = "Flash"
-	desc = "When a problem arises, SCIENCE is the solution."
+	desc = "Когда возникает проблема, НАУКА — это решение."
 	id = "sflash"
 	build_type = MECHFAB
 	materials = list(/datum/material/iron = 750, /datum/material/glass = 750)

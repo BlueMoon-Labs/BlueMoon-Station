@@ -277,9 +277,14 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			if (!loaded)
 				return
 			var/destination = params["id"]
+			// Имя получателя берём у самой машины, а не из params["name"]: то приходит от
+			// клиента и подделывается кем угодно, а строка уходит и в лог, и в эфир.
+			var/obj/machinery/fax/target_fax = get_fax_by_id(destination)
+			if(!target_fax)
+				return
 			if(send(loaded, destination))
-				log_fax(loaded, destination, params["name"])
-				Radio.talk_into(src, "Внимание. Прислан факс от [fax_name]/[fax_id] на [params["name"]].", RADIO_CHANNEL_COMMAND)
+				log_fax(loaded, destination, target_fax.fax_name)
+				announce_dispatch(target_fax)
 				loaded_item_ref = null
 				update_appearance()
 				return TRUE
@@ -299,9 +304,26 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			history_add("Send", params["name"])
 
 			GLOB.requests.fax_request(usr.client, "sent a fax message from [fax_name]/[fax_id] to [params["name"]]", fax_paper)
+			var/mob/living/sender_mob = usr.client?.mob
+			var/sender_real_name = sender_mob?.real_name || usr.client?.ckey || "Unknown"
+			var/sender_job = sender_mob?.mind?.assigned_role || null
+			var/list/message_log = list()
+			message_log["id"] = GLOB.next_command_message_id++
+			message_log["message"] = "Факс от [sender_real_name]"
+			message_log["sender_name"] = sender_real_name
+			message_log["sender_job"] = sender_job
+			message_log["sender_ckey"] = usr.client?.ckey
+			message_log["time_sent"] = world.time
+			message_log["handled"] = FALSE
+			message_log["paper_name"] = fax_paper.name
+			message_log["paper_text"] = fax_paper.get_raw_text()
+			message_log["paper_html"] = get_paper_html(fax_paper)
+			LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
 			for(var/client/staff as anything in GLOB.admins)
-				SEND_SOUND(staff, sound('sound/misc/server-ready.ogg'))
+				if(staff.prefs?.toggles & SOUND_FAX)
+					var/fax_vol = staff.prefs?.get_sound_volume("fax")
+					SEND_SOUND(staff, sound('sound/misc/server-ready.ogg', volume = fax_vol))
 			log_fax(fax_paper, params["id"], params["name"])
 			loaded_item_ref = null
 			update_appearance()
@@ -318,11 +340,14 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * name - The friendly name of the fax machine, but these can be spoofed so the ID is also required
  */
 /obj/machinery/fax/proc/log_fax(obj/item/sent, destination_id, name)
+	// key_name, а не [usr]: голая интерполяция даёт только имя персонажа, и в paper.log
+	// отправки на "DS-2 Syndicate Fax" лежали без ckey - рядом с обычными записями бумаги,
+	// у которых ckey есть. Факс - админ-чувствительный канал, атрибуция обязательна.
 	if (istype(sent, /obj/item/paper))
 		var/obj/item/paper/sent_paper = sent
-		log_paper("[usr] has sent a fax with the message \"[sent_paper.get_raw_text()]\" to [name]/[destination_id].")
+		log_paper("[key_name(usr)] has sent a fax with the message \"[sent_paper.get_raw_text()]\" to [name]/[destination_id].")
 		return
-	log_game("[usr] has faxed [sent] to [name]/[destination_id].]")
+	log_game("[key_name(usr)] has faxed [sent] to [name]/[destination_id].")
 
 /**
  * The procedure for sending a paper to another fax machine.
@@ -335,20 +360,33 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * id - The network ID of the fax machine you want to send the item to.
  */
 /obj/machinery/fax/proc/send(obj/item/loaded, id)
-	for(var/obj/machinery/fax/FAX as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/fax))
-		if (FAX.fax_id != id)
-			continue
-		if (FAX.jammed)
-			do_sparks(5, TRUE, src)
-			balloon_alert(usr, "destination port jammed")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-			return FALSE
-		FAX.receive(loaded, fax_name)
-		history_add("Send", FAX.fax_name)
-		INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "send"))
-		playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, FALSE)
-		return TRUE
-	return FALSE
+	var/obj/machinery/fax/target_fax = get_fax_by_id(id)
+	if (!target_fax)
+		return FALSE
+	if (target_fax.jammed)
+		do_sparks(5, TRUE, src)
+		balloon_alert(usr, "destination port jammed")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		return FALSE
+	target_fax.receive(loaded, fax_name, fax_id, can_announce())
+	history_add("Send", target_fax.fax_name)
+	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "send"))
+	playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, FALSE)
+	return TRUE
+
+/**
+ * Ищет машину сети по её ID.
+ *
+ * Единственный доверенный источник имени получателя: fax_name на клиенте переименовывается
+ * мультитулом и приходит в ui_act вместе с параметрами, а ID выдаётся машиной при инициализации.
+ * Arguments:
+ * * id - сетевой ID искомой машины.
+ */
+/obj/machinery/fax/proc/get_fax_by_id(id)
+	for(var/obj/machinery/fax/fax_machine as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/fax))
+		if (fax_machine.fax_id == id)
+			return fax_machine
+	return null
 
 /**
  * Procedure for accepting papers from another fax machine.
@@ -356,14 +394,87 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * The procedure is called in proc/send() of the other fax. It receives a paper-like object and "prints" it.
  * Arguments:
  * * loaded - The object to be printed.
- * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations.
+ * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations. Renameable with a multitool, so it proves nothing.
+ * * sender_id - The sender's network ID, if the fax came from an actual machine. Assigned on init and not user-editable.
+ * * sender_announces - Whether the sending machine is allowed on the air itself. Central Command and admin faxes are, hidden machines are not.
  */
-/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name)
+/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id, sender_announces = TRUE)
 	playsound(src, 'sound/effects/printer.ogg', 50, FALSE)
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "receive"))
-	say("Received correspondence from [sender_name].")
+	say("Получена корреспонденция от [sender_name].")
 	history_add("Receive", sender_name)
+	//Об отправке рапортует отправитель, но факс ЦК вещает в свою рацию, до станции она не достаёт.
+	//Поэтому о получении говорит сам приёмник - иначе о факсе с ЦК узнают только случайно.
+	announce_receipt(sender_name, sender_id, sender_announces)
+
+	// Добавляем в лог сообщений для панели тикетов
+	var/paper_text
+	var/paper_name = loaded.name
+	var/obj/item/paper/paper = loaded
+	if(istype(paper))
+		paper_text = paper.get_raw_text()
+	else
+		paper_text = loaded.name
+	var/list/message_log = list()
+	message_log["id"] = GLOB.next_command_message_id++
+	message_log["message"] = "Факс от [sender_name]"
+	message_log["sender_name"] = sender_name
+	message_log["sender_job"] = null
+	message_log["sender_ckey"] = null
+	message_log["time_sent"] = world.time
+	message_log["handled"] = FALSE
+	message_log["paper_name"] = paper_name
+	message_log["paper_text"] = paper_text
+	message_log["paper_html"] = istype(paper) ? get_paper_html(paper) : null
+	LAZYADD(GLOB.centcom_communications_messages, list(message_log))
+
+	// Уведомление администрации
+	to_chat(GLOB.admins, span_adminnotice("<b><font color=green>ПОЛУЧЕН ФАКС: </font>[sender_name]</b>: [loaded.name]"))
+	for(var/client/staff as anything in GLOB.admins)
+		if(staff.prefs?.toggles & SOUND_FAX)
+			var/fax_vol = staff.prefs?.get_sound_volume("fax")
+			SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg', volume = fax_vol))
+		if(staff.prefs?.adminhelp_windowflash)
+			window_flash(staff, ignorepref = TRUE)
+
 	addtimer(CALLBACK(src, PROC_REF(vend_item), loaded), 1.9 SECONDS)
+
+/**
+ * Можно ли этой машине вообще говорить в эфир станции.
+ *
+ * Подпольные и снятые с сети аппараты молчат: факс синдиката и машина с перерезанным
+ * сигнальным проводом не должны светиться в командном канале ни при отправке, ни при получении.
+ */
+/obj/machinery/fax/proc/can_announce()
+	return !syndicate_network && visible_to_network
+
+/**
+ * Объявляет по командному каналу об отправленной корреспонденции.
+ *
+ * Молчать должны обе стороны переписки: объявление называет и отправителя, и получателя,
+ * поэтому болтливый аппарат выдал бы в эфир имя и ID спрятанного собеседника.
+ * Arguments:
+ * * destination - машина-получатель. Имя берётся у неё самой, а не из параметров клиента.
+ */
+/obj/machinery/fax/proc/announce_dispatch(obj/machinery/fax/destination)
+	if(!can_announce() || !destination?.can_announce())
+		return
+	Radio?.talk_into(src, "Внимание. Отправлен факс от [fax_name]/[fax_id] на [destination.fax_name].", RADIO_CHANNEL_COMMAND)
+
+/**
+ * Объявляет по командному каналу о полученной корреспонденции.
+ * Arguments:
+ * * sender_name - имя отправителя, как его показал передающий факс. Переименовывается мультитулом,
+ * поэтому идёт в эфир вместе с ID - ровно так же, как в объявлении об отправке.
+ * * sender_id - сетевой ID отправителя, если факс пришёл от машины, а не от ЦК или админа.
+ * * sender_announces - готовность отправителя светиться в эфире. Спрятанную машину не называем
+ * и с этой стороны, иначе гейт отправки обходится простой отправкой факса самому себе на станцию.
+ */
+/obj/machinery/fax/proc/announce_receipt(sender_name, sender_id, sender_announces = TRUE)
+	if(!can_announce() || !sender_announces)
+		return
+	var/sender_label = sender_id ? "[sender_name]/[sender_id]" : sender_name
+	Radio?.talk_into(src, "Внимание. Получен факс от [sender_label].", RADIO_CHANNEL_COMMAND)
 
 /**
  * Procedure for animating an object entering or leaving the fax machine.
@@ -551,4 +662,45 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	else
 		return FALSE
 	return TRUE
+
+/proc/get_paper_html(obj/item/paper/paper)
+	if(!istype(paper))
+		return ""
+	var/html = "<div style='padding:8px; font-family:\"Times New Roman\",serif; font-size:14px; line-height:1.5; color:#000; background:#fff;'>"
+	var/list/field_data_map = list()
+	var/list/sorted_field_indices = list()
+	if(LAZYLEN(paper.raw_field_input_data))
+		for(var/datum/paper_field/field in paper.raw_field_input_data)
+			field_data_map["[field.field_index]"] = field.field_data?.raw_text || ""
+			sorted_field_indices += field.field_index
+		sorted_field_indices = sortTim(sorted_field_indices, GLOBAL_PROC_REF(cmp_numeric_asc))
+	var/field_data_pos = 1
+	for(var/datum/paper_input/input as anything in paper.raw_text_inputs)
+		var/text = input.raw_text
+		// Заполнение документов между []
+		if(LAZYLEN(field_data_map))
+			var/search_pos = 1
+			var/start
+			var/end
+			while(search_pos && field_data_pos <= sorted_field_indices.len)
+				start = findtext(text, "\[", search_pos)
+				end = findtext(text, "\]", start)
+				if(!start || !end || end <= start + 1)
+					break
+				var/replacement = field_data_map["[sorted_field_indices[field_data_pos]]"]
+				text = copytext(text, 1, start) + replacement + copytext(text, end + 1)
+				search_pos = start + length(replacement)
+				field_data_pos++
+		if(!input.advanced_html)
+			text = html_encode(text)
+			text = replacetext(text, "\n", "<br>")
+		if(input.bold)
+			text = "<b>[text]</b>"
+		if(input.font)
+			text = "<span style='font-family:[input.font];'>[text]</span>"
+		if(input.colour)
+			text = "<span style='color:[input.colour];'>[text]</span>"
+		html += text
+	html += "</div>"
+	return html
 

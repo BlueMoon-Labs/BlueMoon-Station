@@ -16,7 +16,8 @@
 	var/require_twohands = FALSE					/// Does it have to be held in both hands
 	var/icon_wielded = FALSE						/// The icon that will be used when wielded
 	var/obj/item/offhand/offhand_item = null		/// Reference to the offhand created for the item
-	var/sharpened_increase = 0						/// The amount of increase recived from sharpening the item
+	var/mob/living/carbon/wield_user = null		/// Reference to the mob currently wielding this item (for signal cleanup)
+	var/sharpened_increase = 0					/// The amount of increase recived from sharpening the item
 
 /**
  * Two Handed component
@@ -76,7 +77,7 @@
 	RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(on_attack_self))
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK, PROC_REF(on_attack))
-	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON, PROC_REF(on_update_icon))
+	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON, PROC_REF(on_update_icon), override = TRUE)
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(parent, COMSIG_ITEM_SHARPEN_ACT, PROC_REF(on_sharpen))
 	RegisterSignal(parent, COMSIG_ITEM_CHECK_WIELDED, PROC_REF(get_wielded))
@@ -92,21 +93,28 @@
 								COMSIG_ITEM_SHARPEN_ACT,
 								COMSIG_ITEM_CHECK_WIELDED))
 
-/// Triggered on equip of the item containing the component
-/datum/component/two_handed/proc/on_equip(datum/source, mob/user, slot)
-	if(require_twohands && slot == ITEM_SLOT_HANDS) // force equip the item
-		wield(user)
-	if(!user.is_holding(parent) && wielded && !require_twohands)
-		unwield(user)
+/datum/component/two_handed/Destroy()
+	// Cleanup the MOB_SWAP_HANDS signal registered during wield()
+	if(wield_user)
+		UnregisterSignal(wield_user, COMSIG_MOB_SWAP_HANDS)
+		wield_user = null
+	if(offhand_item)
+		UnregisterSignal(offhand_item, list(COMSIG_ITEM_DROPPED, COMSIG_PARENT_QDELETING))
+		if(!QDELETED(offhand_item))
+			qdel(offhand_item)
+		offhand_item = null
+	return ..()
 
-/// Triggered on drop of item containing the component
-/datum/component/two_handed/proc/on_drop(datum/source, mob/user)
-	if(require_twohands)
-		unwield(user, show_message=TRUE)
-	if(wielded)
-		unwield(user)
-	if(source == offhand_item && !QDELETED(src))
-		qdel(src)
+/// Оффхенд удаляется в обход unwield (self-qdel в equipped) - отпускаем ссылку.
+/datum/component/two_handed/proc/on_offhand_deleted(datum/source)
+	SIGNAL_HANDLER
+	if(source != offhand_item)
+		return
+	offhand_item = null
+	// Самопроизвольное удаление оффхенда должно восстановить силу, имя, трейт
+	// и сигнал владельца так же, как обычный unwield().
+	if(wielded && wield_user)
+		unwield(wield_user)
 
 /// Triggered on attack self of the item containing the component
 /datum/component/two_handed/proc/on_attack_self(datum/source, mob/user)
@@ -146,6 +154,8 @@
 	if(SEND_SIGNAL(parent, COMSIG_TWOHANDED_WIELD, user) & COMPONENT_TWOHANDED_BLOCK_WIELD)
 		return // blocked wield from item
 	wielded = TRUE
+	wield_user = user
+	ADD_TRAIT(parent, TRAIT_WIELDED, REF(src))
 	RegisterSignal(user, COMSIG_MOB_SWAP_HANDS, PROC_REF(on_swap_hands))
 
 	// update item stats and name
@@ -174,6 +184,9 @@
 	offhand_item.desc = "Your second grip on [parent_item]."
 	offhand_item.wielded = TRUE
 	RegisterSignal(offhand_item, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
+	// Оффхенд умеет самоудаляться (equipped в не-руку) - без сигнала компонент
+	// оставался с висящей ссылкой на удалённый оффхенд.
+	RegisterSignal(offhand_item, COMSIG_PARENT_QDELETING, PROC_REF(on_offhand_deleted))
 	user.put_in_inactive_hand(offhand_item)
 
 /**
@@ -189,8 +202,10 @@
 
 	// wield update status
 	wielded = FALSE
+	wield_user = null
 	UnregisterSignal(user, COMSIG_MOB_SWAP_HANDS)
 	SEND_SIGNAL(parent, COMSIG_TWOHANDED_UNWIELD, user)
+	REMOVE_TRAIT(parent, TRAIT_WIELDED, REF(src))
 
 	// update item stats
 	var/obj/item/parent_item = parent
@@ -220,11 +235,12 @@
 
 	user.update_inv_hands() // Bluemoon Edit-Fix || Вынес, чтобы обновляло всегда.
 
-	// if the item requires two handed drop the item on unwield
-	/* // Bluemoon Removed - Start // Нахуя оно надо? Автор, ты еблан? Это буквально руин на ровном месте, который иначе никак не используется.
-	// if(require_twohands)
-	// 	user.dropItemToGround(parent, force=TRUE)
-	*/ // Bluemoon Removed - End
+	// BLUEMOON FIX - require_twohands предмет нельзя удерживать одной рукой:
+	// при анвилде сбрасываем его на пол. Проверка is_holding нужна, чтобы не ломать
+	// перенос предмета в другой слот (тогда unwield вызывается из on_equip/on_drop,
+	// а предмет уже удалён из held_items другим кодом).
+	if(require_twohands && user.is_holding(parent))
+		user.dropItemToGround(parent, force=TRUE)
 
 	// Show message if requested
 	if(show_message)
@@ -241,7 +257,7 @@
 
 	// Remove the object in the offhand
 	if(offhand_item)
-		UnregisterSignal(offhand_item, COMSIG_ITEM_DROPPED)
+		UnregisterSignal(offhand_item, list(COMSIG_ITEM_DROPPED, COMSIG_PARENT_QDELETING))
 		if(!QDELETED(offhand_item))
 			qdel(offhand_item)
 	// Clear any old refrence to an item that should be gone now
@@ -272,6 +288,28 @@
  */
 /datum/component/two_handed/proc/on_moved(datum/source, mob/user, dir)
 	unwield(user)
+
+/**
+ * on_equip Triggers when the parent item gets equipped to any slot
+ * Unwields if the item was wielded (e.g. put into backpack while wielded)
+ * Auto-wields if the item requires two hands and is equipped to hands
+ */
+/datum/component/two_handed/proc/on_equip(datum/source, mob/living/carbon/user, slot)
+	SIGNAL_HANDLER
+	if(wielded)
+		unwield(user)
+	// Auto-wield require_twohands items when picked up into hands
+	if(require_twohands && !wielded && (slot & ITEM_SLOT_HANDS))
+		wield(user)
+
+/**
+ * on_drop Triggers when the parent item or offhand item is dropped
+ * Unwields if the item was wielded
+ */
+/datum/component/two_handed/proc/on_drop(datum/source, mob/living/carbon/user)
+	SIGNAL_HANDLER
+	if(wielded)
+		unwield(user)
 
 /**
  * on_swap_hands Triggers on swapping hands, blocks swap if the other hand is busy

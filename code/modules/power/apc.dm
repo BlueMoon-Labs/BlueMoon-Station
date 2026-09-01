@@ -1,3 +1,6 @@
+/// Consecutive fixed-point fires required before an idle APC parks itself off SSmachines (debounces area churn).
+#define APC_PARK_SETTLE_FIRES 3
+
 // APC electronics status:
 /// There are no electronics in the APC.
 #define APC_ELECTRONICS_MISSING 0
@@ -109,7 +112,7 @@
 
 /obj/machinery/power/apc
 	name = "area power controller"
-	desc = "A control terminal for the area's electrical systems."
+	desc = "Терминал управления электросистемами соответствующей ему зоны."
 	plane = ABOVE_WALL_PLANE
 
 	icon_state = "apc0"
@@ -159,13 +162,35 @@
 	var/obj/item/clockwork/integration_cog/integration_cog //Is there a cog siphoning power?
 	var/cog_drained = 0 //How much of the cell's charge was drained by an integration cog, recovering this amount takes priority over the normal APC cell recharge calculations, but comes after powering Essentials.
 	var/longtermpower = 10
+	/// TRUE while the APC is in standby: off SSmachines with its area's static-only draw parked
+	/// on the powernet as a baseline load. See apc_park()/apc_unpark().
+	var/apc_parked = FALSE
+	/// Watts parked on the powernet while in standby.
+	var/parked_load = 0
+	/// The powernet currently holding parked_load.
+	var/datum/powernet/parked_powernet
+	/// Consecutive fires the park fixed point has held. Parking waits for APC_PARK_SETTLE_FIRES to debounce
+	/// an area whose draw flickers active/idle around the 2s fire so it does not thrash in and out of standby.
+	var/park_settle_count = 0
+	/// surplus() computed once at the top of process() and reused by the charge math and the arc override,
+	/// avoiding a duplicate powernet walk per APC per fire.
+	var/cached_surplus = 0
 	var/auto_name = FALSE
 	var/failure_timer = 0
 	var/force_update = FALSE
 	var/emergency_lights = FALSE
 	var/nightshift_lights = FALSE
+	var/nightshift_level = 0
+	var/nightshift_manual_override = FALSE
 	var/nightshift_requires_auth = FALSE
 	var/last_nightshift_switch = 0
+	/// Cached light list for bulk APC-driven operations. This duplicates light refs to avoid repeated area walks.
+	var/list/cached_area_lights
+	var/light_cache_dirty = TRUE
+	var/nightshift_refresh_queued = FALSE
+	var/queued_nightshift_lights = FALSE
+	var/queued_nightshift_level = 0
+	var/queued_nightshift_force_clear = FALSE
 	var/update_state = -1
 	var/update_overlay = -1
 	var/icon_update_needed = FALSE
@@ -235,7 +260,10 @@
 		has_electronics = APC_ELECTRONICS_SECURED
 		// is starting with a power cell installed, create it and set its charge level
 		if(cell_type)
-			cell = new cell_type
+			//ячейка обязана лежать внутри APC: гейт блэкбокса в cell.use()
+			//отличает питание APC от ручного использования по loc, а ячейка в
+			//нуллспейсе писала cell_used-тэлли на каждый чардж (67k+ за раунд)
+			cell = new cell_type(src)
 			cell.charge = start_charge * cell.maxcharge / 100 		// (convert percentage to actual value)
 
 		//if area isn't specified use current
@@ -250,7 +278,6 @@
 			name = "\improper [A.name] APC"
 
 		make_terminal()
-		update_nightshift_auth_requirement()
 
 	else
 		area = A
@@ -282,11 +309,14 @@
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_y value ([pixel_y] - should be -23.)")
 			pixel_y = -23
 		if(EAST)
-			if((pixel_y != initial(pixel_x)) && (pixel_x != 24))
+			// pixel_x, а не pixel_y: копипаста сравнивала вертикальное смещение с дефолтом
+			// горизонтального, поэтому у повёрнутых на восток и запад APC сбитый pixel_x
+			// проверялся мимо - лог показывал ложные срабатывания и пропускал настоящие.
+			if((pixel_x != initial(pixel_x)) && (pixel_x != 24))
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_x value ([pixel_x] - should be 24.)")
 			pixel_x = 24
 		if(WEST)
-			if((pixel_y != initial(pixel_x)) && (pixel_x != -25))
+			if((pixel_x != initial(pixel_x)) && (pixel_x != -25))
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_x value ([pixel_x] - should be -25.)")
 			pixel_x = -25
 	if (building)
@@ -297,6 +327,8 @@
 		set_machine_stat(machine_stat | MAINT)
 		update_appearance()
 		addtimer(CALLBACK(src, PROC_REF(update)), 5)
+	register_area_apc()
+	update_nightshift_auth_requirement()
 	register_context()
 
 /obj/machinery/power/apc/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
@@ -306,7 +338,12 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/power/apc/Destroy()
+	apc_unpark()
 	GLOB.apcs_list -= src
+	GLOB.nightshift_apc_queue -= src
+	nightshift_refresh_queued = FALSE
+	cached_area_lights = null
+	unregister_area_apc()
 
 	if(malfai && operating)
 		malfai.malf_picker.processing_time = clamp(malfai.malf_picker.processing_time - 10,0,1000)
@@ -331,6 +368,19 @@
 		cell = null
 		update_appearance()
 		updateUsrDialog()
+
+/obj/machinery/power/apc/proc/register_area_apc()
+	if(!area)
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	root_area.power_apc = src
+
+/obj/machinery/power/apc/proc/unregister_area_apc()
+	if(!area)
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	if(root_area.power_apc == src)
+		root_area.power_apc = null
 
 /obj/machinery/power/apc/proc/make_terminal()
 	// create a terminal object at the same position as original turf loc
@@ -363,10 +413,10 @@
 	if(integration_cog && is_servant_of_ratvar(user))
 		. += "<span class='brass'>There is an integration cog installed!</span>"
 
-	. += "<span class='notice'>Alt-Click the APC to [ locked ? "unlock" : "lock"] the interface.</span>"
+	. += "<span class='notice'>Alt-Click для [ locked ? "разблокировки" : "блокировки"] интерфейса.</span>"
 
 	if(area.hasSiliconAccessInArea(user))
-		. += "<span class='notice'>Ctrl-Click the APC to switch the breaker [ operating ? "off" : "on"].</span>"
+		. += "<span class='notice'>Ctrl-Click для [ operating ? "выключения" : "включения"] энергорубильника.</span>"
 
 // update the APC icon to show the three base states
 // also add overlays for indicator lights
@@ -497,6 +547,8 @@
 //attack with an item - open/close cover, insert cell, or (un)lock interface
 
 /obj/machinery/power/apc/crowbar_act(mob/user, obj/item/W)
+	if(user.a_intent == INTENT_HARM)
+		return
 	. = TRUE
 	if (opened)
 		if (has_electronics == APC_ELECTRONICS_INSTALLED)
@@ -579,7 +631,7 @@
 			switch (has_electronics)
 				if (APC_ELECTRONICS_INSTALLED)
 					has_electronics = APC_ELECTRONICS_SECURED
-					machine_stat &= ~MAINT
+					set_machine_stat(machine_stat & ~MAINT)
 					W.play_tool_sound(src)
 					to_chat(user, "<span class='notice'>You screw the circuit electronics into place.</span>")
 				if (APC_ELECTRONICS_SECURED)
@@ -629,6 +681,7 @@
 			return TRUE
 
 /obj/machinery/power/apc/attackby(obj/item/W, mob/living/user, params)
+	apc_unpark() // cells, tools and wires can invalidate the standby fixed point
 
 	if(area.hasSiliconAccessInArea(user) && get_dist(src,user)>1)
 		return attack_hand(user)
@@ -655,7 +708,7 @@
 		var/turf/host_turf = get_turf(src)
 		if(!host_turf)
 			CRASH("attackby on APC when it's not on a turf")
-		if (host_turf.intact)
+		if (host_turf.turf_flags & TURF_INTACT)
 			to_chat(user, "<span class='warning'>You must remove the floor plating in front of the APC first!</span>")
 			return
 		else if (terminal)
@@ -685,6 +738,10 @@
 				to_chat(user, "<span class='notice'>You add cables to the APC frame.</span>")
 				make_terminal()
 				terminal.connect_to_network()
+	else if(istype(W, /obj/item/pai_cable))
+		var/obj/item/pai_cable/cable = W
+		cable.plugin(src, user)
+		return TRUE
 	else if (istype(W, /obj/item/electronics/apc) && opened)
 		if (has_electronics)
 			to_chat(user, "<span class='warning'>There is already a board inside the [src]!</span>")
@@ -751,29 +808,29 @@
 		if(do_after(user, 50, target = src))
 			to_chat(user, "<span class='notice'>You replace the damaged APC frame with a new one.</span>")
 			qdel(W)
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			obj_integrity = max_integrity
 			if (opened==APC_COVER_REMOVED)
 				opened = APC_COVER_OPENED
 			update_appearance()
 	else if(istype(W, /obj/item/clockwork/integration_cog) && is_servant_of_ratvar(user))
 		if(integration_cog)
-			to_chat(user, "<span class='warning'>This APC already has a cog.</span>")
+			to_chat(user, "<span class='warning'>Этот ЛКП уже имеет шестерню</span>")
 			return
 		if(!opened)
-			user.visible_message("<span class='warning'>[user] slices [src]'s cover lock, and it swings wide open!</span>", \
-			"<span class='alloy'>You slice [src]'s cover lock apart with [W], and the cover swings open.</span>")
+			user.visible_message("<span class='warning'>[user] срезает замок крышки [src],  и она широко распахивается!</span>", \
+			"<span class='alloy'>Вы разрезаете замок крышки [src] с помощью [W], и крышка открывается.</span>")
 			opened = APC_COVER_OPENED
 			update_appearance()
 		else
-			user.visible_message("<span class='warning'>[user] presses [W] into [src]!</span>", \
-			"<span class='alloy'>You hold [W] in place within [src], and it slowly begins to warm up...</span>")
+			user.visible_message("<span class='warning'>[user] начинает устанавливать [W] в [src]!</span>", \
+			"<span class='alloy'>Вы фиксируете [W] внутри [src], и он начинает медленно нагреваться...</span>")
 			playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 			if(!do_after(user, 70, target = src))
 				return
-			user.visible_message("<span class='warning'>[user] installs [W] in [src]!</span>", \
-			"<span class='alloy'>Replicant alloy rapidly covers the APC's innards, replacing the machinery.</span><br>\
-			<span class='brass'>This APC will now passively provide power for the cult!</span>")
+			user.visible_message("<span class='warning'>[user] устанавливает [W] в [src]!</span>", \
+			"<span class='alloy'>Репликантный сплав стремительно покрывает внутренности ЛКП, заменяя собой механизмы.</span><br>\
+			<span class='brass'>Теперь этот ЛКП будет пассивно снабжать культ энергией!</span>")
 			playsound(user, 'sound/machines/clockcult/integration_cog_install.ogg', 50, TRUE)
 			user.transferItemToLoc(W, src)
 			integration_cog = W
@@ -860,11 +917,17 @@
 			to_chat(user, "<span class='warning'>Доступ запрещён.</span>")
 
 /obj/machinery/power/apc/proc/toggle_nightshift_lights(mob/living/user)
+	var/mob/feedback_target = user ? user : usr
 	if(last_nightshift_switch > world.time - 100) //~10 seconds between each toggle to prevent spamming
-		to_chat(usr, "<span class='warning'>[src]'s night lighting circuit breaker is still cycling!</span>")
+		if(feedback_target)
+			to_chat(feedback_target, "<span class='warning'>[src]'s night lighting circuit breaker is still cycling!</span>")
 		return
 	last_nightshift_switch = world.time
-	set_nightshift(!nightshift_lights)
+	if(nightshift_manual_override)
+		var/list/automatic_state = get_automatic_nightshift_state()
+		set_nightshift(automatic_state[1], automatic_state[2], FALSE)
+		return
+	set_nightshift(!nightshift_lights, !nightshift_lights ? 1 : 0, TRUE)
 
 /obj/machinery/power/apc/run_obj_armor(damage_amount, damage_type, damage_flag = 0, attack_dir)
 	if(damage_flag == MELEE && damage_amount < 10 && (!(machine_stat & BROKEN) || malfai))
@@ -889,6 +952,7 @@
 
 /obj/machinery/power/apc/emag_act(mob/user)
 	. = ..()
+	apc_unpark()
 	if(obj_flags & EMAGGED || malfhack)
 		return
 	if(opened)
@@ -910,6 +974,7 @@
 // attack with hand - remove cell (if cover open) or interact with the APC
 
 /obj/machinery/power/apc/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
+	apc_unpark() // pulling the cell or ethereal-draining it changes charge without touching the area draw
 	if(isethereal(user))
 		var/mob/living/carbon/human/H = user
 		if(H.a_intent == INTENT_HARM)
@@ -1029,18 +1094,18 @@
 
 
 /obj/machinery/power/apc/proc/get_malf_status(mob/living/silicon/ai/malf)
-	if(istype(malf) && malf.malf_picker)
-		if(malfai == (malf.parent || malf))
-			if(occupier == malf)
-				return 3 // 3 = User is shunted in this APC
-			else if(istype(malf.loc, /obj/machinery/power/apc))
-				return 4 // 4 = User is shunted in another APC
-			else
-				return 2 // 2 = APC hacked by user, and user is in its core.
-		else
-			return 1 // 1 = APC not hacked.
-	else
+	if(!istype(malf))
 		return 0 // 0 = User is not a Malf AI
+	var/mob/living/silicon/ai/base_malf = malf.parent || malf
+	if(!istype(base_malf) || !base_malf.malf_picker)
+		return 0 // 0 = User is not a Malf AI
+	if(malfai != base_malf)
+		return 1 // 1 = APC not hacked.
+	if(occupier == malf)
+		return 3 // 3 = User is shunted in this APC
+	if(istype(malf.loc, /obj/machinery/power/apc))
+		return 4 // 4 = User is shunted in another APC
+	return 2 // 2 = APC hacked by user, and user is in its core.
 
 /obj/machinery/power/apc/proc/report()
 	return "[area.name] : [equipment]/[lighting]/[environ] ([lastused_equip+lastused_light+lastused_environ]) : [cell? cell.percent() : "N/C"] ([charging])"
@@ -1087,6 +1152,7 @@
 /obj/machinery/power/apc/ui_act(action, params)
 	if(..() || !can_use(usr, 1))
 		return
+	apc_unpark() // channel toggles, charge mode and overrides all invalidate standby
 	if(action == "hijack" && can_use(usr, 1)) //don't need auth for hijack button
 		hijack(usr)
 		return
@@ -1170,7 +1236,7 @@
 			update()
 		if("emergency_lighting")
 			emergency_lights = !emergency_lights
-			for(var/obj/machinery/light/L in area)
+			for(var/obj/machinery/light/L in get_cached_area_lights())
 				if(!initial(L.no_emergency)) //If there was an override set on creation, keep that override
 					L.no_emergency = emergency_lights
 					INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), FALSE)
@@ -1279,11 +1345,11 @@
 	if(!occupier)
 		return
 	if(occupier.parent && occupier.parent.stat != DEAD)
+		remove_verb(occupier, /mob/living/silicon/ai/proc/corereturn)
 		occupier.mind.transfer_to(occupier.parent)
 		occupier.parent.shunted = 0
 		occupier.parent.setOxyLoss(occupier.getOxyLoss())
 		occupier.parent.cancel_camera()
-		remove_verb(occupier.parent, /mob/living/silicon/ai/proc/corereturn)
 		qdel(occupier)
 	else
 		to_chat(occupier, "<span class='danger'>Primary core damaged, unable to return core processes.</span>")
@@ -1366,6 +1432,10 @@
 		return FALSE
 
 /obj/machinery/power/apc/process()
+	// Computed once here and reused by the charge math below and the arc override wrapper, so the powernet
+	// surplus walk runs once per APC per fire instead of twice. Taken before the guards so the arc override
+	// (which runs after ..() even on the broken-with-cell path) never reads a stale cross-fire value.
+	cached_surplus = surplus()
 	if(icon_update_needed)
 		update_appearance()
 	if(machine_stat & (BROKEN|MAINT))
@@ -1377,15 +1447,35 @@
 		force_update = TRUE
 		return
 
-	lastused_light = area.usage(STATIC_LIGHT)
-	lastused_light += area.usage(LIGHT)
-	lastused_equip = area.usage(EQUIP)
-	lastused_equip += area.usage(STATIC_EQUIP)
-	lastused_environ = area.usage(ENVIRON)
-	lastused_environ += area.usage(STATIC_ENVIRON)
-	area.clear_usage()
+	var/dynamic_light
+	var/dynamic_equip
+	var/dynamic_environ
+	if(area.sub_areas)
+		// Linked sub-areas: fold their draw in through the recursive accessors.
+		dynamic_light = area.usage(LIGHT)
+		dynamic_equip = area.usage(EQUIP)
+		dynamic_environ = area.usage(ENVIRON)
+		lastused_light = area.usage(STATIC_LIGHT) + dynamic_light
+		lastused_equip = area.usage(STATIC_EQUIP) + dynamic_equip
+		lastused_environ = area.usage(STATIC_ENVIRON) + dynamic_environ
+		area.clear_usage()
+	else
+		// Common case (no sub-areas): read the six accumulators directly and zero the dynamic ones,
+		// sparing seven proc dispatches per APC per fire (usage() and clear_usage() just touch these vars).
+		dynamic_light = area.used_light
+		dynamic_equip = area.used_equip
+		dynamic_environ = area.used_environ
+		lastused_light = area.static_light + dynamic_light
+		lastused_equip = area.static_equip + dynamic_equip
+		lastused_environ = area.static_environ + dynamic_environ
+		area.used_light = 0
+		area.used_equip = 0
+		area.used_environ = 0
 
 	lastused_total = lastused_light + lastused_equip + lastused_environ
+	// Zero dynamic draw means every consumer left in the area is a sleeping machine's static
+	// stand-in: the precondition for parking this APC's whole load on the powernet (see below).
+	var/dynamic_usage = dynamic_light + dynamic_equip + dynamic_environ
 
 	//store states to update icon if any change
 	var/last_lt = lighting
@@ -1393,7 +1483,7 @@
 	var/last_en = environ
 	var/last_ch = charging
 
-	var/excess = surplus()
+	var/excess = cached_surplus
 
 	if(!avail())
 		main_status = APC_NO_POWER
@@ -1512,6 +1602,49 @@
 	else if (last_ch != charging)
 		queue_icon_update()
 
+	// APC standby: this cycle was a fixed point - full cell on a comfortable grid, and the
+	// only draw left is the static stand-ins of sleeping machines. Repeating it every fire
+	// changes nothing, so park that static load on the powernet as a baseline and leave
+	// SSmachines. Area activity, grid shortfalls and every interaction path unpark us.
+	if(charging == APC_FULLY_CHARGED && main_status == APC_HAS_POWER && !dynamic_usage \
+		&& !shorted && !failure_timer && !force_update && terminal?.powernet)
+		// Debounce: only park once the fixed point has held for several consecutive fires, so an area whose
+		// draw flickers active/idle around the 2s fire settles instead of thrashing park/unpark (list churn).
+		park_settle_count++
+		if(park_settle_count >= APC_PARK_SETTLE_FIRES)
+			return apc_park()
+	else
+		park_settle_count = 0
+
+/// Parks the APC's current (static-only) load on the powernet as a baseline and takes the APC
+/// off SSmachines. Only valid from the fixed point checked at the end of process().
+/obj/machinery/power/apc/proc/apc_park()
+	if(apc_parked)
+		return PROCESS_KILL
+	var/datum/powernet/net = terminal?.powernet
+	if(!net)
+		return
+	apc_parked = TRUE
+	parked_load = lastused_total
+	parked_powernet = net
+	net.standby_load += parked_load
+	LAZYADD(net.standby_apcs, src)
+	return machine_sleep()
+
+/// Ends APC standby: pulls the parked load back off the powernet and resumes normal per-fire
+/// processing. Safe to call from anywhere, including powernet reset()/Destroy().
+/obj/machinery/power/apc/proc/apc_unpark()
+	if(!apc_parked)
+		return
+	apc_parked = FALSE
+	park_settle_count = 0 // a woken APC restarts the settle debounce
+	if(parked_powernet)
+		parked_powernet.standby_load -= parked_load
+		LAZYREMOVE(parked_powernet.standby_apcs, src)
+	parked_powernet = null
+	parked_load = 0
+	machine_wake()
+
 /**
  * Returns the new status value for an APC channel.
  *
@@ -1560,6 +1693,19 @@
 		return APC_CHANNEL_AUTO_OFF
 	return APC_CHANNEL_OFF
 
+/// Тихо отщёлкивает один случайный канал в жёсткий OFF (ивент APC Scramble). Автоматика
+/// такой канал обратно не поднимает - только руки экипажа через интерфейс щитка.
+/obj/machinery/power/apc/proc/scramble_channel()
+	switch(rand(1, 3))
+		if(1)
+			lighting = APC_CHANNEL_OFF
+		if(2)
+			equipment = APC_CHANNEL_OFF
+		if(3)
+			environ = APC_CHANNEL_OFF
+	update_appearance()
+	update()
+
 /obj/machinery/power/apc/proc/reset(wire)
 	switch(wire)
 		if(WIRE_IDSCAN)
@@ -1597,11 +1743,13 @@
 	set_broken()
 
 /obj/machinery/power/apc/disconnect_terminal()
+	apc_unpark() // losing the terminal invalidates the standby fixed point (terminal.powernet is the park anchor)
 	if(terminal)
 		terminal.master = null
 		terminal = null
 
 /obj/machinery/power/apc/proc/set_broken()
+	apc_unpark() // single choke point for every break path (obj_break/deconstruct/blob) - a broken APC must not stay parked
 	if(malfai && operating)
 		malfai.malf_picker.processing_time = clamp(malfai.malf_picker.processing_time - 10,0,1000)
 	operating = FALSE
@@ -1620,7 +1768,7 @@
 		INVOKE_ASYNC(src, PROC_REF(break_lights))
 
 /obj/machinery/power/apc/proc/break_lights()
-	for(var/obj/machinery/light/L in area)
+	for(var/obj/machinery/light/L in get_cached_area_lights())
 		L.on = TRUE
 		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
 		L.on = FALSE
@@ -1647,26 +1795,108 @@
 			return
 
 	failure_timer = max(failure_timer, round(duration))
+	apc_unpark() // the failure countdown runs in process()
 	update()
 	queue_icon_update()
 
-/obj/machinery/power/apc/proc/set_nightshift(on)
-	set waitfor = FALSE
-	if(nightshift_lights == on)
-		return
+/obj/machinery/power/apc/proc/set_nightshift(on, level = 1, manual_override = FALSE)
+	var/quantized_level = on ? clamp(round(level, 0.05), 0, 1) : 0
+	if(nightshift_lights == on && nightshift_level == quantized_level && nightshift_manual_override == manual_override)
+		return 0
 	nightshift_lights = on
-	for(var/obj/machinery/light/L in area)
-		if(L.nightshift_allowed)
-			L.nightshift_enabled = nightshift_lights
-			INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), FALSE)
+	nightshift_level = quantized_level
+	nightshift_manual_override = manual_override
+	var/lights_queued = 0
+	for(var/obj/machinery/light/L in get_cached_area_lights())
+		var/should_enable = on && L.nightshift_allowed
+		var/should_level = should_enable ? quantized_level : 0
+		if(L.nightshift_enabled == should_enable && L.nightshift_level == should_level)
+			continue
+		L.nightshift_enabled = should_enable
+		L.nightshift_level = should_level
+		if(L.queue_nightshift_update())
+			lights_queued++
 		CHECK_TICK
+	return lights_queued
 
 /obj/machinery/power/apc/proc/set_hijacked_lighting()
 	set waitfor = FALSE
-	for(var/obj/machinery/light/L in area)
+	for(var/obj/machinery/light/L in get_cached_area_lights())
 		L.hijacked = hijackerreturn()
 		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, break_light_tube), FALSE)
 		CHECK_TICK
+
+/obj/machinery/power/apc/proc/accepts_automatic_nightshift(force_clear_manual_override = FALSE)
+	return !nightshift_manual_override || force_clear_manual_override
+
+/obj/machinery/power/apc/proc/get_automatic_nightshift_state()
+	if(!area || SSnightshift.high_security_mode || !SSnightshift.nightshift_active)
+		return list(FALSE, 0)
+	if(!area.is_station_member())
+		return list(FALSE, 0)
+	var/configured_level = CONFIG_GET(number/night_shift_public_areas_only)
+	if(configured_level && area.nightshift_public_area > configured_level)
+		return list(FALSE, 0)
+	var/automatic_level = SSnightshift.quantize_nightshift_level(SSnightshift.compute_indoor_nightshift_level(SOLAR_TIME(FALSE, world.time)))
+	return list(TRUE, automatic_level)
+
+/obj/machinery/power/apc/proc/queue_nightshift_refresh(on, level = 1, force_clear_manual_override = FALSE)
+	if(!accepts_automatic_nightshift(force_clear_manual_override))
+		return FALSE
+	queued_nightshift_lights = on
+	queued_nightshift_level = level
+	queued_nightshift_force_clear ||= force_clear_manual_override
+	if(nightshift_refresh_queued)
+		return FALSE
+	nightshift_refresh_queued = TRUE
+	GLOB.nightshift_apc_queue += src
+	return TRUE
+
+/obj/machinery/power/apc/proc/apply_queued_nightshift_refresh()
+	// Ignore stale APC queue entries once their queued state has already been consumed.
+	if(!nightshift_refresh_queued)
+		return 0
+	var/queued_on = queued_nightshift_lights
+	var/queued_level = queued_nightshift_level
+	var/force_clear_manual_override = queued_nightshift_force_clear
+	nightshift_refresh_queued = FALSE
+	queued_nightshift_lights = FALSE
+	queued_nightshift_level = 0
+	queued_nightshift_force_clear = FALSE
+	if(!accepts_automatic_nightshift(force_clear_manual_override))
+		return 0
+	if(force_clear_manual_override)
+		nightshift_manual_override = FALSE
+	return set_nightshift(queued_on, queued_level, FALSE)
+
+/obj/machinery/power/apc/proc/mark_light_cache_dirty()
+	light_cache_dirty = TRUE
+	cached_area_lights = null
+
+/obj/machinery/power/apc/proc/get_cached_area_lights()
+	ensure_light_cache()
+	return cached_area_lights ? cached_area_lights : list()
+
+/obj/machinery/power/apc/proc/ensure_light_cache()
+	if(!light_cache_dirty && !isnull(cached_area_lights))
+		return
+	cached_area_lights = list()
+	if(!area)
+		light_cache_dirty = FALSE
+		return
+	var/area/root_area = area.base_area ? area.base_area : area
+	for(var/obj/machinery/light/L in root_area)
+		if(QDELETED(L))
+			continue
+		cached_area_lights += L
+		CHECK_TICK
+	for(var/area/linked_area as anything in root_area.sub_areas)
+		for(var/obj/machinery/light/L in linked_area)
+			if(QDELETED(L))
+				continue
+			cached_area_lights += L
+			CHECK_TICK
+	light_cache_dirty = FALSE
 
 /obj/machinery/power/apc/proc/update_nightshift_auth_requirement()
 	nightshift_requires_auth = nightshift_toggle_requires_auth()

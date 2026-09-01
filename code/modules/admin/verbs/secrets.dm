@@ -46,7 +46,7 @@
 	. = ..()
 	if(.)
 		return
-	if((action != "admin_log" || action != "show_admins" || action != "mentor_log") && !check_rights(R_ADMIN))
+	if((action != "admin_log" && action != "show_admins" && action != "mentor_log") && !check_rights(R_ADMIN))
 		return
 	var/datum/round_event/E
 	var/ok = FALSE
@@ -54,18 +54,22 @@
 		//Generic Buttons anyone can use.
 		if("admin_log")
 			var/dat = "<B>Admin Log<HR></B>"
-			for(var/l in GLOB.admin_log)
+			for(var/l in GLOB.admin_log_entries)
 				dat += "<li>[l]</li>"
-			if(!GLOB.admin_log.len)
+			if(!GLOB.admin_log_entries.len)
 				dat += "No-one has done anything this round!"
-			holder << browse(dat, "window=admin_log")
+			var/datum/browser/popup = new(holder, "admin_log", "Admin Log")
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("show_admins")
 			var/dat = "<B>Current admins:</B><HR>"
 			if(GLOB.admin_datums)
 				for(var/ckey in GLOB.admin_datums)
 					var/datum/admins/D = GLOB.admin_datums[ckey]
 					dat += "[ckey] - [D.rank.name]<br>"
-				holder << browse(dat, "window=showadmins;size=600x500")
+				var/datum/browser/popup = new(holder, "showadmins", "Current Admins", 600, 500)
+				popup.set_content(dat)
+				popup.open(FALSE)
 		if("mentor_log")
 			var/dat = "<B>Mentor Log<HR></B>"
 			for(var/l in GLOB.mentorlog)
@@ -73,7 +77,9 @@
 
 			if(!GLOB.mentorlog.len)
 				dat += "No mentors have done anything this round!"
-			usr << browse(dat, "window=mentor_log")
+			var/datum/browser/popup = new(usr, "mentor_log", "Mentor Log")
+			popup.set_content(dat)
+			popup.open(FALSE)
 
 		//Buttons for debug.
 		if("maint_access_engiebrig")
@@ -120,18 +126,24 @@
 			var/dat = "<B>Bombing List</B><HR>"
 			for(var/l in GLOB.bombers)
 				dat += text("[l]<BR>")
-			holder << browse(dat, "window=bombers")
+			var/datum/browser/popup = new(holder, "bombers", "Bombing List")
+			popup.set_content(dat)
+			popup.open(FALSE)
 
 		if("list_signalers")
 			var/dat = "<B>Showing last [length(GLOB.lastsignalers)] signalers.</B><HR>"
 			for(var/sig in GLOB.lastsignalers)
 				dat += "[sig]<BR>"
-			holder << browse(dat, "window=lastsignalers;size=800x500")
+			var/datum/browser/popup = new(holder, "lastsignalers", "Last Signalers", 800, 500)
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("list_lawchanges")
 			var/dat = "<B>Showing last [length(GLOB.lawchanges)] law changes.</B><HR>"
 			for(var/sig in GLOB.lawchanges)
 				dat += "[sig]<BR>"
-			holder << browse(dat, "window=lawchanges;size=800x500")
+			var/datum/browser/popup = new(holder, "lawchanges", "Law Changes", 800, 500)
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("showailaws")
 			holder.holder.output_ai_laws()//huh, inconvenient var naming, huh?
 		if("showgm")
@@ -147,7 +159,9 @@
 			for(var/datum/data/record/t in GLOB.data_core.general)
 				dat += "<tr><td>[t.fields["name"]]</td><td>[t.fields["rank"]]</td></tr>"
 			dat += "</table>"
-			holder << browse(dat, "window=manifest;size=440x410")
+			var/datum/browser/popup = new(holder, "manifest", "Crew Manifest", 440, 410)
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("dna")
 			var/dat = "<B>Showing DNA from blood.</B><HR>"
 			dat += "<table cellspacing=5><tr><th>Name</th><th>DNA</th><th>Blood Type</th></tr>"
@@ -156,7 +170,9 @@
 				if(H.ckey)
 					dat += "<tr><td>[H]</td><td>[H.dna.unique_enzymes]</td><td>[H.dna.blood_type]</td></tr>"
 			dat += "</table>"
-			holder << browse(dat, "window=DNA;size=440x410")
+			var/datum/browser/popup = new(holder, "DNA", "DNA Records", 440, 410)
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("fingerprints")
 			var/dat = "<B>Showing Fingerprints.</B><HR>"
 			dat += "<table cellspacing=5><tr><th>Name</th><th>Fingerprints</th></tr>"
@@ -165,7 +181,9 @@
 				if(H.ckey)
 					dat += "<tr><td>[H]</td><td>[md5(H.dna.uni_identity)]</td></tr>"
 			dat += "</table>"
-			holder << browse(dat, "window=fingerprints;size=440x410")
+			var/datum/browser/popup = new(holder, "fingerprints", "Fingerprints", 440, 410)
+			popup.set_content(dat)
+			popup.open(FALSE)
 		if("ctfbutton")
 			toggle_all_ctf(holder)
 		if("tdomereset")
@@ -174,15 +192,15 @@
 				return
 
 			log_admin("[key_name(holder)] reset the thunderdome to default with delete_mobs==[delete_mobs].", 1)
-			message_admins("<span class='adminnotice'>[key_name_admin(holder)] reset the thunderdome to default with delete_mobs==[delete_mobs].</span>")
+			message_admins("[key_name_admin(holder)] reset the thunderdome to default with delete_mobs==[delete_mobs].")
 
 			var/area/thunderdome = GLOB.areas_by_type[/area/tdome/arena]
 			if(delete_mobs == "Да")
 				for(var/mob/living/mob in thunderdome)
 					qdel(mob) //Clear mobs
 			for(var/obj/obj in thunderdome)
-				if(!istype(obj, /obj/machinery/camera) && !istype(obj, /obj/effect/abstract/proximity_checker))
-					qdel(obj) //Clear objects
+				if(!istype(obj, /obj/machinery/camera))
+					qdel(obj) //Clear objects; proximity checkers are recreated when the template is copied
 
 			var/area/template = GLOB.areas_by_type[/area/tdome/arena_source]
 			template.copy_contents_to(thunderdome)
@@ -204,17 +222,11 @@
 			var/val = alert(holder, "What do you want to set night shift to? This will override the automatic system until set to automatic again.", "Night Shift", "On", "Off", "Automatic")
 			switch(val)
 				if("Automatic")
-					if(CONFIG_GET(flag/enable_night_shifts))
-						SSnightshift.can_fire = TRUE
-						SSnightshift.fire()
-					else
-						SSnightshift.update_nightshift(FALSE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "Auto")
 				if("On")
-					SSnightshift.can_fire = FALSE
-					SSnightshift.update_nightshift(TRUE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "On")
 				if("Off")
-					SSnightshift.can_fire = FALSE
-					SSnightshift.update_nightshift(FALSE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "Off")
 		if("moveferry")
 			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Send CentCom Ferry"))
 			if(!SSshuttle.toggleShuttle("ferry","ferry_home","ferry_away"))
@@ -249,11 +261,11 @@
 				if("Make Your Own")
 					AdminCreateVirus(holder)
 				if("Random")
-					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSevents.control
+					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSdirector.event_controls()
 					E = DC.runEvent()
 				if("Choose")
 					var/virus = input("Choose the virus to spread", "BIOHAZARD") as null|anything in sort_list(typesof(/datum/disease), GLOBAL_PROC_REF(cmp_typepaths_asc))
-					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSevents.control
+					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSdirector.event_controls()
 					var/datum/round_event/disease_outbreak/DO = DC.runEvent()
 					DO.virus_type = virus
 					E = DO
@@ -336,7 +348,7 @@
 		if("events")
 			if(!is_funmin)
 				return
-			if(!SSevents.wizardmode)
+			if(!SSdirector.wizardmode)
 				if(alert("Do you want to toggle summon events on?",,"Да","Нет") == "Да")
 					summonevents()
 					SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Activate"))
@@ -347,8 +359,7 @@
 						summonevents()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Intensify"))
 					if("Turn Off Summon Events")
-						SSevents.toggleWizardmode()
-						SSevents.resetFrequency()
+						SSdirector.toggle_wizardmode()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Disable"))
 		if("eagles")
 			if(!is_funmin)
@@ -412,13 +423,13 @@
 					continue
 				GLOB.dna_for_copying.transfer_identity(H, TRUE)
 				H.real_name = H.dna.real_name
-				var/obj/item/pda/worn = H.wear_id
+				var/obj/item/modular_computer/pda/worn = H.wear_id
 				var/obj/item/card/id/W = H.wear_id?.GetID()
 				if(W)
 					W.registered_name = H.real_name
-					W.update_label(W.registered_name, W.assignment)
+					W.update_label()
 					if(worn)
-						if(istype(worn, /obj/item/pda))
+						if(istype(worn, /obj/item/modular_computer/pda))
 							worn.owner = W.registered_name
 							worn.update_label()
 				H.updateappearance(mutcolor_update=1)

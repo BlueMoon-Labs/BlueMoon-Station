@@ -195,6 +195,13 @@
 	dog_fashion = null
 	var/mode = DRILL_DEFAULT
 
+/obj/item/clothing/head/warden/campaignhat
+	name = "sheriff department's campaign hat"
+	desc = "A formal, broad-brimmed hat of the local sheriff's office, with its insignia emblazoned on it. Usually worn by the sheriff and its subordinates."
+	icon_state = "campaignhat"
+	item_state = "campaignhat"
+	dog_fashion = null
+
 /obj/item/clothing/head/warden/drill/screwdriver_act(mob/living/carbon/human/user, obj/item/I)
 	if(..())
 		return TRUE
@@ -229,7 +236,7 @@
 	. = ..()
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 
-/obj/item/clothing/head/warden/drill/proc/handle_speech(datum/source, mob/speech_args)
+/obj/item/clothing/head/warden/drill/proc/handle_speech(datum/source, list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
 	if(message[1] != "*" && message[1] != "!")
 		switch (mode)
@@ -238,7 +245,7 @@
 			if(DRILL_YELLING)
 				message += "!!"
 			if(DRILL_CANADIAN)
-				message = " [message]"
+				message = "[message]"
 				var/list/canadian_words = strings("canadian_replacement.json", "canadian")
 
 				for(var/key in canadian_words)
@@ -252,7 +259,7 @@
 
 				if(prob(30))
 					message += pick(", eh?", ", EH?")
-		speech_args[SPEECH_MESSAGE] = message
+		speech_args[SPEECH_MESSAGE] = trim(message)
 
 /obj/item/clothing/head/beret/sec
 	name = "security beret"
@@ -311,6 +318,17 @@
 	name = "medical officer's beret"
 	desc = "A fancy beret with a blue cross, smells sterile"
 	icon_state = "beret_med"
+
+/obj/item/clothing/head/beret/medical
+	name = "medical beret"
+	desc = "A medical-flavored beret for the doctor in you!"
+	icon_state = "beret_med"
+
+/obj/item/clothing/head/beret/medical/paramedic
+	name = "paramedic beret"
+	desc = "For finding corpses in style!"
+	icon_state = "beret_paramedic"
+	item_state = "beret_paramedic"
 
 /obj/item/clothing/head/beret/chem
 	name = "chemist's beret"

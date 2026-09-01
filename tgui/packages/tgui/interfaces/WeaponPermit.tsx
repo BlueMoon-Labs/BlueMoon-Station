@@ -20,8 +20,8 @@ type WeaponPermitData = {
   centcomm_issued: boolean;
 };
 
-export const WeaponPermit = (props, context) => {
-  const { act, data } = useBackend<WeaponPermitData>(context);
+export const WeaponPermit = (props) => {
+  const { act, data } = useBackend<WeaponPermitData>();
   return (
     <Window title="Разрешение на оружие" width={800} height={450}>
       <Window.Content overflow="auto">

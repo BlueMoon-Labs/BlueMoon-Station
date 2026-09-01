@@ -75,8 +75,9 @@ GLOBAL_LIST_INIT(double_bedsheets, list(/obj/item/bedsheet/double,
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/bedsheet/attack(mob/living/M, mob/user)
-	if(!attempt_initiate_surgery(src, M, user))
-		..()
+	if(attempt_initiate_surgery(src, M, user))
+		return NO_AUTO_CLICKDELAY_HANDLING
+	return ..()
 
 /obj/item/bedsheet/attack_self(mob/user)
 	if(!user.CanReach(src))		//No telekenetic grabbing.

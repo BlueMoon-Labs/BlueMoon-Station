@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Flex, Section } from '../components';
 import { Window } from '../layouts';
 
-export const Vendatray = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Vendatray = (props) => {
+  const { act, data } = useBackend();
   const {
     product_name,
     product_cost,
@@ -75,8 +75,8 @@ export const Vendatray = (props, context) => {
   );
 };
 
-const VendingImage = (props, context) => {
-  const { data } = useBackend(context);
+const VendingImage = (props) => {
+  const { data } = useBackend();
   const {
     product_icon,
   } = data;
@@ -84,12 +84,12 @@ const VendingImage = (props, context) => {
     <Section height="100%">
       <Box as="img"
         m={1}
-        src={`data:image/jpeg;base64,${product_icon}`}
+        src={`data:image/png;base64,${product_icon}`}
         height="96px"
         width="96px"
         style={{
-          '-ms-interpolation-mode': 'nearest-neighbor',
-          'vertical-align': 'middle',
+          imageRendering: 'pixelated',
+          verticalAlign: 'middle',
         }} />
     </Section>
   );

@@ -34,6 +34,7 @@
 
 	/// The messages this console has been sent
 	var/list/datum/comm_message/messages
+	var/messages_trimmed = 0
 
 	/// How many times the alert level has been changed
 	/// Used to clear the modal to change alert level
@@ -186,7 +187,19 @@
 			if (GLOB.security_level == new_sec_level)
 				return
 
-			set_security_level(new_sec_level)
+			var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
+			var/emagged_bypass = (obj_flags & EMAGGED)
+			if(IS_HIGH_SECURITY_LEVEL(current_level) && new_sec_level < SEC_LEVEL_RED)
+				to_chat(usr, span_warning("С высокого кода тревоги можно перейти только на красный — через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			if(GLOB.keycard_secured_level >= SEC_LEVEL_RED && current_level >= SEC_LEVEL_RED && new_sec_level < SEC_LEVEL_RED && !emagged_bypass)
+				to_chat(usr, span_warning("Красный код может быть снят только через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+
+			var/bypass_red_lock = emagged_bypass && !IS_HIGH_SECURITY_LEVEL(current_level)
+			set_security_level(new_sec_level, null, bypass_red_lock)
 
 			to_chat(usr, span_notice("Доступ разрешён. Обновляю уровень угрозы."))
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
@@ -213,7 +226,7 @@
 				return
 			LAZYREMOVE(messages, LAZYACCESS(messages, message_index))
 		if ("emergency_meeting")
-			if(!(SSevents.holidays && SSevents.holidays[APRIL_FOOLS]))
+			if(!(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]))
 				return
 			if (!authenticated_as_silicon_or_captain(usr))
 				return
@@ -270,7 +283,12 @@
 			SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASED
 			SSshuttle.unload_preview()
 			SSshuttle.existing_shuttle = SSshuttle.emergency
-			SSshuttle.action_load(shuttle, replace = TRUE)
+			var/obj/docking_port/mobile/purchased_shuttle = SSshuttle.action_load(shuttle, replace = TRUE)
+			if(!purchased_shuttle)
+				SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE
+				SSshuttle.existing_shuttle = null
+				to_chat(usr, span_alert("Не удалось загрузить шаттл. Попробуйте позже."))
+				return
 			bank_account.adjust_money(-shuttle.credit_cost)
 			minor_announce("[usr.real_name] купил шаттл [shuttle.name] за [shuttle.credit_cost] кредитов.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
 			message_admins("[ADMIN_LOOKUPFLW(usr)] purchased [shuttle.name].")
@@ -452,7 +470,7 @@
 				if (check_access(id_card))
 					authenticated = TRUE
 					authorize_access = id_card.access
-					authorize_name = "[id_card.registered_name] - [id_card.assignment]"
+					authorize_name = "[id_card.registered_name] - [id_card.get_assignment_name()]"
 
 			state = STATE_MAIN
 			playsound(src, 'sound/machines/terminal_on.ogg', 50, FALSE)
@@ -480,20 +498,25 @@
 					var/datum/bank_account/bank = SSeconomy.get_dep_account(ACCOUNT_CAR)
 					if(bank)
 						if(C.bought)
+							var/announce_message = "Станция отменяет плату [GLOB.slavers_team_name] в [C.price] кредитов за [M.real_name]."
+							var/slaver_message = "Станция отказалась платить [GLOB.slavers_team_name] за [C.loc.name]."
 							bank.adjust_money(C.price)
 							C.setBought(FALSE)
+							C.nextboughtChance = world.time + 5 MINUTES
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
-								priority_announce("Станция отменяет плату в [C.price] кредитов за [M.real_name].", sender_override = GLOB.slavers_team_name)
-								tracked_slave_console.radioAnnounce("Станция отказалась платить за [C.loc.name].")
+								priority_announce(announce_message, sender_override = GLOB.station_name)
+								tracked_slave_console.radioAnnounce(slaver_message)
 
 						else
+							var/announce_message = "Станция оплачивает возвращение [M.real_name] у [GLOB.slavers_team_name] за [C.price] кредитов."
+							var/slaver_message = "Станция заплатила выкуп [GLOB.slavers_team_name] за [C.loc.name]."
 							bank.adjust_money(-C.price)
 							C.setBought(TRUE)
 
 							for(var/obj/machinery/computer/slavery/tracked_slave_console in GLOB.tracked_slave_consoles)
-								priority_announce("Станция оплачивает возвращение [M.real_name] за [C.price] кредитов.", sender_override = GLOB.slavers_team_name)
-								tracked_slave_console.radioAnnounce("Станция заплатила выкуп за [C.loc.name].")
+								priority_announce(announce_message, sender_override = GLOB.station_name)
+								tracked_slave_console.radioAnnounce(slaver_message)
 					break
 
 /obj/machinery/computer/communications/ui_data(mob/user)
@@ -542,7 +565,7 @@
 				data["importantActionReady"] = COOLDOWN_FINISHED(src, important_action_cooldown)
 				data["shuttleCalled"] = FALSE
 				data["shuttleLastCalled"] = FALSE
-				data["aprilFools"] = SSevents.holidays && SSevents.holidays[APRIL_FOOLS]
+				data["aprilFools"] = SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]
 				data["alertLevel"] = NUM2SECLEVEL(GLOB.security_level)
 				data["authorizeName"] = authorize_name
 				data["canLogOut"] = !issilicon(user)
@@ -568,15 +591,17 @@
 					var/list/slave = list()
 					slave["id"] = REF(C)
 					slave["name"] = L.real_name
-					slave["bought"] = C.bought
 					slave["price"] = C.price
+					slave["bought"] = C.bought
+					slave["can_bought"] = C.nextboughtChance <= world.time
+					slave["bought_timer"] = seconds_to_clock(max(0, round(C.nextboughtChance - world.time) / 10))
 
 					var/canToggleRansom = FALSE
 					var/ransomFeedback = ""
 					var/ransomChangeCooldown = C.nextRansomChange - world.time
 
 					if(ransomChangeCooldown > 0) // On cooldown.
-						ransomFeedback += " (can undo in [round(ransomChangeCooldown / 10)])"
+						ransomFeedback = "Can undo in [seconds_to_clock(max(0, round(ransomChangeCooldown / 10)))]"
 					else if (C.bought || (bank && bank.account_balance >= C.price)) // Slave already bought
 						canToggleRansom = TRUE
 
@@ -611,10 +636,13 @@
 					data["alertLevelTick"] = alert_level_tick
 					data["canMakeAnnouncement"] = TRUE
 					data["canSetAlertLevel"] = issilicon(user) ? "NO_SWIPE_NEEDED" : "SWIPE_NEEDED"
+					data["redAlertKeycardLocked"] = GLOB.keycard_secured_level >= SEC_LEVEL_RED && GLOB.security_level >= SEC_LEVEL_RED && !(obj_flags & EMAGGED)
+					data["highAlertKeycardLocked"] = GLOB.security_level >= SEC_LEVEL_LAMBDA
 				else if(syndicate)
 					data["canMakeAnnouncement"] = TRUE
 
-				if (SSshuttle.emergency.mode != SHUTTLE_IDLE && SSshuttle.emergency.mode != SHUTTLE_RECALL)
+				var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+				if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_IDLE && emergency_shuttle.mode != SHUTTLE_RECALL)
 					data["shuttleCalled"] = TRUE
 					data["shuttleRecallable"] = SSshuttle.canRecall() || syndicate
 
@@ -624,7 +652,11 @@
 						data["shuttleLastCalled"] = format_text(SSshuttle.emergencyLastCallLoc.name)
 			if (STATE_MESSAGES)
 				data["messages"] = list()
-				data["printerCooldown"] = report_print_cooldown
+				data["messagesTrimmed"] = messages_trimmed
+				// именно булево: COOLDOWN_* хранит абсолютный дедлайн world.time, а
+				// UI кладёт это поле прямо в disabled - сырое число навсегда
+				// запирало кнопку печати после первой же распечатки
+				data["printerCooldown"] = !COOLDOWN_FINISHED(src, report_print_cooldown)
 
 				if (messages)
 					for (var/_message in messages)
@@ -722,7 +754,8 @@
 	if (!authenticated_as_non_silicon_captain(user))
 		return FALSE
 
-	if (SSshuttle.emergency.mode != SHUTTLE_RECALL && SSshuttle.emergency.mode != SHUTTLE_IDLE)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+	if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_RECALL && emergency_shuttle.mode != SHUTTLE_IDLE)
 		return "The shuttle is already in transit."
 	if (SSshuttle.shuttle_purchased == SHUTTLEPURCHASE_PURCHASED)
 		return "A replacement shuttle has already been purchased."
@@ -762,7 +795,7 @@
 	var/list/settings = list(
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" =  GLOB.payed_ert[id]["teamsize"]),
+		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = GLOB.payed_ert[id]["teamsize"]),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = GLOB.payed_ert[id]["mission"]),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -788,12 +821,12 @@
 	ertemplate.opendoors = prefs["open_armory"]["value"] == "Yes" ? TRUE : FALSE
 	priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
 	var/teamSpawned = FALSE
 
 	if(candidates.len > 0)
 		//Pick the (un)lucky players
-		var/numagents = min(ertemplate.teamsize,candidates.len)
+		var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 		//Create team
 		var/datum/team/ert/ert_team = new ertemplate.team
@@ -846,7 +879,7 @@
 
 		if (teamSpawned)
 			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем поздразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
 
 		//Open the Armory doors
 		if(ertemplate.opendoors)
@@ -916,6 +949,7 @@
 
 /obj/machinery/computer/communications/Destroy()
 	GLOB.shuttle_caller_list -= src
+	LAZYCLEARLIST(messages)
 	SSshuttle.autoEvac()
 	return ..()
 
@@ -926,6 +960,11 @@
 
 /obj/machinery/computer/communications/proc/add_message(datum/comm_message/new_message)
 	LAZYADD(messages, new_message)
+	// Prevent unbounded memory growth
+	if(length(messages) > 200)
+		var/trim_count = length(messages) - 150
+		messages.Cut(1, trim_count + 1)
+		messages_trimmed += trim_count
 
 /obj/machinery/computer/communications/proc/print_report(message, title)
 	if(!COOLDOWN_FINISHED(src, report_print_cooldown))

@@ -5,8 +5,7 @@
  */
 
 import { map, zipWith } from 'common/collections';
-import { pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { Box } from './Box';
 
@@ -26,7 +25,11 @@ const normalizeData = (data, scale, rangeX, rangeY) => {
   }
   const normalized = map(point => {
     return zipWith((value, min, max, scale) => {
-      return (value - min) / (max - min) * scale;
+      const span = max - min;
+      if (!Number.isFinite(span) || span === 0) {
+        return 0;
+      }
+      return (value - min) / span * scale;
     })(point, min, max, scale);
   })(data);
   return normalized;
@@ -74,6 +77,7 @@ class LineChart extends Component {
       fillColor = 'none',
       strokeColor = '#ffffff',
       strokeWidth = 2,
+      strokeDasharray,
       ...rest
     } = this.props;
     const { viewBox } = this.state;
@@ -108,6 +112,7 @@ class LineChart extends Component {
                 fill={fillColor}
                 stroke={strokeColor}
                 strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
                 points={points} />
             </svg>
           </div>
@@ -117,11 +122,6 @@ class LineChart extends Component {
   }
 }
 
-LineChart.defaultHooks = pureComponentHooks;
-
-const Stub = props => null;
-
-// IE8: No inline svg support
 export const Chart = {
-  Line: Byond.IS_LTE_IE8 ? Stub : LineChart,
+  Line: LineChart,
 };

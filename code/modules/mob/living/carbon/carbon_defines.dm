@@ -8,6 +8,13 @@
 	var/list/stomach_contents		= list()
 	var/list/internal_organs		= list()	//List of /obj/item/organ in the mob. They don't go in the contents for some reason I don't want to know.
 	var/list/internal_organs_slot= list() //Same as above, but stores "slot ID" - "organ" pairs for easy access.
+	///Кэш подмножества internal_organs с processes_on_life = TRUE: handle_organs
+	///обходит его вместо полного списка. У гуманоида половина органов (гениталии,
+	///хвосты) на Life не процессится, а обход платился каждый тик. null = пересобрать.
+	var/list/life_processing_organs
+	///length(internal_organs) на момент сборки кэша: страховка от прямых правок
+	///списка мимо Insert()/Remove().
+	var/life_processing_organs_source_count = 0
 	var/silent = FALSE 		//Can't talk. Value goes down every life proc. //NOTE TO FUTURE CODERS: DO NOT INITIALIZE NUMERICAL VARS AS NULL OR I WILL MURDER YOU.
 	var/dreaming = 0 //How many dream images we have left to send
 
@@ -18,6 +25,7 @@
 
 //inventory slots
 	var/obj/item/back = null
+	var/obj/item/belt = null
 	var/obj/item/clothing/mask/wear_mask = null
 	var/obj/item/clothing/neck/wear_neck = null
 	var/obj/item/tank/internal = null
@@ -52,6 +60,13 @@
 	var/list/hand_bodyparts = list() //a collection of arms (or actually whatever the fug /bodyparts you monsters use to wreck my systems)
 
 	var/icon_render_key = ""
+	/// Общий на весь мир кэш наборов конечностей: ключ рендера -> список /image.
+	/// Растёт ТОЛЬКО через cache_limb_icons(), которая держит его в пределах
+	/// LIMB_ICON_CACHE_MAX - у ключа (human_update_icons.dm:generate_icon_render_key)
+	/// пространство неограниченное: в нём сырые hex-цвета, JSON боди-маркингов и JSON
+	/// эмиссивных частей, а манекен редактора персонажа пишет сюда постоянную запись на
+	/// КАЖДУЮ перерисовку превью (dummy.dm обнуляет icon_render_key). За прод-раунд 10121
+	/// строка этого списка в переписи выросла с 4013 до 16718 слотов за 25 минут.
 	var/static/list/limb_icon_cache = list()
 
 	//halucination vars
@@ -62,6 +77,8 @@
 	var/next_hallucination = 0
 	var/cpr_time = 1 //CPR cooldown.
 	var/damageoverlaytemp = 0
+	/// world.time after which tox-damage may trigger vomit again (see adjustToxLoss)
+	var/next_tox_vomit = 0
 
 	var/drunkenness = 0 //Overall drunkenness - check handle_alcohol() in life.dm for effects
 	var/tackling = FALSE //Whether or not we are tackling, this will prevent the knock into effects for carbons

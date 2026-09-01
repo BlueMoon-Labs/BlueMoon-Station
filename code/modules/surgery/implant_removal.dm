@@ -19,19 +19,21 @@
 
 /datum/surgery_step/extract_implant/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	var/implants = list()
-	for(var/obj/item/O in target.implants)
+	for(var/obj/item/implant/O in target.implants)
+		if(!O.removable)
+			continue
 		implants[O.name] = O
 	I = show_radial_menu(user, target, implants, require_near = TRUE, tooltips = TRUE)
 	if(I && user && target && user.Adjacent(target) && user.get_active_held_item() == tool)
 		I = implants[I]
 		if(!I)
-			display_results(user, target, "<span class='notice'>You begin to extract [I] from [target]'s [target_zone]...</span>",
-				"[user] begins to extract [I] from [target]'s [target_zone].",
-				"[user] begins to extract something from [target]'s [target_zone].")
-		else
-			display_results(user, target, "<span class='notice'>You look for an implant in [target]'s [target_zone]...</span>",
-				"[user] looks for an implant in [target]'s [target_zone].",
-				"[user] looks for something in [target]'s [target_zone].")
+			return -1
+		display_results(user, target, "<span class='notice'>You begin to extract [I] from [target]'s [target_zone]...</span>",
+			"[user] begins to extract [I] from [target]'s [target_zone].",
+			"[user] begins to extract something from [target]'s [target_zone].")
+	else
+		I = null
+		return -1
 
 /datum/surgery_step/extract_implant/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	if(I)
@@ -57,7 +59,7 @@
 			else
 				qdel(I)
 		else // BLUEMOON add
-			to_chat(user, "<span class='warning'>[I]`s protective systems prevent removing from [target]'s [target_zone].</span>")
+			to_chat(user, span_warning("[I]`s protective systems prevent removing from [target]'s [target_zone]."))
 
 
 	else

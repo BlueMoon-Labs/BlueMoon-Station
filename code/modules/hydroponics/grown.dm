@@ -11,9 +11,6 @@
 	var/bitesize_mod = 0
 	var/splat_type = /obj/effect/decal/cleanable/plant_smudge
 	// If set, bitesize = 1 + round(reagents.total_volume / bitesize_mod)
-	dried_type = -1
-	// Saves us from having to define each stupid grown's dried_type as itself.
-	// If you don't want a plant to be driable (watermelons) set this to null in the time definition.
 	resistance_flags = FLAMMABLE
 	reagent_value = HARVEST_REAGENTS_VALUE
 	var/dry_grind = FALSE //If TRUE, this object needs to be dry to be ground up
@@ -21,7 +18,10 @@
 	var/distill_reagent //If NULL and this object can be distilled, it uses a generic fruit_wine reagent and adjusts its variables.
 	var/wine_flavor //If NULL, this is automatically set to the fruit's flavor. Determines the flavor of the wine if distill_reagent is NULL.
 	var/wine_power = 10 //Determines the boozepwr of the wine if distill_reagent is NULL.
-	var/vision_flags = 0
+	var/vision_flags = NONE
+
+/obj/item/reagent_containers/food/snacks/grown/make_dryable()
+	AddElement(/datum/element/dryable, type)
 
 /obj/item/reagent_containers/food/snacks/grown/Initialize(mapload, obj/item/seeds/new_seed)
 	. = ..()
@@ -37,9 +37,6 @@
 
 	pixel_x = rand(-5, 5)
 	pixel_y = rand(-5, 5)
-
-	if(dried_type == -1)
-		dried_type = src.type
 
 	if(seed)
 		for(var/datum/plant_gene/trait/T in seed.genes)
@@ -93,6 +90,8 @@
 // Various gene procs
 /obj/item/reagent_containers/food/snacks/grown/attack_self(mob/user)
 	if(seed && seed.get_gene(/datum/plant_gene/trait/squash))
+		if(!do_after(user, 0.9 SECONDS, src, timed_action_flags = IGNORE_USER_LOC_CHANGE, progress_loc = user))
+			return
 		squash(user)
 	..()
 
@@ -105,6 +104,8 @@
 				squash(hit_atom)
 
 /obj/item/reagent_containers/food/snacks/grown/proc/squash(atom/target)
+	if(QDELETED(src)) //teleport/slip traits can delete us mid-throw before throw_impact calls squash
+		return
 	var/turf/T = get_turf(target)
 	if(ispath(splat_type, /obj/effect/decal/cleanable/plant_smudge))
 		if(filling_color)
@@ -122,9 +123,10 @@
 		for(var/datum/plant_gene/trait/trait in seed.genes)
 			trait.on_squash(src, target)
 
-	reagents.reaction(T)
-	for(var/A in T)
-		reagents.reaction(A)
+	if(reagents) //on_squash traits (smoke/teleport) may clear or delete our reagents
+		reagents.reaction(T)
+		for(var/A in T)
+			reagents.reaction(A)
 
 	qdel(src)
 
@@ -135,20 +137,23 @@
 				T.on_consume(src, usr)
 	..()
 
-/obj/item/reagent_containers/food/snacks/grown/generate_trash(atom/location)
-	if(trash && (ispath(trash, /obj/item/grown) || ispath(trash, /obj/item/reagent_containers/food/snacks/grown)))
-		. = new trash(location, seed)
-		trash = null
-		return
-	return ..()
+/obj/item/reagent_containers/food/snacks/grown/make_leave_trash()
+	if(trash)
+		AddElement(/datum/element/food_trash, trash, null, TYPE_PROC_REF(/obj/item/reagent_containers/food/snacks/grown/, generate_trash))
 
-/obj/item/reagent_containers/food/snacks/grown/grind_requirements()
-	if(dry_grind && !dry)
-		to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
+/obj/item/reagent_containers/food/snacks/grown/proc/generate_trash(atom/location)
+	if(ispath(trash, /obj/item/grown) || ispath(trash, /obj/item/reagent_containers/food/snacks/grown))
+		. = new trash(get_turf(src), seed)
+
+/obj/item/reagent_containers/food/snacks/grown/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE)
+	if(dry_grind && !HAS_TRAIT(src, TRAIT_DRIED))
+		if(!silent)
+			to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
 		return
 	return TRUE
 
 /obj/item/reagent_containers/food/snacks/grown/on_grind()
+	..()
 	var/nutriment = reagents.get_reagent_amount(/datum/reagent/consumable/nutriment)
 	if(grind_results&&grind_results.len)
 		for(var/i in 1 to grind_results.len)
@@ -157,6 +162,7 @@
 		reagents.del_reagent(/datum/reagent/consumable/nutriment/vitamin)
 
 /obj/item/reagent_containers/food/snacks/grown/on_juice()
+	..()
 	var/nutriment = reagents.get_reagent_amount(/datum/reagent/consumable/nutriment)
 	if(juice_results&&juice_results.len)
 		for(var/i in 1 to juice_results.len)
@@ -165,10 +171,6 @@
 		reagents.del_reagent(/datum/reagent/consumable/nutriment/vitamin)
 
 // For item-containing growns such as eggy or gatfruit
-/obj/item/reagent_containers/food/snacks/grown/shell/attack_self(mob/user)
-	var/obj/item/T
+/obj/item/reagent_containers/food/snacks/grown/shell/make_leave_trash()
 	if(trash)
-		T = generate_trash()
-		qdel(src)
-		user.putItemFromInventoryInHandIfPossible(T, user.active_hand_index, TRUE)
-		to_chat(user, "<span class='notice'>You open [src]\'s shell, revealing \a [T].</span>")
+		AddElement(/datum/element/food_trash, trash, FOOD_TRASH_OPENABLE)

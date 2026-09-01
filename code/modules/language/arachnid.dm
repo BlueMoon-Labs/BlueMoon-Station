@@ -22,6 +22,8 @@
 	//SKYRAT CHANGE - language restriction
 	restricted = FALSE
 	//
+	//arachnid tongue carries no accents, so style via the language itself
+	spans = list(SPAN_CHITVOICE)
 
 /datum/language/arachnid/scramble(input)
 	. = prob(65) ? "<i>wiff</i>" : "<i>thump</i>"

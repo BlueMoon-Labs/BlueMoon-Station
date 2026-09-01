@@ -1016,7 +1016,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain/private)
 "acb" = (
@@ -1569,6 +1568,10 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
 /turf/open/floor/carpet,
 /area/command/bridge)
 "adc" = (
@@ -1939,9 +1942,6 @@
 /area/ai_monitored/turret_protected/ai)
 "adR" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/structure/sign/warning/electricshock{
-	pixel_x = 32
-	},
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
@@ -2451,7 +2451,7 @@
 	name = "Quartermaster's Office APC";
 	pixel_x = 24
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/brown{
@@ -2676,9 +2676,8 @@
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "afo" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = 26
 	},
@@ -3846,7 +3845,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark/side{
@@ -6648,7 +6647,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/teleporter)
 "amU" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/machinery/keycard_auth{
 	pixel_x = 24;
 	pixel_y = -8
@@ -8270,6 +8269,9 @@
 /obj/item/gun/ballistic/shotgun/riot,
 /obj/item/gun/ballistic/shotgun/riot,
 /obj/item/gun/ballistic/shotgun/riot,
+/obj/machinery/status_display{
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
 "apS" = (
@@ -8607,7 +8609,7 @@
 	id = "detectivewindows";
 	name = "HoS Privacy Blast door"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
 "aqz" = (
@@ -8626,11 +8628,82 @@
 /turf/closed/wall/r_wall,
 /area/engineering/atmos)
 "aqD" = (
+/obj/structure/safe/floor/syndi/armory{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9/wtap{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/ballistic/automatic/wt550{
+	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
+	layer = 3.2;
+	name = "security PDW";
+	pixel_x = 3;
+	pixel_y = -3;
+	spawnwithmagazine = 0;
+	pin = /obj/item/firing_pin/implant/mindshield
+	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/storage/firstaid,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/toxin,
+/obj/item/storage/firstaid/fire,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/turf/open/floor/plasteel,
+/turf/open/floor/plasteel/textured/large,
 /area/security/brig)
 "aqE" = (
 /obj/machinery/meter,
@@ -10305,21 +10378,6 @@
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
 	name = "emergency lifejacket"
 	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
-/obj/item/tank/internals/emergency_oxygen/double{
-	pixel_x = 3
-	},
 /obj/item/clothing/mask/breath{
 	pixel_x = -3;
 	pixel_y = -3
@@ -10365,6 +10423,11 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen,
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "atU" = (
@@ -12051,6 +12114,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel/dark/corner{
 	dir = 4
 	},
@@ -21359,7 +21423,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -27408,7 +27472,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/aft)
 "baN" = (
-/obj/machinery/computer/card/minor/rd,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/purple,
 /obj/effect/turf_decal/tile/purple{
 	dir = 1
@@ -28297,7 +28361,7 @@
 /area/science/robotics/lab)
 "bcA" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/rnd/production/circuit_imprinter,
+/obj/machinery/rnd/production/circuit_imprinter/department/science/robotic,
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "bcB" = (
@@ -31345,10 +31409,7 @@
 	},
 /area/engineering/atmos)
 "bhX" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "bhZ" = (
 /obj/machinery/light_switch{
@@ -33889,7 +33950,6 @@
 	name = "Station Intercom";
 	pixel_x = 28
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/item/radio/intercom{
 	name = "Station Intercom";
 	pixel_x = 28
@@ -34065,7 +34125,6 @@
 	},
 /area/science/xenobiology)
 "cGA" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "cLO" = (
@@ -35791,9 +35850,6 @@
 /turf/open/floor/engine/vacuum,
 /area/maintenance/disposal/incinerator)
 "iyH" = (
-/obj/machinery/status_display{
-	pixel_x = -32
-	},
 /obj/machinery/light{
 	dir = 8
 	},
@@ -35940,7 +35996,6 @@
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
 "iUa" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 8
 	},
@@ -37298,7 +37353,7 @@
 	dir = 1;
 	pixel_y = -24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "nmv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -37475,8 +37530,7 @@
 /turf/open/floor/plasteel/dark/corner,
 /area/maintenance/disposal/incinerator)
 "nXb" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "oaV" = (
 /obj/structure/grille,
@@ -37782,7 +37836,7 @@
 /area/maintenance/starboard/aft)
 "pjU" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/yellow/hidden{
+/obj/machinery/atmospherics/pipe/simple/green/hidden{
 	dir = 6
 	},
 /turf/closed/wall/r_wall,
@@ -38503,6 +38557,10 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/machinery/atmospherics/pipe/simple/green/visible,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
+"rQW" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "rVj" = (
@@ -41389,6 +41447,13 @@
 	icon_state = "wood-broken2"
 	},
 /area/maintenance/starboard/aft)
+"usn" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "uuj" = (
 /obj/machinery/plantgenes{
 	pixel_y = 6
@@ -41468,7 +41533,7 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/starboard/fore)
 "uCY" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/maintenance/starboard/aft)
 "uDp" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible{
@@ -42585,6 +42650,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
+"xYe" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/port)
 "xZz" = (
 /obj/item/kirbyplants{
 	icon_state = "plant-22"
@@ -73148,7 +73223,7 @@ vuh
 asw
 jxc
 mae
-hqX
+usn
 wqL
 diG
 aPQ
@@ -73405,7 +73480,7 @@ qFw
 asw
 jxc
 mae
-hqX
+usn
 bpB
 qoT
 eaf
@@ -73920,7 +73995,7 @@ bhS
 jxc
 mae
 hqX
-diG
+rQW
 diG
 yba
 idD
@@ -79054,7 +79129,7 @@ akc
 blg
 aoB
 apG
-uGq
+xYe
 uGq
 bxD
 atM

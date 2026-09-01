@@ -46,7 +46,7 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 	ADD_TRAIT(src, TRAIT_PRIMITIVE, ROUNDSTART_TRAIT)
 	if (cubespawned)
 		var/cap = CONFIG_GET(number/monkeycap)
-		if (LAZYLEN(SSmobs.cubemonkeys) > cap)
+		if (LAZYLEN(SSmobs.cubemonkeys) >= cap) // >= so the cap means the cap, matching the rat caps
 			if (spawner)
 				to_chat(spawner, "<span class='warning'>Bluespace harmonics prevent the spawning of more than [cap] monkeys on the station at one time!</span>")
 			return INITIALIZE_HINT_QDEL
@@ -63,6 +63,25 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 
 
 /mob/living/carbon/monkey/Destroy()
+	walk(src, 0)
+	stop_pulling()
+	// Ссылки, которые ДРУГИЕ обезьяны держали на нас, снимает их собственная
+	// подписка на COMSIG_PARENT_QDELETING (watch_mob_qdel/on_enemy_qdeleting):
+	// сигнал уходит до Destroy и чистит и enemies, и target, и нативный walk.
+	// Прежний свип по GLOB.carbon_list закрывал только пару "обезьяна-обезьяна"
+	// и стоил полного обхода всех карбонов на КАЖДОЕ удаление обезьяны.
+	for(var/mob/living/watched_mob as anything in watched_qdel_mobs)
+		UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs = null
+	target = null
+	enemies = null
+	set_pickup_target(null)
+	bodyDisposal = null
+	qdel(martial_art)
+	martial_art = null
+	blacklistItems = null
+	watched_qdel_items = null
+	myPath = null
 	SSmobs.cubemonkeys -= src
 	return ..()
 

@@ -7,6 +7,6 @@
 	vv_update_display(D, "marked", VV_MSG_MARKED)
 
 /client/proc/mark_datum_mapview(datum/D in world)
-	set category = "Debug"
+	set category = "Debug.4) VV"
 	set name = "Mark Object"
 	mark_datum(D)

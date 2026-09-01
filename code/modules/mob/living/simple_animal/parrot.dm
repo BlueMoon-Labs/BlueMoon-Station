@@ -367,6 +367,8 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 //Bullets
 /mob/living/simple_animal/parrot/bullet_act(obj/item/projectile/Proj)
 	. = ..()
+	if(QDELETED(src)) //on_hit внутри ..() мог уничтожить цель
+		return
 	if(!stat && !client)
 		if(parrot_state == PARROT_PERCH)
 			parrot_sleep_dur = parrot_sleep_max //Reset it's sleep timer if it was perched
@@ -1084,22 +1086,21 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 	name = "Eclectus"
 	icon_state = "eclectusr-flap"
 	icon_living = "eclectusr-flap"
-	icon_dead = "eclectusr-dead"
-	icon_sit = "electusr_sit"
+	icon_sit = "eclectusr_sit"
 
 /mob/living/simple_animal/parrot/eclectus
 	name = "Eclectus"
 	icon_state = "eclectus-flap"
 	icon_living = "eclectus-flap"
 	icon_dead = "eclectus-dead"
-	icon_sit = "electus_sit"
+	icon_sit = "eclectus_sit"
 
 /mob/living/simple_animal/parrot/eclectusf
 	name = "Eclectus"
 	icon_state = "eclectusf-flap"
 	icon_living = "eclectusf-flap"
 	icon_dead = "eclectusf-dead"
-	icon_sit = "electusf_sit"
+	icon_sit = "eclectusf_sit"
 
 /mob/living/simple_animal/parrot/greybird
 	name = "Grey Bird"
@@ -1169,7 +1170,7 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 	icon_state = "goldcrest"
 	icon_living = "goldcrest"
 	icon_dead = "goldcrest-dead"
-	icon_sit = "goldencrest_sit"
+	icon_sit = "goldcrest_sit"
 
 /mob/living/simple_animal/parrot/ringneckdove
 	name = "Ringneck Dove"
@@ -1203,7 +1204,7 @@ GLOBAL_LIST_INIT(strippable_parrot_items, create_strippable_list(list(
 	name = "Grey Cockatiel"
 	icon_state = "blutiel-flap"
 	icon_living = "blutiel-flap"
-	icon_dead = "blutiel-dead"
+	icon_dead = "bluetiel-dead"
 	icon_sit = "blutiel_sit"
 
 /mob/living/simple_animal/parrot/too

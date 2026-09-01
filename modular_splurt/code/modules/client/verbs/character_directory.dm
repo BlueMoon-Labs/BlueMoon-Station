@@ -2,6 +2,7 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 
 /client
 	COOLDOWN_DECLARE(char_directory_cooldown)
+	var/list/directory_notes
 
 /client/verb/show_character_directory()
 	set name = "Character Directory"
@@ -39,14 +40,43 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		data["personalVisibility"] = user.mind.show_in_directory
 		data["personalTag"] = user.mind.directory_tag || "Unset"
 		data["personalErpTag"] = user.mind.directory_erptag || "Unset"
+		data["personalGenderTag"] = user.mind.directory_gendertag || "Unset"
 		data["prefsOnly"] = FALSE
 	else if (user?.client?.prefs)
 		data["personalVisibility"] = user.client.prefs.show_in_directory
 		data["personalTag"] = user.client.prefs.directory_tag || "Unset"
 		data["personalErpTag"] = user.client.prefs.directory_erptag || "Unset"
+		data["personalGenderTag"] = user.client.prefs.directory_gendertag || "Unset"
 		data["prefsOnly"] = TRUE
 
+	// Preference-based tags (always from prefs)
+	if (user?.client?.prefs)
+		var/nc_override = user.client.prefs.directory_noncon
+		data["personalNonconTag"] = nc_override || user.client.prefs.nonconpref || "No"
+		data["personalNonconInherited"] = !nc_override
+
+	// Авто-детект для тега библиотеки персонажей.
+	var/auto_gender = "N/B"
+	if (user?.client?.prefs)
+		var/has_cock_f = user.client.prefs.features["has_cock"]
+		var/has_vag_f = user.client.prefs.features["has_vag"]
+		var/has_breasts_f = user.client.prefs.features["has_breasts"]
+		var/is_female_f = user.client.prefs.gender == "female"
+		if((has_cock_f && has_vag_f) || (has_cock_f && has_breasts_f && is_female_f))
+			auto_gender = "Futa"
+		else if(has_cock_f)
+			auto_gender = "Male"
+		else if(has_vag_f)
+			auto_gender = "Female"
+	data["personalGenderAuto"] = auto_gender
+
 	data["canOrbit"] = isobserver(user)
+
+	// Personal notes
+	if(user?.client)
+		if(!user.client.directory_notes)
+			user.client.directory_notes = load_player_notes(user.client.ckey)
+		data["directory_notes"] = user.client.directory_notes
 
 	return data
 
@@ -68,26 +98,55 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 		var/flavor_text = null
 		var/tag
 		var/erptag
+		var/gendertag
 		var/character_ad
+		var/noncon_tag
+		var/unholy_tag
+		var/unholy_hard_tag
+		var/extreme_tag
+		var/extreme_harm_tag
+		var/list/headshot_links = list()
 		var/ref = REF(C?.mob)
 		if (C.mob?.mind) //could use ternary for all three but this is more efficient
 			tag = C.mob.mind.directory_tag || "Unset"
 			erptag = C.mob.mind.directory_erptag || "Unset"
+			gendertag = C.mob.mind.directory_gendertag || "Unset"
 			character_ad = C.mob.mind.directory_ad
 		else
 			tag = C.prefs.directory_tag || "Unset"
 			erptag = C.prefs.directory_erptag || "Unset"
+			gendertag = C.prefs.directory_gendertag || "Unset"
 			character_ad = C.prefs.directory_ad
+		// Preference-based tags (always from prefs)
+		noncon_tag = C.prefs?.directory_noncon || C.prefs?.nonconpref || "No"
+		unholy_tag = C.prefs?.unholypref || "No"
+		unholy_hard_tag = C.prefs?.unholyhardpref || "No"
+		extreme_tag = C.prefs?.extremepref || "No"
+		extreme_harm_tag = C.prefs?.extremeharm || "No"
+		// Авто-детект для ансет.
+		if(gendertag == "Unset")
+			var/hc = C.prefs?.features["has_cock"]
+			var/hv = C.prefs?.features["has_vag"]
+			if(hc && hv)
+				gendertag = "Futa"
+			else if(hc)
+				gendertag = "Male"
+			else if(hv)
+				gendertag = "Female"
+			else
+				gendertag = "N/B"
 
 		if(ishuman(C.mob))
 			var/mob/living/carbon/human/H = C.mob
 			if(GLOB.data_core && GLOB.data_core.general)
-				if(!find_record("name", H.real_name, GLOB.data_core.general))
+				if(!GLOB.data_core.general_by_name[H.real_name])
 					continue
 			name = H.real_name
 			species = "[H.custom_species ? H.custom_species : H.dna.species]"
 			ooc_notes = H.mind.ooc_notes
 			flavor_text = H.mind.flavor_text
+			if(H.dna?.headshot_links)
+				headshot_links = H.dna.headshot_links.Copy()
 
 		if(isAI(C.mob))
 			var/mob/living/silicon/ai/A = C.mob
@@ -95,6 +154,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Artificial Intelligence"
 			ooc_notes = A.mind.ooc_notes
 			flavor_text = null // No flavor text for AIs :c
+			if(A.mind?.headshot_links)
+				headshot_links = A.mind.headshot_links.Copy()
 
 		if(iscyborg(C.mob))
 			var/mob/living/silicon/robot/R = C.mob
@@ -104,6 +165,8 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			species = "Cyborg"
 			ooc_notes = R.mind.ooc_notes
 			flavor_text = R.mind.silicon_flavor_text
+			if(R.mind?.headshot_links)
+				headshot_links = R.mind.headshot_links.Copy()
 
 		// It's okay if we fail to find OOC notes and flavor text
 		// But if we can't find the name, they must be using a non-compatible mob type currently.
@@ -112,12 +175,20 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 
 		directory_mobs.Add(list(list(
 			"name" = name,
+			"ckey" = C.ckey,
 			"species" = species,
 			"ooc_notes" = ooc_notes,
 			"tag" = tag,
 			"erptag" = erptag,
+			"gender_tag" = gendertag,
 			"character_ad" = character_ad,
 			"flavor_text" = flavor_text,
+			"noncon_tag" = noncon_tag,
+			"unholy_tag" = unholy_tag,
+			"unholy_hard_tag" = unholy_hard_tag,
+			"extreme_tag" = extreme_tag,
+			"extreme_harm_tag" = extreme_harm_tag,
+			"headshot_links" = headshot_links,
 			"ref" = ref
 		)))
 
@@ -149,6 +220,34 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			ghost.ManualFollow(poi)
 			ghost.reset_perspective(null)
 			return TRUE
+		if("setNonconTag")
+			if(!usr.client?.prefs)
+				return
+			var/list/noncon_choices = list("Наследовать из настроек") + GLOB.lewd_prefs_choices
+			var/new_val = tgui_input_list(usr, "Выберите настройку Non-Con (или 'Наследовать из настроек' для автоматического отображения из настроек персонажа)", "Non-Con", noncon_choices)
+			if(!new_val)
+				return
+			usr.client.prefs.directory_noncon = (new_val == "Наследовать из настроек") ? null : new_val
+			usr.client.prefs.save_character()
+			return TRUE
+		if("editNote")
+			if(!usr?.client)
+				return
+			var/target_ckey = params["target_ckey"]
+			if(!target_ckey)
+				return
+			if(!usr.client.directory_notes)
+				usr.client.directory_notes = load_player_notes(usr.client.ckey)
+			var/current_note = usr.client.directory_notes?[target_ckey]
+			var/new_note = strip_html_simple(tgui_input_text(usr, "Заметка об этом игроке", "Личная заметка", current_note, MAX_FLAVOR_LEN, multiline = TRUE, prevent_enter = TRUE), MAX_FLAVOR_LEN)
+			if(isnull(new_note))
+				return
+			if(length(new_note) > 0)
+				usr.client.directory_notes[target_ckey] = new_note
+			else
+				usr.client.directory_notes -= target_ckey
+			save_player_notes(usr.client.ckey, usr.client.directory_notes)
+			return TRUE
 		else
 			return check_for_mind_or_prefs(usr, action, params["overwrite_prefs"])
 
@@ -172,6 +271,14 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if(!new_erptag)
 				return
 			return set_for_mind_or_prefs(user, action, new_erptag, can_set_prefs, can_set_mind)
+		if ("setGenderTag")
+			var/list/gender_choices = list("Авто (по анатомии)") + GLOB.char_directory_gendertags
+			var/new_gendertag = tgui_input_list(usr, "Выберите тег пола (\"\u0410вто\" = автоопределение по анатомии)", "Тег пола", gender_choices)
+			if(!new_gendertag)
+				return
+			if(new_gendertag == "Авто (по анатомии)")
+				new_gendertag = "Unset"
+			return set_for_mind_or_prefs(user, action, new_gendertag, can_set_prefs, can_set_mind)
 		if ("setVisible")
 			var/visible = TRUE
 			if (can_set_mind)
@@ -210,6 +317,13 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if (can_set_mind)
 				user.mind.directory_erptag = new_value
 			return TRUE
+		if ("setGenderTag")
+			if (can_set_prefs)
+				user.client.prefs.directory_gendertag = new_value
+				user.client.prefs.save_character()
+			if (can_set_mind)
+				user.mind.directory_gendertag = new_value
+			return TRUE
 		if ("setVisible")
 			if (can_set_prefs)
 				user.client.prefs.show_in_directory = new_value
@@ -224,3 +338,20 @@ GLOBAL_DATUM(character_directory, /datum/character_directory)
 			if (can_set_mind)
 				user.mind.directory_ad = new_value
 			return TRUE
+
+/datum/character_directory/proc/load_player_notes(ckey)
+	var/json_file = file("data/player_saves/[ckey[1]]/[ckey]/directory_notes.json")
+	if(!fexists(json_file))
+		return list()
+	var/raw = file2text(json_file)
+	if(!raw)
+		return list()
+	var/list/data = json_decode(raw)
+	if(!islist(data))
+		return list()
+	return data
+
+/datum/character_directory/proc/save_player_notes(ckey, list/notes)
+	var/json_file = file("data/player_saves/[ckey[1]]/[ckey]/directory_notes.json")
+	fdel(json_file)
+	WRITE_FILE(json_file, json_encode(notes))

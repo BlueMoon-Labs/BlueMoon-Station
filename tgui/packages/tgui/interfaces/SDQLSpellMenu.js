@@ -355,8 +355,8 @@ const typevars = (type) => {
   return ret;
 };
 
-export const SDQLSpellMenu = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SDQLSpellMenu = (props) => {
+  const { act, data } = useBackend();
   const { type, types, alert } = data;
 
   return (
@@ -457,8 +457,8 @@ const varCondition = (entry, saved_vars) => {
  * @param entry An object, from the list of objects returned by typevars(),
  * corresponding to the variable whose tooltip is to be shown.
  */
-const WrapInTooltip = (props, context) => {
-  const { data } = useBackend(context);
+const WrapInTooltip = (props) => {
+  const { data } = useBackend();
   const { entry, children } = props;
   const { type, tooltips } = data;
   const tip = tooltips[entry.name]?.replace(
@@ -479,8 +479,8 @@ const WrapInTooltip = (props, context) => {
  * A React component that contains a list of the meaningfully-editable variables
  * of the spell being edited.
  */
-const SDQLSpellOptions = (props, context) => {
-  const { data } = useBackend(context);
+const SDQLSpellOptions = (props) => {
+  const { data } = useBackend();
   const { type, saved_vars } = data;
 
   const vars = typevars(type);
@@ -513,8 +513,8 @@ const SDQLSpellOptions = (props, context) => {
  * @param entry An object, from the list of objects returned by typevars(),
  * corresponding to the variable to provide an input element for.
  */
-const SDQLSpellInput = (props, context) => {
-  const { act, data } = useBackend(context);
+const SDQLSpellInput = (props) => {
+  const { act, data } = useBackend();
   const { saved_vars } = data;
   const { entry } = props;
   const { name, type, options, default_value } = entry;
@@ -569,8 +569,8 @@ const SDQLSpellInput = (props, context) => {
  * variable.
  * @param {string} list The name of the list to show variables for.
  */
-const SDQLSpellListEntry = (props, context) => {
-  const { act, data } = useBackend(context);
+const SDQLSpellListEntry = (props) => {
+  const { act, data } = useBackend();
   const { list_vars } = data;
   const { list } = props;
   return (
@@ -640,8 +640,8 @@ const SDQLSpellListEntry = (props, context) => {
  * @param type The type of the variable
  * @param value The current value of the variable
  */
-const SDQLSpellListVarInput = (props, context) => {
-  const { act } = useBackend(context);
+const SDQLSpellListVarInput = (props) => {
+  const { act } = useBackend();
   const { list, name, type, value } = props;
   switch (type) {
     case 'num':
@@ -682,8 +682,8 @@ const SDQLSpellListVarInput = (props, context) => {
   }
 };
 
-const SDQLSpellIcons = (props, context) => {
-  const { data } = useBackend(context);
+const SDQLSpellIcons = (props) => {
+  const { data } = useBackend();
   const {
     saved_vars,
     type,
@@ -706,9 +706,9 @@ const SDQLSpellIcons = (props, context) => {
               height="64px"
               width="auto"
               m={0}
-              src={`data:image/jpeg;base64,${action_icon}`}
+              src={`data:image/png;base64,${action_icon}`}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }}
             />
           </Section>
@@ -720,9 +720,9 @@ const SDQLSpellIcons = (props, context) => {
               height="64px"
               width="auto"
               m={0}
-              src={`data:image/jpeg;base64,${hand_icon}`}
+              src={`data:image/png;base64,${hand_icon}`}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }}
             />
           </Section>
@@ -734,9 +734,9 @@ const SDQLSpellIcons = (props, context) => {
               height="64px"
               width="auto"
               m={0}
-              src={`data:image/jpeg;base64,${projectile_icon}`}
+              src={`data:image/png;base64,${projectile_icon}`}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }}
             />
           </Section>
@@ -750,9 +750,9 @@ const SDQLSpellIcons = (props, context) => {
               height="64px"
               width="auto"
               m={0}
-              src={`data:image/jpeg;base64,${mouse_icon}`}
+              src={`data:image/png;base64,${mouse_icon}`}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }}
             />
           </Section>
@@ -764,9 +764,9 @@ const SDQLSpellIcons = (props, context) => {
               height="64px"
               width="auto"
               m={0}
-              src={`data:image/jpeg;base64,${overlay_icon}`}
+              src={`data:image/png;base64,${overlay_icon}`}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }}
             />
           </Section>

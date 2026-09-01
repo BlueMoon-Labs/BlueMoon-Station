@@ -86,7 +86,7 @@ Class Procs:
 /obj/machinery
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
-	desc = "Some kind of machine."
+	desc = "Какого-то рода машинерия."
 	verb_say = "beeps"
 	verb_yell = "blares"
 	pressure_resistance = 15
@@ -113,8 +113,8 @@ Class Procs:
 		//0 = dont run the auto
 		//1 = run auto, use idle
 		//2 = run auto, use active
-	var/idle_power_usage = 0
-	var/active_power_usage = 0
+	var/idle_power_usage = 100
+	var/active_power_usage = 500
 	var/power_channel = EQUIP
 		//EQUIP,ENVIRON or LIGHT
 	var/list/component_parts = null //list of all the parts used to build it, if made from certain kinds of frames.
@@ -152,12 +152,25 @@ Class Procs:
 	var/is_operational = TRUE
 	///Boolean on whether this machines interact with atmos
 	var/atmos_processing = FALSE
+	///Machinery error message cooldown
+	COOLDOWN_DECLARE(error_message_cooldown)
 
+	///TRUE while the machine deliberately sleeps off SSmachines with its draw converted to a static area load. See machine_sleep().
+	var/machine_sleeping = FALSE
+	///Watts billed to the area as a static load while we sleep, so APC readouts stay honest without per-tick auto_use_power().
+	var/sleep_static_power = 0
+	///The area currently holding our sleep_static_power contribution; tracked so we can pull it back out even after moving.
+	var/area/sleep_static_power_area
+	///The area we listen to for COMSIG_AREA_POWER_CHANGE. Tracked so a move re-points the subscription instead of stacking a second one.
+	var/area/power_change_area
+	///The STATIC_* channel our sleep_static_power was billed to; tracked so a later power_channel change still removes from the right channel.
+	var/sleep_static_power_channel
 
 /obj/machinery/Initialize(mapload)
 	if(!armor)
 		armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
 	. = ..()
+	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
 	SSmachines.register_machine(src)
 	GLOB.machines += src
 
@@ -172,7 +185,9 @@ Class Procs:
 			START_PROCESSING(SSfastprocess, src)
 		else
 			START_PROCESSING(SSmachines, src)
-	RegisterSignal(src, COMSIG_ENTER_AREA, PROC_REF(power_change))
+	RegisterSignal(src, COMSIG_ENTER_AREA, PROC_REF(on_enter_area))
+	RegisterSignal(src, COMSIG_EXIT_AREA, PROC_REF(on_exit_area))
+	register_power_change_area(get_area(src))
 
 	if (occupant_typecache)
 		occupant_typecache = typecacheof(occupant_typecache)
@@ -185,23 +200,68 @@ Class Procs:
 /obj/machinery/Destroy()
 	SSmachines.unregister_machine(src)
 	GLOB.machines.Remove(src)
+	register_power_change_area(null)
+	if(machine_sleeping)
+		machine_sleeping = FALSE
+		SSmachines.sleeping_machines--
+		set_sleep_static_power(0)
 	if(!speed_process)
 		STOP_PROCESSING(SSmachines, src)
 	else
 		STOP_PROCESSING(SSfastprocess, src)
 	dropContents()
-	if(length(component_parts))
-		for(var/atom/A in component_parts)
-			qdel(A)
-		component_parts.Cut()
+	// QDEL_LIST, а не ручной цикл: qdel детали уводит её в нуль-спейс, наш Exited() на это
+	// вычёркивает её из component_parts, и обход живого списка пропускал каждую вторую.
+	QDEL_LIST(component_parts)
 	if(circuit)
 		QDEL_NULL(circuit)
 	return ..()
 
+/**
+ * Points our COMSIG_AREA_POWER_CHANGE subscription at `new_area`, dropping whatever we listened to
+ * before. The area broadcasts its power state over that signal rather than walking its own contents
+ * hunting for machines, so a machine that is not subscribed never hears about a blackout.
+ */
+/obj/machinery/proc/register_power_change_area(area/new_area)
+	if(power_change_area == new_area)
+		return
+	if(power_change_area)
+		UnregisterSignal(power_change_area, COMSIG_AREA_POWER_CHANGE)
+	power_change_area = new_area
+	if(new_area)
+		RegisterSignal(new_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(on_area_power_change))
+
+/// Турф под машиной сменил область (разметка комнаты блюпринтами, создание шаттла).
+/// Питание вызывающий уже переподписал; здесь машина чинит СВОИ реестры в области -
+/// у атмос-машинерии он живёт не в самой машине, а в списках area, и без этого
+/// венты/скрабберы навсегда оставались приписанными к зоне, из которой их вырезали.
+/obj/machinery/proc/on_area_swap(area/old_area, area/new_area)
+	return
+
+///Re-homes the subscription on an area move and resyncs: the new area's channels can differ from the old one's.
+/obj/machinery/proc/on_enter_area(datum/source, area/new_area)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	register_power_change_area(new_area)
+	power_change()
+
+///Drops the subscription on the way out, so a machine parked in nullspace stops following its old area.
+/obj/machinery/proc/on_exit_area(datum/source, area/old_area)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	if(power_change_area == old_area)
+		register_power_change_area(null)
+
+///Signal wrapper: power_change() returns TRUE on a state flip, which must not leak into the signal's return bitfield.
+/obj/machinery/proc/on_area_power_change(datum/source)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	power_change()
+
 /obj/machinery/proc/locate_machinery()
 	return
 
-/obj/machinery/process()//If you dont use process or power why are you here
+/obj/machinery/process(delta_time)//If you dont use process or power why are you here
 	return PROCESS_KILL
 
 /obj/machinery/proc/process_atmos()//If you dont use process why are you here
@@ -213,17 +273,80 @@ Class Procs:
 		return
 	. = machine_stat
 	machine_stat = new_value
-	on_stat_update(machine_stat)
+	on_stat_update(.)
 
 ///Called when the value of `stat` changes, so we can react to it.
 /obj/machinery/proc/on_stat_update(old_value)
-	//From off to on.
-	if((old_value & (NOPOWER|BROKEN|MAINT)) && !(machine_stat & (NOPOWER|BROKEN|MAINT)))
-		set_is_operational(TRUE)
+	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
+
+/**
+ * Parks the machine off the SSmachines processing list while nothing about its state can change,
+ * converting its idle/active draw into a static load on the area so the power grid stays honest.
+ *
+ * Callers inside process() should `return machine_sleep()` (it returns PROCESS_KILL). Every code
+ * path that can make the machine need processing again MUST call machine_wake().
+ */
+/obj/machinery/proc/machine_sleep()
+	if(machine_sleeping || speed_process) // SSfastprocess machines are not ours to park
+		return PROCESS_KILL
+	machine_sleeping = TRUE
+	SSmachines.sleeping_machines++
+	update_sleep_static_power()
+	STOP_PROCESSING(SSmachines, src)
+	return PROCESS_KILL
+
+///Wakes the machine from machine_sleep(): drops the static stand-in draw and resumes processing.
+/obj/machinery/proc/machine_wake()
+	if(!machine_sleeping)
 		return
-	//From on to off.
-	if(machine_stat & (NOPOWER|BROKEN|MAINT))
-		set_is_operational(FALSE)
+	machine_sleeping = FALSE
+	SSmachines.sleeping_machines--
+	set_sleep_static_power(0)
+	if(!QDELETED(src))
+		START_PROCESSING(SSmachines, src)
+
+/**
+ * Recomputes the static stand-in draw of a sleeping machine. Funnels every change through one
+ * place: sleep entry, NOPOWER flips (via on_stat_update/power_change) and area moves (via
+ * power_change from COMSIG_ENTER_AREA). Mirrors what auto_use_power() would bill dynamically.
+ */
+/obj/machinery/proc/update_sleep_static_power()
+	var/watts = 0
+	if(machine_sleeping && !(machine_stat & NOPOWER))
+		if(use_power == IDLE_POWER_USE)
+			watts = idle_power_usage
+		else if(use_power >= ACTIVE_POWER_USE)
+			watts = active_power_usage
+	set_sleep_static_power(watts)
+
+///Moves our static stand-in draw from wherever it is registered onto the current area at the new wattage.
+///Always removes the old contribution from the channel it was actually billed to, not the live power_channel,
+///so a power_channel change while asleep cannot strand load on the wrong channel.
+/obj/machinery/proc/set_sleep_static_power(new_watts)
+	var/area/new_area = new_watts ? get_area(src) : null
+	if(!new_area)
+		new_watts = 0
+	var/new_channel = DYNAMIC_TO_STATIC_CHANNEL(power_channel)
+	if(new_watts == sleep_static_power && new_area == sleep_static_power_area && new_channel == sleep_static_power_channel)
+		return
+	if(sleep_static_power_area)
+		sleep_static_power_area.addStaticPower(-sleep_static_power, sleep_static_power_channel)
+	if(new_area)
+		new_area.addStaticPower(new_watts, new_channel)
+	sleep_static_power = new_watts
+	sleep_static_power_area = new_area
+	sleep_static_power_channel = new_channel
+
+/obj/machinery/vv_edit_var(var_name, var_value)
+	. = ..()
+	// A sleeping machine's static stand-in is only re-derived on power/area hooks, never on a bare
+	// var write. Re-home it when an admin live-edits what it should bill (channel or wattage).
+	if(machine_sleeping)
+		switch(var_name)
+			if(NAMEOF(src, power_channel), NAMEOF(src, use_power), NAMEOF(src, idle_power_usage), NAMEOF(src, active_power_usage))
+				update_sleep_static_power()
 
 /obj/machinery/emp_act(severity)
 	. = ..()
@@ -286,12 +409,15 @@ Class Procs:
 	occupant = new_occupant
 
 /obj/machinery/proc/auto_use_power()
-	if(!powered(power_channel))
+	if(machine_sleeping) // someone re-added us to processing behind machine_wake()'s back; drop the static stand-in so we do not double-bill
+		machine_wake()
+	var/area/our_area = get_area(src)
+	if(!our_area?.powered(power_channel))
 		return FALSE
-	if(use_power == 1)
-		use_power(idle_power_usage,power_channel)
-	else if(use_power >= 2)
-		use_power(active_power_usage,power_channel)
+	if(use_power == IDLE_POWER_USE)
+		our_area.use_power(idle_power_usage, power_channel)
+	else if(use_power >= ACTIVE_POWER_USE)
+		our_area.use_power(active_power_usage, power_channel)
 	return TRUE
 
 /**
@@ -369,11 +495,13 @@ Class Procs:
 
 /obj/machinery/proc/can_transact(obj/item/card/id/thecard, allowdepartment, silent)
 	if(!istype(thecard))
-		if(!silent)
+		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
+			COOLDOWN_START(src, error_message_cooldown, 6 SECONDS)
 			say("Карта не найдена.")
 		return FALSE
 	else if (!thecard.registered_account)
-		if(!silent)
+		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
+			COOLDOWN_START(src, error_message_cooldown, 6 SECONDS)
 			say("Аккаунт не найден.")
 		return FALSE
 //	else if(!allowdepartment && !thecard.registered_account.account_job)
@@ -430,6 +558,8 @@ Class Procs:
 
 //Return a non FALSE value to interrupt attack_hand propagation to subtypes.
 /obj/machinery/interact(mob/user, special_state)
+	if(!user)
+		return
 	if(interaction_flags_machine & INTERACT_MACHINE_SET_MACHINE)
 		user.set_machine(src)
 	. = ..()
@@ -503,7 +633,10 @@ Class Procs:
 		on_deconstruction()
 		if(LAZYLEN(component_parts))
 			spawn_frame(disassembled)
-			for(var/obj/item/I in component_parts)
+			// Снапшот обязателен: forceMove детали приводит к нашему же Exited(), а тот
+			// вычёркивает её из component_parts. Обход живого списка сдвигал индекс и
+			// пропускал элементы - плата так и оставалась внутри уходящей в qdel машины.
+			for(var/obj/item/I as anything in component_parts.Copy())
 				I.forceMove(loc)
 			LAZYCLEARLIST(component_parts)
 			circuit = null
@@ -544,7 +677,7 @@ Class Procs:
 /obj/machinery/obj_break(damage_flag)
 	. = ..()
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		SEND_SIGNAL(src, COMSIG_MACHINERY_BROKEN, damage_flag)
 		update_appearance()
 		return TRUE
@@ -566,18 +699,19 @@ Class Procs:
 		return TRUE
 
 /obj/machinery/proc/default_deconstruction_screwdriver(mob/user, icon_state_open, icon_state_closed, obj/item/I)
-	if(!(flags_1 & NODECONSTRUCT_1) && I.tool_behaviour == TOOL_SCREWDRIVER)
-		I.play_tool_sound(src, 50)
-		if(!panel_open)
-			panel_open = TRUE
-			icon_state = icon_state_open
-			to_chat(user, "<span class='notice'>Вы скручиваете панель обслуживания [src] с винтов.</span>")
-		else
-			panel_open = FALSE
-			icon_state = icon_state_closed
-			to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
-		return TRUE
-	return FALSE
+	if((flags_1 & NODECONSTRUCT_1) || I.tool_behaviour != TOOL_SCREWDRIVER)
+		return FALSE
+
+	I.play_tool_sound(src, 50)
+	panel_open = !panel_open
+	if(panel_open)
+		icon_state = icon_state_open
+		to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
+	else
+		icon_state = icon_state_closed
+		to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
+	update_icon()
+	return TRUE
 
 /obj/machinery/proc/default_change_direction_wrench(mob/user, obj/item/I)
 	if(panel_open && I.tool_behaviour == TOOL_WRENCH)
@@ -589,7 +723,8 @@ Class Procs:
 
 /obj/proc/can_be_unfasten_wrench(mob/user, silent) //if we can unwrench this object; returns SUCCESSFUL_UNFASTEN and FAILED_UNFASTEN, which are both TRUE, or CANT_UNFASTEN, which isn't.
 	if(!(isfloorturf(loc) || istype(loc, /turf/open/indestructible)) && !anchored)
-		to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
+		if(!silent)
+			to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
 		return FAILED_UNFASTEN
 	return SUCCESSFUL_UNFASTEN
 
@@ -635,8 +770,7 @@ Class Procs:
 	if(!machine_board)
 		return FALSE
 	var/P
-	if(W.works_from_distance)
-		to_chat(user, display_parts(user))
+	var/list/message_list = list()
 	for(var/obj/item/A in component_parts)
 		for(var/D in machine_board.req_components)
 			if(istype(A, D))
@@ -659,9 +793,14 @@ Class Procs:
 							B.moveToNullspace()
 					SEND_SIGNAL(W, COMSIG_TRY_STORAGE_INSERT, A, null, null, TRUE)
 					component_parts -= A
-					to_chat(user, "<span class='notice'>[capitalize(A.name)] replaced with [B.name].</span>")
+					message_list += span_notice("[icon2html(A, user)] [capitalize(A.name)] replaced with [icon2html(B, user)] [B.name].")
 					shouldplaysound = 1 //Only play the sound when parts are actually replaced!
 					break
+	if(message_list.len)
+		var/message = jointext(message_list, "\n")
+		to_chat(user,message)
+	if(W.works_from_distance)
+		to_chat(user, display_parts(user))
 	RefreshParts()
 	if(shouldplaysound)
 		W.play_rped_sound()
@@ -684,11 +823,11 @@ Class Procs:
 		var/healthpercent = (obj_integrity/max_integrity) * 100
 		switch(healthpercent)
 			if(50 to 99)
-				. += "Выглядит слегка поврежденным."
+				. += span_warning("Выглядит слегка поврежденным.")
 			if(25 to 50)
-				. += "Выглядит крайне поврежденным."
+				. += span_warning("Выглядит крайне поврежденным.")
 			if(0 to 25)
-				. += "<span class='warning'>Вот-вот развалится!</span>"
+				. += span_warning("Вот-вот развалится!")
 	if(user.research_scanner && component_parts)
 		. += display_parts(user, TRUE)
 
@@ -721,6 +860,12 @@ Class Procs:
 	if (AM == occupant)
 		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, occupant)
 		occupant = null
+	// Проверка circuit.loc здесь ОБЯЗАТЕЛЬНА, хотя и выглядит мёртвой: Exited() зовётся до
+	// присвоения loc, поэтому на уходе платы её loc ещё равен src и очистка не срабатывает.
+	// Именно на это и рассчитан deconstruct(): spawn_frame() перекладывает плату в новый
+	// фрейм, и если снять её из component_parts здесь, следующий же цикл выкладывания её
+	// пропустит - плата останется во фрейме вместо турфа. Тест machine_disassembly это
+	// ловит. Держателя платы у уходящей в qdel машины закрывать надо не отсюда.
 	if(AM == circuit && circuit.loc != src)
 		component_parts -= AM //TODO: make the cmp part functions use lazyX
 		circuit = null

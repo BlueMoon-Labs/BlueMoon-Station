@@ -46,7 +46,7 @@
 
 /mob/living/simple_animal/pet/cat/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/wuv, "purrs!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "hisses!", EMOTE_AUDIBLE)
+	AddElement(/datum/element/pet_bonus, "purrs!", EMOTE_AUDIBLE)
 	AddElement(/datum/element/mob_holder, held_icon)
 
 /mob/living/simple_animal/pet/cat/update_mobility()
@@ -250,18 +250,46 @@
 			walk_to(src,0)
 			turns_since_scan = 0
 			if((movement_target) && !(isturf(movement_target.loc) || ishuman(movement_target.loc) ))
-				movement_target = null
-				stop_automated_movement = 0
+				set_cat_movement_target(null)
 			if( !movement_target || !(movement_target.loc in oview(src, 3)) )
-				movement_target = null
-				stop_automated_movement = 0
+				set_cat_movement_target(null)
 				for(var/mob/living/simple_animal/mouse/snack in oview(src,3))
 					if(isturf(snack.loc) && !snack.stat)
-						movement_target = snack
+						set_cat_movement_target(snack)
 						break
 			if(movement_target)
 				stop_automated_movement = 1
 				walk_to(src,movement_target,0,3)
+
+/**
+ * Единственная точка правки `movement_target`.
+ *
+ * Мышь чистилась только внутри `handle_automated_movement()`, раз в шесть тиков и
+ * под гейтом "жив, стоит, не пристёгнут": кот в шкафу, спящий, мёртвый или с
+ * выключенным ИИ держал удалённую мышь до конца раунда. Вторую ссылку - такую же
+ * невидимую любому ref-скану - держал нативный цикл `walk_to()`, поэтому его тут
+ * же и гасим (замер: unit-тест native_walk_loop_reference).
+ */
+/mob/living/simple_animal/pet/cat/proc/set_cat_movement_target(mob/living/simple_animal/mouse/new_target)
+	if(movement_target == new_target)
+		return
+	if(movement_target)
+		UnregisterSignal(movement_target, COMSIG_PARENT_QDELETING)
+	movement_target = new_target
+	walk_to(src, 0) //нативный цикл держит СТАРУЮ цель жёсткой ссылкой мимо всякого DM
+	if(isnull(new_target))
+		stop_automated_movement = 0
+		return
+	RegisterSignal(new_target, COMSIG_PARENT_QDELETING, PROC_REF(on_movement_target_qdeleting))
+
+/mob/living/simple_animal/pet/cat/proc/on_movement_target_qdeleting(datum/source)
+	SIGNAL_HANDLER
+
+	set_cat_movement_target(null)
+
+/mob/living/simple_animal/pet/cat/Destroy()
+	set_cat_movement_target(null)
+	return ..()
 
 /mob/living/simple_animal/pet/cat/cak //I told you I'd do it, Remie
 	name = "Keeki"

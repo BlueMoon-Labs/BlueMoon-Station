@@ -68,7 +68,7 @@
 	icon_state = "fishburger"
 	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/vitamin = 3)
 	tastes = list("bun" = 4, "fish" = 4)
-	foodtype = GRAIN | MEAT
+	foodtype = GRAIN | MEAT | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/burger/tofu
 	name = "tofu burger"
@@ -302,7 +302,7 @@
 	desc = "HOT! HOT!"
 	icon_state = "fivealarmburger"
 	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/nutriment/vitamin = 5)
-	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/capsaicin = 5, /datum/reagent/consumable/condensedcapsaicin = 5, /datum/reagent/consumable/nutriment/vitamin = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/capsaicin = 5, /datum/reagent/consumable/capsaicin/reaper = 5, /datum/reagent/consumable/nutriment/vitamin = 1)
 	foodtype = GRAIN | MEAT
 
 /obj/item/reagent_containers/food/snacks/burger/rat

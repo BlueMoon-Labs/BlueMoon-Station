@@ -226,11 +226,18 @@
 	PH.attached_action = src
 	..()
 
+// Заклинание и его proc_holder ссылались друг на друга и разрывали связь через
+// QDEL_NULL по ЛОКАЛЬНОЙ копии: PH и attached_action так и оставались забиты
+// уже удалённым партнёром, поэтому в hard delete уходили оба (раунд 9827:
+// /obj/effect/proc_holder/horror и /datum/action/innate/cult/blood_spell/horror,
+// по одной внешней ссылке у каждого, REF SEARCH указал ровно на вар PH).
 /datum/action/innate/cult/blood_spell/horror/Destroy()
-	var/obj/effect/proc_holder/horror/destroy = PH
-	. = ..()
-	if(destroy  && !QDELETED(destroy))
-		QDEL_NULL(destroy)
+	var/obj/effect/proc_holder/horror/holder = PH
+	PH = null
+	if(holder)
+		holder.attached_action = null
+		qdel(holder)
+	return ..()
 
 /datum/action/innate/cult/blood_spell/horror/Activate()
 	PH.toggle(owner) //the important bit
@@ -239,13 +246,15 @@
 /obj/effect/proc_holder/horror
 	active = FALSE
 	ranged_mousepointer = 'icons/effects/cult_target.dmi'
-	var/datum/action/innate/cult/blood_spell/attached_action
+	var/datum/action/innate/cult/blood_spell/horror/attached_action
 
 /obj/effect/proc_holder/horror/Destroy()
-	var/datum/action/innate/cult/blood_spell/AA = attached_action
-	. = ..()
-	if(AA && !QDELETED(AA))
-		QDEL_NULL(AA)
+	var/datum/action/innate/cult/blood_spell/horror/spell = attached_action
+	attached_action = null
+	if(spell)
+		spell.PH = null
+		qdel(spell)
+	return ..()
 
 /obj/effect/proc_holder/horror/proc/toggle(mob/user)
 	if(active)
@@ -270,7 +279,7 @@
 		SEND_SOUND(ranged_ability_user, sound('sound/effects/ghost.ogg',0,1,50))
 		var/image/C = image('icons/effects/cult_effects.dmi',H,"bloodsparkles", ABOVE_MOB_LAYER)
 		add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/cult, "cult_apoc", C, FALSE)
-		addtimer(CALLBACK(H, TYPE_PROC_REF(/atom, remove_alt_appearance),"cult_apoc",TRUE), 2400, TIMER_OVERRIDE|TIMER_UNIQUE)
+		addtimer(CALLBACK(H, TYPE_PROC_REF(/atom/movable, remove_alt_appearance),"cult_apoc",TRUE), 2400, TIMER_OVERRIDE|TIMER_UNIQUE)
 		to_chat(ranged_ability_user,"<span class='cult'><b>[H] has been cursed with living nightmares!</b></span>")
 		attached_action.charges--
 		attached_action.desc = attached_action.base_desc

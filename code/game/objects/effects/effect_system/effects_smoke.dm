@@ -126,12 +126,13 @@
 /obj/effect/particle_effect/smoke/bad
 	lifetime = 8
 
-/obj/effect/particle_effect/smoke/bad/smoke_mob(mob/living/carbon/M)
-	if(..())
-		M.drop_all_held_items()
-		M.adjustOxyLoss(1)
-		M.emote("cough")
-		return TRUE
+/obj/effect/particle_effect/smoke/bad/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
+	C.drop_all_held_items()
+	C.adjustOxyLoss(1)
+	C.emote("cough")
 
 /obj/effect/particle_effect/smoke/bad/Crossed(atom/movable/AM, oldloc)
 	. = ..()
@@ -206,11 +207,12 @@
 	color = "#9C3636"
 	lifetime = 10
 
-/obj/effect/particle_effect/smoke/sleeping/smoke_mob(mob/living/carbon/M)
-	if(..())
-		M.Sleeping(200)
-		M.emote("cough")
-		return TRUE
+/obj/effect/particle_effect/smoke/sleeping/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
+	C.Sleeping(200)
+	C.emote("cough")
 
 /datum/effect_system/smoke_spread/sleeping
 	effect_type = /obj/effect/particle_effect/smoke/sleeping
@@ -224,37 +226,54 @@
 
 
 /obj/effect/particle_effect/smoke/chem/process()
-	if(..())
-		var/turf/T = get_turf(src)
-		var/fraction = 1/initial(lifetime)
-		for(var/atom/movable/AM in T)
-			if(AM.type == src.type)
-				continue
-			if(T.intact && AM.level == 1) //hidden under the floor
-				continue
-			reagents.reaction(AM, TOUCH, fraction)
+	. = ..()
+	if(!.)
+		return
+	var/turf/T = get_turf(src)
+	var/fraction = 1/initial(lifetime)
+	for(var/atom/movable/AM in T)
+		if(AM.type == src.type)
+			continue
+		if((T.turf_flags & TURF_INTACT) && AM.level == 1) //hidden under the floor
+			continue
+		reagents.reaction(AM, TOUCH, fraction)
 
-		reagents.reaction(T, TOUCH, fraction)
-		return TRUE
+	reagents.reaction(T, TOUCH, fraction)
 
-/obj/effect/particle_effect/smoke/chem/smoke_mob(mob/living/carbon/M)
-	if(lifetime<1)
-		return FALSE
-	if(!istype(M))
-		return FALSE
-	var/mob/living/carbon/C = M
-	if(C.internal != null || C.has_smoke_protection())
-		return FALSE
+/obj/effect/particle_effect/smoke/chem/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
 	var/fraction = 1/initial(lifetime)
 	reagents.copy_to(C, fraction*reagents.total_volume)
-	reagents.reaction(M, INGEST, fraction)
-	return TRUE
-
-
+	reagents.reaction(C, INGEST, fraction)
 
 /datum/effect_system/smoke_spread/chem
+	/// Носитель химии до момента рождения дыма. Голый /obj, у которого reagents.my_atom
+	/// смотрит обратно на него же - ссылочный цикл, а рефкаунт BYOND циклы не разбирает
+	/// никогда. Разорвать его может только Destroy(), то есть qdel самой системы.
 	var/obj/chemholder
 	effect_type = /obj/effect/particle_effect/smoke/chem
+	// Система одноразовая и убирает себя сама в конце start().
+	//
+	// Ни одно из ~48 мест создания химдыма qdel не звало: систему заводили локальной
+	// переменной, дёргали set_up()/start() и бросали. Из-за цикла выше каждый такой пуск
+	// оставлял в мире НАВСЕГДА голый /obj + /datum/reagents(500) + датумы реагентов.
+	// В переписи прода (раунды 10050/10052/10054, 100-130 игроков) счётчик голых /obj рос
+	// на +122..+644 за каждый 25-минутный интервал и не убыл ни разу.
+	//
+	// Почему уборка, а не замена /obj на чистый /datum/reagents (путь tg): сама по себе
+	// она течь не лечит - reagent_list -> reagent.holder -> reagents тоже цикл, то есть
+	// брошенная система утекала бы ровно так же, только на один объект меньше. Лечит
+	// именно управление временем жизни, а не тип носителя.
+	//
+	// Цена решения: экземпляр нельзя переиспользовать, повторный start() будет холостым.
+	// Сверено по всему дереву - ни одного chem/foam-экземпляра в переменной объекта нет,
+	// все места создания локальные; в переменных живут только spark_spread, trail_follow
+	// и бесхимийные smoke_spread (мех, дымовая граната, танцпол дьявола), у которых
+	// chemholder'а нет вовсе. Кому переиспользование понадобится - выставить
+	// autocleanup = FALSE и звать qdel() самому.
+	autocleanup = TRUE
 
 /datum/effect_system/smoke_spread/chem/New()
 	..()
@@ -297,6 +316,10 @@
 
 
 /datum/effect_system/smoke_spread/chem/start()
+	// Система себя уже убрала (см. autocleanup у типа) - chemholder отпущен, дальше идти
+	// некуда. Гард такой же, как у /datum/effect_system/start().
+	if(QDELETED(src))
+		return
 	var/mixcolor = mix_color_from_reagents(chemholder.reagents.reagent_list)
 	if(holder)
 		location = get_turf(holder)
@@ -310,6 +333,11 @@
 	S.amount = amount
 	if(S.amount)
 		S.spread_smoke() //calling process right now so the smoke immediately attacks mobs.
+
+	// Химия отдана рождённому дыму, chemholder больше не нужен ни на что. Уборка здесь, а
+	// не на совести вызывающего: см. autocleanup у типа.
+	if(autocleanup)
+		qdel(src)
 
 
 /////////////////////////////////////////////

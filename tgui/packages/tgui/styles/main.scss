@@ -44,6 +44,7 @@
 @include meta.load-css('./components/Tabs.scss');
 @include meta.load-css('./components/TextArea.scss');
 @include meta.load-css('./components/Tooltip.scss');
+@include meta.load-css('./components/FindBar.scss');
 
 // Interfaces
 @include meta.load-css('./interfaces/ListInput.scss');
@@ -51,17 +52,28 @@
 @include meta.load-css('./interfaces/AlertModal.scss');
 @include meta.load-css('./interfaces/CameraConsole.scss');
 @include meta.load-css('./interfaces/Changelog.scss');
+@include meta.load-css('./interfaces/ArcadeOrionTrail.scss');
+@include meta.load-css('./interfaces/ArcadeTetris.scss');
+@include meta.load-css('./interfaces/NtosSnake.scss');
+@include meta.load-css('./interfaces/NtosMinesweeper.scss');
+@include meta.load-css('./interfaces/NtosMessenger.scss');
 @include meta.load-css('./interfaces/CrewManifest.scss');
 @include meta.load-css('./interfaces/ExperimentConfigure.scss');
 @include meta.load-css('./interfaces/NuclearBomb.scss');
 @include meta.load-css('./interfaces/Paper.scss');
 @include meta.load-css('./interfaces/Roulette.scss');
+@include meta.load-css('./interfaces/SlotMachine.scss');
 @include meta.load-css('./interfaces/Safe.scss');
 @include meta.load-css('./interfaces/TachyonArray.scss');
 @include meta.load-css('./interfaces/Techweb.scss');
 @include meta.load-css('./interfaces/SecurityRecords.scss');
 @include meta.load-css('./interfaces/AccountsUplinkTerminal.scss');
 @include meta.load-css('./interfaces/MedalsViewer.scss');
+@include meta.load-css('./interfaces/GamePreferences.scss');
+@include meta.load-css('./interfaces/DirectorPanel.scss');
+@include meta.load-css('./interfaces/PersonalCrafting');
+@include meta.load-css('./interfaces/AdminLogViewer.scss');
+@include meta.load-css('./interfaces/Hypertorus.scss');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');

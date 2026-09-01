@@ -1,28 +1,38 @@
 /datum/round_event_control/pirates
 	name = "Space Pirates"
 	typepath = /datum/round_event/pirates
-	weight = 20
+	weight = 6
 	max_occurrences = 1
-	min_players = 30
-	earliest_start = 45 MINUTES
-	dynamic_should_hijack = TRUE
+	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
+	// Было 45 мин: к этому времени кошелёк уже 2-3 раза выжжен ранней волной, и за день
+	// логов 9766-9775 пираты не выпали ни разу. 30 мин - конкуренция с основной волной.
+	earliest_start = 30 MINUTES
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 10
+	intensity = 15
+	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "The crew will either pay up, or face a pirate assault."
 
 #define PIRATES_ROGUES "Rogues"
 // #define PIRATES_SILVERSCALES "Silverscales"
 // #define PIRATES_DUTCHMAN "Flying Dutchman"
 
-/datum/round_event_control/pirates/preRunEvent()
-	if (!SSmapping.empty_space)
+/datum/round_event_control/pirates/preRunEvent(admin_window = TRUE)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
 	return ..()
 
+/datum/round_event/pirates
+	var/pirates_spawned = FALSE
+	var/spawn_timer_id
+
 /datum/round_event/pirates/start()
 	send_pirate_threat()
 
-/proc/send_pirate_threat()
+/datum/round_event/pirates/proc/send_pirate_threat()
 	var/pirate_type = PIRATES_ROGUES //pick(PIRATES_ROGUES, PIRATES_SILVERSCALES, PIRATES_DUTCHMAN)
 	var/datum/comm_message/threat_msg = new
 	var/payoff = 0
@@ -30,7 +40,7 @@
 	var/ship_template
 	var/ship_name = "Space Privateers Association"
 	var/initial_send_time = world.time
-	var/response_max_time = 3 MINUTES
+	var/response_max_time = 5 MINUTES
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
@@ -46,56 +56,125 @@
 			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
-	threat_msg.answer_callback = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
+	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
-/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
+/datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D)
-			if(D.adjust_money(-payoff))
-				priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
-			else
-				priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
-				spawn_pirates(threat_msg, ship_template, TRUE)
-				return
+		if(D && D.adjust_money(-payoff))
+			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
+			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
+			return
+		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
+		spawn_pirates(threat_msg, ship_template, TRUE)
+		return
 	else
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 
-/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+/datum/round_event/pirates/proc/get_spawn_z()
+	if(SSmapping.empty_space)
+		return SSmapping.empty_space.z_value
+	var/list/space_zlevels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
+	if(length(space_zlevels))
+		return pick(space_zlevels)
+	return SSmapping.station_start
+
+/datum/round_event/pirates/proc/resolve_threat_peacefully()
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
+
+/// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
+/// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
+/// и вернули бы бюджет дважды.
+/datum/round_event/pirates/proc/fail_spawn(reason)
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
+	message_admins("Space Pirates event failed: [reason]")
+	if(!control)
+		return
+	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
+	SSdirector.note_failed_action(control, refund_budget = triggered_randomly, retry_replacement = triggered_randomly)
+	SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_FAILED,
+		detail = "[reason]; [triggered_randomly ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
+
+/datum/round_event/pirates/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+	if(pirates_spawned)
+		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
+	if(!ship_template)
+		fail_spawn("не задан шаблон корабля")
+		return
 
-	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR)
-	shuffle_inplace(candidates)
+	var/z = get_spawn_z()
+	if(!z)
+		fail_spawn("нет подходящего Z-уровня для корабля")
+		return
+
+	// Флаг ставится до загрузки: ship.load() спит (CHECK_TICK в парсере карты), и без него
+	// сработавший за это время таймер или ответ станции загрузили бы второй корабль.
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 	var/datum/map_template/shuttle/pirate/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE, world.maxy - TRANSITIONEDGE - ship.height)
-	var/z = SSmapping.empty_space.z_value
 	var/turf/T = locate(x,y,z)
-	if(!T)
-		CRASH("Pirate event found no turf to load in")
+	if(!T || !ship.load(T))
+		fail_spawn("корабль не удалось загрузить на карту")
+		return
 
-	if(!ship.load(T))
-		CRASH("Loading pirate ship failed!")
-
+	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))
 		for(var/obj/effect/mob_spawn/human/pirate/spawner in A)
-			if(candidates.len > 0)
-				var/mob/our_candidate = candidates[1]
-				spawner.create(our_candidate.ckey)
-				candidates -= our_candidate
-				notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
-			else
-				notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			spawners_list += spawner
 
-	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО Пакта Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
+	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_pirates = list()
+	var/spawner_count = length(spawners_list)
+	var/intensity_share = spawner_count ? control.intensity / spawner_count : 0
+	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
+
+	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		if(LAZYLEN(candidates))
+			var/mob/our_candidate = pick_n_take(candidates)
+			var/mob/living/spawned_pirate = spawner.create(our_candidate.ckey)
+			if(spawned_pirate)
+				spawned_pirates += spawned_pirate
+			notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
+		else
+			spawner.director_source_action = control
+			spawner.director_intensity = intensity_share
+			spawner.director_refund_cost = refund_share
+			notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+	if(length(spawned_pirates))
+		var/spawned_fraction = length(spawned_pirates) / max(1, spawner_count)
+		SSdirector.track_ghost_role_spawn(
+			control,
+			spawned_pirates,
+			budget_backed = triggered_randomly,
+			intensity_override = control.intensity * spawned_fraction,
+			refund_cost_override = triggered_randomly ? control.cost * spawned_fraction : 0,
+		)
+	else
+		SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_EXECUTED,
+			detail = "корабль создан; сразу назначено ролей: 0, свободные спавнеры оставлены призракам")
+
+	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
 
 //Shuttle equipment
 
@@ -256,6 +335,7 @@
 	var/idle_state = "lpad-idle"
 	var/warmup_state = "lpad-idle"
 	var/sending_state = "lpad-beam"
+	var/warmup_time = 10 SECONDS
 	var/cargo_hold_id
 
 /obj/machinery/piratepad/multitool_act(mob/living/user, obj/item/multitool/I)
@@ -275,14 +355,35 @@
 	default_deconstruction_crowbar(tool)
 	return TRUE
 
+/obj/machinery/piratepad/RefreshParts()
+	warmup_time = initial(warmup_time)
+
+	var/parts_rating = 0
+	var/i = 0
+	for(var/obj/item/stock_parts/L in component_parts)
+		parts_rating += L.rating
+		++i
+	// Average rating of all details
+	var/rating = round_down(parts_rating / i)
+	var/const/speed_up_per_rating = 26.6 // T4 = 80% speed up
+	var/speed_up_ratio = max(ceil((rating-1) * speed_up_per_rating),0)/100
+	warmup_time -= warmup_time*speed_up_ratio
+	warmup_time = max(round(warmup_time, 0.1), 0)
 
 /obj/machinery/computer/piratepad_control
 	name = "cargo hold control terminal"
+	//В этом терминале живёт весь прогресс антагонистов-грабителей. Разбитая консоль обнуляла
+	//добычу за раунд и лишала команду цели, поэтому трюмный пульт неразрушаем. Гражданский
+	//пульт наград ниже возвращает себе обычную хрупкость станционной машины.
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	var/status_report = "Ready for delivery."
 	var/obj/machinery/piratepad/pad
-	var/warmup_time = 100
 	var/sending = FALSE
 	var/points = 0
+	///Всё, что через этот терминал вообще прошло. points - это остаток на счету, его обнуляет
+	///снятие кредитов, и цель "собрать на N кредитов" оказывалась невыполненной у команды,
+	///которая свою добычу уже обналичила.
+	var/total_collected = 0
 	var/datum/export_report/total_report
 	var/sending_timer
 	var/cargo_hold_id
@@ -292,6 +393,17 @@
 /obj/machinery/computer/piratepad_control/Initialize(mapload)
 	..()
 	return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/computer/piratepad_control/Destroy()
+	// Таймер прогрева send() держал бы терминал в SStimer, а loot-objective
+	// пиратов/воксов/рейдеров - до конца раунда через cargo_hold
+	deltimer(sending_timer)
+	pad = null
+	for(var/datum/objective/loot/booty in GLOB.objectives)
+		if(booty.cargo_hold == src)
+			booty.get_loot_value() //снимок набранного до того, как ссылка на терминал оборвётся
+			booty.cargo_hold = null
+	return ..()
 
 /obj/machinery/computer/piratepad_control/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
@@ -343,6 +455,40 @@
 			stop_sending()
 			. = TRUE
 
+/obj/machinery/computer/piratepad_control/AltClick(mob/user)
+	. = ..()
+	withdraw_points(user)
+
+/obj/machinery/computer/piratepad_control/proc/withdraw_points(mob/living/user)
+	if(!isliving(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	if(sending)
+		to_chat(user, span_warning("[src] занят отправкой груза!"))
+		return
+	if(!points)
+		to_chat(user, span_notice("На счету нет кредитов для снятия."))
+		return
+	to_chat(user, span_notice("Вы начинаете вывод средств с [src]..."))
+	user.visible_message(span_notice("[user] подключается к [src] для снятия кредитов..."), span_notice("Вы подключаетесь к [src] для снятия кредитов..."))
+	if(!do_after(user, 30 SECONDS, target = src))
+		return
+	if(QDELETED(src) || QDELETED(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE) || (machine_stat & (NOPOWER|BROKEN)))
+		return
+	if(sending || !points)
+		to_chat(user, span_warning("Снятие средств прервано."))
+		return
+	var/withdraw_amount = points
+	points = 0
+	new /obj/item/holochip(drop_location(), withdraw_amount)
+	to_chat(user, span_notice("Вы сняли [withdraw_amount] кредитов с терминала."))
+	playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
+
 /obj/machinery/computer/piratepad_control/proc/recalc()
 	if(sending)
 		return
@@ -371,9 +517,22 @@
 	var/datum/export_report/ex = new
 	var/obj/machinery/piratepad/pad = pad_ref?.resolve()
 
+	var/queued_pirate_ransom = 0
+	var/static/datum/export/pirate/ransom/pirate_ransom_datum
+	if(!pirate_ransom_datum)
+		pirate_ransom_datum = new
 	for(var/atom/movable/AM in get_turf(pad))
 		if(AM == pad)
 			continue
+		if(ishuman(AM))
+			var/mob/living/carbon/human/held = AM
+			var/earn = pirate_ransom_datum.get_cost(held)
+			if(earn)
+				// Same pipeline as /datum/syndicate_contract (extraction pod, station ransom, return) — not cargo qdel.
+				var/datum/ransom_extraction/sequence = new
+				sequence.start_for_pirate(held, get_turf(pad), 100 * rand(18, 45), earn, src)
+				queued_pirate_ransom += earn
+				continue
 		export_item_and_contents(AM, EXPORT_PIRATE | EXPORT_CARGO | EXPORT_CONTRABAND | EXPORT_EMAG, apply_elastic = FALSE, delete_unsold = FALSE, external_report = ex)
 
 	status_report = "Sold: "
@@ -387,6 +546,10 @@
 		status_report += " "
 		value += ex.total_value[E]
 
+	if(queued_pirate_ransom)
+		value += queued_pirate_ransom
+		status_report += " +[queued_pirate_ransom] credits: hostage (extraction) "
+
 	if(!total_report)
 		total_report = ex
 	else
@@ -396,7 +559,12 @@
 			total_report.total_value[E] += ex.total_value[E]
 		// playsound(loc, 'sound/machines/wewewew.ogg', 70, TRUE)
 
+	/// Ransom cr for pirates is applied in /datum/ransom_extraction/aftermath_capture; only ex items here.
 	points += value
+	total_collected += value
+	if(queued_pirate_ransom)
+		points -= queued_pirate_ransom
+		total_collected -= queued_pirate_ransom
 
 	if(!value)
 		status_report += "Nothing"
@@ -410,7 +578,7 @@
 	var/obj/machinery/piratepad/pad = pad_ref?.resolve()
 	if(!pad)
 		status_report = "No pad detected. Build or link a pad."
-		pad.audible_message(span_notice("[pad] beeps."))
+		audible_message(span_notice("[src] beeps."))
 		return
 	if(pad?.panel_open)
 		status_report = "Please screwdrive pad closed to send. "
@@ -422,7 +590,10 @@
 	status_report = "Sending... "
 	pad.visible_message("<span class='notice'>[pad] starts charging up.</span>")
 	pad.icon_state = pad.warmup_state
-	sending_timer = addtimer(CALLBACK(src,PROC_REF(send)),warmup_time, TIMER_STOPPABLE)
+	if(pad.warmup_time)
+		sending_timer = addtimer(CALLBACK(src,PROC_REF(send)),pad.warmup_time, TIMER_STOPPABLE)
+	else
+		send()
 
 /obj/machinery/computer/piratepad_control/proc/stop_sending(custom_report)
 	if(!sending)
@@ -514,7 +685,7 @@
 	desc = "A modified suit to allow space pirates to board shuttles and stations while avoiding the maw of the void. Comes with additional protection and is lighter to move in."
 	icon_state = "spacepirate"
 	w_class = WEIGHT_CLASS_NORMAL
-	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/cover/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
 	slowdown = 0
 	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 25, BOMB = 50, BIO = 100, RAD = 50, FIRE = 80, ACID = 80, WOUND = 20)
 	strip_delay = 40

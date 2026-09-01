@@ -72,6 +72,7 @@
 				if(C.number)
 					number = max(number, C.number+1)
 		c_tag = "[A.name] #[number]"
+		GLOB.cameranet.invalidate_camera_cache() //c_tag присвоен после Initialize (LateInitialize)
 
 // CHECKS
 
@@ -94,6 +95,7 @@
 /obj/machinery/camera/proc/upgradeXRay()
 	assembly.upgrades.Add(new /obj/item/analyzer(assembly))
 	upgrades |= CAMERA_UPGRADE_XRAY
+	mark_visibility_dirty() //XRay меняет примитив зоны видимости (range вместо view)
 
 // If you are upgrading Motion, and it isn't in the camera's Initialize(), add it to the machines list.
 /obj/machinery/camera/proc/upgradeMotion()

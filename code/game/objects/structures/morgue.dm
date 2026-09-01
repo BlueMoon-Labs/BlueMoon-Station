@@ -174,7 +174,7 @@ GLOBAL_LIST_EMPTY(bodycontainers) //Let them act as spawnpoints for revenants an
 		icon_state = "morgue0"
 		STOP_PROCESSING(SSobj, src)
 		return
-	
+
 	if(contents.len == 1)  // Empty
 		icon_state = "morgue1"
 		STOP_PROCESSING(SSobj, src)
@@ -205,7 +205,7 @@ GLOBAL_LIST_EMPTY(bodycontainers) //Let them act as spawnpoints for revenants an
 
 		if(mob_revivible)
 			if(mob_occupant.stat == DEAD && beeper && world.time > next_beep)
-				playsound(src, 'sound/machines/beeping_alarm.ogg', 50, 0) //Clone them you blind fucks
+				playsound(src, 'sound/machines/beeping_alarm.ogg', 50, FALSE, falloff_exponent = 1, distance_multiplier = 1) //Clone them you blind fucks
 				next_beep = world.time + beep_cooldown
 			START_PROCESSING(SSobj, src)
 			break
@@ -286,8 +286,8 @@ GLOBAL_LIST_EMPTY(crematoriums)
 			if (M.stat != DEAD)
 				if(!HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 					M.emote("scream")
-			// BLUEMOON ADDITION AHEAD changeling scream when cremated
-			if (M.mind.has_antag_datum(/datum/antagonist/changeling))
+		// BLUEMOON ADDITION AHEAD changeling scream when cremated
+			if (M.mind?.has_antag_datum(/datum/antagonist/changeling))
 				switch(rand(0,2))
 					if(0)
 						playsound(loc, 'modular_bluemoon/sound/creatures/changeling/changeling_cremation1.ogg', 100, 0.1, ignore_walls = TRUE)

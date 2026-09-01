@@ -304,5 +304,67 @@
 	name = "Elegant Bun"
 	icon_state = "hair_elegantbun"
 
+/datum/sprite_accessory/hair/sergal_short
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal short"
+	icon_state = "hair_sergal_short"
 
+/datum/sprite_accessory/hair/sergal_bun
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal bun"
+	icon_state = "hair_sergal_bun"
 
+/datum/sprite_accessory/hair/sergal_brushed
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal brushed"
+	icon_state = "hair_sergal_brushed"
+
+/datum/sprite_accessory/hair/sergal_long
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal long"
+	icon_state = "hair_sergal_long"
+
+/datum/sprite_accessory/hair/sergal_axolotl
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal axolotl"
+	icon_state = "hair_sergal_axolotl"
+
+/datum/sprite_accessory/hair/sergal_shogun
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal shogun"
+	icon_state = "hair_sergal_shogun"
+
+/datum/sprite_accessory/hair/sergal_spiky
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal spiky"
+	icon_state = "hair_sergal_spiky"
+
+/datum/sprite_accessory/hair/sergal_round
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Sergal round"
+	icon_state = "hair_sergal_round"
+
+/datum/sprite_accessory/hair/longer_bedhead_alt
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Bedhead (Longer)(Alt)"
+	icon_state = "hair_longer_bedhead_alt"
+
+/datum/sprite_accessory/hair/flowerchild
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild"
+	icon_state = "hair_flowerchild"
+
+/datum/sprite_accessory/hair/flowerchild_ponyless
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild (Ponyless)"
+	icon_state = "hair_flowerchild_ponyless"
+
+/datum/sprite_accessory/hair/hair_flowerchild_ponyful
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild (Ponyful)"
+	icon_state = "hair_flowerchild_ponyful"
+
+/datum/sprite_accessory/hair/dreadtail
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Dreadtail"
+	icon_state = "hair_dreadtail"

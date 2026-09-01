@@ -29,7 +29,7 @@ GLOBAL_LIST_INIT(dwarf_last, world.file2list("strings/names/dwarf_last.txt")) //
 	race = /datum/species/dwarf //and the race the path is set to.
 
 /datum/species/dwarf/check_roundstart_eligible()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		return TRUE
 	return ..()
 

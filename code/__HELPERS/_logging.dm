@@ -42,28 +42,23 @@
 	SEND_TEXT(world.log, text)
 #endif
 
-#if defined(REFERENCE_DOING_IT_LIVE)
+// Лог рефтрекера пишется всегда: файл data/logs/<раунд>/harddels.log создаётся каждый раунд.
 #define log_reftracker(msg) log_harddel("## REF SEARCH [msg]")
 
 /proc/log_harddel(text)
 	WRITE_LOG(GLOB.harddel_log, text)
-
-#elif defined(REFERENCE_TRACKING) // Doing it locally
-#define log_reftracker(msg) log_world("## REF SEARCH [msg]")
-
-#else //Not tracking at all
-#define log_reftracker(msg)
-#endif
 
 
 /* Items with ADMINPRIVATE prefixed are stripped from public logs. */
 /proc/log_admin(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMIN: [text]")
 	WRITE_LOG(GLOB.admin_log, "ADMIN: [text]")
+	GLOB.admin_log_entries += "ADMIN: [text]"
 
 /proc/log_admin_private(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMINPRIVATE: [text]")
 	WRITE_LOG(GLOB.admin_log, "ADMIN: [text]")
+	GLOB.admin_log_entries += "ADMIN: [text]"
 
 /proc/log_adminsay(text, list/data)
 	WRITE_LOG(GLOB.world_game_log, "ADMINPRIVATE: ASAY: [text]")
@@ -82,6 +77,10 @@
 /proc/log_mecha(text)
 	if (CONFIG_GET(flag/log_mecha))
 		WRITE_LOG(GLOB.world_mecha_log, "MECHA: [text]")
+
+/proc/log_uplink(text)
+	if (CONFIG_GET(flag/log_uplink))
+		WRITE_LOG(GLOB.uplink_log, "UPLINK: [text]")
 
 /proc/log_virus(text)
 	if (CONFIG_GET(flag/log_virus))
@@ -175,6 +174,7 @@
 /proc/log_vote(text)
 	if (CONFIG_GET(flag/log_vote))
 		WRITE_LOG(GLOB.admin_log, "VOTE: [text]")
+		GLOB.admin_log_entries += "VOTE: [text]"
 
 /proc/log_shuttle(text)
 	if (CONFIG_GET(flag/log_shuttle))
@@ -237,8 +237,13 @@
 	. = "[perf_info.Join(",")]\n"
 	WRITE_LOG_NO_FORMAT(GLOB.perf_log, .)
 
+/proc/log_ping_perf(list/perf_info)
+	. = "[perf_info.Join(",")]\n"
+	WRITE_LOG_NO_FORMAT(GLOB.ping_perf_log, .)
+
 /proc/log_reagent(text)
-	WRITE_LOG(GLOB.reagent_log, text)
+	if (CONFIG_GET(flag/log_reagents))
+		WRITE_LOG(GLOB.reagent_log, text)
 
 /proc/log_reagent_transfer(text)
 	log_reagent("TRANSFER: [text]")
@@ -395,3 +400,51 @@
 		return "[a.loc] ([t.x],[t.y],[t.z]) ([a.loc.type])"
 	else if(a.loc)
 		return "[a.loc] (0,0,0) ([a.loc.type])"
+
+/proc/log_type_to_name(message_type)
+	switch(message_type)
+		if(LOG_ATTACK)
+			return "Attack"
+		if(LOG_SAY)
+			return "Say"
+		if(LOG_WHISPER)
+			return "Whisper"
+		if(LOG_EMOTE)
+			return "Emote"
+		if(LOG_SUBTLER)
+			return "Subtler"
+		if(LOG_DSAY)
+			return "Deadchat"
+		if(LOG_PDA)
+			return "PDA"
+		if(LOG_CHAT)
+			return "Chat"
+		if(LOG_COMMENT)
+			return "Comment"
+		if(LOG_TELECOMMS)
+			return "Telecomms"
+		if(LOG_OOC)
+			return "OOC"
+		if(LOG_ADMIN)
+			return "Admin"
+		if(LOG_ADMIN_PRIVATE)
+			return "Admin"
+		if(LOG_ASAY)
+			return "ASAY"
+		if(LOG_OWNERSHIP)
+			return "Ownership"
+		if(LOG_GAME)
+			return "Game"
+		if(LOG_VIRUS)
+			return "Virus"
+		if(LOG_MECHA)
+			return "Mecha"
+		if(LOG_SHUTTLE)
+			return "Shuttle"
+		if(LOG_VICTIM)
+			return "Victim"
+		if(LOG_ECON)
+			return "Economy"
+		if(LOG_UPLINK)
+			return "Uplink"
+	return "Misc"

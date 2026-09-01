@@ -107,6 +107,7 @@
 
 	quirk_holder.grant_language(/datum/language/corpspeak, source = LANGUAGE_MIND)
 	give_item(/obj/item/clothing/accessory/badge_nt, quirk_holder)
+	give_item(/obj/item/card_sticker/nanotrasen/loadout, quirk_holder, list("backpack" = ITEM_SLOT_BACKPACK))
 
 /datum/quirk/syndi_employee
 	name = "Сотрудник Синдиката"
@@ -121,21 +122,7 @@
 
 	quirk_holder.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
 	give_item(/obj/item/clothing/accessory/badge_syndi, quirk_holder)
-
-/datum/quirk/lewdjob
-	name = "Секс это работа"
-	desc = "Ничего личного, просто бизнес. В моменты интимной близости у вас над головой не будут появляться сердечки."
-	flavor_quirk = TRUE
-	mob_trait = TRAIT_LEWD_JOB
-
-/datum/preferences
-	var/summon_nickname = null
-
-/datum/quirk/lewdsummon
-	name = "Призываемый"
-	desc = "Вы были одарены силой демонов похоти или же сами являлись её источником, что давала возможность осмелившимся безумцам призывать вас при помощи рун. Сможете ли вы исполнить их фантазии?."
-	mob_trait = TRAIT_LEWD_SUMMON
-	gain_text = "<span class='notice'>Призываемый - ЕРП квирк. Использование его для абуза механик, будет крайне строго наказываться ©️. </span>"
+	give_item(/obj/item/card_sticker/syndicate/loadout, quirk_holder, list("backpack" = ITEM_SLOT_BACKPACK))
 
 /datum/quirk/common_pregnancy
 	name = "Обычная беременность"

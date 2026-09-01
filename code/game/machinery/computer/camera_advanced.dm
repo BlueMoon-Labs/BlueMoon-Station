@@ -23,9 +23,19 @@
 
 /obj/machinery/computer/camera_advanced/Initialize(mapload)
 	. = ..()
-	for(var/i in networks)
-		networks -= i
-		networks += lowertext(i)
+	//networks приезжал не списком (варедит или правка на карте), и тогда
+	//пересечение networks & C.network валило рантайм при каждом открытии консоли
+	if(!islist(networks))
+		stack_trace("[type]: networks не список ([networks]) - нормализуем")
+		networks = isnull(networks) ? list() : list("[networks]")
+	//правка списка прямо в цикле по нему пропускала элементы: удаление сдвигает
+	//хвост, а добавление кладёт новый элемент под ещё не пройденный индекс, так
+	//что у консоли с двумя и более сетями часть имён оставалась в исходном
+	//регистре. Собираем новый список.
+	var/list/lowercase_networks = list()
+	for(var/network in networks)
+		lowercase_networks += lowertext(network)
+	networks = lowercase_networks
 	if(lock_override)
 		if(lock_override & CAMERA_LOCK_STATION)
 			z_lock |= SSmapping.levels_by_trait(ZTRAIT_STATION)
@@ -42,9 +52,11 @@
 		actions += new jump_action(src)
 
 /obj/machinery/computer/camera_advanced/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
-	for(var/i in networks)
-		networks -= i
-		networks += "[idnum][i]"
+	//см. Initialize: правка списка внутри цикла по нему пропускает элементы
+	var/list/shuttle_networks = list()
+	for(var/network in networks)
+		shuttle_networks += "[idnum][network]"
+	networks = shuttle_networks
 
 /obj/machinery/computer/camera_advanced/syndie
 	icon_keyboard = "syndie_key"
@@ -63,21 +75,35 @@
 /obj/machinery/proc/remove_eye_control(mob/living/user)
 	CRASH("[type] does not implement ai eye handling")
 
+/**
+ * Отдаёт консоль обратно и отпускает оператора.
+ *
+ * Гейт `if(isnull(user?.client)) return` стоял на ВСЁМ проке, а `/mob/Logout()`
+ * зовёт `unset_machine()` уже ПОСЛЕ отвязки клиента - то есть штатный выход
+ * игрока из тела за консолью проходил мимо всей уборки. `unset_machine()` при
+ * этом обнуляет `mob.machine`, второго шанса убраться не будет, и
+ * `current_user` держал тело до конца раунда (плюс консоль навсегда оставалась
+ * "уже используется", а `QDEL_LAZYLIST(actions)` удаляемого тела уносил ОБЩИЕ
+ * экшены консоли). Клиента теперь требуют только те шаги, которым он нужен.
+ */
 /obj/machinery/computer/camera_advanced/remove_eye_control(mob/living/user)
-	if(isnull(user?.client))
+	if(isnull(user))
 		return
 
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
-	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj.visibleCameraChunks)
+	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj?.visibleCameraChunks)
 		camerachunks_gone.remove(eyeobj)
 
 	user.reset_perspective(null)
-	if(eyeobj.visible_icon)
-		user.client.images -= eyeobj.user_image
-	user.client.view_size.unsupress()
+	var/client/user_client = user.client
+	if(user_client)
+		if(eyeobj?.visible_icon)
+			user_client.images -= eyeobj.user_image
+		user_client.view_size.unsupress()
 
-	eyeobj.eye_user = null
+	if(eyeobj)
+		eyeobj.eye_user = null
 	user.remote_control = null
 	current_user = null
 	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)

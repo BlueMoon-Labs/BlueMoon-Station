@@ -1,5 +1,5 @@
 /datum/quirk/powersharing
-	name = BLUEMOON_TRAIT_NAME_POWERSHARING
+	name = "Двусторонняя Зарядка"
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! Вы можете использовать в руке свой имплант зарядки, чтобы переключить его в режим раздачи энергии, чтобы заряжать ЛКП и батареи из своего аккумулятора. Если другой синтетик держит в руке зарядник, вы можете поделиться с ним зарядкой. К сожалению, эта модификация увеличивает постоянное потребление энергии на 5%."
 	value = 0
 	gain_text = span_danger("Я могу делиться энергией с другими!")
@@ -23,8 +23,10 @@
 		return
 	H.physiology.hunger_mod *= 1.05
 
-/datum/quirk/powersaving/remove()
+/datum/quirk/powersharing/remove()
 	var/mob/living/carbon/human/H = quirk_holder
 	if(!istype(H) || !isrobotic(H))
+		return
+	if(!H.physiology)
 		return
 	H.physiology.hunger_mod /= 1.05

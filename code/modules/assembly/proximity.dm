@@ -14,8 +14,10 @@
 
 /obj/item/assembly/prox_sensor/Initialize(mapload)
 	. = ..()
+	// Movement detection is event-driven (proximity_monitor -> HasProximity).
+	// process() is only the arming countdown, so we register in SSobj only while
+	// timing and PROCESS_KILL ourselves when the countdown is not running.
 	proximity_monitor = new(src, 0)
-	START_PROCESSING(SSobj, src)
 
 /obj/item/assembly/prox_sensor/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -30,6 +32,8 @@
 		return FALSE //Cooldown check
 	if(!scanning)
 		timing = !timing
+		if(timing)
+			START_PROCESSING(SSobj, src) // run the arming countdown
 	else
 		scanning = FALSE
 	update_icon()
@@ -51,7 +55,8 @@
 		timing = FALSE
 		STOP_PROCESSING(SSobj, src)
 	else
-		START_PROCESSING(SSobj, src)
+		// Securing the sensor only arms detection (event-driven). Per-tick
+		// processing is started lazily when a timing countdown begins.
 		proximity_monitor.SetHost(loc,src)
 	update_icon()
 	return secured
@@ -75,7 +80,7 @@
 
 /obj/item/assembly/prox_sensor/process()
 	if(!timing)
-		return
+		return PROCESS_KILL
 	time--
 	if(time <= 0)
 		timing = FALSE
@@ -143,6 +148,8 @@
 				. = TRUE
 		if("time")
 			timing = !timing
+			if(timing)
+				START_PROCESSING(SSobj, src) // run the arming countdown
 			update_icon()
 			. = TRUE
 		if("input")

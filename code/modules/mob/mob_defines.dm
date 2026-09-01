@@ -1,4 +1,5 @@
 /mob
+	blocks_exit_checks = FALSE // no mob type overrides CheckExit() or Uncross()
 	datum_flags = DF_USE_TAG
 	density = TRUE
 	layer = MOB_LAYER
@@ -24,10 +25,13 @@
 	var/datum/focus
 
 	var/lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
+	var/lighting_cutoff = LIGHTING_CUTOFF_VISIBLE
+	var/list/lighting_color_cutoffs
 	var/datum/mind/mind
 	var/list/datum/action/actions = list()
 	var/list/datum/action/chameleon_item_actions
 	var/static/next_mob_id = 0
+	var/brc_mitigation = 0 // BLUEMOON ADD - GAMMA BRC: мультипликативная защита от пуль/лазеров (0-90)
 
 	var/stat = CONSCIOUS //Whether a mob is alive or dead. TODO: Move this to living - Nodrak
 
@@ -42,6 +46,12 @@
 	var/computer_id = null
 	var/list/logging = list()
 	var/atom/machine = null
+	/// Сколько нативных input()/alert() сейчас висит открытыми у этого моба.
+	/// BYOND держит промпт (и спящий фрейм прока вместе с ним) до ответа ДАЖЕ после
+	/// дисконнекта игрока - такой фрейм пинит моба невидимо для любых ref-сканов.
+	/// Инкрементируется обёртками tgui_input-фолбэков; выводится в warnfail-лог,
+	/// панель GC и итог ref-скана для опознания этого класса держателей.
+	var/pending_native_prompts = 0
 
 	var/next_move = null //Nonmodular as fuck, but it's not like sandstorm will touch this. Ever.
 	var/create_area_cooldown

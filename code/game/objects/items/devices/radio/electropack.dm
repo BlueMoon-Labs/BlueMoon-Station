@@ -152,7 +152,7 @@
 /datum/design/electropack/shockcollar
 	name = "Shockcollar"
 	id = "shockcollar"
-	build_type = AUTOLATHE
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
 	build_path = /obj/item/electropack/shockcollar
 	materials = list(/datum/material/iron = 5000, /datum/material/glass =2000)
 	category = list("hacked", "Misc")
@@ -191,7 +191,7 @@
 				H.adjust_arousal(40, "masochism", maso = TRUE)
 				H.handle_post_sex(HIGH_LUST, null, null) // Big cooldown = high_lust
 				if(prob(30))
-					H.emote(pick("moan", "shiver", "blush"))
+					H.emote(pick("moan", "shiver", "blushh"))
 			else
 				if(prob(30))
 					H.emote(pick("groan", "shiver", "twitch_s"))

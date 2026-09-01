@@ -20,6 +20,30 @@
 	var/maxHealth = 100 //Maximum health that should be possible.
 	var/health = 100 	//A mob's health
 
+	///Фазовый бакет троттла Life дальних мобов: размазывает их обработку по
+	///тикам SSmobs вместо синхронного залпа каждый N-й фаер.
+	var/life_stagger_phase
+	///Отдельный бакет дыхания/органов/прочей внутренней периодики. Не должен
+	///коррелировать с life_stagger_phase внешнего far-throttle.
+	var/life_periodic_phase
+	///Накопленные троттлом секунды Life: доезжают следующим обработанным тиком,
+	///чтобы метаболизм/дыхание/статусы шли в игровом времени, а не в тиках
+	var/life_time_debt = 0
+	///SSmobs.times_fired, раньше которого Life() гарантированно был бы no-op:
+	///подсистема пропускает такого моба, вообще не вызывая Life(). Бронируется
+	///самим троттлом в Life(), сбрасывается в 0 через wake_life() на переходах,
+	///которые делают моба срочным (stat, поджиг, цель ИИ).
+	var/life_next_fire = 0
+	///times_fired последнего ВХОДА в Life(). Нужен, чтобы троттл начислял долг
+	///времени и за те фаеры, которые бакет пропустил мимо Life() целиком.
+	var/life_last_fire = 0
+	///Подпись входов update_mobility() на момент прошлого кэтч-олла в Life.
+	///Пустая строка = пересчитать (см. update_mobility_if_dirty).
+	var/cached_mobility_signature = ""
+	///Подпись цифр, из которых строится HUD здоровья, на момент прошлой отрисовки.
+	///Пустая строка = перерисовать (сбрасывается при пересборке HUD).
+	var/cached_health_hud_signature = ""
+
 	//Damage related vars, NOTE: THESE SHOULD ONLY BE MODIFIED BY PROCS
 	var/bruteloss = 0	//Brutal damage caused by brute force (punching, being clubbed by a toolbox ect... this also accounts for pressure damage)
 	var/oxyloss = 0		//Oxygen depravation damage (no air in lungs)
@@ -77,6 +101,8 @@
 
 	var/list/surgeries = list()	//a list of surgery datums. generally empty, they're added when the player wants them.
 
+	var/flash_overlay_timer_id // Айди stoppable таймера автоснятия flash overlay
+	var/atom/movable/screen/fullscreen/flash_overlay_screen // Объект вспышки в flash_overlay(), привязанный к таймеру выше
 	var/_sterilize_timer_id // BLUEMOON ADD timer for desterilize()
 	var/sterilize_power = 0 // BLUEMOON ADD get buff to chance surg. operations in percent
 	var/_sterilize_expire = 0 // BLUEMOON ADD for cumulative timer effect
@@ -89,6 +115,16 @@
 
 	var/on_fire = 0 //The "Are we on fire?" var
 	var/fire_stacks = 0 //Tracks how many stacks of fire we have on, max is usually 20
+
+	var/cached_gravity_value = -1 //Cached gravity for handle_gravity() optimization — only calls update_gravity() when changed
+	///TRUE, когда cached_gravity_value мог протухнуть (моб переместился). Пока
+	///флаг снят, handle_gravity() не опрашивает has_gravity заново: всё, что
+	///меняет гравитацию без перемещения, зовёт refresh_gravity() само.
+	var/gravity_cache_dirty = TRUE
+
+	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
+	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().
+	var/environment_processing_immune = FALSE
 
 	var/bloodcrawl = 0 //0 No blood crawling, BLOODCRAWL for bloodcrawling, BLOODCRAWL_EAT for crawling+mob devour
 	var/holder = null //The holder for blood crawling

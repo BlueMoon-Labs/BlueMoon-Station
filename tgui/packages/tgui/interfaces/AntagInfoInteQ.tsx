@@ -1,7 +1,8 @@
-import { useBackend, useLocalState } from '../backend';
-import { multiline } from 'common/string';
-import { BlockQuote, Button, Dimmer, Section, Stack } from '../components';
 import { BooleanLike } from 'common/react';
+import { multiline } from 'common/string';
+
+import { useBackend } from '../backend';
+import { BlockQuote, Button, Dimmer, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
 const allystyle = {
@@ -19,7 +20,7 @@ const goalstyle = {
   fontWeight: 'bold',
 };
 
-type Objective = {
+export type Objective = {
   count: number;
   name: string;
   explanation: string;
@@ -39,8 +40,8 @@ type Info = {
   objectives: Objective[];
 };
 
-const ObjectivePrintout = (props, context) => {
-  const { data } = useBackend<Info>(context);
+export const ObjectivePrintout = (props) => {
+  const { data } = useBackend<Info>();
   const {
     objectives,
   } = data;
@@ -61,8 +62,8 @@ const ObjectivePrintout = (props, context) => {
   );
 };
 
-const IntroductionSection = (props, context) => {
-  const { act, data } = useBackend<Info>(context);
+const IntroductionSection = (props) => {
+  const { act, data } = useBackend<Info>();
   const {
     intro,
   } = data;
@@ -80,8 +81,8 @@ const IntroductionSection = (props, context) => {
   );
 };
 
-const EmployerSection = (props, context) => {
-  const { data } = useBackend<Info>(context);
+const EmployerSection = (props) => {
+  const { data } = useBackend<Info>();
   const {
     allies,
     goal,
@@ -128,8 +129,8 @@ const EmployerSection = (props, context) => {
   );
 };
 
-const UplinkSection = (props, context) => {
-  const { data } = useBackend<Info>(context);
+const UplinkSection = (props) => {
+  const { data } = useBackend<Info>();
   const {
     has_uplink,
     uplink_intro,
@@ -167,8 +168,8 @@ const UplinkSection = (props, context) => {
   );
 };
 
-const CodewordsSection = (props, context) => {
-  const { data } = useBackend<Info>(context);
+const CodewordsSection = (props) => {
+  const { data } = useBackend<Info>();
   const {
     phrases,
     responses,
@@ -210,8 +211,8 @@ const CodewordsSection = (props, context) => {
   );
 };
 
-export const AntagInfoInteQ = (props, context) => {
-  const { data } = useBackend<Info>(context);
+export const AntagInfoInteQ = (props) => {
+  const { data } = useBackend<Info>();
   return (
     <Window
       width={620}

@@ -9,14 +9,20 @@
 	equip_delay_other = 25
 	resistance_flags = NONE
 	custom_materials = list(/datum/material/glass = 250)
-	var/vision_flags = 0
+	var/vision_flags = NONE
 	var/darkness_view = 2//Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/invis_override = 0 //Override to allow glasses to set higher than normal see_invis
 	var/lighting_alpha
+	/// Процент среза темноты
+	var/lighting_cutoff = null
+	/// То же самое, но для среза ргб
+	var/list/color_cutoffs = null
 	var/list/icon/current = list() //the current hud icons
 	var/vision_correction = 0 //does wearing these glasses correct some of our vision defects?
 	var/glass_colour_type //colors your vision when worn
+	/// type of glasses used in modular_bluemoon\code\modules\clothing\glasses\cover_blindfolds.dm
+	var/glasses_type
 
 /obj/item/clothing/glasses/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is stabbing \the [src] into [user.ru_ego()] eyes! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -70,7 +76,9 @@
 	darkness_view = 2
 	vision_flags = SEE_TURFS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(5, 15, 5)
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
+	glasses_type = "meson"
 
 /obj/item/clothing/glasses/meson/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is putting \the [src] to [user.ru_ego()] eyes and overloading the brightness! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -89,7 +97,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 35, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/meson/night/update_icon_state()
+	. = ..()
 
 /obj/item/clothing/glasses/meson/night/ert
 	name = "night vision meson scanner"
@@ -100,6 +113,7 @@
 	flash_protect = 1
 	vision_correction = 1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 35, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
 
 /obj/item/clothing/glasses/meson/gar
@@ -114,14 +128,9 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 
-/obj/item/clothing/glasses/meson/eyepatch
-	name = "eyepatch mesons"
-	desc = "A meson system that connects directly to the optical nerve of the user, replacing the need for that useless eyeball."
-	icon_state = "mesonpatch"
-
 /obj/item/clothing/glasses/science
 	name = "science goggles"
-	desc = "A pair of snazzy goggles used to protect against chemical spills. Fitted with an analyzer for scanning items and reagents."
+	desc = "Пара стильных очков для защиты от брызг химикатов. Со встроенным анализатором вещей и жидкостей."
 	icon_state = "purple"
 	item_state = "glasses"
 	clothing_flags = SCAN_REAGENTS //You can see reagents while wearing science goggles
@@ -129,6 +138,7 @@
 	glass_colour_type = /datum/client_colour/glass_colour/purple
 	resistance_flags = ACID_PROOF
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	glasses_type = "sci"
 
 /obj/item/clothing/glasses/science/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == ITEM_SLOT_EYES)
@@ -142,7 +152,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 25, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/night/update_icon_state()
+	. = ..()
 
 /obj/item/clothing/glasses/night/prescription/Initialize(mapload)
 	. = ..()
@@ -161,20 +176,14 @@
 	user.visible_message("<span class='suicide'>[user] is tightening \the [src]'s straps around [user.ru_ego()] neck! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	return OXYLOSS
 
-/obj/item/clothing/glasses/eyepatch
-	name = "eyepatch"
-	desc = "Yarr."
-	icon_state = "eyepatch"
-	item_state = "eyepatch"
-
-/obj/item/clothing/glasses/eyepatch/syndicate
+/obj/item/clothing/glasses/syndicate_eyepatch
 	name = "cybernetic eyepatch"
 	desc = "An eyepatch used to enhance one's aim with guns."
 	icon_state = "syndicatepatch"
 	item_state = "syndicatepatch"
 	resistance_flags = ACID_PROOF
 
-/obj/item/clothing/glasses/eyepatch/syndicate/equipped(mob/living/carbon/human/user, slot)
+/obj/item/clothing/glasses/syndicate_eyepatch/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
 		user.visible_message("<span class='warning'>Circuitry from the eyepatch links itself to your brain as you put on the eyepatch.")
@@ -183,7 +192,7 @@
 		ADD_TRAIT(user, TRAIT_INSANE_AIM, "SYNDICATE_EYEPATCH_AIM")
 		ADD_TRAIT(src, TRAIT_NODROP, "SYNDICATE_EYEPATCH_NODROP")
 
-/obj/item/clothing/glasses/eyepatch/syndicate/dropped(mob/living/carbon/human/user)
+/obj/item/clothing/glasses/syndicate_eyepatch/dropped(mob/living/carbon/human/user)
 	. = ..()
 	if(user.get_item_by_slot(ITEM_SLOT_EYES) != src)
 		return
@@ -363,7 +372,6 @@
 	custom_materials = list(/datum/material/iron = 250)
 	flash_protect = 2
 	tint = 2
-	can_toggle = TRUE
 	visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT
 	flags_cover = GLASSESCOVERSEYES
 	visor_flags_inv = HIDEEYES
@@ -389,12 +397,6 @@
 /obj/item/clothing/glasses/sunglasses/blindfold/dropped(mob/living/carbon/human/user)
 	..()
 	user.cure_blind("blindfold_[REF(src)]")
-
-/obj/item/clothing/glasses/fakeblindfold
-	name = "thin blindfold"
-	desc = "Covers the eyes, but not thick enough to obscure vision. Mostly for aesthetic."
-	icon_state = "blindfoldwhite"
-	item_state = "blindfoldwhite"
 
 /obj/item/clothing/glasses/sunglasses/blindfold/white
 	name = "blind personnel blindfold"
@@ -436,6 +438,7 @@
 	item_state = "glasses"
 	vision_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 8, 5)
 	flash_protect = 0
 	glass_colour_type = /datum/client_colour/glass_colour/red
 
@@ -522,6 +525,8 @@
 	darkness_view = 8
 	clothing_flags = SCAN_REAGENTS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_FULLBRIGHT
+	color_cutoffs = list(30, 30, 30)
 	resistance_flags = LAVA_PROOF | FIRE_PROOF
 
 /obj/item/clothing/glasses/godeye/Initialize(mapload)
@@ -581,6 +586,8 @@
 	darkness_view = 8
 	flash_protect = 2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_FULLBRIGHT
+	color_cutoffs = list(30, 30, 30)
 	glass_colour_type = FALSE
 	clothing_flags = SCAN_REAGENTS
 	vision_flags = SEE_TURFS
@@ -625,3 +632,92 @@
 	desc = "Lookin' cool."
 	icon_state = "phantom_glasses"
 	item_state = "phantom_glasses"
+
+/obj/item/clothing/glasses/veil
+	name = "Veil"
+	desc = "Furui's company have brought this from far lands using culture of Jingdai"
+	icon_state = "veil"
+	item_state = "veil"
+	icon = 'modular_bluemoon/icons/obj/clothing/glasses.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/eyes.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	var/list/poly_colors = list("#FFFFFF","#C5302D")
+
+/obj/item/clothing/glasses/veil/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+/obj/item/clothing/glasses/ar_interface
+	name = "AR glasses"
+	desc = "Очки дополненной реальности, имеют в себе встроенный передатчик NTNet пакетов. К очкам можно привязать устройство, имеющее NTnet приемник, для передачи данных об осматриваемых объектах (используется низкоуровневый протокол передачи)"
+	icon = 'modular_bluemoon/icons/obj/clothing/glasses.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/eyes.dmi'
+	icon_state = "geist_gazers"
+	item_state = "geist_gazers"
+	glass_colour_type = /datum/client_colour/glass_colour/green
+	flags_cover = GLASSESCOVERSEYES
+	var/datum/component/ntnet_interface/net
+	var/datum/component/neural_interface/neural_interface
+	var/list/adresses = list()
+
+/obj/item/clothing/glasses/ar_interface/Initialize(mapload)
+	. = ..()
+	net = LoadComponent(/datum/component/ntnet_interface)
+
+/obj/item/clothing/glasses/ar_interface/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_EYES)
+		return
+	neural_interface = user.LoadComponent(/datum/component/neural_interface)
+	neural_interface.AddSource("AR glasses")
+	RegisterSignal(user, COMSIG_MOB_EXAMINATE, PROC_REF(on_examine_target))
+
+/obj/item/clothing/glasses/ar_interface/dropped(mob/user)
+	. = ..()
+	clear_neural_interface()
+	UnregisterSignal(user, COMSIG_MOB_EXAMINATE)
+
+/obj/item/clothing/glasses/ar_interface/attackby(obj/item/I, mob/living/user)
+	. = ..()
+	var/datum/component/ntnet_interface/net_item
+	var/list/processing_list = list(I)
+	while(processing_list.len && !net_item)
+		var/atom/A = processing_list[1]
+		processing_list.Cut(1, 2)
+		//Byond does not allow things to be in multiple contents, or double parent-child hierarchies, so only += is needed
+		//This is also why we don't need to check against assembled as we go along
+		processing_list += A.contents
+		net_item = A.GetComponent(/datum/component/ntnet_interface)
+
+
+	if(net_item && !adresses.Find(net_item.hardware_id))
+		adresses += net_item.hardware_id
+		to_chat(user, "Вы привязали к очкам интерфейс NTnet: [net_item.hardware_id]")
+
+/obj/item/clothing/glasses/ar_interface/attack_self(mob/user)
+	. = ..()
+	adresses = list()
+	to_chat(user, "Вы отвязали от очков все интерфейсы NTnet")
+
+/obj/item/clothing/glasses/ar_interface/Destroy()
+	adresses = null
+	if(net)
+		QDEL_NULL(net)
+	clear_neural_interface()
+	. = ..()
+
+/obj/item/clothing/glasses/ar_interface/proc/clear_neural_interface()
+	var/datum/component/neural_interface/old_interface = neural_interface
+	neural_interface = null
+	if(!QDELETED(old_interface))
+		old_interface.RemoveSource("AR glasses")
+
+/obj/item/clothing/glasses/ar_interface/proc/on_examine_target(datum/source, atom/target)
+	if(get_dist(get_turf(source), get_turf(target)) > 8)
+		return
+
+	var/datum/netdata/data = new
+	data.recipient_ids = adresses
+	data.data = list(source, target)
+	ntnet_send(data)

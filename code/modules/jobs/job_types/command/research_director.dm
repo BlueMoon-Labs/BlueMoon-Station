@@ -16,6 +16,22 @@
 	exp_requirements = 180
 	exp_type = EXP_TYPE_CREW
 	considered_combat_role = TRUE
+	custom_spawn_text = "эффективно распределяйте очки исследований. Следите за изготовлением и эксплуатацией боевых и технических мехов. Вы - третий в очереди на пост ВрИО капитана."
+	alt_titles = list(
+		"Cybersun Lead Specialist", //Триглав выше, для удобства
+		"Biorobotics Director",
+		"CEO of Sex",
+		"Chief Researcher",
+		"Chief Science Officer",
+		"Head of Research",
+		"Lead Researcher",
+		"Research Manager",
+		"Research Overseer",
+		"Research Supervisor",
+		"Science Administrator",
+		"Sex Research Director",
+		"Silicon Administrator"
+		)
 
 	outfit = /datum/outfit/job/rd
 	departments = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_COMMAND
@@ -25,12 +41,12 @@
 						ACCESS_TOX_STORAGE, ACCESS_TELEPORTER, ACCESS_SEC_DOORS,
 						ACCESS_RESEARCH, ACCESS_ROBOTICS, ACCESS_XENOBIOLOGY, ACCESS_AI_UPLOAD,
 						ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MINERAL_STOREROOM,
-						ACCESS_TECH_STORAGE, ACCESS_MINISAT, ACCESS_MAINT_TUNNELS, ACCESS_NETWORK)
+						ACCESS_TECH_STORAGE, ACCESS_MINISAT, ACCESS_MAINT_TUNNELS, ACCESS_NETWORK, ACCESS_PRODUCTION_SCIENCE)
 	minimal_access = list(ACCESS_RD, ACCESS_HEADS, ACCESS_TOX, ACCESS_GENETICS, ACCESS_MORGUE,
 						ACCESS_TOX_STORAGE, ACCESS_TELEPORTER, ACCESS_SEC_DOORS,
 						ACCESS_RESEARCH, ACCESS_ROBOTICS, ACCESS_XENOBIOLOGY, ACCESS_AI_UPLOAD,
 						ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH, ACCESS_GATEWAY, ACCESS_MINERAL_STOREROOM,
-						ACCESS_TECH_STORAGE, ACCESS_MINISAT, ACCESS_MAINT_TUNNELS, ACCESS_NETWORK)
+						ACCESS_TECH_STORAGE, ACCESS_MINISAT, ACCESS_MAINT_TUNNELS, ACCESS_NETWORK, ACCESS_PRODUCTION_SCIENCE)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SCI
 	bounty_types = CIV_JOB_RD
@@ -56,15 +72,15 @@
 	jobtype = /datum/job/rd
 
 	id = /obj/item/card/id/silver
-	belt = /obj/item/pda/heads/rd
+	belt = /obj/item/modular_computer/pda/heads/rd
 	ears = /obj/item/radio/headset/heads/rd
 	uniform = /obj/item/clothing/under/rank/rnd/research_director
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	suit = /obj/item/clothing/suit/toggle/labcoat/rd
 	l_hand = /obj/item/clipboard
-	l_pocket = /obj/item/laser_pointer
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/laser_pointer)
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director)
 
 	backpack = /obj/item/storage/backpack/science
 	box = /obj/item/storage/box/survival/command
@@ -76,23 +92,23 @@
 	name = "Syndicate Research Director"
 	jobtype = /datum/job/rd
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/heads/rd
 	uniform = /obj/item/clothing/under/rank/captain/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit = /obj/item/clothing/suit/toggle/labcoat
 	l_hand = /obj/item/clipboard
-	l_pocket = /obj/item/laser_pointer
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/research_director
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/laser_pointer,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/research_director, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 

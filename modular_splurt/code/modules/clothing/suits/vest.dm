@@ -30,14 +30,15 @@
 		"Alt" = list("icon_state" = "secmed_armor_alt")
 	)
 
-/obj/item/clothing/suit/armor/vest/bluesheid
+/obj/item/clothing/suit/armor/vest/blueshield
 	name = "blueshield armored vest"
 	desc = "A lightweight vest with a blueshield on it."
 	icon_state = "guard_armor"
 	item_state = "guard_armor"
-	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
+	armor = list("melee" = 35, "bullet" = 35, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
+	brc_mitigation_bonus = 10
 
-/obj/item/clothing/suit/armor/vest/bluesheid/spacecoat
+/obj/item/clothing/suit/armor/vest/blueshield/spacecoat
 	name = "Blueshield Peacekeeper Spacecoat"
 	desc = "A greatcoat enhanced with a special alloy for some extra protection."
 	icon_state = "peacekeeper_spacecoat"
@@ -46,7 +47,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/mob/clothing/suit.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/kovac_shitcode/icons/mob/clothing/suit.dmi'
 
-/obj/item/clothing/suit/armor/vest/bluesheid/jacket
+/obj/item/clothing/suit/armor/vest/blueshield/jacket
 	name = "blueshield armored jacket"
 	desc = "A jacket with a NT logo on it."
 	icon = 'modular_splurt/icons/obj/clothing/suits.dmi'
@@ -54,7 +55,7 @@
 	icon_state = "blueshield_alt"
 	item_state = "blueshield_alt"
 
-/obj/item/clothing/suit/armor/vest/bluesheid/coat
+/obj/item/clothing/suit/armor/vest/blueshield/coat
 	name = "blueshield armored coat"
 	desc = "A fashionable piece of armored style."
 	icon_state = "blueshieldcoat"
@@ -77,10 +78,17 @@
 	dog_fashion = null
 
 /obj/item/clothing/suit/armor/vest/peacekeeper
-	name = "peacekeeper armored vest"
-	desc = "A Type I armored vest that provides decent protection against most types of damage. This one is used by the peace minded officer"
+	name = "peacekeeper's armored vest"
+	desc = "A Type I armored vest that provides decent protection against most types of damage. This one is used by the peace-minded officer."
 	icon_state = "peacekeeper"
 	item_state = "peacekeeper"
+	unique_reskin = list(
+		"Blue" = list(
+			"icon_state" = "bluepeacekeeper",
+			"item_state" = "bluepeacekeeper",
+			"name" = "peacekeeper's blue armored vest",
+			"desc" = "A Type I armored vest that provides decent protection against most types of damage. This one is used by your average peacekeeping force you could think of.")
+	)
 	dog_fashion = null
 
 /obj/item/clothing/suit/armor/vest/metrocop

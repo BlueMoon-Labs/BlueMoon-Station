@@ -157,11 +157,12 @@
 
 ////////////////////////
 
-/obj/item/clothing/neck/tie/dogtag
+/obj/item/clothing/accessory/dogtag
 	name = "Dog tag"
 	desc = "The first tag indicates personal number - AG-003288 and affiliation with the AC mercenaries.  The second tag contains the first and last name - Althea Gantia, along with the blood type."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	slot_flags = ITEM_SLOT_NECK
 	icon_state = "dogtag"
 	item_state = "dogtag"
 
@@ -341,6 +342,16 @@
 	icon_state = "hahun_cape"
 	item_state = "hahun_cape"
 
+/obj/item/clothing/neck/tie/eclipse_cape
+	name = "Eclipse cape"
+	desc = "Дорогой с виду плащ с меховым воротником. На Внутренней стороне можно заметить бирку с золотыми нитями: 'В Награду за борьбу с бандами Габегаторов и налетчиков'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_right.dmi'
+	icon_state = "Eclipse"
+	item_state = "hahun_cape"
+
 /obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon
 	name = "Eidolon's gloves"
 	desc = "Medical gloves with Eidolon Corporation markings, have a built-in computer with information, that tied with medical scan and huds. Have distinctive red-green coloring."
@@ -350,6 +361,53 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	icon_state = "hahun_gloves"
 	item_state = "hahun_gloves"
+	var/hudhealth_overlay_icon_state = "hudhealth"
+	var/hudhealth_overlay_icon = "hudhealth_hardcrit"
+	var/hudhealth_overlay_old_icon_state = ""
+	var/mutable_appearance/hudhealth_overlay
+
+/obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon/Initialize(mapload)
+	hudhealth_overlay = mutable_appearance(mob_overlay_icon, hudhealth_overlay_icon, -13)
+	. = ..()
+
+/obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon/equipped(mob/user, slot)
+	..()
+	if(slot_flags & slot)
+		if(iscarbon(user) && user.stat != DEAD)
+			user.add_overlay(hudhealth_overlay)
+			RegisterSignal(user, COMSIG_CARBON_UPDATEHEALTH, PROC_REF(update_damage), user)
+
+/obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon/dropped(mob/user)
+	..()
+	user.cut_overlay(hudhealth_overlay)
+	UnregisterSignal(user, COMSIG_CARBON_UPDATEHEALTH)
+
+/obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon/proc/update_damage(mob/living/carbon/user)
+	if(user.stat == DEAD)
+		return
+	var/healthpercent = (user.health/user.maxHealth) * 100
+	switch(healthpercent)
+		if(100 to INFINITY)
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_full"
+		if(65 to 100)
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_mid"
+		if(35 to 65)
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_lower"
+		if(0 to 25)
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_low"
+		if(-99 to 0)
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_crit"
+		else
+			hudhealth_overlay_icon = hudhealth_overlay_icon_state + "_hardcrit"
+	if(hudhealth_overlay_old_icon_state != hudhealth_overlay_icon)
+		update_healthbar_overlay(user)
+
+/obj/item/clothing/gloves/color/latex/nitrile/hahun_eidolon/proc/update_healthbar_overlay(mob/living/carbon/user)
+	user.cut_overlay(hudhealth_overlay)
+	hudhealth_overlay = mutable_appearance(mob_overlay_icon, hudhealth_overlay_icon, -13)
+	hudhealth_overlay_old_icon_state = hudhealth_overlay_icon
+	user.add_overlay(hudhealth_overlay)
+	user.update_icon(UPDATE_OVERLAYS)
 
 /obj/item/modkit/hahun_eidolon_nitrile
 	name = "Eidolon medical gloves Kit"
@@ -395,18 +453,21 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-irellia"
 	desc = "Banner of the Irellia"
+	inspiration_available = FALSE
 
 /obj/item/banner/rohai
 	name = "Banner of the Rohai empire"
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-rohai"
 	desc = "Banner of the Rohai empire"
+	inspiration_available = FALSE
 
 /obj/item/banner/norn
 	name = "Banner of kingdom Norn"
 	icon = 'modular_bluemoon/fluffs/icons/obj/accessories.dmi'
 	icon_state = "banner-norn"
 	desc = "Banner of kingdom Norn"
+	inspiration_available = FALSE
 
 //////////////////////// БАНЕРЫ
 
@@ -435,3 +496,40 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_right.dmi'
 
 ////////////////////////
+
+/obj/item/clothing/glasses/cover/infovisor
+	name = "infovisor"
+	desc = "A standard old-generation visor that allows you to quickly survey the area."
+	can_switch_eye = FALSE
+	icon_state = "visor"
+	item_state = "visor"
+	base_icon_state = "visor"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+
+/obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	name = "Pilots Federation Badge"
+	desc = "Золотой жетон выполненный в форме эмблемы Федерации Пилотов и обозначающий принадлежность к ней."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	icon_state = "pilot_badge"
+	item_state = "pilot_badge"
+	above_suit = TRUE
+
+/obj/item/clothing/accessory/medal/vulpix_pilot_badge/attack_self(mob/user)
+	if(Adjacent(user))
+		user.visible_message("<span class='notice'>[user] shows you: [icon2html(src, viewers(user))] [src.name].</span>", \
+					"<span class='notice'>You show \the [src.name].</span>")
+		add_fingerprint(user)
+	user.point_bubble(src)
+
+/obj/item/storage/box/wypmcbox
+	name = "Arctic PMC kit"
+	desc = "Military box that contains a full kit of Arctic PMC."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/wypmcbox/PopulateContents()
+	new /obj/item/modkit/wypmchelmet(src)
+	new /obj/item/modkit/wypmcjacket(src)
+	new /obj/item/modkit/wypmcberet(src)
+

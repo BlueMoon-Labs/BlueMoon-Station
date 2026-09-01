@@ -17,6 +17,8 @@
 		return
 
 	if (sender == "Voice in head")
+		M.balloon_alert(M, "Голос в голове")
+		SEND_SOUND(M, sound('sound/effects/ghost2.ogg'))
 		to_chat(M, "<i>Вы слышите голос в голове... <b>[msg]</i></b>")
 	else
 		var/mob/living/carbon/human/H = M
@@ -29,6 +31,10 @@
 			to_chat(usr, "The person you are trying to contact is not wearing a headset. Unsent message: [msg]")
 			return
 
+		var/channel_name = sender == RADIO_CHANNEL_SYNDICATE ? "Синдиката" : "ЦК"
+		var/channel_sound = sender == RADIO_CHANNEL_SYNDICATE ? 'sound/ambience/antag/TatorAlert.ogg' : 'sound/machines/signal.ogg'
+		H.balloon_alert(H, "Получена передача от [channel_name]")
+		SEND_SOUND(H, sound(channel_sound))
 		to_chat(H, "Вы слышите щелчок в ухе прежде, чем голос в вашей голове начинает говорить.  \"Прослушайте сообщение от [sender == RADIO_CHANNEL_SYNDICATE ? "ваших нанимателей" : "ЦК"].  Содержание сообщения[sender == RADIO_CHANNEL_SYNDICATE ? ", агент." : ":"] <span class='bold'>[msg].</span> Конец сообщения.\"")
 
 

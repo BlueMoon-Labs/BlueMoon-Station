@@ -23,8 +23,18 @@
 		new /atom/movable/screen/escape_menu/home_button(
 			null,
 			src,
-			"Остановить Звуки",
+			"Настройки персонажа",
 			/* offset = */ 2,
+			CALLBACK(src, PROC_REF(home_open_character_prefs)),
+		)
+	)
+
+	page_holder.give_screen_object(
+		new /atom/movable/screen/escape_menu/home_button(
+			null,
+			src,
+			"Остановить Звуки",
+			/* offset = */ 3,
 			CALLBACK(src, PROC_REF(home_stop_sounds)),
 		)
 	)
@@ -34,7 +44,7 @@
 			null,
 			src,
 			"Покинуть Тело",
-			/* offset = */ 3,
+			/* offset = */ 4,
 			CALLBACK(src, PROC_REF(open_leave_body)),
 		)
 	)
@@ -44,7 +54,7 @@
 			null,
 			src,
 			"Включить/Выключить Полноэкранный Режим",
-			/* offset = */ 5,
+			/* offset = */ 6,
 			CALLBACK(src, PROC_REF(home_fullscreen)),
 		)
 	)
@@ -53,6 +63,11 @@
 	qdel(src)
 
 /datum/escape_menu/proc/home_open_settings()
+	client?.prefs.ui_interact(client?.mob)
+	qdel(src)
+
+/datum/escape_menu/proc/home_open_character_prefs()
+	client?.prefs.current_tab = 0
 	client?.prefs.ShowChoices(client?.mob)
 	qdel(src)
 
@@ -81,7 +96,7 @@
 	offset,
 	on_click_callback,
 )
-	. = ..()
+	. = ..(mapload, null)
 
 	src.escape_menu = escape_menu
 	src.on_click_callback = on_click_callback
@@ -97,8 +112,14 @@
 	transform = transform.Scale(6, 1)
 
 /atom/movable/screen/escape_menu/home_button/Destroy()
+	maptext = null
+	filters = null
+	if(home_button_text)
+		vis_contents -= home_button_text
+		home_button_text.moveToNullspace()
 	escape_menu = null
 	QDEL_NULL(on_click_callback)
+	QDEL_NULL(home_button_text)
 
 	return ..()
 
@@ -106,13 +127,16 @@
 	if (!enabled())
 		return
 
-	on_click_callback.InvokeAsync()
+	if(on_click_callback)
+		on_click_callback.InvokeAsync()
 
 /atom/movable/screen/escape_menu/home_button/MouseEntered(location, control, params)
-	home_button_text.set_hovered(TRUE)
+	if(home_button_text)
+		home_button_text.set_hovered(TRUE)
 
 /atom/movable/screen/escape_menu/home_button/MouseExited(location, control, params)
-	home_button_text.set_hovered(FALSE)
+	if(home_button_text)
+		home_button_text.set_hovered(FALSE)
 
 /atom/movable/screen/escape_menu/home_button/proc/text_color()
 	return enabled() ? "white" : "gray"
@@ -122,16 +146,16 @@
 
 // Needs to be separated so it doesn't scale
 /atom/movable/screen/escape_menu/home_button_text
-	maptext_width = 200
+	maptext_width = 280
 	maptext_height = 50
-	pixel_x = -80
+	pixel_x = -100
 
 	VAR_PRIVATE
 		button_text
 		hovered = FALSE
 
 /atom/movable/screen/escape_menu/home_button_text/Initialize(mapload, button_text)
-	. = ..()
+	. = ..(mapload, null)
 
 	src.button_text = button_text
 	update_text()
@@ -165,6 +189,14 @@
 
 	if(escape_menu?.client)
 		RegisterSignal(escape_menu.client, COMSIG_CLIENT_MOB_LOGIN, PROC_REF(on_client_mob_login))
+
+/atom/movable/screen/escape_menu/home_button/leave_body/Destroy()
+	// Снимаем по владельцу, выданному держателем: escape_menu.client к этому моменту мог
+	// обнулиться, и тогда подписка молча оставалась в client.comp_lookup и держала кнопку.
+	var/client/subscribed_to = owner_client || escape_menu?.client
+	if(subscribed_to)
+		UnregisterSignal(subscribed_to, COMSIG_CLIENT_MOB_LOGIN)
+	return ..()
 
 /atom/movable/screen/escape_menu/home_button/leave_body/enabled()
 	if (!..())

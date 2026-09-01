@@ -1,6 +1,22 @@
 #define MINING_MESSAGE_COOLDOWN 20
 
-/**********************Mineral deposits**************************/
+/// Цели сглаживания минеральных турфов, ОДИН список на весь мир.
+///
+/// Именно глобалка, а не типовой дефолт и не сборка в Initialize. Типовой дефолт вида
+/// `canSmoothWith = list(...)` в DM НЕ общий: инициализатор-выражение вычисляется на каждом
+/// инстансе заново, и семьдесят тысяч минеральных турфов карты получали семьдесят тысяч
+/// двухэлементных списков (проверено юнит-тестом mineral_smoothing_list_is_shared: два
+/// турфа держали разные объекты). Штатный дедуп через typelist() сюда тоже не достаёт -
+/// /turf/Initialize объявлен SHOULD_CALL_PARENT(FALSE) и до строки
+/// `canSmoothWith = typelist(...)` в /atom/Initialize не доходит вовсе.
+///
+/// Списки только читаются (is_type_in_list в can_area_smooth/smooth_icon), поэтому общий
+/// объект безопасен. Тип, которому нужен свой набор, присваивает его как раньше.
+GLOBAL_LIST_INIT(mineral_smooth_targets, list(/turf/closed/mineral, /turf/closed/indestructible))
+/// То же для подтипов, которые сглаживаются со всем закрытым (снежные горы, эшплэнет).
+GLOBAL_LIST_INIT(closed_turf_smooth_targets, list(/turf/closed))
+
+/**********************Mineral deposits*************************/
 
 /turf/closed/mineral //wall piece
 	name = "rock"
@@ -15,9 +31,9 @@
 	blocks_air = TRUE
 	layer = EDGED_TURF_LAYER
 	initial_temperature = 293.15
+	temperature = 293.15
 	// base_icon_state = "smoothrocks"
 	var/smooth_icon = 'icons/turf/smoothrocks.dmi'
-	var/environment_type = "asteroid"
 	var/turf/open/floor/plating/turf_type = /turf/open/floor/plating/asteroid/airless
 	var/obj/item/stack/ore/mineralType = null
 	var/mineralAmt = 3
@@ -28,8 +44,8 @@
 	var/weak_turf = FALSE
 
 /turf/closed/mineral/Initialize(mapload)
-	if (!canSmoothWith)
-		canSmoothWith = list(/turf/closed/mineral, /turf/closed/indestructible)
+	if(!canSmoothWith)
+		canSmoothWith = GLOB.mineral_smooth_targets
 	. = ..()
 	var/matrix/M = new
 	M.Translate(-4, -4)
@@ -79,12 +95,16 @@
 		to_chat(user, "<span class='notice'>You start picking...</span>")
 
 		if(I.use_tool(src, user, 40, volume=50))
-			var/range = I.digrange //Store the current digrange so people don't cheese digspeed swapping for faster mining
+			// Snap center to firer's turf (not another movable / ambiguity while pulling dense objects).
+			var/turf/user_turf = get_turf(user)
+			if(!isturf(user_turf))
+				return
+			var/dig_radius = I.digrange // Store digrange so people don't cheese digs by swapping mid-action
 			var/list/dug_tiles = list()
 			if(ismineralturf(src))
 				if(I.digrange > 0)
-					for(var/turf/closed/mineral/M in range(user,range))
-						if(get_dir(user,M) & user.dir)
+					for(var/turf/closed/mineral/M in range(dig_radius, user_turf))
+						if(get_dir(user, M) & user.dir)
 							M.gets_drilled(user)
 							dug_tiles += M
 				to_chat(user, "<span class='notice'>You finish cutting into the rock.</span>")
@@ -209,7 +229,6 @@
 				var/turf/closed/mineral/M = T
 				M.turf_type = src.turf_type
 				M.mineralAmt = rand(1, 5)
-				M.environment_type = src.environment_type
 				src = M
 				M.levelupdate()
 			else
@@ -228,7 +247,6 @@
 		/obj/item/stack/ore/silver = 50, /obj/item/stack/ore/plasma = 50, /obj/item/stack/ore/bluespace_crystal = 20)
 
 /turf/closed/mineral/random/high_chance/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
@@ -251,7 +269,6 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 
 /turf/closed/mineral/random/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
@@ -269,9 +286,10 @@
 	smooth_icon = 'icons/turf/walls/mountain_wall.dmi'
 	icon_state = "mountainrock"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	defer_change = TRUE
-	environment_type = "snow"
 	turf_type = /turf/open/floor/plating/asteroid/snow/icemoon
 	baseturfs = /turf/open/floor/plating/asteroid/snow/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
@@ -314,7 +332,6 @@
 		/turf/closed/mineral/gibtonite = 2)
 
 /turf/closed/mineral/random/labormineral/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
@@ -332,9 +349,10 @@
 	icon_state = "mountainrock"
 	// base_icon_state = "mountain_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	defer_change = TRUE
-	environment_type = "snow"
 	turf_type = /turf/open/floor/plating/asteroid/snow/icemoon
 	baseturfs = /turf/open/floor/plating/asteroid/snow/icemoon
 	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
@@ -358,7 +376,6 @@
 	scan_state = "rock_Iron"
 
 /turf/closed/mineral/iron/ice
-	environment_type = "snow_cavern"
 	icon_state = "icerock_iron"
 	smooth_icon = 'icons/turf/walls/icerock_wall.dmi'
 	// base_icon_state = "icerock_wall"
@@ -377,7 +394,6 @@
 	scan_state = "rock_Diamond"
 
 /turf/closed/mineral/diamond/ice
-	environment_type = "snow_cavern"
 	icon_state = "icerock_diamond"
 	smooth_icon = 'icons/turf/walls/icerock_wall.dmi'
 	// base_icon_state = "icerock_wall"
@@ -392,7 +408,6 @@
 	scan_state = "rock_Gold"
 
 /turf/closed/mineral/gold/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
@@ -416,7 +431,6 @@
 	scan_state = "rock_Plasma"
 
 /turf/closed/mineral/plasma/ice
-	environment_type = "snow_cavern"
 	icon_state = "icerock_plasma"
 	smooth_icon = 'icons/turf/walls/icerock_wall.dmi'
 	// base_icon_state = "icerock_wall"
@@ -437,20 +451,17 @@
 	scan_state = "rock_BScrystal"
 
 /turf/closed/mineral/bscrystal/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	defer_change = TRUE
 
 /turf/closed/mineral/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt
 	baseturfs = /turf/open/floor/plating/asteroid/basalt
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 
 /turf/closed/mineral/volcanic/lava_land_surface
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	defer_change = TRUE
@@ -462,10 +473,11 @@
 	icon_state = "rock2"
 	// base_icon_state = "rock_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/ashplanet/wateryrock
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
-	environment_type = "waste"
 	turf_type = /turf/open/floor/plating/ashplanet/rocky
 	defer_change = TRUE
 
@@ -476,10 +488,11 @@
 	icon_state = "mountainrock"
 	// base_icon_state = "mountain_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/asteroid/snow
 	initial_gas_mix = FROZEN_ATMOS
-	environment_type = "snow"
 	turf_type = /turf/open/floor/plating/asteroid/snow
 	defer_change = TRUE
 
@@ -495,9 +508,10 @@
 	icon_state = "icerock"
 	// base_icon_state = "icerock_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/asteroid/snow/ice
-	environment_type = "snow_cavern"
 	turf_type = /turf/open/floor/plating/asteroid/snow/ice
 
 /turf/closed/mineral/snowmountain/cavern/icemoon
@@ -596,14 +610,12 @@
 
 
 /turf/closed/mineral/gibtonite/volcanic
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	defer_change = TRUE
 
 /turf/closed/mineral/gibtonite/ice
-	environment_type = "snow_cavern"
 	icon_state = "icerock_Gibtonite"
 	smooth_icon = 'icons/turf/walls/icerock_wall.dmi'
 	// base_icon_state = "icerock_wall"
@@ -621,7 +633,6 @@
 /turf/closed/mineral/strong
 	name = "Very strong rock"
 	desc = "Seems to be stronger than the other rocks in the area. Only a master of mining techniques could destroy this."
-	environment_type = "basalt"
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
@@ -667,5 +678,26 @@
 
 /turf/closed/mineral/strong/ex_act(severity, target, origin)
 	return
+
+// Общий на весь мир набор целей сглаживания для подтипов, которые сглаживаются со всем
+// закрытым. Присваивание идёт ДО ..(), потому что /turf/closed/mineral/Initialize подставляет
+// свой набор всем, у кого canSmoothWith пуст. Отдельными проками, а не типовыми дефолтами:
+// типовой дефолт `list(...)` в DM строится заново на каждом инстансе, см. комментарий у
+// GLOB.mineral_smooth_targets в начале файла.
+/turf/closed/mineral/random/snow/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/random/labormineral/ice/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/ash_rock/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/snowmountain/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
 
 #undef MINING_MESSAGE_COOLDOWN

@@ -1,6 +1,5 @@
-import { Stack } from '../components';
-
 import { useBackend } from '../backend';
+import { Stack } from '../components';
 import { Window } from '../layouts';
 import { ChemFilterPane } from './ChemFilter';
 
@@ -8,8 +7,8 @@ type BloodFilterData = {
   whitelist: string[];
 };
 
-export const BloodFilter = (props, context) => {
-  const { data } = useBackend<BloodFilterData>(context);
+export const BloodFilter = (props) => {
+  const { data } = useBackend<BloodFilterData>();
   const { whitelist = [] } = data;
 
   return (

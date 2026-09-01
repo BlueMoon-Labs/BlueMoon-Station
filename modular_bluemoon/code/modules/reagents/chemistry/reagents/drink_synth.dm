@@ -112,7 +112,7 @@
 	M.drowsyness = max(0,M.drowsyness-3)
 	M.AdjustSleeping(-40, FALSE)
 	M.adjust_bodytemperature(25 * TEMPERATURE_DAMAGE_COEFFICIENT, 0, BODYTEMP_NORMAL)
-	if(holder.has_reagent(/datum/reagent/consumable/frostoil))
+	if(holder?.has_reagent(/datum/reagent/consumable/frostoil))
 		holder.remove_reagent(/datum/reagent/consumable/frostoil, 5)
 
 /**
@@ -196,7 +196,7 @@
 		return
 	if(!knew_encoded)
 		to_chat(M, "<span class='warning'>С исчезновением реагента из вашей системы вы теряете возможность общаться на закодированном. Увы...</span>")
-		M.remove_language(/datum/language/machine, TRUE, TRUE, LANGUAGE_ALL)
+		M.remove_language(/datum/language/machine, source = LANGUAGE_ALL)
 
 /datum/reagent/consumable/synthdrink/synthanol/codelibre
 	name = "Code Libre"
@@ -217,12 +217,12 @@
 
 /datum/reagent/consumable/synthdrink/synthanol/uplink
 	name = "Uplink"
-	description = "Pact with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
+	description = "PACT with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
 	color = "#d9ff00"
 	glass_icon_state = "uplink"
 	synthetic_taste = "проведения EMAGом по позитронному мозгу..."
 	glass_name = "glass of Uplink"
-	glass_desc = "Pact with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
+	glass_desc = "PACT with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
 	boozepwr = 90
 	value = REAGENT_VALUE_RARE
 	quality = DRINK_VERYGOOD
@@ -416,7 +416,7 @@
 	if(M.client.prefs.erppref == "No" || !M.client.prefs.arousable || (M.client.prefs.cit_toggles & NO_APHRO))
 		return
 	if((prob(min(current_cycle/2,5))))
-		M.emote(pick("moan","blush"))
+		M.emote(pick("moan","blushh"))
 	if(prob(min(current_cycle/4,10)))
 		var/aroused_message = pick("Вы ощущаете лёгкий перегрев...", "Ваши актюаторы работают в ускоренном режиме...", "Ваши гормональные протоколы дают сбой...", "Ваш корпус подрагивает от желания...")
 		to_chat(M, "<span class='userlove'>[aroused_message]</span>")

@@ -44,8 +44,8 @@
 /datum/component/wet_floor/Destroy()
 	STOP_PROCESSING(SSwet_floors, src)
 	var/turf/T = parent
-	qdel(T.GetComponent(/datum/component/slippery))
 	if(istype(T))		//If this is false there is so many things wrong with it.
+		qdel(T.GetComponent(/datum/component/slippery))
 		T.cut_overlay(current_overlay)
 	else
 		stack_trace("Warning: Wet floor component wasn't on a turf when being destroyed! This is really bad!")
@@ -91,7 +91,8 @@
 			lube_flags = SLIDE_ICE | GALOSHES_DONT_HELP
 		if(TURF_WET_SUPERLUBE)
 			intensity = 120
-			lube_flags = SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING
+			// BLUEMOON CHANGE - суперлубрикант отправляет в полёт в космос, а не катит 4 тайла
+			lube_flags = SLIDE | GALOSHES_DONT_HELP | SLIP_WHEN_CRAWLING | SLIDE_INTO_SPACE
 		else
 			qdel(parent.GetComponent(/datum/component/slippery))
 			return
@@ -114,9 +115,14 @@
 
 /datum/component/wet_floor/process()
 	var/turf/open/T = parent
+	if(!istype(T))
+		qdel(src)
+		return
+	var/datum/gas_mixture/environment = T.return_air()
 	var/diff = world.time - last_process
 	var/decrease = 0
 	var/t = T.GetTemperature()
+	var/p = environment.return_pressure()
 	switch(t)
 		if(-INFINITY to T0C)
 			add_wet(TURF_WET_ICE, max_time_left())			//Water freezes into ice!
@@ -125,13 +131,15 @@
 		if(T0C + 100 to INFINITY)
 			decrease = INFINITY
 	decrease = max(0, decrease)
-	if((is_wet() & TURF_WET_ICE) && t > T0C)		//Ice melts into water!
+	if((is_wet() & TURF_WET_ICE) && (t > T0C || p < ONE_ATMOSPHERE / 3))		//Ice melts into water! От давления тоже
 		for(var/obj/O in T.contents)
 			if(O.obj_flags & FROZEN)
 				O.make_unfrozen()
 		add_wet(TURF_WET_WATER, max_time_left())
 		dry(null, TURF_WET_ICE)
-	dry(null, ALL, FALSE, decrease)
+	// BLUEMOON ADDITION - суперсмазка не высыхает сама по себе, убрать её может только уборка.
+	// Сила порога - TURF_WET_LUBE: всё слабее высыхает, суперсмазка (сильнее) - нет.
+	dry(null, TURF_WET_LUBE, FALSE, decrease)
 	check()
 	last_process = world.time
 
@@ -148,6 +156,7 @@
 /datum/component/wet_floor/PreTransfer()
 	var/turf/O = parent
 	O.cut_overlay(current_overlay)
+	STOP_PROCESSING(SSwet_floors, src)
 	//That turf is no longer slippery, we're out of here
 	//Slippery components don't transfer due to callbacks
 	qdel(O.GetComponent(/datum/component/slippery))
@@ -159,6 +168,8 @@
 	T.add_overlay(current_overlay)
 	//Make sure to add/update any slippery component on the new turf (update_flags calls LoadComponent)
 	update_flags()
+	if(!permanent)
+		START_PROCESSING(SSwet_floors, src)
 
 	//NB it's possible we get deleted after this, due to inherit
 

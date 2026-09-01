@@ -38,7 +38,7 @@
 	desc = "The circuit board for a Cryptocurrency Miner."
 	id = "cryptominer"
 	build_path = /obj/item/circuitboard/machine/cryptominer
-	category = list("Misc. Machinery")
+	category = list("Cargo Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/board/cryptominer/syndie
@@ -46,7 +46,7 @@
 	desc = "The circuit board for a Syndicate Cryptocurrency Miner."
 	id = "cryptominersyndie"
 	build_path = /obj/item/circuitboard/machine/cryptominer/syndie
-	category = list("Misc. Machinery")
+	category = list("Cargo Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 
 //BS miner
@@ -55,5 +55,5 @@
 	desc = "The circuit board for a Bluespace Miner."
 	id = "bluespace_miner"
 	build_path = /obj/item/circuitboard/machine/bluespace_miner
-	category = list("Misc. Machinery")
+	category = list("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_ENGINEERING

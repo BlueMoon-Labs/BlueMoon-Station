@@ -22,10 +22,9 @@
 
 /obj/item/assembly/health/toggle_secure()
 	secured = !secured
-	if(secured && scanning)
+	if(secured && scanning) //scanning state survives the unsecure/attach cycle, processing just pauses while unsecured
 		START_PROCESSING(SSobj, src)
 	else
-		scanning = FALSE
 		STOP_PROCESSING(SSobj, src)
 	update_icon()
 	return secured

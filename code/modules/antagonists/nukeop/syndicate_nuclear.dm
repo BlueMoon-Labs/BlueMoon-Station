@@ -50,7 +50,7 @@
 
 /datum/antagonist/syndicate_op/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ops.ogg',100,0)
-	to_chat(owner, "<span class='notice'>Вы Оперативник Синдиката!</span>")
+	to_chat(owner, "<span class='syndicate_big'>Вы Оперативник Синдиката!</span>")
 	owner.announce_objectives()
 
 /datum/antagonist/syndicate_op/on_gain()
@@ -105,7 +105,7 @@
 	owner.current.forceMove(GLOB.syndiop_start[((team_number - 1) % GLOB.syndiop_start.len) + 1])
 
 /datum/antagonist/syndicate_op/leader/move_to_spawnpoint()
-	owner.current.forceMove(pick(GLOB.nukeop_leader_start))
+	owner.current.forceMove(pick(GLOB.syndiop_leader_start))
 
 /datum/antagonist/syndicate_op/create_team(datum/team/nuclear/new_team)
 	if(!new_team)
@@ -339,7 +339,7 @@
 	text += "<br>"
 	text += "(Syndicate used [TC_uses] CR) [purchases]"
 	if(TC_uses == 0 && SSticker.mode.station_was_nuked && !operatives_dead())
-		text += "<BIG>[icon2html('icons/badass.dmi', world, "badass")]</BIG>"
+		text += "<BIG>[icon2html('icons/BadAss.dmi', world, "badass")]</BIG>"
 
 	parts += text
 
@@ -461,13 +461,27 @@
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/engi/syndi
 	internals_slot = ITEM_SLOT_RPOCKET
 	belt = /obj/item/storage/belt/military
-	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
-	/obj/item/clothing/accessory/permit=1,\
-	/obj/item/tank/jetpack/oxygen/harness=1,\
-	/obj/item/gun/ballistic/automatic/pistol=1,\
+	accessory = list(/obj/item/clothing/accessory/permit/special/disk_keeper)
+	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,
+	/obj/item/tank/jetpack/oxygen/harness=1,
+	/obj/item/gun/ballistic/automatic/pistol=1,
 	/obj/item/kitchen/knife/combat/survival)
 
 	uplink_type = /obj/item/syndicate_uplink
+	tc = 60
+
+/datum/outfit/syndicate/lone/post_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
+	. = ..()
+	var/obj/item/card/id/syndicate/W = H.wear_id
+	W.registered_name = H.real_name
+	W.assignment = "Syndicate Nuclear Disk Protector"
+	W.special_assignment = "syndicate"
+	W.update_label()
+	W.update_appearance()
+	H.sec_hud_set_ID()
+
+/datum/outfit/syndicate/lone/extended
+	name = "Lone Operative (Extended)"
 	tc = 120
 
 /datum/outfit/syndicate/syndiesquad
@@ -504,7 +518,7 @@
 	W.access = get_all_accesses()+get_centcom_access("Death Commando")+get_all_syndicate_access()//They get full station access.
 	W.assignment = "Syndicate Special Forces"
 	W.registered_name = H.real_name
-	W.update_label(W.registered_name, W.assignment)
+	W.update_label()
 
 	var/obj/item/implant/weapons_auth/Q = new
 	Q.implant(H)

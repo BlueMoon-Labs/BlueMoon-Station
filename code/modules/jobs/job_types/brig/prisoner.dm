@@ -1,3 +1,5 @@
+GLOBAL_LIST_EMPTY(roundstart_prisoners)
+
 /datum/job/prisoner
 	title = "Prisoner"
 	flag = PRISONER
@@ -8,13 +10,16 @@
 	spawn_positions = 6
 	supervisors = "the security team"
 	random_spawns_possible = FALSE
+	custom_spawn_text = "если вы НАЧАЛИ смену за заключённого, вы ОБЯЗАНЫ пройти к бригу для проведения процедуры заключения. Вам ЗАПРЕЩЕНО совершать побег без уведомления администрации, только если вашей жизни не угрожает опасность."
 	alt_titles = list(
-		"Minimum Security Prisoner",
-		"Maximum Security Prisoner",
-		"SuperMax Security Prisoner",
+		"Prison Slut", // Сортировка по уровню опасности.
+		"Security Slave",
 		"Protective Custody Prisoner",
-		"Prison Slut",
-		"Security Slave"
+		"Minimum Security Prisoner",
+		"Low Security Prisoner",
+		"High Security Prisoner",
+		"Max Security Prisoner",
+		"Supermax Security Prisoner"
 		)
 
 	outfit = /datum/outfit/job/prisoner
@@ -35,7 +40,7 @@
 /datum/job/prisoner/get_roundstart_spawn_point()
 	return get_latejoin_spawn_point()
 
-/datum/job/prisoner/after_spawn(mob/living/carbon/human/H, client/C)
+/datum/job/prisoner/after_spawn(mob/living/carbon/human/H, client/player_client, latejoin)
 	. = ..()
 	var/list/policies = CONFIG_GET(keyed_list/policy)
 	var/policy = policies[POLICYCONFIG_JOB_PRISONER]
@@ -44,6 +49,8 @@
 		to_chat(found, "<br><span class='userdanger'>!!READ THIS!!</span><br><span class='warning'>The following is server-specific policy configuration and overrides anything said above if conflicting.</span>")
 		to_chat(found, "<br><br>")
 		to_chat(found, "<span class='boldnotice'>[policy]</span>")
+	if(!latejoin)
+		GLOB.roundstart_prisoners += WEAKREF(H)
 
 /datum/outfit/job/prisoner
 	name = "Prisoner"

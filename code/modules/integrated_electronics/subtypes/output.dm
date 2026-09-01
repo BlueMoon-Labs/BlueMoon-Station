@@ -1,3 +1,11 @@
+/// Через сколько экран имеет право повторить то же самое значение ещё раз.
+///
+/// Дедуп по значению без этого окна глушил повторяющуюся тревогу навсегда: датчик движения,
+/// написавший "INTRUDER" на первом нарушителе, на всех следующих молчал до конца раунда,
+/// потому что строка не менялась. Окно возвращает повтор, не возвращая спама: самопульс
+/// дёргает do_work() по нескольку раз в секунду, тут же он ограничен одной строкой в 10 с.
+#define SCREEN_REBROADCAST_WINDOW (10 SECONDS)
+
 /obj/item/integrated_circuit/output
 	category_text = "Output"
 
@@ -13,14 +21,42 @@
 	power_draw_per_use = 10
 	var/eol = "&lt;br&gt;"
 	var/stuff_to_display = null
+	///Что экран показал в прошлый раз. Нужен, чтобы не транслировать одно и то же по кругу.
+	var/last_broadcast = null
+	///world.time прошлой трансляции. По нему дедуп перевзводится через SCREEN_REBROADCAST_WINDOW.
+	var/last_broadcast_time = 0
 
 /obj/item/integrated_circuit/output/screen/disconnect_all()
 	..()
 	stuff_to_display = null
+	last_broadcast = null
+	last_broadcast_time = 0
 
 /obj/item/integrated_circuit/output/screen/power_fail()
 	. = ..()
 	stuff_to_display = null
+	last_broadcast = null
+	last_broadcast_time = 0
+
+/**
+ * Возвращает TRUE, если экрану есть что сказать, и запоминает сказанное.
+ *
+ * Сборка на самопульсе дёргает do_work() по нескольку раз в секунду, и до этой проверки
+ * каждый такой пульс стоил viewers() + to_chat с icon2html и строки в circuit.html.
+ * За раунд 10137 одна такая сборка написала 1520 строк - 68% всего файла лога - с
+ * значением, которое ни разу не поменялось.
+ *
+ * Дедуп по значению держится ТОЛЬКО в пределах SCREEN_REBROADCAST_WINDOW. Вечный дедуп
+ * ломал ровно тот сценарий, ради которого экран и ставят: датчик движения, подающий на него
+ * "INTRUDER", звучал один раз за раунд - вторая и все следующие тревоги давали ту же строку
+ * и молча съедались. Повторяющееся сообщение - это событие, а не шум.
+ */
+/obj/item/integrated_circuit/output/screen/proc/display_changed()
+	if(stuff_to_display == last_broadcast && world.time <= last_broadcast_time + SCREEN_REBROADCAST_WINDOW)
+		return FALSE
+	last_broadcast = stuff_to_display
+	last_broadcast_time = world.time
+	return TRUE
 
 /obj/item/integrated_circuit/output/screen/any_examine(mob/user)
 	var/shown_label = ""
@@ -46,7 +82,8 @@
 
 /obj/item/integrated_circuit/output/screen/large/do_work()
 	..()
-
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(2, host.loc))
@@ -63,6 +100,8 @@
 
 /obj/item/integrated_circuit/output/screen/extralarge/do_work()
 	..()
+	if(!display_changed())
+		return
 	var/atom/host = assembly || src
 	var/list/mobs = list()
 	for(var/mob/M in viewers(7, host.loc))
@@ -323,8 +362,15 @@
 		var/list/new_network = get_pin_data(IC_INPUT, 4)
 		if(!isnull(cam_name))
 			camera.c_tag = cam_name
-		if(!isnull(new_network))
-			camera.network = new_network
+		//Пин объявлен списком, но в схему можно подать в него что угодно. Число
+		//в camera.network валило "type mismatch: 4 & /list" в КАЖДОЙ камерной
+		//консоли станции (networks & C.network) - принимаем только список,
+		//приводя элементы к строкам в нижнем регистре, как везде у камер.
+		if(islist(new_network))
+			var/list/sanitized_network = list()
+			for(var/network_entry in new_network)
+				sanitized_network += lowertext("[network_entry]")
+			camera.network = sanitized_network
 		set_camera_status(cam_active)
 
 /obj/item/integrated_circuit/output/video_camera/power_fail()
@@ -425,6 +471,217 @@
 		//update the diagnostic hud
 		assembly.diag_hud_set_circuitstat()
 
+/obj/item/integrated_circuit/output/neural_interface_log_write
+	name = "HUD interface write log"
+	desc = "A component responsible for outputting logs to the user's HUD interface (if available)"
+	extended_desc = "The component is responsible for outputting logs to the user's HUD interface (if present). The interface target can be a reference to an entity with the interface, or a reference to the interface itself. The log type is sent as a key, from the available colored options: SYSTEM, WARNING, ERROR, INFO, DATA, SYNC, HEALTH, MODULE, ALERT, STATUS, DEBUG"
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"text" = IC_PINTYPE_STRING,
+		"key"  = IC_PINTYPE_STRING,
+		"color" = IC_PINTYPE_COLOR,
+		"size" = IC_PINTYPE_NUMBER
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 2
+
+/obj/item/integrated_circuit/output/neural_interface_log_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/text = get_pin_data(IC_INPUT, 2)
+	var/key = get_pin_data(IC_INPUT, 3)
+	var/color = get_pin_data(IC_INPUT, 4)
+	var/size = get_pin_data(IC_INPUT, 5)
+
+	if(!text || !key)
+		activate_pin(3)
+		return
+
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, text, key, color, size)
+	else
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_LOG, FALSE, 15, text, key, color, size)
+
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
+
+/obj/item/integrated_circuit/output/neural_interface_data_write
+	name = "HUD interface write data"
+	desc = "A component responsible for displaying key and value information in the user's HUD interface (if present)."
+	extended_desc = "A component responsible for displaying key and value information in the user's HUD interface (if present). The interface target can be either a reference to an entity with an interface or a reference to the interface itself. Unlike logs, when entering information for the same key, the information will be updated rather than appended."
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"key" = IC_PINTYPE_STRING,
+		"value"  = IC_PINTYPE_STRING,
+		"decay duration"  = IC_PINTYPE_NUMBER,
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 2
+
+/obj/item/integrated_circuit/output/neural_interface_data_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/key = get_pin_data(IC_INPUT, 2)
+	var/value = get_pin_data(IC_INPUT, 3)
+	var/decay_duration = get_pin_data(IC_INPUT, 4)
+
+	if(!key || !value)
+		activate_pin(3)
+		return
+
+	if(!decay_duration)
+		decay_duration = 1 SECONDS
+
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, key, value, decay_duration)
+	else
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_DATA, FALSE, 15, key, value, decay_duration)
+
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write
+	name = "HUD interface write image data"
+	desc = "A component responsible for displaying visual information with a caption on a target in the user's HUD interface (if present)."
+	extended_desc = "A component responsible for displaying visual information with a caption on a target in the user's HUD interface (if present). The interface target can be a reference to an entity with the interface, or a reference to the interface itself. The target for displaying visual information is a reference to an existing object in the world. A key is required to display specific information; if overlays with the same key are placed on two targets, the first will be removed and the second will be overlaid. An offset is required for the displayed text. Available overlays for output: target, circle, aiming, cross, warning, noise, scan, eye, target_conf, none"
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"target" = IC_PINTYPE_REF,
+		"key" = IC_PINTYPE_STRING,
+		"text"  = IC_PINTYPE_STRING,
+		"decay duration"  = IC_PINTYPE_NUMBER,
+		"shift_x" = IC_PINTYPE_NUMBER,
+		"shift_y" = IC_PINTYPE_NUMBER,
+		"icon" = IC_PINTYPE_STRING,
+		"color" = IC_PINTYPE_COLOR,
+		"text_size" = IC_PINTYPE_NUMBER,
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 5
+	var/list/icons = list(
+		"target",
+		"circle",
+		"aiming",
+		"cross",
+		"warning",
+		"noise",
+		"scan",
+		"eye",
+		"target_conf",
+		"none"
+	)
+	var/icon/overlay
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/Initialize(mapload)
+	. = ..()
+	overlay = new(icon='icons/effects/neural_interface_overlays.dmi')
+	overlay.GrayScale()
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/Destroy()
+	overlay = null
+	. = ..()
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/atom/target = get_pin_data(IC_INPUT, 2)
+	var/key = get_pin_data(IC_INPUT, 3)
+	var/text = get_pin_data(IC_INPUT, 4)
+	var/decay_duration = get_pin_data(IC_INPUT, 5)
+	var/shift_x = get_pin_data(IC_INPUT, 6)
+	var/shift_y = get_pin_data(IC_INPUT, 7)
+	var/icon_state_overlay = get_pin_data(IC_INPUT, 8)
+	var/color_overlay = get_pin_data(IC_INPUT, 9)
+	var/text_size = get_pin_data(IC_INPUT, 10)
+
+	if(!shift_x)
+		shift_x = 0
+
+	if(!shift_y)
+		shift_y = 0
+
+	if(!text_size)
+		text_size = 12
+
+	if(!color_overlay)
+		color_overlay = "#00fff2"
+
+	if(!icon_state_overlay)
+		icon_state_overlay = "circle"
+
+	if(!icons.Find(icon_state_overlay))
+		activate_pin(3)
+		return
+
+	if(!target || !key)
+		activate_pin(3)
+		return
+
+	if(get_dist(get_turf(src),get_turf(target)) > 8)
+		activate_pin(3)
+		return
+
+	if(!decay_duration)
+		decay_duration = 1 SECONDS
+
+	var/result
+	if(relay_interface)
+		if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+			activate_pin(3)
+			return
+
+		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+		overlay_image.color = color_overlay
+		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+	else
+		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+		overlay_image.color = color_overlay
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, FALSE, 15, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
 
 //Hippie Ported Code--------------------------------------------------------------------------------------------------------
 

@@ -64,20 +64,36 @@
 	else
 		soundloop.start(user)
 
-/obj/item/clothing/head/helmet/space/hardsuit/proc/display_visor_message(var/msg)
-	var/mob/wearer = loc
-	if(msg && ishuman(wearer))
+/obj/item/clothing/head/helmet/space/hardsuit/proc/display_visor_message(msg, observer_msg)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!msg)
+		return
+	var/mob/living/carbon/human/wearer = loc
+	if(!ishuman(wearer))
+		return
+
+	var/hud_text = "<span style='color: #5cf; font-weight: bold'>[html_encode(msg)]</span>"
+
+	if(wearer.is_blind())
 		wearer.show_message("[icon2html(src, wearer)]<b><span class='robot'>[msg]</span></b>", MSG_VISUAL)
+		return
+
+	if(observer_msg)
+		wearer.balloon_alert_to_viewers(observer_msg, hud_text)
+	else
+		wearer.balloon_alert(wearer, hud_text)
 
 /obj/item/clothing/head/helmet/space/hardsuit/rad_act(severity)
 	. = ..()
 	rad_count += severity
+	START_PROCESSING(SSobj, src) //гейгер спит вне радиации - будим на счёт
 
 /obj/item/clothing/head/helmet/space/hardsuit/process()
 	if(!rad_count)
 		grace_count++
-		if(grace_count == 2)
+		if(grace_count >= 2)
 			soundloop.last_radiation = 0
+			return PROCESS_KILL //декэить нечего: спим до следующего rad_act
 		return
 
 	grace_count = 0
@@ -107,7 +123,7 @@
 	var/helmettype = /obj/item/clothing/head/helmet/space/hardsuit
 	var/obj/item/tank/jetpack/suit/jetpack = null
 	var/hardsuit_type
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemood add
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemood add
 
 /obj/item/clothing/suit/space/hardsuit/Initialize(mapload)
 	if(jetpack && ispath(jetpack))
@@ -118,28 +134,28 @@
 /obj/item/clothing/suit/space/hardsuit/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/tank/jetpack/suit))
 		if(jetpack)
-			to_chat(user, "<span class='warning'>[src] already has a jetpack installed.</span>")
+			to_chat(user, "<span class='warning'>[src] уже имеет реактивный ранец.</span>")
 			return
 		if(src == user.get_item_by_slot(ITEM_SLOT_OCLOTHING)) //Make sure the player is not wearing the suit before applying the upgrade.
-			to_chat(user, "<span class='warning'>You cannot install the upgrade to [src] while wearing it.</span>")
+			to_chat(user, "<span class='warning'>Вы не можете улучшить [src], пока носите его.</span>")
 			return
 
 		if(user.transferItemToLoc(I, src))
 			jetpack = I
-			to_chat(user, "<span class='notice'>You successfully install the jetpack into [src].</span>")
+			to_chat(user, "<span class='notice'>Вы успешно установили реактивный ранец на [src].</span>")
 			return
 	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
 		if(!jetpack)
-			to_chat(user, "<span class='warning'>[src] has no jetpack installed.</span>")
+			to_chat(user, "<span class='warning'>[src] не имеет реактивного ранца.</span>")
 			return
 		if(src == user.get_item_by_slot(ITEM_SLOT_OCLOTHING))
-			to_chat(user, "<span class='warning'>You cannot remove the jetpack from [src] while wearing it.</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять реактивный ранец с [src], пока носите его.</span>")
 			return
 
 		jetpack.turn_off(user)
 		jetpack.forceMove(drop_location())
 		jetpack = null
-		to_chat(user, "<span class='notice'>You successfully remove the jetpack from [src].</span>")
+		to_chat(user, "<span class='notice'>Вы успешно сняли реактивный ранец с [src].</span>")
 		return
 	return ..()
 
@@ -273,7 +289,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 50, BIO = 100, RAD = 50, FIRE = 50, ACID = 75, WOUND = 25)
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe, /obj/item/resonator, /obj/item/gun/energy/kinetic_accelerator)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/mining
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
@@ -307,7 +323,7 @@
 	icon_state = "hardsuit1-syndi"
 	item_state = "syndie_helm"
 	hardsuit_type = "syndi"
-	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 50, FIRE = 50, ACID = 90, WOUND = 25)
+	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, WOUND = 25)
 	on = FALSE
 	var/obj/item/clothing/suit/space/hardsuit/syndi/linkedsuit = null
 	actions_types = list(/datum/action/item_action/toggle_helmet_mode)
@@ -391,7 +407,7 @@
 	tail_state = "syndicate-blood"
 	hardsuit_type = "syndi"
 	w_class = WEIGHT_CLASS_NORMAL
-	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 50, FIRE = 50, ACID = 90, WOUND = 25)
+	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, WOUND = 25)
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi
 	jetpack = /obj/item/tank/jetpack/suit
@@ -404,7 +420,7 @@
 	alt_desc = "An elite version of the syndicate helmet, with improved armour and fireproofing. It is in combat mode. Property of Gorlex Marauders."
 	icon_state = "hardsuit0-syndielite"
 	hardsuit_type = "syndielite"
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 70, FIRE = 100, ACID = 100, WOUND = 30)
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -423,11 +439,11 @@
 	tail_state = "syndicate-elite"
 	hardsuit_type = "syndielite"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/elite
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 70, FIRE = 100, ACID = 100, WOUND = 30)
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 /obj/item/clothing/suit/space/hardsuit/syndi/elite/debug
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/elite/debug
@@ -487,7 +503,7 @@
 	tail_state = "syndicate-winter"
 	hardsuit_type = "owl"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/owl
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 	//Wizard hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/wizard
@@ -520,7 +536,7 @@
 	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 35, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
 	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/wizard
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
 
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
@@ -562,8 +578,8 @@
 	desc = "A special suit that protects against hazardous, low pressure environments. Built with lightweight materials for easier movement."
 	item_state = "medical_hardsuit"
 	tail_state = "syndicate-winter"
-	slowdown = 0.5
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/firstaid, /obj/item/healthanalyzer, /obj/item/stack/medical)
+	slowdown = 0.35
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/firstaid, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/gun/medbeam)
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 10, BIO = 100, RAD = 60, FIRE = 60, ACID = 75, WOUND = 15)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/medical
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
@@ -622,6 +638,7 @@
 	item_state = "hardsuit0-blueshield"
 	hardsuit_type = "blueshield"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield
 	name = "Blue Shield hardsuit"
@@ -635,7 +652,12 @@
 	jetpack = /obj/item/tank/jetpack/suit
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/blue_shield
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
+	unique_reskin = null
+
+/obj/item/clothing/suit/space/hardsuit/blue_shield/Initialize()
+	. = ..()
+	allowed = GLOB.security_hardsuit_allowed
 
 	//Security hardsuit
 /obj/item/clothing/head/helmet/space/hardsuit/security
@@ -678,14 +700,14 @@
 
 /obj/item/clothing/suit/space/hardsuit/security/reskin_obj(mob/user)
 	if(current_skin == "Alt")
-		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 		tail_state = "sec2"
 		if(helmet)
 			var/obj/item/clothing/head/helmet/space/hardsuit/Helm = helmet
 			Helm.hardsuit_type = "sec2"
 			Helm.update_icon_state()
 	if(current_skin == "Blue Variation")
-		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 		tail_state = "ert-commander"
 		if(helmet)
 			var/obj/item/clothing/head/helmet/space/hardsuit/Helm = helmet
@@ -721,14 +743,14 @@
 
 /obj/item/clothing/suit/space/hardsuit/security/hos/reskin_obj(mob/user)
 	if(current_skin == "OTA Variation")
-		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 		tail_state = "syndicate-winter"
 		if(helmet)
 			var/obj/item/clothing/head/helmet/space/hardsuit/Helm = helmet
 			Helm.hardsuit_type = "alliance"
 			Helm.update_icon_state()
 	if(current_skin == "Standart Variation")
-		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 		tail_state = "hos"
 		if(helmet)
 			var/obj/item/clothing/head/helmet/space/hardsuit/Helm = helmet
@@ -784,7 +806,7 @@
 	tail_state = "wizard"
 	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 10, BIO = 100, RAD = 75, FIRE = 60, ACID = 30, WOUND = 15)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/clown
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 /obj/item/clothing/suit/space/hardsuit/clown/mob_can_equip(mob/M, equipper, slot, disable_warning, bypass_equip_delay_self)
 	if(!..() || !ishuman(M))
@@ -814,7 +836,7 @@
 	slowdown = 2
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ancient
 	resistance_flags = FIRE_PROOF
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	var/footstep = 1
 	var/mob/listeningTo
 
@@ -919,7 +941,7 @@
 	slowdown = 0.5
 	armor = list(MELEE = 40, BULLET = 30, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 20, FIRE = 50, ACID = 75, WOUND = 15)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/soviet
-	mutantrace_variation = NONE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 /obj/item/clothing/suit/space/hardsuit/soviet/Initialize(mapload)
 	. = ..()

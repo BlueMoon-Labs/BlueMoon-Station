@@ -6,6 +6,8 @@
 
 	use_power = NO_POWER_USE
 	can_unwrench = 1
+	///FALSE on the pipes that join every colour by design, where paint would mean nothing.
+	var/paintable = TRUE
 	var/datum/pipeline/parent = null
 
 	//Buckling
@@ -27,14 +29,36 @@
 /obj/machinery/atmospherics/pipe/destroy_network()
 	QDEL_NULL(parent)
 
-/obj/machinery/atmospherics/pipe/build_network()
+/obj/machinery/atmospherics/pipe/proc/prune_stale_pipeline_memberships(datum/pipeline/skip_pipeline = null)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(P == skip_pipeline)
+				continue
+			if(src in P.members)
+				P.members -= src
+				P.mark_dirty()
+
+/obj/machinery/atmospherics/pipe/build_network(blocking = FALSE)
+	if(QDELETED(src))
+		return // Pipe was destroyed, don't rebuild
 	if(QDELETED(parent))
+		if(parent && QDESTROYING(parent))
+			investigate_log("[type] at [COORD(src)] rebuilding network while parent pipeline is being destroyed", INVESTIGATE_ATMOS)
 		parent = new
-		parent.build_pipeline(src)
+		parent.build_pipeline(src, blocking)
 
 /obj/machinery/atmospherics/pipe/atmosinit()
 	var/turf/T = loc			// hide if turf is not intact
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 	..()
 
 /obj/machinery/atmospherics/pipe/hide(i)
@@ -45,22 +69,24 @@
 /obj/machinery/atmospherics/pipe/proc/releaseAirToTurf()
 	if(air_temporary)
 		var/turf/T = loc
+		if(!isturf(T))
+			return
 		T.assume_air(air_temporary)
 		air_update_turf()
 
 /obj/machinery/atmospherics/pipe/return_air()
-	return parent.air
+	return parent?.air
 
 /obj/machinery/atmospherics/pipe/return_analyzable_air()
 	if(air_temporary)
 		return air_temporary
-	return parent.air
+	return parent?.air
 
 /obj/machinery/atmospherics/pipe/remove_air(amount)
-	return parent.air.remove(amount)
+	return parent?.air?.remove(amount)
 
 /obj/machinery/atmospherics/pipe/remove_air_ratio(ratio)
-	return parent.air.remove_ratio(ratio)
+	return parent?.air?.remove_ratio(ratio)
 
 /obj/machinery/atmospherics/pipe/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/pipe_meter))
@@ -71,6 +97,9 @@
 		return ..()
 
 /obj/machinery/atmospherics/pipe/analyzer_act(mob/living/user, obj/item/I)
+	if(!parent?.air)
+		to_chat(user, "<span class='warning'>[src] is not connected to a pipenet.</span>")
+		return FALSE
 	atmosanalyzer_scan(parent.air, user, src)
 	return TRUE
 
@@ -84,6 +113,7 @@
 	return FALSE // they're not really machines in the normal sense, probably shouldn't explode
 
 /obj/machinery/atmospherics/pipe/Destroy()
+	prune_stale_pipeline_memberships(parent)
 	QDEL_NULL(parent)
 
 	releaseAirToTurf()
@@ -119,14 +149,38 @@
 	. = ..()
 
 /obj/machinery/atmospherics/pipe/proc/paint(paint_color)
+	if(!paintable)
+		return FALSE
+	if(pipe_color == paint_color)
+		return TRUE
 	add_atom_colour(paint_color, FIXED_COLOUR_PRIORITY)
 	pipe_color = paint_color
+	// Paint decides who this pipe is allowed to touch, so a repaint has to cut
+	// the connections it no longer qualifies for and look for the ones it just
+	// gained. Without this a pipe keeps feeding a network it can no longer
+	// reach, right up until something unrelated rebuilds the pipenet.
+	reconnect_nodes()
 	update_node_icon()
 	return TRUE
 
+/// Drops every node this pipe currently holds and runs the search again, the
+/// same way construction does. Used when something that decides connections -
+/// paint, for now - changes on an already placed pipe.
+/obj/machinery/atmospherics/pipe/proc/reconnect_nodes()
+	for(var/i in 1 to device_type)
+		nullifyNode(i)
+	destroy_network()
+	if(!SSair.initialized)
+		return
+	atmosinit()
+	for(var/obj/machinery/atmospherics/neighbour in pipeline_expansion())
+		neighbour.atmosinit()
+		neighbour.addMember(src)
+	build_network()
+
 /obj/machinery/atmospherics/pipe/attack_ghost(mob/dead/observer/O)
 	. = ..()
-	if(parent)
+	if(parent?.air)
 		atmosanalyzer_scan(parent.air, O, src, FALSE)
 	else
 		to_chat(O, "<span class='warning'>[src] doesn't have a pipenet, which is probably a bug.</span>")

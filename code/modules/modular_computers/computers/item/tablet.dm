@@ -6,7 +6,7 @@
 	icon_state_powered = "tablet-red"
 	icon_state_menu = "menu"
 	base_icon_state = "tablet"
-	// worn_icon_state = "tablet"
+	// icon_state = "tablet"
 	hardware_flag = PROGRAM_TABLET
 	max_hardware_size = 1
 	w_class = WEIGHT_CLASS_SMALL
@@ -16,6 +16,8 @@
 	has_light = TRUE //LED flashlight!
 	comp_light_luminosity = 2.3 //Same as the PDA
 	looping_sound = FALSE
+	allow_chunky = TRUE
+	var/default_ui_state = FALSE
 	var/has_variants = TRUE
 	var/finish_color = null
 
@@ -64,6 +66,7 @@
 		usr.put_in_hands(inserted_item)
 		to_chat(usr, "<span class='notice'>You remove [inserted_item] from \the [src]'s pen slot.</span>")
 		inserted_item = null
+		playsound(src, 'sound/machines/button4.ogg', 50, 1)
 		SStgui.update_uis(src)
 	else
 		to_chat(usr, "<span class='warning'>\The [src] does not have a pen in it!</span>")
@@ -90,6 +93,11 @@
 	if(istype(inserted_item))
 		QDEL_NULL(inserted_item)
 	return ..()
+
+/obj/item/modular_computer/tablet/ui_state(mob/user)
+	if(default_ui_state)
+		return ..()
+	return GLOB.human_adjacent_state_no_view
 
 /obj/item/modular_computer/tablet/ui_act(action, params)
 	. = ..()
@@ -160,6 +168,7 @@
 	///IC log that borgs can view in their personal management app
 	var/list/borglog = list()
 	can_have_pen = FALSE
+	default_ui_state = TRUE
 
 /obj/item/modular_computer/tablet/integrated/Initialize(mapload)
 	. = ..()
@@ -174,9 +183,9 @@
 	borgo = null
 	return ..()
 
-/obj/item/modular_computer/tablet/integrated/turn_on(mob/user)
+/obj/item/modular_computer/tablet/integrated/turn_on(mob/user, open_ui = TRUE)
 	if(borgo?.stat != DEAD)
-		return ..()
+		return ..(user, open_ui)
 	return FALSE
 
 /**
@@ -208,7 +217,7 @@
 /obj/item/modular_computer/tablet/integrated/ui_data(mob/user)
 	. = ..()
 	.["has_light"] = TRUE
-	.["light_on"] = borgo?.lamp_intensity
+	.["light_on"] = borgo?.lamp_enabled
 	.["comp_light_color"] = borgo?.lamp_color
 
 //Makes the flashlight button affect the borg rather than the tablet
@@ -231,6 +240,27 @@
 		return
 	borgo.playsound_local(src, sound, 50, TRUE)
 	to_chat(borgo, span_notice("The [src] displays a [caller.filedesc] notification: [alerttext]"))
+
+/obj/item/modular_computer/tablet/integrated/proc/get_department_access()
+	if(!borgo)
+		return list()
+	if(!borgo.module)
+		return list()
+	var/static/list/module_access_map = list(
+		/obj/item/robot_module/engineering = list(ACCESS_ENGINE),
+		/obj/item/robot_module/medical = list(ACCESS_MEDICAL),
+		/obj/item/robot_module/security = list(ACCESS_SECURITY),
+		/obj/item/robot_module/butler = list(ACCESS_JANITOR),
+		/obj/item/robot_module/miner = list(ACCESS_MINING),
+		/obj/item/robot_module/cargo = list(ACCESS_CARGO),
+		/obj/item/robot_module/syndicate = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/syndicate_medical = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/saboteur = list(ACCESS_SYNDICATE),
+	)
+	for(var/module_type in module_access_map)
+		if(istype(borgo.module, module_type))
+			return module_access_map[module_type]
+	return list()
 
 
 /obj/item/modular_computer/tablet/integrated/syndicate

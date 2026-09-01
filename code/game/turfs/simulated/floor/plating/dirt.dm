@@ -4,6 +4,7 @@
 	desc = "Upon closer examination, it's still dirt."
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "dirt"
+	base_icon_state = "dirt"
 	baseturfs = /turf/open/chasm/jungle
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	planetary_atmos = TRUE
@@ -12,10 +13,11 @@
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/dirt/dark
 	icon_state = "greenerdirt"
+	base_icon_state = "greenerdirt"
 
 /turf/open/floor/plating/dirt/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	return

@@ -60,10 +60,10 @@ Has a version for organic people and robotic/synthetic ones, considering robotic
 	return TRUE
 
 /datum/surgery_step/override_safeties/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You fail overriding the safeties of [target].</span>",
 		"[user] fails overriding the safeties of [target]",
 		"[user] completes the surgery on [target]'s brain.")
-	return FALSE
 
 /datum/surgery_step/remove_corruption
 	name = "Запустить Очистку Системы"
@@ -93,9 +93,9 @@ Has a version for organic people and robotic/synthetic ones, considering robotic
 	if(!target.getorganslot(ORGAN_SLOT_BRAIN) || !HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
 		user.visible_message("<span class='warning'>[user] suddenly realises that [user.ru_who()] can't actually initiate a system purge in [target]...", "<span class='warning'>You suddenly realise that you cannot initiate a system purge in [target].</span>")
 		return FALSE
+	..()
 	display_results(user, target, "<span class='notice'>You fail purging [target]'s system of corruption, damaging [target.ru_na()] instead...</span>",
 	"[user] fails purging [target]'s system of corruption, damaging [target.ru_na()] instead.",
 	"[user] completes the surgery on [target].")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
 	target.gain_trauma_type(BRAIN_TRAUMA_SEVERE, TRAUMA_RESILIENCE_LOBOTOMY)
-	return FALSE

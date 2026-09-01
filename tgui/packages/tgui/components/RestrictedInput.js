@@ -1,7 +1,7 @@
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { Box } from './Box';
 
@@ -34,21 +34,23 @@ export class RestrictedInput extends Component {
     this.state = {
       editing: false,
     };
+    // Commit (clamp + onChange) happens on blur or Enter, never per
+    // keystroke: React fires onChange on every input, so clamping there
+    // would fight the user while typing (the upstream #80490 bug class).
     this.handleBlur = (e) => {
+      const { maxValue, minValue, onChange } = this.props;
       const { editing } = this.state;
       if (editing) {
         this.setEditing(false);
       }
-    };
-    this.handleChange = (e) => {
-      const { maxValue, minValue, onChange } = this.props;
       e.target.value = getClampedNumber(e.target.value, minValue, maxValue);
-      if (onChange) {
+      if (e.target.value !== this.focusedValue && onChange) {
         onChange(e, +e.target.value);
       }
     };
     this.handleFocus = (e) => {
       const { editing } = this.state;
+      this.focusedValue = e.target.value;
       if (!editing) {
         this.setEditing(true);
       }
@@ -65,9 +67,13 @@ export class RestrictedInput extends Component {
     };
     this.handleKeyDown = (e) => {
       const { maxValue, minValue, onChange, onEnter } = this.props;
-      if (e.keyCode === KEY_ENTER) {
+      if (e.key === KEY_ENTER) {
         const safeNum = getClampedNumber(e.target.value, minValue, maxValue);
         this.setEditing(false);
+        e.target.value = safeNum;
+        // Remember the committed value so the follow-up blur handler
+        // does not fire a duplicate onChange.
+        this.focusedValue = safeNum;
         if (onChange) {
           onChange(e, +safeNum);
         }
@@ -77,7 +83,7 @@ export class RestrictedInput extends Component {
         e.target.blur();
         return;
       }
-      if (e.keyCode === KEY_ESCAPE) {
+      if (e.key === KEY_ESCAPE) {
         if (this.props.onEscape) {
           this.props.onEscape(e);
           return;
@@ -98,14 +104,41 @@ export class RestrictedInput extends Component {
       input.value = getClampedNumber(nextValue, minValue, maxValue);
     }
     if (this.props.autoFocus || this.props.autoSelect) {
-      setTimeout(() => {
-        input.focus();
-
-        if (this.props.autoSelect) {
-          input.select();
-        }
-      }, 1);
+      this.setState({ editing: true }, () => {
+        requestAnimationFrame(() => {
+          const input = this.inputRef.current;
+          if (!input) return;
+          input.focus();
+          if (this.props.autoSelect) {
+            input.select();
+            // Re-select when external forces (BYOND window manager) reset selection
+            const reselect = () => {
+              if (document.activeElement === input
+                  && input.selectionStart === input.selectionEnd
+                  && input.value.length > 0) {
+                input.select();
+              }
+            };
+            const cleanup = () => {
+              document.removeEventListener('selectionchange', reselect);
+              input.removeEventListener('mousedown', cleanup);
+              input.removeEventListener('keydown', cleanup);
+            };
+            document.addEventListener('selectionchange', reselect);
+            input.addEventListener('mousedown', cleanup, { once: true });
+            input.addEventListener('keydown', cleanup, { once: true });
+            setTimeout(cleanup, 1000);
+          }
+        });
+      });
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.state.editing && nextState.editing) {
+      return false;
+    }
+    return true;
   }
 
   componentDidUpdate(prevProps, _) {
@@ -127,7 +160,18 @@ export class RestrictedInput extends Component {
 
   render() {
     const { props } = this;
-    const { onChange, onEnter, onInput, value, ...boxProps } = props;
+    const {
+      autoFocus,
+      autoSelect,
+      maxValue,
+      minValue,
+      onChange,
+      onEnter,
+      onEscape,
+      onInput,
+      value,
+      ...boxProps
+    } = props;
     const { className, fluid, monospace, ...rest } = boxProps;
     return (
       <Box
@@ -141,13 +185,13 @@ export class RestrictedInput extends Component {
         <div className="Input__baseline">.</div>
         <input
           className="Input__input"
-          onChange={this.handleChange}
           onInput={this.handleInput}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}
           ref={this.inputRef}
-          type="number"
+          type="text"
+          inputMode="numeric"
         />
       </Box>
     );

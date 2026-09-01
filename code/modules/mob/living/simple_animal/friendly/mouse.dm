@@ -1,6 +1,7 @@
 /mob/living/simple_animal/mouse
 	name = "mouse"
 	desc = "It's a nasty, ugly, evil, disease-ridden rodent."
+	uses_custom_environment_handling = TRUE //свой handle_environment()
 	icon_state = "mouse_gray"
 	icon_living = "mouse_gray"
 	icon_dead = "mouse_gray_dead"
@@ -54,6 +55,7 @@
 		if(!gibbed)
 			var/obj/item/reagent_containers/food/snacks/deadmouse/M = new(loc)
 			M.icon_state = icon_dead
+			M.item_state = "mouse_[body_color]"
 			M.name = name
 			if(toast)
 				M.add_atom_colour("#3A3A3A", FIXED_COLOUR_PRIORITY)
@@ -79,7 +81,7 @@
 
 	if(prob(chew_probability))
 		var/turf/open/floor/F = get_turf(src)
-		if(istype(F) && !F.intact)
+		if(istype(F) && !(F.turf_flags & TURF_INTACT))
 			var/obj/structure/cable/C = locate() in F
 			if(C && prob(15))
 				if(C.avail())
@@ -185,6 +187,11 @@ GLOBAL_VAR(tom_existed)
 	desc = "It looks like somebody dropped the bass on it. A lizard's favorite meal."
 	icon = 'icons/mob/animal.dmi'
 	icon_state = "mouse_gray_dead"
+	// Без своих inhand-файлов труп брался по icon_state из food_lefthand.dmi, где нет
+	// ни одного mouse_*: дохлая мышь была невидима в руках.
+	lefthand_file = 'icons/mob/animals_held_lh.dmi'
+	righthand_file = 'icons/mob/animals_held_rh.dmi'
+	item_state = "mouse_gray"
 	bitesize = 3
 	eatverb = "devour"
 	list_reagents = list(/datum/reagent/consumable/nutriment = 3, /datum/reagent/consumable/nutriment/vitamin = 2)
@@ -192,6 +199,7 @@ GLOBAL_VAR(tom_existed)
 	grind_results = list(/datum/reagent/blood = 20, /datum/reagent/liquidgibs = 5)
 
 /obj/item/reagent_containers/food/snacks/deadmouse/on_grind()
+	..()
 	reagents.clear_reagents()
 
 /mob/living/simple_animal/mouse/proc/miasma(datum/gas_mixture/environment, check_temp = FALSE)

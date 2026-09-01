@@ -14,14 +14,31 @@
 	exp_type = EXP_TYPE_MEDICAL
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_MEDICAL
-	alt_titles = list("NT Safeguard Physician", "Syndicate Field Medic", "Security Doctor", "Security Medic", "Brig Doctor", "Brig EMT", "Security Physician", "Security EMT", "Slutcurity Nurse", "Fucking Slave", "Well-Trained Girl", "Well-Trained Boy", "Trauma Team", "Security Corpsman", "AC Combat Medic", "Field Medic of Interdyne", "Syndicate Corpsman", "SAARE Corpsman")
-
+	alt_titles = list(
+		"AC Combat Medic",
+		"Brig Doctor",
+		"Combat Medic",
+		"Field Medic",
+		"Fucking Slave",
+		"SAARE Corpsman",
+		"Safeguard Physician",
+		"Security Corpsman",
+		"Security Doctor",
+		"Security Medic",
+		"Security Physician",
+		"Slutcurity Nurse",
+		"Special Operations Medic",
+		"Brig EMT",
+		"Security EMT",
+		"Well-Trained Boy",
+		"Well-Trained Girl"
+		)
 
 	outfit = /datum/outfit/job/brigdoc
 	plasma_outfit = /datum/outfit/plasmaman/brigdoc
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
 	bounty_types = CIV_JOB_MED
@@ -29,14 +46,14 @@
 	mind_traits = list(TRAIT_LAW_ENFORCEMENT_METABOLISM, TRAIT_KNOW_MED_SURGERY_T2) //BLUEMOON EDIT added surgery trait
 
 	display_order = JOB_DISPLAY_ORDER_BRIG_PHYSICIAN
-	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia)
+	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/blindness, /datum/quirk/monophobia, /datum/quirk/onelife)
 	threat = 2
 
 /datum/outfit/job/brigdoc
 	name = "Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	belt = /obj/item/pda/security
+	belt = /obj/item/modular_computer/pda/security/brigdoc
 	ears = /obj/item/radio/headset/headset_brigdoc/alt
 	uniform = /obj/item/clothing/under/syndicate/brigdoc
 	gloves = /obj/item/clothing/gloves/color/latex
@@ -48,8 +65,8 @@
 		/obj/item/storage/firstaid/regular,
 		/obj/item/sensor_device_security,
 		/obj/item/melee/classic_baton/telescopic,
-		/obj/item/choice_beacon/copgun, //BLUEMOON ADD
-		/obj/item/clothing/accessory/permit/special/security = 1)
+		/obj/item/choice_beacon/copgun
+		)
 
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
@@ -58,13 +75,15 @@
 
 	implants = list(/obj/item/implant/mindshield)
 
+	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+
 	chameleon_extras = list(/obj/item/storage/firstaid/regular)
 
 /datum/outfit/job/brigdoc/syndicate
 	name = "Syndicate Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	uniform = /obj/item/clothing/under/rank/security/officer/util
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -78,12 +97,15 @@
 							/obj/item/melee/classic_baton/telescopic,
 							/obj/item/sensor_device_security,
 							/obj/item/choice_beacon/copgun,
-							/obj/item/syndicate_uplink_high=1,
-							/obj/item/clothing/accessory/permit/special/security = 1)
+							/obj/item/syndicate_uplink/station=1
+							)
+
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/brigdoc

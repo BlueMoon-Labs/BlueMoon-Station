@@ -1,10 +1,11 @@
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
 import { multiline } from 'common/string';
+import { useState } from 'react';
 
 import { resolveAsset } from '../assets';
-import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Divider, Flex, Icon, Input, Section, Collapsible } from '../components';
+import { useBackend } from '../backend';
+import { Box, Button, Collapsible, Divider, Flex, Icon, Input, Section } from '../components';
 import { Window } from '../layouts';
 
 const PATTERN_NUMBER = / \(([0-9]+)\)$/;
@@ -35,8 +36,8 @@ const compareNumberedText = (a, b) => {
   return compareString(aName, bName);
 };
 
-const BasicSection = (props, context) => {
-  const { act } = useBackend(context);
+const BasicSection = (props) => {
+  const { act } = useBackend();
   const { searchText, source, title } = props;
   const things = source.filter(searchFor(searchText));
   things.sort(compareNumberedText);
@@ -56,8 +57,8 @@ const BasicSection = (props, context) => {
   );
 };
 
-const OrbitedButton = (props, context) => {
-  const { act } = useBackend(context);
+const OrbitedButton = (props) => {
+  const { act } = useBackend();
   const { color, thing } = props;
 
   return (
@@ -93,8 +94,8 @@ const OrbitedButton = (props, context) => {
   );
 };
 
-export const Orbit = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Orbit = (props) => {
+  const { act, data } = useBackend();
   const {
     alive,
     antagonists,
@@ -105,10 +106,10 @@ export const Orbit = (props, context) => {
     ghosts,
     misc,
     npcs,
-    ghost_roles
+    ghost_roles,
   } = data;
 
-  const [searchText, setSearchText] = useLocalState(context, "searchText", "");
+  const [searchText, setSearchText] = useState("");
 
   const collatedAntagonists = {};
   for (const antagonist of antagonists) {
@@ -137,15 +138,22 @@ export const Orbit = (props, context) => {
   });
 
   const orbitMostRelevant = searchText => {
-    for (const source of [
-      sortedAntagonists.map(([_, antags]) => antags),
-      alive, ghosts, dead, dead_players, npcs, misc,
-      sortedGhostRoles.map(([_, ghostRoles]) => ghostRoles),
-    ]) {
+    const sources = [
+      sortedAntagonists.flatMap(([_, antags]) => antags),
+      alive,
+      ghosts,
+      dead,
+      dead_players,
+      npcs,
+      misc,
+      sortedGhostRoles.flatMap(([_, ghostRoles]) => ghostRoles),
+    ];
+    for (const source of sources) {
+      if (!Array.isArray(source)) continue;
       const member = source
         .filter(searchFor(searchText))
         .sort(compareNumberedText)[0];
-      if (member !== undefined) {
+      if (member && member.ref) {
         act("orbit", { ref: member.ref });
         break;
       }

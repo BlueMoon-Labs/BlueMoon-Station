@@ -183,9 +183,9 @@
 
 /datum/supply_pack/critter/goose
 	name = "Goose Crate"
-	desc = "Злые и жестокие птицы. Злые, порочные существа. Пожалуйста, заберите их!"
+	desc = "Злые и жестокие птицы. Злые, порочные существа. Жрут всё подряд и блеют шлейфом. Пожалуйста, заберите их!"
 	cost = 2500
-	contains = list(/mob/living/simple_animal/hostile/retaliate/goose)
+	contains = list(/mob/living/simple_animal/hostile/retaliate/goose/vomit)
 	crate_name = "goose crate"
 
 /datum/supply_pack/critter/pug

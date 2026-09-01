@@ -54,7 +54,7 @@
 	desc = "Yarr."
 	icon_state = "pirate"
 	item_state = "pirate"
-	allowed = list(/obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
+	allowed = list(/obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/cover/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
 
 /obj/item/clothing/suit/pirate/captain
 	name = "Pirate captain coat"
@@ -389,7 +389,6 @@
 	armor = list(MELEE = 95, BULLET = 80, LASER = 50, ENERGY = 60, BOMB = 80, BIO = 100, RAD = 50, FIRE = 95, ACID = 95)
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	cold_protection = CHEST|GROIN|LEGS|ARMS|FEET
-	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -577,6 +576,12 @@
 	cold_protection = CHEST|GROIN|ARMS|LEGS
 	heat_protection = CHEST|GROIN|ARMS|LEGS
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/jacket/leather_trenchcoat
+	name = "edgelord trenchcoat"
+	desc = "A long, black trenchcoat. Makes you feel like you're the one, but you're not."
+	icon_state = "leather_trenchcoat"
+	item_state = "leather_trenchcoat"
 
 /obj/item/clothing/suit/jacket/puffer
 	name = "puffer jacket"
@@ -787,6 +792,9 @@
 	. = ..()
 	allowed = GLOB.security_wintercoat_allowed
 
+/obj/item/clothing/suit/hooded/wintercoat/security/no_armor
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+
 /obj/item/clothing/head/hooded/winterhood/security
 	desc = "A red, armor-padded winter hood."
 	icon_state = "hood_security"
@@ -812,7 +820,7 @@
 	desc = "An arctic white winter coat with a small blue caduceus instead of a plastic zipper tab. Snazzy."
 	icon_state = "coatmedical"
 	item_state = "coatmedical"
-	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
+	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 0, ACID = 45)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/medical
 
@@ -825,7 +833,7 @@
 	desc = "An arctic white winter coat with a small blue caduceus instead of a plastic zipper tab. The normal liner is replaced with an exceptionally thick, soft layer of fur."
 	icon_state = "coatcmo"
 	item_state = "coatcmo"
-	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
+	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 	armor = list(MELEE = 5, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 0, ACID = 0)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/cmo
 
@@ -838,7 +846,7 @@
 	desc = "A lab-grade winter coat made with acid resistant polymers. For the enterprising chemist who was exiled to a frozen wasteland on the go."
 	icon_state = "coatchemistry"
 	item_state = "coatchemistry"
-	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
+	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 30, RAD = 0, FIRE = 30, ACID = 45)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/chemistry
 
@@ -851,7 +859,7 @@
 	desc = "A white winter coat with green markings. Warm, but wont fight off the common cold or any other disease. Might make people stand far away from you in the hallway. The zipper tab looks like an oversized bacteriophage."
 	icon_state = "coatviro"
 	item_state = "coatviro"
-	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
+	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 30, RAD = 0, FIRE = 0, ACID = 0)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/viro
 
@@ -864,7 +872,7 @@
 	desc = "A winter coat with blue markings. Warm, but probably won't protect from biological agents. For the cozy doctor on the go."
 	icon_state = "coatparamed"
 	item_state = "coatparamed"
-	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
+	allowed = list(/obj/item/analyzer, /obj/item/sensor_device, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 0, ACID = 45)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/paramedic
 
@@ -1001,7 +1009,7 @@
 	desc = "A purple-and-beige winter coat that smells of space cleaner."
 	icon_state = "coatjanitor"
 	item_state = "coatjanitor"
-	allowed = list(/obj/item/toy, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/storage/fancy/cigarettes, /obj/item/lighter,/obj/item/grenade/chem_grenade,/obj/item/lightreplacer,/obj/item/flashlight,/obj/item/reagent_containers/glass/beaker,/obj/item/reagent_containers/glass/bottle,/obj/item/reagent_containers/spray,/obj/item/soap,/obj/item/holosign_creator,/obj/item/key/janitor,/obj/item/melee/flyswatter,/obj/item/paint/paint_remover,/obj/item/storage/bag/trash,/obj/item/reagent_containers/glass/bucket,/obj/item/t_scanner/dirt_scanner)
+	allowed = list(/obj/item/access_key, /obj/item/toy, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/storage/fancy/cigarettes, /obj/item/lighter,/obj/item/grenade/chem_grenade,/obj/item/lightreplacer,/obj/item/flashlight,/obj/item/reagent_containers/glass/beaker,/obj/item/reagent_containers/glass/bottle,/obj/item/reagent_containers/spray,/obj/item/soap,/obj/item/holosign_creator,/obj/item/key/janitor,/obj/item/melee/flyswatter,/obj/item/paint/paint_remover,/obj/item/storage/bag/trash,/obj/item/reagent_containers/glass/bucket,/obj/item/t_scanner/dirt_scanner)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/janitor
 
 /obj/item/clothing/head/hooded/winterhood/janitor
@@ -1291,6 +1299,7 @@
 	desc = "Reminds you of someone, but you just can't put your finger on it..."
 	icon_state = "waldo_shirt"
 	item_state = "waldo_shirt"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/samurai
 	name = "Samurai outfit"
@@ -1406,7 +1415,8 @@
 	icon_state = "football_armor_blue"
 	item_state = "football_armor_blue"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit_digi.dmi'
 
 /obj/item/clothing/suit/basil_boys
 	name = "basil boys protective gear"
@@ -1414,7 +1424,8 @@
 	icon_state = "football_armor_red"
 	item_state = "football_armor_red"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit_digi.dmi'
 
 /obj/item/clothing/suit/yakuza
 	name = "tojo clan jacket"
@@ -1482,3 +1493,20 @@
 	item_state = "syndie_jacket"
 	body_parts_covered = CHEST
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/hooded/occult
+	name = "Occult hood"
+	desc = "Certainly makes you look more ominous."
+	icon_state = "occulthood"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEEARS
+	rad_flags = RAD_NO_CONTAMINATE
+
+/obj/item/clothing/suit/hooded/occult
+	name = "Occult collector's coat"
+	desc = "A big, heavy coat lined with leather and ivory cloth, adorned with a hood. It looks dusty."
+	icon_state = "occultcoat"
+	hoodtype = /obj/item/clothing/head/hooded/occult
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	no_t = TRUE

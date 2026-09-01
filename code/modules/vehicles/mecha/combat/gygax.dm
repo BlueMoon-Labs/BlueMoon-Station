@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/gygax
-	desc = "A lightweight, security exosuit. Popular among private and corporate security."
+	desc = "Лёгкий охранный экзокостюм. Популярен среди частной и корпоративной охраны."
 	name = "\improper Gygax"
 	icon_state = "gygax"
 	allow_diagonal_movement = TRUE
@@ -9,8 +9,8 @@
 	deflect_chance = 5
 	armor = list(MELEE = 25, BULLET = 20, LASER = 30, ENERGY = 15, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	max_temperature = 25000
-	leg_overload_coeff = 300
-	overload_step_energy_drain_min = 300
+	leg_overload_coeff = 30
+	overload_step_energy_drain_min = 30
 	force = 25
 	wreckage = /obj/structure/mecha_wreckage/gygax
 	internal_damage_threshold = 35
@@ -18,15 +18,15 @@
 	normal_step_energy_drain = 3
 
 /obj/vehicle/sealed/mecha/combat/gygax/dark
-	desc = "A lightweight exosuit, painted in a dark scheme. This model appears to have some modifications."
+	desc = "Лёгкий экзокостюм, окрашенный в тёмную схему. Эта модель, похоже, имеет некоторые модификации."
 	name = "\improper Dark Gygax"
 	icon_state = "darkgygax"
 	max_integrity = 300
 	deflect_chance = 20
 	armor = list(MELEE = 40, BULLET = 40, LASER = 50, ENERGY = 35, BOMB = 20, BIO = 0, RAD =20, FIRE = 100, ACID = 100)
 	max_temperature = 35000
-	leg_overload_coeff = 100
-	overload_step_energy_drain_min = 100
+	leg_overload_coeff = 10
+	overload_step_energy_drain_min = 10
 	force = 30
 	operation_req_access = list(ACCESS_SYNDICATE)
 	internals_req_access = list(ACCESS_SYNDICATE)
@@ -38,6 +38,7 @@
 
 /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot

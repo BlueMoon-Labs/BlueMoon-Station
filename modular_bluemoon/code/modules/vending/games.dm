@@ -15,6 +15,10 @@
 				/obj/item/toy/cards/deck/tarot = 3,
 				/obj/item/toy/cards/deck/unum = 3,
 				/obj/item/toy/cards/deck/tarot = 3,
+				/obj/item/toy/cards/deck/love_cards/truths = 4,
+				/obj/item/toy/cards/deck/love_cards/kinks = 4,
+				/obj/item/toy/cards/deck/love_cards/actions = 4,
+				/obj/item/toy/cards/deck/love_cards/blanks = 4,
 			),
 		),
 		list(
@@ -28,9 +32,9 @@
 				/obj/item/canvas/twentyfour_twentyfour = 5,
 				/obj/item/canvas/twentythreeXnineteen = 5,
 				/obj/item/canvas/twentythreeXtwentythree = 5,
+				/obj/item/canvas/ultra_big = 5,
 				/obj/item/canvas/thirtysix_twentyfour = 5,
 				/obj/item/canvas/fortyfive_twentyseven = 5,
-				/obj/item/canvas/ultra_big = 5,
 				/obj/item/wallframe/painting = 5,
 				/obj/item/wallframe/painting/large = 5,
 			),
@@ -71,6 +75,7 @@
 				/obj/item/lipstick/navy = 5,
 				/obj/item/lipstick/aqua = 5,
 				/obj/item/lipstick/white = 5,
+				/obj/item/lipstick/crocin = 3,
 				/obj/item/nailpolish/red = 5,
 				/obj/item/nailpolish/blue = 5,
 				/obj/item/nailpolish/aqua = 5,
@@ -93,6 +98,7 @@
 		/obj/item/melee/skateboard/pro = 3,
 		/obj/item/melee/skateboard/hoverboard = 1,
 		/obj/item/choice_beacon/box/plushie = 5,
+		/obj/item/tattoo_gun = 2,
 	)
 	refill_canister = /obj/item/vending_refill/games
 	default_price = PRICE_CHEAP

@@ -416,7 +416,7 @@
 
 /obj/item/ammo_casing/energy/bolt/spike
 	projectile_type = /obj/item/projectile/spike
-	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/taser.ogg'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/luftkuss_taser.ogg'
 
 /obj/item/gun/energy/kinetic_accelerator/spikethrower
 	name = "spike thrower"
@@ -540,11 +540,23 @@
 
 /mob/living/simple_animal/pet/cat/space/alta/Initialize(mapload)
 	. = ..()
-	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSevents.holidays)
+	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSholidays.holidays)
 		icon_state = "spacealta_santa"
 		icon_living = "spacealta_santa"
 		icon_dead = "spacealta_dead_santa"
 		held_icon = "spacealta_santa"
+
+/mob/living/simple_animal/pet/cat/alta/dar
+	name = "Dar Jr"
+	desc = "A little kitten with a cool little bag and a cap! He is trying really hard to bring you your order and happiness!"
+	icon_state = "dar"
+	icon_living = "dar"
+	icon_dead = "dar_dead"
+	held_icon = "dar"
+	unique_pet = TRUE
+	gender = MALE
+	speak = list("*meow", "*meow2", "*meow3", "*meow4", "*meow5", "*meow6", "*mrrp", "*mrrp3", "*purr")
+	icon = 'modular_bluemoon/kovac_shitcode/icons/animals.dmi'
 
 /mob/living/simple_animal/pet/dog/corgi/Lisa/ada
 	name = "Ada"

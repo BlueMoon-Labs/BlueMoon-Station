@@ -29,8 +29,9 @@
 		return
 	// BLUEMOON EDIT END
 	// Remove quirk ability action datum
-	var/datum/action/cooldown/hypnotize/act_hypno = locate() in quirk_mob.actions
-	act_hypno.Remove(quirk_mob)
+	var/datum/action/cooldown/hypnotize/act_hypno = locate(/datum/action/cooldown/hypnotize) in quirk_mob.actions
+	if(act_hypno)
+		act_hypno.Remove(quirk_mob)
 
 	// Remove examine text
 	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
@@ -72,6 +73,10 @@
 		// Warn user and return
 		to_chat(owner, span_warning("You shouldn't have this ability!"))
 		return FALSE
+
+	if(iszombie_infectious(owner))
+		to_chat(owner, span_warning("You zombie and can't do this!"))
+		return
 
 	// Define action owner
 	var/mob/living/carbon/human/action_owner = owner

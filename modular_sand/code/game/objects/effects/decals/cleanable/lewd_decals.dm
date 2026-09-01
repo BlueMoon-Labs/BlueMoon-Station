@@ -6,7 +6,7 @@
 	layer = ABOVE_NORMAL_TURF_LAYER
 	icon = 'modular_sand/icons/obj/genitals/effects.dmi'
 	icon_state = "drip1"
-	random_icon_states = list("drip1", "drip2", "drip3", "drip4")
+	random_icon_states = list("drip1", "drip2", "drip3", "drip4", "drip5")
 
 /obj/effect/decal/cleanable/semendrip/replace_decal(obj/effect/decal/cleanable/semendrip/C)
 	. = ..()
@@ -34,4 +34,11 @@
 /obj/effect/decal/cleanable/semendrip/update_icon()
 	. = ..()
 	add_atom_colour(mix_color_from_reagents(reagents.reagent_list), FIXED_COLOUR_PRIORITY)
+
+/obj/effect/decal/cleanable/semendrip/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food/drinks))
+		. = 1 // Prevent the container from splashing onto / scooping the decal
+		to_chat(user, span_notice("Слишком тягуче, чтобы собрать в ёмкость."))
+		return
+	return ..()
 

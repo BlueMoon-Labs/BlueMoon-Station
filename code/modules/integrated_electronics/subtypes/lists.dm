@@ -210,8 +210,7 @@
 	var/list/input_list = get_pin_data(IC_INPUT, 1)
 	var/index = get_pin_data(IC_INPUT, 2)
 
-	// Check if index is valid
-	if(index > input_list.len)
+	if(!length(input_list) || !isnum(index) || index < 1 || index > length(input_list))
 		set_pin_data(IC_OUTPUT, 1, null)
 		push_data()
 		activate_pin(3)
@@ -276,8 +275,7 @@
 	var/index = get_pin_data(IC_INPUT, 2)
 	var/item = get_pin_data(IC_INPUT, 3)
 
-	// Check if index is valid
-	if(index > input_list.len)
+	if(!length(input_list) || !isnum(index) || index < 1 || index > length(input_list))
 		set_pin_data(IC_OUTPUT, 1, input_list)
 		push_data()
 		activate_pin(3)
@@ -418,7 +416,7 @@
 
 	for(var/i = 1 to number_of_pins)
 		var/list_index = i + start_index - 1
-		if(list_index > input_list.len)
+		if(list_index < 1 || list_index > input_list.len)
 			set_pin_data(IC_OUTPUT, i, null)
 		else
 			set_pin_data(IC_OUTPUT, i, input_list[list_index])

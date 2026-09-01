@@ -107,7 +107,7 @@
 
 	radio = new /obj/item/radio/borg(src)
 
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
@@ -263,7 +263,7 @@
 /mob/living/simple_animal/drone/handle_temperature_damage()
 	return
 
-/mob/living/simple_animal/drone/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0)
+/mob/living/simple_animal/drone/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash/static, override_protection = 0, duration = 25)
 	if(affect_silicon)
 		return ..()
 

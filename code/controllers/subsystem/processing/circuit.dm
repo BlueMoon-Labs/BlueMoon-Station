@@ -87,6 +87,7 @@ PROCESSING_SUBSYSTEM_DEF(circuit)
 		/obj/item/integrated_electronics/wirer,
 		/obj/item/integrated_electronics/debugger,
 		/obj/item/integrated_electronics/analyzer,
+		/obj/item/clothing/glasses/ar_interface,
 		/obj/item/integrated_electronics/detailer,
 		/obj/item/card/data,
 		/obj/item/card/data/full_color,

@@ -17,6 +17,15 @@
 #define TOX_SYSCORRUPT 2 //For toxins damage causing adverse effects to robotic organisms, up to and including fatal corruption, or healing that damage
 #define TOX_OMNI 3 //For tox damage / healing that affects both organics and robotic organisms. Used by very few things, e.g. aheals / by default setToxLoss()
 
+//Тяжесть сбоя системной повреждённости: контракт между handle_corruption() и error_handler().
+//Здесь, а не в handle_corruption.dm: ту же шкалу зовёт ионный шторм.
+
+#define CORRUPTION_ERROR_NONE 0
+#define CORRUPTION_ERROR_MINOR 1
+#define CORRUPTION_ERROR_MAJOR 2
+#define CORRUPTION_ERROR_CRITICAL 3
+#define CORRUPTION_ERROR_CATASTROPHIC 4
+
 //bitflag damage defines used for suicide_act
 #define BRUTELOSS 		(1<<0)
 #define FIRELOSS 		(1<<1)
@@ -107,6 +116,7 @@
 //click cooldowns, in tenths of a second, used for various combat actions
 #define CLICK_CD_MELEE 8
 #define CLICK_CD_RANGE 4
+#define CLICK_CD_THROW 8
 #define CLICK_CD_RAPID 2
 #define CLICK_CD_CLICK_ABILITY 6
 #define CLICK_CD_HANDCUFFED 10
@@ -260,6 +270,8 @@
 #define BODY_ZONE_PRECISE_R_HAND	"r_hand"
 #define BODY_ZONE_PRECISE_L_FOOT	"l_foot"
 #define BODY_ZONE_PRECISE_R_FOOT	"r_foot"
+
+#define BODY_ZONE_LIST_ALL list(BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
 
 //We will round to this value in damage calculations.
 #define DAMAGE_PRECISION 0.01

@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Icon, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const OutfitEditor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const OutfitEditor = (props) => {
+  const { act, data } = useBackend();
   const { outfit, saveable, dummy64 } = data;
   return (
     <Window
@@ -17,9 +17,9 @@ export const OutfitEditor = (props, context) => {
           height="100%"
           opacity={0.5}
           py={3}
-          src={`data:image/jpeg;base64,${dummy64}`}
+          src={`data:image/png;base64,${dummy64}`}
           style={{
-            '-ms-interpolation-mode': 'nearest-neighbor',
+            imageRendering: 'pixelated',
           }} />
         <Section
           fill
@@ -28,8 +28,8 @@ export const OutfitEditor = (props, context) => {
               <Stack.Item grow={1}
                 style={{
                   'overflow': 'hidden',
-                  'white-space': 'nowrap',
-                  'text-overflow': 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
                 }}>
                 <Button
                   ml={0.5}
@@ -109,8 +109,8 @@ export const OutfitEditor = (props, context) => {
   );
 };
 
-const OutfitSlot = (props, context) => {
-  const { act, data } = useBackend(context);
+const OutfitSlot = (props) => {
+  const { act, data } = useBackend();
   const { name, icon, iconRot, slot } = props;
   const { outfit } = data;
   const currItem = outfit[slot];
@@ -128,10 +128,10 @@ const OutfitSlot = (props, context) => {
           <>
             <Box
               as="img"
-              src={`data:image/jpeg;base64,${currItem?.sprite}`}
+              src={`data:image/png;base64,${currItem?.sprite}`}
               title={currItem?.desc}
               style={{
-                '-ms-interpolation-mode': 'nearest-neighbor',
+                imageRendering: 'pixelated',
               }} />
             <Icon
               position="absolute"
@@ -146,8 +146,8 @@ const OutfitSlot = (props, context) => {
         color="label"
         style={{
           'overflow': 'hidden',
-          'white-space': 'nowrap',
-          'text-overflow': 'ellipsis',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
         }}
         title={currItem?.path}>
         {currItem?.name || "Empty"}

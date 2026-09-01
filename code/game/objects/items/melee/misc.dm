@@ -57,8 +57,7 @@
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-			new /obj/effect/temp_visual/heart(target.loc)
+		target.try_play_interaction_effect()
 
 /obj/item/melee/chainofcommand
 	name = "Chain Of Command"
@@ -98,6 +97,9 @@
 	attack_verb = list("attacked", "impaled", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 
 /obj/item/melee/synthetic_arm_blade/Initialize(mapload)
 	. = ..()
@@ -117,7 +119,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	block_chance = 50
 	armour_penetration = 75
-	sharpness = WOUND_SLASH
+	sharpness = SHARP_EDGED
 	attack_verb = list("slashed", "cut")
 	hitsound = 'sound/weapons/rapierhit.ogg'
 	custom_materials = list(/datum/material/iron = 1000)

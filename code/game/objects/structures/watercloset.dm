@@ -450,8 +450,9 @@
 					if(prob(80))
 						H.visible_message(span_warning("[H] искрит, когда [H.ru_ego()] схемы замыкает попавшая влага!"), span_boldwarning("Влага замыкает ваши схемы!"))
 						do_sparks(2, TRUE, H)
-						H.Confused(15)
+						H.AdjustConfused(30 SECONDS)
 						H.Jitter(20)
+						H.emote("shiver")
 						H.apply_damage(10, BURN)
 					else
 						H.visible_message(span_warning("[H] сильно искрит, падая на землю!"), span_boldwarning("ПЛАВАТЬ БЫЛО ПЛОХОЙ ИДЕ..."))
@@ -460,8 +461,9 @@
 						playsound(H, 'modular_splurt/sound/misc/connection_terminated.ogg', 40, FALSE)
 						H.apply_damage(25, BURN)
 						H.AdjustUnconscious(20)
-						H.Confused(20)
+						H.AdjustConfused(40 SECONDS)
 						H.Jitter(30)
+						H.emote("real_agony")
 
 			if(H.wear_suit)
 				washgloves = !(H.wear_suit.flags_inv & HIDEGLOVES)
@@ -528,7 +530,7 @@
 	if(strength <= RAD_BACKGROUND_RADIATION + 20) //BLUEMOON CHANGES
 		qdel(healthy_green_glow)
 		return
-	healthy_green_glow.strength = max(strength-9, 0) //BLUEMOON CHANGES
+	healthy_green_glow.set_strength(max(strength-9, 0)) //BLUEMOON CHANGES
 
 /obj/machinery/shower/process()
 	if(on)
@@ -548,7 +550,7 @@
 
 /obj/machinery/shower/proc/check_heat(mob/living/carbon/C)
 	if(watertemp == "freezing")
-		C.adjust_bodytemperature(-80, 80)
+		C.adjust_bodytemperature(-100, T0C - 20)
 		to_chat(C, "<span class='warning'>The water is freezing!</span>")
 	else if(watertemp == "boiling")
 		C.adjust_bodytemperature(35, 0, 500)
@@ -595,6 +597,18 @@
 /obj/structure/sink/directional/west
 	dir = EAST
 	pixel_x = -13
+
+/obj/structure/sink/Initialize(mapload)
+	. = ..()
+	register_context()
+
+/obj/structure/sink/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить швабру")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HARM, "Отжать швабру")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Отжать швабру")
 
 /obj/structure/sink/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	. = ..()
@@ -668,8 +682,19 @@
 				return
 
 	if(istype(O, /obj/item/mop))
-		O.reagents.add_reagent(dispensedreagent, 5)
-		to_chat(user, "<span class='notice'>You wet [O] in [src].</span>")
+		var/list/modifiers = params2list(params)
+		if((modifiers["ctrl"] || user.a_intent == INTENT_HARM)) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the bucket
+			if(O.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			O.reagents.remove_all(O.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			to_chat(user, "<span class='notice'>You squeeze [O] out into [src].</span>")
+		else
+			if(O.reagents.total_volume == O.reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>The mop is already wet!</span>")
+				return
+			O.reagents.add_reagent(dispensedreagent, O.reagents.maximum_volume)
+			to_chat(user, "<span class='notice'>You wet [O] in [src].</span>")
 		playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
 		return
 

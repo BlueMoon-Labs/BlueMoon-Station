@@ -19,6 +19,19 @@
 	var/lifetime = INFINITY
 	///Delay between each move in deci-seconds
 	var/delay = 1
+	/// Цена шага, выровненная по тику - именно она задаёт расписание и glide.
+	///
+	/// Шаг всё равно может случиться только на тике: SSmovement это SS_TICKER,
+	/// а бакет разливается на первом тике не раньше своего времени. Дробная
+	/// задержка поэтому не даёт дробного интервала, она даёт гуляющий: 2.7ds на
+	/// сетке 0.5ds превращается в 6,5,6,5,6 тиков, и мобы дёргаются ровно так
+	/// же, как дёргался игрок до выравнивания цены шага.
+	///
+	/// `delay` при этом хранит запрошенное значение как есть: по нему
+	/// compare_loops() решает, не просят ли создать точно такой же цикл заново,
+	/// и подсовывать туда выровненное число значило бы пересоздавать цикл на
+	/// каждый запрос.
+	var/scheduled_delay = 1
 	///The next time we should process
 	///Used primarially as a hint to be reasoned about by our [controller], and as the id of our bucket
 	///Should not be modified directly outside of [start_loop]
@@ -41,6 +54,7 @@
 		return FALSE
 
 	src.delay = max(delay, world.tick_lag) //Please...
+	src.scheduled_delay = movement_quantize_delay(src.delay, world.tick_lag)
 	src.lifetime = timeout
 	return TRUE
 
@@ -60,7 +74,7 @@
 	if(!timer && flags & MOVEMENT_LOOP_START_FAST)
 		timer = world.time
 		return
-	timer = world.time + delay
+	timer = world.time + scheduled_delay
 
 /datum/move_loop/proc/stop_loop()
 	SHOULD_CALL_PARENT(TRUE)
@@ -83,6 +97,7 @@
 ///Exists as a helper so outside code can modify delay in a sane way
 /datum/move_loop/proc/set_delay(new_delay)
 	delay =  max(new_delay, world.tick_lag)
+	scheduled_delay = movement_quantize_delay(delay, world.tick_lag)
 
 ///Pauses the move loop for some passed in period
 ///This functionally means shifting its timer up, and clearing it from its current bucket
@@ -91,13 +106,15 @@
 		return
 	//Dequeue us from our current bucket
 	controller.dequeue_loop(src)
-	//Offset our timer
-	timer = world.time + time
+	//Offset our timer - выравниваем по тику, чтобы пауза не сбивала цикл с сетки
+	timer = world.time + movement_quantize_delay(time, world.tick_lag)
 	//Now requeue us with our new target start time
 	controller.queue_loop(src)
 
 /datum/move_loop/process()
-	var/old_delay = delay //The signal can sometimes change delay
+	// Списываем ту цену, которая реально прошла по часам, а не запрошенную:
+	// расписание идёт по выровненной, и по ней же обязан таять срок жизни.
+	var/old_delay = scheduled_delay //The signal can sometimes change delay
 
 	if(SEND_SIGNAL(src, COMSIG_MOVELOOP_PREPROCESS_CHECK) & MOVELOOP_SKIP_STEP) //Chance for the object to react
 		return
@@ -105,6 +122,10 @@
 	lifetime -= old_delay //This needs to be based on work over time, not just time passed
 
 	if(lifetime < 0) //Otherwise lag would make things look really weird
+		qdel(src)
+		return
+
+	if(!controller || QDELETED(moving) || !moving)
 		qdel(src)
 		return
 
@@ -119,7 +140,9 @@
 	if(flags & MOVEMENT_LOOP_IGNORE_GLIDE)
 		return
 
-	moving.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(delay, visual_delay))
+	// Расписание считается по выровненной цене, значит и glide обязан: иначе
+	// спрайт покроет тайл не за то число тиков, которое реально пройдёт.
+	moving.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(scheduled_delay, visual_delay))
 
 ///Handles the actual move, overriden by children
 ///Returns FALSE if nothing happen, TRUE otherwise
@@ -127,8 +150,10 @@
 	return FALSE
 
 ///Removes the atom from some movement subsystem. Defaults to SSmovement
+///moving может быть null: харддел нулит ссылку у вызывающего раньше, чем тот
+///успевает остановить движение - это штатный no-op, а не рантайм
 /datum/controller/subsystem/move_manager/proc/stop_looping(atom/movable/moving, datum/controller/subsystem/movement/subsystem = SSmovement)
-	var/datum/movement_packet/our_info = moving.move_packet
+	var/datum/movement_packet/our_info = moving?.move_packet
 	if(!our_info)
 		return FALSE
 	return our_info.remove_subsystem(subsystem)
@@ -354,6 +379,8 @@
 	var/skip_first
 	///A list for the path we're currently following
 	var/list/movement_path
+	///Only one asynchronous route search may own this loop at a time.
+	var/repath_in_progress = FALSE
 	///Cooldown for repathing, prevents spam
 	COOLDOWN_DECLARE(repath_cooldown)
 
@@ -383,6 +410,8 @@
 /datum/move_loop/has_target/jps/Destroy()
 	id = null //Kill me
 	avoid = null
+	movement_path = null
+	repath_in_progress = FALSE
 	return ..()
 
 /datum/move_loop/has_target/jps/proc/handle_no_id()
@@ -391,22 +420,75 @@
 
 //Returns FALSE if the recalculation failed, TRUE otherwise
 /datum/move_loop/has_target/jps/proc/recalculate_path()
-	if(!COOLDOWN_FINISHED(src, repath_cooldown))
+	if(repath_in_progress || !COOLDOWN_FINISHED(src, repath_cooldown))
 		return
+	repath_in_progress = TRUE
 	COOLDOWN_START(src, repath_cooldown, repath_delay)
+	AI_METRIC_INC(jps_repaths)
 	SEND_SIGNAL(src, COMSIG_MOVELOOP_JPS_REPATH)
-	movement_path = get_path_to(moving, target, max_path_length, minimum_distance, id, simulated_only, avoid, skip_first)
+	var/datum/ai_controller/controller = extra_info
+	// AI chases bound the search to distance + detour slack so a walled-off close target
+	// costs a small diamond, not the whole max_path_length one. Bots keep the full radius.
+	var/effective_max = istype(controller) ? ai_effective_path_radius(moving, target, max_path_length) : max_path_length
+	var/list/new_path = get_path_to(moving, target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	if(!length(new_path))
+		// A target beyond the full budget is unreachable by either pathfinder, so
+		// skip the breach fallback entirely instead of blocking on a pathfinder slot
+		// for a search that can only fail. Gate on the real budget, search the bounded
+		// radius. The cheap direct loop keeps closing the gap.
+		if(istype(controller) && (!max_path_length || get_dist(moving, target) <= max_path_length))
+			new_path = controller.get_path_through_obstacles(target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	// An empty result while a route is still live means the rebuild failed on the move
+	// (the target ducked behind a wall). Wiping the working path over that leaves the
+	// mover standing in the middle of a corridor; let it walk the route out and repath
+	// honestly at the end instead.
+	if(length(new_path) || !length(movement_path))
+		movement_path = new_path
+	repath_in_progress = FALSE
+
+/// TRUE when the cached route no longer ends anywhere near the target. The path is
+/// planned once for wherever the target stood, and the loop only rebuilds it when the
+/// cache runs out - so the longer the route, the longer the mover chases a stale
+/// destination (a door the target left seconds ago). repath_cooldown keeps the rate
+/// bounded, so a moving target costs at most one extra search per repath_delay.
+/datum/move_loop/has_target/jps/proc/target_drifted_from_path()
+	if(repath_in_progress || !COOLDOWN_FINISHED(src, repath_cooldown))
+		return FALSE
+	var/turf/destination = movement_path[length(movement_path)]
+	var/turf/target_turf = get_turf(target)
+	if(!destination || !target_turf)
+		return FALSE
+	if(destination.z != target_turf.z)
+		return TRUE
+	return get_dist(destination, target_turf) > max(minimum_distance || 0, 1)
 
 /datum/move_loop/has_target/jps/move()
 	if(!length(movement_path))
-		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
+		if(!repath_in_progress)
+			INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 		if(!length(movement_path))
 			return FALSE
+
+	//Заказываем перепрокладку на ходу, не теряя текущий шаг: пока новый маршрут
+	//считается, моб продолжает идти по старому.
+	if(target_drifted_from_path())
+		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 
 	var/turf/next_step = movement_path[1]
 	var/atom/old_loc = moving.loc
 	moving.Move(next_step, get_dir(moving, next_step))
 	. = (old_loc != moving?.loc)
+	// Та же честная цена диагонали, что у бюджетного лупа и игрока: JPS-маршрут
+	// сплошь состоит из диагональных сегментов, и без надбавки длинная погоня по
+	// нему сохраняла те же скрытые 1.33x, что этот пас выпилил из прямого шага.
+	// По фактическому направлению: заблокированная диагональ может пройти одной
+	// кардинальной половиной, и за неё диагональной цены нет.
+	if(. && !QDELETED(moving))
+		scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(get_dir(old_loc, moving.loc)), world.tick_lag)
 
 	// this check if we're on exactly the next tile may be overly brittle for dense objects who may get bumped slightly
 	// to the side while moving but could maybe still follow their path without needing a whole new path
@@ -690,7 +772,21 @@
 	var/turf/target_turf = get_step_towards(moving, target)
 	var/atom/old_loc = moving.loc
 	moving.Move(target_turf, get_dir(moving, target_turf))
-	return old_loc != moving?.loc
+	// Шаг может убить пауна: лава, космос, разрыв, ловушка. Ссылка на него после
+	// этого становится null молча, и читать его loc уже нельзя. Луп всё равно
+	// снимется на следующем process(), а этот шаг ничего не стоит.
+	if(QDELETED(moving) || old_loc == moving.loc)
+		return FALSE
+	// Игрок платит за диагональ ×√2 (movement_step_delay в /client/Move), а этот
+	// луп бил с одинаковой задержкой в любом направлении - скрытые 1.33x скорости
+	// в пользу моба поверх номинального паритета. Считаем той же функцией, что и
+	// для игрока, и по ФАКТИЧЕСКОМУ направлению: диагональный Move() может
+	// пройти только одну кардинальную половину, и за неё диагональной цены нет.
+	// Цену следующего интервала выставляем здесь: подсистема переставляет таймер
+	// по scheduled_delay сразу после move(), и glide считается от него же.
+	var/actual_dir = get_dir(old_loc, moving.loc)
+	scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(actual_dir), world.tick_lag)
+	return TRUE
 
 
 /**
@@ -804,8 +900,14 @@
 
 /datum/move_loop/disposal_holder/move()
 	var/obj/structure/disposalholder/holder = moving
-	if(!holder.current_pipe)
+	if(!holder?.current_pipe)
 		return FALSE
 	var/atom/old_loc = moving.loc
-	holder.current_pipe = holder.current_pipe.transfer(holder)
+	// Cache current_pipe before transfer() — transfer can trigger Moved() -> qdel(holder),
+	// and QDEL_HINT_HARDDEL_NOW causes synchronous del() which nullifies holder mid-call.
+	var/obj/structure/disposalpipe/current = holder.current_pipe
+	var/obj/structure/disposalpipe/next_pipe = current.transfer(holder)
+	if(QDELETED(holder))
+		return FALSE
+	holder.current_pipe = next_pipe
 	return old_loc != moving?.loc

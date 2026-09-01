@@ -11,7 +11,7 @@
 	floor_tile = null
 	initial_gas_mix = FROZEN_ATMOS
 	slowdown = 0
-	bullet_sizzle = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
@@ -36,7 +36,6 @@
 	canSmoothWith = list (/turf/closed)
 	baseturfs = /turf/open/floor/plating/layeniaredder
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
-	environment_type = "waste"
 	turf_type = /turf/open/floor/plating/layeniaredder
 	defer_change = TRUE
 
@@ -45,6 +44,7 @@
 	desc = "crimson rocks surround you."
 	icon = 'modular_splurt/icons/turf/layenia.dmi'
 	icon_state = "layenia"
+	base_icon_state = "layenia"
 	heat_capacity = INFINITY
 	slowdown = 0
 	footstep = FOOTSTEP_SAND

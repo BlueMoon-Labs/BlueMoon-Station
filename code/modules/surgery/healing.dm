@@ -79,6 +79,12 @@
 		umsg += " as best as you can while they have clothing on"
 		tmsg += " as best as they can while [target] has clothing on"
 	target.heal_bodypart_damage(urhealedamt_brute,urhealedamt_burn)
+	if(brutehealing && burnhealing)
+		user.balloon_alert(user, "<span style='color:#ff4444'>[round(target.getBruteLoss_nonProsthetic())]</span> | <span style='color:#ff9900'>[round(target.getFireLoss_nonProsthetic())]</span>")
+	else if(brutehealing)
+		user.balloon_alert(user, "<span style='color:#ff4444'>[round(target.getBruteLoss_nonProsthetic())]</span>")
+	else if(burnhealing)
+		user.balloon_alert(user, "<span style='color:#ff9900'>[round(target.getFireLoss_nonProsthetic())]</span>")
 	display_results(user, target, "<span class='notice'>[umsg].</span>",
 		"[tmsg].",
 		"[tmsg].")
@@ -88,6 +94,7 @@
 	return TRUE
 
 /datum/surgery_step/heal/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screwed up!</span>",
 		"<span class='warning'>[user] screws up!</span>",
 		"<span class='notice'>[user] fixes some of [target]'s wounds.</span>", TRUE)
@@ -98,7 +105,6 @@
 		urdamageamt_burn += round((target.getFireLoss()/ (missinghpbonus*2)),0.1)
 
 	target.take_bodypart_damage(urdamageamt_brute, urdamageamt_burn, wound_bonus=CANT_WOUND)
-	return FALSE
 
 /***************************BRUTE***************************/
 /datum/surgery/healing/brute
@@ -219,6 +225,7 @@
 	missinghpbonus = 2.5
 
 /datum/surgery_step/heal/combo/upgraded/femto/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='warning'>You screwed up!</span>",
 		"<span class='warning'>[user] screws up!</span>",
 		"<span class='notice'>[user] fixes some of [target]'s wounds.</span>", TRUE)

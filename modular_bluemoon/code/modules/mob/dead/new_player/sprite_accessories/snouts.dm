@@ -69,20 +69,30 @@
 	icon_state = "mouse"
 	matrixed_sections = MATRIX_ALL
 
-/datum/sprite_accessory/snouts/mam_snouts/catcrin_synth1
-	name = "Synthetic catcrin full snout"
-	icon = 'modular_bluemoon/icons/mob/snout.dmi'
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin
+	name = "Synthetic catcrin snout 1"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
 	icon_state = "catcrin_synth1"
 	matrixed_sections = MATRIX_ALL
 
-/datum/sprite_accessory/snouts/mam_snouts/catcrin_synth2
-	name = "Synthetic Catcrin visor one"
-	icon = 'modular_bluemoon/icons/mob/snout.dmi'
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin/two
+	name = "Synthetic catcrin snout 2"
 	icon_state = "catcrin_synth2"
+
+/datum/sprite_accessory/snouts/mam_snouts/synth_catcrin/three
+	name = "Synthetic catcrin snout 3"
+	icon_state = "catcrin_synth3"
+
+/datum/sprite_accessory/snouts/mam_snouts/kathari
+	name = "Kathari"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
+	icon_state = "kathari"
 	matrixed_sections = MATRIX_ALL
 
-/datum/sprite_accessory/snouts/mam_snouts/catcrin_synth3
-	name = "Synthetic Catcrin visor two"
-	icon = 'modular_bluemoon/icons/mob/snout.dmi'
-	icon_state = "catcrin_synth3"
+/datum/sprite_accessory/snouts/mam_snouts/kathari/alt
+	name = "Kathari alt"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
+	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_ALL
+
+

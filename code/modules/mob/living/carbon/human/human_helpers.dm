@@ -16,7 +16,7 @@
 	if(id)
 		. = id.assignment
 	else
-		var/obj/item/pda/pda = wear_id
+		var/obj/item/modular_computer/pda/pda = wear_id
 		if(istype(pda))
 			. = pda.ownjob
 		else
@@ -30,7 +30,7 @@
 	var/obj/item/card/id/id = get_idcard(FALSE)
 	if(id)
 		return id.registered_name
-	var/obj/item/pda/pda = wear_id
+	var/obj/item/modular_computer/pda/pda = wear_id
 	if(istype(pda))
 		return pda.owner
 	return if_no_id
@@ -64,7 +64,7 @@
 //Useful when player is being seen by other mobs
 /mob/living/carbon/human/proc/get_id_name(if_no_id = "Unknown")
 	var/obj/item/storage/wallet/wallet = wear_id
-	var/obj/item/pda/pda = wear_id
+	var/obj/item/modular_computer/pda/pda = wear_id
 	var/obj/item/card/id/id = wear_id
 	var/obj/item/modular_computer/tablet/tablet = wear_id
 	var/obj/item/clothing/neck/petcollar/petcollar = wear_neck
@@ -109,7 +109,7 @@
 /mob/living/carbon/human/can_track(mob/living/user)
 	if((wear_id && istype(wear_id?.GetID(), /obj/item/card/id/syndicate)) || (wear_neck && istype(wear_neck?.GetID(), /obj/item/card/id/syndicate)))
 		return FALSE
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/hat = head
 		if(hat.blockTracking)
 			return FALSE
@@ -122,7 +122,7 @@
 		return
 	if(G.trigger_guard == TRIGGER_GUARD_NORMAL)
 		if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS))
-			balloon_alert(src, "fingers are too big!")
+			balloon_alert(src, "Пальцы слишком большие!")
 			return FALSE
 	if(HAS_TRAIT(src, TRAIT_NOGUNS))
 		to_chat(src, span_warning("You can't bring yourself to use a ranged weapon!"))

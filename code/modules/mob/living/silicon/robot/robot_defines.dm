@@ -9,8 +9,7 @@
 	// radio = /obj/item/radio/borg
 
 	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
-	// light_system = MOVABLE_LIGHT_DIRECTIONAL
-	var/light_on = FALSE
+	// light_system = OVERLAY_LIGHT_DIRECTIONAL // вторая волна конвертации: лампа борга с поэтапной яркостью
 
 	var/custom_name = ""
 	var/braintype = "Cyborg"
@@ -29,6 +28,9 @@
 	var/previous_health
 	/// Station alert datum for showing alerts UI
 	var/datum/station_alert/alert_control
+
+	// Overlay for borg hat
+	var/mutable_appearance/hat_overlay
 
 //Hud stuff
 
@@ -67,9 +69,17 @@
 	var/vtec = 0 // VTEC speed boost.
 	/// vtec shorted out
 	var/vtec_disabled = FALSE
+	/// world.time, когда кончится форсаж VTEC (режим 3); 0 - лимита времени нет (крейсерский режим)
+	var/vtec_expire = 0
+	/// расход заряда за тик жизни, пока активен разгон VTEC
+	var/vtec_drain = 0
+	/// world.time, когда VTEC снова можно активировать после форсажа
+	var/vtec_cooldown_until = 0
 	var/magpulse = FALSE // Magboot-like effect.
 	var/ionpulse = FALSE // Jetpack-like effect.
 	var/ionpulse_on = FALSE // Jetpack-like effect.
+	/// Не больше одного импульса за тик: Process_Spacemove за шаг зовут дважды, с ручного пути и с ньютоновского
+	var/last_ionpulse_time = -1
 	var/datum/effect_system/trail_follow/ion/ion_trail // Ionpulse effect.
 
 	var/low_power_mode = 0 //whether the robot has no charge left.
@@ -106,7 +116,7 @@
 
 	var/hasExpanded = FALSE
 	var/obj/item/hat
-	var/hat_offset = -3
+	var/alist/hat_offset = NORMAL_HAT_OFFSET
 
 	can_buckle = TRUE
 	buckle_lying = FALSE
@@ -114,11 +124,7 @@
 	var/static/list/can_ride_typecache = typecacheof(/mob/living/carbon/human)
 
 	// cit specific vars //
-	var/sitting = 0
-	var/bellyup = 0
-	var/deep_rest = 0		//DarkSer request by Gardelin0
-	var/wag_rest = 0		//DarkSer request by Gardelin0
-	var/wag_sit = 0			//DarkSer request by Gardelin0
+	var/resting_state = "rest"
 	var/dogborg = FALSE
 
 	var/cansprint = 1

@@ -57,14 +57,19 @@
 /mob/living/carbon/human/proc/GetSpecialVoice()
 	return special_voice
 
+// (ADD) Pe4henika Bluemoon -- start
 /mob/living/carbon/human/binarycheck()
+	var/obj/item/organ/cyberimp/brain/ai_link/I = getorganslot("brain_ai_link")
+	if(istype(I) && I.linked_ai)
+		return TRUE
+
 	if(ears)
 		var/obj/item/radio/headset/dongle = ears
-		if(!istype(dongle))
-			return FALSE
-		if(dongle.translate_binary)
+		if(istype(dongle) && dongle.translate_binary)
 			return TRUE
 
+	return ..()
+// (ADD) Pe4henika Bluemoon -- end
 /mob/living/carbon/human/radio(message, message_mode, list/spans, language)
 	. = ..()
 	if(.)
@@ -109,7 +114,7 @@
 	set waitfor = FALSE		// WINGET IS A SLEEP. DO. NOT. SLEEP.
 	if(stat == CONSCIOUS)
 		if(client)
-			var/temp = winget(client, "input", "text")
+			var/temp = tracked_winget(client, "input", "text")
 			var/say_starter = "Say \"" //"
 			if(findtextEx(temp, say_starter, 1, length(say_starter) + 1) && length(temp) > length(say_starter))	//case sensitive means
 

@@ -20,18 +20,21 @@
 			"BootyF" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandard"),
 			"BootyM" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardM"),
 			"BootyS" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardS"),
-			"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-clerc"), //Gardelin0 Addon
+			"Fembot" = image(icon = 'modular_bluemoon/icons/mob/robot/robots.dmi', icon_state = "fembot-clerc"), //Gardelin0 Addon
 			"Assaultron" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "assaultron_standard"),
 			"Handy" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "handy"),
 			"Robo-Brain" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "robobrain"),
 			"Cyclone" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "cyclone"),
-			"SmollRaptor" = image(icon = 'modular_zubbers/icons/mob/smolraptor.dmi', icon_state = "smolraptor-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
+			"SmollRaptor" = image(icon = 'icons/mob/smolraptor.dmi', icon_state = "smolraptor-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanclown")
 			)
 		stand_icons = sort_list(stand_icons)
-	var/stand_borg_icon = show_radial_menu(R, R , stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_stand_icons = get_selectable_borg_icons(stand_icons, R.client)
+	var/stand_borg_icon = show_radial_menu(R, R , selectable_stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 	if(!stand_borg_icon)
 		return
+	if(apply_donator_borg_icon(stand_borg_icon, R.client))
+		return ..()
 	switch(stand_borg_icon)
 		if("Standard")
 			cyborg_base_icon = "robot"
@@ -48,7 +51,7 @@
 		if("Zoomba")
 			cyborg_base_icon = "zoomba_standard"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
-			hat_offset = 3
+			hat_offset = ZOOMBA_HAT_OFFSET
 		if("Marina")
 			cyborg_base_icon = "marinasd"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
@@ -79,7 +82,7 @@
 			hat_offset = 3
 		if("Fembot") // //Gardelin0 Addon
 			cyborg_base_icon = "fembot-clerc"
-			cyborg_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/robots.dmi'
 		if("Assaultron")
 			cyborg_base_icon = "assaultron_standard"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
@@ -98,12 +101,12 @@
 			hat_offset = 3
 		if("SmollRaptor") // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			cyborg_base_icon = "smolraptor"
-			cyborg_icon_override = 'modular_zubbers/icons/mob/smolraptor.dmi'
+			cyborg_icon_override = 'icons/mob/smolraptor.dmi'
 			dogborg = TRUE
 		if("Dullahan")
 			cyborg_base_icon = "dullahanclown"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 	return ..()
 
@@ -120,7 +123,9 @@
 			"Marina" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "marina_mommy"),
 			"BootyF" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandard"),
 			"BootyM" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardM"),
-			"BootyS" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardS")
+			"BootyS" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardS"),
+			"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurclown"),
+			"Kitty Clown" = image(icon = 'modular_bluemoon/icons/mob/robot/kitty_clown.dmi', icon_state = "kittyclown")
 		)
 		clown_icons = sort_list(clown_icons)
 	var/clown_borg_icon = show_radial_menu(R, R , clown_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
@@ -161,6 +166,18 @@
 			cyborg_base_icon = "bootyclownS"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
 			hat_offset = 3
+		if("Dullahan (Taur)")
+			cyborg_base_icon = "dullahantaurclown"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi'
+			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
+			has_snowflake_deadsprite = TRUE
+			hasrest = TRUE
+		if("Kitty Clown")
+			cyborg_base_icon = "kittyclown"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/kitty_clown.dmi'
+			hat_offset = HOUND_HAT_OFFSET
+			hasrest = TRUE
+			dogborg = TRUE
 	return ..()
 
 /// Cargo Borgs! ///
@@ -210,8 +227,9 @@
 		"K4T" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tcargo"), // SPLURT Addon
 		"K4T (alt)" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tcargo_alt1"), // SPLURT Addon
 		"Raptor V-4" = image(icon = 'modular_splurt/icons/mob/robots_64x45.dmi', icon_state = "caraptor-b"), // ChompS Port (base); Additional spriting by @ertyuk421
-		"SmollRaptor" = image(icon = 'modular_zubbers/icons/mob/smolraptor.dmi', icon_state = "smolraptor_crg-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
-		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahancargo")
+		"SmollRaptor" = image(icon = 'icons/mob/smolraptor.dmi', icon_state = "smolraptor_crg-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
+		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahancargo"),
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurcargo")
 		)
 		var/list/L = list("Cargohound" = "cargohound", "Cargohound Dark" = "cargohounddark", "Vale" = "valecargo", "Feline" = "vixcargo")
 		for(var/a in L)
@@ -222,6 +240,7 @@
 	switch(cargo_borg_icon)
 		if("Default")
 			cyborg_base_icon = "cargoborg"
+			cyborg_icon_override = 'modular_splurt/icons/mob/robots_cargo.dmi'
 		if("Bird")
 			cyborg_base_icon = "bird_cargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_cargo.dmi'
@@ -233,7 +252,7 @@
 		if("Zoomba")
 			cyborg_base_icon = "zoomba_cargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_cargo.dmi'
-			hat_offset = 3
+			hat_offset = ZOOMBA_HAT_OFFSET
 		if("Cargohound")
 			cyborg_base_icon = "cargohound"
 			cyborg_icon_override = 'modular_splurt/icons/mob/widerobots_cargo.dmi'
@@ -245,14 +264,20 @@
 		if("Vale")
 			cyborg_base_icon = "valecargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/widerobots_cargo.dmi'
+			hat_offset = VALE_HAT_OFFSET
+			hasrest = TRUE
 			dogborg = TRUE
 		if("Borgi")
 			cyborg_base_icon = "borgi-cargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/widerobots_cargo.dmi'
+			hat_offset = BORGI_HAT_OFFSET
+			hasrest = TRUE
 			dogborg = TRUE
 		if("Drake")
 			cyborg_base_icon = "drakecargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/widerobots_cargo.dmi'
+			hat_offset = DRAKE_HAT_OFFSET
+			hasrest = TRUE
 			dogborg = TRUE
 		if("Assaultron")
 			cyborg_base_icon = "assaultron_cargo"
@@ -261,26 +286,27 @@
 		if("Meka")
 			cyborg_base_icon = "mekacargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
+			hasrest = TRUE
 		if("M-Meka")
 			cyborg_base_icon = "mmekacargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 		if("F-Meka")
 			cyborg_base_icon = "fmekacargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 		if("K4T")
 			cyborg_base_icon = "k4tcargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 		if("K4T (alt)")
 			cyborg_base_icon = "k4tcargo_alt1"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
 			hasrest = TRUE
 		if("Feline") // ChompS Port
 			cyborg_base_icon = "vixcargo"
@@ -294,12 +320,18 @@
 			dogborg = TRUE
 		if("SmollRaptor") // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			cyborg_base_icon = "smolraptor_crg"
-			cyborg_icon_override = 'modular_zubbers/icons/mob/smolraptor.dmi'
+			cyborg_icon_override = 'icons/mob/smolraptor.dmi'
 			dogborg = TRUE
 		if("Dullahan")
 			cyborg_base_icon = "dullahancargo"
 			cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
-			hat_offset = 3
+			hat_offset = TALL_HAT_OFFSET
+			hasrest = TRUE
+		if("Dullahan (Taur)")
+			cyborg_base_icon = "dullahantaurcargo"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi'
+			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
+			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
 		else
 			return FALSE

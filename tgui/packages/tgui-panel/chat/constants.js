@@ -11,6 +11,7 @@ export const MESSAGE_PRUNE_INTERVAL = 60000;
 export const COMBINE_MAX_MESSAGES = 5;
 export const COMBINE_MAX_TIME_WINDOW = 5000;
 export const IMAGE_RETRY_DELAY = 250;
+export const IMAGE_RETRY_MAX_DELAY = 4000;
 export const IMAGE_RETRY_LIMIT = 10;
 export const IMAGE_RETRY_MESSAGE_AGE = 60000;
 
@@ -32,6 +33,7 @@ export const MESSAGE_TYPE_ADMINPM = 'adminpm';
 export const MESSAGE_TYPE_COMBAT = 'combat';
 export const MESSAGE_TYPE_LEWD = 'lewd';
 export const MESSAGE_TYPE_ADMINCHAT = 'adminchat';
+export const MESSAGE_TYPE_ADMINLOOC = 'adminlooc';
 export const MESSAGE_TYPE_MODCHAT = 'modchat';
 export const MESSAGE_TYPE_EVENTCHAT = 'eventchat';
 export const MESSAGE_TYPE_ADMINLOG = 'adminlog';
@@ -60,20 +62,20 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_RADIO,
     name: 'Radio',
     description: 'All departments of radio messages',
-    selector: '.alert, .minorannounce, .syndradio, .inteqradio, .pirateradio, .centcomradio, .aiprivradio, .comradio, .secradio, .lawradio, .gangradio, .engradio, .medradio, .sciradio, .suppradio, .servradio, .radio, .deptradio, .binarysay, .newscaster, .resonate',
+    selector: '.alert, .minorannounce, .priority_announcement, .system_notice, .syndradio, .inteqradio, .pirateradio, .centcomradio, .aiprivradio, .comradio, .secradio, .lawradio, .gangradio, .engradio, .medradio, .sciradio, .suppradio, .servradio, .radio, .deptradio, .binarysay, .newscaster, .resonate, .changeling_hivemind, .terror, .supermatter_delam, .broadcast_static',
   },
   {
     type: MESSAGE_TYPE_INFO,
     name: 'Info',
     description: 'Non-urgent messages from the game and items',
     selector:
-      '.notice:not(.pm), .adminnotice, .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice',
+      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel, .eldritch, .eldritch_big, .syndicate, .syndicate_big, .telepathy, .telepathybold, .dream, .thought',
   },
   {
     type: MESSAGE_TYPE_WARNING,
     name: 'Warnings',
     description: 'Urgent messages from the game and items',
-    selector: '.warning:not(.pm), .critical, .userdanger, .italics, .alertsyndie, .warningplain',
+    selector: '.warning:not(.pm), .critical, .userdanger, .italics, .alertsyndie, .warningplain, .infernal, .infernal_ascension, .arcane, .revolution, .revolution_big, .mesmerize, .nightmare',
   },
   {
     type: MESSAGE_TYPE_DEADCHAT,
@@ -97,7 +99,7 @@ export const MESSAGE_TYPES = [
     type: 'antagooc',
     name: 'AOOC',
     description: 'Antag OOC Chat.',
-    selector: '.filter_aooc, .antagooc',
+    selector: '.filter_aooc, .antagooc, .adminantagooc',
   },
   {
     type: MESSAGE_TYPE_ADMINPM,
@@ -115,7 +117,7 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_LEWD,
     name: 'Lewd messages',
     description: 'You came!',
-    selector: '.userlove, .love, .lewd',
+    selector: '.userlove, .love, .lewd, .purr, .croon',
   },
   {
     type: MESSAGE_TYPE_UNKNOWN,
@@ -127,9 +129,10 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_ADMINCHAT,
     name: 'Admin Chat',
     description: 'ASAY messages',
-    selector: '.admin_channel, .adminsay',
+    selector: '.admin_channel, .adminsay, .message_to_admin',
     admin: true,
   },
+  /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_MODCHAT,
     name: 'Mod Chat',
@@ -137,31 +140,44 @@ export const MESSAGE_TYPES = [
     selector: '.mod_channel',
     admin: true,
   },
+  */
+  {
+    type: MESSAGE_TYPE_ADMINLOOC,
+    name: '(R)LOOC',
+    description: 'Global LOOC',
+    selector: '.adminlooc',
+    admin: true,
+  },
   {
     type: MESSAGE_TYPE_ADMINLOG,
     name: 'Admin Log',
     description: 'ADMIN LOG: Urist McAdmin has jumped to coordinates X, Y, Z',
-    selector: '.log_message',
+    selector: '.log_message, .filter_adminlog, .antigrif, .adminnotice',
     admin: true,
   },
+  /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_ATTACKLOG,
     name: 'Attack Log',
     description: 'Urist McTraitor has shot John Doe',
     admin: true,
   },
+  */
+ /* Такого типа у нас нету
   {
     type: MESSAGE_TYPE_DEBUG,
     name: 'Debug Log',
     description: 'DEBUG: SSPlanets subsystem Recover().',
+    selector: '.admindebug',
     admin: true,
   },
+  */
   // Mentor
   {
     type: MESSAGE_TYPE_MENTORSAY,
     name: 'Mentor Say',
-    description: 'Mentor Say',
-    selector: '.mentorsay, .mentorsay_admin',
+    description: 'Msay и mentorhelp (тикеты)',
+    selector: '.mentorsay, .mentorsay_admin, .mentornotice',
     mentor: true,
   },
 ];

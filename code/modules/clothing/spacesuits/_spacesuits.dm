@@ -47,4 +47,4 @@
 	equip_delay_other = 80
 	resistance_flags = NONE
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE //rated for cosmic radation :honk:
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC

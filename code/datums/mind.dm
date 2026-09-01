@@ -61,8 +61,20 @@
 	var/static/default_martial_art = new/datum/martial_art
 	var/miming = 0 // Mime's vow of silence
 	var/list/antag_datums
+	/// Активность антага для директора: score шума (атаки/убийства/розыск), затухает с полураспадом
+	/// DIRECTOR_ACTIVITY_HALF_LIFE. Читать через SSdirector.antag_activity() - он применяет затухание.
+	var/director_activity = 0
+	/// world.time последнего изменения director_activity (точка отсчёта затухания)
+	var/director_activity_at = 0
+	/// Накопленная за жизнь антага активность без затухания. Директор запоминает значение в момент
+	/// выдачи каждой роли и по дельте решает, заслуживает ли её ранняя потеря возврата бюджета.
+	var/director_activity_total = 0
+	/// world.time первой встречи директором этого разума живым антагом вне рулсетов/гост-ролей
+	/// (жетон, админ, вербовка). Точка отсчёта затухания untracked-вклада в antag_load.
+	var/director_untracked_since = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
+	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
 	var/damnation_type = 0
 	var/datum/mind/soulOwner //who owns the soul.  Under normal circumstances, this will point to src
 	var/hasSoul = TRUE // If false, renders the character unable to sell their soul.
@@ -74,7 +86,7 @@
 	///has this mind ever been an AI
 	var/has_ever_been_ai = FALSE
 
-	var/assigned_heirloom = null // BLUEMOON EDIT - лодаутные реликвии. Дерьмовейшее решение, но по-другому не знаю, как сделать, чтобы спавнящиеся под ногами лодаутные предметы мог обрабатывать квирк
+	var/obj/item/assigned_heirloom = null // BLUEMOON EDIT - лодаутные реликвии. Дерьмовейшее решение, но по-другому не знаю, как сделать, чтобы спавнящиеся под ногами лодаутные предметы мог обрабатывать квирк
 	var/force_escaped = FALSE  // Set by Into The Sunset command of the shuttle manipulator
 	var/list/learned_recipes //List of learned recipe TYPES.
 
@@ -100,8 +112,22 @@
 	var/ambition_limit = 6
 	/// Time when new ambition can be rolled
 	var/ambition_cooldown_end = 0
-
+	// Research exp for specific item
+	var/research_exp = null
+	var/can_use_research_paper = FALSE
 	// BLUEMOON ADD END
+
+	// Character Directory vars
+	var/show_in_directory
+	var/directory_tag
+	var/directory_erptag
+	var/directory_gendertag
+	var/directory_ad
+	var/ooc_notes
+	var/flavor_text
+	var/silicon_flavor_text
+	var/list/headshot_links = list()
+	var/list/headshot_naked_links = list()
 
 /datum/mind/New(key)
 	skill_holder = new(src)
@@ -111,11 +137,29 @@
 
 /datum/mind/Destroy()
 	SSticker.minds -= src
+	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
+	QDEL_LIST(ambition_objectives)
 	QDEL_NULL(skill_holder)
+	RemoveAllSpells()
+	set_assigned_heirloom(null)
 	set_current(null)
 	soulOwner = null
 	return ..()
+
+/datum/mind/proc/set_assigned_heirloom(obj/item/new_heirloom)
+	if(assigned_heirloom == new_heirloom)
+		return
+	if(assigned_heirloom)
+		UnregisterSignal(assigned_heirloom, COMSIG_PARENT_QDELETING)
+	assigned_heirloom = new_heirloom
+	if(assigned_heirloom)
+		RegisterSignal(assigned_heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_assigned_heirloom_qdeleting))
+
+/datum/mind/proc/on_assigned_heirloom_qdeleting(obj/item/source)
+	SIGNAL_HANDLER
+	if(source == assigned_heirloom)
+		set_assigned_heirloom(null)
 
 /datum/mind/proc/set_current(mob/new_current)
 	if(new_current && QDELETED(new_current))
@@ -219,9 +263,12 @@
 	//Choose snowflake variation if antagonist handles it
 	var/datum/antagonist/S = A.specialization(src)
 	if(S && S != A)
+		//заготовку, которую подменила специализация, тоже сносим штатно
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		A = S
 	if(!A.can_be_owned(src))
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		return
 	A.owner = src
@@ -239,7 +286,7 @@
 /datum/mind/proc/do_add_antag_datum(instanced_datum)
 	. = LAZYLEN(antag_datums)
 	LAZYADD(antag_datums, instanced_datum)
-	if(!.)
+	if(!. && current)
 		add_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 
@@ -248,6 +295,8 @@
 		return
 	var/datum/antagonist/A = has_antag_datum(datum_type)
 	if(A)
+		if(istype(A, /datum/antagonist/heretic) && current)
+			REMOVE_TRAIT(current, TRAIT_ANTIMAGIC_NO_SELFBLOCK, "heretic")
 		A.on_removal()
 		return TRUE
 
@@ -257,7 +306,10 @@
 	LAZYREMOVE(antag_datums, instanced_datum)
 	if(. && !LAZYLEN(antag_datums))
 		ambitions = null
-		remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
+		//разум без тела (тело удалено, дисконнект): remove_verb по null роняет CRASH,
+		//парный do_add_antag_datum гардит current точно так же
+		if(current)
+			remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 
 /datum/mind/proc/remove_all_antag_datums() //For the Lazy amongst us.
@@ -274,6 +326,16 @@
 			return A
 		else if(A.type == datum_type)
 			return A
+
+///Is this character an offstation ghost role (hotel, ghost cafe, CentCom intern, ERT etc.)? Such characters must not be picked as antag objective targets.
+/datum/mind/proc/is_ghost_role()
+	if(has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	if(assigned_role in GLOB.exp_specialmap[EXP_TYPE_SPECIAL])
+		return TRUE
+	if(current && HAS_TRAIT(current, TRAIT_NO_MIDROUND_ANTAG))
+		return TRUE
+	return FALSE
 
 /*
 	Removes antag type's references from a mind.
@@ -336,7 +398,7 @@
 		return
 	if(!istype(current.loc, /obj/item/mmi))
 		return
-	var/obj/item/mmi/B = current.loc.loc
+	var/obj/item/mmi/B = current.loc
 	if(!istype(B.laws, /datum/ai_laws/ratvar))
 		remove_servant_of_ratvar(current, TRUE)
 
@@ -349,6 +411,12 @@
 	remove_cultist()
 	remove_rev()
 	SSticker.mode.update_cult_icons_removed(src)
+
+/datum/mind/proc/remove_slaver()
+	var/datum/antagonist/slaver/slaver = has_antag_datum(/datum/antagonist/slaver,TRUE)
+	if(slaver)
+		remove_antag_datum(slaver.type)
+		special_role = null
 
 /**
  * ## give_uplink
@@ -366,7 +434,7 @@
 		return
 
 	var/list/all_contents = traitor_mob.GetAllContents()
-	var/obj/item/pda/PDA = locate() in all_contents
+	var/obj/item/modular_computer/pda/PDA = locate() in all_contents
 	var/obj/item/radio/R = locate() in all_contents
 	var/obj/item/pen/P
 
@@ -479,15 +547,15 @@
 		all_objectives |= A.objectives
 
 	if(all_objectives.len)
-		output += "<B>Objectives:</B>"
+		output += "<B>Текущие цели:</B>"
 		var/obj_count = 1
 		for(var/datum/objective/objective in all_objectives)
-			output += "<br><B>Objective #[obj_count++]</B>: [objective.explanation_text]"
+			output += "<br><B>Цель #[obj_count++]</B>: [objective.explanation_text]"
 			var/list/datum/mind/other_owners = objective.get_owners() - src
 			if(other_owners.len)
 				output += "<ul>"
 				for(var/datum/mind/M in other_owners)
-					output += "<li>Conspirator: [M.name]</li>"
+					output += "<li>Сообщники: [M.name]</li>"
 				output += "</ul>"
 
 // Кнопки для амбиций и их отображение
@@ -528,6 +596,9 @@
 		if(is_admin)
 			output += " <a href='?src=[REF(antag_datum.owner)];obj_add=[REF(antag_datum)];ambition_panel=1'>Add Objective</a>"
 		output += "<ul>"
+		//дыры в списке целей вычищаем прямо тут: панель на них падала
+		//("Cannot read null.explanation_text", раунд 9827)
+		listclearnulls(antag_datum.objectives)
 		if(!length(antag_datum.objectives))
 			output += "<li><i><b>NONE</b></i>"
 		else
@@ -590,7 +661,8 @@
 				output += "<a href='?src=[REF(src)];req_obj_ping=1'>Ping the admins</a><br>"
 			if(is_admin)
 				output += "<a href='?src=[REF(src)];req_obj_ping_cd_clear=1'>Clear ping cooldown</a><br>"
-	output += "<br><b>[current.real_name]'s Ambitions:</b>"
+	//у отвязанного разума (тело съел клон/госта ещё не вселили) current == null
+	output += "<br><b>[current ? current.real_name : name]'s Ambitions:</b>"
 	if(LAZYLEN(ambitions) < CONFIG_GET(number/max_ambitions))
 		output += " <a href='?src=[REF(src)];add_ambition=1'>Add Ambition</a>"
 	output += "<ul>"
@@ -627,6 +699,7 @@ GLOBAL_LIST(objective_player_choices)
 		/datum/objective/custom,
 		/datum/objective/assassinate/once,
 		/datum/objective/protect,
+		/datum/objective/breakout,
 		/datum/objective/escape,
 		/datum/objective/survive,
 		/datum/objective/martyr,
@@ -646,6 +719,7 @@ GLOBAL_LIST(objective_choices)
 	var/list/allowed_types = list(
 		/datum/objective/custom,
 		/datum/objective/assassinate,
+		/datum/objective/assassinate/internal,
 		/datum/objective/assassinate/once,
 		/datum/objective/maroon,
 		/datum/objective/debrain,
@@ -661,6 +735,7 @@ GLOBAL_LIST(objective_choices)
 		/datum/objective/nuclear/revert,
 		/datum/objective/absorb,
 		/datum/objective/rescue_prisoner,
+		/datum/objective/breakout,
 		/datum/objective/custom
 		)
 
@@ -699,9 +774,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>You are not an antagonist.</span>")
+				return
 		if(!isliving(current))
-			return
-		if(!antag_datums)
+			to_chat(usr, "<span class='warning'>The mind holder is not a living creature.</span>")
 			return
 		var/max_ambitions = CONFIG_GET(number/max_ambitions)
 		if(LAZYLEN(ambitions) >= max_ambitions)
@@ -717,11 +794,11 @@ GLOBAL_LIST(objective_choices)
 			if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_AMBITION))
 				to_chat(usr, "<span class='warning'>You must wait [AMBITION_COOLDOWN_TIME * 0.1] seconds between changes.</span>")
 				return
+			if(!antag_datums)
+				to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
+				return
 		if(!isliving(current))
 			to_chat(usr, "<span class='warning'>The mind holder is no longer a living creature.</span>")
-			return
-		if(!antag_datums)
-			to_chat(usr, "<span class='warning'>The mind holder is no longer an antagonist.</span>")
 			return
 		if(LAZYLEN(ambitions) >= max_ambitions)
 			to_chat(usr, "<span class='warning'>There's a limit of [max_ambitions] ambitions. Edit or remove some to accomodate for your new additions.</span>")
@@ -892,7 +969,8 @@ GLOBAL_LIST(objective_choices)
 		for(var/a in GLOB.admins)
 			var/client/admin_client = a
 			if(admin_client.prefs.toggles & SOUND_ADMINHELP)
-				SEND_SOUND(admin_client, sound('sound/effects/adminhelp.ogg'))
+				var/ah_vol = admin_client.prefs?.get_sound_volume("adminhelp")
+				SEND_SOUND(admin_client, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 			window_flash(admin_client)
 		message_admins("<span class='adminhelp'>[ADMIN_TPMONTY(usr)] has requested a review of their objective changes. (<a href='?_src_=holder;[HrefToken(TRUE)];ObjectiveRequest=[REF(src)]'>RPLY</a>)</span>")
 		do_edit_objectives_ambitions()
@@ -1674,10 +1752,10 @@ GLOBAL_LIST(objective_choices)
 
 /datum/mind/proc/announce_objectives()
 	var/obj_count = 1
-	to_chat(current, "<span class='notice'>Your current objectives:</span>")
+	to_chat(current, span_notice("Ваши текущие цели:"))
 	for(var/objective in get_all_objectives())
 		var/datum/objective/O = objective
-		to_chat(current, "<B>Objective #[obj_count]</B>: [O.explanation_text]")
+		to_chat(current, "<B>Цель #[obj_count]</B>: [O.explanation_text]")
 		obj_count++
 
 /datum/mind/proc/find_syndicate_uplink()
@@ -1742,8 +1820,16 @@ GLOBAL_LIST(objective_choices)
 	special_role = ROLE_REV_HEAD
 
 /datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
+	if(!S || (S in spell_list))
+		return
 	spell_list += S
+	RegisterSignal(S, COMSIG_PARENT_QDELETING, PROC_REF(on_spell_qdeleting))
 	S.action.Grant(current)
+
+/datum/mind/proc/on_spell_qdeleting(obj/effect/proc_holder/spell/spell)
+	SIGNAL_HANDLER
+	UnregisterSignal(spell, COMSIG_PARENT_QDELETING)
+	spell_list -= spell
 
 /datum/mind/proc/owns_soul()
 	return soulOwner == src
@@ -1752,16 +1838,19 @@ GLOBAL_LIST(objective_choices)
 /datum/mind/proc/RemoveSpell(obj/effect/proc_holder/spell/spell)
 	if(!spell)
 		return
-	for(var/X in spell_list)
-		var/obj/effect/proc_holder/spell/S = X
+	for(var/obj/effect/proc_holder/spell/S in spell_list.Copy())
 		if(istype(S, spell))
 			spell_list -= S
+			UnregisterSignal(S, COMSIG_PARENT_QDELETING)
 			qdel(S)
 	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/RemoveAllSpells()
-	for(var/obj/effect/proc_holder/S in spell_list)
-		RemoveSpell(S)
+	for(var/obj/effect/proc_holder/S in spell_list.Copy())
+		spell_list -= S
+		UnregisterSignal(S, COMSIG_PARENT_QDELETING)
+		qdel(S)
+	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/transfer_martial_arts(mob/living/new_character)
 	if(!ishuman(new_character))
@@ -1835,21 +1924,48 @@ GLOBAL_LIST(objective_choices)
 
 //Initialisation procs
 /mob/proc/mind_initialize()
+	var/fresh_mind = FALSE
 	if(mind)
 		mind.key = key
 
 	else
 		mind = new /datum/mind(key)
 		SSticker.minds += mind
-		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
+		fresh_mind = TRUE
 	if(!mind.name)
 		mind.name = real_name
 	mind.set_current(src)
 	mind.hide_ckey = client?.prefs?.hide_ckey
+	// Сигнал шлём только после set_current: подписчики (те же body-bound
+	// скилл-модификаторы) сразу лезут в mind.current, а на разуме без тела
+	// add_skill_modifier роняет CRASH "Body-bound skill modifier ... was tried
+	// to be added to a mob-less mind" - раунд 9827, перетаскивание гхоста в тело.
+	if(fresh_mind)
+		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
 
 /mob/living/carbon/mind_initialize()
 	..()
 	last_mind = mind
+
+/mob/living/mind_initialize()
+	. = ..()
+	if(client?.prefs)
+		mind.show_in_directory = client?.prefs.show_in_directory
+		mind.directory_tag = client?.prefs.directory_tag
+		mind.directory_erptag = client?.prefs.directory_erptag
+		mind.directory_gendertag = client?.prefs.directory_gendertag
+		mind.directory_ad = client?.prefs.directory_ad
+		mind.ooc_notes = client?.prefs.features["ooc_notes"]
+		mind.flavor_text = client?.prefs.features["flavor_text"]
+		mind.silicon_flavor_text = client?.prefs.features["silicon_flavor_text"]
+
+		var/list/temp = client?.prefs.features["headshot_links"]
+		mind.headshot_links = LAZYCOPY(temp)
+		listclearnulls(mind.headshot_links)
+
+		temp = client?.prefs.features["headshot_naked_links"]
+		mind.headshot_naked_links = LAZYCOPY(temp)
+		listclearnulls(mind.headshot_naked_links)
 
 //HUMAN
 /mob/living/carbon/human/mind_initialize()

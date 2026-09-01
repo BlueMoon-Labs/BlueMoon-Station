@@ -175,6 +175,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/atom/movable/screen/map_view/gateway_port/portal_visuals
 	var/teleportion_possible = FALSE
 	var/transport_active = FALSE
+	/// PACT siege red-channel visuals: null, "calibrating", or "open"
+	var/pact_siege_visual = null
 
 	//SKYRAT EDIT ADDITION
 	var/requires_key = FALSE
@@ -183,7 +185,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /obj/item/key/gateway
 	name = "global recall key"
 	desc = "Recall to the Global Gateway."
-	icon = 'modular_bluemoon/smiley/icons/abductorkey.dmi'
+	icon = 'modular_bluemoon/icons/obj/abductorkey.dmi'
 	icon_state = "gateway_key"
 	resistance_flags = INDESTRUCTIBLE
 
@@ -216,15 +218,36 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	destination.name = destination_name
 	destination.target_gateway = src
 	GLOB.gateway_destinations += destination
+	sync_destination_identity()
+
+/obj/machinery/gateway/proc/sync_destination_identity()
+	if(!destination)
+		return
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	if(is_pact_siege_level(T.z))
+		destination.hidden = TRUE
+		return
+	if(destination_name != initial(destination_name))
+		return
+	var/datum/space_level/level = SSmapping.get_level(T.z)
+	if(!level?.name)
+		return
+	destination_name = level.name
+	destination.name = level.name
 
 /obj/machinery/gateway/proc/deactivate()
 	var/datum/gateway_destination/dest = target
 	target = null
 	playsound(src, 'sound/machines/gateway/gateway_close.ogg', 140, TRUE, TRUE, SOUND_RANGE)
-	dest.deactivate(src)
+	if(dest)
+		dest.deactivate(src)
 	QDEL_NULL(portal)
 	use_power(IDLE_POWER_USE)
 	transport_active = FALSE
+	teleportion_possible = FALSE
+	process()
 	update_appearance()
 	portal_visuals.reset_visuals()
 
@@ -237,6 +260,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(teleportion_possible)
 		return
 	for(var/datum/gateway_destination/possible_destination as anything in GLOB.gateway_destinations)
+		if(possible_destination.hidden)
+			continue
+		if(!istype(possible_destination, /datum/gateway_destination/point))
+			continue
 		if(!valid_destination(possible_destination) || !possible_destination.is_available())
 			continue
 		teleportion_possible = TRUE
@@ -248,7 +275,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		return FALSE
 	if(istype(possible_destination, /datum/gateway_destination/gateway))
 		var/datum/gateway_destination/gateway/gateway_dest = possible_destination
-		if(gateway_dest.target_gateway == gateway_dest.target_gateway)
+		if(gateway_dest.target_gateway == src)
 			return FALSE
 	return TRUE
 
@@ -266,6 +293,25 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/gateway/update_overlays()
 	. = ..()
+	if(pact_siege_visual)
+		/// Red channel: custom portal_light (replaces the default untinted one)
+		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
+		glow.color = "#ff2525"
+		. += glow
+		. += emissive_appearance(icon, "portal_light", src)
+		if(pact_siege_visual == "calibrating")
+			/// Drawn last so it sits in front of the frame / red light
+			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")
+			loading.layer = FLOAT_LAYER + 0.2
+			. += loading
+		else if(pact_siege_visual == "open")
+			var/mutable_appearance/mask = mutable_appearance(icon, "portal_mask")
+			mask.color = "#ff3030"
+			mask.alpha = 220
+			mask.layer = FLOAT_LAYER + 0.2
+			. += mask
+		. += show_light_overlays("portal_effect", transport_active)
+		return
 	. += show_light_overlays("portal_light", teleportion_possible)
 	. += show_light_overlays("portal_effect", transport_active)
 
@@ -335,6 +381,12 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	density = TRUE
 	use_power = NO_POWER_USE
 
+/obj/machinery/gateway/away/Initialize(mapload)
+	. = ..()
+	var/turf/T = get_turf(src)
+	if(T && SSmapping.level_trait(T.z, ZTRAIT_AWAY) && !is_pact_siege_level(T.z))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sync_away_gateway_calibration_wait), T.z), 0)
+
 /obj/machinery/gateway/away/interact(mob/user)
 	. = ..()
 	if(!target)
@@ -364,9 +416,9 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		G.portal_visuals.display_to(user)
 		ui = new(user, src, "Gateway", name)
 		ui.open()
+		G.portal_visuals.display_to(user, ui.window)
 
 /obj/machinery/computer/gateway_control/ui_data(mob/user)
 	. = ..()
@@ -377,6 +429,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/list/destinations = list()
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)
+			if(possible_destination.hidden)
+				continue
+			if(!istype(possible_destination, /datum/gateway_destination/point))
+				continue
 			if(!G.valid_destination(possible_destination))
 				continue
 			destinations += list(possible_destination.get_ui_data())
@@ -401,7 +457,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/computer/gateway_control/ui_close(mob/user)
 	. = ..()
-	user.client.clear_map(user)
+	if(G?.portal_visuals)
+		G.portal_visuals.hide_from(user)
 
 /obj/machinery/computer/gateway_control/proc/try_to_linkup()
 	G = locate(/obj/machinery/gateway) in view(7,get_turf(src))
@@ -431,22 +488,17 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	cam_background.plane = HIGHEST_EVER_PLANE
 	cam_background.blend_mode = BLEND_OVERLAY
 
-/atom/movable/screen/map_view/gateway_port/proc/generate_view(map_key)
-	// Map keys have to start and end with an A-Z character,
-	// and definitely NOT with a square bracket or even a number.
-	// I wasted 6 hours on this. :agony:
-	// -- Stylemistake
-	assigned_map = map_key
-	set_position(1, 1)
+/atom/movable/screen/map_view/gateway_port/generate_view(map_key)
+	. = ..(map_key)
 	cam_background.assigned_map = assigned_map
-	cam_background.fill_rect(1, 1, 3, 3)
 
 /atom/movable/screen/map_view/gateway_port/Destroy()
 	QDEL_NULL(cam_background)
 	return ..()
 
-/atom/movable/screen/map_view/gateway_port/proc/display_to(mob/show_to)
-	show_to.client.register_map_obj(cam_background)
+/atom/movable/screen/map_view/gateway_port/display_to_client(client/show_to)
+	. = ..()
+	show_to?.register_map_obj(cam_background)
 
 /atom/movable/screen/map_view/gateway_port/proc/setup_visuals(datum/gateway_destination/D)
 	our_destination = D
@@ -463,7 +515,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	// You could setup gateways to draw onto "lower then everything" z layers, but generating a whole stack of plane masters
 	// Just for this one effect is kinda silly. Maybe next time
 	// Rather then that, let's just render a little preview port to the console, because for reasons that's trivial
-	vis_contents = null
+	vis_contents.Cut()
 
 	var/turf/center_turf = our_destination?.get_target_turf()
 	if(!center_turf)
@@ -471,11 +523,21 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		cam_background.icon_state = "scanline2"
 		cam_background.color = null
 		cam_background.alpha = 255
+		cam_background.fill_rect(1, 1, 7, 7)
 		return
 
-	cam_background.add_filter("portal_blur", 1, list("type" = "blur", "size" = 0.5))
+	var/preview_radius = 5
+	var/list/preview_turfs = block(
+		locate(max(1, center_turf.x - preview_radius), max(1, center_turf.y - preview_radius), center_turf.z),
+		locate(min(world.maxx, center_turf.x + preview_radius), min(world.maxy, center_turf.y + preview_radius), center_turf.z)
+	)
+	var/list/bbox = get_bbox_of_atoms(preview_turfs)
+	var/size_x = bbox[3] - bbox[1] + 1
+	var/size_y = bbox[4] - bbox[2] + 1
 
-	vis_contents += TURF_NEIGHBORS(center_turf)
+	vis_contents = preview_turfs
+	cam_background.add_filter("portal_blur", 1, list("type" = "blur", "size" = 0.5))
 	cam_background.icon_state = "scanline4"
 	cam_background.color = "#adadff"
 	cam_background.alpha = 128
+	cam_background.fill_rect(1, 1, size_x, size_y)

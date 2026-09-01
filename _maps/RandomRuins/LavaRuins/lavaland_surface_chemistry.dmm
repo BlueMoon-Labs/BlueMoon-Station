@@ -1,865 +1,1880 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
-/turf/closed/mineral/volcanic/lava_land_surface,
+"aO" = (
+/obj/item/clothing/head/helmet/space/pirate,
+/turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"b" = (
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+"aQ" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/paper_bin{
+	pixel_x = -1;
+	pixel_y = 6
+	},
+/obj/item/pen/fountain,
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"aV" = (
+/obj/machinery/door/airlock/hatch{
+	req_access_txt = "208"
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"aW" = (
+/obj/effect/spawner/lootdrop/druggie_pill,
+/obj/effect/spawner/lootdrop/druggie_pill,
+/obj/effect/spawner/lootdrop/druggie_pill,
+/obj/structure/closet/crate/freezer,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"bt" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"bS" = (
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"c" = (
-/turf/template_noop,
-/area/template_noop)
-"d" = (
-/turf/closed/wall/mineral/plastitanium,
+"bY" = (
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = -31
+	},
+/turf/open/floor/carpet/red,
 /area/ruin/powered)
-"e" = (
-/obj/machinery/door/airlock/centcom,
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/powered)
-"f" = (
+"de" = (
 /obj/structure/shuttle/engine/propulsion{
-	dir = 4;
-	icon_state = "propulsion_l"
+	dir = 8
 	},
-/obj/structure/window/reinforced/tinted{
-	dir = 4;
-	icon_state = "twindow"
+/turf/open/floor/plating/airless,
+/area/ruin/powered)
+"dm" = (
+/turf/open/floor{
+	icon_state = "platingdmg1"
 	},
-/turf/closed/wall/mineral/plastitanium,
-/area/ruin/powered)
-"g" = (
-/obj/structure/chair{
-	dir = 4
+/area/lavaland/surface/outdoors)
+"dp" = (
+/obj/docking_port/stationary{
+	dwidth = 8;
+	height = 16;
+	shuttle_id = "ftu_tradeship_home";
+	name = "Deep space";
+	width = 30
 	},
-/turf/open/floor/mineral/plastitanium/red,
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile{
+	dheight = 0;
+	dwidth = 8;
+	height = 26;
+	shuttle_id = "ftu";
+	launch_status = 0;
+	name = "ftu trade";
+	port_direction = 8;
+	preferred_direction = 1;
+	width = 15
+	},
+/obj/machinery/door/airlock/hatch,
+/obj/machinery/door/poddoor{
+	id = "tew2";
+	layer = 5
+	},
+/turf/open/floor/plasteel,
 /area/ruin/powered)
-"h" = (
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/powered)
-"i" = (
-/obj/machinery/computer/shuttle,
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/powered)
-"j" = (
+"dG" = (
 /obj/structure/chair{
 	dir = 8
 	},
-/turf/open/floor/mineral/plastitanium/red,
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger4,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
-"k" = (
-/obj/structure/table,
-/obj/item/flashlight/lamp,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"l" = (
-/obj/structure/table,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/obj/item/extinguisher,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"m" = (
-/obj/structure/lattice,
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
-"n" = (
-/obj/item/wrench,
-/turf/open/floor/plating/lavaland_baseturf,
-/area/lavaland/surface/outdoors)
-"o" = (
-/obj/structure/table,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/obj/item/reagent_containers/glass/bottle/plasma,
-/obj/item/reagent_containers/glass/bottle/plasma,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"p" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"q" = (
-/obj/structure/fans,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"t" = (
-/turf/open/floor/plating/lavaland_baseturf,
-/area/lavaland/surface/outdoors)
-"u" = (
-/obj/structure/closet/wardrobe/chemistry_white,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/under/costume/pirate,
-/obj/item/clothing/suit/pirate,
-/obj/item/clothing/head/bandana,
-/obj/item/clothing/head/collectable/pirate,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"v" = (
-/obj/machinery/door/airlock/hatch,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"w" = (
+"dX" = (
 /obj/item/stack/sheet/metal,
 /turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"x" = (
-/obj/item/storage/toolbox/mechanical,
+"em" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"er" = (
+/turf/open/floor{
+	icon_state = "platingdmg3"
+	},
+/area/lavaland/surface/outdoors)
+"et" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208";
+	name = "Хлам"
+	},
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 5
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"eL" = (
+/obj/item/paper/fluff/traid_ship/old,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"eU" = (
+/obj/structure/sign/poster/contraband/gl{
+	pixel_y = 1;
+	pixel_x = -32
+	},
+/obj/machinery/vending/drugs,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"fc" = (
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/lavaland/surface/outdoors)
+"fC" = (
+/obj/machinery/button/door{
+	id = "ffg";
+	name = "Cargo Blast Door Toggle";
+	pixel_y = 28
+	},
+/mob/living/simple_animal/hostile/asteroid/lobstrosity/lava,
+/turf/open/floor/plating/lavaland_baseturf,
+/area/ruin/powered)
+"fX" = (
+/obj/item/wrench,
 /turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"y" = (
+"gj" = (
+/turf/open/floor/plating/lavaland_baseturf,
+/area/lavaland/surface/outdoors)
+"gp" = (
+/obj/machinery/suit_storage_unit/open,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"gJ" = (
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger1,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"gQ" = (
+/obj/structure/sign/poster/solgov/recyle{
+	pixel_x = -31
+	},
+/obj/machinery/door/airlock/hatch{
+	id_tag = "tere"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"hf" = (
+/obj/structure/table/wood/fancy/royalblack,
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"jr" = (
+/obj/machinery/chem_dispenser/fullupgrade,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"jY" = (
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = -31
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"kr" = (
+/obj/structure/table,
+/obj/machinery/light,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"lc" = (
+/obj/machinery/door/airlock/hatch{
+	id_tag = "tere"
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"lw" = (
+/mob/living/simple_animal/hostile/asteroid/lobstrosity/lava,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"lG" = (
+/obj/structure/table,
+/obj/item/phone{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/obj/machinery/button/door{
+	id = "ssa";
+	name = "Cargo Blast Door Toggle";
+	req_access_txt = "208";
+	pixel_x = 6;
+	dir = 1
+	},
+/obj/machinery/button/door{
+	id = "tew2";
+	name = "Cargo Blast Door Toggle";
+	req_access_txt = "208";
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"mk" = (
+/obj/structure/table,
+/obj/machinery/fax{
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"mr" = (
 /obj/item/paper/crumpled/bloody{
 	default_raw_text = "Week 2, day 6. <B>Success!<B> I've managed to synthesize a small amount of solid plasma! The block I created took days to stabilize and cool down, but after running some tests it's exceeding all my expectactions. I'll have to refine the process more before sending a sample to Centcom, but soon we won't have to waste thousands of credits sending those miners to work in this... hellscape anymore. The rest of my mineral samples remained stable too. I'll just have to hope those Space Pirates won't track me down after I stole their trisulfideoxide again... I've hidden the recipe in the safe for now. Code is 8124."
 	},
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"z" = (
-/obj/item/storage/secure/safe,
-/obj/item/paper{
-	default_raw_text = "Mix 30 units of O2 with precisely 12 units of \[br]\[i]*a few paragraphs are torn out*\[/i] \[br]within an oxygenated atmosphere of roughly 650-degree Chlorine. Once the gray mass has solidifed, carefully remove it (hot!) and place in distilled water. Check the object regularly. Once the outer layer peels off, the plasma should shine below! \[br]Note, the recipe is a work-in-progress and should not be attempted without proper safety precautions.";
-	name = "Plasma Synthetizing Recipe"
+"mW" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208";
+	name = "Не показывать"
 	},
-/turf/closed/wall/r_wall,
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 5
+	},
+/turf/open/floor/mineral/titanium,
 /area/ruin/powered)
-"A" = (
-/turf/closed/wall/r_wall,
+"nb" = (
+/turf/open/floor/mineral/titanium,
 /area/ruin/powered)
-"B" = (
+"nr" = (
+/obj/structure/sign/poster/contraband/lusty_xenomorph{
+	pixel_x = -31
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"on" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"op" = (
+/mob/living/simple_animal/hostile/asteroid/lobstrosity/lava,
+/turf/open/floor{
+	icon_state = "platingdmg1"
+	},
+/area/ruin/powered)
+"ou" = (
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"oy" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "tew1"
+	},
+/obj/machinery/door/airlock/vault{
+	req_access_txt = "208";
+	id_tag = "tew1"
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"oP" = (
+/obj/structure/window/shuttle/survival_pod,
+/obj/structure/grille,
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor{
+	id = "ssa";
+	layer = 5
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"qc" = (
 /obj/structure/table,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"C" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/mob/living/simple_animal/hostile/pirate,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"D" = (
-/obj/effect/decal/cleanable/chem_pile,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"E" = (
-/obj/effect/decal/cleanable/blood,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"F" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/mob/living/simple_animal/hostile/pirate/ranged,
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"G" = (
-/obj/structure/table,
-/obj/item/stack/sheet/mineral/silver,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"H" = (
-/obj/effect/mob_spawn/human/corpse/damaged,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"I" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"J" = (
-/obj/structure/table,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/powered)
-"K" = (
-/obj/structure/table,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma{
+/obj/item/trash/plate{
 	pixel_x = -6;
-	pixel_y = 1
+	pixel_y = -2
 	},
-/obj/item/stack/sheet/mineral/plasma{
-	pixel_x = 3
+/obj/item/trash/plate{
+	pixel_x = -6
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
+/obj/item/trash/plate{
+	pixel_x = -6;
+	pixel_y = 2
 	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
+/obj/machinery/light/cold/dim/directional{
+	dir = 1
 	},
-/turf/open/floor/plasteel/white,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
-"L" = (
+"qj" = (
+/turf/open/floor{
+	icon_state = "platingdmg1"
+	},
+/area/ruin/powered)
+"qn" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "tere"
+	},
+/obj/machinery/door/airlock/hatch{
+	id_tag = "tere"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"qs" = (
+/obj/machinery/light,
+/turf/closed/wall/r_wall/syndicate/pirate,
+/area/ruin/powered)
+"qx" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"rf" = (
+/turf/closed/wall/r_wall/syndicate/pirate,
+/area/ruin/powered)
+"rD" = (
+/obj/machinery/door/airlock/hatch{
+	req_access_txt = "208"
+	},
+/turf/open/floor/plasteel/smooth/large,
+/area/ruin/powered)
+"rU" = (
+/turf/closed/mineral/volcanic/lava_land_surface,
+/area/ruin/powered)
+"ta" = (
+/obj/machinery/door/poddoor{
+	id = "gff"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"tc" = (
 /obj/structure/table,
-/obj/item/stack/sheet/mineral/diamond,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
-"M" = (
+"tA" = (
+/turf/template_noop,
+/area/lavaland/surface/outdoors)
+"uf" = (
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger3,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"uA" = (
 /obj/structure/table,
-/obj/item/stack/sheet/mineral/gold{
-	pixel_y = 4
+/obj/item/paper_bin{
+	pixel_x = -1;
+	pixel_y = 6
 	},
-/obj/item/stack/sheet/mineral/gold,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
+/obj/item/pen/fountain,
+/turf/open/floor/mineral/plastitanium/yellow,
 /area/ruin/powered)
-"N" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
+"uR" = (
+/mob/living/simple_animal/hostile/asteroid/goliath/beast/random,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"vt" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/stack/telecrystal,
+/obj/item/stack/telecrystal/inteq,
+/obj/structure/closet/secure_closet,
+/turf/open/floor/plating/lavaland_baseturf,
+/area/ruin/powered)
+"vB" = (
+/obj/machinery/button/door{
+	id = "tere";
+	name = "Cargo Blast Door Toggle";
+	pixel_x = -24;
+	req_access_txt = "208"
+	},
+/turf/open/floor/wood/wood_large,
+/area/ruin/powered)
+"vY" = (
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"wb" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = -1;
+	pixel_y = 6
 	},
 /obj/machinery/light{
-	dir = 4;
-	icon_state = "tube1"
+	dir = 1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium/yellow,
 /area/ruin/powered)
-"O" = (
-/obj/structure/table,
-/obj/item/stack/cable_coil/yellow,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/turf/open/floor/plasteel/white,
+"wT" = (
+/turf/open/floor/pod/light,
 /area/ruin/powered)
-"P" = (
-/obj/machinery/chem_master,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
+"xD" = (
+/turf/open/floor/plasteel/stairs{
+	dir = 4
 	},
-/turf/open/floor/plating,
 /area/ruin/powered)
-"Q" = (
-/obj/machinery/chem_dispenser/fullupgrade,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
+"xE" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet,
+/obj/effect/spawner/lootdrop/trader/ammo{
+	lootcount = 7
 	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/titanium,
 /area/ruin/powered)
-"R" = (
+"ya" = (
+/turf/open/floor/plating/airless{
+	icon_state = "basaltstone_dam"
+	},
+/area/lavaland/surface/outdoors)
+"yc" = (
+/turf/closed/mineral/volcanic/lava_land_surface,
+/area/template_noop)
+"ze" = (
+/obj/structure/safe,
+/obj/item/stack/spacecash/c100000,
+/obj/item/gun/ballistic/revolver/syndicate,
+/turf/open/floor/wood/wood_large,
+/area/ruin/powered)
+"zm" = (
+/obj/machinery/light{
+	dir = 8
+	},
 /obj/machinery/chem_heater,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating,
+/turf/open/floor/pod/light,
 /area/ruin/powered)
-"S" = (
-/obj/effect/decal/cleanable/blood,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating,
-/area/ruin/powered)
-"T" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/turf/open/floor/plating,
-/area/ruin/powered)
-"V" = (
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/plating/lavaland_baseturf,
+"zq" = (
+/obj/structure/lattice,
+/turf/open/floor/festive/sidewalk,
 /area/lavaland/surface/outdoors)
-"W" = (
-/obj/machinery/power/port_gen/pacman{
-	sheets = 100
+"zy" = (
+/obj/machinery/light/small/built{
+	dir = 8
 	},
-/obj/structure/cable/yellow,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"X" = (
 /obj/structure/table,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4;
-	icon_state = "tile_corner"
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8;
-	icon_state = "tile_corner"
-	},
-/obj/item/clothing/suit/space/pirate,
-/obj/item/clothing/head/helmet/space/pirate,
-/turf/open/floor/plasteel/white,
+/obj/machinery/microwave,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
-"Y" = (
-/obj/item/clothing/head/helmet/space/pirate,
+"zL" = (
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = -31
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"zY" = (
+/obj/structure/bed,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"Ai" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Aw" = (
+/turf/closed/wall/r_wall/syndicate/pirate/nodiagonal,
+/area/ruin/powered)
+"AA" = (
+/obj/machinery/button/door{
+	id = "gts";
+	name = "Cargo Blast Door Toggle";
+	pixel_y = -30;
+	req_access_txt = "208"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"AY" = (
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger2,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Bw" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208";
+	name = "Хлам"
+	},
+/obj/effect/spawner/lootdrop/trader/cool{
+	lootcount = 9
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"BN" = (
+/obj/machinery/button/door{
+	id = "tew1";
+	name = "Cargo Blast Door Toggle";
+	pixel_x = -30;
+	req_access_txt = "208"
+	},
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger3,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Cc" = (
+/obj/structure/filingcabinet,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"Cv" = (
+/turf/open/floor{
+	icon_state = "platingdmg2"
+	},
+/area/ruin/powered)
+"CI" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/stack/sheet/mineral/bananium,
+/obj/item/stack/sheet/mineral/bananium,
+/obj/item/stack/sheet/mineral/bananium,
+/obj/structure/closet/secure_closet,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"CN" = (
+/obj/structure/bed,
+/obj/structure/bed{
+	pixel_y = 15
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"Du" = (
+/obj/machinery/smartfridge/food,
+/obj/item/reagent_containers/food/snacks/breadslice/meat,
+/obj/item/reagent_containers/food/snacks/breadslice/meat,
+/obj/item/reagent_containers/food/snacks/breadslice/meat,
+/obj/item/reagent_containers/food/snacks/burger/bigbite,
+/obj/item/reagent_containers/food/snacks/burger/bigbite,
+/obj/item/reagent_containers/food/snacks/burger/cheese,
+/obj/item/reagent_containers/food/snacks/burger/superbite,
+/obj/item/reagent_containers/food/snacks/burger/superbite,
+/obj/item/reagent_containers/food/snacks/cakeslice/chocolate,
+/obj/item/reagent_containers/food/snacks/cakeslice/chocolate,
+/obj/item/reagent_containers/food/snacks/cakeslice/chocolate,
+/obj/item/reagent_containers/food/snacks/meat/steak/wisdomcow,
+/obj/item/reagent_containers/food/snacks/meat/steak/wisdomcow,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Ep" = (
+/obj/machinery/chem_master,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"Et" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Fz" = (
+/obj/machinery/door/poddoor{
+	id = "ffg"
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"FH" = (
+/obj/machinery/button/door{
+	id = "gff";
+	name = "Cargo Blast Door Toggle";
+	pixel_y = 28
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"FI" = (
+/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"FO" = (
+/obj/machinery/power/apc/auto_name{
+	pixel_y = 24
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"Ha" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"He" = (
+/obj/item/reagent_containers/glass/beaker/bluespace,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"Ih" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/structure/sign/flag/terragov{
+	pixel_y = 31
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Im" = (
+/turf/open/floor/wood/wood_large,
+/area/ruin/powered)
+"Ip" = (
+/obj/machinery/computer/shuttle,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Iw" = (
+/obj/machinery/door/airlock/hatch{
+	req_access_txt = "208"
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "gts"
+	},
+/turf/open/floor/wood/wood_large,
+/area/ruin/powered)
+"Jx" = (
+/obj/machinery/light,
+/obj/structure/bed,
+/obj/structure/bed{
+	pixel_y = 15
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"JA" = (
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Kl" = (
+/turf/open/floor{
+	icon_state = "platingdmg3"
+	},
+/area/ruin/powered)
+"KF" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"KR" = (
+/obj/structure/closet/crate/engineering,
+/obj/structure/sign/poster/contraband/energy_swords{
+	pixel_y = 1;
+	pixel_x = -31
+	},
+/obj/item/storage/toolbox/syndicate,
+/obj/item/inducer/syndicate{
+	pixel_x = 5;
+	pixel_y = -5
+	},
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"KW" = (
+/obj/structure/spawner/mining/goliath,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"LV" = (
+/turf/closed/mineral/volcanic/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"Mb" = (
+/obj/structure/safe{
+	open = 1;
+	name = "Old safe";
+	desc = "Очень старый сейф. Петли проржавели насквозь и совершенно не хотят дать дверце закрыться, но за то из него выходит отличный шкафчик для гор денег."
+	},
+/obj/effect/spawner/lootdrop/trader/illegal{
+	lootcount = 3
+	},
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"Md" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"Mf" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208";
+	name = "Патроны"
+	},
+/obj/effect/spawner/lootdrop/trader/ammo{
+	lootcount = 7
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"MC" = (
+/obj/machinery/button/door{
+	id = "tew2";
+	name = "Cargo Blast Door Toggle";
+	req_access_txt = "208";
+	pixel_x = -32;
+	pixel_y = -32
+	},
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger4,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"MN" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"MQ" = (
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"NA" = (
+/obj/machinery/light,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"NK" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/bed,
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger2,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"Px" = (
+/turf/open/floor/plating/airless{
+	icon_state = "basaltstone_dam"
+	},
+/area/ruin/powered)
+"PW" = (
+/obj/machinery/door/airlock/hatch{
+	id_tag = "tere"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"Qf" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet{
+	req_access_txt = "208"
+	},
+/obj/effect/spawner/lootdrop/trader/under{
+	lootcount = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"Qj" = (
+/obj/structure/chair,
+/turf/open/floor/mineral/plastitanium/yellow,
+/area/ruin/powered)
+"QM" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/stack/sheet/mineral/zaukerite,
+/obj/item/stack/sheet/mineral/zaukerite,
+/obj/item/stack/sheet/mineral/zaukerite,
+/obj/structure/closet/secure_closet,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"Rs" = (
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = -8;
+	pixel_y = 10
+	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/food/snacks/cakeslice/bscc,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Rw" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/bed,
+/obj/structure/bed{
+	pixel_y = 15
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/powered)
+"RR" = (
+/obj/structure/shuttle/engine/heater{
+	dir = 8
+	},
+/obj/structure/window/spawner/west,
+/turf/open/floor/plating/airless,
+/area/ruin/powered)
+"Sp" = (
+/turf/open/floor/plating/lavaland_baseturf,
+/area/ruin/powered)
+"Sr" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/stack/sheet/mineral/gold,
+/obj/item/stack/sheet/mineral/gold,
+/obj/item/stack/sheet/mineral/gold,
+/obj/structure/closet/secure_closet,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"Um" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/mob/living/simple_animal/hostile/pirate/contrabandist/leader,
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"UY" = (
+/obj/structure/table,
+/obj/item/reagent_containers/food/snacks/chocolatebar{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/machinery/light,
+/obj/item/reagent_containers/food/snacks/soup/facehuggerpot{
+	pixel_y = 17
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Vi" = (
+/turf/open/floor/festive/sidewalk,
+/area/lavaland/surface/outdoors)
+"Vp" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/carpet/red,
+/area/ruin/powered)
+"Wq" = (
+/turf/template_noop,
+/area/template_noop)
+"Wx" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"XC" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"XF" = (
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger2,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"XY" = (
+/obj/structure/table,
+/obj/machinery/coffeemaker,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Yc" = (
+/obj/item/storage/toolbox/mechanical,
 /turf/open/floor/plating/lavaland_baseturf,
 /area/lavaland/surface/outdoors)
-"Z" = (
-/turf/open/floor/plating,
+"Ym" = (
+/turf/closed/indestructible/syndicate,
+/area/ruin/powered)
+"Yq" = (
+/obj/machinery/button/door{
+	id = "nee";
+	name = "Cargo Blast Door Toggle";
+	pixel_x = -24
+	},
+/obj/machinery/autolathe/hacked,
+/turf/open/floor/pod/light,
+/area/ruin/powered)
+"Zx" = (
+/obj/structure/sink{
+	dir = 4;
+	pixel_y = 8;
+	pixel_x = 12
+	},
+/obj/structure/sign/poster/contraband/random{
+	pixel_x = 30
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/powered)
 
 (1,1,1) = {"
-a
-a
-b
-b
-b
-b
-b
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (2,1,1) = {"
-a
-a
-b
-b
-b
-b
-b
-a
-c
-c
-c
-c
-c
-c
-c
-c
-a
-c
-a
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (3,1,1) = {"
-a
-b
-d
-f
-f
-d
-b
-a
-c
-c
-a
-a
-c
-a
-a
-c
-a
-a
-a
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+de
+de
+de
+de
+Wq
+Wq
+Wq
+Wq
+de
+de
+de
+de
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (4,1,1) = {"
-a
-b
-d
-g
-g
-d
-b
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+RR
+RR
+RR
+RR
+rf
+Wq
+Wq
+rf
+RR
+RR
+RR
+RR
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (5,1,1) = {"
-a
-b
-e
-h
-h
-e
-b
-b
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (6,1,1) = {"
-a
-b
-d
-i
-j
-d
-b
-a
-a
-A
-A
-A
-A
-A
-A
-A
-a
-a
-c
-c
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+Ep
+jr
+eU
+zm
+Yq
+KR
+rf
+Rw
+PW
+on
+gQ
+CN
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (7,1,1) = {"
-a
-b
-d
-d
-d
-d
-b
-a
-a
-A
-k
-B
-G
-p
-J
-A
-a
-a
-a
-a
+Wq
+LV
+LV
+MQ
+MQ
+MQ
+MQ
+MQ
+LV
+tA
+rf
+KF
+wT
+wT
+He
+wT
+MC
+rf
+rf
+rf
+on
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (8,1,1) = {"
-a
-a
-b
-b
-b
-b
-b
-a
-a
-A
-l
-C
-p
-D
-K
-A
-a
-a
-c
-c
+Wq
+LV
+LV
+MQ
+MQ
+LV
+MQ
+MQ
+LV
+LV
+rf
+FH
+aW
+wT
+aW
+wT
+wT
+lc
+on
+on
+on
+PW
+Jx
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (9,1,1) = {"
-b
-a
-b
-b
-m
-m
-m
-A
-A
-A
-o
-p
-P
-C
-X
-A
-a
-a
-c
-c
+Wq
+LV
+MQ
+KW
+MQ
+MQ
+MQ
+MQ
+LV
+LV
+ta
+wT
+wT
+wT
+wT
+wT
+wT
+rf
+rf
+rf
+on
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (10,1,1) = {"
-b
-b
-b
-b
-b
-V
-Y
-v
-Z
-v
-p
-D
-Q
-H
-L
-A
-a
-a
-a
-c
+Wq
+LV
+FI
+MQ
+MQ
+MQ
+LV
+MQ
+rU
+rU
+ta
+wT
+aW
+wT
+aW
+wT
+wT
+rf
+CN
+PW
+on
+on
+on
+dp
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (11,1,1) = {"
-b
-b
-b
-b
-y
-m
-m
-A
-A
-A
-q
-E
-R
-I
-M
-A
-a
-a
-a
-c
+Wq
+LV
+LV
+LV
+LV
+LV
+MQ
+MQ
+rU
+rU
+ta
+wT
+XF
+wT
+wT
+wT
+wT
+rf
+rf
+rf
+on
+rf
+qs
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (12,1,1) = {"
-b
-b
-b
-b
-b
-b
-m
-w
-n
-A
-u
-F
-S
-p
-O
-A
-a
-a
-c
-c
+Wq
+LV
+LV
+LV
+LV
+MQ
+MQ
+uR
+rU
+rU
+ta
+wT
+aW
+wT
+aW
+wT
+wT
+rf
+on
+PW
+on
+PW
+zL
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (13,1,1) = {"
-b
-b
-b
-b
-b
-m
-w
-x
-t
-A
-p
-N
-T
-W
-J
-A
-a
-a
-c
-c
+Wq
+LV
+LV
+LV
+MQ
+MQ
+MQ
+MQ
+rU
+rU
+rf
+FO
+wT
+wT
+wT
+Ha
+wT
+rf
+NK
+rf
+on
+rf
+zY
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (14,1,1) = {"
-a
-a
-a
-a
-a
-a
-m
-t
-t
-A
-z
-A
-A
-A
-A
-A
-a
-a
-a
-c
+Wq
+LV
+LV
+MQ
+MQ
+uR
+MQ
+MQ
+rU
+rU
+Ym
+Fz
+Fz
+Fz
+Fz
+Ym
+xD
+Aw
+rf
+rf
+qn
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (15,1,1) = {"
-c
-c
-c
-c
-c
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-c
+Wq
+MQ
+LV
+MQ
+MQ
+Md
+Md
+Md
+gj
+gj
+Ym
+nb
+qj
+nb
+nb
+Ym
+ou
+ou
+rf
+vB
+Im
+Im
+Im
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (16,1,1) = {"
-c
-c
-c
-c
-c
-c
-c
-c
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-a
-c
+Wq
+MQ
+MQ
+MQ
+MQ
+MQ
+bS
+aO
+fc
+ya
+Sp
+fC
+Qf
+et
+NA
+Ym
+gJ
+AA
+rf
+Im
+hf
+hf
+bY
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (17,1,1) = {"
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-a
-c
-c
-c
-a
-a
-c
-c
-c
-c
+Wq
+MQ
+MQ
+MQ
+MQ
+mr
+Md
+MQ
+er
+dm
+Cv
+Px
+vt
+xE
+op
+Ym
+ou
+ou
+Iw
+Im
+Vp
+hf
+Um
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (18,1,1) = {"
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-a
-a
-c
-c
-c
-c
+Wq
+MQ
+MQ
+uR
+MQ
+MQ
+Vi
+zq
+dX
+fX
+Ym
+Wx
+QM
+Mf
+nb
+Ym
+Et
+ou
+rf
+ze
+Cc
+aQ
+vY
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (19,1,1) = {"
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
+Wq
+MQ
+MQ
+MQ
+MQ
+MQ
+Md
+dX
+Yc
+gj
+Kl
+qj
+CI
+Bw
+nb
+Ym
+ou
+ou
+Aw
+rf
+rf
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}
 (20,1,1) = {"
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
+Wq
+LV
+LV
+LV
+LV
+MQ
+LV
+Md
+er
+gj
+Ym
+lw
+mW
+Sr
+NA
+Ym
+ou
+ou
+ou
+ou
+ou
+ou
+ou
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(21,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+LV
+LV
+LV
+LV
+Ym
+nb
+nb
+nb
+eL
+Ym
+ou
+ou
+ou
+em
+gJ
+ou
+ou
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(22,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+yc
+Ym
+Ym
+Ym
+oy
+Ym
+Ym
+aV
+rf
+rf
+rf
+rf
+rD
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(23,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+Ih
+JA
+BN
+nr
+JA
+JA
+rf
+zy
+ou
+ou
+ou
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(24,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+oP
+gp
+AY
+JA
+JA
+JA
+uA
+rf
+qc
+ou
+ou
+jY
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(25,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+oP
+gp
+JA
+JA
+JA
+Qj
+kr
+rf
+XY
+ou
+XC
+XC
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(26,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+oP
+gp
+JA
+JA
+uf
+JA
+mk
+rf
+tc
+ou
+Rs
+UY
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(27,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+oP
+lG
+JA
+qx
+JA
+JA
+JA
+rf
+Du
+Zx
+MN
+dG
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(28,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+wb
+JA
+Ip
+Ai
+bt
+Mb
+rf
+rf
+rf
+rf
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(29,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+rf
+rf
+oP
+oP
+oP
+oP
+rf
+rf
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(30,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+"}
+(31,1,1) = {"
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
+Wq
 "}

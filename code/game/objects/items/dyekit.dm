@@ -3,6 +3,7 @@
 	desc = "A spray to dye your hair any gradients you'd like."
 	icon = 'icons/obj/dyespray.dmi'
 	icon_state = "dyespray"
+	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/dyespray/attack_self(mob/user)
 	dye(user)
@@ -34,7 +35,7 @@
 	human_target.grad_style = new_grad_style
 	human_target.grad_color = sanitize_hexcolor(new_grad_color)
 	to_chat(human_target, "<span class='notice'>You start applying the hair dye...</span>")
-	if(!do_after(usr, 30, target = human_target))
+	if(!do_after(usr, 3 SECONDS, target = human_target))
 		return
 	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 5)
 	human_target.update_hair()

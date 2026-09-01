@@ -49,3 +49,41 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	icon_state = "mu88_boots"
 	item_state = "mu88_boots"
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/shoes/exo_legs
+	name = "Exo-legs"
+	desc = "Адаптирующие вес под собой, современные протезы для ходьбы"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = GROIN
+	icon_state = "exo_legs"
+	item_state = "exo_legs"
+	var/list/poly_colors = list("#ffffff")
+
+/obj/item/clothing/shoes/exo_legs/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/squeak, list('sound/effects/footstep/exo_footstep-1.ogg' = 1,'sound/effects/footstep/exo_footstep-2.ogg' = 1), 100)
+	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+/obj/item/clothing/shoes/blood_boots
+	name = "crimson aristocracy boots"
+	desc = "Leather boots of burgundy shades, stitched with blood-red thread."
+	icon_state = "blood_boots"
+	item_state = "blood_boots"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
+/obj/item/clothing/shoes/black_sneakers
+	name = "black sneakers"
+	desc = "Black sneakers from limited collection. The label reads: 'Harr'."
+	icon_state = "black_sneakers"
+	item_state = "black_sneakers"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'

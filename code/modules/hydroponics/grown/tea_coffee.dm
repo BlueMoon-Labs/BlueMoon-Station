@@ -56,7 +56,7 @@
 	icon_harvest = "catnip-harvest"
 	icon_dead = "tea-dead"
 	product = /obj/item/reagent_containers/food/snacks/grown/tea/catnip
-	reagents_add = list(/datum/reagent/pax/catnip = 0.1, /datum/reagent/consumable/nutriment/vitamin = 0.06, /datum/reagent/toxin/teapowder = 0.3)
+	reagents_add = list(/datum/reagent/pax/catnip = 0.2, /datum/reagent/consumable/nutriment/vitamin = 0.06, /datum/reagent/toxin/teapowder = 0.1)
 	rarity = 50
 
 /obj/item/reagent_containers/food/snacks/grown/tea/catnip

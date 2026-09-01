@@ -64,7 +64,30 @@ GLOBAL_PROTECT(Banlist)
 	if(!CONFIG_GET(flag/ban_legacy_system))
 		return
 
-	GLOB.Banlist = new("data/banlist.bdb")
+	var/banlist_path = "data/banlist.bdb"
+	var/banlist_lock_path = "[banlist_path].lk"
+	if(fexists(banlist_lock_path))
+		fdel(banlist_lock_path)
+
+	try
+		GLOB.Banlist = new /savefile(banlist_path)
+	catch(var/exception/e)
+		stack_trace("LoadBans(): failed to open legacy banlist [banlist_path]: [e]. Recreating savefile.")
+		log_admin("Legacy banlist savefile is invalid; attempting to recreate [banlist_path].")
+		if(fexists(banlist_lock_path))
+			fdel(banlist_lock_path)
+		if(fexists(banlist_path))
+			var/banlist_backup_path = "[banlist_path].corrupt"
+			if(fexists(banlist_backup_path))
+				fdel(banlist_backup_path)
+			fcopy(banlist_path, banlist_backup_path)
+			fdel(banlist_path)
+		try
+			GLOB.Banlist = new /savefile(banlist_path)
+		catch(var/exception/recreate_error)
+			stack_trace("LoadBans(): failed to recreate legacy banlist [banlist_path]: [recreate_error]")
+			log_admin("Failed to recreate legacy banlist savefile.")
+			return FALSE
 	log_admin("Loading Banlist")
 
 	if (!length(GLOB.Banlist.dir))
@@ -194,8 +217,12 @@ GLOBAL_PROTECT(Banlist)
 		return timeleftstring
 
 /datum/admins/proc/unbanpanel()
+	if(!GLOB.Banlist)
+		to_chat(usr, "<span class='danger'>Legacy banlist is not loaded.</span>")
+		return
+
 	var/count = 0
-	var/dat
+	var/dat = ""
 	GLOB.Banlist.cd = "/base"
 	for (var/A in GLOB.Banlist.dir)
 		count++
@@ -214,11 +241,25 @@ GLOBAL_PROTECT(Banlist)
 		else
 			expiry = "Permaban"
 
-		dat += text("<tr><td><A href='?src=[ref];unbanf=[key][id]'>(U)</A><A href='?src=[ref];unbane=[key][id]'>(E)</A> Key: <B>[key]</B></td><td>ComputerID: <B>[id]</B></td><td>IP: <B>[ip]</B></td><td> [expiry]</td><td>(By: [by])</td><td>(Reason: [reason])</td></tr>")
+		dat += "<tr><td><a href='?src=[ref];unbanf=[key][id]'>(U) Unban</a> <a href='?src=[ref];unbane=[key][id]'>(E) Edit</a></td><td><b>[key]</b></td><td>[id]</td><td>[ip]</td><td>[expiry]</td><td>[by]</td><td>[reason]</td></tr>"
 
-	dat += "</table>"
-	dat = "<HR><B>Bans:</B> <FONT COLOR=blue>(U) = Unban , (E) = Edit Ban</FONT> - <FONT COLOR=green>([count] Bans)</FONT><HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"
-	usr << browse(dat, "window=unbanp;size=875x400")
+	if(!count)
+		dat = "<tr><td colspan='7' class='legacy-unban-empty'>No entries in the legacy banlist (data/banlist.bdb). This is normal for a fresh local server.</td></tr>"
+	else
+		dat = "<thead><tr><th>Actions</th><th>Key</th><th>Computer ID</th><th>IP</th><th>Expires</th><th>Banned by</th><th>Reason</th></tr></thead><tbody>[dat]</tbody>"
+
+	var/html = {"<div class='ban-panel-wrap'><div class='ban-panel-main legacy-unban-main'>"}
+	html += "<div class='ban-panel-add-card'><h2>Legacy unban panel</h2>"
+	html += "<div class='ban-panel-hint'>Uses the local savefile banlist (<b>data/banlist.bdb</b>), not the SQL <b>ban</b> table. For full DB search/unban, disable <b>ban_legacy_system</b> and connect MySQL.</div>"
+	html += "<div style='margin-top:8px;color:#98b0c3;font-size:11px'><b>(U)</b> = Unban &nbsp; <b>(E)</b> = Edit — <span style='color:#6dcc7a'>[count] ban[count == 1 ? "" : "s"]</span></div></div>"
+	html += "<table class='legacy-ban-table'>[dat]</table>"
+	html += "</div></div>"
+
+	var/datum/browser/popup = new(usr, "unbanp", "Unban Panel", 900, 520)
+	popup.add_stylesheet("unbanpanelcss", 'html/admin/unbanpanel.css')
+	popup.add_stylesheet("banlookupcss", 'html/admin/banlookup.css')
+	popup.set_content(html)
+	popup.open(FALSE)
 
 //////////////////////////////////// DEBUG ////////////////////////////////////
 

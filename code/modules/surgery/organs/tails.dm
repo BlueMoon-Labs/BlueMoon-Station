@@ -8,6 +8,7 @@
 	icon_state = "severedtail"
 	zone = BODY_ZONE_PRECISE_GROIN
 	slot = ORGAN_SLOT_TAIL
+	processes_on_life = FALSE //on_life() ниже - пустой return
 	var/tail_type = "None"
 
 /obj/item/organ/tail/Remove(special = FALSE)

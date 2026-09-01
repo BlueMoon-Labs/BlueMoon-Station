@@ -9,7 +9,7 @@
 			/obj/item/clothing/suit/space/hardsuit/shielded= 5,
 			/obj/item/clothing/suit/space/hardsuit/lavaknight= 30,
 			/obj/item/clothing/suit/space/hardsuit/syndi/owl= 20,
-			/obj/item/clothing/suit/space/hardsuit/security/explorer= 30,
+			/obj/item/clothing/suit/space/hardsuit/exploration= 30,
 			/obj/item/clothing/suit/space/hardsuit/engine/ftu= 30,
 			/obj/item/clothing/suit/space/hardsuit/security/kikimora= 20,
 			/obj/item/clothing/suit/space/hardsuit/clown= 10,
@@ -147,7 +147,7 @@
 			/obj/item/gun/energy/broom,
 			/obj/item/gun/energy/pumpaction/defender,
 			/obj/item/gun/energy/goatgun = 0.1,
-			/obj/item/gun/ballistic/shotgun/riot/ks_23,
+			/obj/item/gun/ballistic/shotgun/riot/ks_22,
 			/obj/item/gun/ballistic/shotgun/eshotgun,
 			/obj/item/gun/ballistic/automatic/pistol/deagle,
 			/obj/item/gun/ballistic/automatic/pistol/suppressed,
@@ -159,8 +159,8 @@
 			/obj/item/gun/ballistic/revolver/r45l,
 			/obj/item/gun/syringe/rapidsyringe,
 			/obj/item/gun/energy/e_gun/old,
-			/obj/item/gun/ballistic/automatic/wt550,
-			/obj/item/gun/ballistic/automatic/proto/unrestricted,
+			/obj/item/gun/ballistic/automatic/wt550/standart,
+			/obj/item/gun/ballistic/automatic/proto,
 			/obj/item/gun/energy/e_gun/nuclear,
 			/obj/item/gun/medbeam
 	)

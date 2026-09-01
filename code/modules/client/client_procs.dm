@@ -12,6 +12,94 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	))
 
+/// ckey -> сколько раз он подключался за раунд. Нужен, чтобы каждая строка Logout сразу
+/// говорила, циклический это реконнект или единственный вход.
+GLOBAL_LIST_EMPTY(round_connection_counts)
+/// ckey -> list(закрытых соединений, суммарное время жизни в с, самое короткое в с).
+/// Кормит сводку в конце раунда - см. log_connection_churn_summary().
+GLOBAL_LIST_EMPTY(round_connection_lifetimes)
+
+/// ckey -> world.time его последнего переподключения. Живое окно для детектора шторма.
+GLOBAL_LIST_EMPTY(recent_reconnects)
+/// world.time последнего крика про шторм, чтобы не спамить админам.
+GLOBAL_VAR_INIT(last_churn_alert, 0)
+
+/// Порог, с которого ckey попадает в поимённый список циклящихся в сводке раунда.
+#define CHURN_REPORT_THRESHOLD 10
+/// Сколько РАЗНЫХ ckey должны переподключиться за окно, чтобы это считалось штормом.
+#define CHURN_ALERT_DISTINCT_CKEYS 5
+/// Окно наблюдения за переподключениями.
+#define CHURN_ALERT_WINDOW (2 MINUTES)
+/// Не чаще одного крика в эфир за этот срок.
+#define CHURN_ALERT_COOLDOWN (5 MINUTES)
+
+/**
+ * Отмечает переподключение и, если их слишком много от разных людей, кричит в лог и админам.
+ *
+ * Про шторм 30.07 узнали из Discord спустя часы, а в логах момент начала (13:01:48) пришлось
+ * восстанавливать скриптами. Считаем именно РАЗНЫЕ ckey: один игрок с рвущимся домашним
+ * интернетом это не событие, пятеро за две минуты - уже путь до сервера.
+ */
+/proc/note_reconnect_and_maybe_alert(reconnected_ckey)
+	GLOB.recent_reconnects[reconnected_ckey] = world.time
+	if(world.time < GLOB.last_churn_alert + CHURN_ALERT_COOLDOWN)
+		return
+	var/cutoff = world.time - CHURN_ALERT_WINDOW
+	var/list/stale = list() //собираем отдельно: правка списка внутри его же for() пропускает элементы
+	for(var/key in GLOB.recent_reconnects)
+		if(GLOB.recent_reconnects[key] < cutoff)
+			stale += key
+	GLOB.recent_reconnects -= stale
+	var/distinct = length(GLOB.recent_reconnects)
+	if(distinct < CHURN_ALERT_DISTINCT_CKEYS)
+		return
+	GLOB.last_churn_alert = world.time
+	var/list/who = list()
+	for(var/key in GLOB.recent_reconnects)
+		who += "[key] (вход №[GLOB.round_connection_counts[key]])"
+	log_access("CHURN ALERT: [distinct] разных ckey переподключились за [DisplayTimeText(CHURN_ALERT_WINDOW)] - похоже на шторм реконнектов: [who.Join(", ")]")
+
+/**
+ * Сводка по переподключениям за раунд, одной пачкой строк в конце.
+ *
+ * Смысл: чтобы понять "шторм у всех или у горстки", не нужно было писать скрипты по
+ * game.log. Ровный минимум времени жизни у нескольких ckey с разных сетей - это узел
+ * на пути рвёт соединения по таймеру, а не наша нагрузка.
+ */
+/proc/log_connection_churn_summary()
+	var/total_connections = 0
+	var/list/buckets = list("1" = 0, "2-4" = 0, "5-9" = 0, "[CHURN_REPORT_THRESHOLD]+" = 0)
+	var/list/heavy = list()
+	for(var/ckey in GLOB.round_connection_counts)
+		var/count = GLOB.round_connection_counts[ckey]
+		total_connections += count
+		if(count >= CHURN_REPORT_THRESHOLD)
+			buckets["[CHURN_REPORT_THRESHOLD]+"]++
+			heavy += ckey
+		else if(count >= 5)
+			buckets["5-9"]++
+		else if(count >= 2)
+			buckets["2-4"]++
+		else
+			buckets["1"]++
+	if(!total_connections)
+		return
+	log_access("CHURN: подключений за раунд [total_connections], уникальных ckey [length(GLOB.round_connection_counts)]; \
+		по одному входу [buckets["1"]], 2-4 входа [buckets["2-4"]], 5-9 входов [buckets["5-9"]], \
+		[CHURN_REPORT_THRESHOLD]+ входов [buckets["[CHURN_REPORT_THRESHOLD]+"]]")
+	for(var/ckey in heavy)
+		var/list/record = GLOB.round_connection_lifetimes[ckey]
+		if(!record || !record[1])
+			log_access("CHURN:   [ckey] - входов [GLOB.round_connection_counts[ckey]], закрытых соединений нет")
+			continue
+		log_access("CHURN:   [ckey] - входов [GLOB.round_connection_counts[ckey]], \
+			среднее время жизни соединения [round(record[2] / record[1], 0.1)]с, самое короткое [round(record[3], 0.1)]с")
+
+#undef CHURN_REPORT_THRESHOLD
+#undef CHURN_ALERT_DISTINCT_CKEYS
+#undef CHURN_ALERT_WINDOW
+#undef CHURN_ALERT_COOLDOWN
+
 #define LIMITER_SIZE	5
 #define CURRENT_SECOND	1
 #define SECOND_COUNT	2
@@ -34,9 +122,24 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	If you have any  questions about this stuff feel free to ask. ~Carn
 	*/
 
+///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков:
+///замеряет синхронную часть (до первого сна) и пишет медленные в кольцо SStick_spikes
+/client/proc/record_slow_topic(topic_started, href, context)
+	var/cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - topic_started)
+	if(!SStick_spikes || cost_ms < SStick_spikes.slow_work_threshold_ms)
+		return
+	var/href_preview = length(href) > 200 ? "[copytext(href, 1, 201)]..." : href
+	SStick_spikes.record_slow_work("Topic ([context])", "[ckey]: [href_preview]", cost_ms)
+
 /client/Topic(href, href_list, hsrc)
+	// BYOND 516 can invoke browser/topic callbacks with a null usr.
+	// Normalize to this client's mob so tgui callbacks are not dropped.
+	if(isnull(usr))
+		usr = mob
 	if(!usr || usr != mob)	//stops us calling Topic for somebody else's client. Also helps prevent usr=null
 		return
+
+	var/topic_started = TICK_USAGE
 
 	// asset_cache
 	var/asset_cache_job
@@ -44,6 +147,33 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		asset_cache_job = asset_cache_confirm_arrival(href_list["asset_cache_confirm_arrival"])
 		if (!asset_cache_job)
 			return
+
+	// Tgui Topic middleware — exempt from rate limiting.
+	// tgui messages (ready, ping, UI interactions) must not be dropped
+	// during connection burst when many asset/stat topics fire at once.
+	var/log_tgui_ingress = href_list["tgui"] && CONFIG_GET(flag/emergency_tgui_logging) \
+		&& TGUI_LOGGED_MESSAGE_TYPE(href_list["type"])
+	if(log_tgui_ingress)
+		var/topic_type = href_list["type"]
+		var/window_id = href_list["window_id"]
+		var/payload_len = length(href_list["payload"])
+		var/href_preview = href
+		if(length(href_preview) > 256)
+			href_preview = "[copytext(href_preview, 1, 257)]..."
+		log_tgui(src,
+			"ingress usr=[usr] usr_eq_mob=[usr == mob] type=[topic_type] window_id=[window_id] payload_len=[payload_len] href=[href_preview]",
+			context = "client/Topic")
+	if(tgui_Topic(href_list))
+		record_slow_topic(topic_started, href, "tgui")
+		return
+
+	if(href_list["legacy_zoom_set"])
+		set_ui_zoom(href_list["legacy_zoom_key"], text2num(href_list["legacy_zoom_value"]))
+		return
+
+	if(href_list["statbrowser_zoom_save"])
+		set_ui_zoom("statbrowser", text2num(href_list["zoom_value"]))
+		return
 
 	// Rate limiting
 	var/mtl = CONFIG_GET(number/minute_topic_limit)
@@ -77,15 +207,16 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		if (topiclimiter[SECOND_COUNT] > stl)
 			to_chat(src, "<span class='danger'>Your previous action was ignored because you've done too many in a second</span>")
 			return
-
-
-	// Tgui Topic middleware
-	if(tgui_Topic(href_list))
-		return
 	if(href_list["reload_tguipanel"])
 		nuke_chat()
 	if(href_list["reload_statbrowser"])
+		statbrowser_ready = FALSE
+		statpanel_protocol_acked = FALSE
+		statpanel_last_sent.Cut()
+		statpanel_last_mc_iter = -1
+		reset_listed_turf_icon_cache()
 		src << browse(file('html/statbrowser.html'), "window=statbrowser")
+		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	// Log all hrefs
 	log_href("[src] (usr:[usr]\[[COORD(usr)]\]) : [hsrc ? "[hsrc] " : ""][href]")
 
@@ -138,9 +269,12 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			inprefs = TRUE
 			. = prefs.process_link(usr,href_list)
 			inprefs = FALSE
+			record_slow_topic(topic_started, href, "prefs")
 			return
 		if("vars")
-			return view_var_Topic(href,href_list,hsrc)
+			. = view_var_Topic(href,href_list,hsrc)
+			record_slow_topic(topic_started, href, "vars")
+			return .
 
 	switch(href_list["action"])
 		if("openLink")
@@ -151,11 +285,16 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			return
 
 	..()	//redirect to hsrc.Topic()
+	record_slow_topic(topic_started, href, hsrc ? "hsrc [hsrc]" : "base")
 
 /client/proc/handle_statpanel_click(list/href_list)
 	var/atom/target = locate(href_list["statpanel_item_target"])
 	if(!target)
 		return
+	var/turf/listed = mob?.listed_turf
+	var/refresh_listed_turf = listed && get_turf(target) == listed
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
 	var/button = "left=1"
 	switch(href_list["statpanel_item_click"])
 		if("middle")
@@ -165,6 +304,116 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		else
 			button = "left=1"
 	Click(target, target.loc, null, "[button];[href_list["statpanel_item_shiftclick"]?"shift=1;":null][href_list["statpanel_item_ctrlclick"]?"ctrl=1;":null]&alt=[href_list["statpanel_item_altclick"]?"alt=1;":null]", FALSE, "statpanel")
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
+
+/client/proc/mark_listed_turf_dirty(force_icon_refresh = FALSE)
+	if(mob?.listed_turf)
+		listed_turf_dirty = TRUE
+		listed_turf_dirty_at = world.time
+		if(force_icon_refresh)
+			listed_turf_icon_refresh_pending = TRUE
+
+/client/proc/mark_listed_turf_dirty_from_signal(datum/source)
+	SIGNAL_HANDLER
+	mark_listed_turf_dirty()
+
+/// Handler for COMSIG_TURF_CHANGE — fires on the OLD turf datum just before it is qdel'd
+/// and replaced by a new turf at the same coords. Without this, listed_turf_watched would
+/// dangle to a dead datum (UnregisterSignal would no-op or runtime). We capture the coords
+/// and rebind on the next tick, when the replacement turf exists.
+/client/proc/listed_turf_changed_signal(datum/source)
+	SIGNAL_HANDLER
+	if(!source)
+		return
+	var/turf/old_turf = source
+	var/x = old_turf.x
+	var/y = old_turf.y
+	var/z = old_turf.z
+	// Source is being qdel'd; null the watched ref so we don't UnregisterSignal a dead datum later.
+	listed_turf_watched = null
+	if(mob?.listed_turf == old_turf)
+		mob.listed_turf = null
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	addtimer(CALLBACK(src, PROC_REF(rebind_listed_turf_at_coords), x, y, z), 0, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/client/proc/rebind_listed_turf_at_coords(x, y, z)
+	if(!mob)
+		return
+	var/turf/replacement = locate(x, y, z)
+	if(!replacement || QDELETED(replacement))
+		clear_listed_turf()
+		return
+	if(!mob.TurfAdjacent(replacement))
+		clear_listed_turf()
+		return
+	set_listed_turf(replacement)
+	if(statbrowser_ready)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
+
+/client/proc/update_listed_turf_watch(turf/T)
+	if(listed_turf_watched == T)
+		return
+	if(listed_turf_watched)
+		UnregisterSignal(listed_turf_watched, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE))
+	listed_turf_watched = T
+	if(T)
+		RegisterSignal(T, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL), PROC_REF(mark_listed_turf_dirty_from_signal))
+		RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(listed_turf_changed_signal))
+
+/client/proc/reset_listed_turf_icon_cache()
+	statpanel_sent_icons.Cut()
+	listed_turf_last_icon_refresh = 0
+	listed_turf_icon_refresh_pending = FALSE
+	SSstatpanels.icon_queue -= src
+
+/client/proc/set_listed_turf(turf/T)
+	if(!mob)
+		return
+	var/turf/old_listed = mob.listed_turf
+	if(old_listed == T)
+		update_listed_turf_watch(T)
+		mark_listed_turf_dirty()
+		return
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	mob.listed_turf = T
+	update_listed_turf_watch(T)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = !!T
+	listed_turf_icon_refresh_pending = FALSE
+
+/client/proc/open_listed_turf(turf/T)
+	if(!mob || !T)
+		return
+	set_listed_turf(T)
+	if(!statbrowser_ready)
+		return
+	src << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+	SSstatpanels.refresh_listed_turf(src, force_send = TRUE)
+
+/client/proc/clear_listed_turf(send_output = TRUE)
+	var/turf/old_listed = mob?.listed_turf
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	if(mob)
+		mob.listed_turf = null
+	update_listed_turf_watch(null)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = FALSE
+	listed_turf_dirty_at = 0
+	listed_turf_icon_refresh_pending = FALSE
+	if(send_output && statbrowser_ready)
+		src << output("", "statbrowser:remove_listedturf")
 
 /client/proc/is_content_unlocked()
 	if(!prefs.unlock_content && !IS_CKEY_DONATOR_GROUP(key, DONATOR_GROUP_TIER_1))
@@ -250,6 +499,15 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	//CONNECT//
 	///////////
 
+/// Через сколько после логина спрашивать скин про окно кэша ассетов. winexists ждёт
+/// ответа клиента, и на плохом канале это секунды - результат нужен только ради текста
+/// предупреждения, так что на пути входа в игру ему делать нечего.
+#define ASSET_CACHE_BROWSER_CHECK_DELAY (10 SECONDS)
+/// Через сколько после логина подгонять вьюпорт. fit_viewport - это winget на размеры
+/// плюс до трёх round-trip'ов коррекции подряд; путь change_view откладывает его ровно
+/// по той же причине.
+#define LOGIN_FIT_VIEWPORT_DELAY (1 SECONDS)
+
 /client/New(TopicData)
 	last_activity = world.time
 	world.SetConfig("APP/admin", ckey, "role=admin")
@@ -259,25 +517,57 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
+	// Цена этого подключения по этапам - см. client_connect_probe.dm
+	var/datum/client_connect_probe/connect_probe = new(ckey)
+
 	GLOB.clients += src
 	GLOB.directory[ckey] = src
+
+	// Окна tgui прошлого подключения живут в скине и переживают реконнект, а реестр
+	// tgui_windows лежит на /client и у нас пустой. Пока их не погасить, каждое такое
+	// окно будет слать ready в пустоту и получать "нет такого датума" в ответ
+	if(SStgui)
+		SStgui.force_close_client_windows(src)
 
 	// Instantiate tgui panel
 	tgui_panel = new(src)
 
 	GLOB.ahelp_tickets.ClientLogin(src)
-	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
+
+	// BLUEMOON EDIT Loading preferences earlier to use the deadmin or similar prefs
+	//preferences datum - also holds some persistent data for the client (because we may as well keep these datums to a minimum)
+	prefs = GLOB.preferences_datums[ckey]
+	if(prefs)
+		prefs.parent = src
+	else
+		prefs = new /datum/preferences(src)
+		GLOB.preferences_datums[ckey] = prefs
+
+	addtimer(CALLBACK(src, PROC_REF(ensure_keys_set), prefs), 10)	//prevents possible race conditions
+
+	prefs.last_ip = address				//these are gonna be used for banning
+	prefs.last_id = computer_id			//these are gonna be used for banning
+	fps = sanitize_clientfps(prefs.clientfps)
+	connect_probe.mark("prefs")
+
+	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
+	if(byond_version >= 516)
+		winset(src, null, "browser-options=+find,+byondstorage")
+
 	//Admin Authorisation
+	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
 	holder = GLOB.admin_datums[ckey]
 	var/debug_tools_allowed = FALSE			//CITADEL EDIT
 	if(holder)
+		connecting_admin = TRUE
 		GLOB.admins |= src
 		holder.owner = src
-		connecting_admin = TRUE
 		//CITADEL EDIT
 		if(check_rights_for(src, R_DEBUG))
 			debug_tools_allowed = TRUE
 		//END CITADEL EDIT
+		if(prefs.deadmin & DEADMIN_ONLOGIN)
+			holder.auto_deadmin()
 	else if(GLOB.deadmins[ckey])
 		add_verb(src, /client/proc/readmin)
 		connecting_admin = TRUE
@@ -303,19 +593,6 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		if(isnull(address) || (address in localhost_addresses))
 			var/datum/admin_rank/localhost_rank = new("!localhost!", R_EVERYTHING, R_DBRANKS, R_EVERYTHING) //+EVERYTHING -DBRANKS *EVERYTHING
 			new /datum/admins(localhost_rank, ckey, 1, 1)
-	//preferences datum - also holds some persistent data for the client (because we may as well keep these datums to a minimum)
-	prefs = GLOB.preferences_datums[ckey]
-	if(prefs)
-		prefs.parent = src
-	else
-		prefs = new /datum/preferences(src)
-		GLOB.preferences_datums[ckey] = prefs
-
-	addtimer(CALLBACK(src, PROC_REF(ensure_keys_set), prefs), 10)	//prevents possible race conditions
-
-	prefs.last_ip = address				//these are gonna be used for banning
-	prefs.last_id = computer_id			//these are gonna be used for banning
-	fps = prefs.clientfps //(prefs.clientfps < 0) ? RECOMMENDED_FPS : prefs.clientfps
 
 	if(fexists(roundend_report_file()))
 		add_verb(src, /client/proc/show_previous_roundend_report)
@@ -340,10 +617,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 					alert_mob_dupe_login = TRUE
 				if(matches)
 					if(C)
-						message_admins("<span class='danger'><B>Notice: </B></span><span class='notice'>[key_name_admin(src)] has the same [matches] as [key_name_admin(C)].</span>")
+						message_admins(span_admindanger("<B>Notice:</B> ")+"[key_name_admin(src)] has the same [matches] as [key_name_admin(C)].")
 						log_admin_private("Notice: [key_name(src)] has the same [matches] as [key_name(C)].")
 					else
-						message_admins("<span class='danger'><B>Notice: </B></span><span class='notice'>[key_name_admin(src)] has the same [matches] as [key_name_admin(C)] (no longer logged in). </span>")
+						message_admins(span_admindanger("<B>Notice:</B> ")+"[key_name_admin(src)] has the same [matches] as [key_name_admin(C)] (no longer logged in).")
 						log_admin_private("Notice: [key_name(src)] has the same [matches] as [key_name(C)] (no longer logged in).")
 
 	if(GLOB.player_details[ckey])
@@ -356,6 +633,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 
 	. = ..()	//calls mob.Login()
+	connect_probe.mark("Login")
 	// if (length(GLOB.stickybanadminexemptions))
 	// 	GLOB.stickybanadminexemptions -= ckey
 	// 	if (!length(GLOB.stickybanadminexemptions))
@@ -366,6 +644,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			message_admins("<span class='adminnotice'>[key_name(src)] has been detected as spoofing their byond version. Connection rejected.</span>")
 			add_system_note("Spoofed-Byond-Version", "Detected as using a spoofed byond version.")
 			log_access("Failed Login: [key] - Spoofed byond version")
+			disconnect_reason = "сервер: подделанная версия BYOND"
 			qdel(src)
 
 		if (num2text(byond_build) in GLOB.blacklisted_builds)
@@ -376,13 +655,18 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			if(connecting_admin)
 				to_chat(src, "As an admin, you are being allowed to continue using this version, but please consider changing byond versions")
 			else
+				disconnect_reason = "сервер: билд BYOND в чёрном списке"
 				qdel(src)
 				return
 
 	// Initialize tgui panel
+	statbrowser_ready = FALSE
+	reset_listed_turf_icon_cache()
 	src << browse(file('html/statbrowser.html'), "window=statbrowser")
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
+	acquire_dpi()
+	connect_probe.mark("dpi")
 
 	if(alert_mob_dupe_login && !holder)
 		var/dupe_login_message = "Your ComputerID has already logged in with another key this round, please log out of this one NOW or risk being banned!"
@@ -396,7 +680,12 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	connection_time = world.time
 	connection_realtime = world.realtime
+	connection_realtimeofday = REALTIMEOFDAY
 	connection_timeofday = world.timeofday
+	GLOB.round_connection_counts[ckey] = (GLOB.round_connection_counts[ckey] || 0) + 1
+	round_login_index = GLOB.round_connection_counts[ckey]
+	if(round_login_index > 1)
+		note_reconnect_and_maybe_alert(ckey)
 	winset(src, null, "command=\".configure graphics-hwmode on\"")
 	// Bluemoon Edit:Start Better byond warning
 	var/breaking_version = CONFIG_GET(number/client_error_version)
@@ -412,6 +701,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			to_chat_immediate(src, "Because you are an admin, you are being allowed to walk past this limitation, But it is still STRONGLY suggested you upgrade")
 			// Bluemoon Edit:End Better byond warning
 		else
+			disconnect_reason = "сервер: версия BYOND ниже минимальной"
 			qdel(src)
 			return FALSE
 	else if (byond_version < warn_version)	// Bluemoon Edit: Better byond warning //We have words for this client.
@@ -431,12 +721,19 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if (connection == "web" && !connecting_admin)
 		if (!CONFIG_GET(flag/allow_webclient))
 			to_chat(src, "Web client is disabled")
+			disconnect_reason = "сервер: веб-клиент запрещён"
 			qdel(src)
 			return FALSE
 		if (CONFIG_GET(flag/webclient_only_byond_members) && !IsByondMember())
 			to_chat(src, "Sorry, but the web client is restricted to byond members only.")
+			disconnect_reason = "сервер: веб-клиент только для BYOND members"
 			qdel(src)
 			return FALSE
+
+	// Клиент прошёл все отсеивания (spoofed/blacklist/устаревший/webclient) и
+	// точно остаётся: только теперь о нём можно сообщать подписчикам
+	// (SSlag_switch считает по этому сигналу порог автовключения мер).
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CLIENT_CONNECT, src)
 
 	if( (world.address == address || !address) && !GLOB.host )
 		GLOB.host = key
@@ -470,6 +767,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	get_message_output("watchlist entry", ckey)
 	check_ip_intel()
 	validate_key_in_db()
+	// Прогрев jobban-кэша: без него ленивый билд (синхронный SQL) случается в самый
+	// неудачный момент - внутри бита директора или гост-полла, посреди игрового тика.
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(jobban_buildcache), src)
 
 	send_resources()
 
@@ -495,12 +795,16 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	var/admin_message_note = get_message_output("message", ckey)
 	if(admin_message_note)
 		to_chat(src, admin_message_note)
-	if(!winexists(src, "asset_cache_browser")) // The client is using a custom skin, tell them.
-		to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
+	// Проверка кастомного скина уехала в таймер: winexists усыпляет прок до ответа
+	// клиента, а в прод-раунде один такой вызов стоил 5.5 секунды - и всё остальное
+	// в New() эти секунды ждало.
+	addtimer(CALLBACK(src, PROC_REF(warn_if_no_asset_cache_browser)), ASSET_CACHE_BROWSER_CHECK_DELAY)
 
-	//This is down here because of the browse() calls in tooltip/New()
-	if(!tooltips)
-		tooltips = new /datum/tooltip(src)
+	// Тултип больше не заводится на логине: его New() шлёт клиенту jquery (95 КБ),
+	// и это единственный ассет, который межсессионный кэш пропустить не может -
+	// клиентский список намеренно выбрасывает всё с расширением js. За прод-раунд
+	// набегало 300+ отправок, почти 30 МБ, из них треть в первые пять минут, ровно
+	// когда у всех грузятся окна. Датум создаётся при первом наведении, см. openToolTip().
 
 	var/list/topmenus = GLOB.menulist[/datum/verbs/menu]
 	for (var/thing in topmenus)
@@ -528,24 +832,356 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	view_size = new(src, getScreenSize(prefs.widescreenpref))
 	view_size.resetFormat()
 	view_size.setZoomMode()
-	fit_viewport()
+	normalize_ui_layout()
+	// Подгонка вьюпорта - самая тяжёлая пачка round-trip'ов на логине: winget на размеры
+	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
+	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
 	Master.UpdateTickRate()
+	connect_probe.mark("хвост")
+	connect_probe.finish(round_login_index)
+
+/// Отсутствие окна кэша ассетов означает кастомный скин - предупреждаем и только.
+/// Зовётся таймером после логина: winexists ждёт ответа скина, и на входе в игру
+/// такое ожидание не нужно никому.
+/client/proc/warn_if_no_asset_cache_browser()
+	if(tracked_winexists(src, "asset_cache_browser"))
+		return
+	to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
+
+#undef ASSET_CACHE_BROWSER_CHECK_DELAY
+#undef LOGIN_FIT_VIEWPORT_DELAY
 
 //////////////
 //DISCONNECT//
 //////////////
 
+/client/proc/get_window_scaling()
+	if(!isnum(window_scaling) || window_scaling <= 0)
+		return 1
+	return window_scaling
+
+/client/proc/get_ui_zoom(window_key, default_zoom = 1)
+	if(!istext(window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+
+	var/safe_default_zoom = clamp(round(isnum(default_zoom) ? default_zoom : 1, 0.01), 0.5, 2.0)
+	if(!prefs || !islist(prefs.ui_zoom_preferences))
+		return safe_default_zoom
+
+	var/stored_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(!isnum(stored_zoom))
+		return safe_default_zoom
+	return clamp(round(stored_zoom, 0.01), 0.5, 2.0)
+
+/client/proc/set_ui_zoom(window_key, zoom)
+	if(!prefs || !istext(window_key))
+		return FALSE
+
+	var/safe_window_key = copytext(window_key, 1, 65)
+	if(!length(safe_window_key))
+		return FALSE
+
+	if(!isnum(zoom))
+		return FALSE
+	var/safe_zoom = clamp(round(zoom, 0.01), 0.5, 2.0)
+
+	LAZYINITLIST(prefs.ui_zoom_preferences)
+	var/current_zoom = prefs.ui_zoom_preferences[safe_window_key]
+	if(isnum(current_zoom))
+		current_zoom = clamp(round(current_zoom, 0.01), 0.5, 2.0)
+		if(current_zoom == safe_zoom)
+			return TRUE
+	if(isnull(current_zoom) && prefs.ui_zoom_preferences.len >= 64)
+		return FALSE
+
+	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
+	// Зум приходит пачкой, пока игрок тянет рамку окна, а запись savefile
+	// синхронная - она морозит весь процесс, а не только вызывающего. Кладём один
+	// ключ в буфер склейки: он уйдёт на диск одним открытием савфайла, а не полным
+	// сейвом префов, и переживёт логаут - флаш висит на разлогине и на Destroy датума.
+	prefs.save_single_pref("ui_zoom_preferences", prefs.ui_zoom_preferences)
+	return TRUE
+
+/client/proc/legacy_zoom_head(window_key, base_zoom = 100)
+	if(!window_key)
+		return ""
+
+	var/key_json = json_encode("[window_key]")
+	var/topic_base_json = json_encode("?src=_legacybrowser_;legacy_zoom_set=1")
+	var/initial_zoom = get_ui_zoom(window_key)
+	return {"
+		<style>
+			#legacyZoomIndicator {
+				position: fixed;
+				top: 12px;
+				right: 12px;
+				z-index: 2147483647;
+				padding: 6px 10px;
+				border-radius: 6px;
+				background: rgba(0, 0, 0, 0.75);
+				color: #fff;
+				font: 12px/1.2 Verdana, sans-serif;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 120ms linear;
+			}
+		</style>
+		<script>
+			(function() {
+				var windowKey = [key_json];
+				var topicBase = [topic_base_json];
+				var baseZoom = [base_zoom];
+				var minZoom = 0.5;
+				var maxZoom = 2.0;
+				var zoomStep = 0.1;
+				var userZoom = [initial_zoom];
+				var indicator = null;
+				var hideTimer = null;
+				var persistTimer = null;
+
+				function clampZoom(value) {
+					return Math.min(maxZoom, Math.max(minZoom, value));
+				}
+
+				function sendByondTopic(href) {
+					var protocolUrl = 'byond://' + href;
+
+					function tryBridgeCall(method, firstArg, secondArg) {
+						if (typeof method !== 'function') {
+							return false;
+						}
+
+						try {
+							method.call(bridge, firstArg);
+							return true;
+						} catch (error) {}
+
+						try {
+							method.call(bridge, secondArg);
+							return true;
+						} catch (error) {}
+
+						return false;
+					}
+
+					if (window.cef_to_byond) {
+						try {
+							window.cef_to_byond(protocolUrl);
+							return true;
+						} catch (error) {}
+					}
+
+					var bridge = window.BYOND;
+					if (bridge) {
+						if (tryBridgeCall(bridge, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.callByond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.byond, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.call, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.topic, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.sendMessage, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.send, protocolUrl, href)) {
+							return true;
+						}
+						if (tryBridgeCall(bridge.postMessage, protocolUrl, href)) {
+							return true;
+						}
+					}
+
+					try {
+						window.location.href = protocolUrl;
+						return true;
+					} catch (error) {}
+
+					return false;
+				}
+
+				function ensureIndicator() {
+					if (indicator || !document.body) {
+						return;
+					}
+					indicator = document.createElement('div');
+					indicator.id = 'legacyZoomIndicator';
+					document.body.appendChild(indicator);
+				}
+
+				function showIndicator() {
+					ensureIndicator();
+					if (!indicator) {
+						return;
+					}
+					indicator.textContent = 'Scale: ' + Math.round(userZoom * 100) + '%';
+					indicator.style.opacity = '1';
+					clearTimeout(hideTimer);
+					hideTimer = setTimeout(function() {
+						if (indicator) {
+							indicator.style.opacity = '0';
+						}
+					}, 1200);
+				}
+
+				function applyZoom() {
+					if (!document.body) {
+						return;
+					}
+					document.body.style.zoom = (baseZoom * userZoom) + '%';
+				}
+
+				function schedulePersistZoom() {
+					clearTimeout(persistTimer);
+					persistTimer = setTimeout(function() {
+						sendByondTopic(
+							topicBase
+							+ ';legacy_zoom_key=' + encodeURIComponent(windowKey)
+							+ ';legacy_zoom_value=' + encodeURIComponent(String(userZoom))
+						);
+					}, 200);
+				}
+
+				function adjustZoom(delta) {
+					userZoom = clampZoom(Math.round((userZoom + delta) * 100) / 100);
+					applyZoom();
+					schedulePersistZoom();
+					showIndicator();
+				}
+
+				function handleWheel(event) {
+					if (!event.ctrlKey) {
+						return;
+					}
+
+					var direction = Math.sign(event.deltaY);
+					if (!direction) {
+						return;
+					}
+
+					event.preventDefault();
+					adjustZoom(direction < 0 ? zoomStep : -zoomStep);
+				}
+
+				function init() {
+					applyZoom();
+					ensureIndicator();
+					window.addEventListener('wheel', handleWheel, { passive: false });
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', init, { once: true });
+				} else {
+					init();
+				}
+			})();
+		</script>
+	"}
+
+/client/proc/acquire_dpi(max_retries = 3, retry_delay = 2 SECONDS, retrying = FALSE)
+	if(!retrying)
+		window_scaling_retry_count = 0
+
+	var/new_scaling = text2num(tracked_winget(src, null, "dpi"))
+	if(isnum(new_scaling) && new_scaling > 0)
+		window_scaling = new_scaling
+		window_scaling_retry_count = 0
+		return TRUE
+
+	window_scaling = 1
+
+	if(window_scaling_retry_count >= max_retries)
+		return FALSE
+
+	window_scaling_retry_count++
+	addtimer(CALLBACK(src, PROC_REF(acquire_dpi), max_retries, retry_delay, TRUE), retry_delay, TIMER_UNIQUE | TIMER_OVERRIDE)
+	return FALSE
+
+/client/proc/normalize_ui_layout(force = TRUE)
+	if(!force)
+		return
+	// Reset splitter state to sane defaults; stale per-client values can break layout on DPI changes.
+	winset(src, "mainwindow.split", "splitter=53")
+	winset(src, "infowindow.info", "splitter=32")
+	winset(src, "legacy_output_selector", "left=output_browser")
+	// Ensure critical panes are not left minimized by stale skin state.
+	winset(src, "mainwindow", "is-minimized=false")
+	winset(src, "mapwindow", "is-minimized=false")
+	winset(src, "infowindow", "is-minimized=false")
+	winset(src, "outputwindow", "is-minimized=false")
+	winset(src, "statwindow", "is-minimized=false")
+
 /client/Del()
 	if(!gc_destroyed)
+		// Клиента удаляет сам BYOND, минуя qdel() - а COMSIG_PARENT_QDELETING рассылает
+		// именно qdel(). Без этой рассылки при обычном дисконнекте не срабатывала ни одна
+		// подписка на удаление клиента: эскейп-меню оставалось в GLOB.escape_menus с мёртвым
+		// клиентом, а держатели экранных объектов не успевали снять их до screen.Cut().
+		SEND_SIGNAL(src, COMSIG_PARENT_QDELETING, FALSE)
 		Destroy() //Clean up signals and timers.
-	return ..()
+	// ..() здесь - это встроенное удаление, внутри которого BYOND и обходит мир,
+	// вычищая уцелевшие ссылки. Меряем именно его: половина дисконнектов прошлого
+	// раунда стоила около полусекунды заморозки, и без этой отметки детектор
+	// спайков валит их в общую кучу "внешний столл", где они выглядят как проблема
+	// хоста, а не наша. Порог тот же, что у остальной медленной работы.
+	var/deletion_started = TICK_USAGE
+	. = ..()
+	if(!SStick_spikes)
+		return
+	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
+	if(deletion_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+		SStick_spikes.record_slow_work("del", "/client (логаут)", deletion_cost_ms)
 
 /client/Destroy()
 	GLOB.clients -= src
 	GLOB.directory -= ckey
-	log_access("Logout: [key_name(src)]")
-	GLOB.ahelp_tickets.ClientLogout(src)
-	SSserver_maint.UpdateHubStatus()
+	log_access("Logout: [key_name(src)] | [connection_forensics()]")
+	var/lifetime_seconds = connection_lifetime_seconds()
+	var/list/churn_record = GLOB.round_connection_lifetimes[ckey]
+	if(churn_record)
+		churn_record[1] += 1
+		churn_record[2] += lifetime_seconds
+		churn_record[3] = min(churn_record[3], lifetime_seconds)
+	else
+		GLOB.round_connection_lifetimes[ckey] = list(1, lifetime_seconds, lifetime_seconds)
+	// Отложенные одиночные записи префов ждут таймера склейки. Игрок уходит - дописываем
+	// их сейчас: датум префов переживёт логаут и таймер бы отработал, но настройка,
+	// изменённая в последние секунды, иначе доедет до диска только если сервер доживёт до
+	// срабатывания. Пустой буфер до диска не доходит, так что обычный логаут бесплатен.
+	prefs?.flush_single_prefs()
+	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
+	if(listed_turf_watched || mob?.listed_turf)
+		clear_listed_turf(send_output = FALSE)
+	if(SSstatpanels)
+		SSstatpanels.icon_queue -= src
+		SSstatpanels.icon_run -= src
+		SSstatpanels.ping_run -= src
+		SSstatpanels.currentrun -= src
+	//Оба списка амбиенса - ассоциации С КЛЮЧОМ-КЛИЕНТОМ, то есть жёсткие ссылки.
+	//Чистились они только лениво, когда fire() доберётся до этого клиента, а на
+	//дисконнекте до него уже не доберётся никто: снимаем сами, как со статпанелями.
+	if(SSambience)
+		SSambience.remove_ambience_client(src)
+	//Обе очереди набиваются копией GLOB.clients и между проходами лежат пустыми
+	//(null), поэтому проверяем сам список, а не только подсистему.
+	if(SSblackbox?.exp_update_queue)
+		SSblackbox.exp_update_queue -= src
+	if(SSparallax?.currentrun)
+		SSparallax.currentrun -= src
+	if(GLOB.ahelp_tickets)
+		GLOB.ahelp_tickets.ClientLogout(src)
+
 	if(credits)
 		QDEL_LIST(credits)
 	if(holder)
@@ -569,11 +1205,101 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			)
 
 			send2adminchat("Server", "[cheesy_message] (No admins online)")
-	QDEL_LIST_ASSOC_VAL(char_render_holders)
+	clear_character_previews()
 	// seen_messages = null
 	Master.UpdateTickRate()
 	. = ..() //Even though we're going to be hard deleted there are still some things that want to know the destroy is happening
+	//Строго после ..(): обработчики COMSIG_PARENT_QDELETING имеют право читать
+	//client.prefs и экран, а до реального del() мы всё равно успеваем - хинт ниже
+	//отдаёт удаление SSgarbage, то есть оно случится уже после выхода отсюда.
+	release_owned_references()
 	return QDEL_HINT_HARDDEL_NOW
+
+/**
+ * Рвёт ссылки, которые пережили бы Destroy и заставили BYOND искать нас по всему миру.
+ *
+ * del() освобождает объект бесплатно только при нулевом refcount. Стоит остаться одной
+ * живой ссылке - и BYOND идёт полным обходом мира, обнуляя её; на населённой станции
+ * это сотни миллисекунд заморозки на КАЖДЫЙ дисконнект, и цена растёт вместе с миром.
+ *
+ * Держатели, которые Destroy раньше не снимал вовсе: датум преференсов живёт в GLOB
+ * вечно и пишет нас в parent на каждом логине, тултип, ловцы кликов и держатель
+ * параллакса ссылаются на нас напрямую, а client.images не резался никогда.
+ */
+/client/proc/release_owned_references()
+	if(prefs?.parent == src)
+		prefs.parent = null
+	// prefs НЕ обнуляем. Рефкаунт клиента считает ссылки НА клиента, а client.prefs -
+	// ссылка ИЗ него, так что удешевить del() она не может. Зато между этим местом и
+	// настоящим del() (хинт ниже отдаёт его SSgarbage) клиент ещё жив и достижим через
+	// mob.client, и любой client.prefs.X в этом окне рантаймит "Cannot read null.X".
+	// В шторме реконнектов окно долбится непрерывно: раунд 9835 дал залп из
+	// login.dm/parallax_holder.dm/observer.dm/say.dm ровно по этой причине.
+	//Обратные ссылки tgui. Окна tgui за раунд не удаляются вовсе, а каждое пишет
+	//себе client в поле - к логауту активного игрока это десятки живых ссылок на
+	//клиента, и каждая заставляет BYOND искать нас полным обходом мира на del().
+	//Рвём только направление окно -> клиент: списки самого клиента на его рефкаунт
+	//не влияют, а обнулять их в этом окне опасно - до настоящего del() клиент ещё
+	//достижим через mob.client, и любое обращение к ним рантаймило бы.
+	for(var/window_id in tgui_windows)
+		var/datum/tgui_window/open_window = tgui_windows[window_id]
+		open_window?.client = null
+	if(tgui_panel)
+		tgui_panel.client = null
+	//datum/view_data держит клиента в chief ровно столько же, сколько живёт клиент
+	if(view_size)
+		view_size.chief = null
+	QDEL_NULL(tooltips)
+	QDEL_NULL(parallax_holder)
+	//Ловец кликов заводится в update_clickcatcher() на первом же Login и больше
+	//нигде не удаляется: screen.Cut() ниже снимает его с экрана, а ссылка в
+	//client.click_catcher держит его, пока жив сам клиент. В раунде 10060 с нулём
+	//игроков перепись давала +31..49 click_catcher за интервал при 40-50
+	//оборванных подключениях - по одному на соединение, которое BYOND отверг до
+	//встроенного New() и чей /client так и не дошёл до Del.
+	QDEL_NULL(click_catcher)
+	QDEL_NULL(void)
+	QDEL_NULL(void_right)
+	QDEL_NULL(void_bottom)
+	screen.Cut()
+	images.Cut()
+
+/**
+ * Всё, что DM в принципе способен знать о том, как умерло соединение.
+ *
+ * Пишется в строку Logout. Разбор шторма реконнектов 30.07 (раунд 9835, 779 переподключений)
+ * упёрся в то, что из логов не видно ни времени жизни соединения, ни свежести последнего
+ * пинга, ни того, кто закрыл канал - и всё это пришлось восстанавливать скриптами по
+ * пяти файлам. Набор полей подобран так, чтобы различать причины прямо в grep:
+ *
+ *  - ровное "жил ~120с" у пачки ckey с разных ISP = соединения рвёт узел на пути;
+ *  - "последний пинг 1-2с назад, rtt в норме" = канал умер без предупреждения (сброс),
+ *    а не задохнулся; растущий rtt перед обрывом означал бы перегрузку;
+ *  - "моб /mob/dead/new_player" = игрока выбивает из лобби, где мы ему почти ничего
+ *    не шлём, что сразу снимает подозрение с объёма данных клиенту;
+ *  - "инициатор" отделяет наши собственные кики от обрыва канала.
+ */
+/// Сколько секунд по стенным часам прожило соединение. MIDNIGHT_ROLLOVER_CHECK внутри
+/// REALTIMEOFDAY уже переносит счётчик через полночь, так что разность остаётся честной.
+/client/proc/connection_lifetime_seconds()
+	if(!connection_realtimeofday)
+		return 0
+	return max(REALTIMEOFDAY - connection_realtimeofday, 0) / 10
+
+/client/proc/connection_forensics()
+	var/list/parts = list("вход №[round_login_index]")
+	if(connection_realtimeofday)
+		parts += "жил [round(connection_lifetime_seconds(), 0.1)]с"
+	if(connection_time)
+		parts += "по игровым часам [round((world.time - connection_time) / 10, 0.1)]с"
+	if(lastping_at)
+		parts += "последний пинг [round((world.time - lastping_at) / 10, 0.1)]с назад, rtt [round(lastping_rtt_raw, 1)]мс (сред [round(avgping_rtt || 0, 1)], джиттер [round(avgping_jitter || 0, 1)])"
+	else
+		parts += "пинга не было ни разу"
+	parts += "без ввода [round(inactivity / 10, 0.1)]с"
+	parts += "моб [mob ? "[mob.type]" : "нет"]"
+	parts += "инициатор: [disconnect_reason || "клиент/сеть"]"
+	return parts.Join(" | ")
 
 /client/proc/set_client_age_from_db(connectiontopic)
 	if (IsGuestKey(src.key))
@@ -638,6 +1364,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 				winset(src, null, "command=.options")
 				src << link("[panic_addr]?redirect=1")
 			qdel(query_client_in_db)
+			disconnect_reason = "сервер: паник-бункер"
 			qdel(src)
 			return
 
@@ -709,24 +1436,26 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(!account_join_date)
 		account_join_date = "Error"
 	var/datum/db_query/query_log_connection = SSdbcore.NewQuery({"
-		INSERT INTO `[format_table_name("connection_log")]` (`id`,`datetime`,`server_ip`,`server_port`,`round_id`,`ckey`,`ip`,`computerid`)
+		INSERT INTO [format_table_name("connection_log")] (`id`,`datetime`,`server_ip`,`server_port`,`round_id`,`ckey`,`ip`,`computerid`)
 		VALUES(null,Now(),INET_ATON(:internet_address),:port,:round_id,:ckey,INET_ATON(:ip),:computerid)
 	"}, list("internet_address" = world.internet_address || "0", "port" = world.port, "round_id" = GLOB.round_id, "ckey" = ckey, "ip" = address, "computerid" = computer_id))
 	query_log_connection.Execute()
 	qdel(query_log_connection)
 
-	SSserver_maint.UpdateHubStatus()
+
 
 	if(new_player)
 		player_age = -1
 	. = player_age
 
 /client/proc/findJoinDate()
-	var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-	if(!http)
+	// Спит (вызывающий set_client_age_from_db и так спит на SQL), но мир не держит:
+	// медленный byond.com на роундстартовой волне коннектов морозил весь сервер на 10+с.
+	var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+	if(!response || response.errored || response.status_code != 200)
 		log_world("Failed to connect to byond member page to age check [ckey]")
 		return
-	var/F = file2text(http["CONTENT"])
+	var/F = response.body
 	if(F)
 		var/regex/R = regex("joined = \"(\\d{4}-\\d{2}-\\d{2})\"")
 		if(R.Find(F))
@@ -735,6 +1464,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			CRASH("Age check regex failed for [src.ckey]")
 
 /client/proc/validate_key_in_db()
+	// Slow path fetches byond.com — must not block /client/New(). Return value is
+	// unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
+	set waitfor = FALSE
 	var/sql_key
 	var/datum/db_query/query_check_byond_key = SSdbcore.NewQuery(
 		"SELECT byond_key FROM [format_table_name("player")] WHERE ckey = :ckey",
@@ -747,11 +1479,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		sql_key = query_check_byond_key.item[1]
 	qdel(query_check_byond_key)
 	if(key != sql_key)
-		var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-		if(!http)
+		var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+		if(!response || response.errored || response.status_code != 200)
 			log_world("Failed to connect to byond member page to get changed key for [ckey]")
 			return
-		var/F = file2text(http["CONTENT"])
+		var/F = response.body
 		if(F)
 			var/regex/R = regex("\\tkey = \"(.+)\"")
 			if(R.Find(F))
@@ -765,6 +1497,13 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			else
 				CRASH("Key check regex failed for [ckey]")
 
+/// Сколько принудительных реконнектов подряд CID-проверка вправе потребовать у одного ckey.
+/// Проверка гоняет клиента через browse-редирект с токеном, и токен теряется по куче
+/// невиновных причин: редирект не доехал, игрок нажал Reconnect в меню вместо ссылки,
+/// соединение порвали посреди хендшейка. Без потолка каждая такая потеря заводит клиента
+/// в тот же самый "токен не совпал" -> кик -> реконнект, то есть в бесконечный цикл.
+#define CID_CHECK_MAX_RECONNECTS 2
+
 /client/proc/check_randomizer(topic)
 	. = FALSE
 	if (connection != "seeker")
@@ -776,6 +1515,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	var/static/tokens = list()
 	var/static/cidcheck_failedckeys = list() //to avoid spamming the admins if the same guy keeps trying.
 	var/static/cidcheck_spoofckeys = list()
+	var/static/cidcheck_attempts = list() //сколько раз подряд мы уже гоняли этот ckey на реконнект
+	var/static/cidcheck_abandoned = list() //ckey, на которых проверка сдалась: пускаем без неё до конца раунда, иначе зациклим
+	if (cidcheck_abandoned[ckey])
+		return
 	var/datum/db_query/query_cidcheck = SSdbcore.NewQuery(
 		"SELECT computerid FROM [format_table_name("player")] WHERE ckey = :ckey",
 		list("ckey" = ckey)
@@ -793,6 +1536,16 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			if (!cidcheck_spoofckeys[ckey])
 				message_admins("<span class='adminnotice'>[key_name(src)] appears to have attempted to spoof a cid randomizer check.</span>")
 				cidcheck_spoofckeys[ckey] = TRUE
+
+			cidcheck_attempts[ckey] = (cidcheck_attempts[ckey] || 0) + 1
+			if (cidcheck_attempts[ckey] > CID_CHECK_MAX_RECONNECTS)
+				cidcheck -= ckey
+				tokens -= ckey
+				cidcheck_attempts -= ckey
+				cidcheck_abandoned[ckey] = TRUE
+				log_access("CID randomizer check abandoned: [key] [computer_id] [address] (lastcid: [lastcid], oldcid: [oldcid]) - токен не вернулся после [CID_CHECK_MAX_RECONNECTS] принудительных реконнектов, проверка снята до конца раунда, клиент пропущен")
+				return FALSE
+
 			cidcheck[ckey] = computer_id
 			tokens[ckey] = cid_check_reconnect()
 
@@ -801,11 +1554,13 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			//we sleep after telling the client to reconnect, so if we still exist something is up
 			log_access("Forced disconnect: [key] [computer_id] [address] - CID randomizer check")
 
+			disconnect_reason = "сервер: CID-проверка, токен не вернулся (реконнект [cidcheck_attempts[ckey]] из [CID_CHECK_MAX_RECONNECTS])"
 			qdel(src)
 			return TRUE
 
 		if (oldcid != computer_id && computer_id != lastcid) //IT CHANGED!!!
 			cidcheck -= ckey //so they can try again after removing the cid randomizer.
+			cidcheck_attempts -= ckey
 
 			to_chat(src, "<span class='userdanger'>Connection Error:</span>")
 			to_chat(src, "<span class='danger'>Invalid ComputerID(spoofed). Please remove the ComputerID spoofer from your byond installation and try again.</span>")
@@ -818,6 +1573,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 			log_access("Failed Login: [key] [computer_id] [address] - CID randomizer confirmed (oldcid: [oldcid])")
 
+			disconnect_reason = "сервер: CID-проверка, подтверждённая подмена CID"
 			qdel(src)
 			return TRUE
 		else
@@ -829,7 +1585,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 				message_admins("<span class='adminnotice'>[key_name_admin(src)] has been allowed to connect after appearing to have attempted to spoof a cid randomizer check because it <i>appears</i> they aren't spoofing one this time</span>")
 				cidcheck_spoofckeys -= ckey
 			cidcheck -= ckey
+			cidcheck_attempts -= ckey
 	else if (computer_id != lastcid)
+		cidcheck_attempts[ckey] = (cidcheck_attempts[ckey] || 0) + 1
 		cidcheck[ckey] = computer_id
 		tokens[ckey] = cid_check_reconnect()
 
@@ -838,14 +1596,17 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		//we sleep after telling the client to reconnect, so if we still exist something is up
 		log_access("Forced disconnect: [key] [computer_id] [address] - CID randomizer check")
 
+		disconnect_reason = "сервер: CID-проверка, первый вызов на реконнект"
 		qdel(src)
 		return TRUE
+
+#undef CID_CHECK_MAX_RECONNECTS
 
 /client/proc/cid_check_reconnect()
 	var/token = md5("[rand(0,9999)][world.time][rand(0,9999)][ckey][rand(0,9999)][address][rand(0,9999)][computer_id][rand(0,9999)]")
 	. = token
 	log_access("Failed Login: [key] [computer_id] [address] - CID randomizer check")
-	var/url = winget(src, null, "url")
+	var/url = tracked_winget(src, null, "url")
 	//special javascript to make them reconnect under a new window.
 	src << browse({"<a id='link' href="byond://[url]?token=[token]">byond://[url]?token=[token]</a><script type="text/javascript">document.getElementById("link").click();window.location="byond://winset?command=.quit"</script>"}, "border=0;titlebar=0;size=1x1;window=redirect")
 	to_chat(src, {"<a href="byond://[url]?token=[token]">You will be automatically taken to the game, if not, click here to be taken manually</a>"})
@@ -890,8 +1651,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			message_admins("<span class='adminnotice'>Proxy Detection: [key_name_admin(src)] IP intel rated [res.intel*100]% likely to be a Proxy/VPN.</span>")
 		ip_intel = res.intel
 
-/client/Click(atom/object, atom/location, control, params, ignore_spam = FALSE, extra_info)
-	if(last_click > world.time - world.tick_lag)
+/client/Click(atom/object, atom/location, control, params, ignore_spam = FALSE, extra_info, ignore_last_click = FALSE)
+	if(!ignore_last_click && last_click > world.time - world.tick_lag)
 		return
 	last_activity = world.time
 	last_click = world.time
@@ -995,17 +1756,45 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		//load info on what assets the client has
 		src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
 
-		//Precache the client with all other assets slowly, so as to not block other browse() calls
-		if (CONFIG_GET(flag/asset_simple_preload))
-			addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
+		// BLUEMOON EDIT: defer the heavyweight preload (asset cache + VOX, multi-MB) until the
+		// statbrowser is up. The BYOND browse() queue is single-threaded per client; if we
+		// enqueue megabytes ahead of statbrowser.html, clients sit on "Downloading resources"
+		// while critical UI never arrives and players perceive a disconnect.
+		INVOKE_ASYNC(src, PROC_REF(preload_resources_when_ui_ready))
 
-		#if (PRELOAD_RSC == 0)
-		for (var/type in GLOB.vox_types)
-			for(var/word in GLOB.vox_types[type])
-				var/file = GLOB.vox_types[type][word]
-				Export("##action=load_rsc", file)
-				stoplag()
-		#endif
+/// BLUEMOON EDIT: heavyweight preload (asset cache + VOX) that fires AFTER the statbrowser
+/// is loaded so the UI reaches the player first. Has a hard timeout so clients whose
+/// statbrowser never reports ready still get their resources eventually.
+/client/proc/preload_resources_when_ui_ready()
+	set waitfor = FALSE
+	var/deadline = world.time + 60 SECONDS
+	while(world.time < deadline && !statbrowser_ready)
+		if(QDELETED(src))
+			return
+		sleep(1 SECONDS)
+	if(QDELETED(src))
+		return
+
+	//Precache the client with all other assets slowly, so as to not block other browse() calls
+	if (CONFIG_GET(flag/asset_simple_preload))
+		addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
+
+	#if (PRELOAD_RSC == 0)
+	// Книга недатумных аллокаций: каталог VOX уходит каждому входящему по игровому
+	// соединению отдельной копией, и бюджет на него держит preload_size_budgets.dm.
+	// Отмечаем весь каталог одной записью и по общему промеру: per-file length(file)
+	// завышал впятеро и заодно дёргал книгу 1596 раз на каждый вход.
+	note_nondatum_alloc(NONDATUM_LEDGER_RSC_BYTES, get_vox_preload_bytes())
+	for (var/type in GLOB.vox_types)
+		if(QDELETED(src))
+			return
+		for(var/word in GLOB.vox_types[type])
+			if(QDELETED(src))
+				return
+			var/file = GLOB.vox_types[type][word]
+			Export("##action=load_rsc", file)
+			stoplag()
+	#endif
 
 
 //Hook, override it to run code when dir changes
@@ -1056,15 +1845,26 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	view = new_size
 	var/list/actualview = getviewsize(view)
 	update_clickcatcher()
-	parallax_holder.Reset()
-	mob.hud_used.screentip_text.update_view()
-	mob.reload_fullscreen()
+	parallax_holder?.Reset()
+	mob?.hud_used?.screentip_text?.update_view()
+	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
+	// (view.dm:86 apply -> chief.change_view) ещё внутри /client/New() - client_procs.dm:826,
+	// то есть в момент, когда моба у клиента может не быть. Локально на MetaStation это
+	// воспроизводилось каждым подключением DreamSeeker: "Cannot execute null.reload
+	// fullscreen()", следом "Cannot read null.comp_lookup", а упавший /client/New() BYOND
+	// трактует как отказ и рвёт соединение. На проде этого рантайма нет ни разу за 144 логина
+	// раунда 10048, то есть там моб к этому моменту уже назначен - но соседние строки этот же
+	// моб и так спрашивают через ?., здесь просто потерян знак вопроса.
+	mob?.reload_fullscreen()
 	if (isliving(mob))
 		var/mob/living/M = mob
 		M.update_damage_hud()
 	if (prefs.auto_fit_viewport)
-		addtimer(CALLBACK(src, VERB_REF(fit_viewport), 10)) //Delayed to avoid wingets from Login calls.
-	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
+		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
+		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
+		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
+	if(mob)
+		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
 /client/proc/generate_clickcatcher()
 	if(!void)
@@ -1091,10 +1891,24 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(!LAZYLEN(char_render_holders))
 		for(var/plane_master_path as anything in subtypesof(/atom/movable/screen/plane_master))
 			var/atom/movable/screen/plane_master/plane_master = new plane_master_path()
-			char_render_holders["plane_master-[plane_master.plane]"] = plane_master
+			var/holder_key = "plane_master-[plane_master.plane]"
+			//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE - одно и то же число (-3),
+			//поэтому ключа по плоскости на всех не хватает: два плейн-мастера из
+			//трёх затирались в списке, но оставались в client.screen. Найти их
+			//clear_character_previews() уже не мог, и каждая пересборка превью
+			//оставляла по два бессмертных экранных объекта.
+			if(char_render_holders[holder_key])
+				holder_key = "plane_master-[plane_master.type]"
+			char_render_holders[holder_key] = plane_master
 			plane_master.backdrop(mob)
 			screen |= plane_master
 			plane_master.screen_loc = "character_preview_map:0,CENTER"
+		// Disable lighting on the preview — no lighting objects exist there,
+		// and the blur edge-fix filter would force the empty plane opaque black
+		var/atom/movable/screen/plane_master/lighting_pm = char_render_holders["plane_master-[LIGHTING_PLANE]"]
+		if(lighting_pm)
+			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			lighting_pm.filters = null
 
 	var/pos = 0
 	for(var/dir in GLOB.cardinals)
@@ -1109,11 +1923,25 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		preview.screen_loc = "character_preview_map:0,[pos]"
 
 /client/proc/clear_character_previews()
-	for(var/index in char_render_holders)
-		var/atom/movable/screen/S = char_render_holders[index]
+	if(!LAZYLEN(char_render_holders))
+		char_render_holders = null
+		return
+
+	var/list/char_render_holders_copy = char_render_holders.Copy()
+	char_render_holders = null
+
+	for(var/index in char_render_holders_copy)
+		var/atom/movable/screen/S = char_render_holders_copy[index]
+		S.vis_contents.Cut()
+		S.overlays.Cut()
+		S.underlays.Cut()
+		S.filters = null
+		S.maptext = null
+		S.icon = null
+		S.screen_loc = null
+		S.appearance = null
 		screen -= S
 		qdel(S)
-	char_render_holders = null
 
 /client/proc/can_have_part(part_name)
 	return prefs.pref_species.mutant_bodyparts[part_name] || (part_name in GLOB.unlocked_mutant_parts)
@@ -1133,6 +1961,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		return
 	prefs.hearted_until = world.realtime + (24 HOURS)
 	prefs.hearted = TRUE
+	sync_hearted_pref(prefs)
 	if(!src)
 		return
 	prefs.save_preferences()
@@ -1141,6 +1970,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /client/proc/init_verbs()
 	if(IsAdminAdvancedProcCall())
 		return
+	src << output(get_ui_zoom("statbrowser"), "statbrowser:set_zoom_pref")
 	var/list/verblist = list()
 	var/list/verbstoprocess = verbs.Copy()
 	if(mob)
@@ -1165,27 +1995,28 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(statbrowser_ready)
 		return
 	to_chat(src, span_userdanger("Statpanel failed to load, click <a href='?src=[REF(src)];reload_statbrowser=1'>here</a> to reload the panel "))
+	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
+	statbrowser_ready = TRUE
+	init_verbs()
+	if(mob?.listed_turf)
+		open_listed_turf(mob.listed_turf)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)
-	if(prefs)
-		var/savefile/S = new /savefile(prefs.path)
-		var/list/unlockable_loadout_data = prefs.unlockable_loadout_data
-		if(!length(unlockable_loadout_data))
-			unlockable_loadout_data = list()
-			unlockable_loadout_data[key] = amount
-			WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
-			prefs.unlockable_loadout_data = unlockable_loadout_data
-			return TRUE
-		else
-			if(unlockable_loadout_data[key])
-				unlockable_loadout_data[key] += amount
-			else
-				unlockable_loadout_data[key] = amount
-			WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
-			prefs.unlockable_loadout_data = unlockable_loadout_data
-			return TRUE
-	return FALSE
+	if(!prefs || !key)
+		return FALSE
+	var/list/unlockable_loadout_data = prefs.unlockable_loadout_data
+	if(!islist(unlockable_loadout_data))
+		unlockable_loadout_data = list()
+	// null не равен нулю, поэтому сложение через isnull, а не через прямое +=
+	var/current = unlockable_loadout_data[key]
+	unlockable_loadout_data[key] = (isnull(current) ? 0 : current) + amount
+	prefs.unlockable_loadout_data = unlockable_loadout_data
+	// Прежде тут открывался савфайл и писался WRITE_FILE напрямую, мимо замера
+	// блокирующих вызовов: каждая вымытая плитка уходила синхронно на диск, а
+	// детектор спайков видел её как безымянный "внешний столл". Ключ один, так что
+	// пишем его одиночной записью и под тем же прибором, что и остальные префы.
+	return prefs.save_single_pref("unlockable_loadout", safe_json_encode(unlockable_loadout_data))
 
 /client/proc/open_filter_editor(atom/in_atom)
 	if(holder)
@@ -1208,7 +2039,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 /// Clears the client's screen, aside from ones that opt out
 /client/proc/clear_screen()
-	for (var/object in screen)
+	// По снапшоту: вычитание из screen прямо в обходе по нему сдвигает индексы и
+	// пропускает каждый второй объект.
+	for (var/object in screen.Copy())
 		if (istype(object, /atom/movable/screen))
 			var/atom/movable/screen/screen_object = object
 			if (!screen_object.clear_with_screen)

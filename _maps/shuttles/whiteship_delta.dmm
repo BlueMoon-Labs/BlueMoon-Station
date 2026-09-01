@@ -171,7 +171,7 @@
 	pixel_y = 12
 	},
 /obj/item/toy/cards/cardhand{
-	currenthand = list("2 of Diamonds","3 of Clubs");
+	cards = list("2 of Diamonds","3 of Clubs");
 	pixel_x = -5
 	},
 /obj/item/reagent_containers/food/drinks/beer{
@@ -683,9 +683,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
@@ -2515,9 +2512,6 @@
 	icon_state = "4-8"
 	},
 /obj/structure/spider/stickyweb,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/abandoned/medbay)

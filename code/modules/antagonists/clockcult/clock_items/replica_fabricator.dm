@@ -1,8 +1,8 @@
 //Replica Fabricator: Converts applicable objects to Ratvarian variants.
 /obj/item/clockwork/replica_fabricator
 	name = "replica fabricator"
-	desc = "An odd, L-shaped device that hums with energy."
-	clockwork_desc = "A device that allows the replacing of mundane objects with Ratvarian variants. It requires power to function."
+	desc = "Странное устройство в форме буквы L, наполненное энергией."
+	clockwork_desc = "Устройство, позволяющее заменять обычные предметы на их ратварские аналоги. Для работы ему требуется энергия."
 	icon_state = "replica_fabricator"
 	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/clockwork_righthand.dmi'
@@ -15,7 +15,7 @@
 
 /obj/item/clockwork/replica_fabricator/scarab
 	name = "scarab fabricator"
-	clockwork_desc = "A cogscarab's internal fabricator. It can only be successfully used by a cogscarab and requires power to function."
+	clockwork_desc = "Внутренний фабрикатор жука-шестерни. Им может успешно пользоваться только жук-шестерня, и для его работы требуется энергия."
 	item_state = "nothing"
 	w_class = WEIGHT_CLASS_TINY
 	speed_multiplier = 0.5
@@ -27,13 +27,13 @@
 	return ..()
 
 /obj/item/clockwork/replica_fabricator/scarab/debug
-	clockwork_desc = "A cogscarab's internal fabricator. It can convert nearly any object into a Ratvarian variant."
+	clockwork_desc = "Внутренний фабрикатор жука-шестерни. Он способен преобразовывать практически любой объект в ратварскую версию."
 	uses_power = FALSE
 	debug = TRUE
 
 /obj/item/clockwork/replica_fabricator/cyborg
 	name = "cyborg fabricator"
-	clockwork_desc = "A cyborg's internal fabricator."
+	clockwork_desc = "Внутренний фабрикатор киборга."
 
 /obj/item/clockwork/replica_fabricator/ratvar_act()
 	if(GLOB.ratvar_awakens)
@@ -46,25 +46,25 @@
 /obj/item/clockwork/replica_fabricator/examine(mob/living/user)
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
-		. += "<span class='brass'>Can be used to replace walls, floors, tables, windows, windoors, and airlocks with Clockwork variants.</span>"
-		. += "<span class='brass'>Can construct Clockwork Walls on Clockwork Floors and deconstruct Clockwork Walls to Clockwork Floors.</span>"
+		. += "<span class='brass'>Можно использовать для замены стен, полов, столов, окон, дверей и шлюзов на их механические аналоги.</span>"
+		. += "<span class='brass'>Можно создавать часовые стены из часовых полов и разбирать часовые стены на часовые полы.</span>"
 		if(uses_power)
-			. += "<span class='alloy'>It can consume floor tiles, rods, metal, and plasteel for power at rates of <b>2:[DisplayPower(POWER_ROD)]</b>, <b>1:[DisplayPower(POWER_ROD)]</b>, <b>1:[DisplayPower(POWER_METAL)]</b>, \
-			and <b>1:[DisplayPower(POWER_PLASTEEL)]</b>, respectively.</span>"
-			. += "<span class='alloy'>It can also consume brass sheets for power at a rate of <b>1:[DisplayPower(POWER_FLOOR)]</b>.</span>"
-			. += "<span class='alloy'>Use it in-hand to produce <b>5</b> brass sheets at a cost of <b>[DisplayPower(POWER_WALL_TOTAL)]</b> power.</span>"
-			. += "<span class='alloy'>It has access to <b>[DisplayPower(get_clockwork_power())]</b> of power.</span>"
+			. += "<span class='alloy'>Он может перерабатывать полы, прутья, металл и пласталь в энергию по курсу <b>2:[DisplayPower(POWER_ROD)]</b>, <b>1:[DisplayPower(POWER_ROD)]</b>, <b>1:[DisplayPower(POWER_METAL)]</b>, \
+			и <b>1:[DisplayPower(POWER_PLASTEEL)]</b>, соответственно.</span>"
+			. += "<span class='alloy'>Он также может перерабатывать листы латуни в энергию по курсу <b>1:[DisplayPower(POWER_FLOOR)]</b>.</span>"
+			. += "<span class='alloy'>Используйте его в руке, чтобы создать <b>5</b> листов латуни ценой в <b>[DisplayPower(POWER_WALL_TOTAL)]</b> энергии.</span>"
+			. += "<span class='alloy'>Он имеет доступ к <b>[DisplayPower(get_clockwork_power())]</b> энергии.</span>"
 
 /obj/item/clockwork/replica_fabricator/attack_self(mob/living/user)
 	if(is_servant_of_ratvar(user))
 		if(uses_power)
 			if(!get_clockwork_power(POWER_WALL_TOTAL))
-				to_chat(user, "<span class='warning'>[src] requires <b>[DisplayPower(POWER_WALL_TOTAL)]</b> of power to produce brass sheets!</span>")
+				to_chat(user, "<span class='warning'>[src] требует <b>[DisplayPower(POWER_WALL_TOTAL)]</b> энергии, чтобы создать листы латуни!</span>")
 				return
 			adjust_clockwork_power(-POWER_WALL_TOTAL)
 		playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
 		new/obj/item/stack/tile/brass(user.loc, 5)
-		to_chat(user, "<span class='brass'>You use [get_clockwork_power() ? "some":"all"] of [src]'s power to produce <b>5</b> brass sheets. It now has access to <b>[DisplayPower(get_clockwork_power())]</b> of power.</span>")
+		to_chat(user, "<span class='brass'>Вы используете [get_clockwork_power() ? "часть":"всю"] энергию [src], чтобы создать <b>5</b> листов латуни. Теперь он имеет доступ к <b>[DisplayPower(get_clockwork_power())]</b> энергии.</span>")
 
 /obj/item/clockwork/replica_fabricator/pre_attack(atom/target, mob/living/user, params)
 	if(!target || !user || !is_servant_of_ratvar(user) || istype(target, /obj/item/storage))
@@ -77,7 +77,7 @@
 		return FALSE
 	if(repairing)
 		if(!silent)
-			to_chat(user, "<span class='warning'>You are currently repairing [repairing] with [src]!</span>")
+			to_chat(user, "<span class='warning'>В данный момент вы ремонтируете [repairing] с помощью [src]!</span>")
 		return FALSE
 	var/list/fabrication_values = target.fabrication_vals(user, src, silent) //relevant values for fabricating stuff, given as an associated list
 	if(!islist(fabrication_values))
@@ -85,7 +85,7 @@
 			if(!isturf(target)) //otherwise, if we didn't get TRUE and the original target wasn't a turf, try to fabricate the turf
 				return fabricate(get_turf(target), user, no_table_check)
 			if(!silent)
-				to_chat(user, "<span class='warning'>[target] cannot be fabricated!</span>")
+				to_chat(user, "<span class='warning'>[target] не может быть создан!</span>")
 			if(!no_table_check)
 				return TRUE
 		return FALSE
@@ -110,30 +110,30 @@
 		if(!silent)
 			var/atom/A = fabrication_values["new_obj_type"]
 			if(A)
-				user.visible_message("<span class='warning'>[user]'s [name] starts ripping [target] apart!</span>", \
-				"<span class='brass'>You start fabricating \a [initial(A.name)] from [target]...</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] начинает разбирать [target] на части!</span>", \
+				"<span class='brass'>Вы начинаете изготавливать [initial(A.name)] из [target]...</span>")
 			else
-				user.visible_message("<span class='warning'>[user]'s [name] starts consuming [target]!</span>", \
-				"<span class='brass'>Your [name] starts consuming [target]...</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] начинает поглощать [target]!</span>", \
+				"<span class='brass'>Ваш [name] начинает поглощать [target]...</span>")
 		if(!do_after(user, fabrication_values["operation_time"], target = target, extra_checks = CALLBACK(src, PROC_REF(fabricate_checks), fabrication_values, target, target_type, user, TRUE)))
 			return FALSE
 		if(!silent)
 			var/atom/A = fabrication_values["new_obj_type"]
 			if(A)
-				user.visible_message("<span class='warning'>[user]'s [name] replaces [target] with \a [initial(A.name)]!</span>", \
-				"<span class='brass'>You fabricate \a [initial(A.name)] from [target].</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] заменяет [target] на [initial(A.name)]!</span>", \
+				"<span class='brass'>Вы создали [initial(A.name)] из [target].</span>")
 			else
-				user.visible_message("<span class='warning'>[user]'s [name] consumes [target]!</span>", \
-				"<span class='brass'>Your [name] consumes [target].</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] поглощает [target]!</span>", \
+				"<span class='brass'>Ваш [name] поглощает [target].</span>")
 	else
 		if(!silent)
 			var/atom/A = fabrication_values["new_obj_type"]
 			if(A)
-				user.visible_message("<span class='warning'>[user]'s [name] rips apart [target], replacing it with \a [initial(A.name)]!</span>", \
-				"<span class='brass'>You fabricate \a [initial(A.name)] from [target].</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] разбирает [target] на части, заменяя его на [initial(A.name)]!</span>", \
+				"<span class='brass'>Вы создаёте [initial(A.name)] из [target].</span>")
 			else
-				user.visible_message("<span class='warning'>[user]'s [name] rapidly consumes [target]!</span>", \
-				"<span class='brass'>Your [name] consumes [target].</span>")
+				user.visible_message("<span class='warning'>[name] в руках [user] быстро поглощает [target]!</span>", \
+				"<span class='brass'>Ваш [name] поглощает [target].</span>")
 
 	playsound(target, 'sound/items/deconstruct.ogg', 50, 1)
 	var/new_thing_type = fabrication_values["new_obj_type"]
@@ -189,11 +189,11 @@
 		var/mob/living/L = target
 		if(!is_servant_of_ratvar(L))
 			if(!silent)
-				to_chat(user, "<span class='warning'>[L] does not serve Ratvar!</span>")
+				to_chat(user, "<span class='warning'>[L] не служит Ратвару!</span>")
 			return FALSE
 		if(L.health >= L.maxHealth || (L.flags_1 & GODMODE))
 			if(!silent)
-				to_chat(user, "<span class='warning'>[L == user ? "You are" : "[L] is"] at maximum health!</span>")
+				to_chat(user, "<span class='warning'>[L == user ? "Вы уже имеете максимальное здоровье" : "[L] уже имеет максимальное здоровье"]!</span>")
 			return FALSE
 		repair_values["amount_to_heal"] = L.maxHealth - L.health
 	else if(isobj(target))
@@ -201,12 +201,12 @@
 			var/obj/structure/destructible/clockwork/C = target
 			if(!C.can_be_repaired)
 				if(!silent)
-					to_chat(user, "<span class='warning'>[C] cannot be repaired!</span>")
+					to_chat(user, "<span class='warning'>[C] не может быть починен!</span>")
 				return FALSE
 		var/obj/O = target
 		if(O.obj_integrity >= O.max_integrity)
 			if(!silent)
-				to_chat(user, "<span class='warning'>[O] is at maximum integrity!</span>")
+				to_chat(user, "<span class='warning'>[O] имеет максимальную целостность!</span>")
 			return FALSE
 		repair_values["amount_to_heal"] = O.max_integrity - O.obj_integrity
 	else
@@ -217,7 +217,7 @@
 	repair_values["power_required"] = round(repair_values["healing_for_cycle"]*MIN_CLOCKCULT_POWER, MIN_CLOCKCULT_POWER) //and get the power cost from that
 	if(!GLOB.ratvar_awakens && !get_clockwork_power(repair_values["power_required"]))
 		if(!silent)
-			to_chat(user, "<span class='warning'>You need at least <b>[DisplayPower(repair_values["power_required"])]</b> power to start repairin[target == user ? "g yourself" : "g [target]"], and at least \
-			<b>[DisplayPower(repair_values["amount_to_heal"]*MIN_CLOCKCULT_POWER, MIN_CLOCKCULT_POWER)]</b> to fully repair [target == user ? "yourself" : "[target.ru_na()]"]!</span>")
+			to_chat(user, "<span class='warning'>Вам нужно как минимум <b>[DisplayPower(repair_values["power_required"])]</b> энергии, чтобы начать чинить [target == user ? "себя" : "[target]"], и как минимум \
+			<b>[DisplayPower(repair_values["amount_to_heal"]*MIN_CLOCKCULT_POWER, MIN_CLOCKCULT_POWER)]</b>, чтобы починить [target == user ? "себя" : "[target.ru_ego()]"] полностью!</span>")
 		return FALSE
 	return TRUE

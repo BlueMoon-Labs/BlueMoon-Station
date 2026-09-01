@@ -11,7 +11,7 @@
 		/obj/item/surgicaldrill/advanced/cyborg
 	)
 	/// Базовые инструменты, что мы заменяем или возвращаем
-	var/list/basic_tools = list(/obj/item/retractor, /obj/item/hemostat, /obj/item/cautery, /obj/item/surgicaldrill, /obj/item/scalpel, /obj/item/circular_saw)
+	var/list/basic_tools = list(/obj/item/retractor/upgraded_t2/cyborg, /obj/item/hemostat/upgraded_t2/cyborg, /obj/item/cautery/upgraded_t2/cyborg, /obj/item/surgicaldrill, /obj/item/scalpel/upgraded_t2/cyborg, /obj/item/circular_saw/upgraded_t2/cyborg)
 
 /obj/item/borg/upgrade/advmed_tools/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
@@ -98,20 +98,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with an industrial RCD module.</span>")
 			return FALSE
 
-	var/RCD_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого РЦД
-		RCD = R.module.modules[i]
-		if(istype(RCD, /obj/item/construction/rcd/borg))
-			RCD_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/RCD_index = find_module_index(R, /obj/item/construction/rcd/borg)
+	RCD = RCD_index ? R.module.modules[RCD_index] : null
 
 	IRCD = new(R.module)
 	R.module.basic_modules += IRCD
 	R.module.add_module(IRCD, FALSE, TRUE)
 	var/IRCD_index = R.module.modules.Find(IRCD)
-	for(IRCD in R.module) // Можно оформить и для старого РЦД, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RCD_index, IRCD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RCD_index, IRCD_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, RCD_index, IRCD_index)
 	R.module.remove_module(RCD, TRUE) // Замена произошла - избавляемся от старого РЦД
 
 /obj/item/borg/upgrade/rcdsyndi/deactivate(mob/living/silicon/robot/R, user)
@@ -119,20 +113,19 @@
 	if(!.)
 		return
 
-	var/IRCD_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
-		IRCD = R.module.modules[i]
-		if(istype(IRCD, /obj/item/construction/rcd/borg/syndicate))
-			IRCD_index = i
-			break
+	var/IRCD_index = find_module_index(R, /obj/item/construction/rcd/borg/syndicate)
+	if(!IRCD_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		IRCD = null
+		return
+	IRCD = R.module.modules[IRCD_index]
 
 	RCD = new(R.module)
 	R.module.basic_modules += RCD
 	R.module.add_module(RCD, FALSE, TRUE)
 	var/RCD_index = R.module.modules.Find(RCD)
-	for(RCD in R.module)
-		R.module.modules.Swap(IRCD_index, RCD_index)
-		R.module.basic_modules.Swap(IRCD_index, RCD_index)
+	swap_module_entries(R, IRCD_index, RCD_index)
+	if(IRCD)
 		R.module.remove_module(IRCD, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,20 +217,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with an advanced analyzer module.</span>")
 			return FALSE
 
-	var/analyzer_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого анализатора
-		analyzer = R.module.modules[i]
-		if(istype(analyzer, /obj/item/analyzer))
-			analyzer_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/analyzer_index = find_module_index(R, /obj/item/analyzer)
+	analyzer = analyzer_index ? R.module.modules[analyzer_index] : null
 
 	analyzer_adv = new(R.module)
 	R.module.basic_modules += analyzer_adv
 	R.module.add_module(analyzer_adv, FALSE, TRUE)
 	var/analyzer_adv_index = R.module.modules.Find(analyzer_adv)
-	for(analyzer_adv in R.module) // Можно оформить и для старого анализатора, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(analyzer_index, analyzer_adv_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(analyzer_index, analyzer_adv_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, analyzer_index, analyzer_adv_index)
 	R.module.remove_module(analyzer, TRUE) // Замена произошла - избавляемся от старого
 
 /obj/item/borg/upgrade/gasanalyzer_advanced/deactivate(mob/living/silicon/robot/R, user)
@@ -245,20 +232,19 @@
 	if(!.)
 		return
 
-	var/analyzer_adv_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
-		analyzer_adv = R.module.modules[i]
-		if(istype(analyzer_adv, /obj/item/analyzer/ranged/cyborg))
-			analyzer_adv_index = i
-			break
+	var/analyzer_adv_index = find_module_index(R, /obj/item/analyzer/ranged/cyborg)
+	if(!analyzer_adv_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		analyzer_adv = null
+		return
+	analyzer_adv = R.module.modules[analyzer_adv_index]
 
 	analyzer = new(R.module)
 	R.module.basic_modules += analyzer
 	R.module.add_module(analyzer, FALSE, TRUE)
 	var/analyzer_index = R.module.modules.Find(analyzer)
-	for(analyzer in R.module)
-		R.module.modules.Swap(analyzer_adv_index, analyzer_index)
-		R.module.basic_modules.Swap(analyzer_adv_index, analyzer_index)
+	swap_module_entries(R, analyzer_adv_index, analyzer_index)
+	if(analyzer_adv)
 		R.module.remove_module(analyzer_adv, TRUE)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

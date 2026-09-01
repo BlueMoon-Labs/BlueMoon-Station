@@ -183,13 +183,13 @@
 		ui.open()
 
 /obj/machinery/dna_vault/proc/roll_powers(mob/user)
-	if(user in power_lottery)
+	if(!user?.ckey || (user.ckey in power_lottery))
 		return
 	var/list/L = list()
 	var/list/possible_powers = list(VAULT_TOXIN,VAULT_NOBREATH,VAULT_FIREPROOF,VAULT_STUNTIME,VAULT_ARMOUR,VAULT_SPEED,VAULT_QUICK)
 	L += pick_n_take(possible_powers)
 	L += pick_n_take(possible_powers)
-	power_lottery[user] = L
+	power_lottery[user.ckey] = L
 
 /obj/machinery/dna_vault/ui_data(mob/user) //TODO Make it % bars maybe
 	var/list/data = list()
@@ -204,7 +204,7 @@
 	data["choiceA"] = ""
 	data["choiceB"] = ""
 	if(user && completed)
-		var/list/L = power_lottery[user]
+		var/list/L = power_lottery[user.ckey]
 		if(L?.len)
 			data["used"] = FALSE
 			data["choiceA"] = L[1]
@@ -248,7 +248,7 @@
 		return ..()
 
 /obj/machinery/dna_vault/proc/upgrade(mob/living/carbon/human/H,upgrade_type)
-	if(!(upgrade_type in power_lottery[H]))
+	if(!(upgrade_type in power_lottery[H.ckey]))
 		return
 	var/datum/species/S = H.dna.species
 	switch(upgrade_type)
@@ -279,4 +279,4 @@
 		if(VAULT_QUICK)
 			to_chat(H, "<span class='notice'>Your arms move as fast as lightning.</span>")
 			H.action_cooldown_mod = 0.5
-	power_lottery[H] = list()
+	power_lottery[H.ckey] = list()

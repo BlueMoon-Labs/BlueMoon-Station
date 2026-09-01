@@ -17,12 +17,13 @@
 	pass_flags = PASSTABLE
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
-	maxHealth = 150
-	health = 150
+	maxHealth = 500
+	health = 500
 	healable = 0
 	obj_damage = 50
 	melee_damage_lower = 20
 	melee_damage_upper = 20
+	var/eaten_count = 0
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	vision_range = 1 // Only attack when target is close
@@ -49,17 +50,20 @@
 							observers, and can only be performed once every five seconds. While morphed, you move faster, but do \
 							less damage. In addition, anyone within three tiles will note an uncanny wrongness if examining you. \
 							You can attack any item or dead creature to consume it - creatures will fully restore your health. \
+							Swallowed <b>items</b> (not living prey) can be brought back up from the toolbar action <b>Сплюнуть предмет</b>. \
 							Finally, you can restore yourself to your original form while morphed by shift-clicking yourself.</b>"
 
 /mob/living/simple_animal/hostile/morph/Initialize(mapload)
 	. = ..()
 	src.AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+	var/datum/action/morph_swallow_inventory/spitter = new(src)
+	spitter.Grant(src)
 
 /mob/living/simple_animal/hostile/morph/examine(mob/user)
 	if(morphed)
 		. = form.examine(user)
 		if(get_dist(user,src)<=3)
-			. += "<span class='warning'>It doesn't look quite right...</span>"
+			. += "<span class='warning'>Выглядит как-то неправильно...</span>"
 	else
 		. = ..()
 
@@ -80,6 +84,13 @@
 /mob/living/simple_animal/hostile/morph/proc/allowed(atom/movable/A) // make it into property/proc ? not sure if worth it
 	return !is_type_in_typecache(A, blacklist_typecache) && (isobj(A) || ismob(A))
 
+/// How much swallowed matter boosts stats / heals for one eat (mirror in regurgitate)
+/mob/living/simple_animal/hostile/morph/proc/swallow_bonus_for(atom/movable/A)
+	var/bonus = 1
+	if(istype(A, /mob/living/carbon))
+		bonus = 10
+	return bonus
+
 /mob/living/simple_animal/hostile/morph/proc/eat(atom/movable/A)
 	if(morphed && !eat_while_disguised)
 		to_chat(src, "<span class='warning'>You can not eat anything while you are disguised!</span>")
@@ -87,8 +98,128 @@
 	if(A && A.loc != src)
 		visible_message("<span class='warning'>[src] swallows [A] whole!</span>")
 		A.forceMove(src)
+		var/eat_bonus = swallow_bonus_for(A)
+		eaten_count += eat_bonus
+		melee_damage_lower += 0.1 * eat_bonus
+		melee_damage_upper += 0.1 * eat_bonus
+		maxHealth += eat_bonus
+		adjustHealth(-eat_bonus)
+		// With autoupdate off, datum/ui_update() does nothing useful; refresh open stomach UIs now.
+		SStgui.update_uis(src)
 		return TRUE
 	return FALSE
+
+/// Matches combat / health scaling from swallowed matter when eaten_count changes.
+/mob/living/simple_animal/hostile/morph/proc/recalc_swallow_derived_stats()
+	maxHealth = initial(maxHealth) + eaten_count
+	health = min(health, maxHealth)
+	if(!morphed)
+		melee_damage_lower = initial(melee_damage_lower) + eaten_count * 0.1
+		melee_damage_upper = initial(melee_damage_upper) + eaten_count * 0.1
+	med_hud_set_health()
+
+/// Returns one swallowed item matching display name at a time for the vending UI logic.
+/mob/living/simple_animal/hostile/morph/proc/regurgitate_item_by_name(atom/destination, desired_name)
+	if(!desired_name || stat == DEAD)
+		return FALSE
+	for(var/obj/item/I in contents)
+		if(I.name == desired_name)
+			var/expel_bonus = swallow_bonus_for(I)
+			I.forceMove(destination)
+			if(isliving(src) && stat != DEAD && prob(40))
+				step(I, pick(GLOB.cardinals))
+			to_chat(src, "<span class='notice'>You expel [I]!</span>")
+			visible_message("<span class='warning'>[src] disgorges [I]!</span>", ignored_mobs = list(src))
+			log_game("[key_name(src)] морф выплюнул [I] ([I.type]).")
+			eaten_count = max(eaten_count - expel_bonus, 0)
+			recalc_swallow_derived_stats()
+			adjustHealth(expel_bonus)
+			return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/morph/ui_state(mob/user)
+	return GLOB.self_state
+
+/mob/living/simple_animal/hostile/morph/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "SmartVend", "Желудок морфа")
+		ui.set_autoupdate(FALSE)
+		ui.open()
+
+/mob/living/simple_animal/hostile/morph/ui_data(mob/user)
+	. = list()
+	var/list/listofitems = list()
+	for(var/obj/item/O in contents)
+		if(QDELETED(O))
+			continue
+		var/md5name = md5(O.name)
+		if(listofitems[md5name])
+			listofitems[md5name]["amount"]++
+		else
+			listofitems[md5name] = list(
+				"name" = O.name,
+				"type" = "[O.type]",
+				"amount" = 1
+			)
+	sort_list(listofitems)
+	.["contents"] = listofitems
+	.["name"] = "[name]"
+	.["verb"] = "Выплюнуть"
+	.["searchable"] = TRUE
+	.["isdryer"] = FALSE
+
+/mob/living/simple_animal/hostile/morph/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("Release")
+			if(src != usr)
+				return
+			var/turf/dropspot = drop_location()
+			if(!dropspot || QDELETED(usr))
+				return
+
+			var/desired = params["amount"] ? floor(text2num(params["amount"])) : null
+
+			if(isnull(desired))
+				desired = input(usr, "Сколько одноимённых предметов выплюнуть?", "Желудок морфа", 1) as num|null
+
+			if(isnull(desired))
+				return TRUE
+
+			desired = floor(desired)
+			if(desired < 1)
+				return TRUE
+
+			var/param_name = params["name"]
+
+			while(desired > 0)
+				if(QDELETED(src) || stat == DEAD)
+					break
+				if(!regurgitate_item_by_name(dropspot, param_name))
+					break
+				desired--
+			return TRUE
+	return FALSE
+
+/// Opens searchable list of swallowed /obj/item (living prey must still come out via death/other means).
+/datum/action/morph_swallow_inventory
+	name = "Сплюнуть предмет"
+	desc = "Список поглощённых предметов с поиском. Сплюнуть предмет под вас на пол."
+	icon_icon = 'icons/mob/animal.dmi'
+	button_icon_state = "morph"
+	check_flags = AB_CHECK_ALIVE | AB_CHECK_CONSCIOUS
+
+/datum/action/morph_swallow_inventory/Trigger()
+	if(!..())
+		return FALSE
+	var/mob/living/simple_animal/hostile/morph/body = owner
+	if(!istype(body))
+		return FALSE
+	body.ui_interact(owner)
+	return TRUE
 
 /mob/living/simple_animal/hostile/morph/ShiftClickOn(atom/movable/A)
 	if(morph_time <= world.time && !stat)
@@ -144,9 +275,10 @@
 	icon_state = initial(icon_state)
 	cut_overlays()
 
-	//Baseline stats
-	melee_damage_lower = initial(melee_damage_lower)
-	melee_damage_upper = initial(melee_damage_upper)
+	melee_damage_lower = initial(melee_damage_lower) + eaten_count * 0.1
+	melee_damage_upper = initial(melee_damage_upper) + eaten_count * 0.1
+	maxHealth = initial(maxHealth) + eaten_count
+	health = min(health, maxHealth)
 	speed = initial(speed)
 
 	morph_time = world.time + MORPH_COOLDOWN
@@ -178,21 +310,83 @@
 /mob/living/simple_animal/hostile/morph/LoseAggro()
 	vision_range = initial(vision_range)
 
-/mob/living/simple_animal/hostile/morph/AIShouldSleep(var/list/possible_targets)
-	. = ..()
-	if(.)
-		var/list/things = list()
-		for(var/atom/movable/A in view(src))
-			if(allowed(A))
-				things += A
-		if(things)
-			var/atom/movable/T = pick(things)
-			assume(T)
-
 /mob/living/simple_animal/hostile/morph/can_track(mob/living/user)
 	if(morphed)
 		return FALSE
 	return ..()
+
+// ===== Адаптер-профиль =====
+// Морф сам решает, когда маскироваться: без цели он принимает форму случайного
+// предмета рядом (легаси AIShouldSleep) и лежит в засаде неподвижно.
+// Раскрытие - легаси-путь: захват цели зеркалируется в GiveTarget -> Aggro ->
+// restore(); атака (в т.ч. пожирание) - легаси AttackingTarget делегацией.
+// Sandman (AIStatus = AI_OFF, игровая роль) контроллер не получает вовсе.
+
+///Профиль морфа: засадчик с собственной idle-маскировкой
+/datum/ai_controller/hostile_adapter/ambusher/morph
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/morph_disguise,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+/datum/ai_controller/hostile_adapter/ambusher/morph/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	blackboard[BB_AI_TARGETING_STRATEGY] = /datum/targeting_strategy/hostile_legacy/morph
+
+///Морф: двухуровневое зрение строго легаси - холодное приобретение радиусом
+///ЖИВОГО vision_range (1: жертва вплотную), боевой Aggro-радиус приходит через
+///сам vision_range (Aggro/LoseAggro легаси). Никакого contact-буста после
+///потери цели: замаскированная засада не должна вскрываться через полкомнаты
+///по памяти о скрывшемся контакте.
+/datum/targeting_strategy/hostile_legacy/morph
+
+/datum/targeting_strategy/hostile_legacy/morph/get_aggro_range(mob/living/hunter, profile_range)
+	var/mob/living/simple_animal/hostile/hostile_hunter = hunter
+	if(!istype(hostile_hunter))
+		return profile_range
+	return min(profile_range, max(1, hostile_hunter.vision_range))
+
+///Idle-маскировка: без цели морф принимает форму случайного предмета рядом и
+///лежит в засаде - ни патруля, ни поиска. Бой сабтри не трогает: раскрытие
+///делает легаси Aggro() при захвате цели.
+/datum/ai_planning_subtree/morph_disguise
+
+/datum/ai_planning_subtree/morph_disguise/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/morph/sneak = controller.pawn
+	if(!istype(sneak) || sneak.stat)
+		return
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return //бой: Aggro() уже раскрыл маскировку легаси-путём
+	if(sneak.morphed)
+		return SUBTREE_RETURN_FINISH_PLANNING //засада: сидим неподвижно
+	controller.queue_behavior(/datum/ai_behavior/morph_disguise)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Принять форму случайного пригодного предмета/моба в поле зрения
+///(легаси-выбор из AIShouldSleep; сообщения играет сам assume())
+/datum/ai_behavior/morph_disguise
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/morph_disguise/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/morph/sneak = controller.pawn
+	if(!istype(sneak) || sneak.morphed || sneak.stat)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/list/things = list()
+	for(var/atom/movable/candidate_form in view(sneak))
+		if(sneak.allowed(candidate_form))
+			things += candidate_form
+	if(!length(things))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	sneak.assume(pick(things))
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
 /mob/living/simple_animal/hostile/morph/AttackingTarget() /// Blumoon_change
 	if(morphed && !melee_damage_disguised && !/mob/living/simple_animal/hostile/morph/sandman)
@@ -211,6 +405,12 @@
 			if(do_after(src, 20, target = I))
 				eat(I)
 			return
+	else if(istype(target, /obj/machinery/ore_silo))
+		to_chat(src, "<span class='warning'>You cannot damage the ore silo!</span>")
+		return
+	else if(istype(target, /obj/machinery/computer/communications))
+		to_chat(src, "<span class='warning'>You cannot damage the communications console!</span>")
+		return
 	return ..()
 
 //Spawn Event
@@ -218,10 +418,29 @@
 /datum/round_event_control/morph
 	name = "Spawn Morph"
 	typepath = /datum/round_event/ghost_role/morph
-	weight = 0 //Admin only
+	// Топ-вес пула вместе с ранним окном делал морфа завсегдатаем: 3 выпадения за день
+	// логов 9766-9775, пока дракон/ниндзя/пираты не выпали ни разу.
+	weight = 5
 	max_occurrences = 1
+	min_players = 20
+	// Ранняя волна гост-пула стартует с 20-й минуты вместе с генлингом/болезнью: без порога
+	// морф (единственный без earliest_start) становился залоченной целью копилки первых минут.
+	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // форс-запуск обязан считаться антаг-нагрузкой
+	cost = 10
+	intensity = 15
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
+	family = "morph" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Spawns a hungry shapeshifting blobby creature."
+
+/datum/round_event_control/morph/director_preflight()
+	if(!length(GLOB.xeno_spawn))
+		director_preflight_failure = "на карте нет точек xeno_spawn для морфа"
+		return FALSE
+	return ..()
 
 /datum/round_event/ghost_role/morph
 	minimum_required = 1

@@ -17,7 +17,7 @@
 	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 35, BIO = 100, RAD = 75, FIRE = 75, ACID = 90, WOUND = 40)
 	slowdown = 0
 	w_class = WEIGHT_CLASS_NORMAL
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add
 	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/contractor
 	jetpack = /obj/item/tank/jetpack/suit
@@ -128,12 +128,13 @@
 	qdel(src)
 
 /obj/item/gun/magic/contractor_hook/Destroy() //BLUEMOON ADD START Правильно отвязывает крюк от костюма при сбросе или выпадении самого крюка
-	.=..()
-	suit.scorpion = null
-	suit = null
-	hook_action.action_ready = FALSE
-	hook_action.toggle_button_on_off()
-	hook_action = null //BLUEMOON ADD END
+	if(suit)
+		suit.scorpion = null
+		suit = null
+	if(hook_action)
+		hook_action.action_ready = FALSE
+		hook_action = null
+	return ..() //BLUEMOON ADD END
 
 /obj/item/ammo_casing/magic/contractor_hook
 	name = "Hardlight hook"

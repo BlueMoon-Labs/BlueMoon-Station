@@ -116,6 +116,394 @@
 	else
 		to_chat(user, "<span class='warning'>You need at least [activationCost] charge in your cell to use [src]!</span>")
 
+GLOBAL_LIST_INIT(borg_disguise_options, list(
+	"Standard" = list(
+		list("name" = "Default", "base" = "robot", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_sd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_standard", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_standard", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinasd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavysd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Eyebot", "base" = "eyebotsd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_sd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootystandard", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootystandardM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootystandardS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-clerc", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_standard", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Robo-Brain", "base" = "robobrain", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Cyclone", "base" = "cyclone", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "SmollRaptor", "base" = "smolraptor", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+	),
+	"Medical" = list(
+		list("name" = "Default", "base" = "medical", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Droid", "base" = "medical", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleekmed", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinamed", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Eyebot", "base" = "eyebotmed", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavymed", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_med", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_medical", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_med", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Arachne", "base" = "arachne", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Insekt", "base" = "insekt-Med", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Gibbs", "base" = "gibbs", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_med", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Qualified Doctor", "base" = "qualified_doctor", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootymedical", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootymedicalM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootymedicalS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Haydee", "base" = "haydeemedical", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-medic", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_medical", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekamed", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka (alt)", "base" = "mekamed_alt", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekamed", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekamed", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tmed", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T (alt)", "base" = "k4tmed_alt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy_medical", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mechoid", "base" = "mechoid-medical", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahanmed", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-med", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_med.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Medihound", "base" = "medihound", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Medihound Dark", "base" = "medihounddark", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Vale", "base" = "valemed", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Borgi", "base" = "borgi-medi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixmed", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "medraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4 (alt)", "base" = "traumaraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "SmollRaptor", "base" = "smolraptor_med", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakemed", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "DrakeTrauma", "base" = "draketrauma", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Catborg", "base" = "meowdical", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_medical.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "medicat", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_medicat.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaurmed", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "HoundTrauma", "base" = "houndtrauma", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+	),
+	"Engineer" = list(
+		list("name" = "Default", "base" = "engineer", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Default - Treads", "base" = "engi-tread", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Loader", "base" = "loaderborg", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleekeng", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Can", "base" = "caneng", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinaeng", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Spider", "base" = "spidereng", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavyeng", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_eng", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_eng", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_engi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Conagher", "base" = "conagher", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Eyebot", "base" = "eyeboteng", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Wide", "base" = "wide-engi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_eng", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootyengineer", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootyengineerM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootyengineerS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy_engineer", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-engineering", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_engi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Haydee", "base" = "haydeeengi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekaengi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka (alt)", "base" = "mekaengi_alt", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekaeng", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekaeng", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tengi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T (alt)", "base" = "k4tengi_alt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mechoid", "base" = "mechoid-engineer", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahaneng", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaureng", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-engi", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_engi.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Pup Dozer", "base" = "pupdozer", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Vale", "base" = "valeeng", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Borgi", "base" = "borgi-eng", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Engihound", "base" = "engihound", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Engihound Dark", "base" = "engihounddark", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Otie", "base" = "otiee", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakeeng", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixengi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "engiraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "SmollRaptor", "base" = "smolraptor_eng", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Catborg", "base" = "engi", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_engineering.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "engi", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_engi.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+	),
+	"Security" = list(
+		list("name" = "Default", "base" = "sec", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Default - Treads", "base" = "sec-tread", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleeksec", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Can", "base" = "cansec", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinasec", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Spider", "base" = "spidersec", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavysec", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_security", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_security", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_sec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Woody", "base" = "woody", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Eyebot", "base" = "eyebotsec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Insekt", "base" = "insekt-Sec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_sec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootysecurity", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootysecurityM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootysecurityS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy_security", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sentry Bot", "base" = "sentrybot", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Securitron", "base" = "securitron", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-security", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_sec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Haydee", "base" = "haydeesec", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "FMeka Syndie", "base" = "fmekasyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekasec", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekasec", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekasec", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tsec", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mechoid", "base" = "mechoid-security", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahanpeace", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Catborg", "base" = "sec", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_security.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "sec", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-sec", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_sec.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K9", "base" = "k9", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "K9 Dark", "base" = "k9dark", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Vale", "base" = "valesec", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Borgi", "base" = "borgi-sec", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Otie", "base" = "oties", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Blade", "base" = "bladesec", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "EdgyBoy", "base" = "badboi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "EdgyGirl", "base" = "prettyboi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Syndicate", "base" = "syndihounddark", "icon" = 'modular_splurt/icons/mob/widerobot_synd.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakesec", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixsec", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "secraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+	),
+	"Service" = list(
+		list("name" = "(Service) Waitress", "base" = "service_f", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Butler", "base" = "service_m", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Bro", "base" = "brobot", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Can", "base" = "kent", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Tophat", "base" = "tophat", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Sleek", "base" = "sleekserv", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Heavy", "base" = "heavyserv", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) MissM", "base" = "missm_service", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Protectron", "base" = "protectron_service", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Zoomba", "base" = "zoomba_green", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Lloyd", "base" = "lloyd", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Handy", "base" = "handy-service", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) BootyF", "base" = "bootyservice", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) BootyM", "base" = "bootyserviceM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) BootyS", "base" = "bootyserviceS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Fembot", "base" = "fembot-service", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Meka", "base" = "mekaserve", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) M-Meka", "base" = "mmekaserv", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) F-Meka", "base" = "fmekaserv", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) K4T", "base" = "k4tserve", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service Alt) K4T", "base" = "k4tserve_alt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Feline", "base" = "vixserv", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) Raptor V-4", "base" = "serviraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Fancy) Raptor V-4", "base" = "fancyraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) SmollRaptor", "base" = "smolraptor_srv", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) Dullahan", "base" = "dullahanserv", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Mechoid", "base" = "mechoid-civi", "icon" = 'modular_bluemoon/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) Dragon", "base" = "dragon-serv", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_service.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Waiter) Meka", "base" = "mekaserve_alt", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Default", "base" = "janitor", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Marina", "base" = "marinajan", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Sleek", "base" = "sleekjan", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Can", "base" = "canjan", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Heavy", "base" = "heavyres", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) MissM", "base" = "missm_janitor", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Protectron", "base" = "protectron_janitor", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Zoomba", "base" = "zoomba_jani", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Flynn", "base" = "flynn", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Eyebot", "base" = "eyebotjani", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Insekt", "base" = "insekt-Sci", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Wide", "base" = "wide-jani", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Spider", "base" = "spidersci", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) RoboMaid", "base" = "robomaid_jan", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) BootyF", "base" = "bootyjanitor", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) BootyM", "base" = "bootyjanitorM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) BootyS", "base" = "bootyjanitorS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Handy", "base" = "handy_janitor", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Fembot", "base" = "fembot-janitor", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Otie", "base" = "otiej", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Ratge", "base" = "ratge", "icon" = 'modular_bluemoon/icons/mob/robot/ratge.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Haydee", "base" = "haydeejan", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Slutvice) Haydee", "base" = "HaydeeServ", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Meka", "base" = "mekajani", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) M-Meka", "base" = "mmekajani", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) F-Meka", "base" = "fmekajani", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) K4T", "base" = "k4tjani", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor Alt) K4T", "base" = "k4tjani_alt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Feline", "base" = "vixjani", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor Alt) Feline", "base" = "vixsci", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Raptor V-4", "base" = "janiraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor Alt) Raptor V-4", "base" = "sciraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) SmollRaptor", "base" = "smolraptor_jani", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor Alt) SmollRaptor", "base" = "smolraptor_sci", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Dullahan", "base" = "dullahanjani", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Mechoid", "base" = "mechoid-janitor", "icon" = 'modular_bluemoon/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Catborg", "base" = "service", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_service.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Kittyborg", "base" = "jani", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_jani.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Dullahan (Taur)", "base" = "dullahantaurjani", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Janitor) Dragon", "base" = "dragon-jani", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jani.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Jester) Dragon", "base" = "dragon-clown", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jester.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "(Service) DarkK9", "base" = "k50", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) Vale", "base" = "valeserv", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) ValeDark", "base" = "valeservdark", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) K69", "base" = "k69", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Service) Borgi", "base" = "borgi-serv", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Scrubpuppy", "base" = "scrubpup", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Borgi", "base" = "borgi-jani", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "(Janitor) Drake", "base" = "drakejanit", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+	),
+	"Miner" = list(
+		list("name" = "Lavaland", "base" = "miner", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Asteroid", "base" = "minerOLD", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Droid", "base" = "miner", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleekmin", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinamin", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Can", "base" = "canmin", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavymin", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_miner", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_mining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_mining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Ishimura", "base" = "ishimura", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mining Drone", "base" = "minidrone", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_mining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootyminer", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootyminerM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootyminerS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy_mining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-miner", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_mining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Haydee", "base" = "haydeemining", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekamining", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka (alt)", "base" = "mekaminingalt", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekamining", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekamining", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tmining", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T (alt)", "base" = "k4tminingalt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mechoid", "base" = "mechoid-miner", "icon" = 'modular_bluemoon/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "SmollRaptor", "base" = "smolraptor_mining", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Dullahan", "base" = "dullahanmining", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaurmining", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-mine", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_miner.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Blade", "base" = "blademining", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Vale", "base" = "valemining", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Cargohound", "base" = "cargohound", "icon" = 'modular_splurt/icons/mob/widerobots_cargo.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Cargohound Dark", "base" = "cargohounddark", "icon" = 'modular_splurt/icons/mob/widerobots_cargo.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Otie", "base" = "otiem", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakemining", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixmin", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "mineraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Catborg", "base" = "mine", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_mining.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "mine", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_mine.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+	),
+	"Peacekeeper" = list(
+		list("name" = "Default", "base" = "peacekeeper", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Borgi", "base" = "borgi-peace", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Spider", "base" = "spiderpeace", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_peacekeeper", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinapeace", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleekpk", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Omoikane", "base" = "omoikane", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Insekt", "base" = "insekt-Peace", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootypeacekeeper", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootypeacekeeperM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootypeacekeeperS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Vale", "base" = "valepeace", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakepeace", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Fembot", "base" = "fembot-peacekeeper", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_peace", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Haydee", "base" = "haydeepeace", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekapk", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekapk", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekapk", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tpk", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Feline", "base" = "vixpeace", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "peaceraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "SmollRaptor", "base" = "smolraptor_pk", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Handy", "base" = "handy_peace", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahanpk", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Catborg", "base" = "peace", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_service.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "peace", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_jani.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-pk", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_peacekeeper.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+	),
+	"Clown" = list(
+		list("name" = "ClownMech", "base" = "clownbot", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "ClownMan", "base" = "clownbotman", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "ClownBot", "base" = "clownbot", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Garish", "base" = "garish", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Clowne", "base" = "clowne", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Marina", "base" = "marinaclown", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootyclown", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootyclownM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootyclownS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahanclown", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaurclown", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kitty Clown", "base" = "clown", "icon" = 'modular_bluemoon/icons/mob/robot/kitty_clown.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-clown", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_jester.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+	),
+	"Syndicate" = list(
+		list("name" = "SyndiMech", "base" = "syndicate", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "SyndiMech - Treads", "base" = "syndicate-tread", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Spider", "base" = "spidersyndi", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Sleek", "base" = "sleeksyndi", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Heavy", "base" = "heavysyndi", "icon" = 'modular_citadel/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_syndie", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Protectron", "base" = "protectron_syndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_syndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MAX", "base" = "maxwell", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Eyebot", "base" = "eyebotsyndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "RoboMaid", "base" = "robomaid_syndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyF", "base" = "bootysyndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyM", "base" = "bootysyndiM", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "BootyS", "base" = "bootysyndiS", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Handy", "base" = "handy_syndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Fembot", "base" = "fembot-syndicate", "icon" = 'modular_bluemoon/icons/mob/robot/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Assaultron", "base" = "assaultron_syndi", "icon" = 'modular_splurt/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekasyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekasyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekasyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tsyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Mechoid", "base" = "mechoid-syndi", "icon" = 'modular_bluemoon/icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan", "base" = "dullahansyndi", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaursyndi", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Catborg", "base" = "syndie", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/catborgs/catborg_security.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Kittyborg", "base" = "syndie", "icon" = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dragon", "base" = "dragon-syndi", "icon" = 'modular_bluemoon/icons/mob/robot/dragonborg/dragon_sec.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K9", "base" = "k9syndi", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "K9 Dark", "base" = "k9syndidark", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Syndicate", "base" = "syndihounddark", "icon" = 'modular_splurt/icons/mob/widerobot_synd.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakesyndi", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixsyndi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Raptor V-4", "base" = "syndiraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Borgi", "base" = "borgi-syndi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Otie", "base" = "otiesyndi", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+	),
+	"Cargo" = list(
+		list("name" = "Default", "base" = "cargoborg", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Bird Cargo", "base" = "bird_cargo", "icon" = 'icons/mob/robots.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "MissM", "base" = "missm_cargo", "icon" = 'modular_splurt/icons/mob/robots_cargo.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Zoomba", "base" = "zoomba_cargo", "icon" = 'modular_splurt/icons/mob/robots_cargo.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Borgi", "base" = "borgi-cargo", "icon" = 'modular_splurt/icons/mob/widerobots_cargo.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Drake", "base" = "drakecargo", "icon" = 'modular_sand/icons/mob/cyborg/drakemech.dmi', "dogborg" = TRUE, "drakerest" = TRUE, "pixel" = -16),
+		list("name" = "Assaultron", "base" = "assaultron_cargo", "icon" = 'modular_splurt/icons/mob/robots_cargo.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Meka", "base" = "mekacargo", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "M-Meka", "base" = "mmekacargo", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "F-Meka", "base" = "fmekacargo", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T", "base" = "k4tcargo", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "K4T (alt)", "base" = "k4tcargoalt1", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Raptor V-4", "base" = "cargoraptor", "icon" = 'modular_splurt/icons/mob/robots_64x45.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "SmollRaptor", "base" = "smolraptor_cargo", "icon" = 'icons/mob/smolraptor.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Dullahan", "base" = "dullahancargo", "icon" = 'modular_splurt/icons/mob/robots_32x64.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Dullahan (Taur)", "base" = "dullahantaurcargo", "icon" = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', "dogborg" = FALSE, "drakerest" = FALSE, "pixel" = 0),
+		list("name" = "Cargohound", "base" = "cargohound", "icon" = 'modular_splurt/icons/mob/widerobots_cargo.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Cargohound Dark", "base" = "cargohounddark", "icon" = 'modular_splurt/icons/mob/widerobots_cargo.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Vale", "base" = "valecargo", "icon" = 'modular_citadel/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+		list("name" = "Feline", "base" = "vixcargo", "icon" = 'modular_splurt/icons/mob/widerobot.dmi', "dogborg" = TRUE, "drakerest" = FALSE, "pixel" = -16),
+	),
+))
+
 /obj/item/borg_shapeshifter/proc/toggle(mob/living/silicon/robot/user)
 	if(active)
 		playsound(src, 'sound/effects/pop.ogg', 100, TRUE, -6)
@@ -135,514 +523,33 @@
 		"Miner" = image(icon = 'icons/mob/robots.dmi', icon_state = "miner"),
 		"Peacekeeper" = image(icon = 'icons/mob/robots.dmi', icon_state = "peace"),
 		"Clown" = image(icon = 'icons/mob/robots.dmi', icon_state = "clown"),
-		"Syndicate" = image(icon = 'icons/mob/robots.dmi', icon_state = "synd_sec")
+		"Syndicate" = image(icon = 'icons/mob/robots.dmi', icon_state = "synd_sec"),
+		"Cargo" = image(icon = 'modular_splurt/icons/mob/robots_cargo.dmi', icon_state = "cargoborg")
 		))
 		var/module_selection = show_radial_menu(R, R , module_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 		if(!module_selection)
 			return FALSE
 
-		switch(module_selection)
-			if("Standard")
-				var/static/list/standard_icons = sort_list(list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "robot")
-				))
-				var/borg_icon = show_radial_menu(R, R , standard_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "robot"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					else
-						return FALSE
-
-			if("Medical")
-				var/static/list/med_icons = list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "medical"),
-					"Droid" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "medical"),
-					"Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleekmed"),
-					"Marina" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "marinamed"),
-					"Eyebot" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "eyebotmed"),
-					"Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavymed"),
-					"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakemedbox"),
-					"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-medic"), //Gardelin0 Addon
-					"Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekamed") //Krashly Request
-				)
-				var/list/L = list("Medihound" = "medihound", "Medihound Dark" = "medihounddark", "Vale" = "valemed")
-				for(var/a in L)
-					var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
-					wide.pixel_x = -16
-					med_icons[a] = wide
-				med_icons = sort_list(med_icons)
-				var/borg_icon = show_radial_menu(R, R , med_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "medical"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Droid")
-						disguise = "medical"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Sleek")
-						disguise = "sleekmed"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Marina")
-						disguise = "marinamed"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Eyebot")
-						disguise = "eyebotmed"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Heavy")
-						disguise = "heavymed"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Medihound")
-						disguise = "medihound"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Medihound Dark")
-						disguise = "medihounddark"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Vale")
-						disguise = "valemed"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Drake")
-						disguise = "drakemed"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("Fembot") // //Gardelin0 Addon
-						disguise = "fembot-medic"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("Meka") //Krashly Request
-						disguise = "mekamed"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-
-			if("Engineer")
-				var/static/list/engi_icons = list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "engineer"),
-					"Default - Treads" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "engi-tread"),
-					"Loader" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "loaderborg"),
-					"Handy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "handyeng"),
-					"Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleekeng"),
-					"Can" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "caneng"),
-					"Marina" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "marinaeng"),
-					"Spider" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "spidereng"),
-					"Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavyeng"),
-					"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakeengbox"),
-					"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-engineering"), //Gardelin0 Addon
-					"Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekaengi") //Krashly Request
-				)
-				var/list/L = list("Pup Dozer" = "pupdozer", "Vale" = "valeeng")
-				for(var/a in L)
-					var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
-					wide.pixel_x = -16
-					engi_icons[a] = wide
-				engi_icons = sort_list(engi_icons)
-				var/borg_icon = show_radial_menu(R, R , engi_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "engineer"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Default - Treads")
-						disguise = "engi-tread"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Loader")
-						disguise = "loaderborg"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Handy")
-						disguise = "handyeng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Sleek")
-						disguise = "sleekeng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Can")
-						disguise = "caneng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Marina")
-						disguise = "marinaeng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Spider")
-						disguise = "spidereng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Heavy")
-						disguise = "heavyeng"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Pup Dozer")
-						disguise = "pupdozer"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Vale")
-						disguise = "valeeng"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Alina")
-						disguise = "alina-eng"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Drake")
-						disguise = "drakeeng"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("Fembot") // //Gardelin0 Addon
-						disguise = "fembot-engineering"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("Meka") //Krashly Request
-						disguise = "mekaengi"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-			if("Security")
-				var/static/list/sec_icons = list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "sec"),
-					"Default - Treads" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sec-tread"),
-					"Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleeksec"),
-					"Can" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "cansec"),
-					"Marina" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "marinasec"),
-					"Spider" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "spidersec"),
-					"Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavysec"),
-					"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakesecbox"),
-					"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-security") //Gardelin0 Addon
-				)
-				var/list/L = list("K9" = "k9", "Vale" = "valesec", "K9 Dark" = "k9dark")
-				for(var/a in L)
-					var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
-					wide.pixel_x = -16
-					sec_icons[a] = wide
-				sec_icons = sort_list(sec_icons)
-				var/borg_icon = show_radial_menu(R, R , sec_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "sec"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Default - Treads")
-						disguise = "sec-tread"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Sleek")
-						disguise = "sleeksec"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Marina")
-						disguise = "marinasec"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Can")
-						disguise = "cansec"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Spider")
-						disguise = "spidersec"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Heavy")
-						disguise = "heavysec"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("K9")
-						disguise = "k9"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Alina")
-						disguise = "alina-sec"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("K9 Dark")
-						disguise = "k9dark"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Vale")
-						disguise = "valesec"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Drake")
-						disguise = "drakesec"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("Fembot") // //Gardelin0 Addon
-						disguise = "fembot-security"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					else
-						return FALSE
-			if("Service")
-				var/static/list/service_icons = list(
-					"(Service) Waitress" = image(icon = 'icons/mob/robots.dmi', icon_state = "service_f"),
-					"(Service) Butler" = image(icon = 'icons/mob/robots.dmi', icon_state = "service_m"),
-					"(Service) Bro" = image(icon = 'icons/mob/robots.dmi', icon_state = "brobot"),
-					"(Service) Can" = image(icon = 'icons/mob/robots.dmi', icon_state = "kent"),
-					"(Service) Tophat" = image(icon = 'icons/mob/robots.dmi', icon_state = "tophat"),
-					"(Service) Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleekserv"),
-					"(Service) Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavyserv"),
-					"(Service) Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-service"), //Gardelin0 Addon
-					"(Service) Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekaserve"), //Krashly Request
-					"(Janitor) Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "janitor"),
-					"(Janitor) Marina" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "marinajan"),
-					"(Janitor) Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleekjan"),
-					"(Janitor) Can" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "canjan"),
-					"(Janitor) Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavyres"),
-					"(Janitor) Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakejanitbox"),
-					"(Janitor) Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-janitor"), //Gardelin0 Addon
-					"(Janitor) Ratge" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/ratge.dmi', icon_state = "ratge"), //CassiusRogue Request
-					"(Janitor) Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekajani") //Krashly Request
-				)
-				var/list/L = list("(Service) DarkK9" = "k50", "(Service) Vale" = "valeserv", "(Service) ValeDark" = "valeservdark",
-								"(Janitor) Scrubpuppy" = "scrubpup")
-				for(var/a in L)
-					var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
-					wide.pixel_x = -16
-					service_icons[a] = wide
-				service_icons = sort_list(service_icons)
-				var/borg_icon = show_radial_menu(R, R , service_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("(Service) Waitress")
-						disguise = "service_f"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Service) Butler")
-						disguise = "service_m"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Service) Bro")
-						disguise = "brobot"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Service) Can")
-						disguise = "kent"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Service) Tophat")
-						disguise = "tophat"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Service) Sleek")
-						disguise = "sleekserv"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Service) Heavy")
-						disguise = "heavyserv"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Service) DarkK9")
-						disguise = "k50"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("(Service) Vale")
-						disguise = "valeserv"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("(Service) ValeDark")
-						disguise = "valeservdark"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("(Service) Fembot") // //Gardelin0 Addon
-						disguise = "fembot-service"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("(Service) Meka") //Krashly Request
-						disguise = "mekaserve"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					if("(Janitor) Default")
-						disguise = "janitor"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("(Janitor) Marina")
-						disguise = "marinajan"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Janitor) Sleek")
-						disguise = "sleekjan"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Janitor) Can")
-						disguise = "canjan"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Janitor) Heavy")
-						disguise = "heavyres"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("(Janitor) Scrubpuppy")
-						disguise = "scrubpup"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("(Janitor) Drake")
-						disguise = "drakejanit"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("(Janitor) Fembot") // //Gardelin0 Addon
-						disguise = "fembot-janitor"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("(Janitor) Ratge") // //CassiusRogue request
-						disguise = "ratge"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/ratge.dmi'
-					if("(Janitor) Meka") //Krashly Request
-						disguise = "mekajani"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-			if("Miner")
-				var/static/list/mining_icons = list(
-					"Lavaland" = image(icon = 'icons/mob/robots.dmi', icon_state = "miner"),
-					"Asteroid" = image(icon = 'icons/mob/robots.dmi', icon_state = "minerOLD"),
-					"Droid" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "miner"),
-					"Sleek" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "sleekmin"),
-					"Marina" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "marinamin"),
-					"Can" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "canmin"),
-					"Heavy" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "heavymin"),
-					"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakeminebox"),
-					"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-miner"), //Gardelin0 Addon
-					"Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekamine") //Krashly Request
-				)
-				var/list/L = list("Blade" = "blade", "Vale" = "valemine")
-				for(var/a in L)
-					var/image/wide = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = L[a])
-					wide.pixel_x = -16
-					mining_icons[a] = wide
-				mining_icons = sort_list(mining_icons)
-				var/borg_icon = show_radial_menu(R, R , mining_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Lavaland")
-						disguise = "miner"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Asteroid")
-						disguise = "minerOLD"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Droid")
-						disguise = "miner"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Sleek")
-						disguise = "sleekmin"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Can")
-						disguise = "canmin"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Marina")
-						disguise = "marinamin"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Spider")
-						disguise = "spidermin"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Heavy")
-						disguise = "heavymin"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Blade")
-						disguise = "blade"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Vale")
-						disguise = "valemine"
-						disguise_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-					if("Drake")
-						disguise = "drakemine"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("Fembot") // //Gardelin0 Addon
-						disguise = "fembot-miner"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("Meka") //Krashly Request
-						disguise = "mekamine"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-			if("Peacekeeper")
-				var/static/list/peace_icons = sort_list(list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "peace"),
-					"Borgi" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "borgi"),
-					"Spider" = image(icon = 'modular_citadel/icons/mob/robots.dmi', icon_state = "whitespider"),
-					"Drake" = image(icon = 'modular_sand/icons/mob/cyborg/drakemech.dmi', icon_state = "drakepeacebox"),
-					"Fembot" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi', icon_state = "fembot-peace"), //Gardelin0 Addon
-					"Meka" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekacargo") //Krashly Request
-				))
-				var/borg_icon = show_radial_menu(R, R , peace_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "peace"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Spider")
-						disguise = "whitespider"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Borgi")
-						disguise = "borgi"
-						disguise_icon_override = 'modular_citadel/icons/mob/robots.dmi'
-					if("Drake")
-						disguise = "drakepeace"
-						disguise_icon_override = 'modular_sand/icons/mob/cyborg/drakemech.dmi'
-						disguise_pixel_offset = -16
-						disguise_dogborg = TRUE
-						disguise_drakerest = TRUE
-					if("Fembot") // //Gardelin0 Addon
-						disguise = "fembot-peace"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/robots.dmi'
-					if("Meka") //Krashly Request
-						disguise = "mekapeace"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-			if("Clown")
-				var/static/list/clown_icons = sort_list(list(
-					"Default" = image(icon = 'icons/mob/robots.dmi', icon_state = "clown")
-				))
-				var/borg_icon = show_radial_menu(R, R , clown_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Default")
-						disguise = "clown"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					else
-						return FALSE
-			if("Syndicate")
-				var/static/list/syndicatejack_icons = sort_list(list(
-					"Saboteur" = image(icon = 'icons/mob/robots.dmi', icon_state = "synd_engi"),
-					"Medical" = image(icon = 'icons/mob/robots.dmi', icon_state = "synd_medical"),
-					"Assault" = image(icon = 'icons/mob/robots.dmi', icon_state = "synd_sec"),
-					"Meka Syndie" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekasyndi"), //Krashly Request
-					"Meka Ninja" = image(icon = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi', icon_state = "mekaninja") //Krashly Request
-				))
-				var/borg_icon = show_radial_menu(R, R , syndicatejack_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
-				if(!borg_icon)
-					return FALSE
-				switch(borg_icon)
-					if("Saboteur")
-						disguise = "synd_engi"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Medical")
-						disguise = "synd_medical"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Assault")
-						disguise = "synd_sec"
-						disguise_icon_override = 'icons/mob/robots.dmi'
-					if("Meka Syndie") //Krashly Request
-						disguise = "mekasyndi"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					if("Meka Ninja") //Krashly Request
-						disguise = "mekaninja"
-						disguise_icon_override = 'modular_bluemoon/Gardelin0/icons/mob/tallrobot.dmi'
-					else
-						return FALSE
-			else
-				return FALSE
+		var/list/cat = GLOB.borg_disguise_options[module_selection]
+		if(isnull(cat))
+			return FALSE
+		var/list/option_icons = list()
+		var/list/option_keys = list()
+		for(var/list/opt in cat)
+			var/image/img = image(icon = opt["icon"], icon_state = opt["base"], layer = FALSE)
+			if(opt["pixel"])
+				img.pixel_x = opt["pixel"]
+			option_icons[opt["name"]] = img
+			option_keys[opt["name"]] = opt
+		var/choice = show_radial_menu(R, R, option_icons, require_near = TRUE)
+		if(!choice)
+			return FALSE
+		var/list/chosen = option_keys[choice]
+		disguise = chosen["base"]
+		disguise_icon_override = chosen["icon"]
+		disguise_pixel_offset = chosen["pixel"]
+		disguise_dogborg = chosen["dogborg"]
+		disguise_drakerest = chosen["drakerest"]
 
 		animation_playing = TRUE
 		to_chat(user, "<span class='notice'>You activate \the [src].</span>")

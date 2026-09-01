@@ -1,12 +1,25 @@
-#define REVENANT_SPAWN_THRESHOLD 20
+#define REVENANT_SPAWN_THRESHOLD 10
 
 /datum/round_event_control/revenant
 	name = "Spawn Revenant" // Did you mean 'griefghost'?
 	typepath = /datum/round_event/ghost_role/revenant
-	weight = 7
+	weight = 7 // прижат к середине пула: веса 10 у ранних дешёвых гост-ролей делали их дефолтом раунда
 	max_occurrences = 1
 	min_players = 5
+	// Единственный гост-антаг без earliest_start: до 20-й минуты копилка лочилась на нём
+	// безальтернативно (логи 9766-9775). Ранняя волна пула открывается с 20-й минуты
+	// (см. Spawn Morph/Sentient Disease), плюс до 10 трупов его спавн всё равно ждёт.
+	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 8
+	intensity = 10 // мягкий фоновый призрак, классика лоупопа
+	director_ghost_jobban = ROLE_REVENANT
+	director_ghost_preference = ROLE_REVENANT
+	family = "revenant" // с рулсетом-двойником динамика: не подряд
+	// Не экста и не Light: ревенант высасывает жизнь из экипажа, а мягкие профили оставляем
+	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Spawns an angry, soul sucking ghost."
 
 /datum/round_event/ghost_role/revenant

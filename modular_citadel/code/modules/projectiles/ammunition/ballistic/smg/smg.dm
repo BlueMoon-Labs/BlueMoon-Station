@@ -3,3 +3,6 @@
 	name = "Toxin Tipped 4.6x30mm bullet casing."
 	desc = "A Toxin Tipped 4.6x30mm bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c46x30mm_tx
+	custom_materials = list(/datum/material/iron = 400, /datum/material/uranium = 100)
+	can_be_printed = TRUE
+	advanced_print_req = TRUE

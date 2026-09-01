@@ -42,7 +42,7 @@
 	value = REAGENT_VALUE_VERY_COMMON
 	pH = 2.3
 
-/datum/reagent/toxin/mutagen/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume)
+/datum/reagent/toxin/mutagen/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(!..())
 		return
 	if(!M.has_dna())
@@ -93,10 +93,10 @@
 /datum/reagent/toxin/plasma/reaction_turf(turf/open/T, reac_volume)
 	if(istype(T))
 		var/temp = holder ? holder.chem_temp : T20C
-		T.atmos_spawn_air("plasma=[reac_volume];TEMP=[temp]")
+		T.atmos_spawn_air("plasma=[reac_volume/2];TEMP=[temp]")
 	return
 
-/datum/reagent/toxin/plasma/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with plasma is stronger than fuel!
+/datum/reagent/toxin/plasma/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)//Splashing people with plasma is stronger than fuel!
 	if(method == TOUCH || method == VAPOR)
 		M.adjust_fire_stacks(reac_volume / 5)
 		return
@@ -191,7 +191,7 @@
 	L.cure_fakedeath(type)
 	..()
 
-/datum/reagent/toxin/zombiepowder/reaction_mob(mob/living/L, method=TOUCH, reac_volume)
+/datum/reagent/toxin/zombiepowder/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	L.adjustOxyLoss(0.5*REM, 0)
 	if(method == INGEST)
 		fakedeath_active = TRUE
@@ -274,7 +274,7 @@
 		var/obj/structure/spacevine/SV = O
 		SV.on_chem_effect(src)
 
-/datum/reagent/toxin/plantbgone/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/toxin/plantbgone/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == VAPOR)
 		if(iscarbon(M))
 			var/mob/living/carbon/C = M
@@ -313,7 +313,7 @@
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 1))
 		mytray.adjustPests(-rand(1,2))
 
-/datum/reagent/toxin/pestkiller/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/toxin/pestkiller/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	..()
 	if(M.mob_biotypes & MOB_BUG)
 		var/damage = min(round(0.4*reac_volume, 0.1),10)
@@ -531,18 +531,51 @@
 
 /datum/reagent/toxin/fentanyl
 	name = "Fentanyl"
-	description = "Fentanyl will inhibit brain function and cause toxin damage before eventually knocking out its victim."
+	description = "A potent synthetic opioid. Sedates and damages the brain at low doses; overdoses above 5u cause respiratory failure, delirium, and incoherent speech."
 	reagent_state = LIQUID
 	color = "#64916E"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
+	overdose_threshold = 6
+	var/static/list/overdose_phrases = list(
+		"Я не могу дышать",
+		"Они убьют меня. Они убьют меня",
+		"Мама! С меня хватит",
+		"Пожалуйста, пожалуйста, пожалуйста",
+		"У меня болит живот. У меня болит шея. Все болит",
+	)
 
 /datum/reagent/toxin/fentanyl/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3*REM, 150)
-	if(M.toxloss <= 60)
-		M.adjustToxLoss(1*REM, 0)
+	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2 * REM, 150)
+	if(M.toxloss <= 40)
+		M.adjustToxLoss(0.5 * REM, 0)
+	if(current_cycle >= 12)
+		M.drowsyness += 1
 	if(current_cycle >= 18)
-		M.Sleeping(40, 0)
+		M.Sleeping(20, 0)
+	..()
+	return TRUE
+
+/datum/reagent/toxin/fentanyl/overdose_start(mob/living/M)
+	to_chat(M, "<span class='userdanger'>Грудь сжимается — воздуха не хватает, тело онемело...</span>")
+	..()
+
+/datum/reagent/toxin/fentanyl/overdose_process(mob/living/M)
+	if(prob(22))
+		M.say(pick(overdose_phrases), forced = "fentanyl overdose")
+	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 4 * REM, 150)
+	M.adjustToxLoss(1.5 * REM, 0)
+	M.losebreath += 1
+	M.drowsyness += 2
+	if(prob(25))
+		M.drop_all_held_items()
+	if(prob(20))
+		M.Jitter(3)
+		M.Dizzy(2)
+	if(current_cycle >= 6)
+		M.Sleeping(60, 0)
+	if(prob(8))
+		M.adjustOrganLoss(ORGAN_SLOT_HEART, 5, 100)
 	..()
 	return TRUE
 
@@ -582,7 +615,7 @@
 	metabolization_rate = 0.4 * REAGENTS_METABOLISM
 	toxpwr = 0
 
-/datum/reagent/toxin/itching_powder/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/toxin/itching_powder/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if((method == TOUCH || method == VAPOR) && M.reagents)
 		M.reagents.add_reagent(/datum/reagent/toxin/itching_powder, reac_volume)
 
@@ -886,7 +919,7 @@
 		mytray.adjustToxic(round(chems.get_reagent_amount(type) * 1.5))
 		mytray.adjustWeeds(-rand(1,2))
 
-/datum/reagent/toxin/acid/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume)
+/datum/reagent/toxin/acid/reaction_mob(mob/living/carbon/C, method=TOUCH, reac_volume, affected_bodypart)
 	if(!istype(C))
 		return
 	reac_volume = round(reac_volume,0.1)

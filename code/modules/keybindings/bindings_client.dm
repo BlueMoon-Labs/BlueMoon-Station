@@ -42,11 +42,18 @@
 		ForceAllKeysUp()		//groan, more hacky kevcode
 		return
 
-	if(length(keys_held) > MAX_HELD_KEYS)
-		keys_held.Cut(1,2)
-	keys_held[_key] = TRUE
+	if(length(keys_held) >= MAX_HELD_KEYS && !(_key in keys_held))
+		keyUp(keys_held[1])
+	var/was_held = (_key in keys_held)
+	keys_held[_key] = world.time
 	var/movement = movement_keys[_key]
-	if(!(next_move_dir_sub & movement) && !keys_held["Ctrl"])
+	if(movement)
+		last_movement_key_repeat = world.time
+	// Native +REP and browser auto-repeat are keepalives. A held key has already
+	// run its bindings and only needs to renew the movement lease.
+	if(was_held)
+		return
+	if(movement && !was_held && !(next_move_dir_sub & movement) && !keys_held["Ctrl"])
 		next_move_dir_add |= movement
 
 	// Client-level keybindings are ones anyone should be able to do at any time
@@ -73,16 +80,28 @@
 			break
 
 	holder?.key_down(_key, src, full_key)
-	mob.focus?.key_down(_key, src, full_key)
-	mob.update_mouse_pointer()
+	mob?.focus?.key_down(_key, src, full_key)
+	mob?.update_mouse_pointer()
 
-/// Keyup's all keys held down.
+/// Receives legitimate native/TGUI key-repeat events without feeding them into
+/// the KeyDown flood counter. The first event still uses normal KeyDown so an
+/// invented repeat cannot create held state or bypass its validation.
+/client/verb/keyRepeat(_key as text)
+	SHOULD_NOT_SLEEP(TRUE)
+	set instant = TRUE
+	set hidden = TRUE
+
+	if(!(_key in keys_held))
+		keyDown(_key)
+		return
+	last_activity = world.time
+	keys_held[_key] = world.time
+	if(movement_keys[_key])
+		last_movement_key_repeat = world.time
+
+/// Keyup's all keys held down, including modifier keys.
 /client/proc/ForceAllKeysUp()
-	// simulate a user releasing all keys except for the mod keys. groan. i hate this. thanks, byond. why aren't keyups able to be forced to fire on macro change aoaoaoao.
-	// groan
-	for(var/key in keys_held)		// all of these won't be the 3 mod keys.
-		if((key == "Ctrl") || (key == "Alt") || (key == "Shift"))
-			continue
+	for(var/key in keys_held.Copy())
 		keyUp("[key]")
 
 /client/verb/keyUp(_key as text)
@@ -90,11 +109,17 @@
 	set instant = TRUE
 	set hidden = TRUE
 
+	// TGUI/WebView can duplicate orphaned KeyUp events when focus changes; only real releases should touch the movement buffer.
+	var/was_held = (_key in keys_held)
+	if(!was_held)
+		return
 	keys_held -= _key
 	last_activity = world.time
 	var/movement = movement_keys[_key]
-	if(!(next_move_dir_add & movement))
+	if(movement && was_held && !(next_move_dir_add & movement))
 		next_move_dir_sub |= movement
+	if(movement && !keybindings_has_held_movement_key(keys_held, movement_keys))
+		last_movement_key_repeat = null
 
 	if(prefs.modless_key_bindings[_key])
 		var/datum/keybinding/kb = GLOB.keybindings_by_name[prefs.modless_key_bindings[_key]]
@@ -103,15 +128,28 @@
 
 	// We don't do full key for release, because for mod keys you
 	// can hold different keys and releasing any should be handled by the key binding specifically
-	for (var/kb_name in prefs.key_bindings[_key])
+	for(var/kb_name in prefs.key_bindings[_key])
 		var/datum/keybinding/kb = GLOB.keybindings_by_name[kb_name]
-		if(kb.can_use(src) && kb.up(src))
-			break
+		if(kb.can_use(src))
+			kb.up(src)
 	holder?.key_up(_key, src)
-	mob.focus?.key_up(_key, src)
-	mob.update_mouse_pointer()
+	mob?.focus?.key_up(_key, src)
+	mob?.update_mouse_pointer()
 
 // Called every game tick
 /client/keyLoop()
+	release_expired_movement_keys()
 	holder?.keyLoop(src)
-	mob.focus?.keyLoop(src)
+	mob?.focus?.keyLoop(src)
+
+/// Releases movement whose KeyUp vanished when DreamSeeker lost focus. Other held
+/// actions and modifiers keep their ordinary down/up lifetime.
+/client/proc/release_expired_movement_keys(now = world.time)
+	var/list/expired_keys = keybindings_expired_movement_keys(keys_held, movement_keys, last_movement_key_repeat, now)
+	if(!length(expired_keys))
+		return FALSE
+	for(var/key as anything in expired_keys)
+		keyUp(key)
+	last_movement_key_repeat = null
+	log_game("INPUT: [key_name(src)] force-released stale movement key(s): [expired_keys.Join(", ")].")
+	return TRUE

@@ -2,7 +2,7 @@ import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosNetDos = (props, context) => {
+export const NtosNetDos = (props) => {
   return (
     <NtosWindow
       width={400}
@@ -15,8 +15,8 @@ export const NtosNetDos = (props, context) => {
   );
 };
 
-export const NtosNetDosContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosNetDosContent = (props) => {
+  const { act, data } = useBackend();
 
   const {
     relays = [],
@@ -38,6 +38,7 @@ export const NtosNetDosContent = (props, context) => {
           fluid
           content="Reset"
           textAlign="center"
+          tooltip="Сбросить цель"
           onClick={() => act('PRG_reset')}
         />
       </>
@@ -94,6 +95,7 @@ export const NtosNetDosContent = (props, context) => {
               key={relay.id}
               content={relay.id}
               selected={focus === relay.id}
+              tooltip={`Выбрать ретранслятор ${relay.id}`}
               onClick={() => act('PRG_target_relay', {
                 targid: relay.id,
               })}
@@ -108,6 +110,7 @@ export const NtosNetDosContent = (props, context) => {
         color="bad"
         textAlign="center"
         disabled={!focus}
+        tooltip="Начать DoS-атаку на выбранный ретранслятор"
         mt={1}
         onClick={() => act('PRG_execute')}
       />

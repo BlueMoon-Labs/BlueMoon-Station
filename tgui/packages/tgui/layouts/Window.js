@@ -7,7 +7,7 @@
 import { classes } from 'common/react';
 import { useDispatch } from 'common/redux';
 import { decodeHtmlEntities, toTitleCase } from 'common/string';
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { backendSuspendStart, useBackend } from '../backend';
 import { Icon } from '../components';
@@ -15,17 +15,27 @@ import { UI_DISABLED, UI_INTERACTIVE, UI_UPDATE } from '../constants';
 import { useDebug } from '../debug';
 import { toggleKitchenSink } from '../debug/actions';
 import { dragStartHandler, recallWindowGeometry, resizeStartHandler, setWindowKey } from '../drag';
+import { IS_DEVELOPMENT } from '../env';
 import { createLogger } from '../logging';
 import { Layout } from './Layout';
 
 const logger = createLogger('Window');
 
 const DEFAULT_SIZE = [400, 600];
+const getZoomKey = config => (
+  config.window?.zoom_key
+  || (config.interface && `tgui:${config.interface}`)
+  || 'tgui'
+);
 
 export class Window extends Component {
   componentDidMount() {
-    const { suspended } = useBackend(this.context);
+    const { suspended, config } = useBackend();
     const { canClose = true } = this.props;
+    this._wasSuspended = suspended;
+    this._lastWindowKey = config.window?.key;
+    this._lastWindowScale = config.window?.scale;
+    this._lastZoomKey = getZoomKey(config);
     if (suspended) {
       return;
     }
@@ -37,17 +47,28 @@ export class Window extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const { suspended, config } = useBackend();
+    const wasSuspended = this._wasSuspended;
+    const zoomKey = getZoomKey(config);
     const shouldUpdateGeometry = (
       this.props.width !== prevProps.width
       || this.props.height !== prevProps.height
+      || (wasSuspended && !suspended)
+      || this._lastWindowKey !== config.window?.key
+      || this._lastWindowScale !== config.window?.scale
+      || this._lastZoomKey !== zoomKey
     );
-    if (shouldUpdateGeometry) {
+    if (!suspended && shouldUpdateGeometry) {
       this.updateGeometry();
     }
+    this._wasSuspended = suspended;
+    this._lastWindowKey = config.window?.key;
+    this._lastWindowScale = config.window?.scale;
+    this._lastZoomKey = zoomKey;
   }
 
   updateGeometry() {
-    const { config } = useBackend(this.context);
+    const { config } = useBackend();
     const options = {
       size: DEFAULT_SIZE,
       ...config.window,
@@ -55,6 +76,7 @@ export class Window extends Component {
     if (this.props.width && this.props.height) {
       options.size = [this.props.width, this.props.height];
     }
+    options.zoom_key = getZoomKey(config);
     if (config.window?.key) {
       setWindowKey(config.window.key);
     }
@@ -72,9 +94,9 @@ export class Window extends Component {
     const {
       config,
       suspended,
-    } = useBackend(this.context);
-    const { debugLayout } = useDebug(this.context);
-    const dispatch = useDispatch(this.context);
+    } = useBackend();
+    const { debugLayout } = useDebug();
+    const dispatch = useDispatch();
     const fancy = config.window?.fancy;
     // Determine when to show dimmer
     const showDimmer = config.user && (
@@ -109,14 +131,14 @@ export class Window extends Component {
             <div className="Window__dimmer" />
           )}
         </div>
-        {fancy && (
+        {!!fancy && (
           <>
             <div className="Window__resizeHandle__e"
-              onMousedown={resizeStartHandler(1, 0)} />
+              onMouseDown={resizeStartHandler(1, 0)} />
             <div className="Window__resizeHandle__s"
-              onMousedown={resizeStartHandler(0, 1)} />
+              onMouseDown={resizeStartHandler(0, 1)} />
             <div className="Window__resizeHandle__se"
-              onMousedown={resizeStartHandler(1, 1)} />
+              onMouseDown={resizeStartHandler(1, 1)} />
           </>
         )}
       </Layout>
@@ -161,7 +183,7 @@ const statusToColor = status => {
   }
 };
 
-const TitleBar = (props, context) => {
+const TitleBar = (props) => {
   const {
     className,
     title,
@@ -172,7 +194,7 @@ const TitleBar = (props, context) => {
     onClose,
     children,
   } = props;
-  const dispatch = useDispatch(context);
+  const dispatch = useDispatch();
   return (
     <div
       className={classes([
@@ -192,7 +214,7 @@ const TitleBar = (props, context) => {
       )}
       <div
         className="TitleBar__dragZone"
-        onMousedown={e => fancy && onDragStart(e)} />
+        onMouseDown={onDragStart} />
       <div className="TitleBar__title">
         {typeof title === 'string'
           && title === title.toLowerCase()
@@ -204,7 +226,7 @@ const TitleBar = (props, context) => {
           </div>
         )}
       </div>
-      {process.env.NODE_ENV !== 'production' && (
+      {IS_DEVELOPMENT && (
         <div
           className="TitleBar__devBuildIndicator"
           onClick={() => dispatch(toggleKitchenSink())}>
@@ -214,11 +236,8 @@ const TitleBar = (props, context) => {
       {Boolean(fancy && canClose) && (
         <div
           className="TitleBar__close TitleBar__clickable"
-          // IE8: Synthetic onClick event doesn't work on IE8.
-          // IE8: Use a plain character instead of a unicode symbol.
-          // eslint-disable-next-line react/no-unknown-property
-          onclick={onClose}>
-          {Byond.IS_LTE_IE8 ? 'x' : '×'}
+          onClick={onClose}>
+          ×
         </div>
       )}
     </div>

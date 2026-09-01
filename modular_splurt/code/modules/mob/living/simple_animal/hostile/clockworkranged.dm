@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "clockworkmage"
 	icon_living = "clockworkmage"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 2
@@ -34,3 +33,7 @@
 	deathmessage = "lets out scream and explodes in a pile of gibs..."
 	move_to_delay = 4
 	loot = list(/obj/effect/gibspawner/human)
+
+/mob/living/simple_animal/hostile/clockcultistranged/death(gibbed)
+	. = ..()
+	gib()

@@ -1,10 +1,17 @@
 // Configuration defines
 #define JOB_MINIMAL_ACCESS CONFIG_GET(flag/jobs_have_minimal_access)
 #define PROTOLOCK_DURING_LOWPOP CONFIG_GET(flag/protolock_during_lowpop)
+#define PROTOLOCK_ALL_ACCESS CONFIG_GET(flag/protolock_all_access)
+#define PROTOLOCK_DURING_CODERED CONFIG_GET(flag/protolock_during_codered)
 
 // Only Clients should have a panel for them, okay?
 /mob/Login()
 	. = ..()
+	if(!client)
+		return
+	if(!client.disclaimer_shown && !client.prefs?.bm_disclaimer_accepted)
+		client.disclaimer_shown = TRUE
+		addtimer(CALLBACK(client, TYPE_PROC_REF(/client, show_disclaimer), TRUE), 2 SECONDS)
 	AddComponent(/datum/component/interaction_menu_granter)
 
 /mob/Logout()
@@ -29,9 +36,13 @@
 	thirst = max(0, change)
 
 /mob/proc/can_use_production(obj/machinery/machine_target)
-	// Check if access is required
-	if(!machine_target.req_access)
-		return TRUE
+	//Makes the protolocks able to be disabled
+	if(PROTOLOCK_ALL_ACCESS)
+		return PROTOLOCK_ACCESS_NORMAL
+
+	// RedCode and above
+	if(PROTOLOCK_DURING_CODERED && GLOB.security_level >= SEC_LEVEL_RED && is_station_level(machine_target.z))
+		return PROTOLOCK_ACCESS_CODERED
 
 	// Check if server is NOT using minimal access
 	// This is intended for low populations
@@ -63,20 +74,24 @@
 	// User has no access
 	return FALSE
 
-/mob/proc/can_use_production_topic(obj/machinery/rnd/production/machine_target, raw, ls)
+/mob/proc/can_use_production_topic(obj/machinery/rnd/production/machine_target, action)
 	// Basic actions that are always permitted
-	// This includes syncing research and switching screens
-	if(ls["sync_research"] || ls["switch_screen"])
+	// This includes syncing research
+	if((machine_target.obj_flags & EMAGGED) || action == "sync_research")
 		return TRUE
 
 	// Define user's access type
-	var/user_access = usr.can_use_production(machine_target)
+	var/user_access = src.can_use_production(machine_target)
 
 	// Switch result based on access type
 	// This currently doesn't do anything special
 	switch(user_access)
 		// Type: Low population
 		if(PROTOLOCK_ACCESS_LOWPOP)
+			return TRUE
+
+		// Type: Code red unlock
+		if(PROTOLOCK_ACCESS_CODERED)
 			return TRUE
 
 		// Type: Standard
@@ -90,18 +105,13 @@
 		// Type: Mineral / ORM
 		if(PROTOLOCK_ACCESS_MINERAL)
 			// Check if permitted topic
-			if(ls["ejectsheet"])
+			if(action == "remove_mat")
 				return TRUE
-
-			// Topic prohibited
-			// Deny usage
-			else
-				return FALSE
 
 	// Default to false
 	return FALSE
 
-/mob/proc/can_use_mechfab_topic(obj/machinery/mecha_part_fabricator/machine_target, action, var/list/params)
+/mob/proc/can_use_mechfab_topic(obj/machinery/mecha_part_fabricator/machine_target, action)
 	// Basic actions that are always permitted
 	if(action == "sync_rnd")
 		return TRUE
@@ -118,6 +128,10 @@
 
 		// Type: Standard
 		if(PROTOLOCK_ACCESS_NORMAL)
+			return TRUE
+
+		// Type: Code red unlock
+		if(PROTOLOCK_ACCESS_CODERED)
 			return TRUE
 
 		// Type: Captain
@@ -140,3 +154,5 @@
 
 #undef JOB_MINIMAL_ACCESS
 #undef PROTOLOCK_DURING_LOWPOP
+#undef PROTOLOCK_ALL_ACCESS
+#undef PROTOLOCK_DURING_CODERED

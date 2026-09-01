@@ -5,6 +5,7 @@ PROCESSING_SUBSYSTEM_DEF(nanites)
 
 	var/list/datum/nanite_cloud_backup/cloud_backups = list()
 	var/list/mob/living/nanite_monitored_mobs = list()
+	var/list/mob/living/nanite_host_mobs = list()
 	var/list/datum/nanite_program/relay/nanite_relays = list()
 	var/neural_network_count = 0
 
@@ -20,3 +21,9 @@ PROCESSING_SUBSYSTEM_DEF(nanites)
 			return
 		if(backup.cloud_id == cloud_id)
 			return backup
+
+/datum/controller/subsystem/processing/nanites/proc/sync_hosts(cloud_id)
+	for(var/mob/living/host in nanite_host_mobs)
+		var/cloud = SEND_SIGNAL(host, COMSIG_NANITE_GET_CLOUD)
+		if(cloud && cloud == cloud_id)
+			SEND_SIGNAL(host, COMSIG_NANITE_SET_NEED_SYNC, cloud_id)

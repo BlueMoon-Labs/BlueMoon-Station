@@ -12,10 +12,15 @@
 	var/temp_bleed = 0
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(!BP.generic_bleedstacks && !length(BP.embedded_objects) && !length(BP.wounds) && !BP.bleed_overlay_icon)
+			continue
 		temp_bleed += BP.get_bleed_rate()
 		BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)
+		BP.update_part_wound_overlay()
 	if(temp_bleed)
 		bleed(temp_bleed)
+
+	update_damage_hud()
 
 	//Blood regeneration if there is some space
 	if(blood_volume < BLOOD_VOLUME_NORMAL)
@@ -113,14 +118,22 @@
 
 		var/temp_bleed = 0
 		//Bleeding out
-		if(blood_volume > 0) // BLUEMOON ADD - если в теле есть кровь, то она будет вытекать
-			for(var/X in bodyparts)
-				var/obj/item/bodypart/BP = X
+		for(var/X in bodyparts)
+			var/obj/item/bodypart/BP = X
+			//Healthy limbs have neither blood to integrate nor an overlay to clear.
+			//Avoid two bleed-rate walks plus a component signal for every limb on
+			//every human Life tick; any real source immediately leaves this path.
+			if(!BP.generic_bleedstacks && !length(BP.embedded_objects) && !length(BP.wounds) && !BP.bleed_overlay_icon)
+				continue
+			if(blood_volume > 0) // BLUEMOON ADD - если в теле есть кровь, то она будет вытекать
 				temp_bleed += BP.get_bleed_rate()
 				BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)
+			BP.update_part_wound_overlay()
 
-			if(temp_bleed )
-				bleed(temp_bleed)
+		if(temp_bleed)
+			bleed(temp_bleed)
+
+	update_damage_hud()
 
 //Makes a blood drop, leaking amt units of blood from the mob
 /mob/living/carbon/proc/bleed(amt, force)
@@ -214,12 +227,16 @@
 		blood_data["viruses"] += D.Copy()
 
 	blood_data["blood_DNA"] = dna?.unique_enzymes //	BLUEMOON EDIT: TODO:runtime
-	blood_data["bloodcolor"] = dna.species.exotic_blood_color
-	blood_data["bloodblend"] = dna.species.exotic_blood_blend_mode
+	if(dna?.species)
+		blood_data["bloodcolor"] = dna.species.exotic_blood_color
+		blood_data["bloodblend"] = dna.species.exotic_blood_blend_mode
+	else
+		blood_data["bloodcolor"] = BLOOD_COLOR_HUMAN
+		blood_data["bloodblend"] = BLEND_MULTIPLY
 	if(disease_resistances && disease_resistances.len)
 		blood_data["resistances"] = disease_resistances.Copy()
 	var/list/temp_chem = list()
-	for(var/datum/reagent/R in reagents.reagent_list)
+	for(var/datum/reagent/R in reagents?.reagent_list)
 		temp_chem[R.type] = R.volume
 	blood_data["trace_chem"] = list2params(temp_chem)
 	if(mind)
@@ -233,10 +250,10 @@
 
 	if(!suiciding)
 		blood_data["cloneable"] = 1
-	blood_data["blood_type"] = dna.blood_type
+	blood_data["blood_type"] = dna?.blood_type //runtime guard для мобов без dna (например, ксеносов)
 	blood_data["gender"] = gender
 	blood_data["real_name"] = real_name
-	blood_data["features"] = dna.features
+	blood_data["features"] = dna?.features //runtime guard для мобов без dna
 	blood_data["factions"] = faction
 	blood_data["quirks"] = list()
 	for(var/V in roundstart_quirks)
@@ -394,6 +411,22 @@
 	var/obj/effect/decal/cleanable/oil/B = locate() in T.contents
 	if(!B)
 		B = new(T)
+
+/// Directional blood spray (tg-style hitsplatter + trail decals).
+/mob/living/proc/spray_blood(splatter_direction, splatter_strength = 3)
+	if(get_blood_id() == null || !get_blood_dna_list())
+		return
+	if(!isturf(loc))
+		return
+	var/obj/effect/decal/cleanable/blood/hitsplatter/our_splatter = new(loc, get_static_viruses(), splatter_strength)
+	our_splatter.transfer_mob_blood_dna(src)
+	var/turf/targ = get_ranged_target_turf(src, splatter_direction, splatter_strength)
+	our_splatter.fly_towards(targ, splatter_strength)
+
+/mob/living/carbon/human/spray_blood(splatter_direction, splatter_strength = 3)
+	if((NOBLOOD in dna.species.species_traits) || !blood_volume)
+		return
+	return ..()
 
 /mob/living/proc/adjust_integration_blood(value, remove_actual_blood, force)
     if(integrating_blood +  value < 0 && remove_actual_blood)

@@ -41,14 +41,24 @@ if(hook_vr(proc,args)) return
 The hooks you're calling should return nonzero values on success.
 */
 /proc/hook_vr(hook, list/args=null)
+	//горячий путь: зовётся на КАЖДОМ создании моба (mob_new и цепочка
+	//living/carbon/human) - text2path + new + рефлексия typesof() на строке
+	//стоили ~1.3мс на вызов; хуки стейтлесс, поэтому инстанс и список проков
+	//кэшируются на весь раунд
+	var/static/list/hook_instance_cache = list()
+	var/static/list/hook_procs_cache = list()
 	try
-		var/hook_path = text2path("/hook/[hook]")
-		if(!hook_path)
-			CRASH("hook_vr: Invalid hook '/hook/[hook]' called.")
+		var/thingtocall = hook_instance_cache[hook]
+		if(!thingtocall)
+			var/hook_path = text2path("/hook/[hook]")
+			if(!hook_path)
+				CRASH("hook_vr: Invalid hook '/hook/[hook]' called.")
+			thingtocall = new hook_path
+			hook_instance_cache[hook] = thingtocall
+			hook_procs_cache[hook] = typesof("[hook_path]/proc")
 
-		var/thingtocall = new hook_path
 		var/status = 1
-		for(var/P in typesof("[hook_path]/proc"))
+		for(var/P in hook_procs_cache[hook])
 			if(!call(thingtocall, P)(arglist(args)))
 				stack_trace("hook_vr: Hook '[P]' failed or runtimed.")
 				status = 0

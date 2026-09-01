@@ -3,18 +3,24 @@
 
 //Force-set resting variable, without needing to resist/etc.
 /mob/living/proc/set_resting(new_resting, silent = FALSE, updating = TRUE)
-	if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS])
-		if(prob(10))
+	if(new_resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
+		return
+
+	if(new_resting && HAS_TRAIT(src, TRAIT_FLOORED))
+		return
+
+	if(new_resting == resting)
+		return
+
+	. = resting
+	resting = new_resting
+	if(!silent)
+		to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
+	if(resting) // Легли
+		if(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS] && prob(10))
 			emote("fart")
-	if(new_resting != resting)
-		if(resting && HAS_TRAIT(src, TRAIT_MOBILITY_NOREST)) //forcibly block resting from all sources - BE CAREFUL WITH THIS TRAIT
-			return
-		resting = new_resting
-		if(!silent)
-			to_chat(src, "<span class='notice'>Вы [resting? "устало падаете" : "поднимаетесь"].</span>")
-		if(resting == 1)
-			SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
-		update_resting(updating)
+		SEND_SIGNAL(src, COMSIG_LIVING_RESTING)
+	update_resting(updating)
 
 /mob/living/proc/update_resting(update_mobility = TRUE)
 	if(update_mobility)
@@ -52,6 +58,15 @@
 /mob/living/proc/resist_a_rest(automatic = FALSE, ignoretimer = FALSE) //Lets mobs resist out of resting. Major QOL change with combat reworks.
 	set_resting(FALSE, TRUE)
 	return TRUE
+
+//Машиночитаемое положение тела (в отличие от пиксельного lying). Вызывается
+//только из update_mobility(): ранний выход при неизменном значении обязателен -
+//иначе это налог на каждого карбона каждый тик Life.
+/mob/living/proc/set_body_position(new_position)
+	if(body_position == new_position)
+		return
+	body_position = new_position
+	SEND_SIGNAL(src, COMSIG_LIVING_SET_BODY_POSITION)
 
 //Updates canmove, lying and icons. Could perhaps do with a rename but I can't think of anything to describe it.
 //Robots, animals and brains have their own version so don't worry about them
@@ -97,6 +112,7 @@
 			should_be_lying = buckled.buckle_lying
 
 	if(should_be_lying)
+		set_body_position(LYING_DOWN)
 		mobility_flags &= ~MOBILITY_STAND
 		setMovetype(movement_type | CRAWLING)
 		if(!lying) //force them on the ground
@@ -115,9 +131,15 @@
 			if(has_gravity() && !buckled)
 				playsound(src, "bodyfall", 20, 1)
 	else
+		set_body_position(STANDING_UP)
 		setMovetype(movement_type & ~CRAWLING)
 		mobility_flags |= MOBILITY_STAND
 		lying = 0
+
+	var/new_body_position = should_be_lying ? LYING_DOWN : STANDING_UP
+	if(body_position != new_body_position)
+		body_position = new_body_position
+		SEND_SIGNAL(src, COMSIG_LIVING_SET_BODY_POSITION)
 
 	if(restrained || incapacitated())
 		mobility_flags &= ~MOBILITY_UI
@@ -168,8 +190,12 @@
 	lying_prev = lying
 
 	//Handle citadel autoresist
-	if(CHECK_MOBILITY(src, MOBILITY_MOVE) && !(combat_flags & COMBAT_FLAG_INTENTIONALLY_RESTING) && canstand_involuntary && iscarbon(src) && client?.prefs?.autostand)//CIT CHANGE - adds autostanding as a preference
-		addtimer(CALLBACK(src, PROC_REF(resist_a_rest), TRUE), 0) //CIT CHANGE - ditto
+	//`resting` в гейте обязателен: resist_a_rest() первым делом возвращает FALSE,
+	//если моб и так стоит, а BiologicalLife зовёт update_mobility() каждый тик -
+	//то есть на каждого стоящего игрока с автовставанием ставился таймер-пустышка
+	//(в проде ~70 аллокаций каждые 2с, чистый налог на SStimer).
+	if(resting && CHECK_MOBILITY(src, MOBILITY_MOVE) && !(combat_flags & COMBAT_FLAG_INTENTIONALLY_RESTING) && canstand_involuntary && iscarbon(src) && client?.prefs?.autostand)//CIT CHANGE - adds autostanding as a preference
+		addtimer(CALLBACK(src, PROC_REF(resist_a_rest), TRUE), 0, TIMER_DELETE_ME) //CIT CHANGE - ditto
 
 	// Movespeed mods based on arms/legs quantity
 	if(!get_leg_ignore())
@@ -184,6 +210,10 @@
 		else
 			remove_movespeed_modifier(/datum/movespeed_modifier/limbless)
 
-	update_movespeed()
-
+	//Безусловного update_movespeed() здесь больше нет. Всё, что этот проц может
+	//поменять в скорости, обновляет её само и только при реальном изменении:
+	//setMovetype() (CRAWLING) выходит по isnull(.), add_or_update_variable_...
+	//сравнивает значение, remove_movespeed_modifier - наличие ключа. Снятые с рук
+	//предметы проходят через update_equipment_speed_mods(). Полный пересчёт кэша
+	//модификаторов на каждого карбона каждый Life-тик был чистым налогом.
 	return mobility_flags

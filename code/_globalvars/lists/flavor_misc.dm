@@ -1,4 +1,8 @@
 //Preferences stuff
+	//Character Directory
+GLOBAL_LIST_INIT(char_directory_tags, list("Pred", "Pred-Pref", "Prey", "Prey-Pref", "Switch", "Non-Vore", "Unset"))
+GLOBAL_LIST_INIT(char_directory_erptags, list("Top", "Top-Pref", "Bottom", "Bottom-Pref", "Submissive Top", "Dominant Bottom", "Switch", "No ERP", "Unset"))
+GLOBAL_LIST_INIT(char_directory_gendertags, list("Female", "Futa", "Male", "MtF", "FtM", "N/B", "Unset"))
 	//Hairstyles
 GLOBAL_LIST_EMPTY(hair_styles_list)			//stores /datum/sprite_accessory/hair indexed by name
 GLOBAL_LIST_EMPTY(hair_styles_male_list)		//stores only hair names
@@ -88,6 +92,21 @@ GLOBAL_LIST_INIT(mutant_transform_list, list("wingsopen" = "wings",
 	"waggingtail_lizard" = "tail_lizard",
 	"waggingspines" = "spines",
 	"mam_waggingtail" = "mam_tail"))
+
+GLOBAL_LIST_INIT(head_mutant_parts_for_severed_head, list(
+	"snout",
+	"mam_snouts",
+	"frills",
+	"horns",
+	"ears",
+	"mam_ears",
+	"caps",
+	"ipc_screen",
+	"ipc_antenna",
+	"xenohead",
+	"arachnid_mandibles",
+	"insect_fluff",
+))
 
 GLOBAL_LIST_INIT(ghost_forms_with_directions_list, list(
 	"ghost",
@@ -192,19 +211,31 @@ GLOBAL_LIST_INIT(ai_core_display_screens, list(
 	"Hippy"
 	))
 
-/proc/resolve_ai_icon(input, radial_preview = FALSE)
-	if(!input || !(input in GLOB.ai_core_display_screens))
-		return "ai"
-	if(radial_preview)
-		return "ai-[lowertext(input)]"
+/proc/resolve_ai_icon(input, radial_preview = FALSE, client/C, dead = FALSE)
+    if(!input)
+        return "ai"
 
-	if(input == "Random")
-		input = pick(GLOB.ai_core_display_screens - "Random")
-	if(input == "Portrait")
-		var/datum/portrait_picker/tgui = new(usr)//create the datum
-		tgui.ui_interact(usr)//datum has a tgui component, here we open the window
-		return "ai-portrait" //just take this until they decide
-	return "ai-[lowertext(input)]"
+    if(C)
+        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+            if(donor_screen.name == input && (C.ckey in donor_screen.ckey_whitelist))
+                if(dead && donor_screen.icon_state_dead)
+                    return donor_screen.icon_state_dead
+                return donor_screen.icon_state
+
+    if(!(input in GLOB.ai_core_display_screens))
+        return "ai"
+
+    if(radial_preview)
+        return "ai-[lowertext(input)]"
+
+    if(input == "Random")
+        input = pick(GLOB.ai_core_display_screens - "Random")
+    if(input == "Portrait")
+        var/datum/portrait_picker/tgui = new(usr)
+        tgui.ui_interact(usr)
+        return "ai-portrait"
+
+    return "ai-[lowertext(input)]"
 
 GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, SEC_DEPT_SCIENCE, SEC_DEPT_SUPPLY))
 
@@ -213,15 +244,19 @@ GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_
 #define DSATCHEL "Department Satchel"
 #define DDUFFELBAG "Department Duffel Bag"
 GLOBAL_LIST_INIT(backbaglist, list(DBACKPACK, DSATCHEL, DDUFFELBAG, //everything after this point is a non-department backpack
-	"Grey Backpack" = /obj/item/storage/backpack,
-	"Grey Satchel" = /obj/item/storage/backpack/satchel,
-	"Grey Duffel Bag" = /obj/item/storage/backpack/duffelbag,
-	"Leather Satchel" = /obj/item/storage/backpack/satchel/leather,
-	"Black Pocketbook" = /obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
-	"Brown Pocketbook" = /obj/item/storage/backpack/pocketbook/brown,
-	"Auburn Pocketbook" = /obj/item/storage/backpack/pocketbook/reddish,
-	"Snail Shell" = /obj/item/storage/backpack/snail,
-	"Sloog Shell" = /obj/item/storage/backpack/sloogshell))
+		"Grey Backpack" = 		/obj/item/storage/backpack,
+		"Grey Satchel" = 		/obj/item/storage/backpack/satchel,
+		"Grey Duffel Bag" = 	/obj/item/storage/backpack/duffelbag,
+		"Leather Satchel" = 	/obj/item/storage/backpack/satchel/leather,
+		"Black Pocketbook" = 	/obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
+		"Brown Pocketbook" = 	/obj/item/storage/backpack/pocketbook/brown,
+		"Auburn Pocketbook" = 	/obj/item/storage/backpack/pocketbook/reddish,
+		"Snail Shell" = 		/obj/item/storage/backpack/snail,
+		"Sloog Shell" = 		/obj/item/storage/backpack/sloogshell,
+		"Hipbag" = 				/obj/item/storage/backpack/hipbag,
+		"Tan Hipbag" = 			/obj/item/storage/backpack/hipbag/tan,
+		"Green Hipbag" = 		/obj/item/storage/backpack/hipbag/green,
+	))
 
 //Suit/Skirt
 #define PREF_SUIT "Jumpsuit"
@@ -341,21 +376,22 @@ GLOBAL_LIST_INIT(roundstart_tongues, list("default","human tongue" = /obj/item/o
 //parts not in unlocked, but in all, are thus locked
 GLOBAL_LIST_INIT(all_mutant_parts, list("tail_lizard" = "Tail", "mam_tail" = "Tail", "tail_human" = "Tail", "snout" = "Snout", "frills" = "Frills", "spines" = "Spines", "mam_body_markings" = "Species Markings" , "mam_ears" = "Ears", "ears" = "Ears", "mam_snouts" = "Snout", "legs" = "Legs", "deco_wings" = "Decorative Wings", "insect_wings" = "Insect Wings", "insect_fluff" = "Neck And Spine", "taur" = "Tauric Body", "insect_markings" = "Insect Markings", "wings" = "Wings", "arachnid_legs" = "Arachnid Legs", "arachnid_spinneret" = "Spinneret", "arachnid_mandibles" = "Mandibles", "xenohead" = "Caste Head", "xenotail" = "Tail", "xenodorsal" = "Dorsal Spines", "ipc_screen" = "Screen", "ipc_antenna" = "Antenna", "meat_type" = "Meat Type", "horns" = "Horns"))
 GLOBAL_LIST_INIT(unlocked_mutant_parts, list("horns", "insect_fluff"))
+GLOBAL_LIST_INIT(mismatched_toggle_parts, list("xenohead", "xenodorsal"))
 
 //parts in either of the above two lists that require a second option that allows them to be coloured
 GLOBAL_LIST_INIT(colored_mutant_parts, list("insect_wings" = "wings_color", "deco_wings" = "wings_color", "horns" = "horns_color"))
 
 //body ids that have greyscale sprites
-GLOBAL_LIST_INIT(greyscale_limb_types, list("human","moth","lizard","pod","plant","jelly","slime","golem","slimelumi","stargazer","mush","ethereal","snail","c_golem","b_golem","mammal","xeno","ipc","insect","synthliz","avian","aquatic", "vox", "shadekin", "nucleation", "teshari"))
+GLOBAL_LIST_INIT(greyscale_limb_types, list("human","moth","lizard","pod","plant","jelly","slime","golem","slimelumi","stargazer","mush","ethereal","snail","c_golem","b_golem","mammal","xeno","ipc","insect","synthliz","avian","sergal","aquatic", "vox", "shadekin", "nucleation", "teshari"))
 
 //body ids that have prosthetic sprites
-GLOBAL_LIST_INIT(prosthetic_limb_types, list("xion","bishop","cybersolutions","grayson","hephaestus","nanotrasen","talon","veymed")) //I don't know if i can module this to splurt
+GLOBAL_LIST_INIT(prosthetic_limb_types, list("xion","bishop","cybersolutions","grayson","hephaestus","nanotrasen","talon","veymed","morpheus")) //I don't know if i can module this to splurt
 
 //body ids that have non-gendered bodyparts
 GLOBAL_LIST_INIT(nongendered_limb_types, list("fly", "zombie" ,"synth", "shadow", "cultgolem", "agent", "plasmaman", "clockgolem", "clothgolem"))
 
 //list of eye types, corresponding to a respective left and right icon state for the set of eyes
-GLOBAL_LIST_INIT(eye_types, list("normal", "wide", "big", "insect", "moth", "double", "double2", "double3", "dragon", "spider", "cyclops", "bigcyclops", "skrell", "slime", "third", "thirdbig", "spectre", "vox", "shadekin", "teshari", "noodle", "none"))
+GLOBAL_LIST_INIT(eye_types, list("normal", "wide", "far", "big", "insect", "moth", "double", "double2", "double3", "dragon", "spider", "cyclops", "bigcyclops", "skrell", "slime", "third", "thirdbig", "spectre", "vox", "shadekin", "teshari", "noodle", "none"))
 
 //list linking bodypart bitflags to their actual names
 GLOBAL_LIST_INIT(bodypart_names, list(num2text(HEAD) = "Head", num2text(CHEST) = "Chest", num2text(LEG_LEFT) = "Left Leg", num2text(LEG_RIGHT) = "Right Leg", num2text(ARM_LEFT) = "Left Arm", num2text(ARM_RIGHT) = "Right Arm"))

@@ -43,7 +43,7 @@
 	var/objective
 
 /datum/surgery_step/brainwash/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	objective = stripped_input(user, "Choose the objective to imprint on your victim's brain.", "Brainwashing", null, MAX_MESSAGE_LEN)
+	objective = tgui_input_text(user, "Выберите цель, которая отпечатается в сознании вашей жертвы.", "Brainwashing", "", MAX_MESSAGE_LEN, TRUE, TRUE)
 	if(!objective)
 		return -1
 	display_results(user, target, "<span class='notice'>You begin to brainwash [target]...</span>",
@@ -63,8 +63,8 @@
 	to_chat(target, "<span class='userdanger'>A new compulsion fills your mind... you feel forced to obey it!</span>")
 	brainwash(target, objective)
 	message_admins("[ADMIN_LOOKUPFLW(user)] surgically brainwashed [ADMIN_LOOKUPFLW(target)] with the objective '[objective]'.")
-	user.log_message("has brainwashed [key_name(target)] with the objective '[objective]' using brainwashing surgery.", LOG_ATTACK)
-	target.log_message("has been brainwashed with the objective '[objective]' by [key_name(user)] using brainwashing surgery.", LOG_VICTIM, log_globally=FALSE)
+	user.log_message("has brainwashed [key_name(target)] with the objective '[objective]' using brainwashing surgery.", LOG_ATTACK, target = target)
+	target.log_message("has been brainwashed with the objective '[objective]' by [key_name(user)] using brainwashing surgery.", LOG_VICTIM, log_globally=FALSE, target = user)
 	log_game("[key_name(user)] surgically brainwashed [key_name(target)] with the objective '[objective]'.")
 	return TRUE
 
@@ -74,6 +74,7 @@
 			"<span class='warning'>[user] screws up, causing brain damage!</span>",
 			"[user] completes the surgery on [target]'s brain.")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
+		..()
 	else
 		user.visible_message("<span class='warning'>[user] suddenly notices that the brain [user.ru_who()] [user.p_were()] working on is not there anymore.", "<span class='warning'>You suddenly notice that the brain you were working on is not there anymore.</span>")
 	return FALSE

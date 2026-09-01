@@ -26,8 +26,8 @@ const getTooltip = (mod: string) => {
 	}
 };
 
-export const GenitalArousalPermission = (_: any, context: any) => {
-	const { act, data } = useBackend<ChastityHypno>(context);
+export const GenitalArousalPermission = (_: any) => {
+	const { act, data } = useBackend<ChastityHypno>();
 	const { genitals } = data;
 	return (
   <Window

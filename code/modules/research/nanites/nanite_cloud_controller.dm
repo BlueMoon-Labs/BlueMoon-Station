@@ -59,6 +59,7 @@
 	var/datum/component/nanites/cloud_copy = backup.AddComponent(/datum/component/nanites)
 	backup.cloud_id = cloud_id
 	backup.nanites = cloud_copy
+	SSnanites.sync_hosts(cloud_id)
 	investigate_log("[key_name(user)] created a new nanite cloud backup with id #[cloud_id]", INVESTIGATE_NANITES)
 
 /obj/machinery/computer/nanite_cloud_controller/ui_interact(mob/user, datum/tgui/ui)
@@ -191,6 +192,7 @@
 			if(backup)
 				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
 				qdel(backup)
+				SSnanites.sync_hosts(current_view)
 				investigate_log("[key_name(usr)] deleted the nanite cloud backup #[current_view]", INVESTIGATE_NANITES)
 			. = TRUE
 		if("upload_program")
@@ -200,16 +202,21 @@
 					playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
 					var/datum/component/nanites/nanites = backup.nanites
 					nanites.add_program(null, disk.program.copy())
+					SSnanites.sync_hosts(current_view)
 					investigate_log("[key_name(usr)] uploaded program [disk.program.name] to cloud #[current_view]", INVESTIGATE_NANITES)
 			. = TRUE
 		if("remove_program")
 			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 			if(backup)
-				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+				var/program_id = text2num(params["program_id"])
+				if(!program_id || program_id < 1 || program_id > length(nanites.programs))
+					return
+				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
+				var/datum/nanite_program/P = nanites.programs[program_id]
 				investigate_log("[key_name(usr)] deleted program [P.name] from cloud #[current_view]", INVESTIGATE_NANITES)
 				qdel(P)
+				SSnanites.sync_hosts(current_view)
 			. = TRUE
 		if("add_rule")
 			if(disk && disk.program && istype(disk.program, /datum/nanite_program/sensor))
@@ -218,31 +225,45 @@
 					return
 				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 				if(backup)
-					playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
 					var/datum/component/nanites/nanites = backup.nanites
-					var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+					var/program_id = text2num(params["program_id"])
+					if(!program_id || program_id < 1 || program_id > length(nanites.programs))
+						return
+					playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
+					var/datum/nanite_program/P = nanites.programs[program_id]
 					var/datum/nanite_rule/rule = rule_template.make_rule(P)
-
+					SSnanites.sync_hosts(current_view)
 					investigate_log("[key_name(usr)] added rule [rule.display()] to program [P.name] in cloud #[current_view]", INVESTIGATE_NANITES)
 			. = TRUE
 		if("remove_rule")
 			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 			if(backup)
-				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
-				var/datum/nanite_rule/rule = P.rules[text2num(params["rule_id"])]
+				var/program_id = text2num(params["program_id"])
+				if(!program_id || program_id < 1 || program_id > length(nanites.programs))
+					return
+				var/datum/nanite_program/P = nanites.programs[program_id]
+				var/rule_id = text2num(params["rule_id"])
+				if(!rule_id || rule_id < 1 || rule_id > length(P.rules))
+					return
+				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)
+				var/datum/nanite_rule/rule = P.rules[rule_id]
 				rule.remove()
+				SSnanites.sync_hosts(current_view)
 
 				investigate_log("[key_name(usr)] removed rule [rule.display()] from program [P.name] in cloud #[current_view]", INVESTIGATE_NANITES)
 			. = TRUE
 		if("toggle_rule_logic")
 			var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 			if(backup)
-				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
 				var/datum/component/nanites/nanites = backup.nanites
-				var/datum/nanite_program/P = nanites.programs[text2num(params["program_id"])]
+				var/program_id = text2num(params["program_id"])
+				if(!program_id || program_id < 1 || program_id > length(nanites.programs))
+					return
+				playsound(src, 'sound/machines/terminal_prompt.ogg', 50, FALSE)
+				var/datum/nanite_program/P = nanites.programs[program_id]
 				P.all_rules_required = !P.all_rules_required
+				SSnanites.sync_hosts(current_view)
 				investigate_log("[key_name(usr)] edited rule logic for program [P.name] into [P.all_rules_required ? "All" : "Any"] in cloud #[current_view]", INVESTIGATE_NANITES)
 				. = TRUE
 

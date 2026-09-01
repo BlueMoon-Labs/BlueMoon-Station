@@ -11,6 +11,17 @@
 	disease.cure()
 	TEST_ASSERT_EQUAL(H.get_confusion(), 0, "Human is still confused after curing confusion.")
 
+/datum/unit_test/adjust_confused/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_EQUAL(H.get_confusion(), 0, "Human starts confused.")
+	H.AdjustConfused(10 SECONDS, 5, 20)
+	TEST_ASSERT_EQUAL(H.get_confusion(), 10, "AdjustConfused did not set expected strength.")
+	TEST_ASSERT(H.get_confusion_movement_level() >= 5, "Confusion status effect did not affect movement level.")
+	H.AdjustConfused(20 SECONDS, 5, 20)
+	TEST_ASSERT_EQUAL(H.get_confusion(), 20, "AdjustConfused did not respect upper bound.")
+	H.SetConfused(0)
+	TEST_ASSERT_EQUAL(H.get_confusion(), 0, "SetConfused(0) did not clear confusion.")
+
 /datum/disease/advance/confusion/New()
 	symptoms += new /datum/symptom/confusion
 	Refresh()

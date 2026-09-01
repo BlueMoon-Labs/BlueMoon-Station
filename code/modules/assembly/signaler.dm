@@ -91,9 +91,7 @@
 			INVOKE_ASYNC(src, PROC_REF(signal))
 			. = TRUE
 		if("freq")
-			frequency = unformat_frequency(params["freq"])
-			frequency = sanitize_frequency(frequency, TRUE)
-			set_frequency(frequency)
+			set_frequency_from_ui(params["freq"])
 			. = TRUE
 		if("code")
 			code = text2num(params["code"])
@@ -101,7 +99,7 @@
 			. = TRUE
 		if("reset")
 			if(params["reset"] == "freq")
-				frequency = initial(frequency)
+				set_frequency(initial(frequency))
 			else
 				code = initial(code)
 			. = TRUE
@@ -153,6 +151,11 @@
 	frequency = new_frequency
 	radio_connection = SSradio.add_object(src, frequency, RADIO_SIGNALER)
 	return
+
+/obj/item/assembly/signaler/proc/set_frequency_from_ui(formatted_frequency)
+	var/new_frequency = unformat_frequency(formatted_frequency)
+	new_frequency = sanitize_frequency(new_frequency, TRUE)
+	set_frequency(new_frequency)
 
 // Embedded signaller used in grenade construction.
 // It's necessary because the signaler doens't have an off state.

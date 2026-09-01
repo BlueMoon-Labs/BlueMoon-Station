@@ -22,10 +22,10 @@
 
 /obj/item/clothing/shoes/magboots/attack_self(mob/user)
 	if(magpulse)
-		clothing_flags &= ~NOSLIP
+		clothing_flags &= ~NOSLIP_ALL
 		slowdown = SHOES_SLOWDOWN
 	else
-		clothing_flags |= NOSLIP
+		clothing_flags |= NOSLIP_ALL
 		slowdown = slowdown_active
 	magpulse = !magpulse
 	icon_state = "[magboot_state][magpulse]"
@@ -33,13 +33,13 @@
 	if(user)
 		user.update_equipment_speed_mods()
 		user.update_inv_shoes()	//so our mob-overlays update
-		user.update_gravity(user.has_gravity())
+		user.refresh_gravity()
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()
 
 /obj/item/clothing/shoes/magboots/negates_gravity()
-	return clothing_flags & NOSLIP
+	return clothing_flags & NOSLIP_ALL
 
 /obj/item/clothing/shoes/magboots/examine(mob/user)
 	. = ..()
@@ -81,6 +81,12 @@
 	icon_state = "advsyndiemag0"
 	magboot_state = "advsyndiemag"
 	slowdown_active = SHOES_SLOWDOWN
+
+/obj/item/clothing/shoes/magboots/syndie/advance/Initialize(mapload)
+	. = ..()
+	var/mob/living/L = loc
+	if(istype(L))
+		attack_self(L)
 
 /obj/item/clothing/shoes/magboots/crushing
 	desc = "Normal looking magboots that are altered to increase magnetic pull to crush anything underfoot."

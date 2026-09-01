@@ -32,8 +32,34 @@
 	name = "Acrador Short Side (Alt 2)"
 	icon_state = "acrador_short_side_alt_2"
 
-/datum/sprite_accessory/ears/mam_ears/mouse
+/datum/sprite_accessory/ears/mam_ears/bm_ears
+	icon = 'modular_bluemoon/icons/mob/ears.dmi' //32x32
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/mouse
 	name = "Mouse Alt"
-	icon = 'modular_bluemoon/icons/mob/ears.dmi'
 	icon_state = "mouse"
 	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/kasari
+	name = "Kasari"
+	icon = 'modular_bluemoon/icons/mob/ears32x64.dmi'  //32x64
+	icon_state = "kasari"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/kasari/big
+	name = "Kasari Big"
+	icon_state = "kasaribig"
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/kasari/alt
+	name = "Kasari Alt"
+	icon_state = "kasarialt"
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/vevisian
+	name = "Vevisian"
+	icon = 'modular_bluemoon/icons/mob/ears32x64.dmi' //32x64
+	icon_state = "vevisian"
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/ears/mam_ears/bm_ears/vevisian/short
+	name = "Vevisian (Short)"
+	icon_state = "vevisianshort"

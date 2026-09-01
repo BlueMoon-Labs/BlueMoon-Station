@@ -8,12 +8,53 @@
 	spawn_positions = 1
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Tiger Cooperative Disciple", //Триглав выше, для удобства
+		"Bichop",
+		"Bishop",
+		"Cleric",
+		"Disciple",
+		"Esotericist",
+		"Ghost Hunter",
+		"Guru",
+		"High Priest",
+		"High Priestess",
+		"Imam",
+		"Junior Inquisitor",
+		"Keeper of Cum",
+		"Magister",
+		"Medium",
+		"Monk",
+		"Morale Officer",
+		"Nun",
+		"Occultism Fan",
+		"Oracle",
+		"Paranormalist",
+		"Pontiff",
+		"Pope",
+		"Preacher",
+		"Priest",
+		"Priestess",
+		"Prior",
+		"Psychic",
+		"Rabbi",
+		"Reverend",
+		"Ritualist",
+		"Shaman",
+		"Shrine Guardian",
+		"Shrine Maiden",
+		"Spiritual Mentor",
+		"Techpriest",
+		"Thaumaturge",
+		"Theologist",
+		"Voodoo Sorcerer",
+		)
 
 	outfit = /datum/outfit/job/chaplain
 	plasma_outfit = /datum/outfit/plasmaman/chaplain
 
-	access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE)
-	minimal_access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE)
+	access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_CIV
 
@@ -135,35 +176,36 @@
 	name = "Chaplain"
 	jobtype = /datum/job/chaplain
 
-	belt = /obj/item/pda/chaplain
+	belt = /obj/item/modular_computer/pda/chaplain
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/chaplain
 	backpack_contents = list(/obj/item/storage/briefcase/crafted/chap_stuff = 1,
 							/obj/item/stamp/chap = 1,
 							)
 	backpack = /obj/item/storage/backpack/cultpack
-	accessory = /obj/item/clothing/accessory/permit/special/chaplain
+	accessory = list(/obj/item/clothing/accessory/permit/special/chaplain)
 	satchel = /obj/item/storage/backpack/cultpack
 
 /datum/outfit/job/chaplain/syndicate
 	name = "Syndicate Chaplain"
 	jobtype = /datum/job/chaplain
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = /obj/item/clothing/accessory/permit/special/chaplain
+	accessory = list(/obj/item/clothing/accessory/permit/special/chaplain, /obj/item/clothing/accessory/permit/special/syndie_station)
 	backpack_contents = list(/obj/item/storage/briefcase/crafted/chap_stuff = 1,
 							/obj/item/stamp/chap = 1,
-							/obj/item/syndicate_uplink=1,
+							/obj/item/syndicate_uplink/station=1,
 							)
 /obj/item/storage/briefcase/crafted/chap_stuff
 	name = "\improper Chaplain Case"

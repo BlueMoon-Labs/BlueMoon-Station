@@ -2,8 +2,7 @@
 <html>
 <head>
 	<title>Tooltip</title>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel='stylesheet' href='THE_FONT_GOES_HERE!!!!!!!!!!!!!!!' >
 	<style type="text/css">
 		body, html {
@@ -118,8 +117,62 @@
 	<div id="wrap" class="wrap">
 		<div id="content" class="content"></div>
 	</div>
-	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript">
+		function byond_bridge_call(path, params) {
+			var query = "";
+			var i = 0;
+			if (params) {
+				for (var key in params) {
+					if (!params.hasOwnProperty(key)) {
+						continue;
+					}
+					if (i++ > 0) {
+						query += "&";
+					}
+					var value = params[key];
+					if (value === null || typeof value === "undefined") {
+						value = "";
+					}
+					query += encodeURIComponent(key) + "=" + encodeURIComponent(value);
+				}
+			}
+
+			var rawUrl = (path || "") + "?" + query;
+			var protocolUrl = "byond://" + rawUrl;
+
+			// Legacy Chromium client
+			if (window.cef_to_byond) {
+				try {
+					window.cef_to_byond(protocolUrl);
+					return true;
+				} catch (e) {}
+			}
+
+			// Primary transport: location.href (stable in WebView2, BYOND 516+)
+			try {
+				window.location.href = protocolUrl;
+				return true;
+			} catch (e) {}
+
+			// Fallback: XHR to DreamSeeker's HTTP server
+			try {
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", rawUrl);
+				xhr.send();
+				return true;
+			} catch (e) {}
+
+			return false;
+		}
+
+		function byond_winset(params) {
+			byond_bridge_call("winset", params || {});
+		}
+
+		function byond_winget(params) {
+			byond_bridge_call("winget", params || {});
+		}
+
 		var tooltip = {
 			'tileSize': 32,
 			'control': '',
@@ -134,7 +187,7 @@
 				tooltip.control = control;
 			},
 			hide: function() {
-				window.location = 'byond://winset?id='+tooltip.control+';is-visible=false';
+				byond_winset({ id: tooltip.control, "is-visible": "false" });
 			},
 			updateCallback: function(map) {
 				if (typeof map === 'undefined' || !map) {return false;}
@@ -142,7 +195,7 @@
 				//alert(tooltip.params+' | '+tooltip.clientView+' | '+tooltip.text+' | '+tooltip.theme); //DEBUG
 
 				//Some reset stuff to avoid fringe issues with sizing
-				window.location = 'byond://winset?id='+tooltip.control+';anchor1=0,0;size=999x999';
+				byond_winset({ id: tooltip.control, anchor1: "0,0", size: "999x999" });
 
 				//Get the real icon size according to the client view
 				//FYI, this bit is even more borrowed from goon, our widescreen broke tooltips so I took a look at how they do it
@@ -245,33 +298,54 @@
 
 				//alert(mapWidth+' | '+mapHeight+' | '+tilesShown+' | '+realIconSize+' | '+leftOffset+' | '+topOffset+' | '+left+' | '+top+' | '+posX+' | '+posY); //DEBUG
 
-				$('body').attr('class', tooltip.theme);
+				document.body.className = tooltip.theme;
 
-				var $content = $('#content'),
-					$wrap 	 = $('#wrap');
-				$wrap.attr('style', '');
-				$content.off('mouseover');
-				$content.html(tooltip.text);
+				var content = document.getElementById('content'),
+					wrap 	 = document.getElementById('wrap');
+				wrap.setAttribute('style', '');
+				content.onmouseover = null;
+				content.innerHTML = tooltip.text;
 
-				$wrap.width($wrap.width() + 2); //Dumb hack to fix a bizarre sizing bug
+				// .wrap без padding и с box-sizing по умолчанию, поэтому clientWidth - это ровно
+				// content-box, который возвращал jQuery .width(), а offsetWidth/offsetHeight -
+				// ровно то, что возвращали .outerWidth()/.outerHeight(). jQuery уехал целиком:
+				// это был единственный legacy-ассет, уезжавший по игровому соединению мимо CDN,
+				// и межсессионный кэш его пропустить не может (клиентский список выбрасывает .js).
+				wrap.style.width = (wrap.clientWidth + 2) + 'px'; //Dumb hack to fix a bizarre sizing bug
 
-				var docWidth	= $wrap.outerWidth(),
-					docHeight	= $wrap.outerHeight();
+				// DPI fix: jQuery returns CSS pixels but byond_winset expects physical (BYOND) pixels.
+				// At high DPI (e.g. 150%), CSS pixels are smaller than physical pixels by devicePixelRatio.
+				var dpr = window.devicePixelRatio || 1;
+				var docWidth	= Math.ceil(wrap.offsetWidth * dpr),
+					docHeight	= Math.ceil(wrap.offsetHeight * dpr);
 
 				if (posY + docHeight > map.size.y) { //Is the bottom edge below the window? Snap it up if so
 					posY = (posY - docHeight) - realIconSizeY - tooltip.padding;
 				}
 
-				//Actually size, move and show the tooltip box
-				window.location = 'byond://winset?id='+tooltip.control+';size='+docWidth+'x'+docHeight+';pos='+posX+','+posY+';is-visible=true';
+				//Clamp to prevent going off-screen on the left or top
+				if (posX < tooltip.padding) {
+					posX = tooltip.padding;
+				}
+				if (posY < tooltip.padding) {
+					posY = tooltip.padding;
+				}
 
-				$content.on('mouseover', function() {
-					tooltip.hide();
+				//Actually size, move and show the tooltip box
+				byond_winset({
+					id: tooltip.control,
+					size: docWidth + "x" + docHeight,
+					pos: posX + "," + posY,
+					"is-visible": "true"
 				});
+
+				content.onmouseover = function() {
+					tooltip.hide();
+				};
 			},
 			update: function(params, client_vw , clien_vh , text, theme, special) {
 				//Assign our global object
-				tooltip.params = $.parseJSON(params);
+				tooltip.params = JSON.parse(params);
 				tooltip.client_view_w = parseInt(client_vw);
 				tooltip.client_view_h = parseInt(clien_vh);
 				tooltip.text = text;
@@ -279,7 +353,11 @@
 				tooltip.special = special;
 
 				//Go get the map details
-				window.location = 'byond://winget?callback=tooltip.updateCallback;id=mapwindow.map;property=size,view-size';
+				byond_winget({
+					callback: "tooltip.updateCallback",
+					id: "mapwindow.map",
+					property: "size,view-size"
+				});
 			},
 		};
 	</script>

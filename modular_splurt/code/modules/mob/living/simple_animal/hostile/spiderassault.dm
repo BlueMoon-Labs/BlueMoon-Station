@@ -3,8 +3,7 @@
 	desc = "A trooper from the spider clan"
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "sptroop"
-	icon_living = "sptoop"
-	icon_dead = "idle"
+	icon_living = "sptroop"
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
 	gender = FEMALE
 	speak_chance = 12

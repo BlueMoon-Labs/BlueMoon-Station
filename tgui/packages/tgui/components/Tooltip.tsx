@@ -1,10 +1,12 @@
 
 import { createPopper, Placement, VirtualElement } from '@popperjs/core';
-import { Component, findDOMfromVNode, InfernoNode, render } from 'inferno';
+import { canDirectlyRef } from 'common/react';
+import { cloneElement, Component, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 type TooltipProps = {
-  readonly children?: InfernoNode;
-  readonly content: InfernoNode;
+  readonly children?: ReactNode;
+  readonly content: ReactNode;
   readonly position?: Placement,
 };
 
@@ -37,53 +39,69 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
   static singletonPopper: ReturnType<typeof createPopper> | undefined;
   static currentHoveredElement: Element | undefined;
   static virtualElement: VirtualElement = {
-    getBoundingClientRect: () => (
-      Tooltip.currentHoveredElement?.getBoundingClientRect()
-        ?? NULL_RECT) as DOMRect,
+    getBoundingClientRect: () => {
+      const rect = Tooltip.currentHoveredElement?.getBoundingClientRect();
+      if (!rect) return NULL_RECT as DOMRect;
+      return rect;
+    },
   };
 
-  getDOMNode() {
-    // HACK: We don't want to create a wrapper, as it could break the layout
-    // of consumers, so we do the inferno equivalent of `findDOMNode(this)`.
-    // My attempt to avoid this was a render prop that passed in
-    // callbacks to onmouseenter and onmouseleave, but this was unwiedly
-    // to consumers, specifically buttons.
-    // This code is copied from `findDOMNode` in inferno-extras.
-    // Because this component is written in TypeScript, we will know
-    // immediately if this internal variable is removed.
-    return findDOMfromVNode(this.$LI, true);
+  state: TooltipState = {
+    hovered: false,
+  };
+
+  domNode: Element | null = null;
+
+  handleRef = (node: unknown) => {
+    this.domNode = node instanceof Element ? node : null;
+  };
+
+  // The element used for positioning. A display:contents wrapper has
+  // a zero-sized rect, so measure its first child instead.
+  getAnchor(): Element | null {
+    const node = this.domNode;
+    if (!node) {
+      return null;
+    }
+    if (node instanceof HTMLElement && node.style.display === 'contents') {
+      return node.firstElementChild ?? node;
+    }
+    return node;
   }
 
-  componentDidMount() {
-    const domNode = this.getDOMNode();
+  handleMouseEnter = () => {
+    let renderedTooltip = Tooltip.renderedTooltip;
+    if (renderedTooltip === undefined) {
+      renderedTooltip = document.createElement("div");
+      renderedTooltip.className = "Tooltip";
+      // DPI fix: append to <html> instead of <body> to escape body zoom.
+      // Popper.js then works in viewport coords for both positioning and
+      // overflow detection, fixing tooltip shift near screen edges.
+      document.documentElement.appendChild(renderedTooltip);
+      Tooltip.renderedTooltip = renderedTooltip;
+    }
 
+    Tooltip.currentHoveredElement = this.getAnchor() ?? undefined;
+    renderedTooltip.style.opacity = "1";
+    this.setState({ hovered: true });
+  };
+
+  handleMouseLeave = () => {
+    this.fadeOut();
+    this.setState({ hovered: false });
+  };
+
+  componentDidMount() {
+    const domNode = this.domNode;
     if (!domNode) {
       return;
     }
-
-    domNode.addEventListener("mouseenter", () => {
-      let renderedTooltip = Tooltip.renderedTooltip;
-      if (renderedTooltip === undefined) {
-        renderedTooltip = document.createElement("div");
-        renderedTooltip.className = "Tooltip";
-        document.body.appendChild(renderedTooltip);
-        Tooltip.renderedTooltip = renderedTooltip;
-      }
-
-      Tooltip.currentHoveredElement = domNode;
-
-      renderedTooltip.style.opacity = "1";
-
-      this.renderPopperContent();
-    });
-
-    domNode.addEventListener("mouseleave", () => {
-      this.fadeOut();
-    });
+    domNode.addEventListener("mouseenter", this.handleMouseEnter);
+    domNode.addEventListener("mouseleave", this.handleMouseLeave);
   }
 
   fadeOut() {
-    if (Tooltip.currentHoveredElement !== this.getDOMNode()) {
+    if (Tooltip.currentHoveredElement !== this.getAnchor()) {
       return;
     }
 
@@ -91,54 +109,88 @@ export class Tooltip extends Component<TooltipProps, TooltipState> {
     Tooltip.renderedTooltip!.style.opacity = "0";
   }
 
-  renderPopperContent() {
+  updatePopper() {
     const renderedTooltip = Tooltip.renderedTooltip;
     if (!renderedTooltip) {
       return;
     }
-
-    render(
-      <span>{this.props.content}</span>,
-      renderedTooltip,
-      () => {
-        let singletonPopper = Tooltip.singletonPopper;
-        if (singletonPopper === undefined) {
-          singletonPopper = createPopper(
-            Tooltip.virtualElement,
-            renderedTooltip!,
-            {
-              ...DEFAULT_OPTIONS,
-              placement: this.props.position || "auto",
-            }
-          );
-
-          Tooltip.singletonPopper = singletonPopper;
-        } else {
-          singletonPopper.setOptions({
-            ...DEFAULT_OPTIONS,
-            placement: this.props.position || "auto",
-          });
-
-          singletonPopper.update();
+    let singletonPopper = Tooltip.singletonPopper;
+    if (singletonPopper === undefined) {
+      singletonPopper = createPopper(
+        Tooltip.virtualElement,
+        renderedTooltip,
+        {
+          ...DEFAULT_OPTIONS,
+          placement: this.props.position || "auto",
         }
-      },
-      this.context,
-    );
+      );
+
+      Tooltip.singletonPopper = singletonPopper;
+    } else {
+      singletonPopper.setOptions({
+        ...DEFAULT_OPTIONS,
+        placement: this.props.position || "auto",
+      });
+
+      singletonPopper.update();
+    }
   }
 
   componentDidUpdate() {
-    if (Tooltip.currentHoveredElement !== this.getDOMNode()) {
-      return;
+    if (
+      this.state.hovered
+      && Tooltip.currentHoveredElement === this.getAnchor()
+    ) {
+      // The portal content has just been committed to the DOM,
+      // so the popper can measure it.
+      this.updatePopper();
     }
-
-    this.renderPopperContent();
   }
 
   componentWillUnmount() {
+    const domNode = this.domNode;
+    if (domNode) {
+      domNode.removeEventListener("mouseenter", this.handleMouseEnter);
+      domNode.removeEventListener("mouseleave", this.handleMouseLeave);
+    }
     this.fadeOut();
   }
 
   render() {
-    return this.props.children;
+    const { children, content } = this.props;
+    const { hovered } = this.state;
+
+    let target: ReactNode;
+    if (canDirectlyRef(children)) {
+      target = cloneElement(children as any, { ref: this.handleRef });
+    } else {
+      // Fallback wrapper for text and class component children.
+      target = (
+        <span ref={this.handleRef} style={{ display: 'contents' }}>
+          {children}
+        </span>
+      );
+    }
+
+    // DPI fix: apply body zoom to content so it matches the rest of the UI,
+    // since the container is outside body zoom (appended to <html>).
+    const zoom = document.body.style.zoom || '100%';
+    const portal = (
+      hovered
+      && Tooltip.renderedTooltip
+      && Tooltip.currentHoveredElement === this.getAnchor()
+    )
+      ? createPortal(
+        <span style={{ zoom }}>{content}</span>,
+        Tooltip.renderedTooltip,
+      )
+      : null;
+
+    return (
+      <>
+        {target}
+        {portal}
+      </>
+    );
   }
 }

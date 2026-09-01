@@ -1,10 +1,15 @@
 #define AI_CORE_BRAIN(X) X.braintype == "Android" ? "brain" : "MMI"
 
+/// Все живые ядра ИИ. Ядер на станции единицы, зато разовым проходам по ним
+/// (например стартовой перекраске от станционных трейтов) больше не нужно
+/// перебирать весь мир.
+GLOBAL_LIST_EMPTY(ai_cores)
+
 /obj/structure/ai_core
 	density = TRUE
 	anchored = FALSE
 	name = "\improper AI core"
-	icon = 'icons/mob/ai.dmi'
+	icon = 'icons/mob/AI.dmi'
 	icon_state = "0"
 	desc = "The framework for an artificial intelligence core."
 	max_integrity = 500
@@ -15,6 +20,7 @@
 
 /obj/structure/ai_core/Initialize(mapload)
 	. = ..()
+	GLOB.ai_cores += src
 	laws = new
 	laws.set_laws_config()
 
@@ -57,12 +63,14 @@
 	return ..()
 
 /obj/structure/ai_core/Destroy()
+	GLOB.ai_cores -= src
 	QDEL_NULL(circuit)
 	QDEL_NULL(core_mmi)
 	QDEL_NULL(laws)
 	return ..()
 
 /obj/structure/ai_core/deactivated
+	name = "inactive AI"
 	icon_state = "ai-empty"
 	anchored = TRUE
 	state = AI_READY_CORE
@@ -391,17 +399,6 @@
 	new /obj/item/stack/sheet/plasteel(loc, 4)
 	qdel(src)
 
-/obj/structure/ai_core/deactivated
-	name = "inactive AI"
-	icon_state = "ai-empty"
-	anchored = TRUE
-	state = AI_READY_CORE
-
-/obj/structure/ai_core/deactivated/New()
-	..()
-	circuit = new(src)
-
-
 /*
 This is a good place for AI-related object verbs so I'm sticking it here.
 If adding stuff to this, don't forget that an AI need to cancel_camera() whenever it physically moves to a different location.
@@ -432,7 +429,7 @@ That prevents a few funky behaviors.
 		AI.control_disabled = FALSE
 		AI.radio_enabled = TRUE
 		AI.forceMove(loc) // to replace the terminal.
-		to_chat(AI, span_notice("You have been uploaded to a stationary terminal. Remote device connection restored."))
+		to_chat(AI, build_ai_upload_notice(TRUE))
 		to_chat(user, "[span_boldnotice("Transfer successful")]: [AI.name] ([rand(1000,9999)].exe) installed and executed successfully. Local copy has been removed.")
 		card.AI = null
 		AI.battery = circuit.battery

@@ -14,33 +14,6 @@
 	name = "Bluespace Artillery Controls (Computer Board)"
 	build_path = /obj/machinery/computer/bsa_control
 
-/obj/item/circuitboard/computer/card
-	name = "ID Console (Computer Board)"
-	icon_state = "command"
-	build_path = /obj/machinery/computer/card
-
-/obj/item/circuitboard/computer/card/centcom
-	name = "CentCom ID Console (Computer Board)"
-	build_path = /obj/machinery/computer/card/centcom
-
-/obj/item/circuitboard/computer/card/minor
-	name = "Department Management Console (Computer Board)"
-	build_path = /obj/machinery/computer/card/minor
-	var/target_dept = 1
-	var/list/dept_list = list("Civilian","Security","Medical","Science","Engineering","Cargo")
-
-/obj/item/circuitboard/computer/card/minor/attackby(obj/item/I, mob/user, params)
-	if(I.tool_behaviour == TOOL_SCREWDRIVER)
-		target_dept = (target_dept == dept_list.len) ? 1 : (target_dept + 1)
-		to_chat(user, "<span class='notice'>You set the board to \"[dept_list[target_dept]]\".</span>")
-	else
-		return ..()
-
-/obj/item/circuitboard/computer/card/minor/examine(user)
-	..()
-	to_chat(user, "<span class='notice'>Currently set to \"[dept_list[target_dept]]\".</span>")
-
-
 //obj/item/circuitboard/computer/shield
 //	name = "Shield Control (Computer Board)"
 //	icon_state = "command"
@@ -297,7 +270,8 @@
 	name = "InteQ Shuttle (Computer Board)"
 	icon_state = "generic"
 	build_path = /obj/machinery/computer/shuttle/syndicate
-	var/challenge = FALSE
+	var/challenge = FALSE // Legacy compatibility
+	var/challenge_start_time = 0 // world.time when war was declared
 	var/moved = FALSE
 
 /obj/item/circuitboard/computer/syndicate_shuttle/Initialize(mapload)
@@ -492,6 +466,11 @@
 	icon_state = "security"
 	build_path = /obj/machinery/computer/secure_data
 
+/obj/item/circuitboard/computer/brig_assistant_console
+	name = "Brig Assistant Tasks Console (Computer Board)"
+	icon_state = "security"
+	build_path = /obj/machinery/computer/brig_assistant_console
+
 // /obj/item/circuitboard/computer/warrant
 // 	name = "Security Warrant Viewer (Computer Board)"
 // 	icon_state = "security"
@@ -501,6 +480,44 @@
 	name = "Security Cameras (Computer Board)"
 	icon_state = "security"
 	build_path = /obj/machinery/computer/security
+	/// Сети камер, прошитые в плату. Пусто - собранная консоль оставит свои заводские сети.
+	var/list/network
+
+/// Копия прошитого набора сетей: пустой список означает "заводскую настройку не трогать".
+/obj/item/circuitboard/computer/security/proc/get_configured_network()
+	return network ? network.Copy() : list()
+
+/obj/item/circuitboard/computer/security/examine(mob/user)
+	. = ..()
+	if(length(network))
+		. += span_notice("Плата прошита на сети камер: [jointext(network, ", ")].")
+	else
+		. += span_notice("Плата ни на одну сеть камер не прошита - консоль соберётся с заводскими.")
+	. += span_notice("Набор сетей меняется мультитулом.")
+
+/obj/item/circuitboard/computer/security/multitool_act(mob/living/user, obj/item/tool)
+	. = ..()
+	var/list/current_network = get_configured_network()
+	var/input = stripped_input(user, "На какие сети камер прошить плату? Несколько сетей разделяются запятой.", "Настройка сетей камер", jointext(current_network, ","))
+	if(!input || !user.canUseTopic(src, BE_CLOSE))
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	var/list/new_network = list()
+	for(var/entry in splittext(input, ","))
+		var/network_name = trim(lowertext(entry))
+		if(!length(network_name))
+			continue
+		new_network |= network_name
+	if(!length(new_network))
+		to_chat(user, span_warning("Ни одной сети распознать не удалось, прошивка платы осталась прежней."))
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	network = new_network
+	to_chat(user, span_notice("Теперь плата соберёт консоль на сети: [jointext(network, ", ")]."))
+	return TOOL_ACT_TOOLTYPE_SUCCESS
+
+/obj/item/circuitboard/computer/security/configure_machine(obj/machinery/computer/security/machine)
+	if(!istype(machine) || !length(network))
+		return
+	machine.network = network.Copy()
 
 /obj/item/circuitboard/computer/advanced_camera
 	name = "Advanced Camera Console (Computer Board)"

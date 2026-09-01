@@ -29,9 +29,13 @@
 	earliest_start = 0 MINUTES
 	description = "Everything becomes sticky enough to be glued to people when thrown."
 
-/datum/round_event_control/wizard/embedpocalypse/sticky/canSpawnEvent(players_amt, gamemode)
+/datum/round_event_control/wizard/embedpocalypse/sticky/can_fire(datum/director_signals/signals)
+	. = ..()
+	if(!.)
+		return .
 	if(GLOB.embedpocalypse)
 		return FALSE
+	return TRUE
 
 /datum/round_event/wizard/embedpocalypse/sticky/start()
 	for(var/obj/item/I in world)

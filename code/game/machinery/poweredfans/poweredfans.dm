@@ -14,12 +14,21 @@
 	CanAtmosPass = ATMOS_PASS_NO
 	var/obj/machinery/fan_assembly/assembly
 
+/obj/machinery/poweredfans/Destroy()
+	CanAtmosPass = ATMOS_PASS_YES
+	air_update_turf(TRUE)
+	// Сборка живёт внутри вентилятора (Initialize кладёт её в src), и родитель
+	// раздаёт содержимое сам. Ссылку снимаем до него: иначе удалённый
+	// вентилятор держит сборку за собой, и уходит в хардделы уже она.
+	assembly = null
+	return ..()
+
 /obj/machinery/poweredfans/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		if(!assembly)
 			assembly = new()
 		assembly.forceMove(drop_location())
-		assembly.machine_stat = 2
+		assembly.build_state = 2
 		assembly.setAnchored(TRUE)
 		assembly.setDir(dir)
 		assembly = null
@@ -39,18 +48,25 @@
 		assembly = FA
 	else
 		assembly = new(src)
-		assembly.machine_stat = 3
-	air_update_turf(TRUE)
+		assembly.build_state = 3
+	refresh_atmos_barrier(TRUE)
+
+// Барьер поверфана держит и тепло - ровно пока держит воздух (то есть пока
+// есть питание). refresh_atmos_barrier() уже дёргает пересчёт соседства, так
+// что состояние кондукции меняется вместе с газовым.
+/obj/machinery/poweredfans/BlockThermalConductivity()
+	return CanAtmosPass == ATMOS_PASS_NO
 
 /obj/machinery/poweredfans/power_change()
 	..()
-	if(powered())
-		icon_state = "mfan_powered"
-		CanAtmosPass = ATMOS_PASS_NO
-		air_update_turf(TRUE)
-	else
-		icon_state = "mfan_unpowered"
-		CanAtmosPass = ATMOS_PASS_YES
-		air_update_turf(TRUE)
-	update_icon_state()
+	refresh_atmos_barrier()
+
+/obj/machinery/poweredfans/proc/refresh_atmos_barrier(force_update = FALSE)
+	var/blocking = powered()
+	var/new_pass = blocking ? ATMOS_PASS_NO : ATMOS_PASS_YES
+	icon_state = blocking ? "mfan_powered" : "mfan_unpowered"
+	if(!force_update && CanAtmosPass == new_pass)
+		return
+	CanAtmosPass = new_pass
+	air_update_turf(TRUE)
 

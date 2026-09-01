@@ -5,6 +5,7 @@
 /obj/machinery/disposal
 	icon = 'icons/obj/atmospherics/pipes/disposal.dmi'
 	density = TRUE
+	shadow_weight = 0.4
 	armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 90, ACID = 30)
 	max_integrity = 200
 	resistance_flags = FIRE_PROOF
@@ -45,6 +46,10 @@
 
 	return INITIALIZE_HINT_LATELOAD //we need turfs to have air
 
+/obj/machinery/disposal/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	machine_wake() // something new to swallow; resume the auto-flush countdown
+
 /obj/machinery/disposal/proc/trunk_check()
 	trunk = locate() in loc
 	if(!trunk)
@@ -58,6 +63,7 @@
 
 /obj/machinery/disposal/Destroy()
 	eject()
+	QDEL_NULL(air_contents)
 	if(trunk)
 		trunk.linked = null
 	return ..()
@@ -78,12 +84,17 @@
 		deconstruct()
 
 /obj/machinery/disposal/LateInitialize()
-	//this will get a copy of the air turf and take a SEND PRESSURE amount of air from it
+	// Transfer air directly from turf when possible to avoid creating temporary gas_mixture (GC)
 	var/atom/L = loc
-	var/datum/gas_mixture/env = new
-	env.copy_from(L.return_air())
-	var/datum/gas_mixture/removed = env.remove(SEND_PRESSURE + 1)
-	air_contents.merge(removed)
+	if(istype(L, /turf/open))
+		var/turf/open/T = L
+		T.transfer_air(air_contents, SEND_PRESSURE + 1)
+	else
+		// Fallback for closed turfs / non-turfs: copy uses temp mixture
+		var/datum/gas_mixture/env = new
+		env.copy_from(L.return_air())
+		env.transfer_to(air_contents, SEND_PRESSURE + 1)
+		qdel(env)
 	trunk_check()
 
 /obj/machinery/disposal/attackby(obj/item/I, mob/user, params)
@@ -214,6 +225,7 @@
 	var/obj/structure/disposalholder/H = new(src)
 	newHolderDestination(H)
 	H.init(src)
+	QDEL_NULL(air_contents)
 	air_contents = new()
 	H.start(src)
 	flushing = FALSE
@@ -289,7 +301,7 @@
 
 /obj/machinery/disposal/bin
 	name = "disposal unit"
-	desc = "A pneumatic waste disposal unit."
+	desc = "Пневматическое устройство для утилизации отходов."
 	icon_state = "disposal"
 	var/datum/oracle_ui/themed/nano/ui
 	obj_flags = CAN_BE_HIT | USES_TGUI | SHOVABLE_ONTO
@@ -299,7 +311,7 @@
 	if(istype(I, /obj/item/storage/bag/trash))	//Not doing component overrides because this is a specific type.
 		var/obj/item/storage/bag/trash/T = I
 		var/datum/component/storage/STR = T.GetComponent(/datum/component/storage)
-		to_chat(user, "<span class='warning'>You empty the bag.</span>")
+		to_chat(user, "<span class='warning'>Вы опустошили вашу сумку.</span>")
 		for(var/obj/item/O in T.contents)
 			STR.remove_from_storage(O,src)
 		T.update_icon()
@@ -357,10 +369,13 @@
 		if("eject")
 			eject()
 			. = TRUE
+	if(.)
+		machine_wake() // flush handle / pump state changed; process() owns the follow-through
 
 /obj/machinery/disposal/bin/alt_attack_hand(mob/user)
 	if(can_interact(usr))
 		flush = !flush
+		machine_wake()
 		update_icon()
 		return TRUE
 	return FALSE
@@ -369,10 +384,10 @@
 	if(isitem(AM) && AM.CanEnterDisposals())
 		if(prob(75))
 			AM.forceMove(src)
-			visible_message(span_notice("[AM] lands in [src]."))
+			visible_message(span_notice("[AM] приземляется в [src]."))
 			update_appearance()
 		else
-			visible_message(span_notice("[AM] bounces off of [src]'s rim!"))
+			visible_message(span_notice("[AM] отскакивает от краёв [src]!"))
 			return ..()
 	else
 		return ..()
@@ -382,8 +397,8 @@
 		return FALSE
 	target.DefaultCombatKnockdown(SHOVE_KNOCKDOWN_SOLID)
 	target.forceMove(src)
-	user.visible_message("<span class='danger'>[user.name] shoves [target.name] into \the [src]!</span>",
-		"<span class='danger'>You shove [target.name] into \the [src]!</span>", null, COMBAT_MESSAGE_RANGE)
+	user.visible_message("<span class='danger'>[user.name] заталкивает [target.name] внутрь \the [src]!</span>",
+		"<span class='danger'>Вы впихиваете [target.name] внутрь \the [src]!</span>", null, COMBAT_MESSAGE_RANGE)
 	log_combat(user, target, "shoved", "into [src] (disposal bin)")
 	return TRUE
 
@@ -431,6 +446,11 @@
 	if(machine_stat & BROKEN) //nothing can happen if broken
 		return
 
+	// pump off/charged, handle idle and nothing waiting for the periodic auto-flush:
+	// nothing left to do per tick; Entered()/ui_act()/alt_attack_hand() wake us back up
+	if(!pressure_charging && !flush && !flushing && !(full_pressure && contents.len))
+		return machine_sleep()
+
 	flush_count++
 	if(flush_count >= flush_every_ticks)
 		if(contents.len)
@@ -461,8 +481,7 @@
 		var/transfer_moles = 0.1 * pressure_delta*air_contents.return_volume()/(env.return_temperature() * R_IDEAL_GAS_EQUATION)
 
 		//Actually transfer the gas
-		var/datum/gas_mixture/removed = env.remove(transfer_moles)
-		air_contents.merge(removed)
+		env.transfer_to(air_contents, transfer_moles)
 		air_update_turf()
 
 
@@ -481,7 +500,7 @@
 
 /obj/machinery/disposal/deliveryChute
 	name = "delivery chute"
-	desc = "A chute for big and small packages alike!"
+	desc = "Промышленный лоток для больших и малых посылок!"
 	density = TRUE
 	icon_state = "intake"
 	pressure_charging = FALSE // the chute doesn't need charging and always works
@@ -520,7 +539,7 @@
 	else if(ismob(AM))
 		var/mob/M = AM
 		if(prob(2)) // to prevent mobs being stuck in infinite loops
-			to_chat(M, "<span class='warning'>You hit the edge of the chute.</span>")
+			to_chat(M, "<span class='warning'>Вы ударились о края промышленного лотка.</span>")
 			return
 		M.forceMove(src)
 	flush()

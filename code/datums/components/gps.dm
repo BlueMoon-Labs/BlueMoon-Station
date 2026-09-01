@@ -1,4 +1,4 @@
-///Global GPS_list. All  GPS components get saved in here for easy reference.
+///Global GPS_list. All GPS components get saved in here for easy reference.
 GLOBAL_LIST_EMPTY(GPS_list)
 ///GPS component. Atoms that have this show up on gps. Pretty simple stuff.
 /datum/component/gps
@@ -11,9 +11,11 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		return COMPONENT_INCOMPATIBLE
 	gpstag = _gpstag
 	GLOB.GPS_list += src
+	GLOB.poi_list |= parent
 
 /datum/component/gps/Destroy()
 	GLOB.GPS_list -= src
+	GLOB.poi_list -= parent
 	return ..()
 
 ///GPS component subtype. Only gps/item's can be used to open the UI.
@@ -48,6 +50,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 
 ///Called on COMSIG_ITEM_ATTACK_SELF
 /datum/component/gps/item/proc/interact(datum/source, mob/user)
+	if(isliving(user) && HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		user.balloon_alert(user, "Кнопки слишком маленькие для твоих пальцев!")
+		return
 	if(user)
 		ui_interact(user)
 
@@ -88,6 +93,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 
 ///Toggles the tracking for the gps
 /datum/component/gps/item/proc/toggletracking(mob/user)
+	if(isliving(user) && HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		user.balloon_alert(user, "Кнопки слишком маленькие для твоих пальцев!")
+		return
 	if(!user.canUseTopic(parent, BE_CLOSE))
 		return //user not valid to use gps
 	if(emped)
@@ -104,6 +112,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		tracking = TRUE
 
 /datum/component/gps/item/ui_interact(mob/user, datum/tgui/ui)
+	if(isliving(user) && HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		user.balloon_alert(user, "Кнопки слишком маленькие для твоих пальцев!")
+		return
 	if(emped)
 		to_chat(user, "<span class='hear'>[parent] fizzles weakly.</span>")
 		return
@@ -150,6 +161,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	return data
 
 /datum/component/gps/item/ui_act(action, params)
+	if(isliving(usr) && HAS_TRAIT(usr, TRAIT_CHUNKYFINGERS))
+		usr.balloon_alert(usr, "Кнопки слишком маленькие для твоих пальцев!")
+		return
 	if(..())
 		return
 	switch(action)

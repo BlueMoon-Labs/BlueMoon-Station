@@ -22,7 +22,7 @@
 	var/end_message = "."
 	var/rendered = begin_message + obj_message + end_message
 	deadchat_broadcast(rendered, "<b>[L]</b>", follow_target = L, turf_target = get_turf(L), message_type=DEADCHAT_ANNOUNCEMENT)
-	if(prob(1) || SSevents.holidays && SSevents.holidays[APRIL_FOOLS])
+	if(prob(1) || SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS])
 		L.say("You son of a bitch! I'm in.", forced = "That son of a bitch! They're in.")
 
 /datum/antagonist/brainwashed
@@ -56,7 +56,7 @@
 		return
 	var/list/objectives = list()
 	do
-		var/objective = stripped_input(admin, "Add an objective, or leave empty to finish.", "Brainwashing", null, MAX_MESSAGE_LEN)
+		var/objective = stripped_input(admin, "Add an objective, or leave empty to finish.", "Brainwashing")
 		if(objective)
 			objectives += objective
 	while(tgui_alert(admin,"Add another objective?","More Brainwashing",list("Да","Нет")) == "Да")

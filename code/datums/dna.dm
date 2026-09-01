@@ -136,6 +136,15 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 /datum/dna/proc/check_mutation(mutation_type)
 	return get_mutation(mutation_type)
 
+// BLUEMOON ADD Знаете что? Я не понимаю почему нельзя было это сделать и не трюхать мозг
+/mob/living/proc/check_mutation(mutation_type)
+	return FALSE
+
+/mob/living/carbon/check_mutation(mutation_type)
+	if(dna)
+		return dna.check_mutation(mutation_type)
+// BLUEMOON ADD END
+
 /datum/dna/proc/remove_all_mutations(list/classes = list(MUT_NORMAL, MUT_EXTRA, MUT_OTHER), mutadone = FALSE)
 	remove_mutation_group(mutations, classes, mutadone)
 	scrambled = FALSE
@@ -431,12 +440,25 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 		dna.species = new_race
 		dna.species.on_species_gain(src, old_species, pref_load)
 		if(ishuman(src))
+
+			var/datum/language_holder/lang_holder = new
+			lang_holder.copy_languages(get_language_holder())
+			lang_holder.remove_all_languages(source = LANGUAGE_SPECIES)
+
 			qdel(language_holder)
 			var/species_holder = initial(mrace.species_language_holder)
 			language_holder = new species_holder(src)
 
+			language_holder.copy_languages(lang_holder)
+			qdel(lang_holder)
+
 /mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
 	..()
+	//вид может отменять гравитацию (species.negates_gravity), но применять её
+	//прямо здесь нельзя: set_species идёт и при создании моба, а update_gravity
+	//там навешивает FLOATING ещё до того, как моб вообще где-то оказался.
+	//Помечаем кэш - ближайший тик Life пересчитает.
+	gravity_cache_dirty = TRUE
 	if(icon_update)
 		update_body()
 		update_hair()

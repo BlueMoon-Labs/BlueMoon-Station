@@ -59,7 +59,7 @@
 	ammo_type = /obj/item/ammo_casing/shotgun/rubbershot
 	max_ammo = 6
 
-/obj/item/gun/ballistic/shotgun/rsh12
+/obj/item/gun/ballistic/shotgun/automatic/rsh12
 	name = "RSH-12"
 	desc = "A moden Russian-made semi-automatic revolver, intended to used with 12 gauge."
 	icon_state = "rsh12"
@@ -67,14 +67,44 @@
 	icon = 'modular_bluemoon/kovac_shitcode/icons/obj/weapons/weapons.dmi'
 	lefthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_l.dmi'
 	righthand_file = 'modular_bluemoon/kovac_shitcode/icons/mob/weapons/weapons_r.dmi'
-	fire_sound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rsh12.ogg'
-	pumpsound = 'modular_bluemoon/kovac_shitcode/sound/weapons/rsh12_drum.ogg'
+	fire_sound = 'modular_bluemoon/sound/weapons/rs12_boom.ogg'
+	pumpsound = 'modular_bluemoon/sound/weapons/rs12_reload.ogg'
+	var/dry_fire_sound  = 'modular_bluemoon/sound/weapons/rs12_empty.ogg' // осечка или нет боевого патрона
+	var/last_round_sound = 'modular_bluemoon/sound/weapons/rs12_shot.ogg'  // звук последнего патрона
+	var/shell_drop_sound = 'modular_bluemoon/sound/weapons/rs12_emptyshell.ogg' // звук падения гильзы
 	fire_delay = 5
 	recoil = 5
 	spread = 3
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/com/rsh12
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/can_shoot()
+	if(!chambered || !chambered.BB)  // Нет патрона или пустая гильза
+		return FALSE
+	return TRUE
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/shoot_with_empty_chamber(mob/living/user)
+	playsound(user, dry_fire_sound, 50, 1)  // звук пустого выстрела
+	to_chat(user, "<span class='warning'>*CLICK* Пусто!</span>")
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	. = ..()
+	if(. && magazine?.ammo_count() == 0 && !chambered?.BB)
+		playsound(user, last_round_sound, 70, 1)  // Громче для последнего выстрела
+		to_chat(user, "<span class='warning'>That was the last shot!</span>") // Звук падения гильзы с небольшой задержкой
+	if(.)
+		addtimer(CALLBACK(src, .proc/play_shell_drop, user), 2)
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/proc/play_shell_drop(mob/user)
+	playsound(user, shell_drop_sound, 40, 1)
+
+/obj/item/gun/ballistic/shotgun/automatic/rsh12/attackby(obj/item/A, mob/user, params)
+	var/prev_count = magazine?.ammo_count()
+	. = ..()
+	// Проигрываем pumpsound если что-то было загружено
+	if(magazine && magazine.ammo_count() > prev_count)
+		playsound(user, pumpsound, 50, 1)
 
 //HoS G22 pistol
 /obj/item/gun/ballistic/automatic/pistol/g22
@@ -106,6 +136,7 @@
 /obj/item/ammo_box/magazine/m10mm_large
 	name = "enlarged pistol magazine (10mm)"
 	desc = "An extra ammo gun magazine."
+	icon = 'icons/obj/ammo.dmi'
 	icon_state = "c20r45-16"
 	ammo_type = /obj/item/ammo_casing/c10mm
 	caliber = "10mm"
@@ -135,16 +166,14 @@
 	build_path = /obj/item/ammo_box/magazine/m10mm_large
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
 
-/datum/design/m10mm_large_soporific
+/datum/design/m10mm_large/soporific
 	name = "enlarged pistol magazine (10mm soporific)"
 	desc = "An extra ammo gun magazine. Loaded with rounds which inject the target with a variety of substances to induce sleep."
 	id = "10mm_large_soporific"
-	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 10000, /datum/material/glass=3000)
 	build_path = /obj/item/ammo_box/magazine/m10mm_large/soporific
-	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
 ///
 
@@ -155,7 +184,7 @@
 	desc = "A storage case for a heavy revolver."
 
 /obj/item/storage/secure/briefcase/rsh12_box/PopulateContents()
-	new /obj/item/gun/ballistic/shotgun/rsh12(src)
+	new /obj/item/gun/ballistic/shotgun/automatic/rsh12(src)
 	new /obj/item/ammo_box/shotgun/loaded/rubbershot(src)
 	new /obj/item/ammo_box/shotgun/loaded/rubbershot(src)
 	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
@@ -297,11 +326,13 @@
 		return
 	..()
 	if((wielded) && prob(50))
-		INVOKE_ASYNC(src, PROC_REF(slash), user)
+		INVOKE_ASYNC(src, PROC_REF(slash), user, target)
 
 /obj/item/inteq_sledgehammer/proc/slash(mob/living/user, mob/living/target)
-		user.do_attack_animation(target, ATTACK_EFFECT_KICK)
-		sleep(1)
+	if(!user || !target)
+		return
+	user.do_attack_animation(target, ATTACK_EFFECT_KICK)
+	sleep(1)
 
 /obj/item/inteq_sledgehammer/afterattack(atom/A, mob/user, proximity)
 	. = ..()
@@ -309,6 +340,46 @@
 		var/obj/O = A
 		O.take_damage(18)
 		O.take_damage(8)
+
+/obj/item/inteq_sledgehammer/toy
+	name = "toy sledgehammer"
+	desc = "A cheap plastic replica of an InteQ sledgehammer. BONK!"
+	force = 0
+	throwforce = 0
+	w_class = WEIGHT_CLASS_TINY
+	throw_speed = 3
+	throw_range = 7
+	attack_verb = list("bonked", "squished", "banned")
+	block_parry_data = null
+	block_chance = 0
+	item_flags = NONE
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	armour_penetration = 0
+	attack_speed = CLICK_CD_MELEE * 1.5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/inteq_sledgehammer/toy/ComponentInitialize()
+	AddComponent(/datum/component/two_handed, force_unwielded=0, force_wielded=0, icon_wielded="sledgehammer1")
+
+/obj/item/inteq_sledgehammer/toy/attack(mob/M, mob/user)
+	if(iscarbon(M))
+		var/mob/living/carbon/C = M
+		C.AddElement(/datum/element/squish, 3 SECONDS)
+	playsound(loc, 'modular_splurt/sound/misc/bonk.ogg', 1000, 1)
+	..()
+
+/obj/item/inteq_sledgehammer/toy/afterattack(atom/A, mob/user, proximity)
+	return
+
+/obj/item/inteq_sledgehammer/toy/pre_attack(atom/A, mob/living/user, params, attackchain_flags, damage_multiplier)
+	if(!(attackchain_flags & ATTACK_IGNORE_CLICKDELAY) && !CheckAttackCooldown(user, A))
+		return STOP_ATTACK_PROC_CHAIN
+	return NONE
+
+/obj/item/inteq_sledgehammer/toy/suicide_act(mob/user)
+	user.visible_message("<span class='suicide'>[user] бьёт себя [src]! Похоже, [user.ru_who()] пытается выбить себя из жизни.</span>")
+	return (BRUTELOSS|FIRELOSS|TOXLOSS|OXYLOSS)
 
 /datum/block_parry_data/inteq_sledgehammer
 	can_block_directions = BLOCK_DIR_NORTH
@@ -361,7 +432,7 @@
 	desc = "A high powered chainsaw for cutting up ...you know...."
 	item = /obj/item/chainsaw/doomslayer/inteq_chainsaw
 	cost = 16
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /// Clown Ops Uplink additions
 /datum/uplink_item/suits/hardsuit/elite_clown
@@ -399,7 +470,7 @@
 			Additionally the suit is collapsible, making it small enough to fit within a backpack."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi
 	cost = 8
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_elite
 	name = "Syndicate Elite Hardsuit"
@@ -407,7 +478,7 @@
 			provides the user with superior armor and mobility compared to the standard Syndicate hardsuit."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	cost = 12
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_shield
 	name = "Syndicate Shielded Hardsuit"

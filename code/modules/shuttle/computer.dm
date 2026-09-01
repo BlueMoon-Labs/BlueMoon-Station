@@ -9,14 +9,10 @@
 	var/shuttleId
 	/// Possible destinations of the attached shuttle
 	var/possible_destinations = ""
-	/// Variable dictating if the attached shuttle requires authorization from the admin staff to move
-	var/admin_controlled = FALSE
 	/// Variable dictating if the attached shuttle is forbidden to change destinations mid-flight
 	var/no_destination_swap = FALSE
 	/// ID of the currently selected destination of the attached shuttle
 	var/destination
-	/// Authorization request cooldown to prevent request spam to admin staff
-	COOLDOWN_DECLARE(request_cooldown)
 
 /obj/machinery/computer/shuttle/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -31,16 +27,12 @@
 	data["docked_location"] = M ? M.get_status_text_tgui() : "Unknown"
 	data["locations"] = list()
 	data["locked"] = FALSE
-	data["authorization_required"] = admin_controlled
 	data["timer_str"] = M ? M.getTimerStr() : "00:00"
 	data["destination"] = destination
 	if(!M)
 		data["status"] = "Missing"
 		return data
-	if(admin_controlled)
-		data["status"] = "Unauthorized Access"
-	else
-		data["status"] = M.mode == SHUTTLE_IGNITING ? "Igniting" : M.mode != SHUTTLE_IDLE ? "In Transit" : "Idle"
+	data["status"] = M.mode == SHUTTLE_IGNITING ? "Igniting" : M.mode != SHUTTLE_IDLE ? "In Transit" : "Idle"
 	for(var/obj/docking_port/stationary/S in SSshuttle.stationary)
 		if(!options.Find(S.shuttle_id))
 			continue
@@ -70,6 +62,10 @@
 
 	switch(action)
 		if("move")
+			if(istype(src, /obj/machinery/computer/shuttle/pod))
+				if(GLOB.security_level < SEC_LEVEL_RED && !(obj_flags & EMAGGED))
+					to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
+					return
 			var/obj/docking_port/mobile/M = SSshuttle.getShuttle(shuttleId)
 			if(M.launch_status == ENDGAME_LAUNCHED)
 				to_chat(usr, "<span class='warning'>You've already escaped. Never going back to that place again!</span>")
@@ -100,14 +96,6 @@
 			if(target_destination)
 				destination = target_destination
 				return TRUE
-		if("request")
-			if(!COOLDOWN_FINISHED(src, request_cooldown))
-				to_chat(usr, "<span class='warning'>CentCom is still processing last authorization request!</span>")
-				return
-			COOLDOWN_START(src, request_cooldown, 1 MINUTES)
-			to_chat(usr, "<span class='notice'>Your request has been received by CentCom.</span>")
-			to_chat(GLOB.admins, "<b>FERRY: <font color='#3d5bc3'>[ADMIN_LOOKUPFLW(usr)] (<A HREF='?_src_=holder;[HrefToken()];secrets=movepod'>Move Pod</a>)</b> is requesting to move the transport Escape Pod.</font>")
-			return TRUE
 
 /obj/machinery/computer/shuttle/emag_act(mob/user)
 	. = ..()
@@ -121,4 +109,9 @@
 
 /obj/machinery/computer/shuttle/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	if(port && (shuttleId == initial(shuttleId) || override))
+		// register() переименовывает shuttle_id при коллизии (foo -> foo_2), и навигационная
+		// консоль следом создаёт порт "foo_2_custom". Без переноса имени в possible_destinations
+		// у заспавненного в раунде корабля пункт "custom location" не появляется вовсе.
+		if(shuttleId && shuttleId != port.shuttle_id)
+			possible_destinations = replacetext(possible_destinations, "[shuttleId]_custom", "[port.shuttle_id]_custom")
 		shuttleId = port.shuttle_id

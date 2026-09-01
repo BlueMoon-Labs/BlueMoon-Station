@@ -21,6 +21,10 @@
 	var/spreadIntoAdjacentChance = 75
 	/// Internal seed of the glowshroom, stats are stored here
 	var/obj/item/seeds/myseed
+	/// Spread timer so we can cancel and replace scheduled callbacks safely.
+	var/spread_timer_id
+	/// Decay timer so we can cancel and replace scheduled callbacks safely.
+	var/decay_timer_id
 	/// Turfs where the glowshroom cannot spread to
 	var/static/list/blacklisted_glowshroom_turfs = typecacheof(list(
 	/turf/open/lava,
@@ -46,6 +50,12 @@
 	. += "This is a [generation]\th generation [name]!"
 
 /obj/structure/glowshroom/Destroy()
+	if(spread_timer_id)
+		deltimer(spread_timer_id)
+		spread_timer_id = null
+	if(decay_timer_id)
+		deltimer(decay_timer_id)
+		decay_timer_id = null
 	if(myseed)
 		QDEL_NULL(myseed)
 	return ..()
@@ -61,6 +71,7 @@
 
 /obj/structure/glowshroom/Initialize(mapload, obj/item/seeds/newseed, mutate_stats, spread)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(newseed)
 		myseed = newseed.Copy()
 		myseed.forceMove(src)
@@ -98,12 +109,22 @@
 	else //if on the floor, glowshroom on-floor sprite
 		icon_state = base_icon_state
 
-	addtimer(CALLBACK(src, PROC_REF(Spread)), delay_spread)
-	addtimer(CALLBACK(src, PROC_REF(Decay)), delay_decay, FALSE) // Start decaying the plant
+	queue_spread_timer()
+	queue_decay_timer() // Start decaying the plant
 
 /**
   * Causes glowshroom spreading across the floor/walls.
   */
+
+/obj/structure/glowshroom/proc/queue_spread_timer()
+	if(spread_timer_id)
+		deltimer(spread_timer_id)
+	spread_timer_id = addtimer(CALLBACK(src, PROC_REF(Spread)), delay_spread, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/obj/structure/glowshroom/proc/queue_decay_timer()
+	if(decay_timer_id)
+		deltimer(decay_timer_id)
+	decay_timer_id = addtimer(CALLBACK(src, PROC_REF(Decay)), delay_decay, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /obj/structure/glowshroom/proc/Spread()
 	var/turf/ownturf = get_turf(src)
@@ -146,6 +167,8 @@
 				continue
 
 			Decay(TRUE, 2) // Decay before spawning new mushrooms to reduce their endurance
+			if(QDELETED(src) || !myseed) // Decay may have killed us when endurance dropped below 1
+				return
 			var/obj/structure/glowshroom/child = new type(newLoc, myseed, TRUE, TRUE)
 			child.generation = generation + 1
 			shrooms_planted++
@@ -153,7 +176,7 @@
 			CHECK_TICK
 	if(shrooms_planted <= myseed.yield) //if we didn't get all possible shrooms planted, try again later
 		myseed.adjust_yield(-shrooms_planted)
-		addtimer(CALLBACK(src, PROC_REF(Spread)), delay_spread)
+		queue_spread_timer()
 
 /obj/structure/glowshroom/proc/CalcDir(turf/location = loc)
 	var/direction = 16
@@ -206,7 +229,7 @@
 		if(obj_integrity > max_integrity)
 			obj_integrity = max_integrity
 		if (myseed.endurance > 0)
-			addtimer(CALLBACK(src, PROC_REF(Decay)), delay_decay, FALSE) // Recall decay timer
+			queue_decay_timer() // Recall decay timer
 			return
 	if (myseed.endurance < 1) // Plant is gone
 		qdel(src)
@@ -218,6 +241,12 @@
 /obj/structure/glowshroom/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		take_damage(5, BURN, 0, 0)
+
+/obj/structure/glowshroom/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/glowshroom/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 /obj/structure/glowshroom/acid_act(acidpwr, acid_volume)
 	. = 1

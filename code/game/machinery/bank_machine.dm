@@ -1,5 +1,6 @@
 /obj/machinery/computer/bank_machine
 	name = "bank machine"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "A machine used to deposit and withdraw station funds."
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "computer"

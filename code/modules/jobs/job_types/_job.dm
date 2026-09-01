@@ -245,7 +245,7 @@
 /datum/job/proc/radio_help_message(mob/M)
 	to_chat(M, "<b>Prefix your message with :h to speak on your department's radio. To see other prefixes, look closely at your headset.</b>")
 
-// BLUEMOON ADD 
+// BLUEMOON ADD
 /datum/job/proc/jobname_to_ru(mob/M, jobname)
 	var/static/list/joblist = list()
 // BLUEMOON ADD END
@@ -264,7 +264,7 @@
 	uniform = /obj/item/clothing/under/color/grey
 	id = /obj/item/card/id
 	ears = /obj/item/radio/headset
-	belt = /obj/item/pda
+	belt = /obj/item/modular_computer/pda
 	back = /obj/item/storage/backpack
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	box = /obj/item/storage/box/survival
@@ -272,6 +272,7 @@
 	var/backpack = /obj/item/storage/backpack
 	var/satchel  = /obj/item/storage/backpack/satchel
 	var/duffelbag = /obj/item/storage/backpack/duffelbag
+	var/no_custom_backpack = FALSE
 
 	var/pda_slot = ITEM_SLOT_BELT
 
@@ -286,6 +287,8 @@
 				back = satchel //Department satchel
 			if(DDUFFELBAG)
 				back = duffelbag //Department duffel bag
+			else if(no_custom_backpack)
+				back = backpack
 			else
 				var/find_preference_backpack = GLOB.backbaglist[preference_backpack] //attempt to find non-department backpack
 				if(find_preference_backpack)
@@ -313,24 +316,24 @@
 	if(!J)
 		J = SSjob.GetJob(H.job)
 
-	if(H.nameless && J.dresscodecompliant)
+	if(J && H.nameless && J.dresscodecompliant)
 		if(J.title in GLOB.command_positions)
 			H.real_name = J.title
 		else
 			H.real_name = "[J.title] #[rand(10000, 99999)]"
 
 	var/obj/item/card/id/C = H.wear_id
-	if(istype(C) && C.bank_support)
+	if(J && istype(C) && C.bank_support)
 		C.access = J.get_access()
 		shuffle_inplace(C.access) // Shuffle access list to make NTNet passkeys less predictable
 		C.registered_name = H.real_name
-		C.assignment = J.title
-		if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
-			C.update_label(C.registered_name, preference_source.prefs.alt_titles_preferences[J.title])
-		else
-			C.update_label()
+		if(J)
+			C.assignment = J.title
+			if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
+				C.custom_job = preference_source.prefs.alt_titles_preferences[J.title]
+		C.update_label()
 
-		if(J.title != "Stowaway") //SPLURT EDIT
+		if(J && J.title != "Stowaway") //SPLURT EDIT
 			for(var/A in SSeconomy.bank_accounts)
 				var/datum/bank_account/B = A
 				if(B.account_id == H.account_id)
@@ -339,15 +342,16 @@
 					break
 		H.sec_hud_set_ID()
 
-	var/obj/item/pda/PDA = H.get_item_by_slot(pda_slot)
+	var/obj/item/modular_computer/pda/PDA = H.get_item_by_slot(pda_slot)
 	if(istype(PDA))
-		PDA.owner = H.real_name
-		if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
-			PDA.ownjob = preference_source.prefs.alt_titles_preferences[J.title]
-		else
-			PDA.ownjob = J.title
-		PDA.update_label()
-		if(preference_source && !PDA.equipped) //PDA's screen color, font style and look depend on client preferences.
+		var/new_job = null
+		if(J)
+			if(preference_source && preference_source.prefs && preference_source.prefs.alt_titles_preferences[J.title])
+				new_job = preference_source.prefs.alt_titles_preferences[J.title]
+			else
+				new_job = J.title
+		PDA.update_label(H.real_name, new_job)
+		if(preference_source)
 			PDA.update_style(preference_source)
 
 /datum/outfit/job/get_chameleon_disguise_info()

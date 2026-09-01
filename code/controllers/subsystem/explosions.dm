@@ -7,17 +7,16 @@ SUBSYSTEM_DEF(explosions)
 	var/static/list/datum/wave_explosion/active_wave_explosions = list()
 	var/static/list/datum/wave_explosion/currentrun = list()
 
+/datum/controller/subsystem/explosions/last_task()
+	return "взрывов в проходе [length(currentrun)] из [length(active_wave_explosions)]"
+
 /datum/controller/subsystem/explosions/fire(resumed)
 	if(!resumed)
 		currentrun = active_wave_explosions.Copy()
 	var/datum/wave_explosion/E
-	var/ran = 0
-	while(length(currentrun) && !MC_TICK_CHECK)
-		ran = 0
-		for(var/i in currentrun)
-			E = i
-			if(E.tick())
-				currentrun -= E
-			ran++
-		if(!ran)
-			break
+	for(var/i in currentrun)
+		if(MC_TICK_CHECK)
+			return
+		E = i
+		if(E.tick())
+			currentrun -= E

@@ -1,6 +1,8 @@
-import { Section, Flex, Collapsible, Box, Tooltip, LabeledList, ByondUi, Button } from "../components";
+import { useState } from "react";
+
+import { useBackend } from "../backend";
+import { Box, Button, ByondUi, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
 import { Window } from "../layouts";
-import { useBackend, useLocalState } from "../backend";
 
 const getTagColor = (erptag) => {
   switch (erptag) {
@@ -39,54 +41,56 @@ interface CharacterProfileContext {
   vore_tag: string;
   erp_tag: string;
   mob_tag: string;
-  hornyantags_tag: string;
   nc_tag: string;
   unholy_tag: string;
+  unholy_hard_tag: string;
   extreme_tag: string;
   very_extreme_tag: string;
+  tattoo_tag: string;
 }
 
-export const CharacterProfile = (props, context) => {
-  const { data } = useBackend<CharacterProfileContext>(context);
+export const CharacterProfile = (props) => {
+  const { data } = useBackend<CharacterProfileContext>();
 
   const tags = [
-    { name: "ERP Verbs", title: "ЕРП механики", value: data.erp_verbs },  // BLUEMOON - mechanical_erp_verbs_examine
+    { name: "ERP Verbs", title: "ЕРП механики", value: data.erp_verbs }, // BLUEMOON - mechanical_erp_verbs_examine
     { name: "ERP", title: "Эротический отыгрыш", value: data.erp_tag },
     { name: "Non-Con", title: "Изнасилование", value: data.nc_tag },
     { name: "Vore", title: "Поедание/Проглатывание", value: data.vore_tag },
     { name: "Mob-Sex", title: "Совокупление с Мобами", value: data.mob_tag },
-    { name: "Horny Antags", title: "Жертва хорни антагов", value: data.hornyantags_tag },
     { name: "Unholy", title: "Грязный секс", value: data.unholy_tag },
+    { name: "Unholy Hard", title: "Очень грязный секс", value: data.unholy_hard_tag },
     { name: "Extreme", title: "Жестокий секс", value: data.extreme_tag },
     { name: "Extreme Harm", title: "Очень жестокий секс", value: data.very_extreme_tag },
+    { name: "Tattoo", title: "Татуировки от других", value: data.tattoo_tag },
   ];
 
   return (
     <Window resizable width={950} height={740}>
       <Window.Content scrollable>
         <Flex>
-          <Flex.Item>
+          <Flex.Item width="276px" shrink={0} style={{ overflow: 'hidden' }}>
             <CharacterProfileImageElement />
             <CharacterModelImageElement />
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Персонажа" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.flavortext || "———"}
               </Section>
             </Collapsible>
 
             {data.flavortext_naked ? (
                <Collapsible title="Описание Голого Тела Персонажа" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.flavortext_naked || "———"}
                 </Section>
-              </Collapsible>
+               </Collapsible>
             ) : (<Box />)}
 
             {data.security_records ? (
               <Collapsible title="База Данных Службы Безопасности" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.security_records || "———"}
                 </Section>
               </Collapsible>
@@ -94,19 +98,19 @@ export const CharacterProfile = (props, context) => {
 
             {data.medical_records ? (
               <Collapsible title="База Данных Медицинского Отдела" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.medical_records || "———"}
                 </Section>
               </Collapsible>
             ) : (<Box />)}
 
             <Collapsible title={`Раса - ${data.species_name}`} open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.custom_species_lore || "———"}
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.oocnotes || "———"}
               </Section>
             </Collapsible>
@@ -129,53 +133,83 @@ export const CharacterProfile = (props, context) => {
   );
 };
 
-const CharacterProfileImageElement = (props, context) => {
-  const { data } = useBackend<CharacterProfileContext>(context);
+const CharacterProfileImageElement = (props) => {
+  const { data } = useBackend<CharacterProfileContext>();
 
   const headshot_links =
     [
       ...(data.headshot_links || []),
-      ...(data.headshot_naked_links || [])
+      ...(data.headshot_naked_links || []),
     ].filter(link => link?.length) || [];
 
   const [
     selectedHeadshot,
-    selectHeadshot
-  ] = useLocalState(context, 'selectedHeadshot', 0);
+    selectHeadshot,
+  ] = useState(0);
+
+  const safeSelectedHeadshot = headshot_links.length > 0
+    ? selectedHeadshot % headshot_links.length
+    : 0;
 
   const prevHeadshot = () => selectHeadshot(
-    (selectedHeadshot + headshot_links.length - 1) % headshot_links.length
+    (safeSelectedHeadshot + headshot_links.length - 1) % headshot_links.length
   );
   const nextHeadshot = () => selectHeadshot(
-    (selectedHeadshot + 1) % headshot_links.length
+    (safeSelectedHeadshot + 1) % headshot_links.length
   );
 
-  if (headshot_links.length) return (
+  const currentLink = headshot_links[safeSelectedHeadshot];
+  const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
+  const mediaStyle = {
+    width: '256px',
+    height: '256px',
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
+  } as const;
+
+  if (headshot_links.length) { return (
     <Section title="Арт персонажа" pb="12" textAlign="center">
       <Box mb={1}>
-        <img src={headshot_links[selectedHeadshot]} height="256px" width="256px" />
+        {isVideo ? (
+          <video
+            src={currentLink as string}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={mediaStyle}
+          />
+        ) : (
+          <img
+            src={currentLink as string}
+            style={mediaStyle}
+          />
+        )}
       </Box>
       {headshot_links.length > 1 ? (
         <Box>
           <Button onClick={prevHeadshot} icon="arrow-left" />
-          <span style={{margin: "0 8px"}}><b>{selectedHeadshot + 1} / {headshot_links.length}</b></span>
+          <span style={{ margin: "0 8px" }}><b>{safeSelectedHeadshot + 1} / {headshot_links.length}</b></span>
           <Button onClick={nextHeadshot} icon="arrow-right" />
         </Box>
       ) : (<Box />)}
     </Section>
-  );
+  ); }
   return (<Box />);
 };
 
-const CharacterModelImageElement = (props, context) => {
-  const { act, data } = useBackend<CharacterProfileContext>(context);
+const CharacterModelImageElement = (props) => {
+  const { act, data, config } = useBackend<CharacterProfileContext>();
 
+  if(config.status < 2)
+    { return null; }
   return (
     <Section title="Модель персонажа" pb="12" textAlign="center">
       <Box mb={1}>
         <ByondUi
           height="256px" width="256px"
-          params={{ id: data.character_ref, type: 'map' }}
+          params={{ id: data.character_ref, type: 'map', zoom: 0 }}
         />
       </Box>
       <Box>

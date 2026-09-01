@@ -1,10 +1,11 @@
 /obj/effect/fun_balloon
 	name = "fun balloon"
 	desc = "This is going to be a laugh riot."
-	icon = 'icons/obj/items_and_weapons.dmi'
+	icon = 'icons/obj/toys/balloons.dmi'
 	icon_state = "syndballoon"
 	anchored = TRUE
 	var/popped = FALSE
+	var/pop_sound_effect = 'sound/items/party_horn.ogg'
 
 /obj/effect/fun_balloon/Initialize(mapload)
 	. = ..()
@@ -28,7 +29,7 @@
 
 /obj/effect/fun_balloon/proc/pop()
 	visible_message("[src] pops!")
-	playsound(get_turf(src), 'sound/items/party_horn.ogg', 50, 1, -1)
+	playsound(get_turf(src), pop_sound_effect, 50, TRUE, -1)
 	qdel(src)
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
@@ -53,7 +54,7 @@
 		bodies += M
 
 	var/question = "Would you like to be [group_name]?"
-	var/list/candidates = pollCandidatesForMobs(question, ROLE_PAI, null, FALSE, 100, bodies)
+	var/list/candidates = pollCandidatesForMob(question, ROLE_PAI, null, FALSE, 100, bodies, priority_check = FALSE)
 	while(LAZYLEN(candidates) && LAZYLEN(bodies))
 		var/mob/C = pick_n_take(candidates)
 		var/mob/living/body = pick_n_take(bodies)
@@ -79,16 +80,16 @@
 	var/effect_range = 5
 
 /obj/effect/fun_balloon/scatter/effect()
-	for(var/mob/living/M in range(effect_range, get_turf(src)))
-		var/turf/T = find_safe_turf()
-		new /obj/effect/temp_visual/gravpush(get_turf(M))
-		M.forceMove(T)
-		to_chat(M, "<span class='notice'>Pop!</span>")
+	for(var/mob/living/dispersed_mob in range(effect_range, get_turf(src)))
+		var/turf/drop_off = find_safe_turf(z)
+		new /obj/effect/temp_visual/gravpush(get_turf(dispersed_mob))
+		dispersed_mob.forceMove(drop_off)
+		dispersed_mob.balloon_alert(dispersed_mob, "pop!")
 
 /obj/effect/station_crash
 	name = "station crash"
 	desc = "With no survivors!"
-	icon = 'icons/obj/items_and_weapons.dmi'
+	icon = 'icons/obj/toys/balloons.dmi'
 	icon_state = "syndballoon"
 	anchored = TRUE
 

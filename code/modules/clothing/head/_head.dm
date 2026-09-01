@@ -8,10 +8,12 @@
 	var/blockTracking = 0 //For AI tracking
 	dynamic_hair_suffix = ""
 	var/datum/beepsky_fashion/beepsky_fashion //the associated datum for applying this to a secbot
-	var/vision_flags = 0
+	var/vision_flags = NONE
 	var/darkness_view = 2//Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/lighting_alpha
+	var/lighting_cutoff = null
+	var/list/color_cutoffs = null
 
 /obj/item/clothing/head/Initialize(mapload)
 	. = ..()
@@ -23,7 +25,9 @@
 /obj/item/clothing/head/throw_impact(atom/hit_atom, datum/thrownthing/thrownthing)
 	. = ..()
 	///if the thrown object's target zone isn't the head
-	if(thrownthing.target_zone != BODY_ZONE_HEAD)
+	// Прилёт бывает и без броска: zFall() зовёт throw_impact() с пустым thrownthing, и шляпа,
+	// упавшая в дыру мульти-Z, роняла рантайм на каждом этаже
+	if(!thrownthing || thrownthing.target_zone != BODY_ZONE_HEAD)
 		return
 	///ignore any hats with downsides when worn
 	if(clothing_flags & IGNORE_HAT_TOSS)

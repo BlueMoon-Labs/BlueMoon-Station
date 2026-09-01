@@ -2,8 +2,8 @@ import { useBackend } from "../backend";
 import { Button, Input, LabeledList, NumberInput, Section, Stack } from '../components';
 import { Window } from "../layouts";
 
-export const SentienceFunBalloon = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SentienceFunBalloon = (props) => {
+  const { act, data } = useBackend();
   const { group_name, range } = data;
   return (
     <Window

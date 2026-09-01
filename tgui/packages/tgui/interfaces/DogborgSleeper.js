@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
@@ -23,8 +23,8 @@ const damageTypes = [
   },
 ];
 
-export const DogborgSleeper = (props, context) => {
-  const { act, data } = useBackend(context);
+export const DogborgSleeper = (props) => {
+  const { act, data } = useBackend();
   const {
     occupant = {},
     occupied,
@@ -66,7 +66,7 @@ export const DogborgSleeper = (props, context) => {
             </NoticeBox>
           )}
           {!!occupied && (
-            <Fragment>
+            <>
               <ProgressBar
                 value={occupant.health}
                 minValue={occupant.minHealth}
@@ -102,14 +102,14 @@ export const DogborgSleeper = (props, context) => {
                   </LabeledList.Item>
                 </LabeledList>
               )}
-            </Fragment>
+            </>
           )}
         </Section>
         <Section
           title="Operations"
           minHeight="205px"
           buttons={(
-            <Fragment>
+            <>
               {(<Button
                 icon={'sign-out-alt'}
                 content={'Eject Contents'}
@@ -119,7 +119,7 @@ export const DogborgSleeper = (props, context) => {
                 content={'Self-Clean Cycle'}
                 disabled={cleaning}
                 onClick={() => act('cleaning')} />)}
-            </Fragment>
+            </>
           )}>
           {chems.map(chem => (
             <Button

@@ -1,3 +1,7 @@
+/proc/_isclownjob(mob/honker)
+	var/datum/job/clowncheck = SSjob.GetJob(honker.job)
+	return istype(clowncheck, /datum/job/clown)
+
 /datum/job/clown
 	title = "Clown"
 	flag = CLOWN
@@ -8,13 +12,20 @@
 	spawn_positions = 2
 	supervisors = "the head of personnel"
 	selection_color = "#dddddd"
+	alt_titles = list(
+		"Comedian",
+		"Cumedian",
+		"Jester",
+		"Joker",
+		"Sexy Clown"
+		)
 
 	outfit = /datum/outfit/job/clown
 	departments = DEPARTMENT_BITFLAG_SERVICE
 	plasma_outfit = /datum/outfit/plasmaman/clown
 
-	access = list(ACCESS_THEATRE)
-	minimal_access = list(ACCESS_THEATRE)
+	access = list(ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_MINIMAL
 	paycheck_department = ACCOUNT_SRV
 
@@ -46,7 +57,7 @@
 	name = "Clown"
 	jobtype = /datum/job/clown
 
-	belt = /obj/item/pda/clown
+	belt = /obj/item/modular_computer/pda/clown
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/clown
 	shoes = /obj/item/clothing/shoes/clown_shoes
@@ -73,7 +84,7 @@
 	name = "Syndicate Clown"
 	jobtype = /datum/job/clown
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/clown
@@ -83,12 +94,13 @@
 
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 	backpack_contents = list(
 		/obj/item/stamp/clown = 1,
 		/obj/item/reagent_containers/spray/waterflower = 1,
 		/obj/item/reagent_containers/food/snacks/grown/banana = 1,
 		/obj/item/instrument/bikehorn = 1,
-		/obj/item/syndicate_uplink = 1)
+		/obj/item/syndicate_uplink/station = 1)
 
 /datum/outfit/job/clown/pre_equip(mob/living/carbon/human/H, visualsOnly)
 	. = ..()

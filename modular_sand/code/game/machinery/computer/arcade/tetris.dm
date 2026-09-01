@@ -15,19 +15,151 @@
 	desc = "The pinnacle of human technology."
 	circuit = /obj/item/circuitboard/computer/arcade/tetris
 	COOLDOWN_DECLARE(TETRIS_COOLDOWN_MAIN)
+	/// Кто сейчас играет (для остановки музыки при закрытии UI)
+	var/mob/current_player = null
+	/// Все еще защита от дурочков с href, разделяем состояние игры.
+	var/game_active = FALSE
+	var/mob/active_game_player = null
+	/// Время старта игры
+	var/game_start_time = 0
 
-/obj/machinery/computer/arcade/tetris/Topic(href, href_list)
-	if(..())
-		return TRUE
+/obj/machinery/computer/arcade/tetris/ui_interact(mob/user, datum/tgui/ui)
+	if(!isliving(user))
+		return
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "ArcadeTetris", name)
+		ui.open()
+
+/// Останавливаем музыку при закрытии окна и сбрасываем состояние игры
+/obj/machinery/computer/arcade/tetris/ui_close(mob/user)
+	. = ..()
+	stop_tetris_music(user)
+	if(user == active_game_player)
+		game_active = FALSE
+		active_game_player = null
+
+/// Запускаем случайный саундтрек в цикле
+/obj/machinery/computer/arcade/tetris/proc/start_tetris_music(mob/user)
+	if(!user?.client)
+		return
+	current_player = user
+	var/track = pick(
+		'modular_bluemoon/sound/machines/tetris/03.ogg',
+		'modular_bluemoon/sound/machines/tetris/04.ogg',
+		'modular_bluemoon/sound/machines/tetris/06.ogg',
+		'modular_bluemoon/sound/machines/tetris/16.ogg',
+		'modular_bluemoon/sound/machines/tetris/19.ogg',
+		'modular_bluemoon/sound/machines/tetris/21.mp3',
+		'modular_bluemoon/sound/machines/tetris/33.ogg',
+		'modular_bluemoon/sound/machines/tetris/34.ogg')
+	var/sound/S = sound(track, repeat = TRUE, wait = FALSE, volume = 40, channel = CHANNEL_TETRIS_MUSIC)
+	SEND_SOUND(user, S)
+
+/// Останавливаем музыку
+/obj/machinery/computer/arcade/tetris/proc/stop_tetris_music(mob/user)
+	if(!user)
+		user = current_player
+	if(user?.client)
+		user.stop_sound_channel(CHANNEL_TETRIS_MUSIC)
+	if(current_player == user)
+		current_player = null
+
+/// Проигрываем звуковой эффект на автомате
+/obj/machinery/computer/arcade/tetris/proc/play_tetris_sfx(sfx_type)
+	switch(sfx_type)
+		if("move")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/move_piece.ogg', 20, TRUE, extrarange = -5)
+		if("rotate")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/rotate_piece.ogg', 25, TRUE, extrarange = -5)
+		if("drop")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/piece_falling_after_line_clear.ogg', 30, TRUE, extrarange = -4)
+		if("line_clear")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/line_clear.ogg', 40, TRUE, extrarange = -3)
+		if("tetris")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/player_sending_blocks.ogg', 50, TRUE, extrarange = -3)
+		if("level_up")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/level_up_jingle.ogg', 45, TRUE, extrarange = -3)
+		if("game_over")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/game_over.ogg', 50, TRUE, extrarange = -2)
+		if("high_score")
+			playsound(src, 'modular_bluemoon/sound/machines/tetris/game_over.ogg', 55, TRUE, extrarange = -2)
+
+/obj/machinery/computer/arcade/tetris/ui_data(mob/user)
+	var/list/data = list()
+	data["cooldownReady"] = COOLDOWN_FINISHED(src, TETRIS_COOLDOWN_MAIN)
+	if(user?.client)
+		data["personal_best"] = user.client.get_award_status(/datum/award/score/highscore/tetris) || 0
 	else
-		usr.set_machine(src)
-		if(href_list["tetrisScore"])
+		data["personal_best"] = 0
+	var/datum/award/score/highscore/tetris/S = SSachievements.scores[/datum/award/score/highscore/tetris]
+	var/list/leaderboard = list()
+	if(S && S.high_scores.len)
+		var/list/entries = list()
+		for(var/ckey in S.high_scores)
+			entries += list(list("ckey" = ckey, "score" = S.high_scores[ckey]))
+		for(var/i = 1; i <= entries.len; i++)
+			for(var/j = i + 1; j <= entries.len; j++)
+				var/list/a = entries[i]
+				var/list/b = entries[j]
+				if(b["score"] > a["score"])
+					entries[i] = b
+					entries[j] = a
+		var/rank = 0
+		for(var/list/entry in entries)
+			rank++
+			if(rank > 10)
+				break
+			leaderboard += list(list("rank" = rank, "ckey" = entry["ckey"], "score" = entry["score"]))
+	data["leaderboard"] = leaderboard
+	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)
+	return data
+
+/obj/machinery/computer/arcade/tetris/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	if(params["ic_advactivator"])
+		return
+
+	switch(action)
+		if("sfx")
+			play_tetris_sfx(params["type"])
+			return TRUE
+		if("music_start")
+			if(game_active && usr != active_game_player)
+				return FALSE
+			game_active = TRUE
+			active_game_player = usr
+			game_start_time = world.time
+			start_tetris_music(usr)
+			return TRUE
+		if("music_stop")
+			stop_tetris_music(usr)
+			return TRUE
+		if("submitScore")
+			if(!game_active || usr != active_game_player)
+				return FALSE
+			game_active = FALSE
+			active_game_player = null
 			// Sanitize score as an integer
 			// Restricts maximum score to (default) 100,000
-			var/temp_score = sanitize_num_clamp(text2num(href_list["tetrisScore"]), max=TETRIS_SCORE_MAX)
+			var/temp_score = sanitize_num_clamp(text2num(params["score"]), max=TETRIS_SCORE_MAX)
+			var/game_duration = max(0, world.time - game_start_time)
+			game_start_time = 0
+
+			// Простая антифиддер защита. Пидорки что лезят в код чтобы накрутить счет - сосите хуй
+			if(game_duration < 1 MINUTES && temp_score > 30000)
+				log_admin("[key_name(usr)] отправил подозрительный счёт [temp_score] в аркадном тетрисе за [game_duration/10]с — отклонено.")
+				message_admins("[ADMIN_LOOKUPFLW(usr)] пытался накрутить счёт в аркадном тетрисе: [temp_score] очков за [game_duration/10]с.")
+				return FALSE
+
+			if(usr?.client && SSachievements.achievements_enabled)
+				usr.client.give_award(/datum/award/score/highscore/tetris, usr, temp_score)
 
 			// Check for high score
 			if(temp_score > TETRIS_SCORE_HIGH)
+				play_tetris_sfx("high_score")
 				// Alert admins
 				message_admins("[ADMIN_LOOKUPFLW(usr)] [ADMIN_KICK(usr)] has achieved a score of [temp_score] on [src] in [get_area(src.loc)]! Score exceeds configured suspicion threshold.")
 
@@ -42,33 +174,28 @@
 
 			// Check if any prize would be vended
 			if(!reward_count)
-				// Return without further effects
-				return
+				return TRUE
 
 			// Check cooldown
 			if(!COOLDOWN_FINISHED(src, TETRIS_COOLDOWN_MAIN))
-				// Play a fake prize vend effect based on prizevend()
 				playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 				visible_message(span_notice("[src] sputters for a moment before going quiet."))
+				return TRUE
 
-				// Return with no further effects
-				return
-
-			// Set cooldown time
-			COOLDOWN_START(src, TETRIS_COOLDOWN_MAIN, TETRIS_TIME_COOLDOWN)
+			// Set cooldown time (ensure > 0 or cooldown would never finish)
+			COOLDOWN_START(src, TETRIS_COOLDOWN_MAIN, max(1, TETRIS_TIME_COOLDOWN))
 
 			// Vend prizes
 			prizevend(usr, reward_count)
 
 			// Check if science points are possible and allowed
 			if((!SSresearch.science_tech) || TETRIS_NO_SCIENCE)
-				return
+				return TRUE
 
 			// Define user ID card
 			var/obj/item/card/id/user_id = usr.get_idcard()
 
-			// Check if ID exists
-			// Check if ID has science access
+			// Check if ID exists and has science access
 			if(istype(user_id) && (ACCESS_RESEARCH in user_id.access))
 				// Limit maximum research points to (default) 10,000
 				var/score_research_points = clamp(temp_score, 0, TETRIS_SCORE_MAX_SCI)
@@ -78,84 +205,26 @@
 
 				// Announce points earned
 				say("Research personnel detected. Applying gathered data to algorithms...")
+		if("deleteRecord")
+			if(!check_rights_for(usr?.client, R_ADMIN))
+				return FALSE
+			var/datum/award/score/highscore/tetris/del_score = SSachievements.scores[/datum/award/score/highscore/tetris]
+			if(!del_score)
+				return FALSE
+			return del_score.admin_delete_record(usr, ckey(params["ckey"]))
+		if("forceReset")
+			if(!check_rights_for(usr?.client, R_ADMIN))
+				return FALSE
+			if(SStetris_weekly_rewards.processing_rewards)
+				to_chat(usr, span_warning("Сброс уже выполняется, подождите."))
+				return FALSE
+			log_admin("[key_name(usr)] принудительно запустил недельный сброс рейтинга тетриса.")
+			message_admins("[key_name_admin(usr)] принудительно запустил недельный сброс рейтинга тетриса.")
+			SStetris_weekly_rewards.begin_reward_cycle()
+			return TRUE
 
-	return
-
-/obj/machinery/computer/arcade/tetris/attack_ai(user as mob)
-	return src.attack_hand(user)
-
-/obj/machinery/computer/arcade/tetris/attack_hand(mob/user as mob)
-	if(..())
-		return
-	add_fingerprint(user)
-
-	if(machine_stat & (BROKEN|NOPOWER))
-		return
-
-	if(user.client)
-		var/datum/asset/simple/assets = get_asset_datum(/datum/asset/simple/tetris)
-		assets.send(user.client)
-
-	var/dat = {"
-	<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN'>
-	<html><head>
-	<META NAME='description' content='Tetris is a PC-Game, which is a part of the '7 by one stroke' package, written in HTML and JavaScript'>
-	<META NAME='author' content='Lutz Tautenhahn'>
-	<META NAME='keywords' content='Game, Tetris, Streich, Stroke, JavaScript'>
-	<META HTTP-EQUIV='Content-Type' CONTENT='text/html; charset=iso-8859-1'>
-	<title>Telemetry Enhanced Testing and Research Informatic Simulator</title>
-	<script language='JavaScript'>
-	function submitScore(s){
-		window.location.href = 'byond://?src=\ref[src];tetrisScore=' + s;
-	}
-	</script>
-	<script language='JavaScript1.2'>
-	if (navigator.appName != 'Microsoft Internet Explorer')
-	  document.captureEvents(Event.KEYDOWN)
-	document.onkeydown = NetscapeKeyDown;
-	function NetscapeKeyDown(key)
-	{ KeyDown(key.which);
-	}
-	</script>
-	<script for=document event='onkeydown()' language='JScript'>
-	if (window.event) KeyDown(window.event.keyCode);
-	</script>
-	<script language='JavaScript' src='tetris.js'></script>
-	</head>
-	<BODY bgcolor=#E0A060>
-	<form name='ScoreForm'>
-	<DIV ALIGN=center>
-	<table noborder><tr><td>
-	<script language='JavaScript' src='tetris2.js'></script>
-	</td>
-	<td>&nbsp;&nbsp;&nbsp;</td>
-	<td valign=top>
-	<table border=4 cellpadding=4 cellspacing=6  bgcolor=#C0B0A0><tr><td>
-	<table noborder cellpadding=2 cellspacing=2>
-	<tr><td align=center><input type=button width='70' style='width:70;' value='Pause' onClick='Pause()'></td></tr>
-	<tr><td>&nbsp;</td></tr>
-	<tr><td align=center><input type=button width='70' style='width:70;' value='New' onClick='New()'></td></tr>
-	<tr><td>&nbsp;</td></tr>
-	<tr><td align=center>Score:</td></tr>
-	<tr><td align=center><input type=button width='70' style='width:70; background-color:#ffffff' name='Score'></td></tr>
-	<tr><td align=center>Level:</td></tr>
-	<tr><td align=center><input type=button width='70' style='width:70; background-color:#ffffff' name='Level' onClick='IncreaseDifficulty()'></td></tr>
-	<tr><td align=center>Lines:</td></tr>
-	<tr><td align=center><input type=button width='70' style='width:70; background-color:#ffffff' name='Lines''></td></tr>
-	<tr><td align=center><table border=2 cellpadding=0 cellspacing=3><tr><td><img src='tetrisp0.gif' border=0></td></tr></table></td></tr>
-	</table></td></tr></table>
-	</td></tr></table>
-	<script language='JavaScript'>
-	Init(true);
-	</script>
-	</DIV>
-	</form>
-	</BODY>
-	</HTML>
-	"}
-	user << browse(dat, "window=tetris;size=435x550")
-	user.set_machine(src)
-	onclose(user, "tetris")
+	add_fingerprint(usr)
+	. = TRUE
 
 // Remove defines
 #undef TETRIS_REWARD_DIVISOR

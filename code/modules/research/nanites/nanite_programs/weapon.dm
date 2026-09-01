@@ -91,7 +91,7 @@
 	var/heavy_range = FLOOR(nanite_amount/100, 1) - 1
 	var/light_range = FLOOR(nanite_amount/50, 1) - 1
 	explosion(host_mob, 0, heavy_range, light_range)
-	nanites.delete_nanites()
+	nanites.nanites_depleted()
 
 //TODO make it defuse if triggered again
 
@@ -171,6 +171,8 @@
 
 /datum/nanite_program/comm/mind_control/on_trigger(comm_message)
 	if(host_mob.stat == DEAD)
+		return
+	if(HAS_TRAIT(host_mob, TRAIT_MINDSHIELD))
 		return
 	var/sent_directive = comm_message
 	if(!comm_message)

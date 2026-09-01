@@ -19,9 +19,10 @@ $bg-map: colors.$bg-map !default;
 @mixin button-color($color) {
   // Adapt text color to background luminance to ensure high contast
   $luminance: luminance($color);
-  $text-color: if($luminance > 0.4,
-    rgba(0, 0, 0, 1),
-    rgba(255, 255, 255, 1));
+  $text-color: rgba(255, 255, 255, 1);
+  @if $luminance > 0.4 {
+    $text-color: rgba(0, 0, 0, 1);
+  }
 
   transition: color 50ms, background-color 50ms;
   background-color: $color;
@@ -54,7 +55,6 @@ $bg-map: colors.$bg-map !default;
   margin-bottom: base.em(2px);
   // Disable selection in buttons
   user-select: none;
-  -ms-user-select: none;
 
   &:last-child {
     margin-right: 0;

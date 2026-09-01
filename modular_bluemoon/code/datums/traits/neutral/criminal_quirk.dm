@@ -37,7 +37,7 @@ GLOBAL_LIST_EMPTY(bluemoon_criminal_characters)
 	addtimer(CALLBACK(src, PROC_REF(on_crime_creation)), time_before_creating_crimes + 10 SECONDS, TIMER_DELETE_ME) // Если вызвать qdel сразу после объявления таймера, будет рантайм
 
 /datum/quirk/bluemoon_criminal/Destroy()
-	if(!(quirk_holder.real_name in GLOB.bluemoon_criminal_characters))
+	if(quirk_holder && !(quirk_holder.real_name in GLOB.bluemoon_criminal_characters))
 		GLOB.bluemoon_criminal_characters += quirk_holder.name
 	. = ..()
 
@@ -48,7 +48,7 @@ GLOBAL_LIST_EMPTY(bluemoon_criminal_characters)
 	addtimer(CALLBACK(src, /mob/living/carbon/human/proc/create_security_crime), time_to_create_crimes, TIMER_UNIQUE|TIMER_DELETE_ME)
 
 /mob/living/carbon/human/proc/create_security_crime()
-	var/datum/data/record/target_records = find_record("name", name, GLOB.data_core.security)
+	var/datum/data/record/target_records = GLOB.data_core.security_by_name[name]
 	if(!target_records)
 		to_chat(src, span_danger("Кажется, у вас не существует базы данных, чтобы добавить в неё нарушения закона."))
 		return

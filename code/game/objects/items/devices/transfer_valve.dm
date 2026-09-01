@@ -55,11 +55,15 @@
 			if(!user.transferItemToLoc(item, src))
 				return
 			tank_one = item
+			item.add_fingerprint(user)
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>You attach the tank to the transfer valve.</span>")
 		else if(!tank_two)
 			if(!user.transferItemToLoc(item, src))
 				return
 			tank_two = item
+			item.add_fingerprint(user)
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>You attach the tank to the transfer valve.</span>")
 
 		update_icon()
@@ -79,7 +83,7 @@
 		A.holder = src
 		A.toggle_secure()	//this calls update_icon(), which calls update_icon() on the holder (i.e. the bomb).
 
-		GLOB.bombers += "[key_name(user)] attached a [item] to a transfer valve."
+		add_bomber_message("[key_name(user)] attached a [item] to a transfer valve.")
 		message_admins("[ADMIN_LOOKUPFLW(user)] attached a [item] to a transfer valve.")
 		log_game("[key_name(user)] attached a [item] to a transfer valve.")
 		attacher = user
@@ -119,7 +123,7 @@
 		if(client.next_valve_grief_warning < world.time)
 			var/turf/T = get_turf(src)
 			client.next_valve_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
-			message_admins("<span class='adminhelp'>ANTI-GRIEF:</span> New player [ADMIN_LOOKUPFLW(user)] touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
+			message_antigrif("New player [ADMIN_LOOKUPFLW(user)] touched \a [src] at [ADMIN_VERBOSEJMP(T)].")
 			client.touched_transfer_valve = TRUE
 
 	if(.)
@@ -216,6 +220,10 @@
 	tank_one.air_contents.transfer_ratio_to(target, 1)
 	if(!target_self)
 		tank_two.air_contents.transfer_ratio_to(target, 1)
+	// this mutates the tanks' mixtures behind assume_air()'s back - wake them so the
+	// merged (possibly reacting) mix gets processed
+	tank_one.excite_tank()
+	tank_two.excite_tank()
 
 /obj/item/transfer_valve/proc/split_gases()
 	if (!valve_open || !tank_one || !tank_two)
@@ -223,15 +231,20 @@
 	var/ratio1 = tank_one.air_contents.return_volume()/tank_two.air_contents.return_volume()
 	tank_two.air_contents.transfer_ratio_to(tank_one.air_contents, ratio1)
 	tank_two.air_contents.set_volume(tank_two.air_contents.return_volume() - tank_one.air_contents.return_volume())
+	tank_one.excite_tank()
+	tank_two.excite_tank()
 
 /*
 	Exadv1: I know this isn't how it's going to work, but this was just to check
 	it explodes properly when it gets a signal (and it does).
 */
 /obj/item/transfer_valve/proc/toggle_valve()
+	var/turf/bombturf = get_turf(src)
+	if (bombturf && is_pact_siege_level(bombturf.z))
+		balloon_alert(src.loc, "You cannot detonate this bomb in SIEGE territory!")
+		return
 	if(!valve_open && tank_one && tank_two)
 		valve_open = TRUE
-		var/turf/bombturf = get_turf(src)
 
 		var/attachment
 		if(attached_device)
@@ -255,7 +268,7 @@
 
 
 		var/admin_bomb_message = "Bomb valve opened in [ADMIN_VERBOSEJMP(bombturf)][admin_attachment_message][admin_bomber_message]"
-		GLOB.bombers += admin_bomb_message
+		add_bomber_message(admin_bomb_message)
 		message_admins(admin_bomb_message, 0, 1)
 		log_game("Bomb valve opened in [AREACOORD(bombturf)][attachment_message][bomber_message]")
 

@@ -5,9 +5,11 @@ GLOBAL_LIST_INIT(cable_colors, list(
 	"pink" = "#ff3cc8",
 	"orange" = "#ff8000",
 	"cyan" = "#00ffff",
-	"white" = "#ffffff",
+	"white" = "#fdfdfd",
 	"red" = "#ff0000"
 	))
+
+GLOBAL_LIST_INIT(cable_color_list, list("yellow", "green", "blue", "pink", "orange", "cyan", "white", "red"))
 
 ///////////////////////////////
 //CABLE STRUCTURE
@@ -109,18 +111,19 @@ By design, d1 is the smallest direction and d2 is the highest
 
 	var/turf/T = get_turf(src)			// hide if turf is not intact
 	if(level==1)
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 	GLOB.cable_list += src //add it to the global cable list
-
-	if(d1)
-		stored = new/obj/item/stack/cable_coil(null,2,cable_color)
-	else
-		stored = new/obj/item/stack/cable_coil(null,1,cable_color)
 
 	var/list/cable_colors = GLOB.cable_colors
 	cable_color = param_color || cable_color || pick(cable_colors)
 	if(cable_colors[cable_color])
 		cable_color = cable_colors[cable_color]
+
+	if(d1)
+		stored = new /obj/item/stack/cable_coil(null, 2, TRUE, cable_color)
+	else
+		stored = new /obj/item/stack/cable_coil(null, 1, TRUE, cable_color)
+
 	update_icon()
 
 /obj/structure/cable/Destroy()					// called when a cable is deleted
@@ -153,7 +156,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/structure/cable/proc/handlecable(obj/item/W, mob/user, params)
 	var/turf/T = get_turf(src)
-	if(T.intact)
+	if(T.turf_flags & TURF_INTACT)
 		return
 	if(W.tool_behaviour == TOOL_WIRECUTTER)
 		if (shock(user, 50))
@@ -444,6 +447,14 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/structure/cable/proc/auto_propogate_cut_cable(obj/O)
 	if(O && !QDELETED(O))
+		// Массовая резка (взрыв/сингуло) ставит по отложенному колбеку на каждый
+		// кабель, но выжившие концы часто лежат в ОДНОМ фрагменте: первый колбек
+		// перестраивает его целиком, остальным пересборка не нужна. Без этого
+		// гейта взрыв давал серию полных BFS по уже перестроенной сети в одном
+		// тике SStimer (~200мс каждый на станционной сетке).
+		var/obj/structure/cable/cut_end = O //P_list собирается с cable_only = 1
+		if(istype(cut_end) && cut_end.powernet && cut_end.powernet.created_at == world.time)
+			return
 		var/datum/powernet/newPN = new()// creates a new powernet...
 		propagate_network(O, newPN)//... and propagates it to the other side of the cable
 
@@ -539,10 +550,16 @@ By design, d1 is the smallest direction and d2 is the highest
 		user.visible_message("<span class='suicide'>[user] is strangling себя with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
 	return(OXYLOSS)
 
-/obj/item/stack/cable_coil/Initialize(mapload, new_amount, merge = TRUE)
+/obj/item/stack/cable_coil/Initialize(mapload, new_amount, merge = TRUE, cable_color)
 	. = ..()
 	pixel_x = rand(-2,2)
 	pixel_y = rand(-2,2)
+	if(cable_color)
+		var/list/cable_colors = GLOB.cable_colors
+		if(cable_colors[cable_color])
+			color = cable_colors[cable_color]
+		else
+			color = cable_color
 	update_icon()
 
 ///////////////////////////////////
@@ -668,7 +685,7 @@ By design, d1 is the smallest direction and d2 is the highest
 	if(!isturf(user.loc))
 		return
 
-	if(!isturf(T) || T.intact || !T.can_have_cabling())
+	if(!isturf(T) || (T.turf_flags & TURF_INTACT) || !T.can_have_cabling())
 		to_chat(user, "<span class='warning'>You can only lay cables on catwalks and plating!</span>")
 		return
 
@@ -716,7 +733,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 	if(C.shock(user, 50))
 		if(prob(50)) //fail
-			new /obj/item/stack/cable_coil(get_turf(C), 1, C.color)
+			new /obj/item/stack/cable_coil(get_turf(C), 1, TRUE, C.color)
 			C.deconstruct()
 
 	return C
@@ -730,7 +747,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 	var/turf/T = C.loc
 
-	if(!isturf(T) || T.intact)		// sanity checks, also stop use interacting with T-scanner revealed cable
+	if(!isturf(T) || (T.turf_flags & TURF_INTACT))		// sanity checks, also stop use interacting with T-scanner revealed cable
 		return
 
 	if(get_dist(C, user) > 1)		// make sure it's close enough
@@ -750,7 +767,7 @@ By design, d1 is the smallest direction and d2 is the highest
 			if (showerror)
 				to_chat(user, "<span class='warning'>You can only lay cables on catwalks and plating!</span>")
 			return
-		if(U.intact)						//can't place a cable if it's a plating with a tile on it
+		if(U.turf_flags & TURF_INTACT)						//can't place a cable if it's a plating with a tile on it
 			to_chat(user, "<span class='warning'>You can't lay cable there unless the floor tiles are removed!</span>")
 			return
 		else
@@ -870,24 +887,27 @@ By design, d1 is the smallest direction and d2 is the highest
 	color = "cyan"
 
 /obj/item/stack/cable_coil/white
-	color = "white"
+	color = "#fdfdfd"
 
 /obj/item/stack/cable_coil/random
-	color = "#ffffff"
+	color = "#fdfdfd"
 
-/obj/item/stack/cable_coil/random/Initialize(mapload, new_amount, merge = TRUE, param_color = null)
+/obj/item/stack/cable_coil/random/Initialize(mapload, new_amount, merge = TRUE, cable_color)
 	. = ..()
-	var/list/cable_colors = GLOB.cable_colors
-	color = pick(cable_colors)
+	var/chosen_color = pick(GLOB.cable_color_list)
+	color = GLOB.cable_colors[chosen_color]
 
 /obj/item/stack/cable_coil/random/five
 	amount = 5
+
+/obj/item/stack/cable_coil/random/one
+	amount = 1
 
 /obj/item/stack/cable_coil/cut
 	amount = null
 	icon_state = "coil2"
 
-/obj/item/stack/cable_coil/cut/Initialize(mapload, new_amount, merge = TRUE)
+/obj/item/stack/cable_coil/cut/Initialize(mapload, new_amount, merge = TRUE, cable_color)
 	// do random amount calls BEFORE we add the mats or else the code eats shit and dies
 	if(!amount)
 		amount = rand(1,2)
@@ -924,6 +944,6 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/item/stack/cable_coil/cut/random/Initialize(mapload, new_amount, merge = TRUE, param_color = null)
 	. = ..()
-	var/list/cable_colors = GLOB.cable_colors
-	color = pick(cable_colors)
+	var/chosen_color = pick(GLOB.cable_color_list)
+	color = GLOB.cable_colors[chosen_color]
 

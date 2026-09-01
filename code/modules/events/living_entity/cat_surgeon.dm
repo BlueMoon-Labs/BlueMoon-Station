@@ -4,6 +4,7 @@
 	max_occurrences = 2
 	weight = 25
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_FLAVOR
 
 /datum/round_event/cat_surgeon/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/cat_surgeon_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)

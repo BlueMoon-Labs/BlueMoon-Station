@@ -95,7 +95,7 @@
 
 /datum/component/simple_rotation/proc/ExamineMessage(datum/source, mob/user, list/examine_list)
 	if(rotation_flags & ROTATION_ALTCLICK)
-		examine_list += "<span class='notice'>Alt-click to rotate it clockwise.</span>"
+		examine_list += "<span class='notice'>Alt-click для вращения по часовой стрелке.</span>"
 
 /datum/component/simple_rotation/proc/HandRot(datum/source, mob/user, rotation = default_rotation_direction)
 	if(can_be_rotated)

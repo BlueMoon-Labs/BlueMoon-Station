@@ -14,7 +14,7 @@
 	name = "Empty Water balloon"
 	id = "waterballoon"
 	materials = list(/datum/material/plastic = 50)
-	build_path = /obj/item/toy/balloon
+	build_path = /obj/item/toy/waterballoon
 	category = list("initial", "Toys")
 
 /datum/design/autoylathe/spinningtoy

@@ -3,6 +3,14 @@
  * SPDX-License-Identifier: MIT
  */
 
+/// Порт локального dev-сервера tgui (см. tgui/scripts/vite-dev.cjs). Должен совпадать с серверным.
+#define TGUI_DEV_SERVER_PORT 3000
+
+/// Тип скин-контрола по id окна: "BROWSER", "WINDOW" и так далее. Задан скин-файлом
+/// и в пределах одного подключения не меняется, а winexists - это round-trip до
+/// клиента на каждое открытие окна tgui. Спрашиваем один раз за сессию.
+/client/var/list/tgui_window_control_types = list()
+
 /datum/tgui_window
 	var/id
 	var/client/client
@@ -11,6 +19,7 @@
 	var/is_browser = FALSE
 	var/status = TGUI_WINDOW_CLOSED
 	var/locked = FALSE
+	var/visible = FALSE
 	var/datum/tgui/locked_by
 	var/datum/subscriber_object
 	var/subscriber_delegate
@@ -23,6 +32,8 @@
 	var/initial_inline_html
 	var/initial_inline_js
 	var/initial_inline_css
+
+	var/list/oversized_payloads = list()
 
 /**
  * public
@@ -57,7 +68,8 @@
 		inline_html = "",
 		inline_js = "",
 		inline_css = "")
-	log_tgui(client, "[id]/initialize ([src])")
+	if(CONFIG_GET(flag/emergency_tgui_logging))
+		log_tgui(client, "[id]/initialize ([src])")
 	if(!client)
 		return
 	src.initial_fancy = fancy
@@ -69,6 +81,10 @@
 	fatally_errored = FALSE
 	// Build window options
 	var/options = "file=[id].html;can_minimize=0;auto_format=0;"
+	// Pooled tgui windows are revealed by frontend after geometry is applied.
+	// Keep them hidden at browse() time to avoid a first-frame flash.
+	if(pooled)
+		options += "is-visible=0;size=400x600;"
 	// Remove titlebar and resize handles for a fancy window
 	if(fancy)
 		options += "titlebar=0;can_resize=0;"
@@ -79,37 +95,102 @@
 	html = replacetextEx(html, "\[tgui:windowId]", id)
 	// Inject inline assets
 	var/inline_assets_str = ""
+	var/first_js_url = null
+	// dev hot-reload: ip берётся из конфига, иначе из env (его выставляет DEV launch-конфиг VS Code)
+	var/dev_server_ip = CONFIG_GET(string/tgui_dev_server_ip)
+	if(!length(dev_server_ip))
+		dev_server_ip = world.GetConfig("env", "TGUI_DEV_SERVER_IP")
 	for(var/datum/asset/asset in assets)
 		var/mappings = asset.get_url_mappings()
 		for(var/name in mappings)
-			var/url = mappings[name]
+			var/url = tgui_resolve_asset_url(name, mappings[name], dev_server_ip)
 			// Not encoding since asset strings are considered safe
 			if(copytext(name, -4) == ".css")
 				inline_assets_str += "Byond.loadCss('[url]', true);\n"
 			else if(copytext(name, -3) == ".js")
 				inline_assets_str += "Byond.loadJs('[url]', true);\n"
+				if(isnull(first_js_url))
+					first_js_url = url
 		asset.send(client)
+	var/assets_placeholder_before = !!findtext(html, "<!-- tgui:assets -->")
+	var/assets_placeholder_before_lf = !!findtext(html, "<!-- tgui:assets -->\n")
+	var/assets_placeholder_before_crlf = FALSE
+	if(findtext(html, "<!-- tgui:assets -->[ascii2text(13)]\n"))
+		assets_placeholder_before_crlf = TRUE
 	if(length(inline_assets_str))
 		inline_assets_str = "<script>\n" + inline_assets_str + "</script>\n"
+	// 516 migration: handle either LF or CRLF template line endings.
 	html = replacetextEx(html, "<!-- tgui:assets -->\n", inline_assets_str)
+	html = replacetextEx(html, "<!-- tgui:assets -->", inline_assets_str)
+	var/assets_placeholder_after = !!findtext(html, "<!-- tgui:assets -->")
+	var/first_js_url_display = first_js_url || "<none>"
+	if(CONFIG_GET(flag/emergency_tgui_logging))
+		log_tgui(client,
+			"[id]/initialize assets_count=[length(assets)] inline_assets_chars=[length(inline_assets_str)] first_js_url=[first_js_url_display] placeholder_before=[assets_placeholder_before] lf=[assets_placeholder_before_lf] crlf=[assets_placeholder_before_crlf] placeholder_after=[assets_placeholder_after]",
+			window = src)
 	// Inject inline HTML
 	if (inline_html)
 		html = replacetextEx(html, "<!-- tgui:inline-html -->", inline_html)
+		html = replacetextEx(html, "<!-- tgui:html -->", inline_html)
 	// Inject inline JS
 	if (inline_js)
 		inline_js = "<script>\n[inline_js]\n</script>"
 		html = replacetextEx(html, "<!-- tgui:inline-js -->", inline_js)
+		html = replacetextEx(html, "<!-- tgui:js -->", inline_js)
 	// Inject inline CSS
 	if (inline_css)
 		inline_css = "<style>\n[inline_css]\n</style>"
 		html = replacetextEx(html, "<!-- tgui:inline-css -->", inline_css)
+		html = replacetextEx(html, "<!-- tgui:css -->", inline_css)
 	// Open the window
 	client << browse(html, "window=[id];[options]")
+	// BYOND 516 can occasionally present an initial frame despite browse options.
+	// Force pooled windows hidden immediately; frontend will reveal when ready.
+	if(pooled && istype(client))
+		winset(client, id, "is-visible=0")
 	// Detect whether the control is a browser
-	is_browser = winexists(client, id) == "BROWSER"
+	if(!istype(client))
+		return
+	var/win_type = client.tgui_window_control_types[id]
+	if(!win_type)
+		win_type = tracked_winexists(client, id)
+		// winexists усыпил прок до ответа скина - клиент мог за это время отвалиться
+		if(!istype(client))
+			return
+		// Пустой ответ означает "контрола нет"; такое не кэшируем, чтобы окно,
+		// созданное позже, определилось правильно
+		if(length(win_type))
+			client.tgui_window_control_types[id] = win_type
+	is_browser = win_type == "BROWSER"
+	if(CONFIG_GET(flag/emergency_tgui_logging))
+		var/primary_target = get_primary_output_target()
+		var/secondary_target = get_secondary_output_target()
+		var/mirror_output = CONFIG_GET(flag/emergency_tgui_mirror_output)
+		log_tgui(client,
+			"[id]/initialize winexists=[win_type], is_browser=[is_browser], primary_target=[primary_target], secondary_target=[secondary_target], mirror_output=[mirror_output]",
+			window = src)
 	// Instruct the client to signal UI when the window is closed.
 	if(!is_browser && istype(client)) // BLUEMOON EDIT - sanity check
 		winset(client, id, "on-close=\"uiclose [id]\"")
+
+/datum/tgui_window/proc/get_primary_output_target()
+	return is_browser ? "[id]:update" : "[id].browser:update"
+
+/datum/tgui_window/proc/get_secondary_output_target()
+	return is_browser ? "[id].browser:update" : "[id]:update"
+
+/datum/tgui_window/proc/get_output_targets()
+	var/list/targets = list(get_primary_output_target())
+	// Opt-in diagnostics only: mirror updates to the alternate output channel.
+	if(CONFIG_GET(flag/emergency_tgui_mirror_output))
+		targets += get_secondary_output_target()
+	return targets
+
+/datum/tgui_window/proc/send_output_message(message)
+	if(!client)
+		return
+	for(var/target in get_output_targets())
+		client << output(message, target)
 
 /**
  * public
@@ -198,24 +279,27 @@
 		#ifdef TGUI_DEBUGGING
 			log_tgui(client, "[id]/close: suspending")
 		#endif
+		visible = FALSE
 		status = TGUI_WINDOW_READY
 		send_message("suspend")
 		// You would think that BYOND would null out client or make it stop passing istypes or, y'know, ANYTHING during
 		// logout, but nope! It appears to be perfectly valid to call winset by every means we can measure in Logout,
 		// and yet it causes a bad client runtime. To avoid that happening, we just have to know if we're in Logout or
 		// not.
-		if(!logout && client)
+		if(!logout && client && !isnewplayer(client.mob)) // BLUEMOON EDIT - для new_player в лобби не сбрасываем фокус, иначе bm_lobby_browser перестаёт работать
 			winset(client, null, "mapwindow.map.focus=true")
 		return
-	log_tgui(client, "[id]/close")
+	if(CONFIG_GET(flag/emergency_tgui_logging))
+		log_tgui(client, "[id]/close")
 	release_lock()
+	visible = FALSE
 	status = TGUI_WINDOW_CLOSED
 	message_queue = null
 	// Do not close the window to give user some time
 	// to read the error message.
 	if(!fatally_errored)
 		client << browse(null, "window=[id]")
-		if(!logout && istype(client)) // BLUEMOON EDIT - sanity check
+		if(!logout && istype(client) && !isnewplayer(client.mob)) // BLUEMOON EDIT - sanity check + не сбрасываем фокус для new_player в лобби
 			winset(client, null, "mapwindow.map.focus=true")
 
 /**
@@ -231,15 +315,44 @@
 	if(!client)
 		return
 	var/message = TGUI_CREATE_MESSAGE(type, payload)
+	var/message_length = length(message)
+	// Книга недатумных аллокаций: собранное сообщение живёт в памяти сразу в трёх видах
+	// (json, url_encode, склейка), и ни один из них не датум. Порог предупреждения ниже
+	// ловит только чудовищ - в книгу идёт КАЖДОЕ сообщение, иначе сумма за окно врёт.
+	note_nondatum_alloc(NONDATUM_LEDGER_TGUI_BYTES, message_length)
+	warn_on_oversized_payload(type, payload, message_length)
 	// Place into queue if window is still loading
 	if(!force && status != TGUI_WINDOW_READY)
 		if(!message_queue)
 			message_queue = list()
 		message_queue += list(message)
 		return
-	client << output(message, is_browser \
-		? "[id]:update" \
-		: "[id].browser:update")
+	send_output_message(message)
+
+/**
+ * private
+ *
+ * Жалуется в лог на слишком тяжёлое сообщение - по разу на интерфейс за раунд.
+ *
+ * Собранное сообщение живёт в памяти сразу в трёх видах (json, url_encode, склейка),
+ * и на многомегабайтной нагрузке это запрос непрерывного куска у 32-битного процесса:
+ * DreamDaemon умирает без рантайма прямо на сборке (раунды 9941, 9948, меню крафта на
+ * 3.4 МБ и книга рецептов диспенсера на 0.9 МБ). Ловим следующего такого раньше, чем он
+ * положит раунд.
+ */
+/datum/tgui_window/proc/warn_on_oversized_payload(type, payload, message_length)
+	if(message_length < TGUI_PAYLOAD_WARNING_SIZE)
+		return
+	var/list/config = islist(payload) ? payload["config"] : null
+	var/interface_name = islist(config) ? config["interface"] : null
+	var/warning_key = "[interface_name || "?"]/[type]"
+	var/static/list/warned_payloads = list()
+	if(warned_payloads[warning_key])
+		return
+	warned_payloads[warning_key] = TRUE
+	log_tgui(client,
+		"нагрузка [warning_key] весит [num2text(message_length, 12)] Б - такие сообщения просят у процесса непрерывный кусок памяти и способны уронить мир на сборке",
+		window = src)
 
 /**
  * public
@@ -258,9 +371,7 @@
 			message_queue = list()
 		message_queue += list(message)
 		return
-	client << output(message, is_browser \
-		? "[id]:update" \
-		: "[id].browser:update")
+	send_output_message(message)
 
 /**
  * public
@@ -279,6 +390,12 @@
 	if(istype(asset, /datum/asset/spritesheet))
 		var/datum/asset/spritesheet/spritesheet = asset
 		send_message("asset/stylesheet", spritesheet.css_filename())
+	else if(istype(asset, /datum/asset/spritesheet_batched))
+		// Без этого css батчёвого листа в окно не уезжает вовсе: файл зарегистрирован
+		// в транспорте, но <link> в документ вставляет именно это сообщение, и все
+		// спрайты остаются пустыми прямоугольниками.
+		var/datum/asset/spritesheet_batched/batched_spritesheet = asset
+		send_message("asset/stylesheet", batched_spritesheet.css_filename())
 	send_raw_message(asset.get_serialized_url_mappings())
 
 /**
@@ -289,10 +406,13 @@
 /datum/tgui_window/proc/flush_message_queue()
 	if(!client || !message_queue)
 		return
+	var/queue_len = length(message_queue)
+	if(CONFIG_GET(flag/emergency_tgui_logging))
+		log_tgui(client,
+			"[id]/flush_message_queue queue_len=[queue_len], status=[status]",
+			window = src)
 	for(var/message in message_queue)
-		client << output(message, is_browser \
-			? "[id]:update" \
-			: "[id].browser:update")
+		send_output_message(message)
 	message_queue = null
 
 /**
@@ -301,6 +421,11 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_window/proc/on_message(type, payload, href_list)
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
+	if(log_handshake)
+		log_tgui(client,
+			"[id]/on_message type=[type], status_before=[status], queue_len=[length(message_queue)]",
+			window = src)
 	// Status can be READY if user has refreshed the window.
 	if(type == "ready" && status == TGUI_WINDOW_READY)
 		// Resend the assets
@@ -330,6 +455,9 @@
 	switch(type)
 		if("ping")
 			send_message("pingReply", payload)
+		if("visible")
+			visible = TRUE
+			SEND_SIGNAL(src, COMSIG_TGUI_WINDOW_VISIBLE, client)
 		if("suspend")
 			close(can_be_suspended = TRUE)
 		if("close")
@@ -347,3 +475,82 @@
 			// Resend the assets
 			for(var/asset in sent_assets)
 				send_asset(asset)
+		if("oversizedPayloadRequest")
+			var/payload_id = payload["id"]
+			var/chunk_count = payload["chunkCount"]
+			var/max_chunk_count = CONFIG_GET(number/tgui_max_chunk_count)
+			var/permit_payload = chunk_count <= max_chunk_count
+			// Отказ больше не молчит. Раньше сервер просто отвечал allow = FALSE, клиент
+			// выбрасывал очередь без единого слова, и для игрока это выглядело как "окно висит,
+			// сервер не принимает" - ровно так выглядел упёршийся в лимит JSON интегральной
+			// сборки, и разобраться было нечем.
+			if(!permit_payload)
+				log_tgui(client, "[id]/on_message payload rejected: [chunk_count] chunks over limit [max_chunk_count]", window = src)
+				to_chat(client, span_warning("Введённый текст слишком велик для передачи: [chunk_count] частей при лимите [max_chunk_count]. Сократите текст."))
+			else
+				permit_payload = create_oversized_payload(payload_id, payload["type"], chunk_count)
+				if(!permit_payload)
+					log_tgui(client, "[id]/on_message payload rejected: too many concurrent payloads or duplicate id", window = src)
+					to_chat(client, span_warning("Сервер уже собирает другой большой ввод. Подождите несколько секунд и повторите."))
+			send_message("oversizePayloadResponse", list("allow" = permit_payload, "id" = payload_id))
+		if("payloadChunk")
+			var/payload_id = payload["id"]
+			if(append_payload_chunk(payload_id, payload["chunk"]))
+				send_message("acknowlegePayloadChunk", list("id" = payload_id))
+			else
+				send_message("payloadDropped", list("id" = payload_id))
+	if(log_handshake)
+		log_tgui(client,
+			"[id]/on_message done type=[type], status_after=[status], queue_len=[length(message_queue)], fatally_errored=[fatally_errored]",
+			window = src)
+
+/datum/tgui_window/proc/create_oversized_payload(payload_id, message_type, chunk_count)
+	// Limit concurrent in-flight payloads to prevent memory exhaustion
+	if(length(oversized_payloads) >= 3)
+		return FALSE
+	if(oversized_payloads[payload_id])
+		stack_trace("Attempted to create oversized tgui payload with duplicate ID.")
+		return FALSE
+	// Do NOT use TIMER_UNIQUE|TIMER_OVERRIDE: each new CALLBACK() has a different hash,
+	// so those flags would not deduplicate timers — they would just accumulate.
+	// Store the timer ID explicitly and use deltimer() before each reset.
+	var/timer_id = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 30 SECONDS, TIMER_STOPPABLE)
+	oversized_payloads[payload_id] = list(
+		"type" = message_type,
+		"count" = chunk_count,
+		"chunks" = list(),
+		"timer" = timer_id,
+	)
+	return TRUE
+
+/datum/tgui_window/proc/append_payload_chunk(payload_id, chunk)
+	var/list/oversized_payload = oversized_payloads[payload_id]
+	if(!oversized_payload)
+		return FALSE // Payload was timed out or never existed — signal caller
+	var/list/chunks = oversized_payload["chunks"]
+	chunks += chunk
+	if(length(chunks) >= oversized_payload["count"])
+		deltimer(oversized_payload["timer"])
+		var/message_type = oversized_payload["type"]
+		var/final_payload = chunks.Join("")
+		remove_oversized_payload(payload_id)
+		on_message(message_type, json_decode(final_payload), list("type" = message_type, "payload" = final_payload, "tgui" = TRUE, "window_id" = id))
+	else
+		// Explicit deltimer + new addtimer to correctly reset the deadline
+		deltimer(oversized_payload["timer"])
+		oversized_payload["timer"] = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 30 SECONDS, TIMER_STOPPABLE)
+	return TRUE
+
+/datum/tgui_window/proc/remove_oversized_payload(payload_id)
+	oversized_payloads -= payload_id
+
+/// Возвращает URL для загрузки tgui-ассета. Если задан dev_server_ip,
+/// бандлы (js/css главного tgui и панели) перенаправляются на dev-сервер
+/// для hot-reload; остальные ассеты возвращаются без изменений.
+/proc/tgui_resolve_asset_url(name, url, dev_server_ip)
+	if(!length(dev_server_ip))
+		return url
+	if(name == "tgui.bundle.js" || name == "tgui.bundle.css" \
+		|| name == "tgui-panel.bundle.js" || name == "tgui-panel.bundle.css")
+		return "http://[dev_server_ip]:[TGUI_DEV_SERVER_PORT]/[name]"
+	return url

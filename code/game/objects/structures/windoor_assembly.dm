@@ -37,6 +37,7 @@
 	air_update_turf(TRUE)
 
 /obj/structure/windoor_assembly/Destroy()
+	QDEL_NULL(electronics)
 	density = FALSE
 	air_update_turf(TRUE)
 	return ..()
@@ -190,7 +191,7 @@
 						return
 
 					to_chat(user, "<span class='notice'>You cut the windoor wires.</span>")
-					new/obj/item/stack/cable_coil(get_turf(user), 1)
+					new /obj/item/stack/cable_coil(get_turf(user), 1)
 					state = "01"
 					if(secure)
 						name = "secure anchored windoor assembly"
@@ -273,6 +274,9 @@
 							windoor.req_access = electronics.accesses
 						windoor.electronics = electronics
 						electronics.forceMove(windoor)
+						// Иначе QDEL_NULL(electronics) в Destroy сборки убьёт
+						// электронику уже живого виндора (см. door_assembly).
+						electronics = null
 						if(created_name)
 							windoor.name = created_name
 						qdel(src)
@@ -295,7 +299,10 @@
 						else
 							windoor.req_access = electronics.accesses
 						windoor.electronics = electronics
-						electronics.loc = windoor
+						electronics.forceMove(windoor)
+						// Иначе QDEL_NULL(electronics) в Destroy сборки убьёт
+						// электронику уже живого виндора (см. door_assembly).
+						electronics = null
 						if(created_name)
 							windoor.name = created_name
 						qdel(src)

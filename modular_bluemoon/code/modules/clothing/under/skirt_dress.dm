@@ -6,6 +6,7 @@
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/gothrevskirt
 	name = "Ghotic Vulgar Dress"
@@ -14,6 +15,7 @@
 	item_state = "syndicate-black"
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/angelrevskirt
 	name = "Angelic Vulgar Dress"
@@ -22,6 +24,7 @@
 	item_state = "capspacehelmet"
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/blackrevdress
 	name = "Black Revealing Dress"
@@ -30,6 +33,7 @@
 	item_state = "syndicate-black"
 	body_parts_covered = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/whiterevdress
 	name = "White Revealing Dress"
@@ -39,6 +43,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/ryodan
 	name = "Ryodan Suit"

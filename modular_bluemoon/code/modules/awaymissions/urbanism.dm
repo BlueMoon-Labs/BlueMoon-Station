@@ -40,6 +40,7 @@
 	layer = 4
 	light_range = 15
 	light_color = "#ffffdd"
+	light_flags = LIGHT_NO_RANGE_CAP // статичный наружный прожектор: дальность выше базового капа
 	max_integrity = 9999999
 
 
@@ -78,6 +79,21 @@
 	icon_state = "redbarrel"
 	reagent_id = /datum/reagent/fuel
 	tank_volume = 300
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium
+	name = "Radium barrel"
+	desc = "Barrel filled with radium. Very dangerous."
+	icon_state = "radiumbarrel"
+	reagent_id = /datum/reagent/radium
+	tank_volume = 300
+	var/rad_strength = 1000
+
+/obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
+	. = ..()
+	var/datum/component/radioactive/Comp
+	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
+	Comp = GetComponent(/datum/component/radioactive)
+	Comp.set_strength(rad_strength)
 
 /obj/structure/barricade/urbanism
 	name = "Barricade"
@@ -190,7 +206,7 @@
 	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 9999999
 
 /obj/structure/urbanismmachines
 
@@ -229,7 +245,7 @@
 	armor = list(MELEE = 80, BULLET =80, LASER = 70, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 9999999
 	layer = SPACEVINE_LAYER
 
 

@@ -110,12 +110,14 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 /mob/proc/remove_movespeed_modifier(datum/movespeed_modifier/type_id_datum, update = TRUE)
 	var/key
 	if(ispath(type_id_datum))
-		key = initial(type_id_datum.id) || "[type_id_datum]"		//id if set, path set to string if not.
+		key = initial(type_id_datum.id)		//id if set, path set to string if not.
+		if(!key)
+			key = "[type_id_datum]"
 	else if(!istext(type_id_datum))		//if it isn't text it has to be a datum, as it isn't a type.
 		key = type_id_datum.id
 	else								//assume it's an id
 		key = type_id_datum
-	if(!LAZYACCESS(movespeed_modification, key))
+	if(!key || !LAZYACCESS(movespeed_modification, key))
 		return FALSE
 	LAZYREMOVE(movespeed_modification, key)
 	if(update)
@@ -141,7 +143,10 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 	else if(ispath(type_id_datum))
 		if(!initial(type_id_datum.variable))
 			CRASH("Not a variable modifier")
-		final = LAZYACCESS(movespeed_modification, initial(type_id_datum.id) || "[type_id_datum]")
+		var/key = initial(type_id_datum.id)
+		if(!key)
+			key = "[type_id_datum]"
+		final = LAZYACCESS(movespeed_modification, key)
 		if(!final)
 			final = new type_id_datum
 			inject = TRUE
@@ -154,8 +159,13 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 			inject = TRUE
 			modified = TRUE
 	if(!isnull(multiplicative_slowdown))
-		final.multiplicative_slowdown = multiplicative_slowdown
-		modified = TRUE
+		// Only flag for a movespeed rebuild when the value actually changed: variable
+		// modifiers (hunger, health, temperature) are re-set every Life tick with the
+		// same value, and an unconditional update_movespeed() here made every such
+		// tick rebuild the whole modifier cache for nothing.
+		if(final.multiplicative_slowdown != multiplicative_slowdown)
+			final.multiplicative_slowdown = multiplicative_slowdown
+			modified = TRUE
 	if(inject)
 		add_movespeed_modifier(final, FALSE)
 	if(update && modified)
@@ -183,7 +193,9 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 /mob/proc/has_movespeed_modifier(datum/movespeed_modifier/datum_type_id)
 	var/key
 	if(ispath(datum_type_id))
-		key = initial(datum_type_id.id) || "[datum_type_id]"
+		key = initial(datum_type_id.id)
+		if(!key)
+			key = "[datum_type_id]"
 	else if(istext(datum_type_id))
 		key = datum_type_id
 	else
@@ -233,7 +245,6 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 			else
 				continue
 		. = M.apply_multiplicative(., src)
-	// your delay decreases, "give" the delay back to the client
 	cached_multiplicative_slowdown = .
 	if(!client)
 		return
@@ -241,21 +252,32 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 	if(movespeed_override)
 		cached_multiplicative_slowdown = max(cached_multiplicative_slowdown, movespeed_override)
 	// BLUEMOON ADD END
-	var/diff = (client.last_move - client.move_delay) - cached_multiplicative_slowdown
-	if(diff > 0)
-		if(client.move_delay > world.time + 1.5)
-			client.move_delay -= diff
-		var/timeleft = world.time - client.move_delay
-		var/elapsed = world.time - client.last_move
-		var/glide_size_current = glide_size
-		if((timeleft <= 0) || (elapsed > 20))
-			set_glide_size(16, TRUE)
-			return
-		var/pixels_moved = glide_size_current * elapsed * (1 / world.tick_lag)
-		// calculate glidesize needed to move to the next tile within timeleft deciseconds
-		var/ticks_allowed = timeleft / world.tick_lag
-		var/pixels_per_tick = pixels_moved / ticks_allowed
-		set_glide_size(pixels_per_tick * GLOB.glide_size_multiplier, TRUE)
+	// Шаг в полёте оплачен по старой цене. Если скорость выросла, расписание
+	// подтягивается на разницу цен, а glide пересчитывается на остаток пути:
+	// иначе спрайт доедет до тайла и встанет ждать разрешения, и эта пауза
+	// видна как рывок.
+	//
+	// Трогаем только своё расписание. move_delay пишут ещё захват, отдача и
+	// админские вербы - подтянуть чужой срок как свой значило бы отменить
+	// чужой штраф.
+	if(!movement_can_reschedule(client.move_delay, client.last_step_target, world.time))
+		return
+	GLOB.movement_reschedule_checks++
+	// Цена считается тем же проком, что и в /client/Move. Прежний расчёт брал
+	// cached_multiplicative_slowdown напрямую, и у подтипов с более широким
+	// movement_delay() - борг, вендиго - условие "подешевело" выполнялось
+	// всегда: каждый пересчёт подтягивал шаг на тик вперёд.
+	var/new_cost = movement_step_cost(client.last_step_diagonal)
+	var/new_target = movement_reschedule_step(client.move_delay, client.last_step_cost, new_cost, world.time, world.tick_lag)
+	if(new_target == client.move_delay)
+		return
+	GLOB.movement_reschedule_applied++
+	client.move_delay = new_target
+	client.last_step_target = new_target
+	client.last_step_cost = new_cost
+	var/elapsed_ticks = (world.time - client.last_move) / world.tick_lag
+	var/remaining_ticks = movement_ticks_until(new_target, world.time, world.tick_lag)
+	set_glide_size(movement_catchup_glide(glide_size, elapsed_ticks, remaining_ticks, world.icon_size))
 
 /// Get the move speed modifiers list of the mob
 /mob/proc/get_movespeed_modifiers()
@@ -275,7 +297,7 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
   * DANGER: IT IS UP TO THE PERSON USING THIS TO MAKE SURE THE MODIFIER IS NOT MODIFIED IF IT HAPPENS TO BE GLOBAL/CACHED.
   */
 /mob/proc/get_movespeed_modifier_datum(id)
-	return movespeed_modification[id]
+	return LAZYACCESS(movespeed_modification, id)
 
 /// Checks if a move speed modifier is valid and not missing any data
 /proc/movespeed_data_null_check(datum/movespeed_modifier/M)		//Determines if a data list is not meaningful and should be discarded.

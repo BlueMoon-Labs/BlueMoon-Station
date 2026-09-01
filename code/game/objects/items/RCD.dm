@@ -560,8 +560,7 @@ RLD
 	if(has_ammobar)
 		var/ratio = CEILING((matter / max_matter) * ammo_sections, 1)
 		if(ratio)
-			cut_overlays()	//To prevent infinite stacking of overlays
-			add_overlay("[icon_state]_charge[ratio]")
+			. += "[icon_state]_charge[ratio]"
 
 /obj/item/construction/rcd/Initialize(mapload)
 	. = ..()
@@ -876,6 +875,8 @@ RLD
 	has_ammobar = FALSE
 	matter = 200
 	max_matter = 200
+	custom_price = PRICE_ABOVE_EXPENSIVE*1.5
+	custom_premium_price = PRICE_ABOVE_EXPENSIVE*3
 
 	///type of the plumbing machine
 	var/blueprint = null

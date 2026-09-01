@@ -14,6 +14,10 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 			continue
 		if (I.restricted && !allow_restricted)
 			continue
+		if(length(I.required_round_types) && !(GLOB.round_type in I.required_round_types))
+			continue
+		if(LAZYLEN(I.blocked_round_types) && (GLOB.round_type in I.blocked_round_types))
+			continue
 
 		if(!filtered_uplink_items[I.category])
 			filtered_uplink_items[I.category] = list()
@@ -99,12 +103,22 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 	var/list/restricted_species //Limits items to a specific species. Hopefully.
 	var/illegal_tech = TRUE // Can this item be deconstructed to unlock certain techweb research nodes?
 	var/hijack_only = FALSE //can this item be purchased only during hijackings?
+	/// If nonempty, only offered when `GLOB.round_type` is one of these (Bluemoon; e.g. `ROUNDTYPE_DYNAMIC_HARD`).
+	var/list/required_round_types
+	/// If nonempty, never offered when `GLOB.round_type` is one of these (Bluemoon; e.g. `ROUNDTYPE_DYNAMIC_LIGHT`).
+	var/list/blocked_round_types
 
 /datum/uplink_item/proc/get_discount()
 	return pick(4;0.75,2;0.5,1;0.25)
 
-/datum/uplink_item/proc/purchase(mob/user, datum/component/uplink/U)
+/datum/uplink_item/proc/purchase(mob/user, datum/component/uplink/U, atom/source)
 	var/atom/A = spawn_item(item, user, U)
+	var/turf/T = get_turf(user)
+	var/atom/uplink = U.parent
+	var/vr_text = is_vr_level(T.z) ? " in VR" : ""
+	log_uplink("[key_name(user)] purchased [A.name] for [cost] telecrystals from [uplink?.name][vr_text]")
+	if(!vr_text && !is_centcom_level(T.z) && GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		message_antigrif("[ADMIN_LOOKUPFLW(user)] purchased [A.name] at [ADMIN_VERBOSEJMP(T)].")
 	if(purchase_log_vis && U.purchase_log)
 		U.purchase_log.LogPurchase(A, src, cost)
 
@@ -184,7 +198,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 // Role-specific items
 /datum/uplink_item/role_restricted
 	category = "Role-Restricted"
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	surplus = 0
 
 // Pointless

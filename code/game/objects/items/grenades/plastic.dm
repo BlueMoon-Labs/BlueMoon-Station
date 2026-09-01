@@ -32,6 +32,9 @@
 /obj/item/grenade/plastic/Destroy()
 	qdel(nadeassembly)
 	nadeassembly = null
+	if(target && !QDELETED(target))
+		UnregisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(add_plastic_overlay))
+		target.update_icon(UPDATE_OVERLAYS)
 	target = null
 	return ..()
 
@@ -61,18 +64,20 @@
 	if(target)
 		if(!QDELETED(target))
 			location = get_turf(target)
-			target.cut_overlay(plastic_overlay)
 			UnregisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(add_plastic_overlay))
+			target.update_icon(UPDATE_OVERLAYS)
 			if(!ismob(target) || full_damage_on_mobs)
 				target.ex_act(EXPLODE_HEAVY, target)
+				if(ismob(target) && primed_by && primed_by != target)
+					log_combat(primed_by, target, "detonated C4 on", src)
 	else
 		location = get_turf(src)
 	if(location)
 		if(directional && target && target.density)
 			var/turf/T = get_step(location, aim_dir)
-			explosion(get_step(T, aim_dir), boom_sizes[1], boom_sizes[2], boom_sizes[3])
+			explosion(get_step(T, aim_dir), boom_sizes[1], boom_sizes[2], boom_sizes[3], attacker = primed_by)
 		else
-			explosion(location, boom_sizes[1], boom_sizes[2], boom_sizes[3])
+			explosion(location, boom_sizes[1], boom_sizes[2], boom_sizes[3], attacker = primed_by)
 	if(ismob(target) && can_gib_mobs)
 		var/mob/M = target
 		M.gib()
@@ -116,6 +121,7 @@
 			return
 		target = AM
 
+		primed_by = user
 		message_admins("[ADMIN_LOOKUPFLW(user)] planted [name] on [target.name] at [ADMIN_VERBOSEJMP(target)] with [det_time] second fuse")
 		log_game("[key_name(user)] planted [name] on [target.name] at [AREACOORD(user)] with [det_time] second fuse")
 
@@ -192,7 +198,6 @@
 /obj/item/grenade/plastic/c4/Destroy()
 	qdel(wires)
 	wires = null
-	target = null
 	return ..()
 
 /obj/item/grenade/plastic/c4/suicide_act(mob/user)
@@ -228,7 +233,7 @@
 	else
 		location = get_turf(src)
 	if(location)
-		explosion(location,0,0,3)
+		explosion(location,0,0,3, attacker = primed_by)
 	qdel(src)
 
 /obj/item/grenade/plastic/c4/attack(mob/M, mob/user, def_zone)

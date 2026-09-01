@@ -142,6 +142,12 @@ GLOBAL_LIST_INIT(xeno_recipes, list ( \
 	var/wetness = 30 //Reduced when exposed to high temperautres
 	var/drying_threshold_temperature = 500 //Kelvin to start drying
 
+/obj/item/stack/sheet/wetleather/Initialize(mapload, new_amount, merge)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+	AddElement(/datum/element/microwavable, /obj/item/stack/sheet/leather)
+	AddElement(/datum/element/dryable, /obj/item/stack/sheet/leather)
+
 /*
  * Leather SHeet
  */
@@ -250,13 +256,19 @@ GLOBAL_LIST_INIT(sinew_recipes, list ( \
 /obj/item/stack/sheet/wetleather/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	..()
 	if(exposed_temperature >= drying_threshold_temperature)
-		wetness--
-		if(wetness == 0)
-			new /obj/item/stack/sheet/leather(drop_location(), 1)
-			wetness = initial(wetness)
-			use(1)
+		dry_step()
 
-/obj/item/stack/sheet/wetleather/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	. = ..()
-	new /obj/item/stack/sheet/leather(drop_location(), amount)
-	qdel(src)
+/obj/item/stack/sheet/wetleather/proc/dry_step()
+	wetness--
+	if(wetness == 0)
+		new /obj/item/stack/sheet/leather(drop_location(), 1)
+		wetness = initial(wetness)
+		use(1)
+
+// Hot air dries hide as well as a flame does - a hide left in an oven-hot room
+// no longer waits for a hotspot to sit on its tile.
+/obj/item/stack/sheet/wetleather/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature >= drying_threshold_temperature
+
+/obj/item/stack/sheet/wetleather/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	dry_step()

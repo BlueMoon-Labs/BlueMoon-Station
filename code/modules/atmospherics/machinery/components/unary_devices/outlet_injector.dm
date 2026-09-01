@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector
-	icon_state = "inje_map-2"
+	icon_state = "inje_map-3"
 	name = "air injector"
 	desc = "Has a valve and pump attached to it."
 	use_power = IDLE_POWER_USE
@@ -23,6 +23,7 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/CtrlClick(mob/user)
 	if(can_interact(user))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 	return ..()
@@ -30,6 +31,7 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/AltClick(mob/user)
 	if(can_interact(user))
 		volume_rate = MAX_TRANSFER_RATE
+		atmos_wake()
 		investigate_log("was set to [volume_rate] L/s by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "volume output set to [volume_rate] L/s")
 		update_appearance()
@@ -45,7 +47,7 @@
 		// everything is already shifted so don't shift the cap
 		add_overlay(getpipeimage(icon, "inje_cap", initialize_directions))
 
-	if(!nodes[1] || !on || !is_operational())
+	if(!nodes[1] || !on || !is_operational)
 		icon_state = "inje_off"
 	else
 		icon_state = "inje_on"
@@ -58,32 +60,42 @@
 
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/process_atmos()
-	..()
+	if(atmos_idle_until > world.time)
+		return
 
 	injecting = 0
 
-	if(!on || !is_operational())
+	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/air_volume = air_contents.return_volume()
 
-	if(air_contents.return_temperature() > 0)
-		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
-		air_update_turf()
-
+	// An empty pipe or a zero volume_rate must not reactivate the turf and dirty
+	// the pipenet every fire; the pipenet pressure-jump broadcast and UI/signal
+	// wakes cover the moment that changes. assume_air_ratio reports whether any
+	// gas actually moved and already reactivates the turf on success.
+	if(air_contents.return_temperature() > 0 && air_volume > 0 \
+		&& loc.assume_air_ratio(air_contents, volume_rate / air_volume))
 		update_parents()
+		atmos_idle_streak = 0
+	else
+		atmos_consider_idle()
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/proc/inject()
 
-	if(on || injecting || !is_operational())
+	if(on || injecting || !is_operational)
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/air_volume = air_contents.return_volume()
 
 	injecting = 1
 
-	if(air_contents.return_temperature() > 0)
-		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
+	if(air_contents.return_temperature() > 0 && air_volume > 0)
+		loc.assume_air_ratio(air_contents, volume_rate / air_volume)
 		update_parents()
 
 	flick("inje_inject", src)
@@ -119,6 +131,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	if("power" in signal.data)
 		on = text2num(signal.data["power"])
 
@@ -151,12 +166,14 @@
 	data["on"] = on
 	data["rate"] = round(volume_rate)
 	data["max_rate"] = round(MAX_TRANSFER_RATE)
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/ui_act(action, params)
 	if(..())
 		return
 
+	atmos_wake()
 	switch(action)
 		if("power")
 			on = !on
@@ -182,7 +199,7 @@
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/can_unwrench(mob/user)
 	. = ..()
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 
@@ -192,9 +209,17 @@
 	piping_layer = 1
 	icon_state = "inje_map-1"
 
-/obj/machinery/atmospherics/components/unary/outlet_injector/layer3
-	piping_layer = 3
-	icon_state = "inje_map-3"
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer2
+	piping_layer = 2
+	icon_state = "inje_map-2"
+
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer4
+	piping_layer = 4
+	icon_state = "inje_map-4"
+
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer5
+	piping_layer = 5
+	icon_state = "inje_map-5"
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/on
 	on = TRUE
@@ -203,9 +228,17 @@
 	piping_layer = 1
 	icon_state = "inje_map-1"
 
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3
-	piping_layer = 3
-	icon_state = "inje_map-3"
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2
+	piping_layer = 2
+	icon_state = "inje_map-2"
+
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4
+	piping_layer = 4
+	icon_state = "inje_map-4"
+
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer5
+	piping_layer = 5
+	icon_state = "inje_map-5"
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/atmos
 	frequency = FREQ_ATMOS_STORAGE

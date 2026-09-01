@@ -173,6 +173,13 @@
 	filling_color = "#FFFFFF"
 	foodtype = GRAIN
 
+/obj/item/reagent_containers/food/snacks/breadslice/custom/OnCreatedFromProcessing(mob/living/user, obj/item/work_tool, list/chosen_option, obj/item/reagent_containers/food/snacks/original_atom)
+	..()
+	if(!istype(original_atom))
+		return
+	filling_color = original_atom.filling_color
+	update_snack_overlays(src)
+
 /obj/item/reagent_containers/food/snacks/baguette
 	name = "baguette"
 	desc = "Bon appetit!"
@@ -332,7 +339,7 @@
 
 //teleporting tumor bread kills it
 /obj/item/reagent_containers/food/snacks/store/bread/tumor_bread/bread_teleport()
-	visible_message(src, "<span class='warning'>[src] explodes in a horrible mess of tumor and flour!</span>")
+	visible_message("<span class='warning'>[src] explodes in a horrible mess of tumor and flour!</span>")
 	qdel(src)
 
 /obj/item/reagent_containers/food/snacks/breadslice/tumor_bread
@@ -342,3 +349,19 @@
 	filling_color = "#B2D72C"
 	list_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/toxin = 2)
 	foodtype = GROSS | GRAIN
+
+// MARTIAN //
+/obj/item/reagent_containers/food/snacks/store/bread/reispan
+	name = "reispan"
+	desc = "Though the concept of rice bread has been common in Asia for centuries, the reispan as we know it today is most commonly associated with Mars- where limited arable land has forced ingenuity."
+	icon_state = "reispan"
+	bonus_reagents = list(/datum/reagent/consumable/nutriment = 9)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 15)
+	slice_path = /obj/item/reagent_containers/food/snacks/breadslice/reispan
+
+/obj/item/reagent_containers/food/snacks/breadslice/reispan
+	name = "reispan slice"
+	desc = "A slice of reispan, for use in Martian-style sandwiches."
+	icon = 'icons/obj/food/burgerbread.dmi'
+	icon_state = "reispan_slice"
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)

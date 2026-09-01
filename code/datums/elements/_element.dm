@@ -62,5 +62,7 @@
  * You only need additional arguments beyond the type if you're using [ELEMENT_BESPOKE]
  */
 /datum/proc/_RemoveElement(list/arguments)
+	if(!islist(arguments))
+		arguments = args.Copy()
 	var/datum/element/ele = SSdcs.GetElement(arguments)
 	ele.Detach(src)

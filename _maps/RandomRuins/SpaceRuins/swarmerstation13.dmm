@@ -48,10 +48,6 @@
 /obj/structure/swarmer/blockade,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
-"n" = (
-/obj/item/deactivated_swarmer,
-/turf/open/floor/plating/airless,
-/area/ruin/space/has_grav)
 "o" = (
 /obj/item/pen,
 /turf/open/floor/plating/airless,
@@ -897,7 +893,7 @@ c
 e
 e
 m
-n
+e
 g
 e
 m
@@ -941,7 +937,7 @@ e
 m
 e
 e
-n
+e
 m
 e
 e
@@ -1105,7 +1101,7 @@ a
 a
 c
 o
-n
+e
 e
 e
 e

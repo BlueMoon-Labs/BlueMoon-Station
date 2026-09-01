@@ -1,5 +1,5 @@
 /datum/quirk/powersaving
-	name = BLUEMOON_TRAIT_NAME_POWERSAVING
+	name = "Эффективное Энергопотребление"
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! Ваше аппаратное обеспечение использует самые современные методики энергосбережения, благодаря чему вы разряжаетесь примерно на 40% медленнее."
 	value = 2
 	gain_text = span_danger("Выключение NTVIDIA 9090 экономит мне 400 ватт???")
@@ -26,5 +26,7 @@
 /datum/quirk/powersaving/remove()
 	var/mob/living/carbon/human/H = quirk_holder
 	if(!istype(H) || !isrobotic(H))
+		return
+	if(!H.physiology)
 		return
 	H.physiology.hunger_mod /= 0.6

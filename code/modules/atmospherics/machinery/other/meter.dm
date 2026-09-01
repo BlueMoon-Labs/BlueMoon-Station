@@ -55,6 +55,11 @@
 	PIPING_LAYER_DOUBLE_SHIFT(src, target_layer)
 
 /obj/machinery/meter/process_atmos()
+	// Meters are pure telemetry: refreshing the icon, the radio report and the
+	// area power lookup every ATMOS_TELEMETRY_INTERVAL-th atmos fire (2s) is
+	// indistinguishable to players and cuts most of their steady cost.
+	if(SSair.times_fired % ATMOS_TELEMETRY_INTERVAL)
+		return
 	if(!(target?.flags_1 & INITIALIZED_1))
 		icon_state = "meterX"
 		return FALSE
@@ -63,7 +68,7 @@
 		icon_state = "meter0"
 		return FALSE
 
-	use_power(5)
+	use_power(5 * ATMOS_TELEMETRY_INTERVAL) // 5 per fire, charged once per interval
 
 	var/datum/gas_mixture/environment = target.return_air()
 	if(!environment)

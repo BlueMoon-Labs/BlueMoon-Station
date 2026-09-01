@@ -1,0 +1,37 @@
+{
+	"ollama.timeout": 180,
+	"ollama.maxTokens": 4096,
+	"ollama.contextSize": 8192,
+	"ollama.tools": false,
+	"eslint.nodePath": "./tgui/.yarn/sdks",
+	"eslint.workingDirectories": [
+		"./tgui"
+	],
+	"typescript.tsdk": "./tgui/.yarn/sdks/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"search.exclude": {
+		"**/.yarn": true,
+		"**/.pnp.*": true
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"workbench.editorAssociations": {
+		"*.dmi": "dmiEditor.dmiEditor"
+	},
+	"files.eol": "\n",
+	"gitlens.advanced.blame.customArguments": ["-w"],
+	"tgstationTestExplorer.project.resultsType": "json",
+	"[javascript]": {
+		"editor.rulers": [80]
+	},
+	"[typescript]": {
+		"editor.rulers": [80]
+	},
+	"[scss]": {
+		"editor.rulers": [80]
+	},
+	"editor.bracketPairColorization.enabled": true,
+	"editor.guides.bracketPairs": "active",
+	"errorLens.enabled": false
+}

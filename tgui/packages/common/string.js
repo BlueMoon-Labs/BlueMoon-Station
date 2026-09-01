@@ -32,7 +32,7 @@ export const multiline = str => {
   // Remove this base indentation and trim the resulting string
   // from both ends.
   return lines
-    .map(line => line.substr(minIndent).trimRight())
+    .map(line => line.slice(minIndent).trimEnd())
     .join('\n')
     .trim();
 };
@@ -118,7 +118,7 @@ export const toTitleCase = str => {
     'Into', 'Near', 'Nor', 'Of', 'On', 'Onto', 'Or', 'The', 'To', 'With',
   ];
   let currentStr = str.replace(/([^\W_]+[^\s-]*) */g, str => {
-    return str.charAt(0).toUpperCase() + str.substr(1).toLowerCase();
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   });
   for (let word of WORDS_LOWER) {
     const regex = new RegExp('\\s' + word + '\\s', 'g');
@@ -171,7 +171,4 @@ export const decodeHtmlEntities = str => {
 /**
  * Converts an object into a query string,
  */
-export const buildQueryString = obj => Object.keys(obj)
-  .map(key => encodeURIComponent(key)
-    + '=' + encodeURIComponent(obj[key]))
-  .join('&');
+export const buildQueryString = obj => new URLSearchParams(obj).toString();

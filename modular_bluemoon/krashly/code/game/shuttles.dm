@@ -38,8 +38,8 @@
 //Golem's shuttle
 
 /datum/map_template/shuttle/golems
-	prefix = "_maps/shuttles/bluemoon/"
-	suffix = "golems"
+	prefix = "_maps/RandomRuins/AnywhereRuins/"
+	suffix = "golem_ship"
 	name = "Shuttle 'Freedom'"
 
 /obj/machinery/computer/shuttle/golems
@@ -49,7 +49,7 @@
 	icon_keyboard = "syndie_key"
 	light_color = LIGHT_COLOR_RED
 	circuit = /obj/item/circuitboard/computer/golems
-	shuttleId = "golems"
+	shuttleId = "golem_ship"
 	possible_destinations = "whiteship_home;golems_custom"
 
 /obj/item/circuitboard/computer/golems

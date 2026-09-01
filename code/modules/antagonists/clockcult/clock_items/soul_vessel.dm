@@ -1,24 +1,24 @@
 //Soul vessel: An ancient positronic brain that serves only Ratvar.
 /obj/item/mmi/posibrain/soul_vessel
 	name = "soul vessel"
-	desc = "A heavy brass cube, three inches to a side, with a single protruding cogwheel."
-	var/clockwork_desc = "A soul vessel, an ancient relic that can attract the souls of the damned or simply rip a mind from an unconscious or dead human.\n\
-	<span class='brass'>If active, can serve as a positronic brain, placable in cyborg shells or clockwork construct shells.</span>"
+	desc = "Тяжелый латунный куб со стороной три дюйма, с одним выступающим зубчатым колесом."
+	var/clockwork_desc = "Сосуд для душ - древняя реликвия, способная притягивать души проклятых или просто вырывать разум из тела без сознания или мертвого человека.\n\
+	<span class='brass'>В случае активации может служить в качестве позитронного мозга, который можно разместить в корпусах киборгов или часовых конструкций.</span>"
 	icon = 'icons/obj/clockwork_objects.dmi'
 	icon_state = "soul_vessel"
 	req_access = list()
-	braintype = "Servant"
-	begin_activation_message = "<span class='brass'>You activate the cogwheel. It hitches and stalls as it begins spinning.</span>"
-	success_message = "<span class='brass'>The cogwheel's rotation smooths out as the soul vessel activates.</span>"
-	fail_message = "<span class='warning'>The cogwheel creaks and grinds to a halt. Maybe you could try again?</span>"
+	braintype = "Слуга"
+	begin_activation_message = "<span class='brass'>Вы включаете шестеренку. Она с трудом запускается и на мгновение замирает, когда начинает вращаться.</span>"
+	success_message = "<span class='brass'>Вращение шестерни становится более плавным по мере активации сосуда души.</span>"
+	fail_message = "<span class='warning'>Зубчатое колесо скрипнуло и с трудом остановилось. Может, попробуете ещё раз?</span>"
 	new_role = "Soul Vessel"
-	welcome_message = "<span class='warning'>ALL PAST LIVES ARE FORGOTTEN.</span>\n\
-	<b>You are a soul vessel - a clockwork mind created by Ratvar, the Clockwork Justiciar.\n\
-	You answer to Ratvar and his servants. It is your discretion as to whether or not to answer to anyone else.\n\
-	The purpose of your existence is to further the goals of the servants and Ratvar himself. Above all else, serve Ratvar.</b>"
-	new_mob_message = "<span class='brass'>The soul vessel emits a jet of steam before its cogwheel smooths out.</span>"
-	dead_message = "<span class='deadsay'>Its cogwheel, scratched and dented, lies motionless.</span>"
-	recharge_message = "<span class='warning'>The soul vessel's internal geis capacitor is still recharging!</span>"
+	welcome_message = "<span class='warning'>ВСЕ ПРОШЛЫЕ ЖИЗНИ ЗАБЫТЫ.</span>\n\
+	<b>Ты сосуд для души - механический разум, созданный Ратваром, Часовым Юстициаром.\n\
+	Вы подчиняетесь Ратвару и его слугам. Решать, подчиняться ли кому-либо еще, остается на ваше усмотрение.\n\
+	Смысл твоего существования заключается в том, чтобы способствовать достижению целей слуг и самого Ратвара. Прежде всего, служи Ратвару.</b>"
+	new_mob_message = "<span class='brass'>Сосуд души выпускает струю пара, прежде чем его шестерня приходит в равновесие.</span>"
+	dead_message = "<span class='deadsay'>Его шестерня, поцарапанная и помятая, лежит неподвижно.</span>"
+	recharge_message = "<span class='warning'>Внутренний конденсатор Гейс сосуда души все еще заряжается!</span>"
 	possible_names = list("Судья", "Страж", "Служитель", "Кузнец", "Спираль")
 	autoping = FALSE
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -50,7 +50,7 @@
 
 /obj/item/mmi/posibrain/soul_vessel/attack_self(mob/living/user)
 	if(!is_servant_of_ratvar(user))
-		to_chat(user, "<span class='warning'>You fiddle around with [src], to no avail.</span>")
+		to_chat(user, "<span class='warning'>Вы возитесь с [src], но это не приносит результата.</span>")
 		return FALSE
 	..()
 
@@ -61,35 +61,35 @@
 	if(QDELETED(brainmob))
 		return
 	if(brainmob.key)
-		to_chat(user, "<span class='nezbere'>\"This vessel is filled, friend. Provide it with a body.\"</span>")
+		to_chat(user, "<span class='nezbere'>\"Этот сосуд наполнен, друг мой. Дай ему тело.\"</span>")
 		return
 	if(is_servant_of_ratvar(target))
-		to_chat(user, "<span class='nezbere'>\"It would be more wise to revive your allies, friend.\"</span>")
+		to_chat(user, "<span class='nezbere'>\"Было бы разумнее воскресить своих союзников, друг мой.\"</span>")
 		return
 	var/mob/living/carbon/human/H = target
 	if(H.stat == CONSCIOUS)
-		to_chat(user, "<span class='warning'>[H] must be dead or unconscious for you to claim [H.ru_ego()] mind!</span>")
+		to_chat(user, "<span class='warning'>[H] должен быть мёртвым или без сознания, чтобы захватить [H.ru_ego()] разум!</span>")
 		return
 	if(H.head)
 		var/obj/item/I = H.head
 		if(I.flags_inv & HIDEHAIR) //they're wearing a hat that covers their skull
-			to_chat(user, "<span class='warning'>[H]'s head is covered, remove [H.ru_ego()] [H.head] first!</span>")
+			to_chat(user, "<span class='warning'>Голова [H] покрыта, сначала уберите [H.ru_ego()] [H.head]!</span>")
 			return
 	if(H.wear_mask)
 		var/obj/item/I = H.wear_mask
 		if(I.flags_inv & HIDEHAIR) //they're wearing a mask that covers their skull
-			to_chat(user, "<span class='warning'>[H]'s head is covered, remove [H.ru_ego()] [H.wear_mask] first!</span>")
+			to_chat(user, "<span class='warning'>Голова [H] покрыта, сначала уберите [H.ru_ego()] [H.wear_mask]!</span>")
 			return
 	var/obj/item/bodypart/head/HE = H.get_bodypart(BODY_ZONE_HEAD)
 	if(!HE) //literally headless
-		to_chat(user, "<span class='warning'>[H] has no head, and thus no mind to claim!</span>")
+		to_chat(user, "<span class='warning'>[H] не имеет головы, а значит, и разума, который можно было бы забрать!</span>")
 		return
 	var/obj/item/organ/brain/B = H.getorgan(/obj/item/organ/brain)
 	if(!B) //either somebody already got to them or robotics did
-		to_chat(user, "<span class='warning'>[H] has no brain, and thus no mind to claim!</span>")
+		to_chat(user, "<span class='warning'>[H] не имеет мозга, а значит, и разума, который можно было бы забрать!</span>")
 		return
 	if(!H.key) //nobody's home
-		to_chat(user, "<span class='warning'>[H] has no mind to claim!</span>")
+		to_chat(user, "<span class='warning'>[H] не имеет разума, который можно было бы забрать!</span>")
 		return
 	playsound(H, 'sound/misc/splort.ogg', 60, 1, -1)
 	playsound(H, 'sound/magic/clockwork/anima_fragment_attack.ogg', 40, 1, -1)
@@ -97,11 +97,11 @@
 	H.death()
 	H.cure_fakedeath("soul_vessel")
 	H.apply_status_effect(STATUS_EFFECT_SIGILMARK) //let them be affected by vitality matrices
-	picked_name = "Slave"
+	picked_name = "Раб"
 	braintype = picked_name
 	brainmob.timeofhostdeath = H.timeofdeath
-	user.visible_message("<span class='warning'>[user] presses [src] to [H]'s head, ripping through the skull and carefully extracting the brain!</span>", \
-	"<span class='brass'>You extract [H]'s consciousness from [H.ru_ego()] body, trapping it in the soul vessel.</span>")
+	user.visible_message("<span class='warning'>[user] прижимает [src] к голове [H], прорывая череп и аккуратно извлекая мозг!</span>", \
+	"<span class='brass'>Вы извлекаете сознание [H] из [H.ru_ego()] тела и заключаете [H.ru_ego()] в сосуд души.</span>")
 	transfer_personality(H)
 	brainmob.fully_replace_character_name(null, "[braintype] [H.real_name]")
 	name = "[initial(name)] ([brainmob.name])"

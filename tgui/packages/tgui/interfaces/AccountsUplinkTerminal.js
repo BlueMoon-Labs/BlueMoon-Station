@@ -1,5 +1,6 @@
 
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import { Button, Flex, Icon, Input, LabeledList, Section, Table } from '../components';
 import { Window } from '../layouts';
@@ -8,9 +9,9 @@ import { LoginScreen } from './common/LoginScreen';
 
 const safe = (v, d = '') => (v === null || v === undefined ? d : v);
 
-export const AccountsUplinkTerminal = (_props, context) => {
+export const AccountsUplinkTerminal = (_props) => {
   try {
-    const { data } = useBackend(context);
+    const { data } = useBackend();
     const loginState = safe(data?.loginState, { logged_in: 0 });
     const currentPage = safe(data?.currentPage, 1);
 
@@ -59,13 +60,13 @@ export const AccountsUplinkTerminal = (_props, context) => {
 // LIST
 // ─────────────────────────────────────────────────────────────
 
-const AccountsRecordList = (_props, context) => {
-  const { act, data } = useBackend(context);
+const AccountsRecordList = (_props) => {
+  const { act, data } = useBackend();
   const accounts = Array.isArray(data?.accounts) ? data.accounts : [];
 
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'owner_name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', true);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [sortId, setSortId] = useState('owner_name');
+  const [sortOrder, setSortOrder] = useState(true);
 
   const passSort = { sortId, setSortId, sortOrder, setSortOrder };
 
@@ -113,8 +114,8 @@ const AccountsRecordList = (_props, context) => {
                   if (account.account_index === -1) {
                     act('view_account_detail', {
                       index: -1,
-                      dep_index: account.dep_index,   // ✅ добавили
-                      dep_id: account.dep_id,         // ✅ добавили
+                      dep_index: account.dep_index, // ✅ добавили
+                      dep_id: account.dep_id, // ✅ добавили
                       // target_name: account.target_name, // можно, но уже не обязательно
                     });
                   } else {
@@ -161,11 +162,11 @@ const SortButton = (props, _context) => {
   );
 };
 
-const AccountsActions = (_props, context) => {
-  const { act, data } = useBackend(context);
+const AccountsActions = (_props) => {
+  const { act, data } = useBackend();
   const is_printing = !!data?.is_printing;
 
-  const [, setSearchText] = useLocalState(context, 'searchText', '');
+  const [, setSearchText] = useLocalState('searchText', '');
 
   return (
     <Flex>
@@ -194,8 +195,8 @@ const AccountsActions = (_props, context) => {
 // DETAILS
 // ─────────────────────────────────────────────────────────────
 
-const DetailedAccountInfo = (_props, context) => {
-  const { act, data } = useBackend(context);
+const DetailedAccountInfo = (_props) => {
+  const { act, data } = useBackend();
   const {
     is_printing = false,
     account_number = '',
@@ -207,12 +208,12 @@ const DetailedAccountInfo = (_props, context) => {
   const transactions = Array.isArray(data.transactions) ? data.transactions : [];
   const isDepartment = !!data.is_department;
   return (
-    <Fragment>
+    <>
       <Section
         title={`#${account_number} / ${owner_name}`}
         mt={1}
         buttons={
-          <Fragment>
+          <>
             <Button
               icon="print"
               content="Print Account Details"
@@ -224,7 +225,7 @@ const DetailedAccountInfo = (_props, context) => {
               content="Back"
               onClick={() => act('back')}
             />
-          </Fragment>
+          </>
         }>
         <LabeledList>
           <LabeledList.Item label="Account Number">
@@ -300,7 +301,7 @@ const DetailedAccountInfo = (_props, context) => {
           )}
         </Table>
       </Section>
-    </Fragment>
+    </>
   );
 };
 
@@ -309,10 +310,10 @@ const DetailedAccountInfo = (_props, context) => {
 // CREATE
 // ─────────────────────────────────────────────────────────────
 
-const CreateAccount = (_props, context) => {
-  const { act } = useBackend(context);
-  const [accName, setAccName] = useLocalState(context, 'accName', '');
-  const [accDeposit, setAccDeposit] = useLocalState(context, 'accDeposit', '');
+const CreateAccount = (_props) => {
+  const { act } = useBackend();
+  const [accName, setAccName] = useState('');
+  const [accDeposit, setAccDeposit] = useState('');
 
   return (
     <Section
@@ -323,9 +324,9 @@ const CreateAccount = (_props, context) => {
         <LabeledList.Item label="Account Holder">
           <Input placeholder="Name Here" onChange={(e, v) => setAccName(v)} />
         </LabeledList.Item>
-        <LabeledList.Item label="Initial Deposit">
+        {/* <LabeledList.Item label="Initial Deposit">
           <Input placeholder="0" onChange={(e, v) => setAccDeposit(v)} />
-        </LabeledList.Item>
+        </LabeledList.Item> */}
       </LabeledList>
       <Button
         mt={1}

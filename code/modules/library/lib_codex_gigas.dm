@@ -20,16 +20,13 @@
 	var/currentName = ""
 	var/currentSection = PRE_TITLE
 
-/obj/item/book/codex_gigas/attack_self(obj/item/I, mob/user)
+/obj/item/book/codex_gigas/attack_self(mob/user)
 	if(is_blind(user))
 		to_chat(user, "<span class='warning'>As you are trying to read, you suddenly feel very stupid.</span>")
 		return
-	if(istype(I, /obj/item/pen))
-		if(!user.can_write(I))
-			to_chat(user, "<span class='notice'>You skim through the book but can't comprehend any of it.</span>")
-			return
 	if(inUse)
 		to_chat(user, "<span class='notice'>Someone else is reading it.</span>")
+		return
 	if(ishuman(user))
 		var/mob/living/carbon/human/U = user
 		if(U.check_acedia())
@@ -64,7 +61,16 @@
 	inUse = FALSE
 
 /obj/item/book/codex_gigas/proc/display_devil(datum/antagonist/devil/devil, mob/reader, devilName)
-	reader << browse("Information on [devilName]<br><br><br>[GLOB.lawlorify[LORE][devil.ban]]<br>[GLOB.lawlorify[LORE][devil.bane]]<br>[GLOB.lawlorify[LORE][devil.obligation]]<br>[GLOB.lawlorify[LORE][devil.banish]]<br>[devil.ascendable?"This devil may ascend given enough souls.":""]", "window=book[window_size != null ? ";size=[window_size]" : ""]")
+	var/book_w = 0
+	var/book_h = 0
+	if(window_size)
+		var/list/size_parts = splittext(window_size, "x")
+		if(length(size_parts) >= 2)
+			book_w = text2num(size_parts[1])
+			book_h = text2num(size_parts[2])
+	var/datum/browser/popup = new(reader, "book", "Codex Gigas", book_w, book_h)
+	popup.set_content("Information on [devilName]<br><br><br>[GLOB.lawlorify[LORE][devil.ban]]<br>[GLOB.lawlorify[LORE][devil.bane]]<br>[GLOB.lawlorify[LORE][devil.obligation]]<br>[GLOB.lawlorify[LORE][devil.banish]]<br>[devil.ascendable?"This devil may ascend given enough souls.":""]")
+	popup.open(FALSE)
 
 /obj/item/book/codex_gigas/proc/ask_name(mob/reader)
 	ui_interact(reader)

@@ -18,6 +18,50 @@
 		var/datum/gas_mixture/A = new(200)
 		airs[i] = A
 
+// Показания портов для интерфейсов
+
+///Подписи портов в интерфейсе. Переопределяется теми, у кого стороны
+///несимметричны: "Вход"/"Выход" честнее, чем "Порт 1"/"Порт 2".
+/obj/machinery/atmospherics/components/proc/ui_port_labels()
+	return list()
+
+///Живые показания того, что реально стоит на портах. Без них девайсовые окна
+///просили выставить давление вслепую: панель показывала только уставку.
+/obj/machinery/atmospherics/components/proc/ui_port_data()
+	var/list/labels = ui_port_labels()
+	var/list/ports = list()
+	for(var/i in 1 to length(airs))
+		var/datum/gas_mixture/port_air = airs[i]
+		if(!port_air)
+			continue
+		ports += list(list(
+			"name" = (i <= length(labels)) ? labels[i] : "Порт [i]",
+			"pressure" = round(port_air.return_pressure(), 0.01),
+			"temperature" = round(port_air.return_temperature(), 0.01),
+			"moles" = round(port_air.total_moles(), 0.01),
+			"connected" = !isnull(nodes) && (i <= length(nodes)) && !isnull(nodes[i]),
+		))
+	return ports
+
+/// Текущее давление на выходе. Нужно там, где уставка задаётся не в кПа
+/// (объёмный насос задаёт л/с) и панель без живого давления слепа.
+/obj/machinery/atmospherics/components/proc/output_line_pressure()
+	var/datum/gas_mixture/out = length(airs) >= 2 ? airs[2] : null
+	return out ? round(out.return_pressure()) : null
+
+/// Агрегат с оторванной трубой выглядит как исправный: иконка "on" горит, а
+/// газ не идёт - помпа накачивает собственный обрубок до цели и штатно
+/// засыпает. В раунде 9875 при перекладке труб это читалось как "помпы сами
+/// отмирают". Examine обязан говорить о недособранной линии прямо.
+/obj/machinery/atmospherics/components/examine(mob/user)
+	. = ..()
+	var/missing = 0
+	for(var/i in 1 to device_type)
+		if(!nodes[i])
+			missing++
+	if(missing)
+		. += "<span class='warning'>Подключено соединений: <b>[device_type - missing] из [device_type]</b> - пока линия не собрана, газ через недостающие стороны не пойдёт.</span>"
+
 // Iconnery
 
 /obj/machinery/atmospherics/components/proc/update_icon_nopipes()
@@ -29,7 +73,7 @@
 	underlays.Cut()
 
 	var/turf/T = loc
-	if(level == 2 || (istype(T) && !T.intact))
+	if(level == 2 || (istype(T) && !(T.turf_flags & TURF_INTACT)))
 		showpipe = TRUE
 		plane = ABOVE_WALL_PLANE
 	else
@@ -57,15 +101,17 @@
 
 /obj/machinery/atmospherics/components/proc/get_pipe_underlay(state, dir, color = null)
 	if(color)
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 	else
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 
 // Pipenet stuff; housekeeping
 
 /obj/machinery/atmospherics/components/nullifyNode(i)
+	var/datum/gas_mixture/air_ref = airs ? airs[i] : null
 	if(parents[i])
 		nullifyPipenet(parents[i])
+	prune_stale_pipeline_memberships(air_ref)
 	QDEL_NULL(airs[i])
 	return ..()
 
@@ -73,12 +119,15 @@
 	..()
 	update_parents()
 
-/obj/machinery/atmospherics/components/build_network()
+/obj/machinery/atmospherics/components/build_network(blocking = FALSE)
+	if(!parents)
+		stack_trace("[type] build_network() at [COORD(src)]: parents list is null - object may be destroyed or improperly initialized")
+		return
 	for(var/i in 1 to device_type)
 		if(!parents[i])
 			parents[i] = new /datum/pipeline()
 			var/datum/pipeline/P = parents[i]
-			P.build_pipeline(src)
+			P.build_pipeline(src, blocking)
 
 /**
  * Called by nullify_node(), used to remove the pipeline the component is attached to
@@ -88,11 +137,19 @@
 /obj/machinery/atmospherics/components/proc/nullifyPipenet(datum/pipeline/reference)
 	if(!reference)
 		CRASH("nullifyPipenet(null) called by [type] on [COORD(src)]")
+	if(QDESTROYING(reference))
+		stack_trace("nullifyPipenet() called on already-destroying pipeline [reference]([REF(reference)]) by [type] at [COORD(src)]")
+		// Still need to clear our local references even if pipeline is being destroyed
+		for (var/i in 1 to parents.len)
+			if (parents[i] == reference)
+				parents[i] = null
+		return
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
 			reference.other_airs -= airs[i] // Disconnects from the pipeline side
 			parents[i] = null // Disconnects from the machinery side.
 	reference.other_atmosmch -= src
+	LAZYREMOVE(reference.bridging_atmosmch, src)
 	/**
 	 *  We explicitly qdel pipeline when this particular pipeline
 	 *  is projected to have no member and cause GC problems.
@@ -106,26 +163,77 @@
 			CRASH("nullifyPipenet() called on qdeleting [reference]")
 		qdel(reference)
 
+/obj/machinery/atmospherics/components/proc/prune_stale_pipeline_memberships(datum/gas_mixture/air_ref)
+	var/list/seen_pipelines = list()
+	for(var/list/source as anything in list(SSair.networks, SSair.currentrun))
+		if(!islist(source))
+			continue
+		for(var/thing as anything in source)
+			if(!istype(thing, /datum/pipeline))
+				continue
+			var/datum/pipeline/P = thing
+			if(P in seen_pipelines)
+				continue
+			seen_pipelines += P
+			if(QDELETED(P) || QDESTROYING(P))
+				continue
+			var/changed = FALSE
+			if(src in P.other_atmosmch)
+				P.other_atmosmch -= src
+				LAZYREMOVE(P.bridging_atmosmch, src)
+				changed = TRUE
+			if(air_ref && (air_ref in P.other_airs))
+				P.other_airs -= air_ref
+				changed = TRUE
+			if(changed)
+				P.mark_dirty()
+				if(!length(P.other_atmosmch) && !length(P.members))
+					qdel(P)
+
 /obj/machinery/atmospherics/components/returnPipenetAirs(datum/pipeline/reference)
 	var/list/returned_air = list()
+	if(!parents || !airs)
+		stack_trace("[type] returnPipenetAirs() at [COORD(src)]: parents=[parents ? "exists" : "null"] airs=[airs ? "exists" : "null"] - called during invalid state")
+		return returned_air
 	for (var/i in 1 to parents.len)
 		if (parents[i] == reference)
-			returned_air += airs[i]
+			var/datum/gas_mixture/air = airs[i]
+			if(air)
+				returned_air += air
 	return returned_air
 
 /obj/machinery/atmospherics/components/pipeline_expansion(datum/pipeline/reference)
 	if(reference)
-		return list(nodes[parents.Find(reference)])
+		if(!parents?.len || !nodes?.len)
+			return list()
+		var/index = parents.Find(reference)
+		if(!index || index > nodes.len)
+			return list()
+		return list(nodes[index])
 	return ..()
 
 /obj/machinery/atmospherics/components/setPipenet(datum/pipeline/reference, obj/machinery/atmospherics/A)
-	parents[nodes.Find(A)] = reference
+	if(!parents?.len || !nodes?.len)
+		return
+	var/index = nodes.Find(A)
+	if(!index || index > parents.len)
+		return
+	parents[index] = reference
 
 /obj/machinery/atmospherics/components/returnPipenet(obj/machinery/atmospherics/A = nodes[1]) //returns parents[1] if called without argument
-	return parents[nodes.Find(A)]
+	if(!parents?.len || !nodes?.len)
+		return null
+	var/index = nodes.Find(A)
+	if(!index || index > parents.len)
+		return null
+	return parents[index]
 
 /obj/machinery/atmospherics/components/replacePipenet(datum/pipeline/Old, datum/pipeline/New)
-	parents[parents.Find(Old)] = New
+	if(!parents?.len)
+		return
+	for(var/index in 1 to parents.len)
+		if(parents[index] == Old)
+			parents[index] = New
 
 /obj/machinery/atmospherics/components/unsafe_pressure_release(var/mob/user, var/pressures)
 	..()
@@ -165,10 +273,10 @@
 	for(var/i in 1 to device_type)
 		var/datum/pipeline/parent = parents[i]
 		if(!parent)
-			WARNING("Component is missing a pipenet! Rebuilding...")
+			investigate_log("[type] at [COORD(src)] is missing a pipenet, rebuilding", INVESTIGATE_ATMOS)
 			SSair.add_to_rebuild_queue(src)
 		else
-			parent.update = TRUE
+			parent.mark_dirty()
 
 /obj/machinery/atmospherics/components/returnPipenets()
 	. = list()
@@ -198,3 +306,76 @@
 /obj/machinery/atmospherics/components/analyzer_act(mob/living/user, obj/item/I)
 	atmosanalyzer_scan(airs, user, src)
 	return TRUE
+
+/// Disconnects from pipenets, re-runs atmosinit, and rebuilds pipeline membership. Used after assembly or rotation.
+/obj/machinery/atmospherics/components/proc/reconnect_nodes()
+	for(var/i in 1 to device_type)
+		var/obj/machinery/atmospherics/node = nodes[i]
+		if(node)
+			if(src in node.nodes)
+				node.disconnect(src)
+			nodes[i] = null
+		if(parents[i])
+			nullifyPipenet(parents[i])
+	if(!SSair.initialized)
+		return
+	atmosinit()
+	for(var/i in 1 to device_type)
+		var/obj/machinery/atmospherics/node = nodes[i]
+		if(node)
+			node.atmosinit()
+			node.addMember(src)
+	build_network()
+	update_icon()
+
+/obj/machinery/atmospherics/components/default_change_direction_wrench(mob/user, obj/item/I)
+	if(!..())
+		return FALSE
+	SetInitDirections()
+	reconnect_nodes()
+	return TRUE
+
+/obj/machinery/atmospherics/components/proc/crowbar_deconstruction_act(mob/living/user, obj/item/tool, internal_pressure = 0)
+	if(!panel_open)
+		balloon_alert(user, "open the panel first!")
+		return TRUE
+
+	var/unsafe_wrenching = FALSE
+	var/filled_pipe = FALSE
+	var/datum/gas_mixture/environment_air = loc.return_air()
+
+	for(var/i in 1 to device_type)
+		var/datum/gas_mixture/inside_air = airs[i]
+		if(inside_air?.total_moles() > 0 || internal_pressure)
+			filled_pipe = TRUE
+		if(nodes[i])
+			internal_pressure = max(internal_pressure, airs[i].return_pressure())
+
+	if(!filled_pipe)
+		return default_deconstruction_crowbar(tool)
+
+	if(environment_air)
+		internal_pressure -= environment_air.return_pressure()
+
+	// Same deal as unwrenching a pipe: instant unless the thing is still holding
+	// pressure, in which case the warning below needs a window to matter.
+	var/deconstruct_delay = 0
+	if(internal_pressure > 2 * ONE_ATMOSPHERE)
+		to_chat(user, span_warning("As you begin deconstructing \the [src] a gush of air blows in your face... maybe you should reconsider?"))
+		unsafe_wrenching = TRUE
+		deconstruct_delay = ATMOS_UNSAFE_WRENCH_DELAY
+
+	if(deconstruct_delay && !do_after(user, deconstruct_delay, src))
+		return TRUE
+	if(unsafe_wrenching)
+		unsafe_pressure_release(user, internal_pressure)
+	tool.play_tool_sound(src, 50)
+	deconstruct(TRUE)
+	return TRUE
+
+// IMPORTANT: Call parent FIRST because parent's nullifyNode() accesses parents[] and airs[]
+// Do NOT change this order to match child classes - they clean up different vars
+/obj/machinery/atmospherics/components/Destroy()
+	. = ..()
+	parents = null
+	QDEL_LIST(airs)

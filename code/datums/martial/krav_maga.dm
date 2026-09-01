@@ -2,6 +2,7 @@
 	name = "Krav Maga"
 	id = MARTIALART_KRAVMAGA
 	pugilist = TRUE
+	resist_grab_chance = 50
 	var/datum/action/neck_chop/neckchop = new/datum/action/neck_chop()
 	var/datum/action/leg_sweep/legsweep = new/datum/action/leg_sweep()
 	var/datum/action/lung_punch/lungpunch = new/datum/action/lung_punch()
@@ -24,15 +25,18 @@
 		to_chat(owner, "<span class='warning'>You can't use [name] while you're incapacitated.</span>")
 		return
 	var/mob/living/carbon/human/H = owner
-	if (H.mind.martial_art.streak == "neck_chop")
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	if (style.streak == "neck_chop")
 		owner.visible_message("<span class='danger'>[owner] assumes a neutral stance.</span>", "<b><i>Your next attack is cleared.</i></b>")
-		H.mind.martial_art.streak = ""
+		style.streak = ""
 	else
 		if(HAS_TRAIT(H, TRAIT_PACIFISM))
 			to_chat(H, "<span class='warning'>You don't want to harm other people!</span>")
 			return
 		owner.visible_message("<span class='danger'>[owner] assumes the Neck Chop stance!</span>", "<b><i>Your next attack will be a Neck Chop.</i></b>")
-		H.mind.martial_art.streak = "neck_chop"
+		style.streak = "neck_chop"
 
 /datum/action/leg_sweep
 	name = "Leg Sweep - Trips the victim, knocking them down for a brief moment."
@@ -44,15 +48,18 @@
 		to_chat(owner, "<span class='warning'>You can't use [name] while you're incapacitated.</span>")
 		return
 	var/mob/living/carbon/human/H = owner
-	if (H.mind.martial_art.streak == "leg_sweep")
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	if (style.streak == "leg_sweep")
 		owner.visible_message("<span class='danger'>[owner] assumes a neutral stance.</span>", "<b><i>Your next attack is cleared.</i></b>")
-		H.mind.martial_art.streak = ""
+		style.streak = ""
 	else
 		if(HAS_TRAIT(H, TRAIT_PACIFISM))
 			to_chat(H, "<span class='warning'>You don't want to harm other people!</span>")
 			return
 		owner.visible_message("<span class='danger'>[owner] assumes the Leg Sweep stance!</span>", "<b><i>Your next attack will be a Leg Sweep.</i></b>")
-		H.mind.martial_art.streak = "leg_sweep"
+		style.streak = "leg_sweep"
 
 /datum/action/lung_punch//referred to internally as 'quick choke'
 	name = "Lung Punch - Delivers a strong punch just above the victim's abdomen, constraining the lungs. The victim will be unable to breathe for a short time."
@@ -64,23 +71,38 @@
 		to_chat(owner, "<span class='warning'>You can't use [name] while you're incapacitated.</span>")
 		return
 	var/mob/living/carbon/human/H = owner
-	if (H.mind.martial_art.streak == "quick_choke")
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	if (style.streak == "quick_choke")
 		owner.visible_message("<span class='danger'>[owner] assumes a neutral stance.</span>", "<b><i>Your next attack is cleared.</i></b>")
-		H.mind.martial_art.streak = ""
+		style.streak = ""
 	else
 		if(HAS_TRAIT(H, TRAIT_PACIFISM))
 			to_chat(H, "<span class='warning'>You don't want to harm other people!</span>")
 			return
 		owner.visible_message("<span class='danger'>[owner] assumes the Lung Punch stance!</span>", "<b><i>Your next attack will be a Lung Punch.</i></b>")
-		H.mind.martial_art.streak = "quick_choke"//internal name for lung punch
+		style.streak = "quick_choke"//internal name for lung punch
 
 /datum/martial_art/krav_maga/teach(mob/living/carbon/human/H,make_temporary=0)
-	if(..())
-		to_chat(H, "<span class = 'userdanger'>You know the arts of [name]!</span>")
-		to_chat(H, "<span class = 'danger'>Place your cursor over a move at the top of the screen to see what it does.</span>")
-		neckchop.Grant(H)
-		legsweep.Grant(H)
-		lungpunch.Grant(H)
+	// Возврат обязателен: вызывающие (например, панель игрока) считают null отказом
+	// и qdel-ят уже выданный стиль - тогда харддел обнулял mind.martial_art, а кнопки
+	// приёмов оставались висеть (прод-раунд 10151).
+	. = ..()
+	if(!.)
+		return
+	to_chat(H, "<span class = 'userdanger'>You know the arts of [name]!</span>")
+	to_chat(H, "<span class = 'danger'>Place your cursor over a move at the top of the screen to see what it does.</span>")
+	neckchop.Grant(H)
+	legsweep.Grant(H)
+	lungpunch.Grant(H)
+
+/datum/martial_art/krav_maga/Destroy()
+	// Кнопки принадлежат стилю - без этого они переживали его на HUD владельца.
+	QDEL_NULL(neckchop)
+	QDEL_NULL(legsweep)
+	QDEL_NULL(lungpunch)
+	return ..()
 
 /datum/martial_art/krav_maga/on_remove(mob/living/carbon/human/H)
 	to_chat(H, "<span class = 'userdanger'>You suddenly forget the arts of [name]...</span>")

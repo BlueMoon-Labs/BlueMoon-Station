@@ -7,6 +7,14 @@
 	var/list/writtentext = ""
 	var/list/obj/item/equipment = list()
 
+/obj/item/organ/genital/Destroy()
+	QDEL_NULL(climax_fluids)
+	QDEL_LIST(equipment)
+	if(linked_organ?.linked_organ == src)
+		linked_organ.linked_organ = null
+	linked_organ = null
+	return ..()
+
 /obj/item/organ/genital/modify_size(modifier, min, max)
 	. = ..()
 	if(owner) //Add extra space depending on the owner's size
@@ -64,3 +72,7 @@
 
 	// Send signal
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_GENITALS)
+
+/mob/living/carbon/human/proc/is_genital_forced_visible(key)
+	return key && layers_for_apply_effect && (key in layers_for_apply_effect)
+

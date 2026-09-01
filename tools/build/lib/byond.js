@@ -8,7 +8,7 @@ import { regQuery } from './winreg.js';
  */
 let dmPath;
 
-const getDmPath = async () => {
+export const getDmPath = async () => {
   if (dmPath) {
     return dmPath;
   }

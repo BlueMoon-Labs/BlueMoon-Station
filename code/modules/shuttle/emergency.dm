@@ -13,6 +13,7 @@
 
 /obj/machinery/computer/emergency_shuttle
 	name = "emergency shuttle console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "For shuttle control."
 	icon_screen = "shuttle"
 	icon_keyboard = "tech_key"
@@ -293,6 +294,8 @@
 	port_direction = WEST
 	var/sound_played = 0 //If the launch sound has been sent to all players on the shuttle itself
 	var/hijack_status = NOT_BEGUN
+	/// Очередь путей /datum/shuttle_event из GLOB.admin_forceable_hyperspace_events — по порядку при уходе в транзит.
+	var/list/queued_admin_hyperspace_events = list()
 
 /obj/docking_port/mobile/emergency/canDock(obj/docking_port/stationary/S)
 	return SHUTTLE_CAN_DOCK //If the emergency shuttle can't move, the whole game breaks, so it will force itself to land even if it has to crush a few departments in the process
@@ -370,6 +373,29 @@
 	query_round_shuttle_name.Execute()
 	qdel(query_round_shuttle_name)
 
+/// Roll and schedule tg-style hyperspace events for the transit leg (processed in SSshuttle while docked to /transit).
+/obj/docking_port/mobile/emergency/proc/prepare_hyperspace_events()
+	for(var/datum/shuttle_event/old_event as anything in event_list)
+		qdel(old_event)
+	event_list.Cut()
+
+	var/evac_duration = SSshuttle.emergencyEscapeTime * engine_coeff
+	var/used_admin_queue = FALSE
+	if(length(queued_admin_hyperspace_events))
+		for(var/event_type in queued_admin_hyperspace_events)
+			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in get_admin_forceable_hyperspace_events()))
+				continue
+			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
+			queued_ev?.start_up_event(evac_duration, TRUE)
+			used_admin_queue = TRUE
+		queued_admin_hyperspace_events.Cut()
+	if(!used_admin_queue)
+		var/list/weighted = get_hyperspace_event_roll_weights()
+		if(length(weighted))
+			var/chosen = pickweight(weighted)
+			var/datum/shuttle_event/new_event = add_shuttle_event(chosen)
+			new_event?.start_up_event(evac_duration, TRUE)
+
 /obj/docking_port/mobile/emergency/check()
 	if(!timer)
 		return
@@ -401,6 +427,7 @@
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce("Эвакуационный Шаттл пристыковался к станции. Вам отведено [timeLeft(600)] минуты для посадки.", null, "shuttledock", "Priority")
 				ShuttleDBStuff()
+				try_station_dock_ert_mopp()
 
 
 		if(SHUTTLE_DOCKED)
@@ -450,8 +477,9 @@
 				mode = SHUTTLE_ESCAPE
 				launch_status = ENDGAME_LAUNCHED
 				setTimer(SSshuttle.emergencyEscapeTime * engine_coeff)
+				prepare_hyperspace_events()
 				priority_announce("Шаттл Эвакуации покинул станцию. До прибытия Шаттла Эвакуации на Аванпост Центрального Командования осталось [timeLeft(600)] минут.", null, null, "ВНИМАНИЕ: ОТБЫТИЕ ШАТТЛА")
-				INVOKE_ASYNC(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts))
+				addtimer(CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts)), 0)
 
 		if(SHUTTLE_STRANDED)
 			SSshuttle.checkHostileEnvironment()
@@ -486,7 +514,7 @@
 				// now move the actual emergency shuttle to centcom
 				// unless the shuttle is "hijacked"
 				var/destination_dock = "emergency_away"
-				if(is_hijacked() && GLOB.master_mode == "Extended")
+				if(is_hijacked() && (GLOB.round_type == ROUNDTYPE_EXTENDED || GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT))
 					destination_dock = "emergency_real_syndicate"
 					minor_announce("Обнаружен взлом в протоколах \
 						автопилота шаттла. Пожалуйста, найдите и поговорите с \
@@ -512,6 +540,27 @@
 	priority_announce("The Emergency Shuttle is preparing for direct jump. Estimate [timeLeft(600)] minutes until the shuttle docks at Central Command.", null, null, "Priority")
 
 
+/// Subtype for escape pod ports so that we can give them trait behaviour
+/obj/docking_port/stationary/escape_pod
+	name = "escape pod loader"
+	height = 5
+	width = 3
+	dwidth = 1
+	roundstart_template = /datum/map_template/shuttle/escape_pod/default
+	/// Set to true if you have a snowflake escape pod dock which needs to always have the normal pod or some other one
+	var/enforce_specific_pod = FALSE
+
+/obj/docking_port/stationary/escape_pod/Initialize(mapload)
+	. = ..()
+	if(enforce_specific_pod)
+		return
+
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_SMALLER_PODS))
+		roundstart_template = /datum/map_template/shuttle/escape_pod/cramped
+		return
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_BIGGER_PODS))
+		roundstart_template = /datum/map_template/shuttle/escape_pod/luxury
+
 /obj/docking_port/mobile/pod
 	name = "escape pod"
 	shuttle_id = "pod"
@@ -524,20 +573,15 @@
 	var/obj/machinery/computer/shuttle/C = getControlConsole()
 	if(!istype(C, /obj/machinery/computer/shuttle/pod))
 		return ..()
-	if(GLOB.security_level >= SEC_LEVEL_RED || (C && (C.obj_flags & EMAGGED)))
-		if(launch_status == UNLAUNCHED)
-			launch_status = EARLY_LAUNCHED
-			return ..()
-	else
-		to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
-		return TRUE
+	if(launch_status == UNLAUNCHED)
+		launch_status = EARLY_LAUNCHED
+	return ..()
 
 /obj/docking_port/mobile/pod/cancel()
 	return
 
 /obj/machinery/computer/shuttle/pod
 	name = "pod control computer"
-	admin_controlled = TRUE
 	possible_destinations = "pod_asteroid"
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "dorm_available"
@@ -545,9 +589,9 @@
 	density = FALSE
 	clockwork = TRUE //it'd look weird
 
-/obj/machinery/computer/shuttle/pod/Initialize(mapload)
+/obj/machinery/computer/shuttle/pod/ui_data(mob/user)
 	. = ..()
-	RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(check_lock))
+	.["pod_depart_locked"] = !(obj_flags & EMAGGED) && (GLOB.security_level < SEC_LEVEL_RED)
 
 /obj/machinery/computer/shuttle/pod/ComponentInitialize()
 	. = ..()
@@ -557,7 +601,7 @@
 	. = SEND_SIGNAL(src, COMSIG_ATOM_EMAG_ACT)
 	if(obj_flags & EMAGGED)
 		return
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(user, "<span class='warning'>You fry the pod's alert level checking system.</span>")
 	return TRUE
@@ -565,26 +609,13 @@
 /obj/machinery/computer/shuttle/pod/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	. = ..()
 	if(possible_destinations == initial(possible_destinations) || override)
-		possible_destinations = "pod_lavaland[idnum]"
-
-/**
- * Signal handler for checking if we should lock or unlock escape pods accordingly to a newly set security level
- *
- * Arguments:
- * * source The datum source of the signal
- * * new_level The new security level that is in effect
- */
-/obj/machinery/computer/shuttle/pod/proc/check_lock(datum/source, new_level)
-	SIGNAL_HANDLER
-
-	if(obj_flags & EMAGGED)
-		return
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	admin_controlled = !(new_level < SEC_LEVEL_RED)
+		possible_destinations = "pod_lavaland[idnum];pod"
 
 /obj/docking_port/stationary/random
 	name = "escape pod"
 	shuttle_id = "pod"
+	hidden = TRUE
+	override_can_dock_checks = TRUE
 	dwidth = 1
 	width = 3
 	height = 4
@@ -599,6 +630,14 @@
 		return
 
 	var/list/turfs = get_area_turfs(target_area)
+	// Multi-z Lavaland: both jungle and wasteland use MINING; only the surface has LAVA_RUINS. Without this, pods pick the lower z.
+	var/list/lava_surface_z = SSmapping.levels_by_all_trait(list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
+	if(LAZYLEN(lava_surface_z))
+		var/list/filtered = list()
+		for(var/turf/T as anything in turfs)
+			if(T.z in lava_surface_z)
+				filtered += T
+		turfs = filtered
 	var/original_len = turfs.len
 	while(turfs.len)
 		var/turf/picked_turf = pick(turfs)
@@ -653,6 +692,30 @@
 	new /obj/item/pickaxe/emergency(src)
 	new /obj/item/pickaxe/emergency(src)
 	new /obj/item/survivalcapsule(src)
+	new /obj/item/storage/toolbox/emergency(src)
+
+/obj/item/storage/pod_luxury
+	name = "luxury space suits"
+	desc = "A wall mounted safe containing space suits. Will only open in emergencies."
+	anchored = TRUE
+	icon = 'icons/obj/storage.dmi'
+	icon_state = "safe"
+	integrity_failure = 0.2
+	component_type = /datum/component/storage/concrete/emergency
+
+/obj/item/storage/pod_luxury/PopulateContents()
+	new /obj/item/clothing/head/helmet/space/syndicate(src)
+	new /obj/item/clothing/head/helmet/space/syndicate(src)
+	new /obj/item/clothing/suit/space/syndicate(src)
+	new /obj/item/clothing/suit/space/syndicate(src)
+	new /obj/item/clothing/mask/gas/syndicate(src)
+	new /obj/item/clothing/mask/gas/syndicate(src)
+	new /obj/item/tank/internals/oxygen/red(src)
+	new /obj/item/tank/internals/oxygen/red(src)
+	new /obj/item/pickaxe/diamond(src)
+	new /obj/item/pickaxe/diamond(src)
+	new /obj/item/survivalcapsule/luxury(src)
+	new /obj/item/storage/toolbox/emergency(src)
 	new /obj/item/storage/toolbox/emergency(src)
 
 /obj/docking_port/mobile/emergency/backup

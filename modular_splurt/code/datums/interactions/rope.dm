@@ -13,7 +13,7 @@
 
 	return ..()
 
-/datum/interaction/lewd/bondage_rope_remove/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/lewd/bondage_rope_remove/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	if(!istype(target, /mob/living/carbon))
 		return
 	var/mob/living/carbon/C = target

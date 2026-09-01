@@ -81,7 +81,7 @@
 		if(prob(reac_volume))
 			W.ScrapeAway()
 
-/datum/reagent/clf3/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/clf3/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(istype(M))
 		if(method != INGEST && method != INJECT)
 			M.adjust_fire_stacks(min(reac_volume/5, 10))
@@ -175,7 +175,7 @@
 	G.fire_temperature = T20C+1
 	return G
 
-/datum/reagent/phlogiston/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/phlogiston/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	M.adjust_fire_stacks(1)
 	var/burndmg = max(0.3*M.fire_stacks, 0.3)
 	M.adjustFireLoss(burndmg, 0)
@@ -212,7 +212,7 @@
 	M.adjust_fire_stacks(1)
 	..()
 
-/datum/reagent/napalm/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/napalm/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(istype(M))
 		if(method != INGEST && method != INJECT)
 			M.adjust_fire_stacks(min(reac_volume/4, 20))
@@ -336,7 +336,7 @@
 /datum/reagent/firefighting_foam/reaction_obj(obj/O, reac_volume)
 	O.extinguish()
 
-/datum/reagent/firefighting_foam/reaction_mob(mob/living/M, method=TOUCH, reac_volume)
+/datum/reagent/firefighting_foam/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method in list(VAPOR, TOUCH))
 		M.adjust_fire_stacks(-reac_volume)
 		M.ExtinguishMob()

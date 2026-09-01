@@ -486,6 +486,7 @@
 			HY.harvest = 0
 			HY.weedlevel = 0 // Reset
 			HY.pestlevel = 0 // Reset
+			HY.machine_wake() // a spread-into tray that was asleep now holds a live plant that must grow
 			HY.update_icon()
 			HY.visible_message("<span class='warning'>The [H.myseed.plantname] spreads!</span>")
 

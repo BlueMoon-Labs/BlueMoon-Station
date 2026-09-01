@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, LabeledList, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
 
-export const VrSleeper = (props, context) => {
-  const { act, data } = useBackend(context);
+export const VrSleeper = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       width={475}

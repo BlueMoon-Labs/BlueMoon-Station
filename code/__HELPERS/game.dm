@@ -15,7 +15,10 @@
 	var/area/A = get_base_area ? get_base_area(X) : get_area(X)
 	if(!A)
 		return null
-	return format_text ? format_text(A.name) : A.name
+	var/name = A.name
+	if(!name)
+		return ""
+	return format_text ? format_text(name) : name
 
 /proc/get_areas_in_range(dist=0, atom/center=usr)
 	if(!dist)
@@ -88,6 +91,36 @@
 	source.luminosity = lum
 
 	return heard
+
+/**
+ * Ассоц-набор турфов в view(5) от турфа источника речи, без учёта освещения.
+ *
+ * Однословный кэш на тик: все слушатели одного сообщения обрабатываются
+ * синхронно подряд, поэтому первый вызов платит за view(), остальные читают
+ * готовый набор. Раньше compose_message() гонял view(5) на КАЖДОГО слушателя.
+ * Направление проверки перевёрнуто (view от источника, а не от слушателя) -
+ * для турф-центров view симметричен с точностью до углов, а тут только
+ * косметика размера текста.
+ */
+/proc/get_speech_visible_turfs(turf/sourceturf)
+	var/static/turf/cached_source
+	var/static/cached_time = -1
+	var/static/list/cached_turfs
+
+	if(cached_source == sourceturf && cached_time == world.time)
+		return cached_turfs
+
+	cached_source = sourceturf
+	cached_time = world.time
+	cached_turfs = list()
+
+	var/lum = sourceturf.luminosity
+	sourceturf.luminosity = 6
+	for(var/turf/visible_turf in view(5, sourceturf))
+		cached_turfs[visible_turf] = TRUE
+	sourceturf.luminosity = lum
+
+	return cached_turfs
 
 /proc/alone_in_area(area/the_area, mob/must_be_alone, check_type = /mob/living/carbon)
 	var/area/our_area = get_area(the_area)
@@ -248,36 +281,112 @@
 
 	return found_mobs
 
-/proc/get_hearers_in_view(R, atom/source)
+/**
+ * Все слышащие movables в видимости от турфа source (без учёта освещения).
+ *
+ * Кандидаты берутся из канала contents_type спатиал-грида (по умолчанию
+ * HEARING; playsound передаёт CLIENTS), затем на их турфы расставляются
+ * /mob/oranges_ear и один hearers() фильтрует по линии видимости только
+ * мобов-ушей вместо перебора всего содержимого view(): см. комментарий
+ * в oranges_ear.dm.
+ */
+/proc/get_hearers_in_view(R, atom/source, contents_type = SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
 		return
+
+	if(!SSspatial_grid.initialized) //речь до инита грида (лобби и т.п.)
+		return legacy_get_hearers_in_view(R, T)
+
+	if(R <= 0) //только турф источника
+		for(var/atom/movable/target as anything in T)
+			var/list/hearables_from_this_atom = target.important_recursive_contents?[contents_type]
+			if(hearables_from_this_atom)
+				. += hearables_from_this_atom
+	else
+		var/list/hearables_from_grid = SSspatial_grid.orthogonal_range_search(T, contents_type, R)
+		if(!length(hearables_from_grid))
+			return
+
+		var/list/assigned_oranges_ears = SSspatial_grid.assign_oranges_ears(hearables_from_grid)
+
+		//тот же примитив видимости, что у старого пути (view + подсветка):
+		//типизация по /mob заставляет view() обходить только мобовый связный
+		//список контентов турфов - в этом и есть выигрыш ушей
+		var/lum = T.luminosity
+		T.luminosity = 6
+		for(var/mob/oranges_ear/ear in view(R, T))
+			. += ear.references
+		T.luminosity = lum
+
+		for(var/mob/oranges_ear/remaining_ear as anything in assigned_oranges_ears)
+			remaining_ear.unassign()
+
+	if(contents_type != SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		return
+
+	//сигнал сохраняем: дуллахан слышит телом через голову и т.п.
+	//итерируем снапшот - обработчики дописывают слушателей в выходной список
+	var/list/found_hearers = .
+	for(var/atom/movable/hearer as anything in found_hearers.Copy())
+		//харддел слушателя внутри контейнера оставляет null в
+		//important_recursive_contents - не рантаймим и не отдаём его дальше
+		if(isnull(hearer))
+			found_hearers -= null
+			continue
+		SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
+
+///старый BFS-обход view(); нужен только до инициализации спатиал-грида
+/proc/legacy_get_hearers_in_view(R, turf/T)
+	. = list()
 	var/list/processing = list()
 	if(R == 0)
 		processing += T.contents
 	else
 		var/lum = T.luminosity
 		T.luminosity = 6
-		var/list/cached_view = view(R, T)
-		for(var/mob/M in cached_view)
-			processing += M
-		for(var/obj/O in cached_view)
-			processing += O
+		for(var/atom/movable/AM in view(R, T))
+			processing.Add(AM)
 		T.luminosity = lum
 	var/i = 0
-	while(i < length(processing))
+	var/lim = length(processing)
+	while(i < lim)
 		var/atom/A = processing[++i]
 		if(A.flags_1 & HEAR_1)
 			. += A
 			SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
-		processing += A.contents
+		if(length(A.contents))
+			processing += A.contents
+			lim = length(processing)
 
+/**
+ * То же, что get_hearers_in_view, но без учёта видимости: чистый радиус.
+ * С гридом это выборка ячеек плюс фильтр дистанции, без view() вообще.
+ */
 /proc/get_hearers_in_range(R, atom/source)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
 		return
+
+	if(SSspatial_grid.initialized)
+		if(R <= 0) //только турф источника
+			for(var/atom/movable/target as anything in T)
+				var/list/hearables_from_this_atom = target.important_recursive_contents?[RECURSIVE_CONTENTS_HEARING_SENSITIVE]
+				if(hearables_from_this_atom)
+					. += hearables_from_this_atom
+		else
+			for(var/atom/movable/hearable as anything in SSspatial_grid.orthogonal_range_search(T, SPATIAL_GRID_CONTENTS_TYPE_HEARING, R))
+				if(get_dist(T, hearable) <= R)
+					. += hearable
+
+		var/list/found_hearers = .
+		for(var/atom/movable/hearer as anything in found_hearers.Copy())
+			SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
+		return
+
+	//фолбэк до инита грида
 	var/list/processing = range(R, source)
 	var/i = 0
 	while(i < length(processing))
@@ -482,15 +591,44 @@
 		else
 			candidates -= M
 
-/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE)
-	var/list/candidates = get_all_ghost_role_eligible()
-	return pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates)
+/proc/pollGhostCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 30 SECONDS, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check, poll_header = null, poll_alert_pic = null)
+	if(!isnum(poll_time) || poll_time <= 0)
+		stack_trace("pollGhostCandidates: invalid poll_time ([poll_time]) — check call site argument order; using 30 SECONDS.")
+		poll_time = 30 SECONDS
+	var/list/candidates
+	if(isnull(priority_check))
+		priority_check = GLOB.master_mode != ROUNDTYPE_EXTENDED
+	if(priority_check)
+		var/list/priority_candidates = get_all_ghost_role_eligible(priority_only = TRUE)
+		. = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, priority_candidates, poll_header, poll_alert_pic)
+		var/result_len = LAZYLEN(.)
+		if(result_len >= minimum_required)
+			return .
+		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
+		candidates -= priority_candidates
 
-/proc/pollCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE, list/group = null)
-	var/time_passed = world.time
-	if (!Question)
-		Question = "Would you like to be a special role?"
+		var/const/min_low_pool_time = 6 SECONDS
+		var/low_pool_time = poll_time <= min_low_pool_time ? poll_time : max(min_low_pool_time, round(poll_time/2))
+		var/list/low_priority_candidates = pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, low_pool_time, ignore_category, flashwindow, candidates, poll_header, poll_alert_pic)
+		if(!result_len)
+			return low_priority_candidates
+
+		var/need = minimum_required - result_len
+		while(need-- > 0 && LAZYLEN(low_priority_candidates))
+			. += pick_n_take(low_priority_candidates)
+		return .
+
+	else
+		candidates = get_all_ghost_role_eligible(priority_only = FALSE)
+		return pollCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, candidates, poll_header, poll_alert_pic)
+
+/proc/pollCandidates(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, ignore_category = null, flashwindow = TRUE, list/group = null, poll_header = null, poll_alert_pic = null)
 	var/list/result = list()
+	if(!LAZYLEN(group))
+		return result
+	if(!Question)
+		Question = "Would you like to be a special role?"
+	var/list/candidates = list()
 	for(var/m in group)
 		var/mob/M = m
 		if(!M.key || !M.client || (ignore_category && GLOB.poll_ignore[ignore_category] && (M.ckey in GLOB.poll_ignore[ignore_category])))
@@ -505,36 +643,34 @@
 			if(jobban_isbanned(M, jobbanType) || QDELETED(M) || jobban_isbanned(M, ROLE_INTEQ) || QDELETED(M))
 				continue
 
-		showCandidatePollWindow(M, poll_time, Question, result, ignore_category, time_passed, flashwindow)
-	sleep(poll_time)
+		candidates += M
+	if(!LAZYLEN(candidates))
+		return result
 
-	//Check all our candidates, to make sure they didn't log off or get deleted during the wait period.
-	for(var/mob/M in result)
-		if(!M.key || !M.client)
-			result -= M
-
+	result = SSpolling.poll_ghost_prefiltered(
+		Question,
+		poll_time,
+		ignore_category,
+		flashwindow,
+		candidates,
+		poll_header,
+		poll_alert_pic,
+		null,
+		null,
+	)
 	listclearnulls(result)
-
 	return result
 
-/proc/pollCandidatesForMob(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, mob/M, ignore_category = null)
-	var/list/L = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category)
-	if(!M || QDELETED(M) || !M.loc)
+/proc/pollCandidatesForMob(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, mob/M, ignore_category = null, flashwindow = TRUE, minimum_required = 1, priority_check)
+	. = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category, flashwindow, minimum_required, priority_check)
+	if(islist(M))
+		var/list/mobs = M
+		for(var/i = mobs.len, i >= 1, --i)
+			var/atom/A = mobs[i]
+			if(!A || QDELETED(A) || !A.loc)
+				mobs.Cut(i, i + 1)
+	else if(!M || QDELETED(M) || !M.loc)
 		return list()
-	return L
-
-/proc/pollCandidatesForMobs(Question, jobbanType, datum/game_mode/gametypeCheck, be_special_flag = 0, poll_time = 300, list/mobs, ignore_category = null)
-	var/list/L = pollGhostCandidates(Question, jobbanType, gametypeCheck, be_special_flag, poll_time, ignore_category)
-	var/i=1
-	for(var/v in mobs)
-		var/atom/A = v
-		if(!A || QDELETED(A) || !A.loc)
-			mobs.Cut(i,i+1)
-		else
-			++i
-	return L
-
-/proc/poll_helper(var/mob/living/M)
 
 /proc/makeBody(mob/dead/observer/G_found) // Uses stripped down and bastardized code from respawn character
 	if(!G_found || !G_found.key)
@@ -564,19 +700,6 @@
 		return
 	winset(C, "mainwindow", "flash=5")
 
-//Recursively checks if an item is inside a given type, even through layers of storage. Returns the atom if it finds it.
-/proc/recursive_loc_check(atom/movable/target, type)
-	var/atom/A = target
-	if(istype(A, type))
-		return A
-
-	while(!istype(A.loc, type))
-		if(!A.loc)
-			return
-		A = A.loc
-
-	return A.loc
-
 ///Send a message in common radio when a player arrives
 /proc/announce_arrival(mob/living/carbon/human/character, rank)
 	if(!SSticker.IsRoundInProgress() || QDELETED(character))
@@ -604,6 +727,33 @@
 	var/pressure = environment.return_pressure()
 	if(pressure <= LAVALAND_EQUIPMENT_EFFECT_PRESSURE)
 		. = TRUE
+
+/**
+ * Расчёт мультипликатора урона при атмосферном давлении ниже 1-й атмосферы.
+ *
+ * Аргументы:
+ * - turf/T - турф, в котором произошёл выстрел/расчёт урона/e.t.c.
+ * - pressure_treshold - давление в кПа, ниже которого урон не уменьшается.
+ * - decrease_mult - мультипликатор урона, обычно как переменная у отдельно взятого айтема.
+ *
+ * На выходе идёт линейное lerp() уменьшение урона интерполяцией, без округлений числа.
+ */
+/proc/get_pressure_damage_multiplier(turf/T, pressure_treshold, decrease_mult)
+	if(!istype(T))
+		return 1
+
+	var/datum/gas_mixture/environment = T.return_air()
+	if(!istype(environment) || (pressure_treshold >= ONE_ATMOSPHERE))
+		return 1
+
+	var/pressure = environment.return_pressure()
+	if(pressure <= pressure_treshold) // Не только лаваленд, но и любой турф с давлением ниже дефайна
+		return 1
+	if(pressure >= ONE_ATMOSPHERE)
+		return decrease_mult
+
+	var/t = (pressure - pressure_treshold)/(ONE_ATMOSPHERE - pressure_treshold)
+	return lerp(1, decrease_mult, t)
 
 /proc/ispipewire(item)
 	var/static/list/pipe_wire = list(
@@ -637,3 +787,21 @@
 			if(GLOB.typecache_powerfailure_safe_areas[A.type])
 				continue
 			C.energy_fail(rand(duration_min,duration_max))
+
+/// Finds vent pumps on large atmos networks suitable for vent-spawn antagonists.
+/proc/find_vent_spawns()
+	var/list/vents = list()
+	var/list/vent_pumps = SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/atmospherics/components/unary/vent_pump)
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent as anything in vent_pumps)
+		if(QDELETED(temp_vent))
+			continue
+		if(!SSmapping.level_trait(temp_vent.loc.z, ZTRAIT_STATION) || temp_vent.welded)
+			continue
+		var/datum/pipeline/temp_vent_parent = temp_vent.parents[1]
+		if(!temp_vent_parent)
+			continue
+		// Stops antagonists getting stuck in small networks (Security, Virology, etc.)
+		if(temp_vent_parent.other_atmosmch.len <= 20)
+			continue
+		vents += temp_vent
+	return vents

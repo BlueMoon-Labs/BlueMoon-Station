@@ -4,10 +4,10 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 // Auxgm
 // It's a send-up of XGM, like what baystation got.
 // It's got the same architecture as XGM, but it's structured
-// differently to make it more convenient for auxmos.
+// cached for gas mixture and reactions.
 
 // Most important compared to TG is that it does away with hardcoded typepaths,
-// which lead to problems on the auxmos end anyway. We cache the string value
+// We cache the string value
 // references on the Rust end, so no performance is lost here.
 
 // Also allows you to add new gases at runtime
@@ -47,6 +47,14 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 	var/id = ""
 	var/specific_heat = 0
 	var/name = ""
+	/// Текст для внутриигрового справочника. Пишется по единой схеме: что это,
+	/// как получить, зачем нужен, чем опасен - иначе тексты разъезжаются по
+	/// объёму и полезности, и половина газов остаётся без ответа на "а зачем".
+	var/description = ""
+	/// Уровень сложности синтеза, GAS_TIER_*. Объявляется явно у каждого газа,
+	/// потому что по нему калибруются цена продажи и разовая награда науки за
+	/// первый синтез, а вывести его из цепочки реакций глазами нельзя.
+	var/tier = GAS_TIER_RAW
 	var/gas_overlay = "generic" //icon_state in icons/effects/atmospherics.dmi
 	var/color = "#ffff" // Tints the overlay by this color. Use instead of gas_overlay, usually (but not necessarily).
 	var/odor = null // Odor string. Null means none; if not null, anyone who breathes the gas will smell it.
@@ -64,7 +72,17 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 	var/oxidation_rate = 1 // how many moles of this can oxidize how many moles of material
 	var/fire_temperature = null // temperature above which gas may catch fire; null for none
 	var/list/fire_products = null // what results when this gas is burned (oxidizer or fuel); null for none
-	var/enthalpy = 0 // Standard enthalpy of formation in joules, used for fires
+	/// Энергия горения в джоулях на моль СГОРЕВШЕГО газа - именно так это поле
+	/// читает genericfire (energy_released += amt * enthalpy, продукты в баланс не
+	/// входят). Значение обязано быть положительным у всего, что задаёт
+	/// fire_temperature или oxidation_temperature: минус означает пожар, который
+	/// охлаждает воздух. Исключение одно и намеренное - плюоксий, ему минус выдан
+	/// как штраф окислителя.
+	/// У чистых продуктов (CO2, вода, бром) поле не читается никем и хранит
+	/// историческую энтальпию ОБРАЗОВАНИЯ; по ней же считаются теплоты сгорания
+	/// топлив в gas_types.dm. Оксид азота и нитрил - единственные, чью энтальпию
+	/// образования читает ещё и разложение закиси (reactions.dm), их менять нельзя.
+	var/enthalpy = 0
 	var/fire_burn_rate = 1 // how many moles are burned per product released
 	var/fire_radiation_released = 0 // How much radiation is released when this gas burns
 	var/powermix = 0 // how much this gas contributes to the supermatter's powermix ratio

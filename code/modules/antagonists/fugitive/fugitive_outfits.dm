@@ -60,7 +60,7 @@
 /datum/outfit/synthetic/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	if(visualsOnly)
 		return
-	var/obj/item/organ/eyes/robotic/glow/eyes = new()
+	var/obj/item/organ/eyes/robotic/toggled/glow/eyes = new()
 	eyes.Insert(src, drop_if_replaced = FALSE)
 
 /datum/outfit/spacepol
@@ -152,7 +152,7 @@
 	back = /obj/item/storage/backpack
 	suit = /obj/item/clothing/suit/armor/riot
 	shoes = /obj/item/clothing/shoes/jackboots
-	glasses = /obj/item/clothing/glasses/eyepatch
+	glasses = /obj/item/clothing/glasses/cover/eyepatch
 	r_pocket = /obj/item/restraints/handcuffs/cable
 	implants = list(/obj/item/implant/mindshield)
 	ears = /obj/item/radio/headset

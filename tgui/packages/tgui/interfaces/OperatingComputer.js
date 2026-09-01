@@ -1,7 +1,7 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
-import { AnimatedNumber, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs, Divider } from '../components';
+import { AnimatedNumber, Button, Divider, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 const damageTypes = [
@@ -21,14 +21,14 @@ const damageTypes = [
     color: 'green',
   },
   {
-    label: 'Дыхание',
+    label: 'Гипоксия',
     type: 'oxyLoss',
     color: 'blue',
   },
 ];
 
-export const OperatingComputer = (props, context) => {
-  const [tab, setTab] = useSharedState(context, 'tab', 1);
+export const OperatingComputer = (props) => {
+  const [tab, setTab] = useSharedState('tab', 1);
   return (
     <Window
       width={350}
@@ -58,8 +58,8 @@ export const OperatingComputer = (props, context) => {
   );
 };
 
-const PatientStateView = (props, context) => {
-  const { act, data } = useBackend(context);
+const PatientStateView = (props) => {
+  const { act, data } = useBackend();
   const {
     table,
     procedures = [],
@@ -73,7 +73,7 @@ const PatientStateView = (props, context) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <Section title="Состояние пациента">
         {patient && (
           <LabeledList>
@@ -135,7 +135,7 @@ const PatientStateView = (props, context) => {
               {procedure.next_step_chance}
             </LabeledList.Item>
             {procedure.alternative_step && (
-              <Fragment>
+              <>
                 <Divider />
                 <LabeledList.Item label="Альт. процедура">
                   {procedure.alternative_step}
@@ -153,24 +153,30 @@ const PatientStateView = (props, context) => {
                 <LabeledList.Item label="Шанс успеха">
                   {procedure.alternative_step_chance}
                 </LabeledList.Item>
-              </Fragment>
+              </>
             )}
           </LabeledList>
         </Section>
       ))}
-    </Fragment>
+      {patient && patient.special_condition ? (
+      <Section title="Особенности пациента" preserveWhitespace>
+        {patient.special_condition}
+      </Section>
+      ) : ""
+      }
+    </>
   );
 };
 
-const SurgeryProceduresView = (props, context) => {
-  const { act, data } = useBackend(context);
+const SurgeryProceduresView = (props) => {
+  const { act, data } = useBackend();
   const {
     surgeries_base = [],
     surgeries = [],
   } = data;
 
   return (
-    <Fragment>
+    <>
       <Section title="Продвинутые хирургические операции">
         <Button
           icon="download"
@@ -196,6 +202,6 @@ const SurgeryProceduresView = (props, context) => {
           </Section>
         ))}
       </Section>
-    </Fragment>
+    </>
   );
 };

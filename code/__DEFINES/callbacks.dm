@@ -14,6 +14,8 @@
 		}; \
 	}
 #define CALLBACK_NEW(typepath, args) CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(___callbacknew), typepath, args)
+/// A shorthand for the verb callback datum, used by the SSverb_manager queueing macros
+#define VERB_CALLBACK new /datum/callback/verb_callback
 ///Per the DM reference, spawn(-1) will execute the spawned code immediately until a block is met.
 #define MAKE_SPAWN_ACT_LIKE_WAITFOR -1
 ///Create a codeblock that will not block the callstack if a block is met.

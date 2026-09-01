@@ -48,11 +48,13 @@
 			vision_flags = SEE_TURFS
 			darkness_view = 1
 			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			color_cutoffs = list(5, 15, 5)
 
-		if(MODE_TRAY) //undoes the last mode, meson
+		if(MODE_TRAY)
 			vision_flags = NONE
 			darkness_view = 2
 			lighting_alpha = null
+			color_cutoffs = null
 
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
@@ -126,6 +128,7 @@
 
 /obj/item/clothing/glasses/meson/engine/update_icon_state()
 	icon_state = "trayson-[mode]"
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)
 
 /obj/item/clothing/glasses/meson/engine/tray //atmos techs have lived far too long without tray goggles while those damned engineers get their dual-purpose gogles all to themselves
 	name = "optical t-ray scanner"

@@ -31,14 +31,14 @@
 			if(!this["desc"])
 				if(istype(spawner_obj, /obj/effect/mob_spawn))
 					var/obj/effect/mob_spawn/MS = spawner_obj
-					this["short_desc"] = MS.short_desc
-					this["flavor_text"] = MS.flavour_text
-					this["important_info"] = MS.important_info
+					this["short_desc"] = strip_html_tags(MS.short_desc)
+					this["flavor_text"] = strip_html_tags(MS.flavour_text)
+					this["important_info"] = strip_html_tags(MS.important_info)
 					this["category"] = MS.category
 					this["can_load_appearance"] = MS.can_load_appearance
 				else
 					var/obj/O = spawner_obj
-					this["desc"] = O.desc
+					this["desc"] = strip_html_tags(O.desc)
 		this["amount_left"] = LAZYLEN(GLOB.mob_spawners[spawner])
 		data["spawners"] += list(this)
 

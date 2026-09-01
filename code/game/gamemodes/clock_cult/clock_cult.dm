@@ -53,38 +53,39 @@ Credit where due:
 	return D && (!require_full_power || !D.neutered) && (!holy_water_check || !D.ignore_holy_water)
 
 /proc/is_eligible_servant(mob/M)
+	. = FALSE
 	if(!istype(M))
-		return FALSE
+		return
+	if(jobban_isbanned(M, ROLE_SERVANT_OF_RATVAR))
+		return
 	if(M.mind)
 		if(M.mind.assigned_role in list("Captain", "Chaplain"))
-			return FALSE
+			return
 		if(M.mind.enslaved_to && !is_servant_of_ratvar(M.mind.enslaved_to))
-			return FALSE
+			return
 		if(M.mind.unconvertable)
-			return FALSE
-		if (IS_HERETIC(M))
-			return FALSE
+			return
+		if(IS_HERETIC(M))
+			return
 	else
-		return FALSE
+		return
 	if(iscultist(M) || isconstruct(M) || ispAI(M))
-		return FALSE
+		return
 	if(isliving(M))
 		var/mob/living/L = M
 		if(HAS_TRAIT(L, TRAIT_MINDSHIELD))
-			return FALSE
+			return
 	if(ishuman(M) || isbrain(M) || isguardian(M) || issilicon(M) || isclockmob(M) || istype(M, /mob/living/simple_animal/drone/cogscarab) || istype(M, /mob/camera/eminence))
 		return TRUE
-	return FALSE
 
 /proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type)
 	if(!L || !L.mind)
 		return
 	var/update_type = /datum/antagonist/clockcult
-	if(silent)
-		update_type = /datum/antagonist/clockcult/silent
 	if(override_type)		//prioritizes
 		update_type = override_type
 	var/datum/antagonist/clockcult/C = new update_type(L.mind)
+	C.silent = silent
 	C.make_team = create_team
 	C.show_in_roundend = create_team //tutorial scarabs begone
 
@@ -93,23 +94,23 @@ Credit where due:
 		if(R.deployed)
 			var/mob/living/silicon/ai/AI = R.mainframe
 			R.undeploy()
-			to_chat(AI, "<span class='userdanger'>Anomaly Detected. Returned to core!</span>") //The AI needs to be in its core to properly be converted
+			to_chat(AI, "<span class='userdanger'>Обнаружена аномалия. Возвращение в ядро!</span>") //The AI needs to be in its core to properly be converted
 
 	. = L.mind.add_antag_datum(C)
 
 	if(!silent && L)
 		if(.)
-			to_chat(L, "<span class='heavy_brass'>The world before you suddenly glows a brilliant yellow. [issilicon(L) ? "You cannot compute this truth!" : \
-			"Your mind is racing!"] You hear the whooshing steam and cl[pick("ank", "ink", "unk", "ang")]ing cogs of a billion billion machines, and all at once it comes to you.<br>\
-			Ratvar, the Clockwork Justiciar, [GLOB.ratvar_awakens ? "has been freed from his eternal prison" : "lies in exile, derelict and forgotten in an unseen realm"].</span>")
+			to_chat(L, "<span class='heavy_brass'>Мир перед вами внезапно озаряется ярко-желтым светом. [issilicon(L) ? "Вы не можете вычислить эту истину!" : \
+			"Ваш разум мечется!"] Вы слышите шипение пара и [pick("лязг", "звон", "стук", "грохот")] шестерёнок миллиардов миллиардов машин, и в тот же миг тебя озаряет.<br>\
+			Ратвар, Часовой Юстициар, [GLOB.ratvar_awakens ? "освободился из своей вечной темницы" : "пребывает в изгнании, покинутый и забытый в незримом мире"].</span>")
 			flash_color(L, flash_color = list("#BE8700", "#BE8700", "#BE8700", rgb(0,0,0)), flash_time = 50)
 		else
-			L.visible_message("<span class='boldwarning'>[L] seems to resist an unseen force!</span>", null, null, 7, L)
-			to_chat(L, "<span class='heavy_brass'>The world before you suddenly glows a brilliant yellow. [issilicon(L) ? "You cannot compute this truth!" : \
-			"Your mind is racing!"] You hear the whooshing steam and cl[pick("ank", "ink", "unk", "ang")]ing cogs of a billion billion machines, and the sound</span> <span class='boldwarning'>\
-			is a meaningless cacophony.</span><br>\
-			<span class='userdanger'>You see an abomination of rusting parts[GLOB.ratvar_awakens ? ", and it is here.<br>It is too late" : \
-			" in an endless grey void.<br>It cannot be allowed to escape"].</span>")
+			L.visible_message("<span class='boldwarning'>[L] словно сопротивляется незримой силе!</span>", null, null, 7, L)
+			to_chat(L, "<span class='heavy_brass'>Мир перед вами внезапно озаряется ослепительным жёлтым светом. [issilicon(L) ? "Вы не можете вычислить эту истину!" : \
+			"Ваш разум мечется!"] Вы слышите шипение пара и [pick("лязг", "звон", "стук", "грохот")] шестерёнок миллиардов миллиардов машин, но этот звук</span> <span class='boldwarning'>\
+			не более чем бессмысленная какофония.</span><br>\
+			<span class='userdanger'>Перед вами предстаёт чудовищное нагромождение ржавых механизмов[GLOB.ratvar_awakens ? ", и оно уже здесь.<br>Слишком поздно." : \
+			" посреди бесконечной серой пустоты.<br>Ему нельзя позволить вырваться."].</span>")
 			L.playsound_local(get_turf(L), 'sound/ambience/antag/clockcultalr.ogg', 40, TRUE, frequency = 100000, pressure_affected = FALSE)
 			flash_color(L, flash_color = list("#BE8700", "#BE8700", "#BE8700", rgb(0,0,0)), flash_time = 5)
 
@@ -129,7 +130,7 @@ Credit where due:
 
 /datum/game_mode
 	var/list/servants_of_ratvar = list() //The Enlightened servants of Ratvar
-	var/clockwork_explanation = "Defend the Ark of the Clockwork Justiciar and free Ratvar." //The description of the current objective
+	var/clockwork_explanation = "Защитите Ковчег Часового Юстициара и освободите Ратвара." //The description of the current objective
 
 /datum/game_mode/clockwork_cult
 	name = "clockwork cult"
@@ -141,12 +142,12 @@ Credit where due:
 	required_enemies = 3
 	recommended_enemies = 5
 	enemy_minimum_age = 0 // BLUEMOON EDIT - было 7, сделал 0, т.к. на сервере ВЛ и загриферить ролью тяжело
-	protected_jobs = list("Prisoner", "Shaft Miner", "AI", "Cyborg", "Security Officer", "Warden", "Detective", "Head of Security", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain") //Silicons can eventually be converted
+	protected_jobs = list("Prisoner", "AI", "Cyborg", "Security Officer", "Warden", "Detective", "Head of Security", "Head of Personnel", "Chief Engineer", "Chief Medical Officer", "Research Director", "Quartermaster", "Blueshield", "Brig Physician", "Peacekeeper", "NanoTrasen Representative", "Internal Affairs Agent", "Chaplain") //Silicons can eventually be converted
 	restricted_jobs = list("Chaplain","Bridge Officer", "Captain")
 	announce_span = "brass"
-	announce_text = "Servants of Ratvar are trying to summon the Justiciar!\n\
-	<span class='brass'>Servants</span>: Construct defenses to protect the Ark. Sabotage the station!\n\
-	<span class='notice'>Crew</span>: Stop the servants before they can summon the Clockwork Justiciar."
+	announce_text = "Слуги Ратвара пытаются вызвать Юстициара!\n\
+	<span class='brass'>Слуги</span>: Постройте защитные сооружения для защиты Ковчега. Совершите диверсию на станции!\n\
+	<span class='notice'>Экипаж</span>: Остановите слуг, прежде чем они успеют вызвать Часового Юстициара."
 	var/list/servants_to_serve = list() //Yes this list is made out of list
 	var/roundstart_player_count
 
@@ -176,7 +177,7 @@ Credit where due:
 		servant.restricted_roles = restricted_jobs
 		starter_servants--
 	if(!servants_to_serve.len) //Uh oh, something went wrong
-		setup_error = "There are no clockcult candidates! (Or something went very wrong)"
+		setup_error = "Здесь нет кандидатов для часового культа (Или что-то пошло совсем не так)"
 		return FALSE
 	GLOB.clockwork_vitality += 50 * servants_to_serve.len //some starter Vitality to help recover from initial fuck ups
 	return TRUE //Haha yes it works time to not touch it any more than that.
@@ -195,9 +196,9 @@ Credit where due:
 /datum/game_mode/proc/greet_servant(mob/M) //Description of their role
 	if(!M)
 		return FALSE
-	to_chat(M, "<span class='bold large_brass'>You are a servant of Ratvar, the Clockwork Justiciar!</span>")
-	to_chat(M, "<span class='brass'>Unlock <b>Script</b> scripture by converting a new servant or when 35kw of power is reached.</span>")
-	to_chat(M, "<span class='brass'><b>Application</b> scripture will be unlocked when 50kw of power is reached.</span>")
+	to_chat(M, "<span class='bold large_brass'>Ты слуга Ратвара, Часового Юстициара!</span>")
+	to_chat(M, "<span class='brass'>Разблокируйте писания категории <b>Скриптов</b>, конвертировав нового слугу или достигнув 35 кВт энергии.</span>")
+	to_chat(M, "<span class='brass'>Писания <b>Применения</b> разблокируются, когда вы достигнете 50 кВт энергии.</span>")
 	M.playsound_local(get_turf(M), 'sound/ambience/antag/clockcultalr.ogg', 100, FALSE, pressure_affected = FALSE)
 	return TRUE
 
@@ -207,21 +208,21 @@ Credit where due:
 	var/mob/living/carbon/human/L = M
 	var/obj/item/clockwork/slab/S = new
 	var/slot = "At your feet"
-	var/list/slots = list("In your left pocket" = ITEM_SLOT_LPOCKET, "In your right pocket" = ITEM_SLOT_RPOCKET, "In your backpack" = ITEM_SLOT_BACKPACK)
+	var/list/slots = list("В вашем левом кармане" = ITEM_SLOT_LPOCKET, "В вашем правом кармане" = ITEM_SLOT_RPOCKET, "В вашем рюкзаке" = ITEM_SLOT_BACKPACK)
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L
 		var/obj/item/clockwork/replica_fabricator/F = new
 		if(H.equip_to_slot_or_del(F, ITEM_SLOT_BACKPACK))
-			to_chat(H, "<span class='brass'>You have been equipped with a replica fabricator, an advanced tool that can convert objects like doors, tables or even coats into clockwork equivalents.</span>")
+			to_chat(H, "<span class='brass'>Вы получили в свое распоряжение фабрикатор реплик - усовершенствованный инструмент, который может превращать такие предметы, как двери, столы и даже пол, в эквиваленты часовых механизмов.</span>")
 		slot = H.equip_in_one_of_slots(S, slots)
-		if(slot == "In your backpack")
-			slot = "In your [H.back.name]"
+		if(slot == "В вашем рюкзаке")
+			slot = "В вашем [H.back.name]"
 	if(slot == "At your feet")
 		if(!S.forceMove(get_turf(L)))
 			qdel(S)
 	if(S && !QDELETED(S))
-		to_chat(L, "<span class='alloy'>[slot] is a <b>clockwork slab</b>, a multipurpose tool used to construct machines and invoke ancient words of power. If this is your first time \
-		as a servant, you can read <a href=\"https://citadel-station.net/wikimain/index.php?title=Clockwork_Cult\">the wiki page</a> to learn more.</span>")
+		to_chat(L, "<span class='alloy'>[slot] <b>часовая плита</b>, универсальный инструмент, используемый для создания машин и произнесения древних слов силы. Если вы здесь впервые \
+		в качестве слуги вы можете прочитать <a href=\"https://citadel-station.net/wikimain/index.php?title=Clockwork_Cult\">страницу на вики</a>, чтобы узнать больше.</span>")
 		return TRUE
 	return FALSE
 
@@ -243,12 +244,12 @@ Credit where due:
 		SSticker.mode_result = "loss - servants failed their objective (summon ratvar)"
 
 /datum/game_mode/clockwork_cult/generate_report()
-	return "Bluespace monitors near your sector have detected a continuous stream of patterned fluctuations since the station was completed. It is most probable that a powerful entity \
-	from a very far distance away is using to the station as a vector to cross that distance through bluespace. The theoretical power required for this would be monumental, and if \
-	the entity is hostile, it would need to rely on a single central power source - disrupting or destroying that power source would be the best way to prevent said entity from causing \
-	harm to company personnel or property.<br><br>Keep a sharp on any crew that appear to be oddly-dressed or using what appear to be magical powers, as these crew may be defectors \
-	working for this entity and utilizing highly-advanced technology to cross the great distance at will. If they should turn out to be a credible threat, the task falls on you and \
-	your crew to dispatch it in a timely manner."
+	return "Блюспейс мониторы в вашем секторе с момента завершения строительства станции фиксируют непрерывный поток закономерных флуктуаций. Наиболее вероятно, что могущественная сущность \
+	на чрезвычайно большом расстоянии использует станцию в качестве точки привязки для преодоления этого расстояния через блюспейс. Теоретически для этого потребовалось бы колоссальное количество энергии, а если \
+	эта сущность враждебна, ей придётся полагаться на единственный центральный источник питания - нарушение его работы или уничтожение станет лучшим способом предотвратить причинение \
+	вреда персоналу и имуществу Компании.<br><br>Проявляйте особую бдительность в отношении членов экипажа, которые выглядят необычно одетыми или используют способности, напоминающие магию. Эти сотрудники могут оказаться перебежчиками, \
+	работающими на эту сущность и использующими чрезвычайно развитые технологии, позволяющие по своей воле преодолевать столь огромные расстояния. Если они окажутся реальной угрозой, обязанность по \
+	их своевременной нейтрализации ложится на вас и ваш экипаж."
 
 /datum/game_mode/proc/update_servant_icons_added(datum/mind/M)
 	var/datum/atom_hud/antag/A = GLOB.huds[ANTAG_HUD_CLOCKWORK]
@@ -273,7 +274,7 @@ Credit where due:
 	belt = /obj/item/storage/belt/utility/servant
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
 	/obj/item/clockwork/replica_fabricator = 1, /obj/item/stack/tile/brass/fifty = 1, /obj/item/reagent_containers/food/drinks/bottle/holyoil = 1)
-	id = /obj/item/pda
+	id = /obj/item/modular_computer/pda
 	var/plasmaman //We use this to determine if we should activate internals in post_equip()
 
 /datum/outfit/servant_of_ratvar/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
@@ -286,15 +287,21 @@ Credit where due:
 
 /datum/outfit/servant_of_ratvar/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	var/obj/item/card/id/W = new(H)
-	var/obj/item/pda/PDA = H.wear_id
+	var/obj/item/modular_computer/pda/PDA = H.wear_id
 	W.assignment = "Assistant"
 	W.access += ACCESS_MAINT_TUNNELS
 	W.registered_name = H.real_name
 	W.update_label()
 	if(plasmaman && !visualsOnly) //If we need to breathe from the plasma tank, we should probably start doing that
-		H.internal = H.get_item_for_held_index(2)
+		//в руке может оказаться не баллон, если рука была занята - в internal пускаем только танк
+		H.internal = null
+		var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
+		if(istype(plasma_tank))
+			H.internal = plasma_tank
+		//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+		H.update_action_buttons_icon()
 	PDA.owner = H.real_name
 	PDA.ownjob = "Assistant"
 	PDA.update_label()
-	PDA.id_check(H, W)
+	PDA.InsertID(W)
 	H.sec_hud_set_ID()

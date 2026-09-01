@@ -4,11 +4,10 @@
 	icon = 'icons/obj/bloodpack.dmi'
 	icon_state = "bloodpack"
 	volume = 200
-	reagent_flags = DRAINABLE
+	reagent_flags = DRAINABLE | TRANSPARENT
 	var/blood_type = null
 	var/labelled = 0
 	var/color_to_apply = "#FFFFFF"
-	var/mutable_appearance/fill_overlay
 
 /obj/item/reagent_containers/blood/Initialize(mapload)
 	. = ..()
@@ -18,8 +17,8 @@
 
 /obj/item/reagent_containers/blood/on_reagent_change(changetype)
 	if(reagents)
-		var/datum/reagent/blood/B = reagents.has_reagent(/datum/reagent/blood)
-		if(B && B.data && B.data["blood_type"])
+		var/datum/reagent/blood/B = reagents.get_master_reagent()
+		if(istype(B) && islist(B.data) && B.data["blood_type"])
 			blood_type = B.data["blood_type"]
 			color_to_apply = bloodtype_to_color(blood_type)
 		else
@@ -36,6 +35,8 @@
 
 /obj/item/reagent_containers/blood/update_overlays()
 	. = ..()
+	if(!reagents)
+		return
 	var/v = min(round(reagents.total_volume / volume * 10), 10)
 	if(v > 0)
 		. += mutable_appearance('icons/obj/reagentfillings.dmi', "bloodpack[v]", color = mix_color_from_reagents(reagents.reagent_list))

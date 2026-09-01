@@ -12,7 +12,7 @@
 /mob/living/simple_animal/qareen
 	name = "Qareen"
 	desc = "A horny spirit."
-	icon = 'modular_bluemoon/Gardelin0/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
+	icon = 'modular_bluemoon/icons/mob/qareen.dmi'	//It looks pretty tho! - Gardelin0
 	icon_state = "qareen_none_idle"
 	var/icon_idle = "qareen_none_idle"
 	var/icon_reveal = "qareen_none_revealed"
@@ -64,7 +64,7 @@
 	var/essence = 150 //The resource, and health, of qareens.
 	var/essence_regen_cap = 150 //The regeneration cap of essence (go figure); regenerates every Life() tick up to this amount.
 	var/essence_regenerating = TRUE //If the qareen regenerates essence or not
-	var/essence_regen_amount = 5 //How much essence regenerates
+	var/essence_regen_amount = 1 //How much essence regenerates
 	var/essence_accumulated = 0 //How much essence the qareen has stolen
 	var/essence_excess = 0 //How much stolen essence available for unlocks
 	var/revealed = FALSE //If the qareen can take damage from normal sources.
@@ -81,6 +81,9 @@
 /mob/living/simple_animal/qareen/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SIXTHSENSE, INNATE_TRAIT)
+	//дух раздевает игроков напрямую: гейт "нет рук - нет стрипа" в strippable
+	//не должен резать эту способность (как у боргов и взрослых ксеносов)
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT)
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/night_vision/qareen(null))
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/telepathy/qareen(null))
 //	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/qareen/defile(null))	Reserved for later. - Gardelin0
@@ -190,13 +193,18 @@
 //damage, gibbing, and dying
 /mob/living/simple_animal/qareen/attackby(obj/item/W, mob/living/user, params)
 	. = ..()
-	if(istype(W, /obj/item/nullrod))
+	if(istype(W, /obj/item/nullrod) || istype(W, /obj/item/storage/book/bible))
 		visible_message("<span class='warning'>[src] violently flinches!</span>", \
 						"<span class='revendanger'>As \the [W] passes through you, you feel your essence draining away!</span>")
-		adjustBruteLoss(25) //hella effective
+		adjustBruteLoss(essence_regen_cap/2 - W.force)
 		inhibited = TRUE
 		update_action_buttons_icon()
 		addtimer(CALLBACK(src, PROC_REF(reset_inhibit)), 30)
+
+/datum/reagent/water/holywater/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	. = ..()
+	if(isqareen(M))
+		M.adjustBruteLoss(reac_volume*10)
 
 /datum/reagent/toxin/on_mob_life(mob/living/simple_animal/qareen/Q) //So the holy water will damage it! - Gardelin0
 	if(istype(Q))
@@ -209,8 +217,6 @@
 	update_action_buttons_icon()
 
 /mob/living/simple_animal/qareen/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	if(!forced && !revealed)
-		return FALSE
 	. = amount
 	essence = max(0, essence-amount)
 	if(updating_health)
@@ -225,8 +231,8 @@
 	death()
 
 /mob/living/simple_animal/qareen/death()
-	if(!revealed || stasis) //qareens cannot die if they aren't revealed //or are already dead
-		return 0
+	if(stasis)
+		return FALSE
 	stasis = TRUE
 	to_chat(src, "<span class='revendanger'>NO! No... it's too late, you can feel your essence [pick("spewing out", "bursting out")]...</span>")
 	mob_transforming = TRUE
@@ -420,7 +426,7 @@
 				break
 	if(!key_of_qareen)
 		message_admins("The new qareen's old client either could not be found or is in a new, living mob - grabbing a random candidate instead...")
-		var/list/candidates = pollCandidatesForMob("Do you want to be [qareen.name] (reforming)?", ROLE_QAREEN, null, ROLE_QAREEN, 50, qareen)
+		var/list/candidates = pollCandidatesForMob("Do you want to be [qareen.name] (reforming)?", ROLE_QAREEN, null, ROLE_QAREEN, 50, qareen, priority_check = FALSE)
 		if(!LAZYLEN(candidates))
 			qdel(qareen)
 			message_admins("No candidates were found for the new qareen. Oh well!")

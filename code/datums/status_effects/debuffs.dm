@@ -381,7 +381,7 @@
 
 /datum/status_effect/vtec_disabled
 	id = "vtec_disable"
-	tick = FALSE
+	tick_interval = -1 //конечная duration истекает в process(), сам tick() не нужен
 
 /datum/status_effect/vtec_disabled/on_creation(mob/living/new_owner, set_duration)
 	if(isnum(set_duration))
@@ -1360,3 +1360,76 @@
 	dump_in_space(owner)
 
 #undef HEALING_SLEEP_DEFAULT
+
+/////////////////////////////////////////////////////
+//////////////////BOLA STATUS EFFECT///////////////////
+
+/datum/status_effect/bola_snared
+	id = "bola_snared"
+	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = null
+	var/was_teleported = FALSE // для проверки на факт телепортации
+	var/obj/item/restraints/legcuffs/bola/bola
+
+/datum/status_effect/bola_snared/on_creation(mob/living/new_owner, obj/item/restraints/legcuffs/bola/B)
+	bola = B
+	return ..()
+
+/datum/status_effect/bola_snared/on_apply()
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(bola_trip))
+	RegisterSignal(owner, COMSIG_MOVABLE_TELEPORTED, PROC_REF(bola_teleport))
+	return ..()
+
+/datum/status_effect/bola_snared/on_remove()
+	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(owner, COMSIG_MOVABLE_TELEPORTED)
+	return ..()
+
+/datum/status_effect/bola_snared/proc/bola_trip(mob/living/carbon/C)
+	SIGNAL_HANDLER
+	if(!C.has_gravity()) // нет гравитации? Бола не заставит нас падать
+		return
+	if(!C.legcuffed) // если мы сняли болу, то эффекта нет
+		C.remove_status_effect(src)
+		return
+	if(C.movement_type & CRAWLING || C.m_intent == MOVE_INTENT_WALK) // если мы ползаем, то эффекта нет
+		return
+	if(was_teleported) // если мы передвинулись телепортом, то эффекта нет
+		was_teleported = FALSE
+		return
+	if(prob(12)) // сам эффект: шанс и последствия ходьбы с болой на ногах
+		C.Paralyze(5)
+		C.Knockdown(30)
+		SEND_SIGNAL(C, COMSIG_ADD_MOOD_EVENT, "trip", /datum/mood_event/tripped/bola)
+		owner.visible_message(span_danger("[owner] запутывается в своих ногах из-за болы и падает!"), span_userdanger("Вы теряете равновесие из-за болы и падаете!"))
+
+/datum/status_effect/bola_snared/proc/bola_teleport(channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	was_teleported = TRUE
+
+/datum/status_effect/rust_corruption
+	id = "rust_turf_effects"
+	alert_type = null
+	tick_interval = 2 SECONDS
+
+/datum/status_effect/rust_corruption/tick()
+	if(!owner)
+		return
+	// tick_interval is in deciseconds; scale SPLURT per-second values to our tick length.
+	var/tick_s = tick_interval * 0.1
+	if(issilicon(owner) || isbot(owner))
+		owner.adjustBruteLoss(10 * tick_s, FALSE, TRUE)
+		return
+	if(iscarbon(owner))
+		var/mob/living/carbon/carbon_owner = owner
+		carbon_owner.adjust_disgust(5 * tick_s)
+		carbon_owner.adjustToxLoss(2 * tick_s, FALSE, TRUE) // heretic rust (extra vs SPLURT: tox on carbons)
+		carbon_owner.reagents?.remove_all(0.75 * tick_s)
+		for(var/obj/item/bodypart/limb as anything in carbon_owner.bodyparts)
+			if(limb.is_robotic_limb())
+				limb.receive_damage(10, 0, 0, 0, FALSE)
+		carbon_owner.updatehealth()
+		return
+	owner.adjustToxLoss(2 * tick_s, FALSE, TRUE)
+
+/////////////////////////////////////////////////////

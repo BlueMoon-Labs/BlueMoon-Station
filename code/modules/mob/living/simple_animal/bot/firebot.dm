@@ -6,7 +6,7 @@
 
 /mob/living/simple_animal/bot/firebot
 	name = "\improper Firebot"
-	desc = "A little fire extinguishing bot. He looks rather anxious."
+	desc = "Небольшой робот-пожарный, выглядит на взводе."
 	icon = 'icons/mob/aibots.dmi'
 	icon_state = "firebot"
 	density = FALSE
@@ -51,10 +51,10 @@
 	QDEL_NULL(internal_ext)
 	return ..()
 
-/mob/living/simple_animal/bot/firebot/bot_reset()
-	create_extinguisher()
-
 /mob/living/simple_animal/bot/firebot/proc/create_extinguisher()
+	//сброс бота звали дважды из-за двойного bot_reset, и старый огнетушитель
+	//оставался висеть в contents без единой ссылки
+	QDEL_NULL(internal_ext)
 	internal_ext = new /obj/item/extinguisher(src)
 	internal_ext.safety = FALSE
 	internal_ext.precision = TRUE
@@ -85,8 +85,11 @@
 	..()
 	update_icon()
 
+//Было два определения bot_reset на один тип - dreamchecker ругался redefined_proc,
+//а огнетушитель пересоздавался по цепочке. Свели в одно.
 /mob/living/simple_animal/bot/firebot/bot_reset()
 	..()
+	create_extinguisher()
 	target_fire = null
 	old_target_fire = null
 	ignore_list = list()
@@ -100,17 +103,19 @@
 	last_found = world.time
 	update_icon()
 
+//Тут по копипасте лежало определение для флурбота - оно перебивало настоящее
+//из floorbot.dm, а сам файрбот оставался с текстами по умолчанию.
 /mob/living/simple_animal/bot/firebot/set_custom_texts()
-	text_hack = "You corrupt [name]'s safety protocols."
-	text_dehack = "You detect errors in [name] and reset his programming."
-	text_dehack_fail = "[name] is not responding to reset commands!"
+	text_hack = "Вы взломали протоколы безопасности у [name]."
+	text_dehack = "Вы заметили ошибки в программе [name] и сбросили их до заводских настроек."
+	text_dehack_fail = "[name] не отвечает на запросы сброса настроек!"
 
 /mob/living/simple_animal/bot/firebot/emag_act(mob/user)
 	. = ..()
 	if(emagged == 1)
 		if(user)
-			to_chat(user, "<span class='danger'>[src] buzzes and beeps.</span>")
-		audible_message("<span class='danger'>[src] buzzes oddly!</span>")
+			to_chat(user, "<span class='danger'>[src] пищит и жужжит.</span>")
+		audible_message("<span class='danger'>[src] странно жужжит!</span>")
 		playsound(src, "sparks", 75, TRUE)
 		if(user)
 			old_target_fire = user
@@ -190,11 +195,14 @@
 		target_fire = null
 		var/scan_range = (stationary_mode ? 1 : DEFAULT_SCAN_RANGE)
 
+		//обзор строим один раз на оба скана: scan() без cached_view пересобирает view()
+		var/list/cached_view = shuffle(view(scan_range, src))
+
 		if(extinguish_people)
-			target_fire = scan(/mob/living, old_target_fire, scan_range) // Scan for burning humans first
+			target_fire = scan(/mob/living, old_target_fire, scan_range, cached_view) // Scan for burning humans first
 
 		if(target_fire == null && extinguish_fires)
-			target_fire = scan(/turf/open, old_target_fire, scan_range) // Scan for burning turfs second
+			target_fire = scan(/turf/open, old_target_fire, scan_range, cached_view) // Scan for burning turfs second
 
 		old_target_fire = target_fire
 
@@ -226,7 +234,7 @@
 
 	if(target_fire && (get_dist(src, target_fire) > 2))
 
-		path = get_path_to(src, target_fire, 30, 1, id=access_card)
+		path = get_path_to(src, target_fire, BOT_TARGET_PATH_LIMIT, 1, id=access_card)
 		mode = BOT_MOVING
 		if(!path.len)
 			soft_reset()
@@ -258,7 +266,7 @@
 
 	if(is_burning(scan_target))
 		if((detected_cooldown + DETECTED_VOICE_INTERVAL) < world.time)
-			speak("Fire detected!")
+			speak("Обнаружен пожар!")
 			playsound(src, "sound/voice/firebot/detected.ogg", 50, 0)
 			detected_cooldown = world.time
 		result = scan_target
@@ -293,7 +301,7 @@
 
 /mob/living/simple_animal/bot/firebot/explode()
 	on = FALSE
-	visible_message("<span class='boldannounce'>[src] blows apart!</span>")
+	visible_message("<span class='boldannounce'>[src] разлетаеся на части!</span>")
 
 	var/atom/Tsec = drop_location()
 

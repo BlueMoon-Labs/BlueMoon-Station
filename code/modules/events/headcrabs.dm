@@ -11,6 +11,7 @@
 	weight = 10
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Насылает кучу Мозгососов на Космическую Станцию."
 
 /datum/round_event/headcrabs
@@ -22,7 +23,8 @@
 /datum/round_event/headcrabs/start()
 	var/list/availableareas = list()
 	for(var/area/maintenance/A in world)
-		availableareas += A
+		for(var/turf/T in A)
+			availableareas += T
 	for(var/turf/X in GLOB.xeno_spawn)
 		availableareas += X
 	var/list/spawn_types = list()
@@ -52,7 +54,7 @@
 	var/num = rand(2,max_number)
 
 	while(availableareas.len > 0 && num > 0)
-		var/turf/open/floor/T = pick(availableareas)
+		var/turf/T = pick(availableareas)
 		availableareas.Remove(T)
 		num--
 		var/spawn_type = pick(spawn_types)

@@ -67,21 +67,28 @@
 	allowed_typecache = null
 	// if(insertion_check)
 	// 	QDEL_NULL(insertion_check)
-	if(precondition)
-		QDEL_NULL(precondition)
-	if(after_insert)
-		QDEL_NULL(after_insert)
+	//коллбэки нам не принадлежат: remote_materials передаёт контейнеру СВОЙ
+	//after_insert (см. _MakeLocal), и qdel отсюда оставлял в remote_materials
+	//мёртвую ссылку при пересоздании контейнера (подключение к силосу).
+	//Достаточно отпустить ссылки - без держателей датум соберётся сам
+	precondition = null
+	after_insert = null
 	return ..()
 
 /datum/component/material_container/proc/on_examine(datum/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
 
 	if(show_on_examine)
+		var/list/entries = list()
+
 		for(var/I in materials)
 			var/datum/material/M = I
 			var/amt = materials[I]
 			if(amt)
-				examine_list += "<span class='notice'>It has [amt] units of [lowertext(M.name)] stored.</span>"
+				entries += "[amt] см³ [lowertext(vocabulary_to_ru(GLOB.mat_ru_genitive, M.name))]"
+
+		if(length(entries))
+			examine_list += "<span class='notice'>Внутри хранится [english_list(entries)].</span>"
 
 /// Proc that allows players to fill the parent with mats
 /datum/component/material_container/proc/on_attackby(datum/source, obj/item/I, mob/living/user)
@@ -96,7 +103,7 @@
 		return
 	if((I.flags_1 & HOLOGRAM_1) || (I.item_flags & NO_MAT_REDEMPTION) || (tc && !is_type_in_typecache(I, tc)))
 		// if(!(mat_container_flags & MATCONTAINER_SILENT))
-		to_chat(user, "<span class='warning'>[parent] won't accept [I]!</span>")
+		to_chat(user, "<span class='warning'>[parent] не принимает [I]!</span>")
 		return
 	. = COMPONENT_NO_AFTERATTACK
 	var/datum/callback/pc = precondition
@@ -104,10 +111,10 @@
 		return
 	var/material_amount = get_item_material_amount(I) //, mat_container_flags)
 	if(!material_amount)
-		to_chat(user, "<span class='warning'>[I] does not contain sufficient materials to be accepted by [parent].</span>")
+		to_chat(user, "<span class='warning'>[I] не содержит каких-либо материалов, принимаемых [parent].</span>")
 		return
 	if((!precise_insertion || !GLOB.typecache_stack[I.type]) && !has_space(material_amount))
-		to_chat(user, "<span class='warning'>[parent] is full. Please remove materials from [parent] in order to insert more.</span>")
+		to_chat(user, "<span class='warning'>Хранилище [parent] заполнено. Уберите часть материалов из [parent], чтобы вставить новые.</span>")
 		return
 	user_insert(I, user) //, mat_container_flags)
 
@@ -145,7 +152,7 @@
 		qdel(I)
 
 	if(inserted)
-		to_chat(user, "<span class='notice'>You insert a material total of [inserted] into [parent].</span>")
+		to_chat(user, "<span class='notice'>Вы вставили материалы объёмом в [inserted] см³ внутрь [parent].</span>")
 		if(after_insert)
 			after_insert.Invoke(I, last_inserted_id, inserted)
 		if(remote && remote.after_insert)
@@ -437,3 +444,23 @@
 	if(!istype(mat))
 		mat = SSmaterials.GetMaterialRef(mat)
 	return(materials[mat])
+
+/datum/component/material_container/ui_static_data(mob/user)
+	. = list()
+	.["SHEET_MATERIAL_AMOUNT"] = SHEET_MATERIAL_AMOUNT
+
+/// List format is list(material_name = list(amount = ..., ref = ..., etc.))
+/datum/component/material_container/ui_data(mob/user)
+	. = list()
+
+	for(var/datum/material/M in materials)
+		var/amount = materials[M]
+
+		. += list(list(
+			"name" = M.name,
+			"ref" = REF(M),
+			"amount" = amount,
+			"sheets" = round(amount / MINERAL_MATERIAL_AMOUNT),
+			"removable" = amount >= MINERAL_MATERIAL_AMOUNT,
+			"color" = M.color
+		))

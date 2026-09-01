@@ -39,7 +39,7 @@
 	/// Assoc list "[bitflag]" = list(typepaths)
 	var/list/autogrant_actions_controller = list()
 	/// Assoc list mob = list(type = action datum assigned to mob)
-	var/list/mob/occupant_actions = list()
+	var/list/list/datum/action/occupant_actions = list()
 	/// This vehicle will follow us when we move (like atrailer duh)
 	var/obj/vehicle/trailer
 	/// Do we have a special mouse
@@ -223,7 +223,8 @@
 // BLUEMOON ADDITION AHEAD - предотвращаем множество абузов скорости, не давая сверхтяжёлым персонажам залезать на транспорт
 /obj/vehicle/pre_buckle_mob(mob/living/M)
 	if(M.mob_weight > MOB_WEIGHT_HEAVY)
-		usr.visible_message(span_warning("[usr] tried to get [M] on [src], but it doesn't move. Too much weight!."), span_warning("You tried to get [M] on [src], but it doesn't move. Too much weight!"))
+		//не usr: бакл бывает программным (usr null), да и баклер - не всегда usr
+		M.visible_message(span_warning("[M] tried to get on [src], but it doesn't move. Too much weight!"), span_warning("You tried to get on [src], but it doesn't move. Too much weight!"))
 		unbuckle_mob(M, TRUE)
 		return
 	. = ..()

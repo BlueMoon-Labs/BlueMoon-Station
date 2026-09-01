@@ -166,12 +166,22 @@
 /datum/supply_pack/medical/adv_surgery_tools
 	name = "Med-Co Advanced Surgery Tools"
 	desc = "В этот ящик входит полный набор хирургических инструментов MedCo advanced, а также банка синтетической плоти. Требуется Хирургический доступ для открытия"
-	cost = 5500
+	cost = 11999
 	access = ACCESS_SURGERY
 	contains = list(/obj/item/storage/belt/medical/surgery_belt_adv,
 					/obj/item/reagent_containers/medspray/synthflesh,
 					/obj/item/reagent_containers/medspray/sterilizine)
 	crate_name = "medco surgery tools"
+	crate_type = /obj/structure/closet/crate/secure/medical
+
+/datum/supply_pack/medical/upgraded_surgery_tools
+	name = "Trauma Team Surgery Tools"
+	desc = "В этот ящик входит полный набор хирургических инструментов, тех же, что использует Trauma Team, а также банка синтетической плоти. Требуется Хирургический доступ для открытия"
+	cost = 3500
+	access = ACCESS_SURGERY
+	contains = list(/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
+					/obj/item/reagent_containers/medspray/synthflesh)
+	crate_name = "trauma team surgery tools"
 	crate_type = /obj/structure/closet/crate/secure/medical
 
 /datum/supply_pack/medical/surgery

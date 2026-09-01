@@ -16,6 +16,7 @@
 	var/datum/action/kick/kick = new/datum/action/kick()
 	var/datum/action/strike/strike = new/datum/action/strike()
 	var/datum/action/drop/drop = new/datum/action/drop()
+	resist_grab_chance = 50
 
 /datum/martial_art/wrestling/proc/check_streak(var/mob/living/carbon/human/A, var/mob/living/carbon/human/D)
 	if(!can_use(A, D))
@@ -55,8 +56,10 @@
 		to_chat(owner, "<span class='warning'>You are too HIPPIE to WRESTLE other living beings!</span>")
 		return
 	owner.visible_message("<span class='danger'>[owner] prepares to BODY SLAM!</span>", "<b><i>Your next attack will be a BODY SLAM.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "slam"
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	style.streak = "slam"
 
 /datum/action/throw_wrassle
 	name = "Throw (Cinch) - Spin a cinched opponent around and throw them."
@@ -70,8 +73,10 @@
 		to_chat(owner, "<span class='warning'>You are too HIPPIE to WRESTLE other living beings!</span>")
 		return
 	owner.visible_message("<span class='danger'>[owner] prepares to THROW!</span>", "<b><i>Your next attack will be a THROW.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "throw"
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	style.streak = "throw"
 
 /datum/action/kick
 	name = "Kick - A powerful kick, sends people flying away from you. Also useful for escaping from bad situations."
@@ -85,8 +90,10 @@
 		to_chat(owner, "<span class='warning'>You are too HIPPIE to WRESTLE other living beings!</span>")
 		return
 	owner.visible_message("<span class='danger'>[owner] prepares to KICK!</span>", "<b><i>Your next attack will be a KICK.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "kick"
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	style.streak = "kick"
 
 /datum/action/strike
 	name = "Strike - Hit a neaby opponent with a quick attack."
@@ -100,8 +107,10 @@
 		to_chat(owner, "<span class='warning'>You are too HIPPIE to WRESTLE other living beings!</span>")
 		return
 	owner.visible_message("<span class='danger'>[owner] prepares to STRIKE!</span>", "<b><i>Your next attack will be a STRIKE.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "strike"
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	style.streak = "strike"
 
 /datum/action/drop
 	name = "Drop - Smash down onto an opponent."
@@ -115,18 +124,32 @@
 		to_chat(owner, "<span class='warning'>You are too HIPPIE to WRESTLE other living beings!</span>")
 		return
 	owner.visible_message("<span class='danger'>[owner] prepares to LEG DROP!</span>", "<b><i>Your next attack will be a LEG DROP.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "drop"
+	var/datum/martial_art/style = owner_martial_art()
+	if(!style)
+		return
+	style.streak = "drop"
 
 /datum/martial_art/wrestling/teach(mob/living/carbon/human/H,make_temporary=0)
-	if(..())
-		to_chat(H, "<span class = 'userdanger'>SNAP INTO A THIN TIM!</span>")
-		to_chat(H, "<span class = 'danger'>Place your cursor over a move at the top of the screen to see what it does.</span>")
-		drop.Grant(H)
-		kick.Grant(H)
-		slam.Grant(H)
-		throw_wrassle.Grant(H)
-		strike.Grant(H)
+	// См. krav_maga: без возврата вызывающие считают успешное обучение провалом.
+	. = ..()
+	if(!.)
+		return
+	to_chat(H, "<span class = 'userdanger'>SNAP INTO A THIN TIM!</span>")
+	to_chat(H, "<span class = 'danger'>Place your cursor over a move at the top of the screen to see what it does.</span>")
+	drop.Grant(H)
+	kick.Grant(H)
+	slam.Grant(H)
+	throw_wrassle.Grant(H)
+	strike.Grant(H)
+
+/datum/martial_art/wrestling/Destroy()
+	// Кнопки принадлежат стилю - без этого они переживали его на HUD владельца.
+	QDEL_NULL(slam)
+	QDEL_NULL(throw_wrassle)
+	QDEL_NULL(kick)
+	QDEL_NULL(strike)
+	QDEL_NULL(drop)
+	return ..()
 
 /datum/martial_art/wrestling/on_remove(mob/living/carbon/human/H)
 	to_chat(H, "<span class = 'userdanger'>You no longer feel that the tower of power is too sweet to be sour...</span>")

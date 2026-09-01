@@ -9,12 +9,24 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	exp_type_department = EXP_TYPE_SERVICE // This is so the jobs menu can work properly
+	alt_titles = list(
+		"Junior Bartender", //Стажер выше, для удобства
+		"Bar Owner",
+		"Barista",
+		"Barkeeper",
+		"Barmaid",
+		"Crocin Terrorist",
+		"Mixologist",
+		"Sommelier",
+		"Tavernkeeper",
+		"The Semen Degustator"
+		)
 
 	outfit = /datum/outfit/job/bartender
 	plasma_outfit = /datum/outfit/plasmaman/bar
 
-	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_BAR, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_BAR, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_SRV
 	bounty_types = CIV_JOB_DRINK
@@ -40,18 +52,19 @@
 	jobtype = /datum/job/bartender
 
 	glasses = /obj/item/clothing/glasses/sunglasses/reagent
-	belt = /obj/item/pda/bar
+	belt = /obj/item/modular_computer/pda/bar
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/bartender
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1)
 	shoes = /obj/item/clothing/shoes/laceup
+	accessory = list(/obj/item/clothing/accessory/permit/special/bartender)
 
 /datum/outfit/job/bartender/syndicate
 	name = "Syndicate Bartender"
 	jobtype = /datum/job/bartender
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	glasses = /obj/item/clothing/glasses/sunglasses/reagent
 	ears = /obj/item/radio/headset/headset_srv
@@ -59,12 +72,14 @@
 	suit = /obj/item/clothing/suit/armor/vest/alt
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bartender, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/job/bartender/after_spawn(mob/living/H, client/C, latejoin = TRUE)
 	. = ..()

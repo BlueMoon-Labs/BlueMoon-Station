@@ -9,9 +9,15 @@
 /obj/item/integrated_electronics/analyzer/afterattack(var/atom/A, var/mob/living/user)
 	. = ..()
 	if(istype(A, /obj/item/electronic_assembly))
-		var/saved = "[A.name] analyzed! On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code>[SScircuit.save_electronic_assembly(A)]</code>"
+		// html_encode обязателен: JSON уезжает в браузерный попап как есть, и любой символ
+		// < > & из подписи компонента или текстпада браузер съедал как разметку - скопированная
+		// схема была уже битой, а принтер отвечал "Invalid program format". Так же сделано в
+		// assembly_tgui.dm, где этот же JSON отдают на копирование.
+		var/saved = "[A.name] analyzed! On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code style='word-break:break-all;white-space:pre-wrap'>[html_encode(SScircuit.save_electronic_assembly(A))]</code>"
 		if(saved)
 			to_chat(user, "<span class='notice'>You scan [A].</span>")
-			user << browse(saved, "window=circuit_scan;size=500x600;border=1;can_resize=1;can_close=1;can_minimize=1")
+			var/datum/browser/popup = new(user, "circuit_scan", "Circuit Scan", 500, 600)
+			popup.set_content(saved)
+			popup.open()
 		else
 			to_chat(user, "<span class='warning'>[A] is not complete enough to be encoded!</span>")

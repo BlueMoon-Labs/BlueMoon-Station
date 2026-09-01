@@ -30,6 +30,7 @@
 				/obj/item/clothing/under/bunnysuit/white = 3,
 				/obj/item/clothing/under/domina = 5,
 				/obj/item/clothing/under/performer = 3,
+				/obj/item/clothing/under/performer/polychromic = 3,
 				/obj/item/clothing/under/misc/gear_harness = 10,
 				/obj/item/clothing/shoes/invisiboots = 10, // Added here to go with the Gear Harness
 				/obj/item/clothing/under/shorts/polychromic/pantsu = 3,
@@ -75,6 +76,7 @@
 				/obj/item/clothing/gloves/latexsleeves = 3,
 				/obj/item/bdsm_whip = 3,
 				/obj/item/bdsm_whip/ridingcrop = 3,
+				/obj/item/storage/belt/belly_riding = 10,
 			),
 		),
 
@@ -91,6 +93,7 @@
 				/obj/item/sybian_kit = 5,
 				/obj/item/dildo_machine_kit = 5,
 				/obj/item/gloryhole_kit = 5,
+				/obj/item/wallframe/lewd_portal = 3,
 				/obj/item/storage/box/shibari_stand = 5,
 				/obj/item/storage/box/xstand_kit = 5,
 				/obj/item/storage/box/bdsmbed_kit = 5,
@@ -103,9 +106,13 @@
 				/obj/item/assembly/signaler = 3,
 				/obj/item/assembly/timer = 3,
 				/obj/item/fleshlight = 4,
+				/obj/item/borg/upgrade/dominatrix_module = 6,
 				/obj/item/storage/box/portallight = 4,
 				/obj/item/portallight = 4,
 				/obj/item/clothing/underwear/briefs/panties/portalpanties = 4,
+				/obj/item/clothing/underwear/briefs/hardspace_panties/female = 4,
+				/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra = 4,
+				/obj/item/clothing/mask/hardspace_mask = 4,
 				/obj/item/summon_chalk = 5,
 				/obj/item/qareen_chalk = 5,
 				/obj/item/genital_equipment/sounding = 4,
@@ -128,7 +135,7 @@
 				/obj/item/clothing/neck/stole = 2,
 				/obj/item/clothing/neck/stole/black = 2,
 				/obj/item/clothing/mask/gas/sechailer/slut = 4,
-				/obj/item/card/id/lust = 5,
+				/obj/item/card_sticker/lust = 5,
 				/obj/item/clothing/glasses/hud/slaver = 8,
 				/obj/item/clothing/wrists/helper_bracelet = 10,
 				/obj/item/clothing/wrists/helper_bracelet/love_need_bracelet = 10,
@@ -156,6 +163,7 @@
 				/obj/item/storage/pill_bottle/butt_enlargement = 10,
 				/obj/item/reagent_containers/glass/bottle/crocin = 10,
 				/obj/item/reagent_containers/glass/bottle/camphor = 5,
+				/obj/item/lipstick/crocin = 5,
 				/obj/item/storage/pill_bottle/belly_inflation = 10,
 				/obj/item/storage/fancy/jellybean_pack = 5,
 				/obj/item/autosurgeon/penis = 3,
@@ -166,6 +174,8 @@
 			"name" = "Miscellaneous",
 			"icon" = "question",
 			"products" = list(
+				/obj/item/love_offer = 32,
+				/obj/item/fancy_pillow = 32,
 				/obj/item/storage/daki = 4,
 				/obj/item/clothing/underwear/briefs/panties/maebari = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_heart = 3,
@@ -179,6 +189,14 @@
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_vag_x = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_vag_bandaid = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_anal_bandaid = 3,
+			),
+		),
+		list(
+			"name" = "MOD parts",
+			"icon" = "question",
+			"products" = list(
+				/obj/item/mod/control/pre_equipped/lustwish = 3,
+				/obj/item/mod/module/nudity_lover = 5,
 			),
 		),
 	)
@@ -226,6 +244,7 @@
 		/obj/item/storage/pill_bottle/peen_pop = 3,
 		/obj/item/chastity_hypno/magazine = 6,
 		/obj/item/chastity_hypno/watch = 2,
+		/obj/item/ammo_casing/p50/lewd = 3,
     )
 	premium = list(
 		/obj/item/clothing/under/pants/chaps = 5,

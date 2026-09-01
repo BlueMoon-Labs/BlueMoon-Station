@@ -32,6 +32,10 @@
 	reminded_times_left = 1 // BLUEMOON ADD - 1 напоминания достаточно, чтобы не играли в мирномага
 	time_needed_to_remind = 5 MINUTES // BLUEMOON ADD
 
+/datum/antagonist/gang/Destroy()
+	QDEL_NULL(package_spawner)
+	return ..()
+
 /datum/outfit/gangster
 	name = "Gangster (Preview only)"
 
@@ -108,10 +112,9 @@
 
 /datum/antagonist/gang/apply_innate_effects(mob/living/mob_override)
 	..()
-	if(starter_gangster)
-		package_spawner.Grant(owner.current)
-		package_spawner.my_gang_datum = src
 	var/mob/living/M = mob_override || owner.current
+	package_spawner.my_gang_datum = src
+	package_spawner.Grant(M)
 	add_antag_hud(antag_hud_type, antag_hud_name, M)
 	// if(M.hud_used)
 	// 	var/datum/hud/H = M.hud_used
@@ -121,9 +124,8 @@
 	// 	H.mymob.client.screen += giving_wanted_lvl
 
 /datum/antagonist/gang/remove_innate_effects(mob/living/mob_override)
-	if(starter_gangster)
-		package_spawner.Remove(owner.current)
 	var/mob/living/M = mob_override || owner.current
+	package_spawner.Remove(M)
 	remove_antag_hud(antag_hud_type, M)
 //	if(M.hud_used)
 //		var/datum/hud/H = M.hud_used
@@ -659,3 +661,26 @@
 	gang_team_type = /datum/team/gang/basil_boys
 
 /datum/team/gang/basil_boys/rename_gangster()
+
+/datum/atom_hud/antag/gangster
+	self_visible = FALSE
+
+/datum/atom_hud/antag/gangster/should_show_to(mob/M, atom/A)
+	if(isobserver(M))
+		return TRUE
+	if(!M?.mind || !ismob(A))
+		return FALSE
+	var/mob/A_mob = A
+	if(!A_mob.mind)
+		return FALSE
+	var/datum/antagonist/gang/target_gang = A_mob.mind.has_antag_datum(/datum/antagonist/gang)
+	if(!target_gang)
+		return FALSE
+	var/datum/antagonist/gang/viewer_gang = M.mind.has_antag_datum(/datum/antagonist/gang)
+	if(viewer_gang)
+		return viewer_gang.my_gang == target_gang.my_gang
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		if(istype(H.glasses, /obj/item/clothing/glasses/hud/spacecop))
+			return TRUE
+	return FALSE

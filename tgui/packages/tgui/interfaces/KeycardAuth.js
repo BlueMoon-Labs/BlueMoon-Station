@@ -2,16 +2,24 @@ import { useBackend } from '../backend';
 import { Box, Button, Section } from '../components';
 import { Window } from '../layouts';
 
-export const KeycardAuth = (props, context) => {
-  const { act, data } = useBackend(context);
+export const KeycardAuth = (props) => {
+  const { act, data } = useBackend();
+  const {
+    waiting,
+    auth_required,
+    can_set_red_alert,
+    can_clear_red_alert,
+    can_clear_high_alert,
+  } = data;
+
   return (
     <Window
       width={375}
-      height={125}>
+      height={165}>
       <Window.Content>
         <Section>
           <Box>
-            {data.waiting === 1 && (
+            {waiting === 1 && (
               <span>
                 Ожидайте подтверждения запроса
                 на втором устройстве...
@@ -19,9 +27,9 @@ export const KeycardAuth = (props, context) => {
             )}
           </Box>
           <Box>
-            {data.waiting === 0 && (
+            {waiting === 0 && (
               <>
-                {!!data.auth_required && (
+                {!!auth_required && (
                   <Button
                     icon="check-square"
                     color="red"
@@ -31,15 +39,29 @@ export const KeycardAuth = (props, context) => {
                     onClick={() => act('auth_swipe')}
                     content="Авторизовать" />
                 )}
-                {data.auth_required === 0 && (
+                {auth_required === 0 && (
                   <>
-                    <Button
-                      icon="exclamation-triangle"
-                      fluid
-                      onClick={() => {
-                        return act('red_alert');
-                      }}
-                      content="Красный код" />
+                    {!!can_set_red_alert && (
+                      <Button
+                        icon="exclamation-triangle"
+                        fluid
+                        onClick={() => act('red_alert')}
+                        content="Красный код" />
+                    )}
+                    {!!can_clear_red_alert && (
+                      <Button
+                        icon="check"
+                        fluid
+                        onClick={() => act('clear_red_alert')}
+                        content="Снять красный код" />
+                    )}
+                    {!!can_clear_high_alert && (
+                      <Button
+                        icon="check"
+                        fluid
+                        onClick={() => act('clear_high_alert')}
+                        content="Снизить код (до красного)" />
+                    )}
                     <Button
                       icon="wrench"
                       fluid
@@ -50,6 +72,16 @@ export const KeycardAuth = (props, context) => {
                       fluid
                       onClick={() => act('bsa_unlock')}
                       content="Протоколы Блюспейс-Артиллерии" />
+                    <Button
+                      icon="database"
+                      fluid
+                      onClick={() => act('bs_miner_protocols')}
+                      content="Протоколы Блюспейс майнеров" />
+                    <Button
+                      icon="key"
+                      fluid
+                      onClick={() => act('give_janitor_access')}
+                      content="Выдать доступ уборщику" />
                   </>
                 )}
               </>

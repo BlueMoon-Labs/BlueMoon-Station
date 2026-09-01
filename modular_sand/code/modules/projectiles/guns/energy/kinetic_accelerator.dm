@@ -281,6 +281,8 @@
 /obj/item/borg/upgrade/modkit/knockback/projectile_strike(obj/item/projectile/kinetic/K, turf/target_turf, atom/target, obj/item/gun/energy/kinetic_accelerator/KA)
 	..()
 	var/mob/living/simple_animal/T = target
+	if(!istype(T))
+		return
 	if(T.stat != DEAD)
 		playsound(T, 'sound/magic/fireball.ogg', 20, 1)
 		new /obj/effect/temp_visual/fire(T.loc)
@@ -389,7 +391,10 @@
 	..()
 	if(isliving(target))
 		if(istype(target, /mob/living/simple_animal))
-			var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/explosivelegion/L = new(get_step(target, target.dir))
+			var/turf/spawn_turf = get_turf(target) || target_turf
+			if(!spawn_turf)
+				return
+			var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/explosivelegion/L = new(spawn_turf)
 			L.GiveTarget(target)
 
 //blood drunk miner
@@ -413,7 +418,7 @@
 	playsound(K.firer, 'sound/magic/fireball.ogg', 20, 1)
 	var/list/hitlist = list()
 	for(var/turf/T in getline(KA.loc, target.loc) - get_turf(K.firer))
-		new /obj/effect/hotspot(T)
+		T.ensure_hotspot()
 		T.hotspot_expose(700,50,1)
 		for(var/mob/living/L in T.contents)
 			if(L in hitlist || (L == K.firer))
@@ -467,7 +472,7 @@
 	. = ..()
 	KA.block_chance -= modifier
 
-//10mm modkit (currently broken, only the 10mm pka works)
+// 10mm modkit — ballistic shot; modkit effects only on impact (not every tile in flight).
 /obj/item/gun/energy/kinetic_accelerator/tenmm
 	desc = "A self recharging, ranged mining tool that does increased damage in low pressure. This one feels a bit heavier than usual."
 	ammo_type = list(/obj/item/ammo_casing/energy/kinetic/etenmm)
@@ -494,32 +499,34 @@
 	select_name = "kinetic 10mm"
 	fire_sound = 'sound/weapons/gunshot.ogg'
 
+/// Ballistic PKA round: same numbers as /obj/item/projectile/bullet/c10mm, no kinetic pierce/mining-on-path.
 /obj/item/projectile/kinetic/etenmm
-	name = "kinetic 10mm"
+	name = "10mm bullet"
+	icon_state = "bullet"
 	damage = 30
 	damage_type = BRUTE
+	flag = BULLET
+	armour_penetration = 20
 	range = 50
-	color = "#FFFFFF"
-	icon = 'icons/obj/projectiles.dmi'
-	icon_state = "bullet"
+	hitsound_wall = "ricochet"
+	log_override = FALSE
+	// Ballistic round — skip /obj/item/projectile/kinetic pressure scaling.
+	// Раньше это делалось через call(/obj/item/projectile/proc/prehit_pierce)(src, target):
+	// такой вызов идёт как глобальный прок с src == null и падает на первом же попадании.
+	ignores_pressure_penalty = TRUE
 
-/obj/item/projectile/kinetic/etenmm/prehit_pierce(atom/target)
-	if(kinetic_gun)
-		var/list/mods = kinetic_gun.modkits
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_prehit(src, target, kinetic_gun)
-	return TRUE
+/obj/item/projectile/kinetic/etenmm/on_range()
+	qdel(src)
 
 /obj/item/projectile/kinetic/etenmm/strike_thing(atom/target)
-	var/turf/target_turf = get_turf(target)
-	if(!target_turf)
-		target_turf = get_turf(src)
-	if(kinetic_gun) //hopefully whoever shot this was not very, very unfortunate.
-		var/list/mods = kinetic_gun.modkits
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_strike_predamage(src, target_turf, target, kinetic_gun)
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_strike(src, target_turf, target, kinetic_gun)
+	if(!kinetic_gun)
+		return
+	var/turf/target_turf = get_turf(target) || get_turf(src)
+	for(var/obj/item/borg/upgrade/modkit/M in kinetic_gun.modkits)
+		M.projectile_strike_predamage(src, target_turf, target, kinetic_gun)
+	for(var/obj/item/borg/upgrade/modkit/M in kinetic_gun.modkits)
+		M.projectile_strike(src, target_turf, target, kinetic_gun)
+	// No mineral drilling or kinetic_blast — ballistic 10mm only.
 
 //sif
 /obj/item/borg/upgrade/modkit/critical

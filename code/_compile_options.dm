@@ -3,6 +3,23 @@
 
 //#define DATUMVAR_DEBUGGING_MODE //Enables the ability to cache datum vars and retrieve later for debugging which vars changed.
 
+//#define ATOM_STATISTICS_LOGGING //Collect atoms load time statisctics from Atoms Subsystem to "atom_loading_stats.log"
+
+// Перепись НЕ-атомных датумов по типам (code/datums/datum_census.dm): компоненты, элементы,
+// газовые смеси, углы освещения, таймеры, коллбеки - всё, чего нет в world.contents и чего
+// поэтому не видит перепись инстансов. Пишется в лог мира вместе с ней.
+//
+// Стоит 0.21 мкс на создание датума - замер стенда на двух миллионах созданий, четыре
+// чередующихся прогона (422.7 мс без хука против 838.3 мс с ним). Локальный прогон
+// MetaStation создаёт около 380 не-атомных датумов в секунду, то есть счётчик съедает
+// восемь сотых миллисекунды на секунду мира.
+//
+// Память под сами счётчики: четыре ассоциативных списка на 8.5-12 тысяч ключей каждый,
+// по 47 Б на ключ - около двух мегабайт на раунд. Это плата за ответ на вопрос, который
+// иначе решается перебором гипотез: рост раунда 10048 на 466 МБ перепись инстансов не
+// объясняет вовсе, потому что не-атомных датумов она не видит по построению.
+#define DATUM_CENSUS
+
 // Comment this out if you are debugging problems that might be obscured by custom error handling in world/Error
 #ifdef DEBUG
 #define USE_CUSTOM_ERROR_HANDLER
@@ -11,23 +28,8 @@
 #ifdef TESTING
 #define DATUMVAR_DEBUGGING_MODE
 
-///Used to find the sources of harddels, quite laggy, don't be surpised if it freezes your client for a good while
-//#define REFERENCE_TRACKING
-#ifdef REFERENCE_TRACKING
-
-///Should we be logging our findings or not
-#define REFERENCE_TRACKING_LOG
-
-///Used for doing dry runs of the reference finder, to test for feature completeness
-//#define REFERENCE_TRACKING_DEBUG
-
-///Run a lookup on things hard deleting by default.
-//#define GC_FAILURE_HARD_LOOKUP
-#ifdef GC_FAILURE_HARD_LOOKUP
-#define FIND_REF_NO_CHECK_TICK
-#endif //ifdef GC_FAILURE_HARD_LOOKUP
-
-#endif //ifdef REFERENCE_TRACKING
+// Рефтрекер компилируется всегда (code/modules/admin/view_variables/reference_tracking.dm).
+// Авто-сканы при GC-фейлах гейтятся рантаймом: SSgarbage.reftrack_mode (панель GC / конфиг gc_reftrack_mode).
 
 /*
 * Enables debug messages for every single reaction step. This is 1 message per 0.5s for a SINGLE reaction. Useful for tracking down bugs/asking me for help in the main reaction handiler (equilibrium.dm).
@@ -39,14 +41,6 @@
 // #define VISUALIZE_ACTIVE_TURFS //Highlights atmos active turfs in green
 // #define TRACK_MAX_SHARE //Allows max share tracking, for use in the atmos debugging ui
 #endif //ifdef TESTING
-
-//#define REFERENCE_DOING_IT_LIVE
-#ifdef REFERENCE_DOING_IT_LIVE
-// compile the backend
-#define REFERENCE_TRACKING
-// actually look for refs
-#define GC_FAILURE_HARD_LOOKUP
-#endif // REFERENCE_DOING_IT_LIVE
 
 //#define UNIT_TESTS //If this is uncommented, we do a single run though of the game setup and tear down process with unit tests in between
 
@@ -60,7 +54,11 @@
 								// 2 for preloading absolutely everything;
 
 #ifdef LOWMEMORYMODE
+#ifdef ABSOLUTE_MINIMUM_MODE
+#define FORCE_MAP "_maps/runtimestation_minimal.json"
+#else
 #define FORCE_MAP "_maps/runtimestation.json"
+#endif
 #endif
 
 //Additional code for the above flags.
@@ -77,11 +75,11 @@
 #endif
 
 #if defined(UNIT_TESTS)
-//Hard del testing defines
-#define REFERENCE_TRACKING
+// Хуки записи found_refs/should_save_refs для тестов рефтрекера (find_reference_sanity и др.).
 #define REFERENCE_TRACKING_DEBUG
-#define FIND_REF_NO_CHECK_TICK
-// #define GC_FAILURE_HARD_LOOKUP // Uncomment this to have harddel reftracking in unit tests (takes 3-5min to run per single harddel)
+// Ассеты собираются на инициализации, а не в лобби: прогон тестов до RUNLEVEL_LOBBY
+// не доходит, и отложенные листы никто бы не собрал.
+#define DO_NOT_DEFER_ASSETS
 #endif
 
 #ifdef TGS
@@ -99,3 +97,7 @@
 // You will need to compile your own copy of prof.dll in order to use it.
 // Find the source code and build instructions here: https://github.com/mafemergency/byond-tracy/
 // #define TRACY_PROFILING
+
+// Enables GC per-fire CSV profiler. Writes to data/logs/gc_profiler.csv and gc_profiler_types.csv.
+// Use to diagnose GC performance bottlenecks. No runtime overhead when commented out.
+// #define GC_PROFILER

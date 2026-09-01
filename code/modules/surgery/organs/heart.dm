@@ -84,11 +84,13 @@
 		return
 	if(owner.client && beating)
 		failed = FALSE
-		var/sound/slowbeat = sound('sound/health/slowbeat.ogg', repeat = TRUE)
-		var/sound/fastbeat = sound('sound/health/fastbeat.ogg', repeat = TRUE)
-
+		// Датумы строятся внутри веток, а не перед ними: этот прок зовётся на каждом
+		// проходе SSmobs у каждого игрока с бьющимся сердцем, а сами звуки нужны только
+		// в момент СМЕНЫ ритма. Две аллокации на игрока раз в две секунды - это сотни
+		// тысяч /sound за раунд, из которых используется единицы.
 		if(owner.health <= owner.crit_threshold && beat != BEAT_SLOW)
 			beat = BEAT_SLOW
+			var/sound/slowbeat = sound('sound/health/slowbeat.ogg', repeat = TRUE)
 			owner.playsound_local(get_turf(owner), slowbeat,40,0, channel = CHANNEL_HEARTBEAT)
 			// BLUEMOON ADD START - кастомное описание для роботов
 			if(HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM))
@@ -102,6 +104,7 @@
 
 		if(owner.jitteriness)
 			if(owner.health > HEALTH_THRESHOLD_FULLCRIT && (!beat || beat == BEAT_SLOW))
+				var/sound/fastbeat = sound('sound/health/fastbeat.ogg', repeat = TRUE)
 				owner.playsound_local(get_turf(owner),fastbeat,40,0, channel = CHANNEL_HEARTBEAT)
 				beat = BEAT_FAST
 		else if(beat == BEAT_FAST)
@@ -125,6 +128,12 @@
 				owner.visible_message("<span class='userdanger'>[owner] clutches at [owner.ru_ego()] chest as if [owner.ru_ego()] heart is stopping!</span>")
 			owner.set_heartattack(TRUE)
 			failed = TRUE
+	else if((organ_flags & ORGAN_SYNTHETIC) && failed)
+		// Помпу починили или заменили. У органики beating возвращает set_heartattack(FALSE),
+		// а синтетическую ветку выше никто не отматывал: beating = 0 стояло вечно и
+		// переживало и ребут, и дефиб - синтетик оживал уже с "сердечным приступом".
+		failed = FALSE
+		Restart()
 
 /obj/item/organ/heart/slime
 	name = "mitochondria"
@@ -289,8 +298,8 @@
 	addtimer(VARSET_CALLBACK(src, dose_available, TRUE), 5 MINUTES)
 
 /obj/item/organ/heart/ipc
-	name = "IPC heart"
-	desc = "An electronic pump that regulates hydraulic functions, the electronics have EMP shielding."
+	name = "hydraulic pump"
+	desc = "A shielded electrohydraulic pump that regulates pressure throughout an IPC chassis."
 	icon_state = "heart-c"
 	organ_flags = ORGAN_SYNTHETIC // BLUEMOON ADD - органы синтетиков не должны гнить и должны быть подвержены ЭМИ
 

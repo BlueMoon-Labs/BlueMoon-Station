@@ -11,15 +11,15 @@ import { Box } from '../components';
 import { useDebug } from '../debug';
 import { Layout } from './Layout';
 
-export const Pane = (props, context) => {
+export const Pane = (props) => {
   const {
     theme,
     children,
     className,
     ...rest
   } = props;
-  const { suspended } = useBackend(context);
-  const { debugLayout } = useDebug(context);
+  const { suspended } = useBackend();
+  const { debugLayout } = useDebug();
   return (
     <Layout
       className={classes([

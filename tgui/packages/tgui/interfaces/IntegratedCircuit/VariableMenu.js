@@ -1,4 +1,5 @@
-import { useLocalState } from '../../backend';
+import { useState } from 'react';
+
 import {
   Box,
   Button,
@@ -8,7 +9,7 @@ import {
   Stack,
 } from '../../components';
 
-export const VariableMenu = (props, context) => {
+export const VariableMenu = (props) => {
   const {
     variables,
     onAddVariable,
@@ -19,12 +20,12 @@ export const VariableMenu = (props, context) => {
     ...rest
   } = props;
 
-  const [name, setName] = useLocalState(context, "variable_name", null);
-  const [type, setType] = useLocalState(context, "variable_type", types[1]);
+  const [name, setName] = useState(null);
+  const [type, setType] = useState(types[1]);
 
   return (
     <Section
-      title="Variable Options"
+      title="Переменные схемы"
       {...rest}
       fill
       height="100%"
@@ -70,7 +71,7 @@ export const VariableMenu = (props, context) => {
             <Stack vertical fill>
               <Stack.Item>
                 <Input
-                  placeholder="Name"
+                  placeholder="Имя переменной"
                   fluid
                   onInput={(e, nameVal) => setName(nameVal)}
                 />
@@ -84,14 +85,14 @@ export const VariableMenu = (props, context) => {
               </Stack.Item>
               <Stack.Item grow={1}>
                 <Button
-                  content="Add Variable"
+                  content="Добавить переменную"
                   onClick={(e) => onAddVariable(name, type, e)}
                   fluid
                 />
               </Stack.Item>
               <Stack.Item>
                 <Button
-                  content="Add Setter"
+                  content="Сеттер"
                   fluid
                   icon="plus"
                   onClick={handleAddSetter}
@@ -99,7 +100,7 @@ export const VariableMenu = (props, context) => {
               </Stack.Item>
               <Stack.Item>
                 <Button
-                  content="Add Getter"
+                  content="Геттер"
                   fluid
                   icon="plus"
                   onClick={handleAddGetter}

@@ -1,0 +1,49 @@
+/**
+ * NtOS Terminal
+ * Classic green phosphor CRT terminal.
+ * Feature: monospace green-on-black like an old computer console.
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+$terminal: #1a7a1a;
+
+@use '../colors.scss' with (
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #0a0f0a,
+  $color-bg-grad-spread: 0%,
+  $border-radius: 0,
+);
+
+.theme-ntos_terminal {
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': #0d3d0d,
+    'color-transparent-text': rgba(150, 255, 150, 0.8),
+    'color-selected': #2d8f2d,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'color-default-fill': $terminal,
+    'background-color': rgba(0, 255, 0, 0.08),
+  ));
+  @include meta.load-css('../components/Section.scss');
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': #0d2d0d,
+  ));
+
+  .Button {
+    font-family: 'Courier New', monospace;
+  }
+
+  .Layout__content {
+    background-image: none;
+  }
+}

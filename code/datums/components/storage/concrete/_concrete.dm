@@ -132,14 +132,11 @@
 	//or moving objects, things that should never happen
 	var/atom/parent = src.parent
 	var/list/seeing_mobs = can_see_contents()
+	var/obj/item/removed_item = isitem(AM) && AM
 	for(var/mob/M in seeing_mobs)
 		M.client.screen -= AM
-	if(isitem(AM))
-		var/obj/item/removed_item = AM
+	if(removed_item)
 		removed_item.item_flags &= ~IN_STORAGE
-		if(ismob(parent.loc))
-			var/mob/carrying_mob = parent.loc
-			removed_item.dropped(carrying_mob, TRUE)
 	if(new_location)
 		//Reset the items values
 		_removal_reset(AM)
@@ -149,6 +146,9 @@
 	else
 		//Being destroyed, just move to nullspace now (so it's not in contents for the icon update)
 		AM.moveToNullspace()
+	if(removed_item && ismob(parent.loc))
+		var/mob/carrying_mob = parent.loc
+		removed_item.dropped(carrying_mob, TRUE)
 	refresh_mob_views()
 	if(isobj(parent))
 		var/obj/O = parent
@@ -169,11 +169,17 @@
 	var/moved = FALSE
 	if(!istype(I))
 		return FALSE
+	// Дублирует гейт can_be_inserted: force-пути (signal_insertion_attempt) идут мимо
+	// проверок, а удаляемый предмет нельзя возвращать в contents ни по какому пути.
+	if(QDELETED(I))
+		return FALSE
 	if(M)
 		if(!M.temporarilyRemoveItemFromInventory(I))
 			return FALSE
 		else
 			moved = TRUE //At this point if the proc fails we need to manually move the object back to the turf/mob/whatever.
+	if(QDELETED(I))
+		return FALSE
 	if(I.pulledby)
 		I.pulledby.stop_pulling()
 	if(silent)
@@ -186,6 +192,9 @@
 			else
 				I.forceMove(parent.drop_location())
 		return FALSE
+	if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
+		I.pixel_x = I.base_pixel_x
+		I.pixel_y = I.base_pixel_y
 	I.on_enter_storage(master)
 	I.item_flags |= IN_STORAGE
 	refresh_mob_views()

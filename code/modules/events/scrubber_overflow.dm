@@ -1,10 +1,15 @@
 /datum/round_event_control/scrubber_overflow
 	name = "Scrubber Overflow: Normal"
 	typepath = /datum/round_event/scrubber_overflow
-	weight = 75
-	max_occurrences = 3
+	// Вес 75 (при типичных 25-50 у соседей по MINOR) плюс наследование его всеми подтипами давали
+	// семейству труб ~28% каждого minor-ролла: по 3-5 переливов за раунд. Семейство "scrubbers"
+	// делит фолл-офф повторов и паузу, метка disruptive глушит переливы в мягких профилях.
+	weight = 20
+	max_occurrences = 2
 	min_players = 10
 	category = EVENT_CATEGORY_JANITORIAL
+	family = "scrubbers"
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
 	description = "The scrubbers release a tide of mostly harmless froth."
 	admin_setup = list(/datum/event_admin_setup/listed_options/scrubber_overflow)
 
@@ -19,7 +24,7 @@
 	var/overflow_probability = 50
 	/// Specific reagent to force all scrubbers to use, null for random reagent choice
 	var/datum/reagent/forced_reagent_type
-	/// A list of scrubbers that will have reagents ejected from them
+	/// A list of scrubbers and vents that will have reagents ejected from them
 	var/list/scrubbers = list()
 	/// The list of chems that scrubbers can produce
 	var/list/safer_chems = list(/datum/reagent/water,
@@ -88,22 +93,35 @@
 			continue
 		scrubbers += temp_vent
 
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
+		var/turf/vent_turf = get_turf(temp_vent)
+		if(!vent_turf)
+			continue
+		if(!is_station_level(vent_turf.z))
+			continue
+		if(temp_vent.welded)
+			continue
+		if(!prob(overflow_probability))
+			continue
+		scrubbers += temp_vent
+
 	if(!scrubbers.len)
 		return kill()
 
-/datum/round_event_control/scrubber_overflow/canSpawnEvent(players_amt, allow_magic = FALSE)
+/datum/round_event_control/scrubber_overflow/can_fire(datum/director_signals/signals)
 	. = ..()
 	if(!.)
 		return
 	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/temp_vent in GLOB.machines)
 		var/turf/scrubber_turf = get_turf(temp_vent)
-		if(!scrubber_turf)
+		if(!scrubber_turf || !is_station_level(scrubber_turf.z) || temp_vent.welded)
 			continue
-		if(!is_station_level(scrubber_turf.z))
+		return TRUE
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
+		var/turf/vent_turf = get_turf(temp_vent)
+		if(!vent_turf || !is_station_level(vent_turf.z) || temp_vent.welded)
 			continue
-		if(temp_vent.welded)
-			continue
-		return TRUE //there's at least one. we'll let the codergods handle the rest with prob() i guess.
+		return TRUE
 	return FALSE
 
 /// proc that will run the prob check of the event and return a safe or dangerous reagent based off of that.
@@ -111,9 +129,12 @@
 	return dangerous ? get_random_reagent_id() : pick(safer_chems)
 
 /datum/round_event/scrubber_overflow/start()
-	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/vent as anything in scrubbers)
-		if(!vent.loc)
-			CRASH("SCRUBBER SURGE: [vent] has no loc somehow?")
+	for(var/obj/machinery/atmospherics/components/unary/vent as anything in scrubbers)
+		// Между setup() и start() проходит несколько тиков - за это время вент
+		// могли снести (взрыв, фауна). CRASH здесь обрывал весь цикл на первом
+		// же снесённом венте и глушил событие целиком (раунд 9915).
+		if(QDELETED(vent) || !vent.loc)
+			continue
 
 		var/datum/reagents/dispensed_reagent = new /datum/reagents(reagents_amount)
 		dispensed_reagent.my_atom = vent
@@ -137,6 +158,7 @@
 	min_players = 25
 	max_occurrences = 1
 	earliest_start = 35 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of moderately harmless froth."
 
 /datum/round_event/scrubber_overflow/threatening
@@ -150,6 +172,7 @@
 	min_players = 35
 	max_occurrences = 1
 	earliest_start = 45 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of mildly harmless froth."
 
 /datum/round_event/scrubber_overflow/catastrophic
@@ -159,7 +182,7 @@
 /datum/round_event_control/scrubber_overflow/every_vent
 	name = "Scrubber Overflow: Every Vent"
 	typepath = /datum/round_event/scrubber_overflow/every_vent
-	weight = 0
+	admin_only = TRUE
 	max_occurrences = 0
 	description = "The scrubbers release a tide of mostly harmless froth, but every scrubber is affected."
 

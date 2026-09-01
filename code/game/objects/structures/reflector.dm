@@ -58,6 +58,11 @@
 /obj/structure/reflector/proc/dir_map_to_angle(dir)
 	return FALSE
 
+///Собранный рефлектор зеркалит отражаемые им лучи, поэтому для beam-стрелка AI
+///он не жёсткий блок линии огня (пуле, которую он не отражает, - остаётся блоком).
+/obj/structure/reflector/ranged_ai_lane_passable(obj/item/projectile/projectile_path)
+	return finished && allowed_projectile_typecache[projectile_path]
+
 /obj/structure/reflector/bullet_act(obj/item/projectile/P)
 	var/pdir = P.dir
 	var/pangle = P.Angle

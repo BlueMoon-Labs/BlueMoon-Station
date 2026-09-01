@@ -63,7 +63,7 @@
 	include_user = 1
 	cooldown_min = 20 //25 deciseconds reduction per rank
 
-	smoke_spread = 2
+	smoke_type = /datum/effect_system/smoke_spread/bad
 	smoke_amt = 4
 
 	action_icon_state = "smoke"
@@ -81,7 +81,7 @@
 	range = -1
 	include_user = 1
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 2
 
 	action_icon_state = "smoke"
@@ -112,7 +112,7 @@
 	cooldown_min = 5 //4 deciseconds reduction per rank
 
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 0
 
 	inner_tele_radius = 0
@@ -140,7 +140,7 @@
 	include_user = 1
 	cooldown_min = 200 //100 deciseconds reduction per rank
 
-	smoke_spread = 1
+	smoke_type = /datum/effect_system/smoke_spread
 	smoke_amt = 2
 	sound1 = 'sound/magic/teleport_diss.ogg'
 	sound2 = 'sound/magic/teleport_app.ogg'
@@ -236,7 +236,7 @@
 	var/distfromcaster
 	playMagSound()
 	for(var/turf/T in targets) //Done this way so things don't get thrown all around hilariously.
-		for(var/mob/M in T)
+		for(var/mob/living/M in T)
 			mobs += M
 		for(var/obj/O in T)
 			objs += O
@@ -249,7 +249,7 @@
 		if(AM == user || AM.anchored)
 			continue
 
-		if(ismob(AM))
+		if(isliving(AM))
 			var/mob/M = AM
 			if(M.anti_magic_check(anti_magic_check, FALSE))
 				continue
@@ -342,7 +342,7 @@
 		if(isliving(hit_atom))
 			var/mob/living/M = hit_atom
 			if(!M.anti_magic_check())
-				M.electrocute_act(80, src, null, SHOCK_ILLUSION)
+				M.electrocute_act(80, src, null, SHOCK_ILLUSION | SHOCK_NOGLOVES)
 		qdel(src)
 
 /obj/item/spellpacket/lightningbolt/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, quickstart = TRUE)

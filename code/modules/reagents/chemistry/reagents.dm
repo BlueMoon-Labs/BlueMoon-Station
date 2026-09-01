@@ -60,6 +60,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 	var/condensation_amount = 1
 	var/molarity = 5 // How many units per mole of this reagent. Technically this is INVERSE molarity, but hey.
 	var/accelerant_quality = 0 /// How flammable is this material?
+	var/list/metabolized_traits
 
 /datum/reagent/New()
 	. = ..()
@@ -72,7 +73,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 	. = ..()
 	holder = null
 
-/datum/reagent/proc/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0)
+/datum/reagent/proc/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart = 0)
 	if(!istype(M))
 		return FALSE
 	if(method == VAPOR) //smoke, foam, spray
@@ -100,7 +101,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 			else
 				temp = T20C
 		if(temp > boiling_point)
-			T.atmos_spawn_air("[get_gas()]=[volume/molarity];TEMP=[temp]")
+			T.atmos_spawn_air("[get_gas()]=[volume/(molarity*2)];TEMP=[temp]")
 
 /datum/reagent/proc/on_mob_life(mob/living/carbon/M)
 	current_cycle++
@@ -159,11 +160,13 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 
 // Called when this reagent first starts being metabolized by a liver
 /datum/reagent/proc/on_mob_metabolize(mob/living/L)
-	return
+	if(metabolized_traits)
+		for(var/trait in metabolized_traits)
+			ADD_TRAIT(L, trait, "metabolize:[type]")
 
 // Called when this reagent stops being metabolized by a liver
 /datum/reagent/proc/on_mob_end_metabolize(mob/living/L)
-	return
+	REMOVE_TRAITS_IN(L, "metabolize:[type]")
 
 /datum/reagent/proc/on_move(mob/M)
 	return

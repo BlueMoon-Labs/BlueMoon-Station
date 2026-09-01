@@ -2,16 +2,18 @@
 	id = "bspspray"
 	display_name = "Advanced Janitoring"
 	description = "A better sprayer for your job!"
+	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("practical_bluespace", "janitor") // BLUEMOON ADD practical_bluespace
-	design_ids = list("bluespacespray", "light_replacer_blue", "omni_janicart", "adv_mop_cleaner", "adv_mop_reach") // BLUEMOON ADD light_replacer_blue + "omni_janicart"
+	design_ids = list("bluespacespray", "light_replacer_blue", "omni_janicart", "adv_mop_cleaner", "adv_mop_reach", "spraycan_bluespace") // BLUEMOON ADD light_replacer_blue + "omni_janicart"
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
 
 /datum/techweb_node/syndicate_basic/cool
 	id = "syndicate_cool"
-	display_name = "A Single Illegal Weapon"
-	description = "Shoot with style! Cannot be supressed!"
+	display_name = "Syndicate standard ammunition"
+	description = "Shoot with style! Luger cannot be suppressed!"
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("syndicate_basic")
-	design_ids = list("luger")
+	design_ids = list("luger", "pistolm9mm", "c9mm_box")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 	hidden = FALSE
 
@@ -19,6 +21,7 @@
 	id = "advanced_bluetravel"
 	display_name = "Advanced Bluespace Travel"
 	description = "Using superior knowledge of bluespace, you can develop more finely-controlled teleportation equipment."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("adv_bluespace", "bluespace_warping")
 	design_ids = list("telepad", "telesci_console")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
@@ -27,6 +30,7 @@
 	id = "adv_toolset_implant"
 	display_name = "Advanced Toolset Implant"
 	description = "Allows the creation of alien powerful implants for your arms."
+	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("alien_bio", "alien_engi", "adv_cyber_implants")
 	design_ids = list("ci-toolset-adv","ci-surgery-adv")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

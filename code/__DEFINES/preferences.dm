@@ -19,16 +19,22 @@
 #define NO_ANTAG				(1<<16)
 #define VERB_CONSENT			(1<<17) // Sandstorm - ERP Mechanic Addition
 #define LEWD_VERB_SOUNDS		(1<<18) // Sandstorm - ERP Mechanic Addition
-#define TG_PLAYER_PANEL			(1<<19) // SPLURT - Opt for the old splashscreen player panel
 #define SOUND_JUKEBOXES			(1<<20)
+#define RANGED_VERBS_CONSENT	(1<<21) // BLUEMOON ADD интеракты с расстояния
+#define SOUND_PERSONAL_JUKEBOXES	(1<<22)
+#define SOUND_EMOTE					(1<<23)
+#define SOUND_FAX					(1<<19)	// toggles
+#define SOUND_MENTORHELP			(1<<0)	// mentor_toggles
 
-#define DEADMIN_ALWAYS				(1<<0)
+#define DEADMIN_ONSPAWN				(1<<0)
 #define DEADMIN_ANTAGONIST			(1<<1)
 #define DEADMIN_POSITION_HEAD		(1<<2)
 #define DEADMIN_POSITION_SECURITY	(1<<3)
 #define DEADMIN_POSITION_SILICON	(1<<4)
+#define DEADMIN_ONLOGIN				(1<<5)
+#define DEMENTOR_ON_LOGIN			(1<<6)
 
-#define TOGGLES_DEFAULT (SOUND_ADMINHELP|SOUND_MIDI|SOUND_AMBIENCE|SOUND_LOBBY|MEMBER_PUBLIC|INTENT_STYLE|MIDROUND_ANTAG|SOUND_INSTRUMENTS|SOUND_JUKEBOXES|SOUND_SHIP_AMBIENCE|SOUND_PRAYERS|SOUND_ANNOUNCEMENTS|SOUND_BARK)
+#define TOGGLES_DEFAULT (SOUND_ADMINHELP|SOUND_MIDI|SOUND_AMBIENCE|SOUND_LOBBY|MEMBER_PUBLIC|INTENT_STYLE|MIDROUND_ANTAG|SOUND_INSTRUMENTS|SOUND_JUKEBOXES|SOUND_PERSONAL_JUKEBOXES|SOUND_SHIP_AMBIENCE|SOUND_PRAYERS|SOUND_ANNOUNCEMENTS|SOUND_BARK|SOUND_EMOTE|SOUND_FAX)
 
 //Chat toggles
 #define CHAT_OOC			(1<<0)
@@ -45,6 +51,12 @@
 #define CHAT_BANKCARD		(1<<11)
 
 #define TOGGLES_DEFAULT_CHAT (CHAT_OOC|CHAT_DEAD|CHAT_GHOSTEARS|CHAT_GHOSTSIGHT|CHAT_PRAYER|CHAT_RADIO|CHAT_PULLR|CHAT_GHOSTWHISPER|CHAT_GHOSTPDA|CHAT_GHOSTRADIO|CHAT_LOOC|CHAT_BANKCARD)
+
+// Chat custom colors
+#define CUSTOM_OOC			(1<<0)
+#define CUSTOM_AOOC			(1<<1)
+
+#define TOGGLES_DEFAULT_CUSTOM_COLORS (CUSTOM_OOC|CUSTOM_AOOC)
 
 //randomised elements
 #define RANDOM_ANTAG_ONLY 1
@@ -97,13 +109,12 @@
 #define JP_MEDIUM 2
 #define JP_HIGH 3
 
-// 'Be Victim' consent options for preferences panel / antag target HUD
-#define BEVICTIM_NO "No"
-#define BEVICTIM_ASK "Ask"
-#define BEVICTIM_YES "Yes"
-
 // Values for /datum/preference/savefile_identifier
 /// This preference is character specific.
 #define PREFERENCE_CHARACTER "character"
 /// This preference is account specific.
 #define PREFERENCE_PLAYER "player"
+
+// Кол-во хедшотов, не ставить меньше 1
+#define MAX_HEADSHOTS 6
+#define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS

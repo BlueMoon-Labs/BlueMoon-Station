@@ -7,7 +7,7 @@
 /client/proc/admin_cmd_respawn_return_to_lobby()
 	set name = "Respawn Player (Unrestricted)"
 	set desc = "Gives a player an unrestricted respawn, resetting all respawn restrictions for them."
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 
 	var/list/mob/valid = list()
 	for(var/mob/dead/observer/I in GLOB.dead_mob_list)
@@ -21,7 +21,12 @@
 	if(!valid.len)
 		to_chat(src, "<span class='warning'>No player found that is either a ghost or is in lobby with restrictions active.</span>")
 		return
-	var/ckey = valid[input(src, "Choose a player (only showing logged in players who have restrictions)", "Unrestricted Respawn") as null|anything in valid]
+	// tgui вместо нативного input: пока нативный промпт висит без ответа, его фрейм
+	// держит в локалях весь список призраков - и не отпускает даже после дисконнекта
+	var/choice = tgui_input_list(usr, "Choose a player (only showing logged in players who have restrictions)", "Unrestricted Respawn", valid)
+	if(!choice)
+		return
+	var/ckey = valid[choice]
 	var/client/player = GLOB.directory[ckey]
 	if(!player)
 		to_chat(src, "<span class='warning'>Client not found.</span>")
@@ -29,7 +34,7 @@
 	var/mob/M = player.mob
 	if(istype(M, /mob/dead/observer))
 		var/mob/dead/observer/O = M
-		var/confirm = alert(src, "Send [O]([ckey]) back to the lobby without respawn restrictions?", "Send to Lobby", "Yes", "No")
+		var/confirm = tgui_alert(usr, "Send [O]([ckey]) back to the lobby without respawn restrictions?", "Send to Lobby", list("Yes", "No"))
 		if(confirm != "Yes")
 			return
 		//SPLURT edit
@@ -44,7 +49,7 @@
 			player.prefs.dnr_triggered = FALSE
 	else if(istype(M, /mob/dead/new_player))
 		var/mob/dead/new_player/NP = M
-		var/confirm = alert(src, "Remove [NP]'s respawn restrictions?", "Remove Restrictions", "Yes", "No")
+		var/confirm = tgui_alert(usr, "Remove [NP]'s respawn restrictions?", "Remove Restrictions", list("Yes", "No"))
 		if(confirm != "Yes")
 			return
 		//SPLURT edit
@@ -66,7 +71,7 @@
 /client/proc/admin_cmd_remove_ghost_respawn_timer()
 	set name = "Remove Respawn Timer for Player"
 	set desc = "Removes a player's respawn timer without removing their respawning restrictions."
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 
 	var/list/mob/dead/observer/valid = list()
 	for(var/mob/dead/observer/I in GLOB.dead_mob_list)
@@ -77,9 +82,12 @@
 	if(!valid.len)
 		to_chat(src, "<span class='warning'>No logged in ghosts found.</span>")
 		return
-	var/mob/dead/observer/O = valid[input(src, "Choose a player (only showing logged in)", "Remove Respawn Timer") as null|anything in valid]
+	var/choice = tgui_input_list(usr, "Choose a player (only showing logged in)", "Remove Respawn Timer", valid)
+	if(!choice)
+		return
+	var/mob/dead/observer/O = valid[choice]
 
-	if(!O.client)
+	if(!O || !O.client)
 		to_chat(src, "<span class='warning'>[O] has no client.</span>")
 		return
 	var/timeleft = O.time_left_to_respawn()
@@ -128,9 +136,9 @@
 		to_chat(src, "<span class='warning'>Respawns are disabled in configuration.</span>")
 		return
 
-	if(client.prefs.dnr_triggered)
-		to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
-		return
+	//if(client.prefs.dnr_triggered) // Ну не хочет чел вставать, зачем ему респавн то резать -_-
+		//to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
+		//return
 
 	// BLUEMOON ADD я не знаю почему бан респавна не банил респавн
 	if(jobban_isbanned(src, ROLE_RESPAWN))

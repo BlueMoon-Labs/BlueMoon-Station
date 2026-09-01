@@ -10,6 +10,8 @@
 	/// Show ID?
 	var/show_id = TRUE
 	var/cooldown = FALSE //Door cooldowns
+	/// Should we toggle open/close of doors based on their current state
+	var/sync_doors = TRUE
 
 /obj/item/assembly/control/Initialize(mapload)
 	if(mapload && id)
@@ -29,7 +31,7 @@
 	if(!can_change_id)
 		return
 		// защита от грифа (невозможность тыкать замаппленные бласты, цк в т.ч.)
-	var/change_id = tgui_input_number(user, "Set the door controllers ID", "Door Controller ID", id, 100)
+	var/change_id = tgui_input_text(user, "Set the door controllers ID", "Door Controller ID", id, 100)
 	if(!change_id || QDELETED(usr) || QDELETED(src) || !usr.canUseTopic(src, be_close = TRUE, no_dextery = FALSE, no_tk = TRUE))
 		return
 	id = change_id
@@ -41,7 +43,7 @@
 	var/openclose
 	for(var/obj/machinery/door/poddoor/M in GLOB.machines)
 		if(M.id == src.id)
-			if(openclose == null)
+			if(openclose == null || !sync_doors)
 				openclose = M.density
 			INVOKE_ASYNC(M, openclose ? TYPE_PROC_REF(/obj/machinery/door/poddoor, open) : TYPE_PROC_REF(/obj/machinery/door/poddoor, close))
 	addtimer(VARSET_CALLBACK(src, cooldown, FALSE), 10)
@@ -159,8 +161,8 @@
 	addtimer(VARSET_CALLBACK(src, cooldown, FALSE), 50)
 
 /obj/item/assembly/control/electrochromatic
-	name = "electrochromatic window controller"
-	desc = "Toggles linked electrochromatic windows."
+	name = "electrochromatic glazing controller"
+	desc = "Toggles linked electrochromatic windows, windoors, and glass-paneled airlocks."
 	can_change_id = TRUE
 	/// Stores our status to prevent windows from desyncing.
 	var/on = FALSE

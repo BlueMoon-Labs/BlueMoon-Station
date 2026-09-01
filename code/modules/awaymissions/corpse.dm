@@ -37,6 +37,13 @@
 	var/make_bank_account = FALSE // BLUEMOON ADD
 	var/starting_money = 0 // BLUEMOON ADD работает только при make_bank_account = TRUE
 	var/category = "misc" // BLUEMOON ADD - категоризация для отображения по спискам
+	/// Отложенное действие директора, создавшее этот гост-спавнер. Если первичный poll никого
+	/// не назначил, позднее занятие спавнера всё равно переводит прогноз в живой учёт.
+	var/datum/director_action/director_source_action
+	/// Доля общей intensity командного действия, принадлежащая этому спавнеру; null = вся.
+	var/director_intensity
+	/// Страховая доля цены этого спавнера; 0 у форса админа и незастрахованных ролей.
+	var/director_refund_cost = 0
 
 ///override this to add special spawn conditions to a ghost role
 /obj/effect/mob_spawn/proc/allow_spawn(mob/user, silent = FALSE)
@@ -57,15 +64,17 @@
 		var/mob/dead/observer/O = user
 		if(!O.can_reenter_round())
 			return FALSE
-	var/ghost_role = alert(latejoinercalling ? "Latejoin as [mob_name]? (This is a ghost role, and as such, it's very likely to be off-station.)" : "Become [mob_name]? (Warning, You can no longer be cloned!)",,"Да","Нет")
-	if(ghost_role == "Нет" || !loc)
+	// tgui вместо нативного alert: BYOND держит нативный промпт (и фрейм с ним) до
+	// ответа даже после дисконнекта - брошенный диалог "Become X?" вечно пинит призрака
+	var/ghost_role = tgui_alert(user, latejoinercalling ? "Latejoin as [mob_name]? (This is a ghost role, and as such, it's very likely to be off-station.)" : "Become [mob_name]? (Warning, You can no longer be cloned!)", "Ghost role", list("Да", "Нет"))
+	if(ghost_role != "Да" || !loc)
 		return
 	var/requested_char = FALSE
 	if(can_load_appearance == TRUE && ispath(mob_type, /mob/living/carbon/human)) // Can't just use if(can_load_appearance), 2 has a different behavior
-		switch(alert(user, "Желаете загрузить текущего своего выбранного персонажа?", "Play as your character!", "Yes", "No", "Actually nevermind"))
+		switch(tgui_alert(user, "Желаете загрузить текущего своего выбранного персонажа?", "Play as your character!", list("Yes", "No", "Actually nevermind")))
 			if("Yes")
 				requested_char = TRUE
-			if("Actually nevermind")
+			if("Actually nevermind", null)
 				return
 	if(!uses)
 		to_chat(user, "<span class='warning'>This spawner is out of charges!</span>")
@@ -110,15 +119,27 @@
 /obj/effect/mob_spawn/proc/equip(mob/M, load_character)
 	return
 
-/obj/effect/mob_spawn/proc/create(ckey, name, load_character)
-	var/mob/living/M = new mob_type(get_turf(src)) //living mobs only
+/**
+ * Создаёт моба спавнера.
+ *
+ * spawn_type - явный тип вместо общего mob_type. Нужен там, где выбор делает игрок в
+ * спящем диалоге (радиальное меню свармера): пока один гост выбирает, второй успевает
+ * переписать общий вар спавнера, и первый спавнил "объект типа null".
+ */
+/obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type)
+	var/mob_path = spawn_type || mob_type
+	var/mob/living/M = new mob_path(get_turf(src)) //living mobs only
 	if(!random)
 		M.real_name = mob_name ? mob_name : M.name
 		if(!mob_gender)
 			mob_gender = pick(MALE, FEMALE)
 		M.gender = mob_gender
 	if(faction)
-		M.faction = list(faction)
+		//Варэдит на карте может задать и строку, и готовый список. Голое list(faction) во втором
+		//случае давало список внутри списка: такая фракция не совпадала ни с одной чужой, и моб
+		//становился врагом вообще всем, включая своих.
+		var/list/spawn_faction = islist(faction) ? faction : list(faction)
+		M.faction = spawn_faction.Copy()
 	if(disease)
 		M.ForceContractDisease(new disease)
 	if(death)
@@ -132,13 +153,6 @@
 
 	if(ckey)
 		M.ckey = ckey
-		if(ishuman(M) && load_character)
-			var/mob/living/carbon/human/H = M
-			if (H.client)
-				if (loadout_enabled == TRUE)
-					SSjob.equip_loadout(null, H)
-					SSjob.post_equip_loadout(null, H)
-			H.load_client_appearance(H.client)
 		//splurt change
 		if(jobban_isbanned(M, "pacifist")) //do you love repeat code? i sure do
 			to_chat(M, "<span class='cult'>You are pacification banned. Pacifist has been force applied.</span>")
@@ -152,7 +166,12 @@
 				output_message += "<p>[flavour_text]</p>"
 			if(important_info != "")
 				output_message += "<span class='warning'>[important_info]</span>"
-			output_message += "\n<span class='boldwarning'>В режим игры Extended станцию посещать допустимо, в Dynamic — запрещено!</span>"
+			// Напоминание о правилах посещения станции адресовано оффстанционным гост-ролям.
+			// Спавнер, стоящий на самой станции (свармер у гейтвея и прочие мидраундовые роли),
+			// запрещал бы игроку находиться ровно там, где он появился.
+			var/turf/spawner_turf = get_turf(src)
+			if(addition_warning && (!spawner_turf || !is_station_level(spawner_turf.z)))
+				output_message += "\n\n[addition_warning]"
 			to_chat(M, examine_block(output_message))
 		// BLUEMOON EDIT END
 		var/datum/mind/MM = M.mind
@@ -172,17 +191,43 @@
 		// BLUEMOON EDIT END
 		if(assignedrole)
 			M.mind.assigned_role = assignedrole
-		special(M, name)
+		if(ishuman(M) && load_character)
+			var/mob/living/carbon/human/H = M
+			if (H.client)
+				H.load_client_appearance(H.client, quirks = FALSE)
+				if (loadout_enabled == TRUE)
+					SSjob.equip_loadout(null, H)
+					SSjob.post_equip_loadout(null, H)
+				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
+		// BLUEMOON ADD START - загрузка татуировок для гост-ролей без загрузки внешности
+		else if(ishuman(M) && can_load_appearance)
+			var/mob/living/carbon/human/H = M
+			if(H.client?.prefs)
+				H.client.prefs.apply_tattoos_to_human(H)
+		// BLUEMOON ADD END
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)
 		special_post_appearance(M, name) // BLUEMOON ADD
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
+		special(M, name)
+		// BLUEMOON ADD START - глобальный сигнал для модульных реакций на занятие гост-роли игроком
+		SEND_GLOBAL_SIGNAL(COMSIG_GHOST_ROLE_CLAIMED, M)
+		// BLUEMOON ADD END
+		if(director_source_action)
+			SSdirector.track_ghost_role_spawn(
+				director_source_action,
+				list(M),
+				budget_backed = director_refund_cost > 0,
+				intensity_override = director_intensity,
+				refund_cost_override = director_refund_cost,
+			)
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)
 		qdel(src)
+	return M
 
 // Base version - place these on maps/templates.
 /obj/effect/mob_spawn/human
@@ -306,7 +351,7 @@
 		H.equipOutfit(outfit)
 		if(disable_pda)
 			// We don't want corpse PDAs to show up in the messenger list.
-			var/obj/item/pda/PDA = locate(/obj/item/pda) in H
+			var/obj/item/modular_computer/pda/PDA = locate(/obj/item/modular_computer/pda) in H
 			if(PDA)
 				PDA.toff = TRUE
 		if(disable_sensors)
@@ -453,7 +498,7 @@
 /obj/effect/mob_spawn/human/doctor/alive/equip(mob/living/carbon/human/H)
 	..()
 	// Remove radio and PDA so they wouldn't annoy station crew.
-	var/list/del_types = list(/obj/item/pda, /obj/item/radio/headset)
+	var/list/del_types = list(/obj/item/modular_computer/pda, /obj/item/radio/headset)
 	for(var/del_type in del_types)
 		var/obj/item/I = locate(del_type) in H
 		qdel(I)
@@ -590,7 +635,7 @@
 	uniform = /obj/item/clothing/under/rank/centcom/commander
 	suit = /obj/item/clothing/suit/armor/bulletproof
 	ears = /obj/item/radio/headset/heads/captain
-	glasses = /obj/item/clothing/glasses/eyepatch
+	glasses = /obj/item/clothing/glasses/cover/eyepatch
 	mask = /obj/item/clothing/mask/cigarette/cigar/cohiba
 	head = /obj/item/clothing/head/centhat
 	gloves = /obj/item/clothing/gloves/tackler/combat

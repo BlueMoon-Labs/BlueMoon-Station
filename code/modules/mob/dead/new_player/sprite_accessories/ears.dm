@@ -345,6 +345,11 @@
 	icon_state = "fox"
 	matrixed_sections = MATRIX_RED_GREEN
 
+/datum/sprite_accessory/ears/mam_ears/protogen
+	name = "Protogen"
+	icon_state = "protogen"
+	matrixed_sections = MATRIX_RED_GREEN
+
 /datum/sprite_accessory/ears/mam_ears/husky
 	name = "Husky"
 	icon_state = "wolf"
@@ -410,6 +415,16 @@
 /datum/sprite_accessory/ears/mam_ears/sergal
 	name = "Sergal"
 	icon_state = "sergal"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/sergal_alt
+	name = "Sergal alt"
+	icon_state = "sergal_alt"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/ears/mam_ears/sergal_alt_two
+	name = "Sergal alt (Secondary)"
+	icon_state = "sergal_alt2"
 	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/ears/mam_ears/skunk

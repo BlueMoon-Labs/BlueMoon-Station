@@ -16,6 +16,20 @@
 	exp_type = EXP_TYPE_CREW
 	exp_type_department = EXP_TYPE_MEDICAL
 	considered_combat_role = TRUE
+	custom_spawn_text = "стремитесь поддерживать чистоту в отделе. Следите за наличием лекарств в холодильниках. Оповещайте о угрозе вируса и принимайте соответствующие решения. Вы - четвёртый в очереди на пост ВрИО капитана."
+	alt_titles = list(
+		"Interdyne Lead Specialist", //Триглав выше, для удобства
+		"Chief Heal Stud",
+		"Chief Heal Slut",
+		"Chief Physician",
+		"Head of Medical",
+		"Head Physician",
+		"Healing Fleshlight Master",
+		"Healing Fleshlight Mistress",
+		"Healthcare Manager",
+		"Medical Administrator",
+		"Medical Director",
+		)
 
 	outfit = /datum/outfit/job/cmo
 	departments = DEPARTMENT_BITFLAG_MEDICAL | DEPARTMENT_BITFLAG_COMMAND
@@ -23,10 +37,10 @@
 
 	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_HEADS, ACCESS_MINERAL_STOREROOM,
 			ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_CMO, ACCESS_SURGERY, ACCESS_RC_ANNOUNCE,
-			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_MAINT_TUNNELS)
+			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_PSYCH, ACCESS_MAINT_TUNNELS, ACCESS_PRODUCTION_MEDICAL)
 	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_HEADS, ACCESS_MINERAL_STOREROOM,
 			ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_CMO, ACCESS_SURGERY, ACCESS_RC_ANNOUNCE,
-			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_MAINT_TUNNELS)
+			ACCESS_KEYCARD_AUTH, ACCESS_SEC_DOORS, ACCESS_PSYCH, ACCESS_MAINT_TUNNELS, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_CMO
@@ -60,17 +74,19 @@
 	jobtype = /datum/job/cmo
 
 	id = /obj/item/card/id/silver
-	belt = /obj/item/pda/heads/cmo
+	belt = /obj/item/modular_computer/pda/heads/cmo
+	r_pocket = /obj/item/folder/biscuit/confidential/spare_id_safe_code
 	l_pocket = /obj/item/pinpointer/crew
 	ears = /obj/item/radio/headset/heads/cmo
+	glasses = /obj/item/clothing/glasses/hud/health/sunglasses
 	uniform = /obj/item/clothing/under/rank/medical/chief_medical_officer
 	shoes = /obj/item/clothing/shoes/sneakers/brown
 	suit = /obj/item/clothing/suit/toggle/labcoat/cmo
 	l_hand = /obj/item/storage/firstaid/regular
 	suit_store = /obj/item/flashlight/pen/paramedic
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command=1)
 	box = /obj/item/storage/box/survival/command
-	accessory = /obj/item/clothing/accessory/permit/special/chief_medic
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic)
 
 	backpack = /obj/item/storage/backpack/medic
 	satchel = /obj/item/storage/backpack/satchel/med
@@ -83,9 +99,8 @@
 	name = "Syndicate Chief Medical Officer"
 	jobtype = /datum/job/cmo
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
-	l_pocket = /obj/item/pinpointer/crew
 	ears = /obj/item/radio/headset/heads/cmo
 	uniform = /obj/item/clothing/under/rank/captain/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
@@ -94,17 +109,14 @@
 	suit_store = /obj/item/flashlight/pen/paramedic
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1, /obj/item/syndicate_uplink_high=1)
-	accessory = /obj/item/clothing/accessory/permit/special/chief_medic
-
-	backpack = /obj/item/storage/backpack/medic
-	satchel = /obj/item/storage/backpack/satchel/med
-	duffelbag = /obj/item/storage/backpack/duffelbag/med
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/chief_medic, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/cmo/hardsuit
 	name = "Chief Medical Officer (Hardsuit)"
@@ -112,7 +124,7 @@
 	mask = /obj/item/clothing/mask/breath
 	suit = /obj/item/clothing/suit/space/hardsuit/medical
 	suit_store = /obj/item/tank/internals/oxygen
-	r_pocket = /obj/item/flashlight/pen
+	r_hand = /obj/item/flashlight/pen
 
 /datum/outfit/job/cmo/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()

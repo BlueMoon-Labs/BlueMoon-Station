@@ -39,7 +39,7 @@
 
 /obj/item/storage/backpack/holding
 	name = "bag of holding"
-	desc = "A backpack that opens into a localized pocket of Blue Space."
+	desc = "Рюкзак с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingpack"
 	item_state = "holdingpack"
 	resistance_flags = FIRE_PROOF
@@ -50,13 +50,13 @@
 
 /obj/item/storage/backpack/holding/satchel
 	name = "satchel of holding"
-	desc = "A satchel that opens into a localized pocket of Blue Space."
+	desc = "Поясной ранец с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingsat"
 	item_state = "holdingsat"
 
 /obj/item/storage/backpack/holding/duffel
 	name = "duffel bag of holding"
-	desc = "A duffel bag that opens into a localized pocket of Blue Space."
+	desc = "Сумка с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingduffel"
 	item_state = "holdingduffel"
 
@@ -68,7 +68,7 @@
 	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
 
 /obj/item/storage/backpack/holding/suicide_act(mob/living/user)
-	user.visible_message("<span class='suicide'>[user] is jumping into [src]! It looks like [user.p_theyre()] trying to commit suicide.</span>")
+	user.visible_message(span_suicide("[user] влезает внутрь [src]! Похоже, что [user.ru_who()] пытается исчезнуть навсегда!"))
 	user.dropItemToGround(src, TRUE)
 	user.Stun(100, ignore_canstun = TRUE)
 	sleep(20)
@@ -195,6 +195,12 @@
 	icon_state = "viropack"
 	item_state = "viropack"
 
+/obj/item/storage/backpack/detective
+	name = "detective backpack"
+	desc = "It's a very robust backpack. Smells sigarets and noir"
+	icon_state = "backpack_detective"
+	item_state = "backpack_detective"
+
 /*
  * Satchel Types
  */
@@ -303,6 +309,12 @@
 	icon_state = "satchel-ntr"
 	item_state = "satchel-ntr"
 
+/obj/item/storage/backpack/satchel/detective
+	name = "detective satchel"
+	desc = "It's a very robust satchel. Smells sigarets and noir"
+	icon_state = "satchel-detective"
+	item_state = "satchel-detective"
+
 /obj/item/storage/backpack/satchel/flat
 	name = "smuggler's satchel"
 	desc = "A very slim satchel that can easily fit into tight spaces."
@@ -319,7 +331,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_combined_w_class = 6
-	STR.cant_hold = typecacheof(list(/obj/item/storage/backpack/satchel/flat)) //muh recursive backpacks
+	var/static/list/flat_cant_hold = typecacheof(list(/obj/item/storage/backpack/satchel/flat)) //muh recursive backpacks
+	STR.cant_hold = flat_cant_hold
 
 /obj/item/storage/backpack/satchel/flat/hide(intact)
 	if(intact)
@@ -420,6 +433,12 @@
 	icon_state = "duffel-ntr"
 	item_state = "duffel-ntr"
 
+/obj/item/storage/backpack/duffelbag/detective
+	name = "detective duffel bag"
+	desc = "A large robust duffel bag for holding extra things... you know, for detective things"
+	icon_state = "duffel_detective"
+	item_state = "duffel_detective"
+
 /obj/item/storage/backpack/duffelbag/med
 	name = "medical duffel bag"
 	desc = "A large duffel bag for holding extra medical supplies."
@@ -434,6 +453,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	slot_flags = NONE
+	custom_price = PRICE_EXPENSIVE
+	custom_premium_price = PRICE_EXPENSIVE*2
 
 /obj/item/storage/backpack/duffelbag/med/surgery/ComponentInitialize()
 	. = ..()
@@ -508,6 +529,134 @@
 	new /obj/item/reagent_containers/medspray/sterilizine(src)
 	new /obj/item/razor(src)
 
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded
+	name = "upgraded surgical tools case"
+	desc = "Надёжный кейс из пластика марки Trauma Team. Внутри находится набор высококачественных инструментов."
+	icon_state = "firstaid-surgery-upgraded"
+	item_state = "firstaid-toxin"
+	icon = 'modular_bluemoon/icons/obj/storage.dmi'
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded/PopulateContents()
+	new /obj/item/scalpel/upgraded_t2(src)
+	new /obj/item/hemostat/upgraded_t2(src)
+	new /obj/item/retractor/upgraded_t2(src)
+	new /obj/item/circular_saw/upgraded_t2(src)
+	new /obj/item/cautery/upgraded_t2(src)
+	new /obj/item/surgicaldrill(src)
+	new /obj/item/blood_filter(src)
+	new /obj/item/bonesetter(src)
+	new /obj/item/stack/medical/bone_gel(src)
+	new /obj/item/surgical_drapes(src)
+	new /obj/item/clothing/mask/surgical(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
+	new /obj/item/reagent_containers/medspray/synthflesh(src)
+
+/obj/item/storage/backpack/duffelbag/med/surgery_empty
+	name = "surgical tools case"
+	desc = "A large plastic case for holding surgical tools or most other medical supplies you could imagine."
+	icon_state = "firstaid-surgery"
+	item_state = "firstaid"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	slot_flags = NONE
+
+/obj/item/storage/backpack/duffelbag/med/surgery_empty/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	var/static/list/can_hold = typecacheof(list(
+		/obj/item/healthanalyzer,
+		/obj/item/dnainjector,
+		/obj/item/reagent_containers/dropper,
+		/obj/item/reagent_containers/glass/beaker,
+		/obj/item/reagent_containers/glass/bottle,
+		/obj/item/reagent_containers/pill,
+		/obj/item/reagent_containers/syringe,
+		/obj/item/reagent_containers/medspray,
+		/obj/item/lighter,
+		/obj/item/storage/fancy/cigarettes,
+		/obj/item/storage/pill_bottle,
+		/obj/item/stack/medical,
+		/obj/item/flashlight/pen,
+		/obj/item/extinguisher/mini,
+		/obj/item/reagent_containers/hypospray,
+		/obj/item/hypospray/mkii,
+		/obj/item/sensor_device,
+		/obj/item/radio,
+		/obj/item/clothing/gloves,
+		/obj/item/lazarus_injector,
+		/obj/item/bikehorn/rubberducky,
+		/obj/item/clothing/mask/surgical,
+		/obj/item/clothing/mask/breath,
+		/obj/item/clothing/mask/breath/medical,
+		/obj/item/surgical_drapes,
+		/obj/item/scalpel,
+		/obj/item/circular_saw,
+		/obj/item/bonesetter,
+		/obj/item/surgicaldrill,
+		/obj/item/retractor,
+		/obj/item/cautery,
+		/obj/item/hemostat,
+		/obj/item/blood_filter,
+		/obj/item/geiger_counter,
+		/obj/item/clothing/neck/stethoscope,
+		/obj/item/stamp,
+		/obj/item/clothing/glasses,
+		/obj/item/wrench/medical,
+		/obj/item/clothing/mask/muzzle,
+		/obj/item/storage/bag/chemistry,
+		/obj/item/storage/bag/bio,
+		/obj/item/reagent_containers/blood,
+		/obj/item/tank/internals/emergency_oxygen,
+		/obj/item/gun/syringe/syndicate,
+		/obj/item/implantcase,
+		/obj/item/implant,
+		/obj/item/implanter,
+		/obj/item/pinpointer/crew,
+		/obj/item/reagent_containers/chem_pack,
+		/obj/item/razor,
+		/obj/item/stack/sticky_tape
+		))
+	STR.can_hold = can_hold
+
+/obj/item/storage/backpack/duffelbag/med/leather
+	name = "Surgery Bag"
+	desc = "Bag made from leather for surgery tools. Pretty small to place in bag, But have lack of space for all tools."
+	icon_state = "surgery_bag"
+	item_state = "firstaid"
+	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/storage/backpack/duffelbag/med/leather/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	var/static/list/can_hold = typecacheof(list(
+		/obj/item/reagent_containers/dropper,
+		/obj/item/reagent_containers/pill,
+		/obj/item/reagent_containers/syringe,
+		/obj/item/reagent_containers/medspray,
+		/obj/item/storage/pill_bottle,
+		/obj/item/stack/medical,
+		/obj/item/reagent_containers/hypospray,
+		/obj/item/hypospray/mkii,
+		/obj/item/lazarus_injector,
+		/obj/item/surgical_drapes,
+		/obj/item/scalpel,
+		/obj/item/circular_saw,
+		/obj/item/bonesetter,
+		/obj/item/surgicaldrill,
+		/obj/item/retractor,
+		/obj/item/cautery,
+		/obj/item/hemostat,
+		/obj/item/blood_filter,
+		/obj/item/gun/syringe/syndicate,
+		/obj/item/implantcase,
+		/obj/item/implant,
+		/obj/item/implanter,
+		/obj/item/reagent_containers/chem_pack,
+		))
+	STR.can_hold = can_hold
+
 /obj/item/storage/backpack/duffelbag/sec
 	name = "security duffel bag"
 	desc = "A large duffel bag for holding extra security supplies and ammunition."
@@ -519,14 +668,14 @@
 	desc = "A large duffel bag for holding extra supplies - this one has a material inlay with space for various sharp-looking tools."
 
 /obj/item/storage/backpack/duffelbag/sec/surgery/PopulateContents()
-	new /obj/item/scalpel(src)
-	new /obj/item/hemostat(src)
-	new /obj/item/retractor(src)
-	new /obj/item/circular_saw(src)
+	new /obj/item/scalpel/upgraded_t2(src)
+	new /obj/item/hemostat/upgraded_t2(src)
+	new /obj/item/retractor/upgraded_t2(src)
+	new /obj/item/circular_saw/upgraded_t2(src)
+	new /obj/item/cautery/upgraded_t2(src)
 	new /obj/item/surgicaldrill(src)
-	new /obj/item/cautery(src)
-	new /obj/item/bonesetter(src)
 	new /obj/item/blood_filter(src)
+	new /obj/item/bonesetter(src)
 	new /obj/item/surgical_drapes(src)
 	new /obj/item/clothing/mask/surgical(src)
 	new /obj/item/reagent_containers/medspray/sterilizine(src)
@@ -596,6 +745,30 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.silent = TRUE
 
+/obj/item/storage/backpack/duffelbag/syndie/backpack
+	name = "Syndicate Backpack"
+	desc = "Military Backpack for holding extra tactical supplies with Fashion!."
+	icon_state = "syndi_backpack"
+	item_state = "duffel-syndieammo"
+
+/obj/item/storage/backpack/duffelbag/syndie/backpack/sci
+	icon_state = "syndi_sci_backpack"
+
+/obj/item/storage/backpack/duffelbag/syndie/backpack/eng
+	icon_state = "syndi_eng_backpack"
+	resistance_flags = FIRE_PROOF
+	desc = "Military Backpack for holding extra tactical supplies. Have Extra alloy what prevent burning"
+
+/obj/item/storage/backpack/duffelbag/syndie/backpack/cargo
+	icon_state = "syndi_cargo_backpack"
+
+/obj/item/storage/backpack/duffelbag/syndie/backpack/med
+	icon_state = "syndi_med_backpack"
+
+/obj/item/storage/backpack/duffelbag/syndie/backpack/com
+	icon_state = "syndi_com_backpack"
+	resistance_flags = FIRE_PROOF
+
 /obj/item/storage/backpack/duffelbag/syndie/hitman
 	desc = "A large duffel bag for holding extra things. There is a Nanotrasen logo on the back."
 	icon_state = "duffel-syndieammo"
@@ -623,14 +796,14 @@
 	item_state = "duffel-syndiemed"
 
 /obj/item/storage/backpack/duffelbag/syndie/surgery/PopulateContents()
-	new /obj/item/scalpel(src)
-	new /obj/item/hemostat(src)
-	new /obj/item/retractor(src)
-	new /obj/item/circular_saw(src)
+	new /obj/item/scalpel/upgraded_t2(src)
+	new /obj/item/hemostat/upgraded_t2(src)
+	new /obj/item/retractor/upgraded_t2(src)
+	new /obj/item/circular_saw/upgraded_t2(src)
+	new /obj/item/cautery/upgraded_t2(src)
 	new /obj/item/surgicaldrill(src)
-	new /obj/item/cautery(src)
-	new /obj/item/bonesetter(src)
 	new /obj/item/blood_filter(src)
+	new /obj/item/bonesetter(src)
 	new /obj/item/surgical_drapes(src)
 	new /obj/item/clothing/suit/straight_jacket(src)
 	new /obj/item/clothing/mask/muzzle(src)
@@ -776,7 +949,7 @@
 	STR.silent = TRUE
 
 /obj/item/storage/backpack/duffelbag/clown/syndie/PopulateContents()
-	new /obj/item/pda/clown(src)
+	new /obj/item/modular_computer/pda/clown(src)
 	new /obj/item/clothing/under/rank/civilian/clown(src)
 	new /obj/item/clothing/shoes/clown_shoes(src)
 	new /obj/item/clothing/mask/gas/clown_hat(src)

@@ -12,7 +12,7 @@
 	requires_ntnet = TRUE
 	requires_ntnet_feature = NTNET_COMMUNICATION
 	ui_header = "ntnrc_idle.gif"
-	available_on_ntnet = TRUE
+	available_on_ntnet = FALSE
 	tgui_id = "NtosNetChat"
 	program_icon = "comment-alt"
 	alert_able = TRUE

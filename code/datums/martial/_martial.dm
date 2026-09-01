@@ -18,7 +18,7 @@
 	var/datum/weakref/holder //owner of the martial art
 	var/display_combos = FALSE //shows combo meter if true
 	var/combo_timer = 6 SECONDS
-
+	var/resist_grab_chance = 30 // шанс на резист агрограбу
 	var/timerid
 
 /datum/martial_art/proc/disarm_act(mob/living/carbon/human/A, mob/living/carbon/human/D)
@@ -107,3 +107,13 @@
 ///Gets called when a projectile hits the owner. Returning anything other than BULLET_ACT_HIT will stop the projectile from hitting the mob.
 /datum/martial_art/proc/on_projectile_hit(mob/living/carbon/human/A, obj/item/projectile/P, def_zone)
 	return BULLET_ACT_HIT
+
+/// Боевой стиль владельца кнопки-приёма, если он ещё на месте.
+/// Кнопки приёмов принадлежат самому стилю и переживают его: стиль могли снять,
+/// подменить или вовсе удалить (харддел обнуляет mind.martial_art), а кнопка
+/// оставалась висеть на HUD и падала в "Cannot read null.streak" (раунд 10151).
+/datum/action/proc/owner_martial_art()
+	var/mob/living/carbon/human/human_owner = owner
+	if(!istype(human_owner))
+		return null
+	return human_owner.mind?.martial_art

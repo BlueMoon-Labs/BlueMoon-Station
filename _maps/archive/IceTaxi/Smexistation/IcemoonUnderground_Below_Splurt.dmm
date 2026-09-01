@@ -6,19 +6,19 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "aT" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plating,
 /area/command/bridge)
 "bo" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
 	dir = 1;
-	piping_layer = 1
+	piping_layer = 2
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
 "bG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/space_heater,
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -43,7 +43,7 @@
 /turf/closed/wall/r_wall,
 /area/mine/eva)
 "dV" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/command/bridge)
 "en" = (
@@ -131,7 +131,7 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/underground/explored)
 "nA" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer4{
 	dir = 1
 	},
 /turf/open/floor/plating/snowed/smoothed/icemoon,
@@ -157,7 +157,7 @@
 /turf/open/floor/plasteel,
 /area/mine/eva)
 "oz" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -174,7 +174,7 @@
 /turf/open/floor/plasteel,
 /area/mine/eva)
 "pd" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
 /turf/open/floor/plating,
@@ -206,10 +206,10 @@
 /turf/open/floor/plating,
 /area/mine/eva)
 "rC" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
 /turf/open/floor/plating,
@@ -239,8 +239,8 @@
 /area/mine/eva)
 "sy" = (
 /obj/structure/ladder,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 9
 	},
 /obj/structure/railing{
@@ -308,7 +308,7 @@
 /turf/open/floor/plasteel,
 /area/mine/eva)
 "za" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 9
 	},
 /obj/structure/railing{
@@ -344,10 +344,10 @@
 /turf/closed/wall/r_wall,
 /area/command/bridge)
 "BS" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plating,
 /area/command/bridge)
 "BV" = (
@@ -368,16 +368,16 @@
 /turf/open/floor/plating/snowed/smoothed/icemoon,
 /area/icemoon/surface/outdoors)
 "Du" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
 "Eo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 9
 	},
 /turf/open/floor/plating,
@@ -468,10 +468,10 @@
 /turf/closed/wall/mineral/snow,
 /area/icemoon/underground/explored)
 "Pj" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
 /obj/machinery/light/small{
@@ -480,7 +480,7 @@
 /turf/open/floor/plating,
 /area/command/bridge)
 "PX" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 10
 	},
 /turf/open/floor/plating,
@@ -529,7 +529,7 @@
 /obj/effect/turf_decal/stripes/yellow/box,
 /obj/machinery/atmospherics/pipe/simple/multiz{
 	dir = 4;
-	piping_layer = 3
+	piping_layer = 4
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -547,7 +547,7 @@
 /obj/effect/turf_decal/stripes/yellow/box,
 /obj/machinery/atmospherics/pipe/simple/multiz{
 	dir = 4;
-	piping_layer = 1
+	piping_layer = 2
 	},
 /turf/open/floor/plating,
 /area/command/bridge)

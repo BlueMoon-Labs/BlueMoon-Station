@@ -1,11 +1,12 @@
 #define PROFILER_FILENAME "profiler.json"
+#define MAP_PROFILER_FILENAME "map_profile.json"
 
 SUBSYSTEM_DEF(profiler)
 	name = "Profiler"
 	init_order = INIT_ORDER_PROFILER
 	runlevels = RUNLEVELS_DEFAULT | RUNLEVEL_LOBBY
 	wait = 3000
-	flags = SS_NO_TICK_CHECK
+	flags = SS_NO_TICK_CHECK | SS_BACKGROUND
 	var/fetch_cost = 0
 	var/write_cost = 0
 
@@ -60,4 +61,15 @@ SUBSYSTEM_DEF(profiler)
 	timer = TICK_USAGE_REAL
 	WRITE_FILE(json_file, current_profile_data)
 	write_cost = MC_AVERAGE(write_cost, TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer))
+#if DM_VERSION >= 515
+	// SendMaps-профиль (always-on со старта SStick_spikes): рендер-стоимость,
+	// которую проковский профайлер не видит вообще. Paradise/Aurora-паттерн.
+	var/current_sendmaps_data = world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json")
+	CHECK_TICK
+	if(length(current_sendmaps_data))
+		var/map_json_file = file("[GLOB.log_directory]/[MAP_PROFILER_FILENAME]")
+		if(fexists(map_json_file))
+			fdel(map_json_file)
+		WRITE_FILE(map_json_file, current_sendmaps_data)
+#endif
 #endif

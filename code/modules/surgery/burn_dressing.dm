@@ -12,6 +12,7 @@
 	targetable_wound = /datum/wound/burn
 	icon_state = "fugu_gland"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_WOUND
+	ignore_clothes = TRUE
 
 /datum/surgery/debride/can_start(mob/living/user, mob/living/carbon/target)
 	if(..())
@@ -66,7 +67,7 @@
 	return ..()
 
 /datum/surgery_step/debride/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	display_results(user, target, "<span class='notice'>You carve away some of the healthy flesh from [target]'s [parse_zone(target_zone)].</span>",
 		"<span class='notice'>[user] carves away some of the healthy flesh from [target]'s [parse_zone(target_zone)] with [tool]!</span>",
 		"<span class='notice'>[user] carves away some of the healthy flesh from  [target]'s [parse_zone(target_zone)]!</span>")
@@ -111,7 +112,7 @@
 	return ..()
 
 /datum/surgery_step/dress/failure(mob/user, mob/living/target, target_zone, obj/item/tool, datum/surgery/surgery, var/fail_prob = 0)
-	..()
+	. = ..()
 	if(istype(tool, /obj/item/stack))
 		var/obj/item/stack/used_stack = tool
 		used_stack.use(1)

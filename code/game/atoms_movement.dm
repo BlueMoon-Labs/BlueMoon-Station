@@ -33,21 +33,21 @@
 	if(oldarea != newarea)
 		oldarea.Exited(src, newloc)
 
-	for(var/i in oldloc)
-		if(i == src) // Multi tile objects
-			continue
-		var/atom/movable/thing = i
-		thing.Uncrossed(src)
+	if(length(oldloc.contents))
+		for(var/atom/movable/thing as anything in oldloc)
+			if(thing == src) // Multi tile objects
+				continue
+			thing.Uncrossed(src)
 
 	newloc.Entered(src, oldloc)
 	if(oldarea != newarea)
 		newarea.Entered(src, oldloc)
 
-	for(var/i in loc)
-		if(i == src) // Multi tile objects
-			continue
-		var/atom/movable/thing = i
-		thing.Crossed(src)
+	if(loc && length(loc.contents))
+		for(var/atom/movable/thing as anything in loc)
+			if(thing == src) // Multi tile objects
+				continue
+			thing.Crossed(src)
 
 /**
  * meant for movement with zero side effects. only use for objects that are supposed to move "invisibly" (like camera mobs or ghosts)
@@ -159,8 +159,7 @@
 		return FALSE
 
 /atom/movable/proc/handle_buckled_mob_movement(newloc, direct, glide_size_override)
-	for(var/m in buckled_mobs)
-		var/mob/living/buckled_mob = m
+	for(var/mob/living/buckled_mob as anything in buckled_mobs)
 		if(!buckled_mob.Move(newloc, direct, glide_size_override))
 			forceMove(buckled_mob.loc)
 			last_move = buckled_mob.last_move
@@ -173,7 +172,23 @@
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
-	if (!inertia_moving)
+
+	//спатиал-грид: перекладываем содержимое наших каналов при пересечении
+	//границы ячеек (для большинства movables это одна null-проверка ключа)
+	if(HAS_SPATIAL_GRID_CONTENTS(src))
+		var/turf/old_turf = get_turf(OldLoc)
+		var/turf/new_turf = get_turf(src)
+		if(old_turf && new_turf && (old_turf.z != new_turf.z \
+			|| GET_SPATIAL_INDEX(old_turf.x) != GET_SPATIAL_INDEX(new_turf.x) \
+			|| GET_SPATIAL_INDEX(old_turf.y) != GET_SPATIAL_INDEX(new_turf.y)))
+			SSspatial_grid.exit_cell(src, old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
+		else if(old_turf && !new_turf)
+			SSspatial_grid.exit_cell(src, old_turf)
+		else if(new_turf && !old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
+	// Diagonal intents are split into two cardinals inside Move(); the second half lands here.
+	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED))
 		inertia_next_move = world.time + inertia_move_delay
 		newtonian_move(Dir)
 	return TRUE
@@ -191,6 +206,21 @@
 	. = ..()
 	SEND_SIGNAL(src, COMSIG_MOVABLE_CROSSED, AM)
 
+/**
+ * Спрашивают, когда что-то СОБИРАЕТСЯ покинуть турф, на котором мы стоим -
+ * вернуть FALSE значит не пустить. Так работают бордюрные объекты: боковое окно
+ * или перила пропускают во все стороны, кроме своей.
+ *
+ * Зовётся только из [/turf/Exit] и только для атомов с `blocks_exit_checks`.
+ * Нативный проход BYOND по contents отключён (см. [/atom/Exit]), потому что он
+ * дёргал этот прок на КАЖДОМ атоме в турфе при каждом шаге - 553k вызовов за 78
+ * секунд раунда 9800, притом что запретить выход не могло почти ничто.
+ *
+ * Поэтому переопределение Uncross() на типе, у которого `blocks_exit_checks`
+ * выключен (любой /mob, любой /obj/item), НЕ РАБОТАЕТ - оно просто не будет
+ * вызвано. Нужен запрет выхода на таком типе - вешай COMSIG_ATOM_EXIT через
+ * /datum/element/connect_loc, это дешевле и не требует обхода contents.
+ */
 /atom/movable/Uncross(atom/movable/AM, atom/newloc)
 	. = ..()
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_UNCROSS, AM) & COMPONENT_MOVABLE_BLOCK_UNCROSS)
@@ -215,9 +245,14 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
-	for (var/item in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
-		var/atom/movable/AM = item
+	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
+
+///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
+/atom/movable/proc/onEnteredNullspace(old_z)
+	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	for(var/atom/movable/movable_content as anything in src)
+		movable_content.onEnteredNullspace(old_z)
 
 ///Proc to modify the movement_type and hook behavior associated with it changing.
 /atom/movable/proc/setMovetype(newval)
@@ -244,6 +279,12 @@
 /atom/movable/proc/doMove(atom/destination)
 	. = FALSE
 	if(destination)
+		// Возврат qdel-нутого мувера в мир = вечный пин ссылкой из contents турфа
+		// (класс "post-qdel forceMove" по уликам warnfail раунда 9746: обсерверы,
+		// оффхенды). Отказываем и именуем виновника - стек тут синхронный.
+		if(QDELETED(src))
+			stack_trace("doMove qdel-нутого [type] в [destination] ([destination.type])")
+			return
 		if(pulledby)
 			pulledby.stop_pulling()
 		var/atom/oldloc = loc
@@ -259,8 +300,9 @@
 				oldloc.Exited(src, destination)
 				if(old_area && old_area != destarea)
 					old_area.Exited(src, destination)
-			for(var/atom/movable/AM in oldloc)
-				AM.Uncrossed(src)
+			if(oldloc && length(oldloc.contents))
+				for(var/atom/movable/AM as anything in oldloc)
+					AM.Uncrossed(src)
 			var/turf/oldturf = get_turf(oldloc)
 			var/turf/destturf = get_turf(destination)
 			var/old_z = (oldturf ? oldturf.z : null)
@@ -271,10 +313,11 @@
 			if(destarea && old_area != destarea)
 				destarea.Entered(src, oldloc)
 
-			for(var/atom/movable/AM in destination)
-				if(AM == src)
-					continue
-				AM.Crossed(src, oldloc)
+			if(length(destination.contents))
+				for(var/atom/movable/AM as anything in destination)
+					if(AM == src)
+						continue
+					AM.Crossed(src, oldloc)
 
 		Moved(oldloc, NONE, TRUE)
 		. = TRUE
@@ -284,23 +327,33 @@
 		. = TRUE
 		if (loc)
 			var/atom/oldloc = loc
+			var/turf/old_turf = get_turf(oldloc)
 			var/area/old_area = get_area(oldloc)
+			//эта ветка не зовёт Moved(), поэтому спатиал-грид чистим сами:
+			//иначе уход в nullspace оставит вечную ссылку в старой ячейке,
+			//а возврат зарегистрирует вторую (см. Moved в этом файле)
+			if(HAS_SPATIAL_GRID_CONTENTS(src))
+				var/turf/old_grid_turf = get_turf(oldloc)
+				if(old_grid_turf)
+					SSspatial_grid.exit_cell(src, old_grid_turf)
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)
-		loc = null
+			loc = null
+			if(old_turf)
+				onEnteredNullspace(old_turf.z)
 
 /**
  * Called whenever an object moves and by mobs when they attempt to move themselves through space
  * And when an object or action applies a force on src, see [newtonian_move][/atom/movable/proc/newtonian_move]
  *
- * return FALSE to have src start/keep drifting in a no-grav area and 1 to stop/not start drifting
- *
- * Mobs should return TRUE if they should be able to move of their own volition, see [/client/proc/Move]
- *
- * Arguments:
- * * movement_dir - 0 when stopping or any dir when trying to move
- */
+  * return FALSE to have src start/keep drifting in a no-grav area and 1 to stop/not start drifting
+  *
+  * Mobs should return TRUE if they should be able to move of their own volition, see [/client/proc/Move]
+  *
+  * Arguments:
+  * * movement_dir - 0 when stopping or any dir when trying to move
+  */
 /atom/movable/proc/Process_Spacemove(movement_dir = 0)
 	if(has_gravity(src))
 		return TRUE
@@ -314,8 +367,13 @@
 	if(!isturf(loc))
 		return TRUE
 
-	if(locate(/obj/structure/lattice) in range(1, get_turf(src))) //Not realistic but makes pushing things in space easier
+	var/turf/T = get_turf(src)
+	if(length(T.contents) && (locate(/obj/structure/lattice) in T))
 		return TRUE
+	for(var/dir in GLOB.alldirs)
+		var/turf/adj = get_step(T, dir)
+		if(adj && length(adj.contents) && (locate(/obj/structure/lattice) in adj))
+			return TRUE
 
 	return FALSE
 
@@ -328,6 +386,16 @@
 	inertia_dir = direction
 	if(!direction)
 		return TRUE
+	// Дрейф наследует текущую цену шага носителя: выбегание в космос на бегу
+	// не должно сбрасывать темп до дефолтных 5 дс на тайл. Пока есть опора,
+	// сюда не доходим вовсе (ранний bail выше), так что ходьба по полу не трогает var.
+	if(ismob(src))
+		var/mob/drift_mob = src
+		inertia_move_delay = max(drift_mob.movement_step_cost(FALSE), world.tick_lag)
+	// Свежий дрейф не ждёт полный шаговый интервал: Moved() уже положил нам
+	// кулдаун +inertia_move_delay, и без сброса вход в полёт подвисал бы.
+	if(!(src in SSspacedrift.processing))
+		inertia_next_move = world.time
 	inertia_last_loc = loc
 	SSspacedrift.processing[src] = src
 	return TRUE

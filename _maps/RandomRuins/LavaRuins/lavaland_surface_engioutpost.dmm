@@ -336,18 +336,12 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "bg" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
 /turf/open/floor/plating/icemoon,
 /area/lavaland/surface/outdoors)
 "bh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 6
 	},
@@ -359,9 +353,6 @@
 "bi" = (
 /obj/machinery/door/airlock/engineering{
 	name = "The Singularity Engine"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 8
@@ -574,7 +565,7 @@
 /turf/open/floor/plating/rust,
 /area/lavaland/surface/outdoors)
 "bI" = (
-/obj/item/pda/clear{
+/obj/item/modular_computer/pda/clear{
 	note = "Chief's asked me to check on the machinery inside PDA. He's also worried about Build, but i'm sure Harry'll handle the construction. I just need to work on Internals. Fuck i'm hungry"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{

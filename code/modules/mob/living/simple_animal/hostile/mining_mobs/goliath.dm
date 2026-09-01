@@ -1,3 +1,8 @@
+///Дальность щупалец: экранный радиус, чтобы нельзя было схватить за кадром
+#define GOLIATH_TENTACLE_RANGE 7
+///На сколько урон по голиафу приближает следующее щупальце
+#define GOLIATH_TENTACLE_RAGE_STEP (0.5 SECONDS)
+
 //A slow but strong beast that tries to stun using its tentacles
 /mob/living/simple_animal/hostile/asteroid/goliath
 	name = "goliath"
@@ -12,7 +17,11 @@
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
 	move_to_delay = 10
 	ranged = 1
-	ranged_cooldown_time = 60
+	//Кулдаун обязан быть длиннее самого долгого стана щупальца (grab_stun_*),
+	//иначе следующее щупальце приземляется, пока жертва ещё лежит, Stun()
+	//обновляется на полную - и голиаф держит её до смерти. Разница кулдауна
+	//и стана - это окно, в котором жертва может встать и ответить.
+	ranged_cooldown_time = 100
 	friendly_verb_continuous = "wails at"
 	friendly_verb_simple = "wail at"
 	speak_emote = list("bellows")
@@ -23,6 +32,7 @@
 	obj_damage = 100
 	melee_damage_lower = 18
 	melee_damage_upper = 18
+	melee_telegraph_duration = 0.4 SECONDS
 	attack_verb_continuous = "pulverizes"
 	attack_verb_simple = "pulverize"
 	attack_sound = 'sound/weapons/punch1.ogg'
@@ -46,7 +56,7 @@
 /mob/living/simple_animal/hostile/asteroid/goliath/proc/handle_preattack()
 	if(ranged_cooldown <= world.time + ranged_cooldown_time*0.25 && !pre_attack)
 		pre_attack++
-	if(!pre_attack || stat || AIStatus == AI_IDLE)
+	if(!pre_attack || stat || get_effective_ai_status() == AI_IDLE)
 		return
 	icon_state = pre_attack_icon
 
@@ -62,20 +72,33 @@
 	..(gibbed)
 
 /mob/living/simple_animal/hostile/asteroid/goliath/OpenFire()
-	var/tturf = get_turf(target)
+	var/turf/tturf = get_turf(target)
 	if(!isturf(tturf))
 		return
-	if(get_dist(src, target) <= 7)//Screen range check, so you can't get tentacle'd offscreen
-		visible_message("<span class='warning'>[src] digs its tentacles under [target]!</span>")
-		new /obj/effect/temp_visual/goliath_tentacle/original(tturf, src)
-		ranged_cooldown = world.time + ranged_cooldown_time
-		icon_state = icon_aggro
-		pre_attack = 0
+	if(get_dist(src, target) > GOLIATH_TENTACLE_RANGE)//Screen range check, so you can't get tentacle'd offscreen
+		return
+	//Щупальце вырастает прямо под целью, поэтому голиаф обязан её видеть.
+	//Своей геометрии у этой способности нет: гейт линии огня пропускает
+	//всё без projectiletype, а стратегию ignore_sight голиаф получает лишь
+	//за ENVIRONMENT_SMASH_WALLS - право ломиться сквозь стену, не бить сквозь неё.
+	if(!can_see(src, target, GOLIATH_TENTACLE_RANGE))
+		return
+	visible_message("<span class='warning'>[src] digs its tentacles under [target]!</span>")
+	new /obj/effect/temp_visual/goliath_tentacle/original(tturf, src)
+	ranged_cooldown = world.time + ranged_cooldown_time
+	icon_state = icon_aggro
+	pre_attack = 0
 
 /mob/living/simple_animal/hostile/asteroid/goliath/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	ranged_cooldown -= 5
-	handle_preattack()
 	. = ..()
+	//Ускорение щупалец - награда за УРОН по голиафу. Без гейта по фактически
+	//нанесённому урону кулдаун срезало любое обращение к adjustHealth, включая
+	//лечение и нулевые вызовы, и реальная каденс щупалец выходила короче
+	//настроенной - ровно за счёт окна, в котором жертва может действовать.
+	if(. <= 0)
+		return
+	ranged_cooldown -= GOLIATH_TENTACLE_RAGE_STEP
+	handle_preattack()
 
 /mob/living/simple_animal/hostile/asteroid/goliath/Aggro()
 	vision_range = aggro_vision_range
@@ -114,10 +137,11 @@
 	icon_living = "Goliath"
 	icon_aggro = "Goliath_alert"
 	icon_dead = "Goliath_dead"
-	maxHealth = 400
-	health = 400
+	maxHealth = 800
+	health = 800
 	speed = 4
-	ranged_cooldown_time = 80
+	//всё ещё чаще обычного голиафа, но окно на действие сохраняется
+	ranged_cooldown_time = 90
 	pre_attack_icon = "Goliath_preattack"
 	throw_message = "does nothing to the rocky hide of the"
 	loot = list(/obj/item/stack/sheet/animalhide/goliath_hide) //A throwback to the asteroid days
@@ -129,6 +153,10 @@
 	var/turf/last_location
 	var/tentacle_recheck_cooldown = 100
 
+// Отключаю тентаклиевую фауну вокруг древних, из за огромного срача в память удалеными тентаклями и таймерами.
+// Если кто перепишет работу тентаклей (/obj/effect/temp_visual/goliath_tentacle/ и далее по цепочки проки)
+// без их постоянного создания и удаления, жизнь можно включить обратно.
+/*
 /mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
 		return
@@ -145,6 +173,7 @@
 					new /obj/effect/temp_visual/goliath_tentacle(t, src)
 			else
 				cached_tentacle_turfs -= t
+*/
 
 /mob/living/simple_animal/hostile/asteroid/goliath/beast/tendril
 	fromtendril = TRUE
@@ -155,7 +184,20 @@
 	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
 	icon_state = "Goliath_tentacle_spawn"
 	layer = BELOW_MOB_LAYER
-	var/mob/living/spawner
+	/// Weak reference so tentacles don't keep their owner alive through timer callbacks.
+	var/datum/weakref/spawner_ref
+	///Стан обычного захвата. Все три тира обязаны быть короче ranged_cooldown_time
+	///голиафа: разница и есть окно, в котором жертва встаёт и отвечает. Стан
+	///длиннее кулдауна означает, что следующее щупальце застаёт её лежащей и
+	///просто обновляет Stun() - цепочка не отпускает до смерти.
+	var/grab_stun = 7.5 SECONDS
+	///Захват сквозь броню с GOLIATH_RESISTANCE
+	var/grab_stun_armored = 2.5 SECONDS
+	///Захват через одежду с GOLIATH_WEAKNESS (HEVA): дольше всех, но не бесконечно
+	var/grab_stun_vulnerable = 8.5 SECONDS
+
+/obj/effect/temp_visual/goliath_tentacle/proc/get_spawner()
+	return spawner_ref?.resolve()
 
 /obj/effect/temp_visual/goliath_tentacle/Initialize(mapload, mob/living/new_spawner)
 	. = ..()
@@ -163,7 +205,7 @@
 		if(T != src)
 			return INITIALIZE_HINT_QDEL
 	if(!QDELETED(new_spawner))
-		spawner = new_spawner
+		spawner_ref = WEAKREF(new_spawner)
 	if(ismineralturf(loc))
 		var/turf/closed/mineral/M = loc
 		M.gets_drilled()
@@ -172,6 +214,7 @@
 
 /obj/effect/temp_visual/goliath_tentacle/original/Initialize(mapload, new_spawner)
 	. = ..()
+	var/mob/living/spawner = get_spawner()
 	var/list/directions = GLOB.cardinals.Copy()
 	for(var/i in 1 to 3)
 		var/spawndir = pick_n_take(directions)
@@ -186,18 +229,18 @@
 
 /obj/effect/temp_visual/goliath_tentacle/proc/trip()
 	var/latched = FALSE
+	var/mob/living/spawner = get_spawner()
 	for(var/mob/living/L in loc)
-		if((!QDELETED(spawner) && spawner.faction_check_mob(L)) || L.stat == DEAD)
+		if((spawner && spawner.faction_check_mob(L)) || L.stat == DEAD)
 			continue
 		visible_message("<span class='danger'>[src] grabs hold of [L]!</span>")
-		var/mob/living/carbon/C = L
-		var/obj/item/clothing/S = C.get_item_by_slot(ITEM_SLOT_OCLOTHING)
+		var/obj/item/clothing/S = L.get_item_by_slot(ITEM_SLOT_OCLOTHING)
 		if(S && S.resistance_flags & GOLIATH_RESISTANCE)
-			L.Stun(25)
+			L.Stun(grab_stun_armored)
 		else if(S && S.resistance_flags & GOLIATH_WEAKNESS)
-			L.Stun(115)
+			L.Stun(grab_stun_vulnerable)
 		else
-			L.Stun(75)
+			L.Stun(grab_stun)
 		L.adjustBruteLoss(rand(15,20)) // Less stun more harm
 		latched = TRUE
 	for(var/obj/vehicle/sealed/mecha/M in loc)
@@ -212,3 +255,6 @@
 	icon_state = "Goliath_tentacle_retract"
 	deltimer(timerid)
 	timerid = QDEL_IN_STOPPABLE(src, 7)
+
+#undef GOLIATH_TENTACLE_RANGE
+#undef GOLIATH_TENTACLE_RAGE_STEP

@@ -15,6 +15,7 @@
 	var/key                           // Character used to speak in language
 	// If key is null, then the language isn't real or learnable.
 	var/flags                         // Various language flags.
+	var/visual_language = FALSE       // Whether this language is visual (sign language) rather than audible
 	var/list/syllables                // Used when scrambling text for a non-speaker.
 	var/sentence_chance = 5      // Likelihood of making a new sentence after each syllable.
 	var/space_chance = 55        // Likelihood of getting a space in the random scramble string
@@ -52,7 +53,7 @@
 	return TRUE
 
 /datum/language/proc/get_icon()
-	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+	var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 	return sheet.icon_tag("language-[icon_state]")
 
 /datum/language/proc/get_random_name(gender, name_count=2, syllable_count=4, syllable_divisor=2)

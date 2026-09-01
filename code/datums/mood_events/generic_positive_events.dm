@@ -65,6 +65,11 @@
 	mood_change = 12
 	hidden = TRUE
 
+/datum/mood_event/badass_antag
+	description = "<span class='nicegreen'>I'm a fucking badass and everyone around me knows it.</span>\n"
+	mood_change = 8
+	hidden = TRUE
+
 /datum/mood_event/revolution
 	description = "<span class='nicegreen'>НАШЕ ДЕЛО ПРАВОЕ! ПОБЕДА БУДЕТ ЗА РЕВОЛЮЦИЕЙ!</span>\n"
 	mood_change = 3
@@ -229,6 +234,11 @@
 	mood_change = 2
 	timeout = 2 MINUTES
 
+/datum/mood_event/inspiration
+	description = "<span class='nicegreen'>Меня переполняет вдохновение! Хочется творить.</span>\n"
+	mood_change = 3
+	timeout = 10 MINUTES
+
 /datum/mood_event/artgood
 	description = "<span class='nicegreen'>Какой воодушевляющий рисунок. Я его на какое-то время запомню.</span>\n"
 	mood_change = 3
@@ -278,3 +288,12 @@
 	description = span_love("Сладкое ощущение связи и близости... Ваши тела едины.\n")
 	mood_change = 2
 	timeout = 4 MINUTES
+
+/datum/mood_event/maso_medicine
+	description = span_love("Лекарства делают своё дело. Боль от неё крайне приятная.\n")
+	mood_change = 2
+	timeout = 1 MINUTES
+
+/datum/mood_event/birthday
+	description = "<span class='nicegreen'>Сегодня мой день рождения!</span>\n"
+	mood_change = 2

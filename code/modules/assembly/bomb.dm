@@ -12,6 +12,7 @@
 	var/status = FALSE   //0 - not readied //1 - bomb finished with welder
 	var/obj/item/assembly_holder/bombassembly = null   //The first part of the bomb is an assembly holder, holding an igniter+some device
 	var/obj/item/tank/bombtank = null //the second part of the bomb is a plasma tank
+	var/mob/living/bomb_attacher
 
 /obj/item/onetankbomb/IsSpecialAssembly()
 	return TRUE
@@ -53,7 +54,7 @@
 		return
 	if(I.use_tool(src, user, 0, volume=40))
 		status = TRUE
-		GLOB.bombers += "[key_name(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]"
+		add_bomber_message("[key_name(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]")
 		message_admins("[ADMIN_LOOKUPFLW(user)] welded a single tank bomb. Temp: [bombtank.air_contents.return_temperature()-T0C]")
 		to_chat(user, "<span class='notice'>A pressure hole has been bored to [bombtank] valve. \The [bombtank] can now be ignited.</span>")
 		add_fingerprint(user)
@@ -136,6 +137,7 @@
 	assembly.master = bomb			//Tell the assembly about its new owner
 
 	bomb.bombtank = src	//Same for tank
+	bomb.bomb_attacher = user
 	master = bomb
 
 	forceMove(bomb)
@@ -149,6 +151,10 @@
 	var/fuel_moles = air_contents.get_moles(GAS_PLASMA) + air_contents.get_moles(GAS_O2)/6
 	var/datum/gas_mixture/bomb_mixture = air_contents.copy()
 	var/strength = 1
+	var/mob/living/bomb_attacker
+	if(istype(master, /obj/item/onetankbomb))
+		var/obj/item/onetankbomb/bomb = master
+		bomb_attacker = bomb.bomb_attacher
 
 	var/turf/ground_zero = get_turf(loc)
 
@@ -160,11 +166,11 @@
 		strength = (fuel_moles/15)
 
 		if(strength >=1)
-			explosion(ground_zero, round(strength,1), round(strength*2,1), round(strength*3,1), round(strength*4,1))
+			explosion(ground_zero, round(strength,1), round(strength*2,1), round(strength*3,1), round(strength*4,1), attacker = bomb_attacker)
 		else if(strength >=0.5)
-			explosion(ground_zero, 0, 1, 2, 4)
+			explosion(ground_zero, 0, 1, 2, 4, attacker = bomb_attacker)
 		else if(strength >=0.2)
-			explosion(ground_zero, -1, 0, 1, 2)
+			explosion(ground_zero, -1, 0, 1, 2, attacker = bomb_attacker)
 		else
 			ground_zero.assume_air(bomb_mixture)
 			ground_zero.hotspot_expose(1000, 125)
@@ -173,9 +179,9 @@
 		strength = (fuel_moles/20)
 
 		if(strength >=1)
-			explosion(ground_zero, 0, round(strength,1), round(strength*2,1), round(strength*3,1))
+			explosion(ground_zero, 0, round(strength,1), round(strength*2,1), round(strength*3,1), attacker = bomb_attacker)
 		else if (strength >=0.5)
-			explosion(ground_zero, -1, 0, 1, 2)
+			explosion(ground_zero, -1, 0, 1, 2, attacker = bomb_attacker)
 		else
 			ground_zero.assume_air(bomb_mixture)
 			ground_zero.hotspot_expose(1000, 125)
@@ -184,7 +190,7 @@
 		strength = (fuel_moles/25)
 
 		if (strength >=1)
-			explosion(ground_zero, -1, 0, round(strength,1), round(strength*3,1))
+			explosion(ground_zero, -1, 0, round(strength,1), round(strength*3,1), attacker = bomb_attacker)
 		else
 			ground_zero.assume_air(bomb_mixture)
 			ground_zero.hotspot_expose(1000, 125)
@@ -193,6 +199,7 @@
 		ground_zero.assume_air(bomb_mixture)
 		ground_zero.hotspot_expose(1000, 125)
 
+	qdel(bomb_mixture)
 	ground_zero.air_update_turf()
 
 /obj/item/tank/proc/release()	//This happens when the bomb is not welded. Tank contents are just spat out.

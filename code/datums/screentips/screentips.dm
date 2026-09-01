@@ -1,4 +1,5 @@
 #define HINT_ICON_FILE 'icons/ui_icons/screentips/cursor_hints.dmi'
+#define SCREENTIP_CONTEXT_ICON_FONT_SCALE_PERCENT 67
 
 /// Stores the cursor hint icons for screentip context.
 GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_context_icons())
@@ -20,16 +21,24 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
 /proc/build_context(list/context, key, allow_image)
 	if(!length(context) || !length(context[key]) || !key)
 		return ""
-	var/list/to_add
+	var/list/to_add = list()
+	if(!islist(context[key])) // tg ports
+		var/action = context[key]
+		context[key] = list()
+		LAZYSET(context[key], INTENT_ANY, action)
 	for(var/intent in context[key])
 		// Splits key combinations from mouse buttons. e.g. `Ctrl-Shift-LMB` goes in, `Ctrl-Shift-` goes out. Will be empty for single button actions.
 		var/key_combo = length(key) > 3 ? "[copytext(key, 1, -3)]" : ""
 		// Grab the mouse button, LMB/RMB+intent
 		var/button = "[copytext(key, -3)]-[intent]"
+		var/using_image = FALSE
 		if(allow_image)
-			// Compile into image, if allowed
-			button = "\icon[GLOB.screentip_context_icons[button]]"
-		LAZYADD(to_add, "[key_combo][button][allow_image ? "" : ":"] [context[key][intent]]")
+			// Render icon, if available; if not, keep text fallback.
+			var/image/context_icon = GLOB.screentip_context_icons[button]
+			if(context_icon)
+				button = "<span style='font-size: [SCREENTIP_CONTEXT_ICON_FONT_SCALE_PERCENT]%;'>\icon[context_icon]</span>"
+				using_image = TRUE
+		LAZYADD(to_add, "[key_combo][button][using_image ? "" : ": "][context[key][intent]]")
 
 	// Prepare separator for same button but different intent
 	var/separator = "[allow_image ? " " : " / "]"
@@ -38,3 +47,4 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
 	return to_add.Join(separator)
 
 #undef HINT_ICON_FILE
+#undef SCREENTIP_CONTEXT_ICON_FONT_SCALE_PERCENT

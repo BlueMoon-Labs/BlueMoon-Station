@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosRevelation = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosRevelation = (props) => {
+  const { act, data } = useBackend();
   return (
     <NtosWindow
       width={400}

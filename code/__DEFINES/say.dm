@@ -66,6 +66,22 @@
 #define SPAN_CLOWN "clown"
 #define SPAN_SINGING "singing" // Skyrat edit
 #define SPAN_TAPE_RECORDER "tape_recorder"
+#define SPAN_SMALL_VOICE "small"
+//BlueMoon add - дополнительные стили речи для чата
+#define SPAN_WHISPER "whisper"
+#define SPAN_LAST_BREATH "last_breath"
+#define SPAN_SLURRING "slurring"
+#define SPAN_GLITCH "glitch"
+#define SPAN_SUPERMATTER "supermatter_delam"
+#define SPAN_BROADCAST_STATIC "broadcast_static"
+#define SPAN_TELEMETRY "telemetry"
+#define SPAN_SIGNLANG "signlang"
+#define SPAN_FELINSPEAK "felinspeak"
+#define SPAN_VOXSHRIEK "voxshriek"
+#define SPAN_ETHEREALVOICE "etherealvoice"
+#define SPAN_PLASMAVOICE "plasmavoice"
+#define SPAN_CHITVOICE "chitvoice"
+#define SPAN_SHADEKINVOICE "shadekinvoice"
 
 //bitflag #defines for return value of the radio() proc.
 #define ITALICS 1
@@ -76,9 +92,9 @@
 #define EAVESDROP_EXTRA_RANGE 1 //how much past the specified message_range does the message get starred, whispering only
 
 // A link given to ghost alice to follow bob
-#define FOLLOW_LINK(alice, bob) "<a href=?src=[REF(alice)];follow=[REF(bob)]>(F)</a>"
+#define FOLLOW_LINK(alice, bob) "<a href=?src=[REF(alice)];[follow_href_params(bob)]>(F)</a>"
 #define TURF_LINK(alice, turfy) "<a href=?src=[REF(alice)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(T)</a>"
-#define FOLLOW_OR_TURF_LINK(alice, bob, turfy) "<a href=?src=[REF(alice)];follow=[REF(bob)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(F)</a>"
+#define FOLLOW_OR_TURF_LINK(alice, bob, turfy) "<a href=?src=[REF(alice)];[follow_href_params(bob)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(F)</a>"
 
 #define LINGHIVE_NONE 0
 #define LINGHIVE_OUTSIDER 1
@@ -95,11 +111,14 @@
 // Always able to be seen
 #define EMOTE_OMNI 4
 
-//Don't set this very much higher then 1024 unless you like inviting people in to dos your server with message spam
+/// Max chars to process through say_emphasis regex - prevents ReDoS/crash from crafted input (illegal operation in chat)
+#define MAX_SAY_EMPHASIS_LEN	4096
+/// Max length for filter words - bounds IC chat filter scan cost per entry
+#define MAX_FILTER_WORD_LEN	256
 //ambition start
 #define MAX_AMBITION_LEN		1024
 //ambition end
-#define MAX_MESSAGE_LEN			4096		//Citadel edit: What's the WORST that could happen?
+#define MAX_MESSAGE_LEN			8192
 #define MAX_FLAVOR_LEN			4096
 #define MAX_FLAVOR_PREVIEW_LEN	40
 #define MAX_TASTE_LEN			400 //lick... vore... ew... //BLUEMOON EDIT

@@ -12,6 +12,7 @@
 	target_mobtypes = list(/mob/living/carbon/human, /mob/living/carbon/monkey)
 	possible_locs = list(BODY_ZONE_HEAD)
 	requires_bodypart_type = 0
+	icon = 'icons/obj/defibrillators.dmi'
 	icon_state = "defibpaddles0"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
 
@@ -72,10 +73,14 @@
 		"[user] send a powerful shock to [target]'s brain with [tool]...")
 	target.adjustOxyLoss(-50, 0)
 	target.updatehealth()
-	if(target.revive())
+	if(target.revive(post_revive_effects = TRUE))
+		var/breathless = HAS_TRAIT(target, TRAIT_NOBREATH)
 		user.visible_message("...[target] wakes up, alive and aware!", "<span class='notice'><b>IT'S ALIVE!</b></span>")
 		target.visible_message("...[target] wakes up, alive and aware!")
-		target.emote("gasp")
+		if(breathless)
+			target.emote("twitch")
+		else
+			target.emote("gasp")
 		target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 50, 199) //MAD SCIENCE
 		for(var/obj/item/organ/O in target.internal_organs)//zap those buggers back to life!
 			if(O.organ_flags & ORGAN_FAILING)
@@ -90,8 +95,8 @@
 		return FALSE
 
 /datum/surgery_step/revive/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
 	display_results(user, target, "<span class='notice'>You shock [target]'s brain with [tool], but [target.ru_who()] doesn't react.</span>",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.",
 		"[user] send a powerful shock to [target]'s brain with [tool], but [target.ru_who()] doesn't react.")
 	target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 15, 199)
-	return FALSE

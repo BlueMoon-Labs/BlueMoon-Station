@@ -12,13 +12,16 @@
 	var/rename_team
 	var/code
 	var/mission = "защитите станцию любой ценой и докажите свою состоятельность!"
-	var/teamsize = 5
+	var/teamsize = 1
+	var/maxteamsize = 5
 	var/polldesc
 	var/ertphrase = 'modular_bluemoon/sound/ert/ert_yes.ogg'
 
 /datum/ert/New()
 	if (!polldesc)
 		polldesc = "a Code [code] Nanotrasen Emergency Response Team"
+	if(maxteamsize < teamsize)
+		maxteamsize = teamsize
 
 /datum/ert/janitor
 	opendoors = FALSE
@@ -32,6 +35,12 @@
 	code = "Green"
 	leader_role = /datum/antagonist/ert/commander/green
 	roles = list(/datum/antagonist/ert/security/green, /datum/antagonist/ert/medic/green, /datum/antagonist/ert/engineer/green)
+
+/datum/ert/mopp
+	opendoors = FALSE
+	code = "MOPP"
+	leader_role = /datum/antagonist/ert/commander/mopp
+	roles = list(/datum/antagonist/ert/security/mopp, /datum/antagonist/ert/medic/mopp, /datum/antagonist/ert/engineer/mopp)
 
 /datum/ert/blue
 	opendoors = FALSE
@@ -80,7 +89,7 @@
 
 /datum/ert/centcom_official
 	code = "Official"
-	teamsize = 3
+	maxteamsize = 3
 	opendoors = FALSE
 	leader_role = /datum/antagonist/official
 	roles = list(/datum/antagonist/ert/security, /datum/antagonist/ert/medic)
@@ -100,7 +109,6 @@
 
 /datum/ert/greybois
 	code = "Green"
-	teamsize = 5
 	opendoors = FALSE
 	enforce_human = FALSE
 	roles = list(/datum/antagonist/greybois)

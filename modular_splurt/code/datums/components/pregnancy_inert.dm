@@ -27,6 +27,12 @@
 	RegisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_life))
 	RegisterSignal(carrier, COMSIG_MOB_CLIMAX, PROC_REF(on_climax))
 
+/datum/component/ovipositor/Destroy(force, ...)
+	if(carrier)
+		unregister_carrier()
+		carrier = null
+	return ..()
+
 /datum/component/ovipositor/proc/unregister_carrier()
 	UnregisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE)
 	UnregisterSignal(carrier, COMSIG_MOB_CLIMAX)
@@ -76,7 +82,7 @@
 		return FALSE
 
 	if(receiver && isliving(target))
-		if(CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
+		if(istype(receiver, /obj/item/organ/genital) && CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
 			return lay_eg(receiver, senders_cum, anonymous)
 	return lay_eg(get_turf(carrier), senders_cum, anonymous)
 

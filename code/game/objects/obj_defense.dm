@@ -1,7 +1,6 @@
 //the essential proc to call when an obj must receive damage of any kind.
 /obj/proc/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir, armour_penetration = 0)
-	if(QDELETED(src))
-		stack_trace("[src] taking damage after deletion")
+	if(QDELETED(src) || !src.loc)
 		return
 	if(sound_effect)
 		play_attack_sound(damage_amount, damage_type, damage_flag)
@@ -47,7 +46,7 @@
 			else
 				playsound(src, 'sound/weapons/tap.ogg', 50, 1)
 		if(BURN)
-			playsound(src.loc, 'sound/items/welder.ogg', 100, 1)
+			playsound(src, 'sound/items/welder.ogg', 100, 1)
 
 /obj/hitby(atom/movable/hit_by, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
 	..()
@@ -62,6 +61,8 @@
 	if(resistance_flags & INDESTRUCTIBLE)
 		return
 	..() //contents explosion
+	if(QDELETED(src))
+		return
 	if(target == src)
 		obj_integrity = 0
 		qdel(src)
@@ -115,7 +116,7 @@
 /obj/blob_act(obj/structure/blob/B)
 	if(isturf(loc))
 		var/turf/T = loc
-		if(T.intact && level == 1) //the blob doesn't destroy thing below the floor
+		if((T.turf_flags & TURF_INTACT) && level == 1) //the blob doesn't destroy thing below the floor
 			return
 	take_damage(400, BRUTE, MELEE, 0, get_dir(src, B))
 
@@ -210,7 +211,7 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 /obj/fire_act(exposed_temperature, exposed_volume)
 	if(isturf(loc))
 		var/turf/T = loc
-		if(T.intact && level == 1) //fire can't damage things hidden below the floor.
+		if((T.turf_flags & TURF_INTACT) && level == 1) //fire can't damage things hidden below the floor.
 			return
 	if(exposed_temperature && !(resistance_flags & FIRE_PROOF))
 		take_damage(clamp(0.02 * exposed_temperature, 0, 20), BURN, FIRE, 0)

@@ -4,6 +4,7 @@
 	icon_state = "cap"
 /obj/structure/closet/secure_closet/captains/PopulateContents() //Excess clothing and such can be found in the Captain's Wardrobe. You can also find this file in code/modules/vending/wardrobes.
 	..()
+	new /obj/item/folder/biscuit/confidential/spare_id_safe_code(src) // Для антагов или непредвиденных ситуаций
 	new /obj/item/clothing/neck/petcollar(src) //I considered removing the pet stuff too but eh, who knows. We might get Renault back. Plus I guess you could use that collar for... other means. Aren't you supposed to be guarding the disk?
 	new /obj/item/pet_carrier(src)
 	new /obj/item/cartridge/captain(src)
@@ -14,7 +15,6 @@
 	new /obj/item/gun/energy/e_gun(src)
 	new /obj/item/door_remote/captain(src)
 	new /obj/item/storage/photo_album/Captain(src)
-	new /obj/item/mod/construction/armor/magnate(src)
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/storage/garment_case/captain(src) //BLUEMOON add
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
@@ -29,8 +29,7 @@
 	new /obj/item/radio/headset/heads/hop(src)
 	new /obj/item/storage/box/ids(src)
 	new /obj/item/storage/box/ids(src)
-	new /obj/item/storage/box/deviants(src) // bluemoon edit
-	new /obj/item/storage/box/deviants(src)
+	new /obj/item/storage/secure/briefcase/hop_permits(src)
 	new /obj/item/megaphone/command(src)
 	new /obj/item/assembly/flash/handheld(src)
 	new /obj/item/restraints/handcuffs/cable/zipties(src)
@@ -62,7 +61,6 @@
 	new /obj/item/pinpointer/nuke(src)
 	new /obj/item/circuitboard/machine/techfab/department/security(src)
 	new /obj/item/storage/photo_album/HoS(src)
-	new /obj/item/mod/construction/armor/safeguard(src)
 	new /obj/item/mod/module/jetpack(src)
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/storage/garment_case/hos(src) //Bluemoon add
@@ -84,7 +82,6 @@
 	new /obj/item/flashlight/seclite(src)
 	new /obj/item/clothing/gloves/krav_maga/sec(src)
 	new /obj/item/door_remote/head_of_security(src)
-	new /obj/item/gun/ballistic/shotgun/automatic/combat/warden(src)
 	new /obj/item/storage/garment_case/warden(src) // Bluemoon Add
 
 /obj/structure/closet/secure_closet/security
@@ -243,6 +240,27 @@
 	req_access = list(ACCESS_ARMORY)
 	storage_capacity = 50
 	icon_state = "tac"
+
+/obj/structure/closet/secure_closet/lethalshots/proc/security_level_allows_access()
+	return GLOB.security_level >= SEC_LEVEL_BLUE
+
+/obj/structure/closet/secure_closet/lethalshots/proc/security_level_denied_message(mob/user)
+	to_chat(user, span_warning("Этот шкаф можно открыть только при уровне тревоги [SECURITY_LEVEL_COLORED(SEC_LEVEL_BLUE)] и выше. Текущий уровень: [SECURITY_LEVEL_COLORED(GLOB.security_level)]."))
+
+/obj/structure/closet/secure_closet/lethalshots/togglelock(mob/living/user, silent)
+	if(locked && !security_level_allows_access())
+		if(!silent)
+			security_level_denied_message(user)
+		return
+	return ..()
+
+/obj/structure/closet/secure_closet/lethalshots/can_open(mob/living/user, force = FALSE)
+	if(!force && !security_level_allows_access())
+		if(user)
+			security_level_denied_message(user)
+		return FALSE
+	return ..()
+
 /obj/structure/closet/secure_closet/lethalshots/PopulateContents()
 	..()
 	new /obj/item/electrostaff(src)

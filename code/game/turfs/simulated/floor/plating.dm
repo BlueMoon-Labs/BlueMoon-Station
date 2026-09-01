@@ -10,7 +10,8 @@
 /turf/open/floor/plating
 	name = "plating"
 	icon_state = "plating"
-	intact = FALSE
+	base_icon_state = "plating"
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_INTACT
 	baseturfs = /turf/baseturf_bottom
 	footstep = FOOTSTEP_PLATING
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
@@ -35,16 +36,6 @@
 	if (!burnt_states)
 		burnt_states = list("panelscorched")
 	. = ..()
-	if(!attachment_holes || (!broken && !burnt))
-		icon_plating = icon_state
-	else
-		icon_plating = initial(icon_state)
-
-/turf/open/floor/plating/update_icon()
-	if(!..())
-		return
-	if(!broken && !burnt)
-		icon_state = icon_plating //Because asteroids are 'platings' too.
 
 /turf/open/floor/plating/attackby(obj/item/C, mob/user, params)
 	if(..())
@@ -151,16 +142,18 @@
 /turf/open/floor/plating/welder_act(mob/living/user, obj/item/I)
 	if((broken || burnt) && I.use_tool(src, user, 0, volume=80))
 		to_chat(user, "<span class='danger'>You fix some dents on the broken plating.</span>")
-		icon_state = icon_plating
+		icon_state = base_icon_state
 		burnt = FALSE
 		broken = FALSE
+		update_appearance()
 
 	return TRUE
 
 /turf/open/floor/plating/rust_heretic_act()
 	if(prob(70))
 		new /obj/effect/temp_visual/glowing_rune(src)
-	ChangeTurf(/turf/open/floor/plating/rust)
+	var/turf/after = ChangeTurf(/turf/open/floor/plating/rust)
+	after?.AddElement(/datum/element/heretic_rust)
 
 /turf/open/floor/plating/make_plating()
 	return
@@ -169,6 +162,7 @@
 	name = "metal foam plating"
 	desc = "Thin, fragile flooring created with metal foam."
 	icon_state = "foam_plating"
+	base_icon_state = "foam_plating"
 
 /turf/open/floor/plating/foam/burn_tile()
 	return //jetfuel can't melt steel foam

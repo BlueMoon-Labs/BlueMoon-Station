@@ -16,6 +16,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	name = "item"
 	icon = 'icons/obj/items_and_weapons.dmi'
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+	blocks_exit_checks = FALSE // no item type overrides CheckExit() or Uncross()
 
 	attack_hand_speed = 0
 	attack_hand_is_action = FALSE
@@ -26,6 +27,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/jitter = 0
 	var/dizzy = 0
 	var/stuttering = 0
+	/// Кэш иконки кровавого пятна: собирается один раз на предмет из его initial(icon_state)
+	/// и лежит здесь, чтобы cut_overlay() снимал ровно тот оверлей, который добавили.
+	/// Раньше стоял на /atom, то есть в каждом турфе мира, при трёх читателях - и все три тут.
+	var/icon/blood_splatter_icon
 	///icon state name for inhand overlays
 	var/item_state = null
 	//Название хвоста-картинки из tail_digi.dmi
@@ -74,6 +79,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/pickup_sound
 	///Sound uses when dropping the item, or when its thrown.
 	var/drop_sound
+	///Sound uses when the item lands after being thrown. Overrides drop_sound.
+	var/throw_drop_sound
 	///Whether or not we use stealthy audio levels for this item's attack sounds
 	var/stealthy_audio = FALSE
 
@@ -136,6 +143,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/heat = 0
 	///All items with sharpness of SHARP_EDGED or higher will automatically get the butchering component.
 	var/sharpness = SHARP_NONE
+	var/can_dismember = TRUE
 
 	var/tool_behaviour = NONE
 	var/toolspeed = 1
@@ -228,11 +236,14 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/Destroy()
 	master = null
 	item_flags &= ~DROPDEL	//prevent reqdels
-	if(ismob(loc))
+	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
-	for(var/X in actions)
-		qdel(X)
+	// QDEL_LIST, а не ручной цикл: /datum/action/Destroy() вычёркивает себя из actions, и
+	// обход живого списка пропускал каждое второе действие. Плюс сам список обязан
+	// обнулиться - иначе предмет держит ссылки на уже удалённые датумы действий.
+	QDEL_LIST(actions)
+	actions = null
 	return ..()
 
 /obj/item/ComponentInitialize()
@@ -290,6 +301,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	. = ..()
+	if(QDELETED(src))
+		return
 	if(!anchored)
 		var/throw_dist = round(rand(3, max(3, 2.5 * sqrt(power))), 1)
 		throw_speed = EXPLOSION_THROW_SPEED
@@ -298,24 +311,32 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/examine(mob/user) //This might be spammy. Remove?
 	. = ..()
+	var/is_plural = (gender == PLURAL)
+	. += "[is_plural ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера."
 
-	. += "[gender == PLURAL ? "They are" : "It is"] a [weightclass2text(w_class)] item."
+	if(resistance_flags)
+		var/resistance_text = ""
+		if(resistance_flags & INDESTRUCTIBLE)
+			resistance_text = "Выгляд[is_plural ? "я" : "и"]т особенно прочным[is_plural ? "и" : ""]. Скорее всего, выдерж[is_plural ? "а" : "и"]т что угодно."
+		else
+			var/list/resistance_list = list()
+			if(resistance_flags & LAVA_PROOF)
+				resistance_list += "лаве"
+			if(resistance_flags & (ACID_PROOF | UNACIDABLE))
+				resistance_list += "кислоте"
+			if(resistance_flags & FIRE_PROOF)
+				resistance_list += "огню"
+			if(resistance_flags & FREEZE_PROOF)
+				resistance_list += "экстремальному холоду"
 
-	if(resistance_flags & INDESTRUCTIBLE)
-		. += "[src] seems extremely robust! It'll probably withstand anything that could happen to it!"
-	else
-		if(resistance_flags & LAVA_PROOF)
-			. += "[src] is made of an extremely heat-resistant material, it'd probably be able to withstand lava!"
-		if(resistance_flags & (ACID_PROOF | UNACIDABLE))
-			. += "[src] looks pretty robust! It'd probably be able to withstand acid!"
-		if(resistance_flags & FREEZE_PROOF)
-			. += "[src] is made of cold-resistant materials."
-		if(resistance_flags & FIRE_PROOF)
-			. += "[src] is made of fire-retardant materials."
+			if(length(resistance_list))
+				resistance_text += "Устойчиво к [english_list(resistance_list)]."
+		if(resistance_text)
+			. += "[is_plural ? "Эти вещи устойчивы" : "Этот предмет устойчив"] к повреждениям. [span_tooltip_fast(resistance_text)]"
 
 	if(item_flags & (ITEM_CAN_BLOCK | ITEM_CAN_PARRY))
 		var/datum/block_parry_data/data = return_block_parry_datum(block_parry_data)
-		. += "[src] has the capacity to be used to block and/or parry. <a href='?src=[REF(data)];name=[strip_html(name)];block=[item_flags & ITEM_CAN_BLOCK];parry=[item_flags & ITEM_CAN_PARRY];render=1'>\[Show Stats\]</a>"
+		. += "[src] имеет потеницал к блокированию и/или паррированию. <a href='?src=[REF(data)];name=[strip_html(name)];block=[item_flags & ITEM_CAN_BLOCK];parry=[item_flags & ITEM_CAN_PARRY];render=1'>\[Show Stats\]</a>"
 
 	// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
 	if(item_flags & FAMILY_HEIRLOOM)
@@ -328,7 +349,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 					if(src == heirloom_quirk.heirloom)
 						my_heirloom = TRUE // МОЯ ПРЕЛЕСТЬ!
 		if(my_heirloom)
-			. += "<span class='boldnotice'>[src] - это моя реликвия! Нужно её беречь!</span>"
+			. += "<span class='boldnotice'>[src] - моя реликвия! Нужно её беречь!</span>"
 		else
 			. += "<span class='notice'>[src] выглядит очень ухоженно. Видимо, этот предмет кому-то ценен...</span>"
 	// BLUEMOON ADD END
@@ -338,7 +359,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 	// Research prospects, including boostable nodes and point values.
 	// Deliver to a console to know whether the boosts have already been used.
-	var/list/research_msg = list("<font color='purple'>Research prospects:</font> ")
+	var/list/research_msg = list("<font color='purple'>Перспективы исследований:</font> ")
 	var/sep = ""
 	var/list/boostable_nodes = techweb_item_boost_check(src)
 	if (boostable_nodes)
@@ -355,18 +376,18 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		research_msg += techweb_point_display_generic(points)
 
 	if (!sep) // nothing was shown
-		research_msg += "None"
+		research_msg += "отсутствуют"
 
 	// Extractable materials. Only shows the names, not the amounts.
-	research_msg += ".<br><font color='purple'>Extractable materials:</font> "
+	research_msg += ".<br><font color='purple'>Материалы для разбора:</font> "
 	if (length(custom_materials))
 		sep = ""
 		for(var/mat in custom_materials)
 			research_msg += sep
-			research_msg += CallMaterialName(mat)
+			research_msg += CallMaterialName_RuNominative(mat)
 			sep = ", "
 	else
-		research_msg += "None"
+		research_msg += "отсутствуют"
 	research_msg += "."
 	. += research_msg.Join()
 
@@ -388,7 +409,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
 		if(current_equipped_slot in user.check_obscured_slots())
-			to_chat(user, "<span class='warning'>You are unable to unequip that while wearing other garments over it!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять вещь, пока носите что-то поверх неё!</span>")
 			return FALSE
 
 	. = TRUE
@@ -420,7 +441,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/grav = user.has_gravity()
 	if(grav > STANDARD_GRAVITY)
 		var/grav_power = min(3,grav - STANDARD_GRAVITY)
-		to_chat(user,"<span class='notice'>You start picking up [src]...</span>")
+		to_chat(user,"<span class='notice'>Вы начали поднимать [src]...</span>")
 		if(!do_mob(user,src,30*grav_power))
 			return
 
@@ -453,7 +474,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(loc == user && current_equipped_slot && current_equipped_slot != ITEM_SLOT_HANDS)
 		if(current_equipped_slot in user.check_obscured_slots())
-			to_chat(user, "<span class='warning'>You are unable to unequip that while wearing other garments over it!</span>")
+			to_chat(user, "<span class='warning'>Вы не можете снять вещь, пока носите что-то поверх неё!</span>")
 			return FALSE
 
 
@@ -557,9 +578,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(over == src)
 		return usr.client.Click(src, src_location, src_control, params)
-	var/list/directaccess = usr.DirectAccess()	//This, specifically, is what requires the copypaste. If this were after the adjacency check, then it'd be impossible to use items in your inventory, among other things.
-												//If this were before the above checks, then trying to click on items would act a little funky and signal overrides wouldn't work.
-	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || (src in directaccess)) && (usr.CanReach(over) || (over in directaccess))))
+	//The direct-access check is what requires the copypaste. If it were after the adjacency check, then it'd be impossible
+	//to use items in your inventory, among other things. If it were before the above checks, then trying to click on items
+	//would act a little funky and signal overrides wouldn't work.
+	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || usr.in_direct_access(src)) && (usr.CanReach(over) || usr.in_direct_access(over))))
 		if(!usr.get_active_held_item())
 			usr.UnarmedAttack(src, TRUE)
 			if(usr.get_active_held_item() == src)
@@ -594,6 +616,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/equipped(mob/user, slot, initial = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	var/signal_flags = SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
+	SEND_SIGNAL(user, COMSIG_MOB_EQUIPPED_ITEM, src, slot)
 	current_equipped_slot = slot
 	if(!(signal_flags & COMPONENT_NO_GRANT_ACTIONS))
 		for(var/X in actions)
@@ -740,7 +763,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if (prob(eyes.damage - 10 + 1))
 			M.become_blind(EYE_DAMAGE)
 			to_chat(M, "<span class='danger'>You go blind!</span>")
-
+		// Bleeding eye puncture wound + overlay (r_eye / l_eye)
+		if(affecting && is_human_victim && prob(eyes.damage - 10 + 1))
+			var/picked_right = prob(50)
+			to_chat(M, "<span class='userdanger'>Вы чувствуете жгучую боль в [picked_right ? "правом" : "левом"] глазу!</span>")
+			var/datum/wound/pierce/severe/eye/eye_puncture = new
+			eye_puncture.apply_wound(affecting, right_side = picked_right)
 /obj/item/clean_blood()
 	. = ..()
 	// Quick fix for shoes being clean but the blood splatter was still on them, I suspect it is blood_dna on shoes were setting to null before the if (maybe it is a racing condition)
@@ -773,16 +801,16 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			var/volume = get_volume_by_throwforce_and_or_w_class()
 			if (throwforce > 0 || HAS_TRAIT(src, TRAIT_CUSTOM_TAP_SOUND))
 				if (mob_throw_hit_sound)
-					playsound(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
 				else if(hitsound)
-					playsound(hit_atom, hitsound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, hitsound, volume, TRUE, -1)
 				else
-					playsound(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
 			else
-				playsound(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
+				SSthrowing.playsound_capped(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
 
-		else if (drop_sound)
-			playsound(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
+		else if (throw_drop_sound || drop_sound)
+			SSthrowing.playsound_capped(src, throw_drop_sound || drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
 		return hit_atom.hitby(src, 0, itempush, throwingdatum=throwingdatum)
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, messy_throw = TRUE, quickstart = TRUE)
@@ -801,6 +829,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		transform = M
 		pixel_x = rand(-8, 8)
 		pixel_y = rand(-8, 8)
+
+/obj/item/proc/randomize_pixel_position(atom/movable/dropped_by)
+	if(item_flags & NO_PIXEL_RANDOM_DROP)
+		return
+	pixel_x = clamp((base_pixel_x + dropped_by?.pixel_x + rand(-6, 6)), -16, 16)
+	pixel_y = clamp((base_pixel_y + dropped_by?.pixel_y + rand(-6, 6)), -16, 16)
 
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)
@@ -863,10 +897,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/get_sharpness()
 	return sharpness
 
-/obj/item/proc/get_dismemberment_chance(obj/item/bodypart/affecting)
-	if(affecting.can_dismember(src))
-		if((sharpness || damtype == BURN) && w_class >= WEIGHT_CLASS_NORMAL && force >= 10)
-			. = force * (affecting.get_damage() / affecting.max_damage)
+/obj/item/proc/can_dismember()
+	return can_dismember
 
 /obj/item/proc/get_dismember_sound()
 	if(damtype == BURN)
@@ -929,14 +961,20 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/proc/on_mob_death(mob/living/L, gibbed)
 
-/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R) //Used to check for extra requirements for grinding an object
+/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE) //Used to check for extra requirements for grinding an object
 	return TRUE
 
  //Called BEFORE the object is ground up - use this to change grind results based on conditions
  //Use "return -1" to prevent the grinding from occurring
 /obj/item/proc/on_grind()
+	SHOULD_CALL_PARENT(TRUE)
+
+	return SEND_SIGNAL(src, COMSIG_ITEM_ON_GRIND)
 
 /obj/item/proc/on_juice()
+	SHOULD_CALL_PARENT(TRUE)
+
+	return SEND_SIGNAL(src, COMSIG_ITEM_ON_JUICE)
 
 /obj/item/proc/set_force_string()
 	switch(force)
@@ -969,7 +1007,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	SEND_SIGNAL(src, COMSIG_ITEM_MOUSE_ENTER, location, control, params)
 	if(get(src, /mob) == usr && !QDELETED(src))
 		var/mob/living/L = usr
-		if(usr.client.prefs.enable_tips)
+		var/in_open_storage = usr.active_storage?.parent == src.loc // tooltip browser panel overlaps storage items and intercepts mouse events, causing a flicker loop
+		if(usr.client.prefs.enable_tips && !in_open_storage)
 			var/timedelay = usr.client.prefs.tip_delay/100
 			usr.client.tip_timer = addtimer(CALLBACK(src, PROC_REF(openTip), location, control, params, usr), timedelay, TIMER_STOPPABLE)//timer takes delay in deciseconds, but the pref is in milliseconds. dividing by 100 converts it.
 		if(usr.client.prefs.outline_enabled)
@@ -1118,8 +1157,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if(hand_index)
 			M.held_items[hand_index] = null
 			M.update_inv_hands()
-			if(M.client)
-				M.client.screen -= src
+			M.remove_from_hud_screens(src)
 			layer = initial(layer)
 			plane = initial(plane)
 			appearance_flags &= ~NO_CLIENT_COLOR

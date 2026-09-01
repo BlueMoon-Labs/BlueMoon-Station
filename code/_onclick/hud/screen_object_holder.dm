@@ -14,6 +14,8 @@
 	RegisterSignal(client, COMSIG_PARENT_QDELETING, PROC_REF(on_parent_qdel))
 
 /datum/screen_object_holder/Destroy()
+	if(client)
+		UnregisterSignal(client, COMSIG_PARENT_QDELETING)
 	clear()
 	client = null
 
@@ -24,6 +26,7 @@
 	ASSERT(istype(screen_object))
 
 	screen_objects += screen_object
+	stamp_owner(screen_object)
 	client?.screen += screen_object
 
 /// Gives the screen object to the client, but does not qdel it when it's cleared
@@ -32,6 +35,19 @@
 
 	protected_screen_objects += screen_object
 	client?.screen += screen_object
+
+/// Объекты меню живут без hud, поэтому снять себя с экрана они могут только по прямой
+/// ссылке на владельца - проставляем её здесь, а не в каждом конструкторе страницы.
+/// Штампуем только те объекты, которые держатель сам и удаляет: protected - это GLOB-синглтоны
+/// (заголовок и подпись меню), их Destroy() возвращает QDEL_HINT_LETMELIVE не доходя до
+/// родителя, поле в них никто не прочитает, а держать в общем синглтоне ссылку на конкретного
+/// клиента незачем.
+/datum/screen_object_holder/proc/stamp_owner(atom/screen_object)
+	PRIVATE_PROC(TRUE)
+
+	var/atom/movable/screen/escape_menu/menu_object = screen_object
+	if(istype(menu_object))
+		menu_object.owner_client = client
 
 /datum/screen_object_holder/proc/remove_screen_object(atom/screen_object)
 	ASSERT(istype(screen_object))
@@ -42,6 +58,11 @@
 	client?.screen -= screen_object
 
 /datum/screen_object_holder/proc/clear()
+	for(var/atom/movable/screen/S in screen_objects)
+		S.screen_loc = null
+	// Protected objects are singletons managed externally - don't null their screen_loc
+	// or they'll be invisible next time they're shown (screen_loc won't auto-restore)
+
 	client?.screen -= screen_objects
 	client?.screen -= protected_screen_objects
 

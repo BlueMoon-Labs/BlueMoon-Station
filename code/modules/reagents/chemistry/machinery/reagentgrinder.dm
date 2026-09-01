@@ -3,9 +3,9 @@
 
 /obj/machinery/reagentgrinder
 	name = "\improper All-In-One Grinder"
-	desc = "From BlenderTech. Will It Blend? Let's test it out!"
-	icon = 'icons/obj/kitchen.dmi'
-	icon_state = "juicer1"
+	desc = "От компании BlenderTech. Will It Blend? Давайте проверим!"
+	icon = 'icons/obj/machines/kitchen.dmi'
+	icon_state = "juicer"
 	layer = BELOW_OBJ_LAYER
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 5
@@ -66,11 +66,14 @@
 		AM.forceMove(drop_location())
 	holdingitems = list()
 
-/obj/machinery/reagentgrinder/update_icon_state()
-	if(beaker)
-		icon_state = "juicer1"
-	else
-		icon_state = "juicer0"
+/obj/machinery/reagentgrinder/update_overlays()
+	. = ..()
+
+	if(!QDELETED(beaker))
+		. += "[icon_state]-beaker"
+
+	if(anchored && !panel_open && is_operational)
+		. += "[icon_state]-on"
 
 /obj/machinery/reagentgrinder/proc/replace_beaker(mob/living/user, obj/item/reagent_containers/new_beaker)
 	if(beaker)
@@ -102,7 +105,7 @@
 		return TRUE
 	//BLUEMOON CHANGE в блендер ничего нельзя запихать пока он работает
 	if(operating)
-		to_chat(user, "<span class='warning'>[src] currently working!</span>")
+		to_chat(user, "<span class='warning'>[src] сейчас работает!</span>")
 		return TRUE
 	//BLUEMOON CHANGE END
 	if (istype(I, /obj/item/reagent_containers) && !(I.item_flags & ABSTRACT) && I.is_open_container())
@@ -111,37 +114,40 @@
 		if(!user.transferItemToLoc(B, src))
 			return
 		replace_beaker(user, B)
-		to_chat(user, "<span class='notice'>You add [B] to [src].</span>")
+		to_chat(user, "<span class='notice'>Вы вставили [B] внутрь [src].</span>")
 		update_icon()
 		return
 
 	if(holdingitems.len >= limit)
-		to_chat(user, "<span class='warning'>[src] is filled to capacity!</span>")
+		to_chat(user, "<span class='warning'>[src] уже полностью заполнен!</span>")
 		return TRUE
 
 	//Fill machine with a bag!
 	if(istype(I, /obj/item/storage/bag))
 		var/list/inserted = list()
-		if(SEND_SIGNAL(I, COMSIG_TRY_STORAGE_TAKE_TYPE, /obj/item/reagent_containers/food/snacks/grown, src, limit - length(holdingitems), null, null, user, inserted))
+		if(SEND_SIGNAL(I, COMSIG_TRY_STORAGE_TAKE_TYPE, /obj/item, src, limit - length(holdingitems), null, null, user, inserted, CALLBACK(src, PROC_REF(inserting_check))))
 			for(var/i in inserted)
 				holdingitems[i] = TRUE
 			if(!I.contents.len)
-				to_chat(user, "<span class='notice'>You empty [I] into [src].</span>")
+				to_chat(user, "<span class='notice'>Вы вытряхнули [I] внутрь [src].</span>")
 			else
-				to_chat(user, "<span class='notice'>You fill [src] to the brim.</span>")
+				to_chat(user, "<span class='notice'>Вы заполнили [src] доверху.</span>")
 		return TRUE
 
 	if(!I.grind_results && !I.juice_results)
-		to_chat(user, "<span class='warning'>You cannot grind [I] into reagents!</span>") //BLUEMOON CHANGE перенесено взаимодействие на харм в самое начало
+		to_chat(user, "<span class='warning'>Вы не можете перемолоть [I] в реагенты!</span>") //BLUEMOON CHANGE перенесено взаимодействие на харм в самое начало
 		return TRUE
 
 	if(!I.grind_requirements(src)) //Error messages should be in the objects' definitions
 		return
 
 	if(user.transferItemToLoc(I, src))
-		to_chat(user, "<span class='notice'>You add [I] to [src].</span>")
+		to_chat(user, "<span class='notice'>Вы добавили [I] внутрь [src].</span>")
 		holdingitems[I] = TRUE
 		return FALSE
+
+/obj/machinery/reagentgrinder/proc/inserting_check(obj/item/I)
+	return (I.grind_results || I.juice_results) && I.grind_requirements(src, TRUE)
 
 /obj/machinery/reagentgrinder/ui_interact(mob/user) // The microwave Menu //I am reasonably certain that this is not a microwave
 	. = ..()
@@ -195,34 +201,34 @@
 /obj/machinery/reagentgrinder/examine(mob/user)
 	. = ..()
 	if(!in_range(user, src) && !hasSiliconAccessInArea(user) && !isobserver(user))
-		. += "<span class='warning'>You're too far away to examine [src]'s contents and display!</span>"
+		. += "<span class='warning'>Вы слишком далеко от [src], чтобы рассмотреть в деталях!</span>"
 		return
 
 	if(operating)
-		. += "<span class='warning'>\The [src] is operating.</span>"
+		. += "<span class='warning'>\The [src] работает.</span>"
 		return
 
 	if(beaker || length(holdingitems))
-		. += "<span class='notice'>\The [src] contains:</span>"
-		if(beaker)
-			. += "<span class='notice'>- \A [beaker].</span>"
+		. += "<span class='notice'>\The [src] содержит:</span>"
 		for(var/i in holdingitems)
 			var/obj/item/O = i
 			. += "<span class='notice'>- \A [O.name].</span>"
+		if(beaker)
+			. += "<span class='notice'>- \A [beaker].</span>"
 
 	if(!(machine_stat & (NOPOWER|BROKEN)))
-		. += "<span class='notice'>The status display reads:</span>"
-		. += "<span class='notice'>- Grinding reagents at <b>[speed*100]%</b>.<span>"
 		if(beaker)
 			for(var/datum/reagent/R in beaker.reagents.reagent_list)
-				. += "<span class='notice'>- [R.volume] units of [R.name].</span>"
+				. += "<span class='notice'>- [R.volume]u [R.name].</span>"
+		. += "<span class='notice'>Статус-дисплей сообщает:\n\
+		- Содержимое перемалывается на скорости <b>[speed*100]%.</b></span>"
 
 /obj/machinery/reagentgrinder/AltClick(mob/user)
 	. = ..()
 	if(istype(user) && user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 	//BLUEMOON CHANGE нельзя вытащить из блендера банку когда он работает
 		if(operating)
-			to_chat(user, "<span class='warning'>[src] currently working!</span>")
+			to_chat(user, "<span class='warning'>[src] сейчас работает!</span>")
 		else
 			replace_beaker(user)
 	//BLUEMOON CHANGE END
@@ -239,18 +245,8 @@
 	holdingitems -= O
 	qdel(O)
 
-/obj/machinery/reagentgrinder/proc/shake_for(duration)
-	var/offset = prob(50) ? -2 : 2
-	var/old_pixel_x = pixel_x
-	animate(src, pixel_x = pixel_x + offset, time = 0.2, loop = -1) //start shaking
-	addtimer(CALLBACK(src, PROC_REF(stop_shaking), old_pixel_x), duration)
-
-/obj/machinery/reagentgrinder/proc/stop_shaking(old_px)
-	animate(src)
-	pixel_x = old_px
-
 /obj/machinery/reagentgrinder/proc/operate_for(time, silent = FALSE, juicing = FALSE)
-	shake_for(time / speed)
+	Shake(2, 2, time / speed)
 	operating = TRUE
 	if(!silent)
 		if(!juicing)
@@ -276,7 +272,7 @@
 
 /obj/machinery/reagentgrinder/proc/juice_item(obj/item/I) //Juicing results can be found in respective object definitions
 	if(I.on_juice(src) == -1)
-		to_chat(usr, "<span class='danger'>[src] shorts out as it tries to juice up [I], and transfers it back to storage.</span>")
+		to_chat(usr, "<span class='danger'>[src] надрывается в попытке выдавить [I], возвращая предмет назад в хранилище.</span>")
 		return
 	beaker.reagents.add_reagent_list(I.juice_results)
 	remove_object(I)
@@ -295,7 +291,7 @@
 
 /obj/machinery/reagentgrinder/proc/grind_item(obj/item/I) //Grind results can be found in respective object definitions
 	if(I.on_grind(src) == -1) //Call on_grind() to change amount as needed, and stop grinding the item if it returns -1
-		to_chat(usr, "<span class='danger'>[src] shorts out as it tries to grind up [I], and transfers it back to storage.</span>")
+		to_chat(usr, "<span class='danger'>[src] надрывается в попытке размолоть [I], возвращая предмет назад в хранилище.</span>")
 		return
 	beaker.reagents.add_reagent_list(I.grind_results)
 	if(I.reagents)

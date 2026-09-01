@@ -21,8 +21,6 @@
 
 /obj/machinery/computer/launchpad/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_MULTITOOL)
-		if(!multitool_check_buffer(user, W))
-			return
 		if(W.buffer && istype(W.buffer, /obj/machinery/launchpad))
 			if(LAZYLEN(launchpads) < maximum_pads)
 				launchpads |= W.buffer

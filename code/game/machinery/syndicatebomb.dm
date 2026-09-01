@@ -207,6 +207,8 @@
 			activate()
 			update_icon()
 			add_fingerprint(user)
+			if(payload)
+				payload.primed_by = user
 
 			var/turf/bombturf = get_turf(src)
 			if(payload && !istype(payload, /obj/item/bombcore/training))
@@ -249,7 +251,7 @@
 /obj/machinery/syndicatebomb/self_destruct
 	name = "self destruct device"
 	desc = "Do not taunt. Warranty invalid if exposed to high temperature. Not suitable for agents under 3 years of age."
-	payload = /obj/item/bombcore/large
+	payload = /obj/item/bombcore/self_destruct
 	can_unanchor = FALSE
 
 ///Bomb Cores///
@@ -265,6 +267,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE //Burnable (but the casing isn't)
 	var/adminlog = null
+	var/mob/living/primed_by
 	var/range_heavy = 3
 	var/range_medium = 9
 	var/range_light = 17
@@ -282,7 +285,7 @@
 	if(adminlog)
 		message_admins(adminlog)
 		log_game(adminlog)
-	explosion(src, range_heavy, range_medium, range_light, flame_range = range_flame)
+	explosion(src, range_heavy, range_medium, range_light, flame_range = range_flame, attacker = primed_by)
 	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
 		qdel(loc)
 	qdel(src)
@@ -367,6 +370,22 @@
 	range_light = 40
 	range_flame = 50
 //BlueMoon Edit. End.
+
+/obj/item/bombcore/self_destruct
+	name = "self-destruct payload"
+	range_heavy = 38
+	range_medium = 48
+	range_light = 53
+	range_flame = 53
+
+/obj/item/bombcore/self_destruct/detonate()
+	if(adminlog)
+		message_admins(adminlog)
+		log_game(adminlog)
+	explosion(src, range_heavy, range_medium, range_light, range_light, adminlog = TRUE, ignorecap = TRUE, flame_range = range_flame, attacker = primed_by)
+	if(loc && istype(loc, /obj/machinery/syndicatebomb/))
+		qdel(loc)
+	qdel(src)
 
 /obj/item/bombcore/miniature
 	name = "Small Bomb Core"
@@ -527,7 +546,7 @@
 			var/turf/T = get_turf(src)
 			detonated--
 			var/log_str = "[ADMIN_LOOKUPFLW(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [ADMIN_VERBOSEJMP(T)]</a>."
-			GLOB.bombers += log_str
+			add_bomber_message(log_str)
 			message_admins(log_str)
 			log_game("[key_name(user)] has remotely detonated [detonated ? "syndicate bombs" : "a syndicate bomb"] using a [name] at [AREACOORD(T)]")
 		detonated =	0

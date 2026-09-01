@@ -146,6 +146,20 @@
 	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	color_src = HAIR
 
+/datum/sprite_accessory/tails/human/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/human/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/human/catbig
 	name = "Cat, Big"
 	icon_state = "catbig"
@@ -173,6 +187,20 @@
 	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/human/alttwocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
 
 /datum/sprite_accessory/tails/human/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"
@@ -204,11 +232,17 @@
 
 /datum/sprite_accessory/tails/human/corvid
 	name = "Corvid"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "crow"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/human/corvid
 	name = "Corvid"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "crow"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/human/cow
 	name = "Cow"
@@ -505,11 +539,17 @@
 
 /datum/sprite_accessory/tails/human/straighttail
 	name = "Straight Tail"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "straighttail"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/human/straighttail
 	name = "Straight Tail"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "straighttail"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/human/squirrel
 	name = "Squirrel"
@@ -688,6 +728,18 @@
 	icon_state = "cat"
 	color_src = HAIR
 
+/datum/sprite_accessory/tails/mam_tails/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/mam_tails/catbig
 	name = "Cat, Big"
 	icon_state = "catbig"
@@ -707,6 +759,16 @@
 	name = "Cat, Double"
 	icon_state = "twocat"
 	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/mam_tails/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/twocat // BlueMoon addition
+	name = "Cat, Double, Alt"
+	icon_state = "twocatalt"
+	matrixed_sections = MATRIX_RED_BLUE
 
 /datum/sprite_accessory/tails/mam_tails/carp // BLUEMOON CHANGE ' /shark' to ' /carp' and 'name = ' to carp
 	name = "Carp"
@@ -796,6 +858,16 @@
 /datum/sprite_accessory/tails_animated/mam_tails_animated/fox
 	name = "Fox"
 	icon_state = "fox"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
 	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/tails/mam_tails/hawk
@@ -964,6 +1036,26 @@
 /datum/sprite_accessory/tails_animated/mam_tails_animated/sergal
 	name = "Sergal"
 	icon_state = "sergal"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/sergal/alt
+	name = "Sergal alt"
+	icon_state = "sergal_alt"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/sergal/alt
+	name = "Sergal alt"
+	icon_state = "sergal_alt"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/mam_tails/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/sergal/alt_two
+	name = "Sergal alt (2 colors)"
+	icon_state = "sergal_alt_2"
 	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/tails/mam_tails/shark

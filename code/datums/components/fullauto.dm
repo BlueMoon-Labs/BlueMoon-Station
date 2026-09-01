@@ -56,7 +56,9 @@
 
 	if(iscarbon(user))
 		var/mob/living/carbon/shooter = user
-		if(shooter.is_holding(parent) && G.fire_select == SELECT_FULLY_AUTOMATIC)
+		//автоогонь живёт на клиентских MouseDown/MouseUp: ИИ-обезьяне с автоматом
+		//вешать его некуда, а прежний код уходил в autofire_on с null-клиентом
+		if(shooter.client && shooter.is_holding(parent) && G.fire_select == SELECT_FULLY_AUTOMATIC)
 			autofire_on(shooter.client)
 		else
 			autofire_off()
@@ -66,6 +68,8 @@
 	SIGNAL_HANDLER
 	if(autofire_stat & (AUTOFIRE_STAT_ALERT|AUTOFIRE_STAT_FIRING))
 		return
+	if(!usercli?.mob)
+		return //без клиента компонент застревал в ALERT с null-стрелком
 	autofire_stat = AUTOFIRE_STAT_ALERT
 	clicker = usercli
 	shooter = clicker.mob
@@ -87,6 +91,7 @@
 	autofire_stat = AUTOFIRE_STAT_IDLE
 
 	if(!QDELETED(clicker))
+		clicker.click_intercept_time = 0 // Allow immediate clicks when switching away from full auto
 		UnregisterSignal(clicker, list(COMSIG_CLIENT_MOUSEDOWN, COMSIG_CLIENT_MOUSEUP, COMSIG_CLIENT_MOUSEDRAG))
 	mouse_status = AUTOFIRE_MOUSEUP //In regards to the component there's no click anymore to care about.
 	clicker = null
@@ -194,6 +199,7 @@
 	STOP_PROCESSING(SSprojectiles, src)
 	autofire_stat = AUTOFIRE_STAT_ALERT
 	if(clicker)
+		clicker.click_intercept_time = 0 // Allow immediate clicks (e.g. right-click to switch weapon mode) after releasing full auto
 		clicker.mouse_override_icon = null
 		clicker.mouse_pointer_icon = clicker.mouse_override_icon
 		UnregisterSignal(clicker, COMSIG_CLIENT_MOUSEDRAG)
@@ -232,6 +238,8 @@
 	if(get_dist(shooter, target) <= 0)
 		target = get_step(shooter, shooter.dir) //Shoot in the direction faced if the mouse is on the same tile as we are.
 		target_loc = target
+	if(shooter.incapacitated())
+		return FALSE
 	else if(!in_view_range(shooter, target))
 		stop_autofiring() //Elvis has left the building.
 		return FALSE

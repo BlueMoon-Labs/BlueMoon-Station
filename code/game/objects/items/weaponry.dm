@@ -86,6 +86,15 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	force = 25
 	block_chance = 0
 
+/obj/item/claymore/shortsword
+	name = "shortsword"
+	desc = "A mercenary's sword, chipped and worn from battles long gone. You could say it is a swordsman's shortsword short sword."
+	icon_state = "shortsword"
+	item_state = "shortsword"
+	slot_flags = ITEM_SLOT_BELT
+	force = 20
+	block_chance = 30
+
 /obj/item/claymore/highlander //ALL COMMENTS MADE REGARDING THIS SWORD MUST BE MADE IN ALL CAPS
 	desc = "<b><i>THERE CAN BE ONLY ONE, AND IT WILL BE YOU!!!</i></b>\nActivate it in your hand to point to the nearest victim."
 	flags_1 = CONDUCT_1
@@ -727,6 +736,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	desc = "A cane used by a true gentleman. Or a clown."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "cane"
+	base_icon_state = "cane"
 	item_state = "stick"
 	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
@@ -735,6 +745,18 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	w_class = WEIGHT_CLASS_SMALL
 	custom_materials = list(/datum/material/iron=50)
 	attack_verb = list("bludgeoned", "whacked", "disciplined", "thrashed")
+	unique_reskin = list("Black and White" = list(RESKIN_ICON_STATE = "cane_black_and_white0"))
+
+/obj/item/cane/update_icon_state()
+	icon_state = base_icon_state
+
+/obj/item/cane/reskin_obj(mob/user)
+	if(current_skin == "Black and White")
+		icon_state = "cane_black_and_white0"
+		item_state = null
+		base_icon_state = "cane_black_and_white0"
+		slot_flags = ITEM_SLOT_BACK
+		AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=5, icon_wielded="cane_black_and_white1")
 
 /obj/item/staff
 	name = "wizard staff"
@@ -1051,7 +1073,8 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	on_icon_state = "baseball_bat_telescopic_1"
 	off_icon_state = "baseball_bat_telescopic_0"
 	on_item_state = "baseball_bat_telescopic"
-	force_on = 15
+	force_on = 23 // better then toolbox
+	armour_penetration =  10
 	force_off = 5
 	throwforce_on = 20
 	throwforce_off = 10
@@ -1245,7 +1268,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 			if(!in_range(src, target)) //Proximity is probably old news by now, do a new check.
 				return //If they moved away, you can't eat them.
 			to_chat(R, "<span class='notice'>You finish licking off \the [target.name].</span>")
-			if(target?.reagents) // BlueMoon Feature: consuming licked fluids
+			if(target?.reagents && target.reagents.total_volume > 0)
 				target.reagents.reaction(R, INGEST, min(5/target.reagents.total_volume, 1))
 				target.reagents.trans_to(R, target.reagents.total_volume, log = TRUE)
 			qdel(target)

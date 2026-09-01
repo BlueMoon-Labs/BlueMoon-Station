@@ -25,7 +25,8 @@
 	//heart attack stuff
 	handle_heart(delta_time, times_fired)
 
-	dna.species.spec_life(src) // for mutantraces
+	if(dna?.species)
+		dna.species.spec_life(src) // for mutantraces
 	return (stat != DEAD) && !QDELETED(src)
 
 /mob/living/carbon/human/PhysicalLife(seconds, times_fired)
@@ -33,8 +34,10 @@
 		return
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) && hud_used)
 		hud_used.coolant_display.update_counter(src)
-	//Update our name based on whether our face is obscured/disfigured
-	name = get_visible_name()
+	//Update our name based on whether our face is obscured/disfigured (throttled to every 4th fire for performance)
+	var/name_phase = client ? times_fired : times_fired + life_periodic_phase
+	if(name_phase % 4 == 0)
+		name = get_visible_name()
 
 /mob/living/carbon/human/calculate_affecting_pressure(pressure)
 	var/headless = !get_bodypart(BODY_ZONE_HEAD) //should the mob be perennially headless (see dullahans), we only take the suit into account, so they can into space.
@@ -80,7 +83,7 @@
 		..()
 
 /mob/living/carbon/human/breathe()
-	if(!dna.species.breathe(src))
+	if(!dna || !dna.species.breathe(src))
 		..()
 
 /mob/living/carbon/human/check_breath(datum/gas_mixture/breath)
@@ -129,7 +132,50 @@
 			lun.check_breath(breath,src)
 
 /mob/living/carbon/human/handle_environment(datum/gas_mixture/environment)
-	dna.species.handle_environment(environment, src)
+	if(dna?.species)
+		dna.species.handle_environment(environment, src)
+	handle_plasma_clothing(environment)
+
+/// Plasma can linger in permeable clothing after leaving a contaminated room.
+/// This piggybacks on the existing human environment tick and never registers
+/// individual items with a subsystem. Steady state (no plasma, clean gear)
+/// costs one gas lookup and one flag read: plasma_gear_dirty arms on any
+/// absorption (and on equipping contaminated gear) and self-clears once the
+/// worn total drops below the poisoning threshold.
+/mob/living/carbon/human/proc/handle_plasma_clothing(datum/gas_mixture/environment)
+	if(!environment)
+		return
+	var/plasma_moles = environment.get_moles(GAS_PLASMA)
+	if(plasma_moles > 0 && environment.return_volume() > 0)
+		var/plasma_partial_pressure = plasma_moles * R_IDEAL_GAS_EQUATION * environment.return_temperature() / environment.return_volume()
+		if(plasma_partial_pressure >= PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE)
+			plasma_gear_dirty = TRUE
+			// An impermeable outer suit keeps the uniform beneath it clean.
+			var/suit_shields_uniform = FALSE
+			if(wear_suit)
+				var/obj/item/clothing/suit_piece = wear_suit
+				suit_shields_uniform = istype(suit_piece) && suit_piece.permeability_coefficient <= PLASMA_CLOTHING_SEALED_PERMEABILITY
+			for(var/piece in list(wear_suit, w_uniform, shoes, gloves, head, wear_mask))
+				var/obj/item/clothing/clothing_piece = piece
+				if(!istype(clothing_piece))
+					continue
+				if(clothing_piece == w_uniform && suit_shields_uniform)
+					continue
+				clothing_piece.absorb_plasma(plasma_partial_pressure)
+
+	if(stat == DEAD || !plasma_gear_dirty)
+		return
+	var/contamination = 0
+	for(var/piece in list(wear_suit, w_uniform, shoes, gloves, head, wear_mask))
+		var/obj/item/clothing/clothing_piece = piece
+		if(istype(clothing_piece))
+			contamination += clothing_piece.plasma_contamination
+	if(contamination < 1)
+		plasma_gear_dirty = FALSE
+		return
+	adjustToxLoss(min(0.25, contamination * 0.0005))
+	if(prob(2))
+		to_chat(src, "<span class='warning'>От пропитанной плазмой ткани на коже вам становится дурно.</span>")
 
 ///FIRE CODE
 /mob/living/carbon/human/handle_fire()
@@ -315,10 +361,10 @@
 
 
 /mob/living/carbon/human/has_smoke_protection()
-	if(wear_mask)
+	if(wear_mask && isclothing(wear_mask))
 		if(wear_mask.clothing_flags & BLOCK_GAS_SMOKE_EFFECT)
 			return TRUE
-	if(glasses)
+	if(glasses && isclothing(glasses))
 		if(glasses.clothing_flags & BLOCK_GAS_SMOKE_EFFECT)
 			return TRUE
 	if(head && istype(head, /obj/item/clothing))

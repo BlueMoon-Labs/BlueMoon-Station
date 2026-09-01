@@ -109,7 +109,10 @@
 /datum/action/vehicle/sealed/mecha/mech_view_stats/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
-	var/datum/browser/popup = new(owner , "exosuit")
+	// nref обязателен: без него onclose() уходит в скин с "null", и крестик по окну
+	// сбрасывает лишь machine, а до Topic() меха "close=1" не доезжает - JS-таймер
+	// панели продолжает стучаться в сервер до конца раунда.
+	var/datum/browser/popup = new(owner, "exosuit", nref = chassis)
 	popup.set_content(chassis.get_stats_html(owner))
 	popup.open()
 
@@ -142,6 +145,26 @@
 		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/strafe)
 		action?.UpdateButtons()
 
+/datum/action/vehicle/sealed/mecha/toggle_stabilizers
+	name = "Toggle thruster stabilizers. Cancels space drift so the mech can hold position. Needs powered thrusters."
+	button_icon_state = "mech_thrusters_off"
+
+/datum/action/vehicle/sealed/mecha/toggle_stabilizers/Trigger()
+	if(!owner || !chassis || !(owner in chassis.occupants))
+		return
+	chassis.toggle_stabilizers()
+
+/obj/vehicle/sealed/mecha/proc/toggle_stabilizers()
+	stabilizers = !stabilizers
+	to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Toggled thruster stabilizers [stabilizers ? "on" : "off"].</span>")
+	log_message("Toggled thruster stabilizers [stabilizers ? "on" : "off"].", LOG_MECHA)
+
+	for(var/occupant in occupants)
+		var/datum/action/vehicle/sealed/mecha/toggle_stabilizers/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/toggle_stabilizers)
+		if(action)
+			action.button_icon_state = "mech_thrusters_[stabilizers ? "on" : "off"]"
+			action.UpdateButtons()
+
 //////////////////////////////////////// Specific Ability Actions  ///////////////////////////////////////////////
 //Need to be granted by the mech type, Not default abilities.
 
@@ -156,27 +179,23 @@
 	name = "Toggle leg actuators overload"
 	button_icon_state = "mech_overload_off"
 
+///Кнопка нового пассажира обязана показывать состояние шасси, а не типовое "выключено"
+/datum/action/vehicle/sealed/mecha/mech_overload_mode/Grant(mob/grant_to)
+	button_icon_state = "mech_overload_[chassis?.leg_overload_mode ? "on" : "off"]"
+	return ..()
+
 /datum/action/vehicle/sealed/mecha/mech_overload_mode/Trigger(forced_state = null)
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
-	if(!isnull(forced_state))
-		chassis.leg_overload_mode = forced_state
-	else
-		chassis.leg_overload_mode = !chassis.leg_overload_mode
-	chassis.log_message("Toggled leg actuators overload.", LOG_MECHA)
-	if(!chassis.leg_overload_mode)
-		button_icon_state = "mech_overload_on"
-		chassis.bumpsmash = TRUE
-		chassis.movedelay = min(1, round(chassis.movedelay * 0.5))
-		chassis.step_energy_drain = max(chassis.overload_step_energy_drain_min,chassis.step_energy_drain*chassis.leg_overload_coeff)
+	var/wanted_state = isnull(forced_state) ? !chassis.leg_overload_mode : forced_state
+	if(!chassis.set_leg_overload(wanted_state))
+		if(wanted_state && !chassis.leg_overload_mode)
+			to_chat(owner, "[icon2html(chassis, owner)]<span class='warning'>Insufficient power; cannot overload leg actuators.</span>")
+		return
+	if(chassis.leg_overload_mode)
 		to_chat(owner, "[icon2html(chassis, owner)]<span class='danger'>You enable leg actuators overload.</span>")
 	else
-		button_icon_state = "mech_overload_off"
-		chassis.bumpsmash = FALSE
-		chassis.movedelay = initial(chassis.movedelay)
-		chassis.step_energy_drain = chassis.normal_step_energy_drain
 		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You disable leg actuators overload.</span>")
-	UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_smoke
 	name = "Smoke"

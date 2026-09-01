@@ -78,7 +78,7 @@
 
 /obj/structure/blob/update_icon() //Updates color based on overmind color if we have an overmind.
 	. = ..()
-	if(overmind)
+	if(overmind?.blobstrain)
 		add_atom_colour(overmind.blobstrain.color, FIXED_COLOUR_PRIORITY)
 	else
 		remove_atom_colour(FIXED_COLOUR_PRIORITY)
@@ -138,9 +138,10 @@
 	O.setDir(dir)
 	if(controller)
 		var/mob/camera/blob/BO = controller
-		O.color = BO.blobstrain.color
-		O.alpha = 200
-	else if(overmind)
+		if(BO.blobstrain)
+			O.color = BO.blobstrain.color
+			O.alpha = 200
+	else if(overmind?.blobstrain)
 		O.color = overmind.blobstrain.color
 	if(A)
 		O.do_attack_animation(A) //visually attack the whatever

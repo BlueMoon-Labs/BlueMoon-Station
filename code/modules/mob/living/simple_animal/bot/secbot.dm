@@ -17,7 +17,7 @@
 	bot_core_type = /obj/machinery/bot_core/secbot
 	window_id = "autosec"
 	window_name = "Automatic Security Unit v1.6"
-	allow_pai = 0
+	allow_pai = 1
 	data_hud_type = DATA_HUD_SECURITY_ADVANCED
 	path_image_color = "#FF0000"
 
@@ -381,7 +381,7 @@
 /mob/living/simple_animal/bot/secbot/proc/stun_attack(mob/living/carbon/C)
 	var/judgement_criteria = judgement_criteria()
 	icon_state = "secbot-c"
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 2)
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), 2, TIMER_DELETE_ME)
 	var/threat = 5
 	if(ishuman(C))
 		if(stored_fashion)

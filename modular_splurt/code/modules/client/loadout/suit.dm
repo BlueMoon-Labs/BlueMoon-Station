@@ -102,7 +102,7 @@
 	name = "polychromic trencher coat"
 	cost = 2
 	path = /obj/item/clothing/suit/goner/fake/poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#E6E6E6", "#D6D6D6", "#D6D6D6")
 
 /datum/gear/suit/gonersuit/classic
@@ -119,7 +119,6 @@
 	description = "A jacket made of transparent fibers, often used with reinforcement kits."
 	path = /obj/item/clothing/suit/invisijacket
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 
 //BM add
 /datum/gear/suit/syndiewintercoat/civil

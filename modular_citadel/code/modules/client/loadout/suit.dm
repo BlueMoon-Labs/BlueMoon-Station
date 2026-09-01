@@ -3,13 +3,74 @@
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 	slot = ITEM_SLOT_OCLOTHING
 
+/datum/gear/suit/cmo_tailcoat
+	name = "Chief medical officer's tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/cmo/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Chief Medical Officer"
+	restricted_roles = list("Chief Medical Officer")
+
+/datum/gear/suit/doctor_tailcoat
+	name = "Medical tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Medical Doctor"
+	restricted_roles = list("Medical Doctor")
+
+/datum/gear/suit/chemist_tailcoat
+	name = "Chemist's tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/chemist/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Chemist"
+	restricted_roles = list("Chemist")
+
+/datum/gear/suit/edgelord_trenchcoat
+	name = "Edgelord trenchcoat"
+	path = /obj/item/clothing/suit/jacket/leather_trenchcoat
+
 /datum/gear/suit/poncho
 	name = "Poncho"
 	path = /obj/item/clothing/suit/poncho
 
+/datum/gear/suit/aged_robe
+	name = "Aged Robe"
+	path = /obj/item/clothing/suit/donator/bm/cultist_poly
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A","#A52F29")
+
+/datum/gear/suit/empire_suit
+	name = "Katzen Suit"
+	path = /obj/item/clothing/suit/empire_suit
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A","#e42929", "#e0bf28")
+
 /datum/gear/suit/ponchogreen
 	name = "Green poncho"
 	path = /obj/item/clothing/suit/poncho/green
+
+/datum/gear/suit/poly_armored_poncho
+	name = "Poly Nanotech Poncho"
+	path = /obj/item/clothing/suit/poly_armored_poncho
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A","#e42929")
+
+/datum/gear/suit/poly_poncho
+	name = "Poly Poncho"
+	path = /obj/item/clothing/suit/poly_poncho
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A")
+
+/datum/gear/suit/officerian_coat
+	name = "Poly Coat"
+	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A","#1f1f1f")
+
+/datum/gear/suit/officerian_coat_oversized
+	name = "Poly Coat Oversized"
+	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A","#1a1a1a")
 
 /datum/gear/suit/ponchored
 	name = "Red poncho"
@@ -139,60 +200,50 @@
 /datum/gear/suit/whitehoodie
 	name = "Soft hoodie"
 	path = /obj/item/clothing/suit/toggle/jacket/whitehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketbluehoodie
 	name = "Blue hoodie"
 	path = /obj/item/clothing/suit/jacket/bluehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 /datum/gear/suit/jacketpurplehoodie
 	name = "Purple hoodie"
 	path = /obj/item/clothing/suit/jacket/purplehoodie
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketheartcoat
 	name = "Heart coat"
 	path = /obj/item/clothing/suit/jacket/heartcoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketgothiccoat
 	name = "Long black coat with cuffs"
 	path = /obj/item/clothing/suit/jacket/gothiccoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/jacketgothshirt
 	name = "Black shirt with cuffs"
 	path = /obj/item/clothing/suit/jacket/gothicshirt
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 
 /datum/gear/suit/jacketgothshirtcross
 	name = "Black shirt with cross"
 	path = /obj/item/clothing/suit/jacket/gothicshirtcross
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 
 /datum/gear/suit/gentlecoat
 	name = "Grey coat"
 	path = /obj/item/clothing/suit/jacket/gentlecoat
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 
 /datum/gear/suit/greenjacket
 	name = "Green outdoorsman jacket"
 	path = /obj/item/clothing/suit/toggle/jacket/greenjacket
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
 
 /datum/gear/suit/fancytrench
 	name = "Grey trenchcoat"
 	path = /obj/item/clothing/suit/toggle/jacket/fancytrench
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_COATS
 
 
@@ -200,14 +251,14 @@
 	name = "Polychromic winter coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/polychromic
 	cost = 2 //too many people with neon green coats is hard on the eyes // it's probably fine now
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#6A6964", "#C4B8A6", "#0000FF")
 
 /datum/gear/suit/coat/wbreakpoly
 	name = "Polychromic windbreaker"
 	path = /obj/item/clothing/suit/toggle/wbreakpoly/polychromic
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#464F65", "#916035", "#474747")
 
 /datum/gear/suit/coat/med
@@ -269,7 +320,7 @@
 	name = "Urban Jacket"
 	path = /obj/item/clothing/suit/jacket/urbanjacket/polychromic
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#3B4B2E", "#CBBDAF", "#444444")
 
 /datum/gear/suit/ianshirt
@@ -345,6 +396,34 @@
 	restricted_desc = "Engineering and Cargo"
 	restricted_roles = list("Chief Engineer","Atmospheric Technician","Station Engineer","Cargo Technician", "Shaft Miner", "Quartermaster")
 
+/datum/gear/suit/wy_expensive_fur_trenchcoat
+	name = "Expensive trenchcoat"
+	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Security and Vanguard operative"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Vanguard operative")
+
+/datum/gear/suit/wy_expensive_fur_trenchcoat_alt
+	name = "Expensive trenchcoat Alt"
+	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat_alt
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Security and Vanguard operative"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Vanguard operative")
+
+/datum/gear/suit/officer_armor
+	name = "Officer’s Armor"
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	path = /obj/item/clothing/suit/armor/vest/capcarapace/officer_armor
+	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
+/datum/gear/suit/ppo_armor_strong_heavy
+	name = "Heavy SPO Armor Set"
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	path = /obj/item/clothing/suit/armor/vest/capcarapace/ppo_armor_strong_heavy
+	restricted_desc = "Capitan, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
 /datum/gear/suit/christmascoatr
 	name = "Red Christmas Coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/christmascoatr
@@ -368,3 +447,12 @@
 	name = "Cybertechnical Jacket"
 	path = /obj/item/clothing/suit/syndie_jacket
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
+
+/datum/gear/suit/cropped_jacket_main
+	name = "Cropped jacket"
+	path = /obj/item/clothing/suit/toggle/cropped_jacket_main
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JACKETS
+
+/datum/gear/suit/shoulder_sweater
+	name = "Off shoulder sweater"
+	path = /obj/item/clothing/suit/shoulder_sweater

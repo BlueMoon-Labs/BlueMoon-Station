@@ -36,7 +36,7 @@
 	desc = "A technology disk holding a terabyte of highly confidential abductor technology. \
 			Simply insert into research console of choice and import the files from the disk. Because of its foreign nature, it may require multiple uploads to work properly."
 	item = /obj/item/disk/tech_disk/abductor
-	cost = 12
+	cost = 10
 	restricted_roles = list("Research Director", "Scientist", "Roboticist")
 
 /datum/uplink_item/device_tools/brainwash_disk
@@ -46,6 +46,7 @@
 	item = /obj/item/disk/surgery/brainwashing
 	restricted_roles = list("Medical Doctor", "Roboticist")
 	cost = 5
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/role_restricted/clown_bomb
 	name = "Clown Bomb"
@@ -66,7 +67,7 @@
 			You can ram any spacemen you come across and stuff them into your car, kidnapping them and locking them inside until \
 			someone saves them or they manage to crawl out. Be sure not to ram into any walls or vending machines, as the springloaded seats \
 			are very sensetive. Now with our included lube defense mechanism which will protect you against any angry shitcurity!"
-	item = /obj/vehicle/sealed/car/clowncar
+	item = /obj/item/choice_beacon/vehicle/clown_car
 	cost = 16
 	restricted_roles = list("Clown")
 
@@ -156,6 +157,14 @@
 	item = /obj/item/storage/box/syndie_kit/mimery
 	restricted_roles = list("Mime")
 
+/datum/uplink_item/role_restricted/reticence
+	name = "Reticence Exosuit"
+	desc = "Бесшумный, быстрый и почти невидимый мимский боевой экзокостюм. Оснащается бесшумным пистолетом \
+			и РЦД для возведения стен. Улучшен до уровня лёгкого боевого экзоскелета. Только для мимов."
+	cost = 15
+	item = /obj/vehicle/sealed/mecha/combat/reticence/loaded
+	restricted_roles = list("Mime")
+
 /datum/uplink_item/role_restricted/ultrahonkpins
 	name = "Hilarious firing pin"
 	desc = "A single firing pin made for Clown agents, this firing pin makes any gun honk when fired if not a true clown! \
@@ -201,7 +210,7 @@
 	name = "Modified Syringe Gun"
 	desc = "A syringe gun that fires DNA injectors instead of normal syringes."
 	item = /obj/item/gun/syringe/dna
-	cost = 14
+	cost = 12
 	restricted_roles = list("Geneticist", "Chief Medical Officer")
 
 /datum/uplink_item/role_restricted/chemical_gun
@@ -225,7 +234,7 @@
 	name = "Reverse Revolver"
 	desc = "A revolver that always fires at its user. \"Accidentally\" drop your weapon, then watch as the greedy corporate pigs blow their own brains all over the wall. \
 	The revolver itself is actually real. Only clumsy people, and clowns, can fire it normally. Comes in a box of hugs. Honk."
-	cost = 14
+	cost = 5
 	item = /obj/item/storage/box/hug/reverse_revolver
 	restricted_roles = list("Clown")
 
@@ -239,7 +248,7 @@
 /datum/uplink_item/role_restricted/emitter_cannon
 	name = "Emitter Cannon"
 	desc = "A small emitter fitted into a gun case, do to size constraints and safety it can only shoot about ten times when fully charged."
-	cost = 13 //Low ammo, and deals same as 10mm but emp-able // BLIEMOOD EDIT this rofl about same as 10 mm was fixed, robust weapon
+	cost = 10 //Low ammo, and deals same as 10mm but emp-able // BLIEMOOD EDIT this rofl about same as 10 mm was fixed, robust weapon
 	item = /obj/item/gun/energy/emitter
 	restricted_roles = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
 
@@ -254,7 +263,7 @@
 	name = "Disposable Sentry Gun"
 	desc = "A disposable sentry gun deployment system cleverly disguised as a toolbox, apply wrench for functionality."
 	item = /obj/item/storage/toolbox/emergency/turret
-	cost = 11
+	cost = 5
 	restricted_roles = list("Station Engineer")
 
 /datum/uplink_item/role_restricted/combat_rcd
@@ -269,7 +278,6 @@
 	desc = "A bottle containing Gravitokinetic Bipotential SADS culture. Also known as GBS, extremely deadly virus."
 	item = /obj/item/reagent_containers/glass/bottle/gbs
 	cost = 12
-	restricted_roles = list("Virologist")
 	surplus = 0
 	hijack_only = TRUE
 
@@ -284,14 +292,14 @@
 	name = "KS-23 shotgun"
 	desc = "War crimes are fun!"
 	item = /obj/item/gun/ballistic/shotgun/KS23/Inquisitor
-	cost = 7
+	cost = 5
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug23
 	name = "KS-23 slug box"
 	desc = "8 lead slugs."
 	item = /obj/item/ammo_box/slug23
-	cost = 2
+	cost = 1
 	restricted_roles = list("Chaplain")
 
 /datum/uplink_item/role_restricted/slug_rubber23

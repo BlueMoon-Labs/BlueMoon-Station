@@ -3,6 +3,16 @@
 	desc = "Filled with the cheapest gear credits can buy."
 	icon_state = "syndicate"
 
+/obj/structure/closet/slaver/Initialize(mapload)
+	. = ..()
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(PopulateAfterRoundStart))
+
+/obj/structure/closet/slaver/proc/PopulateAfterRoundStart()
+	SIGNAL_HANDLER
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		new /obj/item/clothing/accessory/permit/special/deviant/lust/slavers(src)
+
 /obj/structure/closet/slaver/PopulateContents()
 	..()
 
@@ -17,7 +27,7 @@
 	new /obj/item/assembly/flash(src)
 	new /obj/item/melee/classic_baton/telescopic(src)
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
-	new /obj/item/pen/sleepy(src)
+	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
 
 //Copy of above in crate version
@@ -38,5 +48,14 @@
 	new /obj/item/assembly/flash(src)
 	new /obj/item/melee/classic_baton/telescopic(src)
 	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
-	new /obj/item/pen/sleepy(src)
+	new /obj/item/reagent_containers/hypospray/medipen/lewdsleepy(src)
 	new /obj/item/slaver/gizmo(src)
+
+/obj/structure/closet/crate/slave_kink
+	name = "Kinkmate Supply"
+
+/obj/structure/closet/crate/slave_kink/PopulateContents()
+	. = ..()
+
+	new /obj/item/vending_refill/kink(src)
+	new /obj/item/vending_refill/kink(src)

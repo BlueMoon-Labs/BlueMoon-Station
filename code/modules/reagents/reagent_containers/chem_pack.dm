@@ -15,7 +15,8 @@
 
 /obj/item/reagent_containers/chem_pack/update_icon()
 	cut_overlays()
-
+	if(!reagents)
+		return
 	var/v = min(round(reagents.total_volume / volume * 10), 10)
 	if(v > 0)
 		var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "chempack1")

@@ -8,6 +8,7 @@
 		/obj/effect,
 		/obj/docking_port,
 		/obj/item/projectile,
+		/atom/movable/lighting_object,
 		))
 	var/list/processing_list = list(location)
 	. = list()
@@ -24,15 +25,21 @@
 		lim = processing_list.len
 
 /proc/radiation_pulse(mob/source, intensity, range_modifier, log=FALSE, can_contaminate=TRUE)
-	if(!SSradiation.can_fire)
+	if(!SSradiation.can_fire || !source)
 		return
+	// Дефолт из /datum/radiation_wave/New() не спасал: аргумент ПЕРЕДАЁТСЯ (пусть и нулём),
+	// а значение по умолчанию применяется только к непереданному. Дальше в волне считалось
+	// max(range_modifier * steps, 1), где null * steps даёт 0, то есть max(...) всегда 1 -
+	// импульс не ослабевал с расстоянием вообще. Нормализуем один раз здесь: это же убирает
+	// пустой "range modifier: " из лога (в прод-раунде таким был каждый импульс из 41).
+	if(isnull(range_modifier))
+		range_modifier = RAD_DISTANCE_COEFFICIENT
 	var/turf/open/pool/PL = get_turf(source)
-	if(istype(PL))
-		if(PL.filled == TRUE)
-			intensity *= 0.15
-	var/area/A = get_area(source)
-	if(source == null)
+	if(istype(PL) && PL.liquids)
+		intensity *= 0.15
+	if(intensity <= RAD_BACKGROUND_RADIATION)
 		return
+	var/area/A = get_area(source)
 	var/atom/nested_loc = source.loc
 	var/spawn_waves = TRUE
 	while(nested_loc != A)
@@ -40,7 +47,7 @@
 			spawn_waves = FALSE
 			break
 		nested_loc = nested_loc.loc
-	if(spawn_waves)
+	if(spawn_waves && intensity >= RAD_MINIMUM_CONTAMINATION && SSradiation.processing.len < RAD_MAX_PROCESSING)
 		for(var/dir in GLOB.cardinals)
 			new /datum/radiation_wave(source, dir, intensity, range_modifier, can_contaminate)
 

@@ -72,6 +72,16 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
+/datum/design/bolter_wrench
+	name = "Bolter Wrench"
+	desc = "A wrench that can unbolt airlocks regardless of power status."
+	id = "bolter_wrench"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 5000)
+	build_path = /obj/item/wrench/bolter
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
 //BLUEMOON ADD START - переношу с ТГ Т2 инструменты для учёных
 /datum/design/handdrillsci
 	name = "Science Hand Drill"
@@ -123,7 +133,7 @@
 	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plastic = 8000, /datum/material/gold = 2000)
 	build_path = /obj/item/construction/rld/mini
 	category = list("Tool Designs")
-	departmental_flags =  DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO
+	departmental_flags =  DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO | DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/ranged_analyzer
 	name = "Long-range Analyzer"
@@ -272,10 +282,10 @@
 	name = "Plastic Drapes"
 	desc = "A large surgery drape made of plastic."
 	id = "drapes"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/plastic = 2500)
 	build_path = /obj/item/surgical_drapes
-	category = list("Tool Designs")
+	category = list("Initial", "Medical", "Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/retractor_adv
@@ -286,7 +296,7 @@
 	materials = list(/datum/material/iron = 500, /datum/material/glass = 500, /datum/material/silver = 1500, /datum/material/gold = 1000)
 	build_path = /obj/item/retractor/advanced
 	category = list("Tool Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/surgicaldrill_adv
 	name = "Surgical Laser Drill"
@@ -296,7 +306,7 @@
 	materials = list(/datum/material/iron = 2500, /datum/material/glass = 2500, /datum/material/silver = 6000, /datum/material/gold = 5500, /datum/material/diamond = 3500)
 	build_path = /obj/item/surgicaldrill/advanced
 	category = list("Tool Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/scalpel_adv
 	name = "Laser Scalpel"
@@ -306,7 +316,7 @@
 	materials = list(/datum/material/iron = 1500, /datum/material/glass = 1500, /datum/material/silver = 4000, /datum/material/gold = 2500)
 	build_path = /obj/item/scalpel/advanced
 	category = list("Tool Designs")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/robotic_processor
 	name = "Robotic Processor"
@@ -317,3 +327,34 @@
 	materials = list(/datum/material/iron = 4500, /datum/material/glass = 4500, /datum/material/silver = 4500, /datum/material/gold = 2500, /datum/material/diamond = 1500)
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+// BLUEMOON Перенёс РПЕДы из parts в tools.
+/datum/design/RPED
+	name = "Rapid Part Exchange Device"
+	desc = "\"Модуль механический специальный\" для хранения, сортировки и применения стандартизированных деталей."
+	id = "rped"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 10000, /datum/material/glass = 5000) //hardcore
+	build_path = /obj/item/storage/part_replacer
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/BS_RPED
+	name = "Bluespace RPED"
+	desc = "Усиленный блюспейс-технологиями, этот RPED может улучшать машинерию дистанционно, без необходимости отвинчивать её панель."
+	id = "bs_rped"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 15000, /datum/material/glass = 5000, /datum/material/silver = 2500) //hardcore
+	build_path = /obj/item/storage/part_replacer/bluespace
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/m_warp_beacon
+	name = "Machine warp beacon"
+	desc = "Устройство позволяющее телепортировать уже собранную машину, по сигнатуре платы, что в нее установили. Не подходит для машин, требующих сложных в производстве деталей."
+	id = "m_warp_beacon"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = MINERAL_MATERIAL_AMOUNT*6, /datum/material/glass = MINERAL_MATERIAL_AMOUNT*5)
+	build_path = /obj/item/warp_machine_beacon
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_ALL

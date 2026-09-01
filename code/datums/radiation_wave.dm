@@ -114,12 +114,22 @@
 			continue
 		if((thing.rad_flags & RAD_NO_CONTAMINATE) || SEND_SIGNAL(thing, COMSIG_ATOM_RAD_CONTAMINATING, strength) & COMPONENT_BLOCK_CONTAMINATION)
 			continue
+		// Skip objects already contaminated at equal or higher strength
+		var/datum/component/radioactive/existing = thing.GetComponent(/datum/component/radioactive)
+		if(existing?.strength >= strength)
+			continue
 		contam_atoms += thing
 	var/did_contam = 0
 	if(can_contam && contam_atoms.len)
 		var/rad_strength = ((strength-RAD_MINIMUM_CONTAMINATION) * RAD_CONTAMINATION_STR_COEFFICIENT)/contam_atoms.len
 		for(var/A in contam_atoms)
 			var/atom/thing = A
-			thing.AddComponent(/datum/component/radioactive, rad_strength, source)
+			// Вторичное заражение (от волны) само НЕ заражает дальше: иначе цепь
+			// "волна -> предмет -> волна" самоподдерживается быстрее полураспада, и комната
+			// с реактором превращается в вечный фонтан волн (пульсы 4000+ от предметов в логах).
+			// Облучение мобов волнами от таких предметов сохранено полностью. Дизайновые
+			// источники (ядро реактора, стержни, ядерка) создают компонент сами и не затронуты.
+			// Продолжение нерфа RAD_CONTAMINATION_STR_COEFFICIENT 0.99 -> 0.35.
+			thing.AddComponent(/datum/component/radioactive, rad_strength, source, RAD_HALF_LIFE, FALSE)
 			did_contam = 1
 	return did_contam

@@ -105,13 +105,21 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	// BLUEMOON EDIT END
 	// Add to global list
 	GLOB.family_heirlooms += heirloom
+	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
 
 /datum/quirk/family_heirloom/post_add()
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
+	//post_add() приезжает отложенным таймером, а реликвию за это время могли уничтожить -
+	//on_heirloom_deleted() обнуляет вар, и обе ветки ниже падали на heirloom.name
+	if(QDELETED(heirloom))
+		return
 	if(!loadout_heirloom)
 		if(where == "В рюкзаке")
-			var/mob/living/carbon/human/H = quirk_holder
-			SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_SHOW, H)
+			//where посчитан ещё в add(), а post_add() приезжает отложенным таймером:
+			//к этому моменту рюкзака на носителе может уже не быть
+			var/mob/living/carbon/human/human_holder = quirk_holder
+			if(istype(human_holder) && human_holder.back)
+				SEND_SIGNAL(human_holder.back, COMSIG_TRY_STORAGE_SHOW, human_holder)
 
 		to_chat(quirk_holder, "<span class='boldnotice'>[where] находится [heirloom.name], передающаяся из поколения в поколение. Береги её!</span>")
 		var/list/family_name = splittext(quirk_holder.real_name, " ")
@@ -126,7 +134,10 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		return
 
 	// When held: Positive mood
-	if(heirloom && (heirloom in quirk_holder.GetAllContents()))
+	// contains_atom() вместо `in GetAllContents()`: реликвию искали, собирая всё
+	// содержимое игрока рекурсивно, каждый тик SSquirks на каждого носителя квирка
+	// (в проде ~8k полных обходов инвентаря за 2.6 минуты).
+	if(heirloom && quirk_holder.contains_atom(heirloom))
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom", /datum/mood_event/family_heirloom)
 
@@ -135,10 +146,15 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom_missing", /datum/mood_event/family_heirloom_missing)
 
-/datum/quirk/item_quirk/family_heirloom/remove()
-	// Clear mood events when removing this quirk
+/datum/quirk/family_heirloom/proc/on_heirloom_deleted()
+	SIGNAL_HANDLER
+	GLOB.family_heirlooms -= heirloom
+	heirloom = null // квирк живёт дальше и не должен держать удалённую реликвию
+
+/datum/quirk/family_heirloom/remove()
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
+	GLOB.family_heirlooms -= heirloom
 
 /datum/quirk/family_heirloom/clone_data()
 	return heirloom
@@ -322,6 +338,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 				if(I.fingerprintslast == quirk_holder.ckey)
 					quirk_holder.put_in_hands(I)
 
+/* Квирк нефунцкиональный и не задействован в механе
 /datum/quirk/poor_aim
 	name = "Ужасный стрелок"
 	desc = "Ваши навыки обращения с оружием не позволяют точно прицелиться даже для того, чтобы спасти свою жизнь. Стрельба с двух рук даже не обсуждается."
@@ -329,6 +346,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mob_trait = TRAIT_POOR_AIM
 	flavor_quirk = TRUE
 	medical_record_text = "Обе руки пациента подвержены тремору."
+*/
 
 /datum/quirk/prosopagnosia
 	name = "Прозопагнозия"
@@ -380,12 +398,36 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/phobia/post_add()
 	var/mob/living/carbon/human/H = quirk_holder
-	phobia = new
+
+	// BLUEMOON EDIT START - получение выбранной фобии из настроек персонажа
+	// На старте раунда квирки выдаются в equip_characters(), а ключ переезжает в тело
+	// только в transfer_characters() - между ними целая стадия с уступками тика, так что
+	// отложенный на 3 секунды post_add почти всегда видит тело без клиента. Настройка
+	// молча терялась и подменялась случайной; mind переезжает раньше, по его ключу
+	// клиент находится и до переноса.
+	var/client/holder_client = quirk_holder.client
+	if(!holder_client)
+		var/holder_key = quirk_holder.mind?.key
+		if(holder_key)
+			holder_client = GLOB.directory[ckey(holder_key)]
+
+	// Если фобия не выбрана или невалидна — берём случайную из доступных в подсистеме
+	var/selected_phobia = SStraumas.pick_phobia_type(holder_client?.prefs?.phobia_type)
+	// BLUEMOON EDIT END
+
+	// Создаем травму с выбранным типом фобии
+	phobia = new /datum/brain_trauma/mild/phobia(selected_phobia)
 	H.gain_trauma(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
 
+	// BLUEMOON EDIT START - обновление мед. записи с указанием конкретной фобии
+	medical_record_text = "Пациент имеет иррациональный страх перед [selected_phobia]."
+	// BLUEMOON EDIT END
+
+/// cure_trauma_type ждёт ТИП, а не экземпляр: istype(BT, экземпляр) всегда FALSE,
+/// поэтому фобия переживала снятие квирка, а ссылка `phobia` на снятой квирке
+/// оставалась единственным держателем травмы и утаскивала её в hard delete.
 /datum/quirk/phobia/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(phobia)
 
 /datum/quirk/mute
 	name = "Немота"
@@ -403,9 +445,9 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mute = new
 	H.gain_trauma(mute, TRAUMA_RESILIENCE_ABSOLUTE)
 
+/// Тот же случай, что и у фобии: в cure_trauma_type уходил экземпляр вместо типа.
 /datum/quirk/mute/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(mute, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(mute)
 
 /datum/quirk/unstable
 	name = "Нестабильный"
@@ -426,6 +468,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/blindness/add()
 	quirk_holder.become_blind(ROUNDSTART_TRAIT)
+	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/quirk/blindness/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
@@ -435,7 +478,13 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	H.regenerate_icons()
 
 /datum/quirk/blindness/remove()
-	quirk_holder?.cure_blind(ROUNDSTART_TRAIT)
+	if(!quirk_holder)
+		return
+	quirk_holder.cure_blind(ROUNDSTART_TRAIT)
+	UnregisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE)
+
+/datum/quirk/blindness/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+	examine_list += "<span class='warning'>[quirk_holder.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 /datum/quirk/coldblooded
 	name = "Холоднокровие"
@@ -536,6 +585,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/less_nightmare/add()
 	var/mob/living/carbon/human/C = quirk_holder
 	C.AddElement(/datum/element/photosynthesis, 1, 1, 0, 0, 0, 0, SHADOW_SPECIES_LIGHT_THRESHOLD, SHADOW_SPECIES_LIGHT_THRESHOLD)
+	give_item(/obj/item/flashlight/flashdark, quirk_holder)
+	give_item(/obj/item/clothing/accessory/permit/special/lessnightmareish, quirk_holder)
 
 /datum/quirk/less_nightmare/remove()
 	var/mob/living/carbon/human/C = quirk_holder

@@ -1,9 +1,9 @@
 //Floorbot
 /mob/living/simple_animal/bot/floorbot
 	name = "\improper Floorbot"
-	desc = "A little floor repairing robot, he looks so excited!"
+	desc = "Небольшой робот, чинящий полы, в очень хорошем настроении!"
 	icon = 'icons/mob/aibots.dmi'
-	icon_state = "floorbot0"
+	icon_state = "floorbot_base"
 	density = FALSE
 	anchored = FALSE
 	health = 25
@@ -31,24 +31,93 @@
 	var/max_targets = 50
 	var/turf/target
 	var/oldloc = null
+	var/box_latches = "single_latch"
+	///Do not immediately replace one unreachable autonomous target with its neighbour.
+	var/next_path_attempt = 0
+
 	var/toolbox = /obj/item/storage/toolbox/mechanical
+	/// Цвет тулбокса для более явного хранения после инициализации
+	var/base_color = "#068bec"
 
 	var/upgrades = 0
+	overlay_system = TRUE
 
-	#define HULL_BREACH		1
+	var/list/toolbox_upg = list()
+
+	// Дробление на анимации в оверлеях плитки на спрайте
+	var/mutable_appearance/tile_overlay
+	var/mutable_appearance/box_overlay
+	var/mutable_appearance/arms_overlay
+	var/mutable_appearance/sensor_overlay
+	var/mutable_appearance/upgrade_overlay
+	var/mutable_appearance/latches_overlay
+
+	#define HULL_BREACH			1
 	#define LINE_SPACE_MODE		2
-	#define FIX_TILE		3
-	#define AUTO_TILE		4
-	#define PLACE_TILE		5
+	#define FIX_TILE			3
+	#define AUTO_TILE			4
+	#define PLACE_TILE			5
 	#define REPLACE_TILE		6
-	#define TILE_EMAG		7
+	#define TILE_EMAG			7
 
-/mob/living/simple_animal/bot/floorbot/Initialize(mapload)
+/mob/living/simple_animal/bot/floorbot/Initialize(mapload, received_toolbox_type, received_base_color, received_latches)
 	. = ..()
+	if(received_toolbox_type)
+		toolbox = received_toolbox_type
+	if(received_base_color)
+		base_color = received_base_color
+	if(received_latches)
+		box_latches = received_latches
+	determine_overlays()
 	update_icon()
+
 	var/datum/job/engineer/J = new/datum/job/engineer
 	access_card.access += J.get_access()
 	prev_access = access_card.access
+
+/**
+  * Присваивание флурботу оверлеев и их layer значения
+  */
+/mob/living/simple_animal/bot/floorbot/proc/determine_overlays()
+	box_overlay = mutable_appearance(icon, "floorbot_box", FLOAT_LAYER)
+	latches_overlay = mutable_appearance(icon, box_latches, FLOAT_LAYER + 0.01)
+	tile_overlay = mutable_appearance(icon, "floorbot-tiles", FLOAT_LAYER + 0.01)
+	arms_overlay = mutable_appearance(icon, "floorbot_arms", FLOAT_LAYER + 0.02)
+	sensor_overlay = mutable_appearance(icon, "floorbot_sensor-1", FLOAT_LAYER + 0.03)
+
+	determine_color()
+
+	add_overlay(box_overlay)
+	add_overlay(latches_overlay)
+	add_overlay(tile_overlay)
+	add_overlay(arms_overlay)
+	add_overlay(sensor_overlay)
+
+/**
+  * Первичное определение цвета тулбокса на флурботе
+  */
+/mob/living/simple_animal/bot/floorbot/proc/determine_color()
+	switch(base_color)
+		if("red")
+			box_overlay.color = "#b31004"
+		if("yellow")
+			box_overlay.color = "#ebb404"
+		if("blue")
+			box_overlay.color = "#068bec"
+		else
+			box_overlay.color = base_color
+
+/**
+  * Добавление флурботу оверлея скина
+  */
+/mob/living/simple_animal/bot/floorbot/proc/determine_skin(skin_name)
+	if(!skin_name)
+		return
+
+	upgrade_overlay = mutable_appearance(icon, skin_name)
+	upgrade_overlay.layer = FLOAT_LAYER
+	upgrade_overlay.dir = dir
+	add_overlay(upgrade_overlay)
 
 /mob/living/simple_animal/bot/floorbot/turn_on()
 	. = ..()
@@ -62,23 +131,31 @@
 	..()
 	target = null
 	oldloc = null
+	next_path_attempt = 0
 	ignore_list = list()
 	anchored = FALSE
 	update_icon()
 
+/mob/living/simple_animal/bot/floorbot/examine(mob/user)
+	. = ..()
+	// Если планируются ещё улучшения (> 2), рекомендация использовать прок english_list() или написать отдельную строчку улучшения
+	if(toolbox_upg && toolbox_upg.len)
+		var/installed_toolboxes = jointext(toolbox_upg, " и ")
+		. += span_info("Бот оболочен [installed_toolboxes].")
+
 /mob/living/simple_animal/bot/floorbot/set_custom_texts()
-	text_hack = "You corrupt [name]'s construction protocols."
-	text_dehack = "You detect errors in [name] and reset his programming."
-	text_dehack_fail = "[name] is not responding to reset commands!"
+	text_hack = "Вы взломали протоколы построек у [name]."
+	text_dehack = "Вы заметили ошибки в программе [name] и сбросили их до заводских настроек."
+	text_dehack_fail = "[name] не отвечает на запросы сброса настроек!"
 
 /mob/living/simple_animal/bot/floorbot/attackby(obj/item/W , mob/user, params)
 	if(istype(W, /obj/item/stack/tile/plasteel))
-		to_chat(user, "<span class='notice'>The floorbot can produce normal tiles itself.</span>")
+		to_chat(user, span_notice("Бот-полоукладчик может производить обычную плитку самостоятельно."))
 		return
 	if(specialtiles && istype(W, /obj/item/stack/tile))
 		var/obj/item/stack/tile/usedtile = W
 		if(usedtile.type != tiletype)
-			to_chat(user, "<span class='warning'>Different custom tiles are already inside the floorbot.</span>")
+			to_chat(user, span_warning("В боте-полоукладчике уже есть пользовательские плитки."))
 			return
 	if(istype(W, /obj/item/stack/tile))
 		if(specialtiles >= maxtiles)
@@ -89,37 +166,50 @@
 		tiles.use(loaded)
 		specialtiles += loaded
 		if(loaded > 0)
-			to_chat(user, "<span class='notice'>You load [loaded] tiles into the floorbot. It now contains [specialtiles] tiles.</span>")
+			to_chat(user, span_notice("Вы загрузили [loaded] в бота-полоукладчика. Теперь в нём есть плитка: [specialtiles]."))
 		else
-			to_chat(user, "<span class='warning'>You need at least one floor tile to put into [src]!</span>")
+			to_chat(user, "<span class='warning'>Нужен хотя бы один метр-на-метр плитки, чтобы вставить в [src]!</span>")
 
 	else if(istype(W, /obj/item/storage/toolbox/artistic))
-		if(bot_core.allowed(user) && open && !(upgrades & UPGRADE_FLOOR_ARTBOX))
-			to_chat(user, "<span class='notice'>You upgrade \the [src] case to hold more!</span>")
-			upgrades |= UPGRADE_FLOOR_ARTBOX
-			maxtiles += 100 //Double the storage!
-			qdel(W)
 		if(!open)
-			to_chat(user, "<span class='notice'>The [src] access pannle is not open!</span>")
+			to_chat(user, span_notice("Панель [src] не открыта!"))
 			return
 		if(!bot_core.allowed(user))
-			to_chat(user, "<span class='notice'>The [src] access pannel locked off to you!</span>")
+			to_chat(user, span_notice("Панель доступов [src] заблокирована для вас!"))
 			return
+		if(W.contents.len)
+			to_chat(user, span_notice("Ящик с инструментами должен быть пуст!"))
+			return
+		if(bot_core.allowed(user) && open && !(upgrades & UPGRADE_FLOOR_ARTBOX))
+			to_chat(user, span_notice("Вы улучшили оболочку \the [src] для большей ёмкости!"))
+			upgrades |= UPGRADE_FLOOR_ARTBOX
+			maxtiles += 100 //Double the storage!
+			toolbox_upg += "просторным корпусом"
+			determine_skin("artistic_floorbot_upgrade")
+			qdel(W)
 		else
-			to_chat(user, "<span class='notice'>The [src] already has a upgraded case!</span>")
+			to_chat(user, span_notice("[src] уже имеет просторную оболочку!"))
 
 	else if(istype(W, /obj/item/storage/toolbox/syndicate))
+		if(!open)
+			to_chat(user, span_notice("Панель [src] не открыта!"))
+			return
+		if(!bot_core.allowed(user))
+			to_chat(user, span_notice("Панель доступов [src] заблокирована для вас!"))
+			return
+		if(W.contents.len)
+			to_chat(user, span_notice("Ящик с инструментами должен быть пуст!"))
+			return
 		if(bot_core.allowed(user) && open && !(upgrades & UPGRADE_FLOOR_SYNDIBOX))
-			to_chat(user, "<span class='notice'>You upgrade \the [src] case to hold more!</span>")
+			to_chat(user, span_notice("Вы улучшили корпус \the [src] для максимальной ёмкости!"))
 			upgrades |= UPGRADE_FLOOR_SYNDIBOX
 			maxtiles += 200 //Double bse storage
 			base_speed = 1 //2x faster!
+			toolbox_upg += "материалом синдикатовского качества"
+			determine_skin("syndicate_floorbot_upgrade")
 			qdel(W)
-		if(!bot_core.allowed(user))
-			to_chat(user, "<span class='notice'>The [src] access pannel locked off to you!</span>")
-			return
 		else
-			to_chat(user, "<span class='notice'>The [src] already has a upgraded case!</span>")
+			to_chat(user, span_notice("[src] уже имеет просторную оболочку!"))
 
 
 	else
@@ -129,7 +219,7 @@
 	. = ..()
 	if(emagged == 2)
 		if(user)
-			to_chat(user, "<span class='danger'>[src] buzzes and beeps.</span>")
+			to_chat(user, "<span class='danger'>[src] жужжит и звенит.</span>")
 
 // Variables sent to TGUI
 /mob/living/simple_animal/bot/floorbot/ui_data(mob/user)
@@ -196,9 +286,15 @@
 		return
 
 	if(prob(5))
-		audible_message("[src] makes an excited booping beeping sound!")
+		audible_message("[src] делает взволнованный звеняще-жужжащий звук!")
+
+	// Обзор строим ОДИН раз на прогон: scan() без cached_view заново собирает
+	// view() + shuffle на каждый вызов, а вызовов тут до четырёх подряд. Раунд
+	// 9827: один такой прогон флорбота стоил 25.1мс из 25.7мс всего слота SSnpcpool.
+	var/list/cached_view
 
 	//Normal scanning procedure. We have tiles loaded, are not emagged.
+	var/autonomous_pathing_ready = world.time >= next_path_attempt
 	if(!target && emagged < 2)
 		if(targetdirection != null) //The bot is in line mode.
 			var/turf/T = get_step(src, targetdirection)
@@ -208,25 +304,26 @@
 			if(isfloorturf(T)) //Check for floor
 				target = T
 
-		if(!target)
+		if(!target && autonomous_pathing_ready)
+			cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 			process_type = HULL_BREACH //Ensures the floorbot does not try to "fix" space areas or shuttle docking zones.
-			target = scan(/turf/open/space)
+			target = scan(/turf/open/space, cached_view = cached_view)
 
-		if(!target && placetiles) //Finds a floor without a tile and gives it one.
+		if(!target && placetiles && autonomous_pathing_ready) //Finds a floor without a tile and gives it one.
 			process_type = PLACE_TILE //The target must be the floor and not a tile. The floor must not already have a floortile.
-			target = scan(/turf/open/floor)
+			target = scan(/turf/open/floor, cached_view = cached_view)
 
-		if(!target && fixfloors) //Repairs damaged floors and tiles.
+		if(!target && fixfloors && autonomous_pathing_ready) //Repairs damaged floors and tiles.
 			process_type = FIX_TILE
-			target = scan(/turf/open/floor)
+			target = scan(/turf/open/floor, cached_view = cached_view)
 
-		if(!target && replacetiles && specialtiles > 0) //Replace a floor tile with custom tile
+		if(!target && replacetiles && specialtiles > 0 && autonomous_pathing_ready) //Replace a floor tile with custom tile
 			process_type = REPLACE_TILE //The target must be a tile. The floor must already have a floortile.
-			target = scan(/turf/open/floor)
+			target = scan(/turf/open/floor, cached_view = cached_view)
 
-	if(!target && emagged == 2) //We are emagged! Time to rip up the floors!
+	if(!target && emagged == 2 && autonomous_pathing_ready) //We are emagged! Time to rip up the floors!
 		process_type = TILE_EMAG
-		target = scan(/turf/open/floor)
+		target = scan(/turf/open/floor, cached_view = cached_view)
 
 
 	if(!target)
@@ -253,26 +350,30 @@
 				anchored = TRUE
 				mode = BOT_REPAIRING
 				F.ReplaceWithLattice()
-				audible_message("<span class='danger'>[src] makes an excited booping sound.</span>")
-				spawn(5)
-					anchored = FALSE
-					mode = BOT_IDLE
-					target = null
+				audible_message("<span class='danger'>[src] делает взволнованный звенящий звук.</span>")
+				addtimer(CALLBACK(src, PROC_REF(floorbot_emagged_resume)), 5, TIMER_DELETE_ME)
 			path = list()
 			return
 		if(path.len == 0)
-			if(!isturf(target))
-				var/turf/TL = get_turf(target)
-				path = get_path_to(src, TL, 30, id=access_card,simulated_only = 0)
-			else
-				path = get_path_to(src, target, 30, id=access_card,simulated_only = 0)
+			var/turf/path_target = isturf(target) ? target : get_turf(target)
+			path = get_path_to(src, path_target, BOT_TARGET_PATH_LIMIT, id=access_card, simulated_only = 0)
 
-			if(!bot_move(target))
+			// Arm the retry cooldown from the JPS result before bot_move()/set_path(null)
+			// or ignore-list bookkeeping: a runtime there used to leave next_path_attempt at 0.
+			if(!length(path))
+				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
 				add_to_ignore(target)
 				target = null
 				mode = BOT_IDLE
 				return
-		else if( !bot_move(target) )
+			if(!bot_move(target))
+				next_path_attempt = world.time + FLOORBOT_FAILED_PATH_RETRY
+				add_to_ignore(target)
+				target = null
+				mode = BOT_IDLE
+				return
+			next_path_attempt = 0
+		else if(!bot_move(target))
 			target = null
 			mode = BOT_IDLE
 			return
@@ -280,6 +381,11 @@
 
 
 	oldloc = loc
+
+/mob/living/simple_animal/bot/floorbot/proc/floorbot_emagged_resume()
+	anchored = FALSE
+	mode = BOT_IDLE
+	target = null
 
 /mob/living/simple_animal/bot/floorbot/proc/is_hull_breach(turf/t) //Ignore space tiles not considered part of a structure, also ignores shuttle docking areas.
 	var/area/t_area = get_area(t)
@@ -337,10 +443,11 @@
 		return
 	if(isspaceturf(target_turf)) //If we are fixing an area not part of pure space, it is
 		anchored = TRUE
-		icon_state = "floorbot-c"
-		visible_message("<span class='notice'>[targetdirection ? "[src] begins installing a bridge plating." : "[src] begins to repair the hole."] </span>")
+		visible_message(span_notice("[targetdirection ? "[src] начинает установку обшивки." : "[src] начинает латать пробоину."]"))
 		mode = BOT_REPAIRING
+		tile_change_animation("floorbot-tiling", FLOAT_LAYER + 0.01)
 		sleep(50)
+		tile_change_animation("floorbot-tiles", FLOAT_LAYER + 0.01)
 		if(mode == BOT_REPAIRING && src.loc == target_turf)
 			if(autotile) //Build the floor and include a tile.
 				target_turf.PlaceOnTop(/turf/open/floor/plasteel, flags = CHANGETURF_INHERIT_AIR)
@@ -352,10 +459,11 @@
 
 		if(F.type != initial(tiletype.turf_type) && (F.broken || F.burnt || isplatingturf(F)) || F.type == (initial(tiletype.turf_type) && (F.broken || F.burnt)))
 			anchored = TRUE
-			icon_state = "floorbot-c"
 			mode = BOT_REPAIRING
-			visible_message("<span class='notice'>[src] begins repairing the floor.</span>")
+			visible_message(span_notice("[src] чинит покрытие под собой."))
+			tile_change_animation("floorbot-tiling", FLOAT_LAYER + 0.01)
 			sleep(50)
+			tile_change_animation("floorbot-tiles", FLOAT_LAYER + 0.01)
 			if(mode == BOT_REPAIRING && F && src.loc == F)
 				F.broken = 0
 				F.burnt = 0
@@ -363,17 +471,18 @@
 
 		if(replacetiles && F.type != initial(tiletype.turf_type) && specialtiles && !isplatingturf(F))
 			anchored = TRUE
-			icon_state = "floorbot-c"
 			mode = BOT_REPAIRING
-			visible_message("<span class='notice'>[src] begins replacing the floor tiles.</span>")
+			visible_message(span_notice("[src] заменяет плитку пола."))
+			tile_change_animation("floorbot-tiling", FLOAT_LAYER + 0.01)
 			sleep(50)
+			tile_change_animation("floorbot-tiles", FLOAT_LAYER + 0.01)
 			if(mode == BOT_REPAIRING && F && src.loc == F)
 				F.broken = 0
 				F.burnt = 0
 				F.PlaceOnTop(initial(tiletype.turf_type), flags = CHANGETURF_INHERIT_AIR)
 				specialtiles -= 1
 				if(specialtiles == 0)
-					speak("Requesting refill of custom floortiles to continue replacing.")
+					speak("Запрос замены пользовательской плитки для возобновления работ.")
 	mode = BOT_IDLE
 	update_icon()
 	anchored = FALSE
@@ -381,12 +490,33 @@
 
 /mob/living/simple_animal/bot/floorbot/update_icon()
 	. = ..()
-	icon_state = "floorbot[on]"
+	determine_on_off()
 
+	box_overlay.dir = dir
+	if(upgrade_overlay)
+		upgrade_overlay.dir = dir
+
+/mob/living/simple_animal/bot/floorbot/proc/tile_change_animation(animation_state, layer_value)
+	if(tile_overlay)
+		cut_overlay(tile_overlay)
+	tile_overlay = mutable_appearance(icon, animation_state)
+	tile_overlay.layer = layer_value
+	tile_overlay.dir = dir
+	add_overlay(tile_overlay)
+
+/mob/living/simple_animal/bot/floorbot/proc/determine_on_off()
+	if(!sensor_overlay)
+		return
+
+	cut_overlay(sensor_overlay)
+	sensor_overlay = mutable_appearance(icon, "floorbot_sensor-[on]")
+	sensor_overlay.layer = FLOAT_LAYER + 0.03
+	sensor_overlay.dir = dir
+	add_overlay(sensor_overlay)
 
 /mob/living/simple_animal/bot/floorbot/explode()
 	on = FALSE
-	visible_message("<span class='boldannounce'>[src] blows apart!</span>")
+	visible_message("<span class='boldannounce'>[src] разлетается на части!</span>")
 	var/atom/Tsec = drop_location()
 
 	drop_part(toolbox, Tsec)
@@ -423,3 +553,10 @@
 				return TRUE
 	return FALSE
 
+#undef HULL_BREACH
+#undef LINE_SPACE_MODE
+#undef FIX_TILE
+#undef AUTO_TILE
+#undef PLACE_TILE
+#undef REPLACE_TILE
+#undef TILE_EMAG

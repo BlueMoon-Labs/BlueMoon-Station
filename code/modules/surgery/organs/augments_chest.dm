@@ -134,6 +134,11 @@
 #undef MAX_HEAL_COOLDOWN
 #undef DEF_CONVALESCENCE_TIME
 
+/obj/item/organ/cyberimp/chest/reviver/sec_level
+	name = "Corporate Reviver implant"
+	implant_color = "#751010"
+	active_security_level = REVIVER_SEC_LEVEL
+
 /obj/item/organ/cyberimp/chest/thrusters
 	name = "implantable thrusters set"
 	desc = "An implantable set of thruster ports. They use the gas from environment or subject's internals for propulsion in zero-gravity areas. \
@@ -146,6 +151,10 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	var/on = FALSE
 	var/datum/effect_system/trail_follow/ion/ion_trail
+	/// Не больше одного списания за тик, см. одноимённое поле у баллонного джетпака.
+	var/last_thrust_time = -1
+	/// Скорость полёта берётся из конфига: TRUE → RUN_DELAY, FALSE → WALK_DELAY.
+	var/full_speed = TRUE
 
 /obj/item/organ/cyberimp/chest/thrusters/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
@@ -153,10 +162,10 @@
 		ion_trail = new
 	ion_trail.set_up(M)
 
-/obj/item/organ/cyberimp/chest/thrusters/Remove(special = FALSE)
+/obj/item/organ/cyberimp/chest/thrusters/deactivate(removing)
+	. = ..()
 	if(on)
 		toggle(TRUE)
-	return ..()
 
 /obj/item/organ/cyberimp/chest/thrusters/ui_action_click()
 	toggle()
@@ -168,17 +177,23 @@
 				to_chat(owner, "<span class='warning'>Your thrusters set seems to be broken!</span>")
 			return FALSE
 		on = TRUE
-		if(allow_thrust(0.01))
+		// Вопрос "потянем ли" задаётся уже поднятому флагу - иначе allow_thrust() отвечает "нет"
+		// просто потому, что двигатели выключены. Не потянули - откатываем флаг здесь; раньше это
+		// делал рекурсивный вызов toggle() из самой allow_thrust(), и по дороге он снимал подписки
+		// и модификаторы, которых ещё не успели навесить.
+		if(!allow_thrust(0.01, consume = FALSE))
+			on = FALSE
+		else
 			ion_trail.start()
-			RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
-			owner.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
+			RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death), override = TRUE)
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set on.</span>")
 	else
 		ion_trail.stop()
 		if(!QDELETED(owner))
-			UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
-			owner.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
+			UnregisterSignal(owner, COMSIG_LIVING_DEATH)
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set off.</span>")
 		on = FALSE
@@ -190,11 +205,22 @@
 	else
 		icon_state = "imp_jetpack"
 
-/obj/item/organ/cyberimp/chest/thrusters/proc/move_react()
-	allow_thrust(0.01)
+/// Мёртвый не тянет рычаги. Дрейф остаётся - тело летит по инерции.
+/obj/item/organ/cyberimp/chest/thrusters/proc/on_owner_death(mob/living/source)
+	SIGNAL_HANDLER
+	if(on)
+		toggle(silent = TRUE)
 
-/obj/item/organ/cyberimp/chest/thrusters/proc/allow_thrust(num)
+/**
+ * Спрашивает у трастеров, есть ли рабочее тело, и по желанию списывает за него.
+ *
+ * `consume = FALSE` отвечает на вопрос "потянем ли", ничего не тратя: накат по курсу на
+ * крейсерской скорости двигателю ничего не стоит, но шагать он всё равно разрешает.
+ */
+/obj/item/organ/cyberimp/chest/thrusters/proc/allow_thrust(num, consume = TRUE)
 	if(!on || !owner)
+		return FALSE
+	if(owner.stat != CONSCIOUS)
 		return FALSE
 
 	var/turf/T = get_turf(owner)
@@ -206,19 +232,29 @@
 	if(environment && environment.return_pressure() > 30)
 		return TRUE
 
+	var/spend = consume && last_thrust_time != world.time
+
 	// Priority 2: use plasma from internal plasma storage.
 	// (just in case someone would ever use this implant system to make cyber-alien ops with jetpacks and taser arms)
 	if(owner.getPlasma() >= num*100)
-		owner.adjustPlasma(-num*100)
+		if(spend)
+			owner.adjustPlasma(-num*100)
+			last_thrust_time = world.time
 		return TRUE
 
 	// Priority 3: use internals tank.
 	var/obj/item/tank/I = owner.internal
 	if(I && I.air_contents && I.air_contents.total_moles() >= num)
-		T.assume_air_moles(I.air_contents, num)
+		if(spend)
+			T.assume_air_moles(I.air_contents, num)
+			last_thrust_time = world.time
 		return TRUE
 
-	toggle(silent = TRUE)
+	// Гасим двигатели только тогда, когда за шаг реально надо было платить. Проверка без списания
+	// приходит и с наката по курсу, и с самого включения - выключаться по ней значило бы душить
+	// двигатели за то, что их спросили.
+	if(consume)
+		toggle(silent = TRUE)
 
 	return FALSE
 
@@ -237,16 +273,24 @@
 	actions_types = list(/datum/action/item_action/chem_implant) ///datum/action/item_action/organ_action/use
 	var/available_c = list()
 
+/obj/item/organ/cyberimp/chest/chem_implant/emp_act(severity)
+	. = ..()
+	if(!owner || . & EMP_PROTECT_SELF)
+		return
+	if(prob(60/severity) && owner)
+		to_chat(owner, span_warning("Your chemical implant lost its charge!"))
+		charge = 0
+
 /obj/item/organ/cyberimp/chest/chem_implant/plus
-	name = "Chemical sequencer implant plus"
+	name = "Chemical Sequencer implant PLUS"
 	desc = "This implant can inject limited list of advanced reagents into your blood."
 	icon_state = "chem_implant_plus"
 	implant_level = 1
 
-/obj/item/organ/cyberimp/chest/chem_implant/emp_act(severity)
-	if(prob(60/severity) && owner)
-		to_chat(owner, "<span class='warning'>Your chemical implant lost it's chargre!</span>")
-		charge = 0
+/obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	name = "Corporate Chemical Sequencer implant"
+	icon_state = "chem_implant_corpo"
+	active_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/chem_implant
 	var/chemname
@@ -321,25 +365,26 @@
 		if(C.chemname && implant_level >= C.level)
 			available_c += list(list("name" = C.chemname, "key" = C.key, "desc" = C.chemdesc, "amount" = C.quantity))
 
-/obj/item/organ/cyberimp/chest/chem_implant/on_life()
+/obj/item/organ/cyberimp/chest/chem_implant/on_life(seconds, times_fired)
 	. = ..()
+	if(!.)
+		return
 	charge_tick++
 	if(charge_tick >= charge_delay)
 		charge_tick = 0
 		if (charge < charge_capacity)
 			charge++
 
-/obj/item/organ/cyberimp/chest/chem_implant/Remove()
-	. = ..()
-
 /obj/item/organ/cyberimp/chest/chem_implant/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "ChemImplantSec", "Chemical Implant Interface", 500, 250)
+		ui = new(user, src, "ChemImplantSec", "Chemical Implant Interface")
 		ui.open()
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_data(mob/user)
 	var/list/data = list()
+	if(!owner)
+		return data
 	data["dead"] = (owner.stat > UNCONSCIOUS)
 	data["health"] = owner.health
 	data["current_chemicals"] = charge
@@ -351,9 +396,8 @@
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_status(mob/user, datum/ui_state/state)
 	. = UI_CLOSE
-	if(user.stat != DEAD)
+	if(user.stat != DEAD && activate_allowed(user = user, silent = TRUE))
 		. = max(., UI_INTERACTIVE)
-
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_act(action, list/params)
 	if(..() && owner.stat != DEAD)

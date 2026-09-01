@@ -11,8 +11,38 @@
 			new /datum/data/mining_equipment("Sonic Jackhammer",					/obj/item/pickaxe/drill/jackhammer,				4000,	"Mining Tools"),
 			new /datum/data/mining_equipment("KinkMate Refill Stock",				/obj/item/vending_refill/kink,					1200,	"Recreational"), //Kinkmate restock for ghostroles/lone miners. Circuit can be found in circuit printer.
 			new /datum/data/mining_equipment("5000 Point Transfer Card",			/obj/item/card/mining_point_card/fivethousand,	5000),
+			new /datum/data/mining_equipment("1 Metadollar",				/obj/item/stack/metadollar,						50000,	"Miscellanous"),
 			)
 	build_inventory() // Фикс нужен для корректного отображения иконок
+
+/obj/machinery/mineral/equipment_vendor/RefreshParts()
+	. = ..()
+	for(var/datum/data/mining_equipment/prize in prize_list)
+		if(ispath(prize.equipment_path, /obj/item/stack/metadollar))
+			prize.cost = prize.base_cost
+
+/obj/machinery/mineral/equipment_vendor/ui_act(action, params)
+	if(action == "purchase")
+		var/datum/data/mining_equipment/prize = locate(params["ref"]) in prize_list
+		if(prize && ispath(prize.equipment_path, /obj/item/stack/metadollar))
+			if(!bm_mining_vendor_can_buy_metadollar(usr))
+				flick(icon_deny, src)
+				return TRUE
+	return ..()
+
+/proc/bm_mining_vendor_can_buy_metadollar(mob/user)
+	if(!ishuman(user))
+		to_chat(user, span_warning("Нужна гуманоидная форма."))
+		return FALSE
+	var/mob/living/carbon/human/H = user
+	if(!H.mind?.assigned_role)
+		to_chat(H, span_warning("Нужна зарегистрированная профессия."))
+		return FALSE
+	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
+	if(!istype(J, /datum/job/mining))
+		to_chat(H, span_warning("Этот товар заказать могут только сотрудники смены с профессией шахтёра."))
+		return FALSE
+	return TRUE
 
 /obj/item/card/mining_point_card/fivethousand
 	points = 5000

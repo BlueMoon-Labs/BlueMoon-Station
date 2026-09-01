@@ -20,8 +20,7 @@
 /obj/item/reagent_containers/food/Initialize(mapload)
 	. = ..()
 	if(!mapload)
-		pixel_x = rand(-5, 5)
-		pixel_y = rand(-5, 5)
+		randomize_pixel_position()
 
 /obj/item/reagent_containers/food/proc/adjust_food_quality(new_quality)
 	food_quality = clamp(new_quality,0,100)

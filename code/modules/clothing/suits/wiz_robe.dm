@@ -71,8 +71,8 @@
 /obj/item/clothing/suit/wizrobe
 	name = "wizard robe"
 	desc = "A magnificent, gem-lined robe that seems to radiate power."
-	icon_state = "wizard"
-	item_state = "wizrobe"
+	icon_state = "bluewizard"
+	item_state = "bluewizrobe"
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
 	body_parts_covered = CHEST|ARMS|LEGS
@@ -285,7 +285,7 @@
 		var/mob/living/simple_animal/hostile/S = k
 		if(!S.mind && isturf(S.loc) && get_dist(S, T) <= 10)
 			S.LoseTarget()
-			S.Goto(pick(surrounding_turfs), S.move_to_delay)
+			S.ai_controller?.receive_combat_contact(null, pick(surrounding_turfs), AI_CONTACT_ALLY)
 
 /datum/action/item_action/stickmen/proc/clear_grudge(mob/living/L)
 	if(!QDELETED(L))
@@ -314,6 +314,7 @@
 	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 20, BIO = 100, RAD = 20, FIRE = 100, ACID = 100)
 	slowdown = 0
 	resistance_flags = FIRE_PROOF | ACID_PROOF
+	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
 	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
 
 

@@ -23,7 +23,7 @@
 
 /obj/item/reagent_containers/glass/maunamug/update_overlays()
 	. = ..()
-	if(reagents.total_volume >= 25)
+	if(reagents && reagents.total_volume >= 25)
 		. += mutable_appearance('icons/obj/reagentfillings.dmi', "maunafilling25", color = mix_color_from_reagents(reagents.reagent_list))
 
 /obj/item/reagent_containers/glass/maunamug/process()

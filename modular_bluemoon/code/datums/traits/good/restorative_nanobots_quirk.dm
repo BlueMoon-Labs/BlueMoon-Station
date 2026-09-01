@@ -48,7 +48,7 @@
 */
 
 /datum/quirk/restorative_nanobots
-	name = BLUEMOON_TRAIT_NAME_RESTORATIVE_NANOBOTS
+	name = "Восстановительные Наноботы"
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! У вас установлена сложная ремонтная система из наноботов, которая со временем ремонтирует ваши повреждения, однако при этом потребляет много энергии и уменьшает вашу защиту от ЭМИ. Восстановление прошивки в сделку не входит."
 	gain_text = span_warning("% dkms status \n nanomachines, 4.2, 3.2.0-33-generic-pae, x540/512: installed... сынок")
 	lose_text = span_notice("Your dream dies with you, Senator.")
@@ -79,11 +79,14 @@
 	if (!consumed_damage)
 		if(healing_in_progress)
 			REMOVE_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
-			H.physiology.hunger_mod /= 1.8
+			if(H.physiology)
+				H.physiology.hunger_mod /= 1.8
 			healing_in_progress = FALSE
 		return
 
 	if(!healing_in_progress)
+		if(!H.physiology)
+			return
 		ADD_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
 		H.physiology.hunger_mod *= 1.8
 		healing_in_progress = TRUE
@@ -100,5 +103,6 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if (!istype(H) || !healing_in_progress)
 		return
-	H.physiology.hunger_mod /= 1.8
-	REMOVE_TRAIT(quirk_holder, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
+	REMOVE_TRAIT(H, TRAIT_NANOBOT_REPAIR_IN_PROGRESS, QUIRK_TRAIT)
+	if(H.physiology)
+		H.physiology.hunger_mod /= 1.8

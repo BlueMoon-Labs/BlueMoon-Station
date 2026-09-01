@@ -2,7 +2,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(!open) //mod must be open
+	if(!is_open()) //mod must be open
 		balloon_alert(user, "suit must be open to transfer!")
 		return
 	switch(interaction)
@@ -88,16 +88,18 @@
 	if(!do_after(user, 5 SECONDS, target = src))
 		balloon_alert(user, "interrupted!")
 		return FALSE
-	if(!user.transferItemToLoc(card, src))
+	if(!card.pai.forceMove(src))
 		return
 
 	card.pai.canholo = FALSE
 	ai = card.pai
+	ai.remote_control = src
+	var/mob/living/silicon/pai/pai = ai
 	balloon_alert(user, "pAI transferred to suit")
 	balloon_alert(ai, "transferred to a suit")
-	ai.remote_control = src
 	for(var/datum/action/action as anything in actions)
-		action.Grant(ai)
+		action.Grant(pai)
+	card.moveToNullspace()
 	return TRUE
 
 /**
@@ -118,7 +120,7 @@
 			balloon_alert(user, "onboard AI cannot fit in this card!")
 		return
 	if(!forced)
-		if(!open)
+		if(!is_open())
 			if(user && feedback)
 				balloon_alert(user, "open the suit panel!")
 			return FALSE
@@ -144,7 +146,10 @@
 	var/mob/living/silicon/pai/pai = ai
 	var/turf/drop_off = get_turf(src)
 	if(drop_off) // In case there's no drop_off, the pAI will simply get deleted.
-		pai.card.forceMove(drop_off)
+		var/obj/item/paicard/card = pai.card
+		card.forceMove(drop_off)
+		pai.forceMove(card)
+		pai.client.eye = card
 
 	for(var/datum/action/action as anything in actions)
 		if(action.owner == pai)
@@ -164,7 +169,8 @@
 #define AI_FALL_TIME (1 SECONDS)
 
 /obj/item/mod/control/relaymove(mob/user, direction)
-	if((!active && wearer) || !cell || cell.charge < CELL_PER_STEP  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
+	var/obj/item/stock_parts/cell/cell = get_cell()
+	if((!is_active() && wearer) || !cell || cell.charge < CELL_PER_STEP  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
 		return FALSE
 	var/timemodifier = MOVE_DELAY * (ISDIAGONALDIR(direction) ? SQRT_2 : 1) * (wearer ? WEARER_DELAY : LONE_DELAY)
 	if(wearer && !wearer.Process_Spacemove(direction))

@@ -1,8 +1,13 @@
 GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 
 #define KEYCARD_RED_ALERT "Red Alert"
+#define KEYCARD_CLEAR_RED_ALERT "Clear Red Alert"
+#define KEYCARD_CLEAR_HIGH_ALERT "Clear High Alert"
 #define KEYCARD_EMERGENCY_MAINTENANCE_ACCESS "Emergency Maintenance Access"
 #define KEYCARD_BSA_UNLOCK "Bluespace Artillery Unlock"
+#define KEYCARD_BSMINER_PROTOCOLS "Bluespace Miner Protocols"
+
+#define ACCESS_GRANTING_COOLDOWN (30 SECONDS)
 
 /obj/machinery/keycard_auth
 	name = "Keycard Authentication Device"
@@ -25,6 +30,9 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	var/mob/triggerer = null
 	var/obj/item/card/id/first_id = null
 	var/waiting = 0
+	var/pending_security_level = 0
+
+	COOLDOWN_DECLARE(access_grant_cooldown)
 
 /obj/machinery/keycard_auth/Initialize(mapload)
 	. = ..()
@@ -48,7 +56,9 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	var/list/data = list()
 	data["waiting"] = waiting
 	data["auth_required"] = event_source ? event_source.event : 0
-	data["red_alert"] = (SECLEVEL2NUM(NUM2SECLEVEL(GLOB.security_level)) >= SEC_LEVEL_RED) ? 1 : 0
+	data["can_set_red_alert"] = (GLOB.security_level < SEC_LEVEL_RED && GLOB.keycard_secured_level < SEC_LEVEL_RED)
+	data["can_clear_red_alert"] = (GLOB.keycard_secured_level == SEC_LEVEL_RED && GLOB.security_level == SEC_LEVEL_RED)
+	data["can_clear_high_alert"] = (GLOB.security_level >= SEC_LEVEL_LAMBDA)
 	data["emergency_maint"] = GLOB.emergency_access
 	data["bsa_unlock"] = GLOB.bsa_unlock
 	return data
@@ -71,8 +81,18 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 		return
 	switch(action)
 		if("red_alert")
-			if(!event_source)
-				sendEvent(KEYCARD_RED_ALERT, ID)
+			if(!event_source && GLOB.security_level < SEC_LEVEL_RED && GLOB.keycard_secured_level < SEC_LEVEL_RED)
+				sendSecurityLevelEvent(SEC_LEVEL_RED, KEYCARD_RED_ALERT, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("clear_red_alert")
+			if(!event_source && GLOB.keycard_secured_level == SEC_LEVEL_RED && GLOB.security_level == SEC_LEVEL_RED)
+				sendSecurityLevelEvent(SEC_LEVEL_BLUE, KEYCARD_CLEAR_RED_ALERT, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("clear_high_alert")
+			if(!event_source && GLOB.security_level >= SEC_LEVEL_LAMBDA)
+				sendSecurityLevelEvent(SEC_LEVEL_RED, KEYCARD_CLEAR_HIGH_ALERT, ID)
 				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 				. = TRUE
 		if("emergency_maint")
@@ -91,6 +111,33 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 				sendEvent(KEYCARD_BSA_UNLOCK, ID)
 				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 				. = TRUE
+		if("bs_miner_protocols")
+			if(!event_source)
+				sendEvent(KEYCARD_BSMINER_PROTOCOLS, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("give_janitor_access")
+			if(!COOLDOWN_FINISHED(src, access_grant_cooldown))
+				balloon_alert(usr, "on cooldown!")
+				return TRUE
+
+			var/list/region_access = list()
+			var/region = 0 // check get_region_accesses(code)
+			for(var/i in list(ACCESS_CAPTAIN, ACCESS_HOP, ACCESS_HOS, ACCESS_CMO, ACCESS_RD, ACCESS_CE, ACCESS_QM))
+				if(i in ID.access)
+					region_access += region
+					if(region == 0)
+						break
+				region++
+			if(region_access.len)
+				COOLDOWN_START(src, access_grant_cooldown, ACCESS_GRANTING_COOLDOWN)
+				SEND_GLOBAL_SIGNAL(COMSIG_ON_DEPARTMENT_ACCESS, region_access)
+				balloon_alert(usr, "key access sent")
+			return
+
+/obj/machinery/keycard_auth/proc/sendSecurityLevelEvent(level_num, event_type, trigger_id)
+	pending_security_level = level_num
+	sendEvent(event_type, trigger_id)
 
 /obj/machinery/keycard_auth/proc/sendEvent(event_type, trigger_id)
 	triggerer = usr
@@ -102,6 +149,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 /obj/machinery/keycard_auth/proc/eventSent()
 	triggerer = null
 	event = ""
+	pending_security_level = 0
 	waiting = 0
 
 /obj/machinery/keycard_auth/proc/triggerEvent(source, trigger_id)
@@ -114,6 +162,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	icon_state = "auth_off"
 	event_source = null
 	first_id = null
+	pending_security_level = 0
 
 /obj/machinery/keycard_auth/proc/trigger_event(confirmer)
 	log_game("[key_name(triggerer)] triggered and [key_name(confirmer)] confirmed event [event]")
@@ -126,15 +175,24 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	deadchat_broadcast(" confirmed [event] at [span_name("[A2.name]")].", span_name("[confirmer]"), confirmer, message_type=DEADCHAT_ANNOUNCEMENT)
 	switch(event)
 		if(KEYCARD_RED_ALERT)
-			set_security_level(SEC_LEVEL_RED)
+			set_security_level(SEC_LEVEL_RED, null, TRUE)
+			GLOB.keycard_secured_level = SEC_LEVEL_RED
+		if(KEYCARD_CLEAR_RED_ALERT)
+			set_security_level(SEC_LEVEL_BLUE, null, TRUE)
+			GLOB.keycard_secured_level = 0
+		if(KEYCARD_CLEAR_HIGH_ALERT)
+			set_security_level(SEC_LEVEL_RED, null, TRUE)
+			GLOB.keycard_secured_level = SEC_LEVEL_RED
 		if(KEYCARD_EMERGENCY_MAINTENANCE_ACCESS)
 			make_maint_all_access()
 		if(KEYCARD_BSA_UNLOCK)
 			toggle_bluespace_artillery()
+		if(KEYCARD_BSMINER_PROTOCOLS)
+			toggle_bluespace_miners()
 
 GLOBAL_VAR_INIT(emergency_access, FALSE)
 /proc/make_maint_all_access()
-	for(var/area/maintenance/A in world)
+	for(var/area/maintenance/A as anything in GLOB.maintenance_areas)
 		for(var/obj/machinery/door/airlock/D in A)
 			D.emergency = TRUE
 			D.update_icon(ALL, 0)
@@ -143,7 +201,7 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("emergency maintenance access", "enabled"))
 
 /proc/revoke_maint_all_access()
-	for(var/area/maintenance/A in world)
+	for(var/area/maintenance/A as anything in GLOB.maintenance_areas)
 		for(var/obj/machinery/door/airlock/D in A)
 			D.emergency = FALSE
 			D.update_icon(ALL, 0)
@@ -156,6 +214,15 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 	minor_announce("Протоколы стрельбы Блюспейс Артиллерии были [GLOB.bsa_unlock? "разблокированы" : "заблокированы"]", "Оружейные системы:")
 	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("bluespace artillery", GLOB.bsa_unlock? "unlocked" : "locked"))
 
+/proc/toggle_bluespace_miners()
+	GLOB.bsminers_lock = !GLOB.bsminers_lock
+	minor_announce("Протоколы работы Блюспейс Майнеров были [GLOB.bsminers_lock ? "заблокированы" : "разблокированы"]", "Внимание! [GLOB.bsminers_lock ? "Остановка" : "Запуск"] добычи ресурсов")
+	SSblackbox.record_feedback("nested tally", "keycard_auths", 1, list("bluespace miners", GLOB.bsminers_lock? "unlocked" : "locked"))
+
+#undef ACCESS_GRANTING_COOLDOWN
 #undef KEYCARD_RED_ALERT
+#undef KEYCARD_CLEAR_RED_ALERT
+#undef KEYCARD_CLEAR_HIGH_ALERT
 #undef KEYCARD_EMERGENCY_MAINTENANCE_ACCESS
 #undef KEYCARD_BSA_UNLOCK
+#undef KEYCARD_BSMINER_PROTOCOLS

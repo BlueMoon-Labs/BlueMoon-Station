@@ -78,7 +78,9 @@
 	icon_state = "cbrnboots"
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/shoes_digi.dmi'
-	resistance_flags = ACID_PROOF
+	body_parts_covered = FEET
+	clothing_flags = THICKMATERIAL
+	resistance_flags = ACID_PROOF | FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100)
 	is_edible = 0

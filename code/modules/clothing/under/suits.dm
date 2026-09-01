@@ -15,6 +15,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/suit/sl
 	desc = "It's a very amish looking suit."
@@ -129,7 +130,8 @@
 	item_state = "henchmen"
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS|HEAD
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEEARS|HIDEEYES|HIDEHAIR|HIDETAUR
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/suit/polychromic	//enables all three overlays to reduce copypasta and defines basic stuff
 	name = "polychromic suit"

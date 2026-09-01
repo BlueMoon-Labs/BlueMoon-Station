@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const OutfitManager = (props, context) => {
-  const { act, data } = useBackend(context);
+export const OutfitManager = (props) => {
+  const { act, data } = useBackend();
   const { outfits } = data;
   return (
     <Window
@@ -41,15 +41,15 @@ export const OutfitManager = (props, context) => {
                   <Stack.Item grow={1} shrink={1}
                     style={{
                       'overflow': 'hidden',
-                      'white-space': 'nowrap',
-                      'text-overflow': 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      textOverflow: 'ellipsis',
                     }}>
                     <Button
                       fluid
                       style={{
                         'overflow': 'hidden',
-                        'white-space': 'nowrap',
-                        'text-overflow': 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
                       }}
                       content={outfit.name}
                       onClick={() => act("edit", { outfit: outfit.ref })} />

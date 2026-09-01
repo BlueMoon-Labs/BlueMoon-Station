@@ -121,7 +121,7 @@
 		var/ispipe = is_pipe() // Indicates if we should change the level of this pipe
 
 		var/turf/T = get_turf(src)
-		if(T.intact && isfloorturf(T))
+		if((T.turf_flags & TURF_INTACT) && isfloorturf(T))
 			to_chat(user, "<span class='warning'>You can only attach the [pipename] if the floor plating is removed!</span>")
 			return TRUE
 

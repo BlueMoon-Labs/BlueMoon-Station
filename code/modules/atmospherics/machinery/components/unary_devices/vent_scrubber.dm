@@ -2,7 +2,7 @@
 #define SCRUBBING	1
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber
-	icon_state = "scrub_map-2"
+	icon_state = "scrub_map-3"
 	name = "air scrubber"
 	desc = "Has a valve and pump attached to it."
 	use_power = IDLE_POWER_USE
@@ -37,26 +37,39 @@
 	RegisterSignal(SSdcs,COMSIG_GLOB_NEW_GAS, PROC_REF(generate_clean_filter_types))
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/generate_clean_filter_types()
+	// Assoc (gas id -> TRUE) so scrub() can probe the room's gases in O(1) each;
+	// scrub_into() iterates assoc keys the same way it iterated the plain list.
 	clean_filter_types = list()
 	for(var/id in filter_types)
 		if(id in GLOB.gas_data.groups)
-			clean_filter_types |= GLOB.gas_data.groups[id]
+			for(var/group_gas in GLOB.gas_data.groups[id])
+				clean_filter_types[group_gas] = TRUE
 		else
-			clean_filter_types += id
+			clean_filter_types[id] = TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/Destroy()
 	var/area/A = get_base_area(src)
-	if (A)
+	if(A)
 		A.air_scrub_names -= id_tag
 		A.air_scrub_info -= id_tag
+	else if(id_tag)
+		log_mapping("[type] [id_tag] destroyed without valid area at [COORD(src)]")
 
 	SSradio.remove_object(src,frequency)
 	radio_connection = null
 	adjacent_turfs.Cut()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	return ..()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/auto_use_power()
-	if(!on || welded || !is_operational() || !powered(power_channel))
+	if(!on || welded || !is_operational)
+		return FALSE
+	// Fetch the area once and call its procs directly, instead of going through powered()
+	// (a get_area()) and then use_power() (another get_area()) — same shape as the base
+	// /obj/machinery/proc/auto_use_power(). use_power is IDLE_POWER_USE here so powered()'s
+	// "!use_power → return TRUE" early-out never fired; this is behaviour-equivalent.
+	var/area/our_area = get_area(src)
+	if(!our_area?.powered(power_channel))
 		return FALSE
 
 	var/amount = idle_power_usage
@@ -68,7 +81,7 @@
 
 	if(widenet)
 		amount += amount * (adjacent_turfs.len * (adjacent_turfs.len / 2))
-	use_power(amount, power_channel)
+	our_area.use_power(amount, power_channel)
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/update_icon_nopipes()
@@ -81,7 +94,7 @@
 		icon_state = "scrub_welded"
 		return
 
-	if(!nodes[1] || !on || !is_operational())
+	if(!nodes[1] || !on || !is_operational)
 		icon_state = "scrub_off"
 		return
 
@@ -122,15 +135,24 @@
 		"sigtype" = "status"
 	))
 
-	var/area/A = get_base_area(src)
-	if(!A.air_scrub_names[id_tag])
-		name = "\improper [A.name] air scrubber #[A.air_scrub_names.len + 1]"
-		A.air_scrub_names[id_tag] = name
-
-	A.air_scrub_info[id_tag] = signal.data
+	var/area/A = register_in_area()
+	if(A)
+		A.air_scrub_info[id_tag] = signal.data
 	radio_connection.post_signal(src, signal, radio_filter_out)
 
 	return TRUE
+
+/// См. vent_pump: реестр имён базовой области обновляется и без радиоканала.
+/obj/machinery/atmospherics/components/unary/vent_scrubber/proc/register_in_area()
+	var/area/base_area = get_base_area(src)
+	if(!base_area)
+		return null
+	if(!base_area.air_scrub_names[id_tag])
+		if(name == initial(name)) // своё имя с карты не затираем
+			base_area.air_scrub_serial++
+			name = "\improper [base_area.name] air scrubber #[base_area.air_scrub_serial]"
+		base_area.air_scrub_names[id_tag] = name
+	return base_area
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/atmosinit()
 	radio_filter_in = frequency==initial(frequency)?(RADIO_FROM_AIRALARM):null
@@ -139,19 +161,55 @@
 		set_frequency(frequency)
 	broadcast_status()
 	check_turfs()
+	register_turf_wake()
+	atmos_wake()
 	..()
 
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	// См. комментарий в vent_pump: регистрация живёт в базовой области.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base)
+		// Сбрасываем только автоимя, замапленное вручную оставляем - см. vent_pump.
+		if(name == old_base.air_scrub_names[id_tag])
+			name = initial(name)
+		old_base.air_scrub_names -= id_tag
+		old_base.air_scrub_info -= id_tag
+	// Без радиоканала broadcast_status() выходит сразу, поэтому регистрируем отдельно.
+	register_in_area()
+	broadcast_status()
+
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
-	..()
-	if(welded || !is_operational())
+	if(atmos_idle_until > world.time)
+		return FALSE
+	if(welded || !is_operational)
+		// Woken by welder_act()/attack_alien()/power_change().
+		atmos_consider_idle()
+		return FALSE
+	if(!nodes[1] && !atmos_initialized)
+		// См. комментарий в vent_pump: до atmosinit() нод нет, гасить нельзя.
+		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] || !on)
 		on = FALSE
+		// Woken by receive_signal().
+		atmos_consider_idle()
 		return FALSE
-	scrub(loc)
+	var/scrubbed = scrub(loc)
 	if(widenet)
 		for(var/turf/tile in adjacent_turfs)
-			scrub(tile)
+			if(scrub(tile))
+				scrubbed = TRUE
+		// Widenet watches neighboring turfs we get no wake events from, so it
+		// never drops into the idle heartbeat.
+		atmos_idle_streak = 0
+		return TRUE
+	if(scrubbed)
+		atmos_idle_streak = 0
+	else
+		// Clean room: recheck on the heartbeat, or instantly when the turf
+		// activates (gas arriving is always an add_to_active call).
+		atmos_consider_idle()
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/scrub(var/turf/tile)
@@ -159,18 +217,32 @@
 		return FALSE
 	var/datum/gas_mixture/environment = tile.return_air()
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/environment_volume = environment.return_volume()
 
 	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
 		return FALSE
+	if(environment_volume <= 0)
+		return FALSE
 
 	if(scrubbing & SCRUBBING)
-		environment.scrub_into(air_contents, volume_rate/environment.return_volume(), clean_filter_types)
-
+		// Probe the room's 2-4 gas ids before touching anything: a scrubber over a
+		// clean room must not reactivate its turf or dirty its pipenet every fire.
+		var/list/environment_gases = environment.get_gases()
+		var/any_filterable = FALSE
+		for(var/id in environment_gases)
+			if(clean_filter_types[id] && environment_gases[id] > 0)
+				any_filterable = TRUE
+				break
+		if(!any_filterable)
+			return FALSE
+		if(!environment.scrub_into(air_contents, volume_rate/environment_volume, clean_filter_types))
+			return FALSE
 		tile.air_update_turf()
 
 	else //Just siphoning all air
-
-		environment.transfer_ratio_to(air_contents, volume_rate/environment.return_volume())
+		if(environment.total_moles() <= 0)
+			return FALSE
+		environment.transfer_ratio_to(air_contents, volume_rate/environment_volume)
 		tile.air_update_turf()
 
 	update_parents()
@@ -180,8 +252,10 @@
 //There is no easy way for an object to be notified of changes to atmos can pass flags
 //	So we check every machinery process (2 seconds)
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process()
-	if(widenet)
-		check_turfs()
+	if(!widenet)
+		// Nothing to poll; receive_signal() re-adds us to SSmachines when widenet turns on.
+		return PROCESS_KILL
+	check_turfs()
 
 //we populate a list of turfs with nonatmos-blocked cardinal turfs AND
 //	diagonal turfs that can share atmos with *both* of the cardinal turfs
@@ -193,9 +267,13 @@
 		adjacent_turfs = T.GetAtmosAdjacentTurfs(alldir = 1)
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/receive_signal(datum/signal/signal)
-	if(!is_operational() || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
+	if(!is_operational || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return FALSE
 
+	// init (rename) and status polls are read-only telemetry; only real commands
+	// may reset the idle heartbeat.
+	if(!("status" in signal.data) && !("init" in signal.data))
+		atmos_wake()
 	var/mob/signal_sender = signal.data["user"]
 
 	if("power" in signal.data)
@@ -203,10 +281,16 @@
 	if("power_toggle" in signal.data)
 		on = !on
 
+	var/old_widenet = widenet
 	if("widenet" in signal.data)
 		widenet = text2num(signal.data["widenet"])
 	if("toggle_widenet" in signal.data)
 		widenet = !widenet
+	if(widenet && widenet != old_widenet)
+		// Non-widenet scrubbers drop out of SSmachines (see process()); rejoin
+		// so the periodic adjacent-turf recalculation runs again.
+		START_PROCESSING(SSmachines, src)
+		check_turfs()
 
 	var/old_scrubbing = scrubbing
 	if("scrubbing" in signal.data)
@@ -239,7 +323,7 @@
 	return
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/power_change()
-	..()
+	..() // the base override already calls atmos_wake()
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/welder_act(mob/living/user, obj/item/I)
@@ -253,6 +337,7 @@
 		else
 			user.visible_message("[user] unwelds the scrubber.", "You unweld the scrubber.", "You hear welding.")
 			welded = FALSE
+		atmos_wake()
 		update_icon()
 		pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 		pipe_vision_img.plane = ABOVE_HUD_PLANE
@@ -260,7 +345,7 @@
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/can_unwrench(mob/user)
 	. = ..()
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 
@@ -277,6 +362,7 @@
 		return
 	user.visible_message("[user] furiously claws at [src]!", "You manage to clear away the stuff blocking the scrubber.", "You hear loud scraping noises.")
 	welded = FALSE
+	atmos_wake()
 	update_icon()
 	pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 	pipe_vision_img.plane = ABOVE_HUD_PLANE
@@ -286,21 +372,37 @@
 	piping_layer = 1
 	icon_state = "scrub_map-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/layer3
-	piping_layer = 3
-	icon_state = "scrub_map-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer2
+	piping_layer = 2
+	icon_state = "scrub_map-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4
+	piping_layer = 4
+	icon_state = "scrub_map-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer5
+	piping_layer = 5
+	icon_state = "scrub_map-5"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on
 	on = TRUE
-	icon_state = "scrub_map_on-2"
+	icon_state = "scrub_map_on-3"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1
 	piping_layer = 1
 	icon_state = "scrub_map_on-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3
-	piping_layer = 3
-	icon_state = "scrub_map_on-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2
+	piping_layer = 2
+	icon_state = "scrub_map_on-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4
+	piping_layer = 4
+	icon_state = "scrub_map_on-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer5
+	piping_layer = 5
+	icon_state = "scrub_map_on-5"
 
 #undef SIPHONING
 #undef SCRUBBING

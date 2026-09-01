@@ -25,6 +25,7 @@
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	faction = list(ROLE_DEATHSQUAD)
+	check_friendly_fire = TRUE
 	status_flags = CANPUSH
 	speak = list("Stop resisting!", "I AM THE LAW!", "Face the wrath of the golden bolt!", "Stop breaking the law, asshole!")
 	search_objects = TRUE
@@ -57,5 +58,5 @@
 	rapid = 3
 	casingtype = /obj/item/ammo_casing/c46x30mm
 	projectilesound = 'sound/weapons/gunshot_smg.ogg'
-	loot = list(/obj/item/gun/ballistic/automatic/wt550,
+	loot = list(/obj/item/gun/ballistic/automatic/wt550/standart,
 				/obj/effect/mob_spawn/human/corpse/nanotrasensoldier)

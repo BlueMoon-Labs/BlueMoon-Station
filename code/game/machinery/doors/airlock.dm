@@ -31,6 +31,7 @@
 
 #define AIRLOCK_LIGHT_BOLTS "bolts"
 #define AIRLOCK_LIGHT_EMERGENCY "emergency"
+#define AIRLOCK_LIGHT_CODE_OVERRIDE "code_override"
 #define AIRLOCK_LIGHT_DENIED "denied"
 #define AIRLOCK_LIGHT_CLOSING "closing"
 #define AIRLOCK_LIGHT_OPENING "opening"
@@ -52,10 +53,22 @@
 #define ELECTRIFIED_PERMANENT -1
 #define AI_ELECTRIFY_DOOR_TIME 30
 
+/// Пауза перед первой повторной попыткой автозакрытия, когда проём занят плотным объектом
+#define AIRLOCK_OBSTRUCTED_RETRY_DELAY (6 SECONDS)
+/// Потолок этой паузы: она удваивается на каждой неудаче, дальше шлюз почти целиком
+/// полагается на сигнал об освобождении турфа, а не крутит таймер каждые шесть секунд.
+/// Опрос не убран совсем: подписка висит только на турфе самого шлюза, а плотность
+/// объекта в проёме может измениться и без ухода с турфа (упавший моб перестаёт быть
+/// плотным), да и у широких шлюзов вторая половина проёма остаётся неподписанной
+#define AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX (30 SECONDS)
+/// Пауза перед закрытием после того, как плотный объект покинул проём
+#define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
+
 /obj/machinery/door/airlock
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
+	opens_with_door_remote = TRUE
 	max_integrity = 300
 	var/normal_integrity = AIRLOCK_INTEGRITY_N
 	integrity_failure = 0.25
@@ -107,6 +120,10 @@
 	var/obj/machinery/door/airlock/cyclelinkedairlock
 	var/shuttledocked = 0
 	var/delayed_close_requested = FALSE // TRUE means the door will automatically close the next time it's opened.
+	/// Текущая пауза перед следующей попыткой автозакрытия при занятом проёме, 0 - проём был свободен
+	var/obstructed_close_delay = 0
+	/// Турф, на котором висит подписка на освобождение проёма
+	var/turf/obstruction_watched_turf
 
 	air_tight = FALSE
 	var/prying_so_hard = FALSE
@@ -119,6 +136,9 @@
 	/// sigh
 	var/unelectrify_timerid
 	var/advactivator_action = FALSE
+	/// Smart glass linkage for electrochromatic buttons (glass airlocks only)
+	var/electrochromatic_status = NOT_ELECTROCHROMATIC
+	var/electrochromatic_id
 
 /obj/machinery/door/airlock/Initialize(mapload)
 	. = ..()
@@ -139,7 +159,7 @@
 	if(damage_deflection == AIRLOCK_DAMAGE_DEFLECTION_N && security_level > AIRLOCK_SECURITY_METAL)
 		damage_deflection = AIRLOCK_DAMAGE_DEFLECTION_R
 	prepare_huds()
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_electrified()
 
@@ -289,6 +309,12 @@
 	qdel(src)
 
 /obj/machinery/door/airlock/Destroy()
+	if(unelectrify_timerid)
+		deltimer(unelectrify_timerid)
+		unelectrify_timerid = null
+	if(closeOther && closeOther.closeOther == src)
+		closeOther.closeOther = null
+	closeOther = null
 	QDEL_NULL(wires)
 	QDEL_NULL(electronics)
 	if(charge)
@@ -301,8 +327,11 @@
 	if(id_tag)
 		for(var/obj/machinery/doorButtons/D in GLOB.machines)
 			D.removeMe(src)
+	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+		new /obj/item/electronics/electrochromatic_kit(drop_location())
+	remove_electrochromatic()
 	QDEL_NULL(note)
-	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.huds)
+	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
 	return ..()
 
@@ -339,7 +368,23 @@
 				H.apply_damage(1, BRUTE, BODY_ZONE_HEAD)
 			else
 				visible_message("<span class='danger'>[user] headbutts the airlock. Good thing [user.ru_who()] wearing a helmet.</span>")
+	if(iscarbon(user) && density && !operating && !welded && !locked && !hasPower())
+		try_bump_open(user)
+		return
 	..()
+
+/obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
+	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
+		return FALSE
+	balloon_alert(user, "forcing open...")
+	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
+						"<span class='notice'>You start forcing [src] open...</span>")
+	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src))
+		if(!density || operating || welded || locked)
+			return FALSE
+		open(2)
+		return TRUE
+	return FALSE
 
 /obj/machinery/door/airlock/proc/isElectrified()
 	if(src.secondsElectrified != NOT_ELECTRIFIED)
@@ -454,6 +499,7 @@
 	var/mutable_appearance/damag_overlay
 	var/mutable_appearance/sparks_overlay
 	var/mutable_appearance/note_overlay
+	var/mutable_appearance/code_override_overlay
 	var/notetype = note_type()
 
 	switch(state)
@@ -483,6 +529,14 @@
 				else
 					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
 					light_color = LIGHT_COLOR_BLUE
+					if(engineering_override || medical_override || security_override)
+						code_override_overlay = get_airlock_overlay("lights_code_override", overlays_file)
+						if(security_override)
+							code_override_overlay.color = AIRLOCK_SECURITY_LIGHT_COLOR
+						else if(medical_override)
+							code_override_overlay.color = AIRLOCK_MEDICAL_LIGHT_COLOR
+						else if(engineering_override)
+							code_override_overlay.color = AIRLOCK_ENGINEERING_LIGHT_COLOR
 			if(note)
 				note_overlay = get_airlock_overlay(notetype, note_overlay_file)
 
@@ -552,6 +606,22 @@
 				filling_overlay = get_airlock_overlay("[airlock_material]_open", overlays_file)
 			else
 				filling_overlay = get_airlock_overlay("fill_open", icon)
+			if(lights && hasPower())
+				if(locked)
+					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				else if(emergency)
+					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				else
+					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					light_color = LIGHT_COLOR_BLUE
+					if(engineering_override || medical_override || security_override)
+						code_override_overlay = get_airlock_overlay("lights_code_override_open", overlays_file)
+						if(security_override)
+							code_override_overlay.color = AIRLOCK_SECURITY_LIGHT_COLOR
+						else if(medical_override)
+							code_override_overlay.color = AIRLOCK_MEDICAL_LIGHT_COLOR
+						else if(engineering_override)
+							code_override_overlay.color = AIRLOCK_ENGINEERING_LIGHT_COLOR
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_open_protected", overlays_file)
@@ -583,8 +653,10 @@
 	add_overlay(filling_overlay)
 	if(lights_overlay)
 		add_overlay(lights_overlay)
-		var/mutable_appearance/lights_vis = mutable_appearance(lights_overlay.icon, lights_overlay.icon_state)
+		var/mutable_appearance/lights_vis = mutable_appearance(lights_overlay.icon, lights_overlay.icon_state, color = lights_overlay.color)
 		add_overlay(lights_vis)
+		if(code_override_overlay)
+			add_overlay(code_override_overlay)
 	add_overlay(panel_overlay)
 	add_overlay(weld_overlay)
 	add_overlay(sparks_overlay)
@@ -606,22 +678,22 @@
 /obj/machinery/door/airlock/proc/check_unres() //unrestricted sides. This overlay indicates which directions the player can access even without an ID
 	if(hasPower() && unres_sides)
 		if(unres_sides & NORTH)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_n") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_n") //layer=src.layer+1
 			I.pixel_y = 32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & SOUTH)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_s") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_s") //layer=src.layer+1
 			I.pixel_y = -32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & EAST)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_e") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_e") //layer=src.layer+1
 			I.pixel_x = 32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
 		if(unres_sides & WEST)
-			var/image/I = image(icon='icons/obj/doors/airlocks/station/overlays.dmi', icon_state="unres_w") //layer=src.layer+1
+			var/image/I = image(icon=overlays_file, icon_state="unres_w") //layer=src.layer+1
 			I.pixel_x = -32
 			set_light(l_range = 2, l_power = 1)
 			add_overlay(I)
@@ -630,7 +702,7 @@
 			if(locked)
 				set_light(1, 0.1, "#0000FF")
 			else if(emergency)
-				set_light(1, 0.1, "#FFFF00")
+				set_light(1, 0.1, AIRLOCK_EMERGENCY_LIGHT_COLOR)
 			else
 				set_light(0)
 		else
@@ -652,6 +724,8 @@
 
 /obj/machinery/door/airlock/examine(mob/user)
 	. = ..()
+	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+		. += span_notice("The viewport has electrochromatic tinting circuitry.")
 	if(obj_flags & EMAGGED)
 		. += "<span class='warning'>Its access panel is smoking slightly.</span>"
 	if(charge && !panel_open && in_range(user, src))
@@ -692,6 +766,9 @@
 		. += "<span class='notice'>Ctrl-click [src] to [ locked ? "raise" : "drop"] its bolts.</span>"
 		. += "<span class='notice'>Alt-click [src] to [ secondsElectrified ? "un-electrify" : "permanently electrify"] it.</span>"
 		. += "<span class='notice'>Ctrl-Shift-click [src] to [ emergency ? "disable" : "enable"] emergency access.</span>"
+
+	if(!hasPower() && density && !welded && !locked)
+		. += "<span class='notice'>Упершись в обесточенную дверь, можно попробовать открыть её вручную.</span>"
 
 /obj/machinery/door/airlock/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -860,6 +937,24 @@
 				return
 	add_fingerprint(user)
 
+	// Разболтировочный ключ — в начале, чтобы не перехватывали другие обработчики
+	if(istype(C, /obj/item/wrench/bolter))
+		if(!locked)
+			return ..()
+		if(!panel_open)
+			to_chat(user, "<span class='warning'>You need to open the maintenance panel first!</span>")
+			return
+		if(security_level != AIRLOCK_SECURITY_NONE)
+			to_chat(user, "<span class='warning'>The airlock's reinforcement prevents access to the bolt mechanism!</span>")
+			return
+		to_chat(user, "<span class='notice'>You start raising the door bolts with [C]...</span>")
+		if(C.use_tool(src, user, 50, volume = 50))
+			if(!panel_open || !locked)
+				return
+			unbolt()
+			user.visible_message("<span class='notice'>[user] raises \the [src]'s bolts with [C].</span>", "<span class='notice'>You raise the door bolts.</span>")
+		return
+
 	if(panel_open)
 		switch(security_level)
 			if(AIRLOCK_SECURITY_NONE)
@@ -995,6 +1090,23 @@
 	else if(istype(C, /obj/item/pai_cable))
 		var/obj/item/pai_cable/cable = C
 		cable.plugin(src, user)
+	else if(istype(C, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
+		var/obj/item/electronics/electrochromatic_kit/K = C
+		if(!glass)
+			to_chat(user, span_warning("Electrochromatic kits only work on glass-paneled airlocks."))
+			return
+		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
+			to_chat(user, span_warning("[src] is already electrochromatic!"))
+			return
+		if(!K.id)
+			to_chat(user, span_warning("[K] has no ID set!"))
+			return
+		if(!user.temporarilyRemoveItemFromInventory(K))
+			to_chat(user, span_warning("[K] is stuck to your hand!"))
+			return
+		user.visible_message(span_notice("[user] upgrades [src] with [K]."), span_notice("You upgrade [src] with [K]."))
+		make_electrochromatic(K.id)
+		qdel(K)
 	else if(istype(C, /obj/item/airlock_painter))
 		change_paintjob(C, user)
 	else if(istype(C, /obj/item/doorCharge))
@@ -1052,7 +1164,7 @@
 								"<span class='italics'>You hear welding.</span>")
 				if(W.use_tool(src, user, 40, volume=50, extra_checks = CALLBACK(src, PROC_REF(weld_checks), W, user)))
 					obj_integrity = max_integrity
-					machine_stat &= ~BROKEN
+					set_machine_stat(machine_stat & ~BROKEN)
 					user.visible_message("[user.name] has repaired [src].", \
 										"<span class='notice'>You finish repairing the airlock.</span>")
 					update_icon()
@@ -1145,9 +1257,8 @@
 			to_chat(user, "<span class='warning'>It's welded, it won't budge!</span>")
 			return
 
-		var/time_to_open = 5
 		if(hasPower() && !prying_so_hard)
-			time_to_open = 50
+			var/time_to_open = 5 SECONDS
 			playsound(src, 'sound/machines/airlock_alien_prying.ogg',100,1) //is it aliens or just the CE being a dick?
 			prying_so_hard = TRUE
 			if(do_after(user, time_to_open,target = src))
@@ -1184,7 +1295,13 @@
 			src.closeOther.close()
 	else
 		playsound(src.loc, 'sound/machines/airlockforced.ogg', 30, 1)
+	//шлюз, открытый игроком вплотную, слышен AI-мобам совсем рядом; автоматика,
+	//циклы и удалённые открытия (стоящий вдали usr) шум не рассылают
+	if(isliving(usr) && usr.client && usr.z == z && get_dist(usr, src) <= 1)
+		ai_broadcast_noise(get_turf(src), AI_NOISE_DOOR_RANGE, usr)
 
+	// Открытие - внешнее событие: разгон паузы автозакрытия начинается заново
+	clear_obstructed_close()
 	if(autoclose)
 		autoclose_in(normalspeed ? 15 SECONDS : 15 DECISECONDS)
 
@@ -1197,14 +1314,15 @@
 			else
 				addtimer(CALLBACK(cyclelinkedairlock, PROC_REF(close)), 2 DECISECONDS)
 	operating = TRUE
+	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
 	sleep(1)
 	set_opacity(0)
-	update_freelook_sight()
-	sleep(4)
 	density = FALSE
 	air_update_turf(TRUE)
-	sleep(1)
+	refresh_electrochromatic_opacity()
+	update_freelook_sight()
+	sleep(5)
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
@@ -1219,6 +1337,54 @@
 	for(var/atom/movable/M in (our_turf.contents - src))
 		if(M.density) // something is blocking the door
 			return TRUE	// BLUEMOON ADD END
+
+/// Проём занят: взводим следующую попытку автозакрытия с растущей паузой и подписываемся
+/// на уход плотного объекта, чтобы закрыться сразу, а не ждать конца паузы.
+/obj/machinery/door/airlock/proc/handle_obstructed_close()
+	if(!autoclose) // autoclose() всё равно ничего не сделает, таймер был бы холостым
+		return
+	watch_obstruction()
+	obstructed_close_delay = obstructed_close_delay ? min(obstructed_close_delay * 2, AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX) : AIRLOCK_OBSTRUCTED_RETRY_DELAY
+	autoclose_in(obstructed_close_delay)
+
+/// Проём свободен: сбрасываем разгон паузы и снимаем подписку
+/obj/machinery/door/airlock/proc/clear_obstructed_close()
+	obstructed_close_delay = 0
+	unwatch_obstruction()
+
+/obj/machinery/door/airlock/proc/watch_obstruction()
+	var/turf/our_turf = get_turf(src)
+	if(obstruction_watched_turf == our_turf)
+		return
+	unwatch_obstruction()
+	if(!our_turf)
+		return
+	obstruction_watched_turf = our_turf
+	RegisterSignal(our_turf, COMSIG_ATOM_EXITED, PROC_REF(on_obstruction_exited))
+	// ChangeTurf делает qdel старому турфу: без этой подписки шлюз держал бы на него
+	// жёсткую ссылку и не давал собраться
+	RegisterSignal(our_turf, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_turf_deleted))
+
+/obj/machinery/door/airlock/proc/unwatch_obstruction()
+	if(!obstruction_watched_turf)
+		return
+	UnregisterSignal(obstruction_watched_turf, list(COMSIG_ATOM_EXITED, COMSIG_PARENT_QDELETING))
+	obstruction_watched_turf = null
+
+/obj/machinery/door/airlock/proc/on_watched_turf_deleted(datum/source)
+	SIGNAL_HANDLER
+	// Подписку перевесит следующая неудачная попытка автозакрытия - она уже взведена
+	obstruction_watched_turf = null
+
+/obj/machinery/door/airlock/proc/on_obstruction_exited(datum/source, atom/movable/gone)
+	SIGNAL_HANDLER
+	if(density || !autoclose)
+		clear_obstructed_close()
+		return
+	if(!gone?.density) // ушло что-то непреграждающее - проём как был занят, так и остался
+		return
+	clear_obstructed_close()
+	autoclose_in(AIRLOCK_OBSTRUCTION_CLEARED_DELAY)
 
 
 /obj/machinery/door/airlock/close(forced=0)
@@ -1237,8 +1403,10 @@
 
 	// BLUEMOON ADD START - ModernTG Wide Airlocks.
 	if(safe && sensor_obstacle_check())
-		autoclose_in(6 SECONDS)
+		handle_obstructed_close()
 		return	// BLUEMOON ADD END
+
+	clear_obstructed_close()
 
 	if(forced < 2)
 		if(obj_flags & EMAGGED)
@@ -1253,6 +1421,7 @@
 		killthis.ex_act(EXPLODE_HEAVY)//Smashin windows
 
 	operating = TRUE
+	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_CLOSING, 1)
 	layer = CLOSED_DOOR_LAYER
 	if(air_tight)
@@ -1267,6 +1436,7 @@
 		crush()
 	if(visible && !glass)
 		set_opacity(1)
+	refresh_electrochromatic_opacity()
 	update_freelook_sight()
 	sleep(1)
 	update_icon(ALL, AIRLOCK_CLOSED, 1)
@@ -1311,8 +1481,9 @@
 	update_icon()
 
 /obj/machinery/door/airlock/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
-	//Airlock is passable if it is open (!density), bot has access, and is not bolted shut or powered off)
-	return !density || (check_access(ID) && !locked && hasPower())
+	//Match the non-human parts of allowed(): emergency access and an unrestricted
+	//exit side are just as usable by a pathing mob as an ID card.
+	return !density || (!locked && !welded && hasPower() && (emergency || (unres_sides & to_dir) || check_access(ID)))
 
 /obj/machinery/door/airlock/emag_act(mob/user)
 	. = ..()
@@ -1383,7 +1554,7 @@
 
 /obj/machinery/door/airlock/obj_break(damage_flag)
 	if(!(flags_1 & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		if(!panel_open)
 			panel_open = TRUE
 		wires.cut_all()
@@ -1632,7 +1803,7 @@
 		set_electrified(ELECTRIFIED_PERMANENT)
 
 /obj/machinery/door/airlock/proc/toggle_bolt(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(wires.is_cut(WIRE_BOLTS))
 		to_chat(user, "<span class='warning'>The door bolt drop wire is cut - you can't toggle the door bolts.</span>")
@@ -1646,13 +1817,13 @@
 		bolt()
 
 /obj/machinery/door/airlock/proc/toggle_emergency(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	emergency = !emergency
 	update_icon()
 
 /obj/machinery/door/airlock/proc/user_toggle_open(mob/user)
-	if(!user_allowed(user))
+	if(user && !user_allowed(user))
 		return
 	if(welded)
 		to_chat(user, text("The airlock has been welded shut!"))
@@ -1662,6 +1833,64 @@
 		close()
 	else
 		open()
+
+/// Glass airlocks only: opacity when closed + electrochromatically dimmed vs normal see-through viewports.
+/obj/machinery/door/airlock/proc/refresh_electrochromatic_opacity()
+	if(!glass || !density)
+		return
+	if(electrochromatic_status == ELECTROCHROMATIC_DIMMED)
+		set_opacity(TRUE)
+	else
+		set_opacity(FALSE)
+
+/obj/machinery/door/airlock/proc/electrochromatic_dim()
+	if(electrochromatic_status == ELECTROCHROMATIC_DIMMED)
+		return
+	electrochromatic_status = ELECTROCHROMATIC_DIMMED
+	var/current = color
+	add_atom_colour("#222222", FIXED_COLOUR_PRIORITY)
+	var/newcolor = color
+	if(color != current)
+		color = current
+		animate(src, color = newcolor, time = 2)
+	refresh_electrochromatic_opacity()
+	update_icon()
+
+/obj/machinery/door/airlock/proc/electrochromatic_off()
+	if(electrochromatic_status == ELECTROCHROMATIC_OFF)
+		return
+	electrochromatic_status = ELECTROCHROMATIC_OFF
+	var/current = color
+	remove_atom_colour(FIXED_COLOUR_PRIORITY, "#222222")
+	var/newcolor = color
+	if(color != current)
+		color = current
+		animate(src, color = newcolor, time = 2)
+	refresh_electrochromatic_opacity()
+	update_icon()
+
+/obj/machinery/door/airlock/proc/remove_electrochromatic()
+	electrochromatic_off()
+	electrochromatic_status = NOT_ELECTROCHROMATIC
+	if(!electrochromatic_id)
+		return
+	var/list/L = GLOB.electrochromatic_window_lookup["[electrochromatic_id]"]
+	if(L)
+		L -= src
+	electrochromatic_id = null
+	refresh_electrochromatic_opacity()
+	update_icon()
+
+/obj/machinery/door/airlock/proc/make_electrochromatic(new_id = electrochromatic_id)
+	remove_electrochromatic()
+	if(!new_id)
+		CRASH("Attempted to make electrochromatic with null ID.")
+	electrochromatic_id = new_id
+	electrochromatic_status = ELECTROCHROMATIC_OFF
+	LAZYINITLIST(GLOB.electrochromatic_window_lookup["[electrochromatic_id]"])
+	GLOB.electrochromatic_window_lookup[electrochromatic_id] |= src
+	refresh_electrochromatic_opacity()
+	update_icon()
 
 #undef AIRLOCK_CLOSED
 #undef AIRLOCK_CLOSING
@@ -1686,3 +1915,7 @@
 #undef NOT_ELECTRIFIED
 #undef ELECTRIFIED_PERMANENT
 #undef AI_ELECTRIFY_DOOR_TIME
+
+#undef AIRLOCK_OBSTRUCTED_RETRY_DELAY
+#undef AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX
+#undef AIRLOCK_OBSTRUCTION_CLEARED_DELAY

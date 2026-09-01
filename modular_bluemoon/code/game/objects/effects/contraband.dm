@@ -23,6 +23,17 @@
 	desc = "Intruder, remember! You're not immune to big sharks lady."
 	icon_state = "poster_secfish"
 
+/obj/structure/sign/poster/official/mac_vulpix
+	name = "MacVulpix Commercial Poster"
+	desc = "Рекламный постер с новой линейкой продукции “Большой Укус” от ресторана быстрого питания МакВульпикс."
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+	icon_state = "mac_vulpix"
+
+/obj/item/poster/mac_vulpix
+	name = "MacVulpix Commercial Poster"
+	poster_type = /obj/structure/sign/poster/official/mac_vulpix
+	icon_state = "rolled_legit"
+
 ////
 
 /obj/item/poster/erthelp
@@ -219,14 +230,15 @@
 	return ..()
 
 /obj/structure/sign/poster/contraband/inteq/process()
-	if(world.time < demotivator.next_scare)
+	if(!demotivator)
+		STOP_PROCESSING(SSobj, src)
 		return
-	var/scared_someone = FALSE
-	for(var/mob/living/viewer in view(5, src))
-		demotivator.pugach(viewer)
-		scared_someone = TRUE
-	if(scared_someone)
-		demotivator.next_scare = world.time + 120
+	if(!demotivator.can_scan()) // throttle the expensive view() sweep
+		return
+	do_scare_scan()
+
+/obj/structure/sign/poster/contraband/inteq/proc/do_scare_scan()
+	demotivator.do_scare_scan()
 
 /obj/item/poster/random_inteq/poster_place_check(mob/user, turf/closed/wall)
 	// Хз, как ты пытаешься повесить постер, будучи не хуманом, но мало ли
@@ -242,9 +254,11 @@
 /obj/structure/sign/poster/contraband/inteq/attackby(obj/item/tool, mob/user, params)
 	if (tool.tool_behaviour == TOOL_WIRECUTTER)
 		QDEL_NULL(demotivator)
+		STOP_PROCESSING(SSobj, src)
 	return ..()
 
 /obj/structure/sign/poster/contraband/inteq/Destroy()
+	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(demotivator)
 	return ..()
 
@@ -277,7 +291,7 @@
 
 /obj/structure/sign/poster/contraband/inteq/inteq_sign
 	name = "InteQ poster"
-	desc = "Частная Военная Компания, занимающаяся обороной частных предприятий и выполнением заказов. В данный момент они хотят уничтожить Пакт между НТ и Синдикатом..."
+	desc = "Частная Военная Компания, занимающаяся обороной частных предприятий и выполнением заказов. В данный момент они хотят уничтожить ПАКТ между НТ и Синдикатом..."
 	icon_state = "poster_inteq_baza"
 
 /obj/structure/sign/poster/contraband/inteq/inteq_better_dead

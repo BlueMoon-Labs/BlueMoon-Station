@@ -1,0 +1,81 @@
+.GamePreferences {
+  .GamePreferences__tabs {
+    gap: 0.25rem;
+  }
+
+  .GamePreferences__nav {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-bottom: 0.25rem;
+  }
+
+  .GamePreferences__navButton {
+    font-weight: 600;
+  }
+
+  .GamePreferences__scroll {
+    scroll-behavior: smooth;
+  }
+
+  .GamePreferences__category {
+    scroll-margin-top: 0.5rem;
+
+    &:not(:last-child) {
+      margin-bottom: 0.75rem;
+    }
+  }
+
+  .GamePreferences__categorySection {
+    .Section__titleText {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+  }
+
+  .GamePreferences__row {
+    min-height: 2rem;
+    padding: 0.15rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .GamePreferences__label {
+    line-height: 1.35;
+  }
+
+  .GamePreferences__hint {
+    opacity: 0.65;
+    font-size: 0.85em;
+    margin-top: 0.1rem;
+  }
+
+  .GamePreferences__capture {
+    margin-bottom: 0.5rem;
+  }
+
+  .GamePreferences__captureFocus {
+    outline: none;
+  }
+
+  .GamePreferences__kbHeader {
+    opacity: 0.75;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .GamePreferences__kbRow {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .GamePreferences__bindButton {
+    min-width: 2.5rem;
+  }
+}

@@ -65,6 +65,18 @@
 /datum/config_entry/number/bluespaceminer_crystal_tier
 	default = 5
 
+// BSM time IN MINUTES to full integrity bs core destroy
+/datum/config_entry/number/bluespaceminer_core_work_time_minutes
+	default = 30
+
+// The chance (per second) that the core in BSM will not take damage during operation. Introduces a bit of chaos
+/datum/config_entry/number/bluespaceminer_core_work_chanse_no_damage
+	default = 5
+
+// Minimum time between instability sector events (per miner; cooldown resets on trigger).
+/datum/config_entry/number/bluespaceminer_instability_cooldown
+	default = 5 MINUTES
+
 /// TETRIS ARCADE MACHINE ///
 // If the machine should skip producing science points
 /datum/config_entry/flag/tetris_no_science
@@ -79,7 +91,7 @@
 
 // Minimum score required to message admins
 /datum/config_entry/number/tetris_score_high
-	default = 10000
+	default = 50000
 
 // Maximum research points that can be generated
 /datum/config_entry/number/tetris_score_max
@@ -89,10 +101,14 @@
 /datum/config_entry/number/tetris_score_max_sci
 	default = 10000
 
-// Minimum time between giving rewards
+// Minimum time between giving rewards (in deciseconds; 0 would break prize dispensing)
 /datum/config_entry/number/tetris_time_cooldown
 	default = 600
+	min_val = 1
 
 /// R&D Machinery ///
 // Should production machinery be restricted for skeleton crews?
 /datum/config_entry/flag/protolock_during_lowpop
+
+// Should production machinery be available in code red and above?
+/datum/config_entry/flag/protolock_during_codered

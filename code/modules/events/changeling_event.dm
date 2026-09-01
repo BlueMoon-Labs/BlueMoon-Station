@@ -8,11 +8,24 @@
 /datum/round_event_control/changeling
 	name = "Changeling Meteor"
 	typepath = /datum/round_event/ghost_role/changeling
-	weight = 8
-	max_occurrences = 3
+	// Вес прижат к середине пула (прод-жалоба "в медиуме постоянно Changeling Meteor"):
+	// на 24-30 экипажа большинство конкурентов отрезано min_players, и вес 8 при трёх
+	// запусках делал метеор дефолтным гост-антагом раунда. Трим 8 -> 6 не дожал:
+	// в логах 9766-9775 метеор выпал в 3 из 5 динамик-раундов.
+	weight = 4
+	max_occurrences = 2
+	// Раннее разнообразие гост-пула (см. Spawn Sentient Disease): доступен с 20-й минуты,
+	// чтобы Devil не был единственным гост-антагом первые полчаса.
+	earliest_start = 20 MINUTES
 	min_players = 20
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 10
+	intensity = 15
+	family = "changeling"
+	director_ghost_jobban = ROLE_CHANGELING
+	director_ghost_preference = ROLE_CHANGELING_MIDROUND
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED) // не экста и не лайт
 	description = "A meteor containing a changeling is summoned and thrown at the exterior of the station."
 
 /datum/round_event/ghost_role/changeling
@@ -21,7 +34,7 @@
 	fakeable = FALSE
 
 /datum/round_event/ghost_role/changeling/spawn_role()
-	var/list/mob/dead/observer/candidate = get_candidates(ROLE_CHANGELING, ROLE_CHANGELING_MIDROUND)
+	var/list/mob/dead/observer/candidate = get_candidates(ROLE_CHANGELING, null, ROLE_CHANGELING_MIDROUND)
 
 	if(!candidate.len)
 		return NOT_ENOUGH_PLAYERS

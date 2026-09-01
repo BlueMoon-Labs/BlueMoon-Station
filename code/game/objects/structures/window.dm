@@ -1,13 +1,16 @@
-GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
-
 /proc/do_electrochromatic_toggle(new_status, id)
-	var/list/windows = GLOB.electrochromatic_window_lookup["[id]"]
-	if(!windows)
+	var/list/linked = GLOB.electrochromatic_window_lookup["[id]"]
+	if(!linked)
 		return
-	var/obj/structure/window/W		//define outside for performance because obviously this matters.
-	for(var/i in windows)
-		W = i
-		new_status? W.electrochromatic_dim() : W.electrochromatic_off()
+	for(var/obj/structure/window/window_trim in linked)
+		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
+	for(var/obj/machinery/door/window/interior_trim in linked)
+		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/structure/curtain_static/glass/gl_curtain in linked)
+		new_status ? gl_curtain.electrochromatic_dim() : gl_curtain.electrochromatic_off()
+	for(var/obj/machinery/door/airlock/gl_airlock in linked)
+		if(gl_airlock.glass)
+			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()
 
 /obj/structure/window
 	name = "window"
@@ -59,6 +62,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 
 /obj/structure/window/examine(mob/user)
 	. = ..()
+	. += airbag_examine()
 	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 		. += "<span class='notice'>The window has electrochromatic circuitry on it.</span>"
 	if(reinf)
@@ -89,9 +93,18 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 			. += "<span class='notice'>The window is <b>screwed</b> to the floor.</span>"
 		else
 			. += "<span class='notice'>The window is <i>unscrewed</i> from the floor, and could be deconstructed by <b>wrenching</b>.</span>"
+	// Теплопроводность остекления не видна ничем, и вычислять её приходилось
+	// градусником по соседней комнате - строкой осмотра игрок хотя бы знает,
+	// чем отгораживаться от печи.
+	if(anchored && density)
+		if(BlockThermalConductivity())
+			. += "<span class='notice'>Стекло <b>не проводит тепло</b>: за ним можно держать раскалённое помещение.</span>"
+		else
+			. += "<span class='warning'>Стекло <b>проводит тепло</b>: жар из соседнего помещения будет просачиваться сквозь него.</span>"
 
 /obj/structure/window/Initialize(mapload, direct)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(direct)
 		setDir(direct)
 
@@ -212,12 +225,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		balloon_alert_to_viewers("СТУК!!!")
 		take_damage(20, BRUTE, MELEE, 0)
 		var/mob/living/carbon/human/pro_user = user
-		if(user.active_hand_index == 1)
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM, wound_bonus = 15)
-		else
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM, wound_bonus = 15)
+		pro_user.apply_damage(11, BRUTE, user.active_hand_index == 1 ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM, wound_bonus = 10)
 		playsound(src, 'sound/effects/Glassknock.ogg', 100, 1)
-	else if(user.a_intent != INTENT_HARM)
+	else
 		user.visible_message("[user] стучится в [src].")
 		balloon_alert_to_viewers("Тук-тук!")
 		playsound(src, 'sound/effects/Glassknock.ogg', 50, 1)
@@ -238,6 +248,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 
 	add_fingerprint(user)
 
+	if(airbag_attackby(I, user))
+		return TRUE
+
 	if(I.tool_behaviour == TOOL_WELDER && user.a_intent == INTENT_HELP)
 		if(obj_integrity < max_integrity)
 			if(!I.tool_start_check(user, amount=0))
@@ -252,7 +265,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 			to_chat(user, "<span class='warning'>[src] is already in good condition!</span>")
 		return
 
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, "<span class='warning'>[src] is already electrochromatic!</span>")
@@ -491,6 +504,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 /obj/structure/window/deconstruct(disassembled = TRUE)
 	if(QDELETED(src))
 		return
+	airbag_on_deconstruct(disassembled)
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -540,6 +554,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	add_fingerprint(user)
 
 /obj/structure/window/Destroy()
+	airbag_drop()
 	density = FALSE
 	air_update_turf(TRUE)
 	update_nearby_icons()
@@ -569,6 +584,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 //merges adjacent full-tile windows into one
 /obj/structure/window/update_overlays()
 	. = ..()
+	var/mutable_appearance/airbag_light = airbag_overlay()
+	if(airbag_light)
+		. += airbag_light
 	if(QDELETED(src) || !fulltile)
 		return
 	var/ratio = obj_integrity / max_integrity
@@ -586,6 +604,14 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	if(exposed_temperature > (T0C + heat_resistance))
 		take_damage(round(exposed_volume / 100), BURN, 0, 0)
 	..()
+
+// Flameless path: a room hot enough to break glass does it without a hotspot
+// ever touching the pane.
+/obj/structure/window/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + heat_resistance)
+
+/obj/structure/window/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(round(exposed_air.return_volume() / 100), BURN, 0, 0)
 
 /obj/structure/window/get_dumping_location(obj/item/storage/source,mob/user)
 	return null
@@ -657,6 +683,22 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	glass_material_datum = /datum/material/alloy/plasmaglass
 	rad_insulation = RAD_NO_INSULATION
 
+// Плазменное стекло - единственное, что игрок может поставить между печью и
+// собой: обычное и армированное гоняют тепло коэффициентом окна (0.1), и
+// камера сгорания через них прогревает соседний отсек до пожарки. Раньше
+// теплоизоляцию давала только армированная плазма, теперь весь сплав - у него
+// и heat_resistance 25000. Гейт по density: разбитое окно снимает печать сразу
+// (Destroy() гасит density и просит пересчёт соседства), иначе она пережила бы
+// саму панель до следующего стороннего апдейта турфа.
+/obj/structure/window/plasma/BlockThermalConductivity()
+	// fulltile обязателен. BlockThermalConductivity() направления не принимает, а
+	// LINDA_system зовёт её внутри цикла по сторонам без всякой фильтрации - то
+	// есть печать выходит КРУГОВОЙ. Газ же у окна directional: CanAtmosPass()
+	// пропускает три стороны из четырёх. Одна панель в дверном проёме иначе
+	// перекрывала бы тепло со всех сторон, продолжая пропускать воздух с трёх, -
+	// на мастере ровно это делала армированная плазма своим безусловным TRUE.
+	return anchored && density && fulltile
+
 /obj/structure/window/plasma/spawner/east
 	dir = EAST
 
@@ -696,9 +738,6 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 /obj/structure/window/plasma/reinforced/unanchored
 	anchored = FALSE
 
-/obj/structure/window/plasma/reinforced/BlockThermalConductivity()
-	return TRUE
-
 /obj/structure/window/reinforced/tinted
 	name = "tinted window"
 	icon_state = "twindow"
@@ -715,6 +754,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	dir = FULLTILE_WINDOW_DIR
 	max_integrity = 50
 	fulltile = TRUE
+	shadow_weight = 0.1
 	flags_1 = PREVENT_CLICK_UNDER_1
 	obj_flags = CAN_BE_HIT //BLUEMOON ADD
 	smooth = SMOOTH_TRUE
@@ -727,6 +767,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		/turf/closed/wall/rust,
 		/turf/closed/wall/r_wall/rust,
 		/turf/closed/wall/clockwork,
+		/turf/closed/indestructible/riveted,
 		/obj/structure/window/fulltile,
 		/obj/structure/window/reinforced/fulltile,
 		/obj/structure/window/reinforced/tinted/fulltile,
@@ -755,6 +796,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		/turf/closed/wall/rust,
 		/turf/closed/wall/r_wall/rust,
 		/turf/closed/wall/clockwork,
+		/turf/closed/indestructible/riveted,
 		/obj/structure/window/fulltile,
 		/obj/structure/window/reinforced/fulltile,
 		/obj/structure/window/reinforced/tinted/fulltile,
@@ -784,6 +826,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		/turf/closed/wall/rust,
 		/turf/closed/wall/r_wall/rust,
 		/turf/closed/wall/clockwork,
+		/turf/closed/indestructible/riveted,
 		/obj/structure/window/fulltile,
 		/obj/structure/window/reinforced/fulltile,
 		/obj/structure/window/reinforced/tinted/fulltile,
@@ -843,6 +886,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		/turf/closed/wall/rust,
 		/turf/closed/wall/r_wall/rust,
 		/turf/closed/wall/clockwork,
+		/turf/closed/wall/r_wall/syndicate,
+		/turf/closed/wall/r_wall/syndicate/nodiagonal,
+		/turf/closed/indestructible/riveted,
 		/obj/structure/window/fulltile,
 		/obj/structure/window/reinforced/fulltile,
 		/obj/structure/window/reinforced/tinted/fulltile,
@@ -856,7 +902,23 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	icon = 'icons/obj/smooth_structures/rice_window.dmi'
 	icon_state = "ice_window"
 	max_integrity = 150
-	canSmoothWith = list(/obj/structure/window/fulltile, /obj/structure/window/reinforced/fulltile, /obj/structure/window/reinforced/tinted/fulltile, /obj/structure/window/plasma/fulltile, /obj/structure/window/plasma/reinforced/fulltile)
+	canSmoothWith = list(
+		/turf/closed/wall,
+		/turf/closed/wall/r_wall,
+		/turf/closed/wall/rust,
+		/turf/closed/wall/r_wall/rust,
+		/turf/closed/wall/clockwork,
+		/turf/closed/indestructible/riveted,
+		/obj/structure/falsewall,
+		/obj/structure/falsewall/brass,
+		/obj/structure/falsewall/reinforced,
+		/obj/structure/window/fulltile,
+		/obj/structure/window/reinforced/fulltile,
+		/obj/structure/window/reinforced/fulltile/ice,
+		/obj/structure/window/reinforced/tinted/fulltile,
+		/obj/structure/window/plasma/fulltile,
+		/obj/structure/window/plasma/reinforced/fulltile
+		)
 	level = 3
 	glass_amount = 2
 
@@ -873,8 +935,8 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	reinf = TRUE
 	heat_resistance = 1600
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
-	smooth = SMOOTH_TRUE
-	canSmoothWith = null
+	smooth = SMOOTH_MORE|SMOOTH_TRUE
+	canSmoothWith = list(/turf/closed/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater, /obj/structure/falsewall/titanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/titaniumglass
@@ -882,6 +944,11 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	glass_material_datum = /datum/material/alloy/titaniumglass
 	glass_amount = 2
 	ricochet_chance_mod = 0.9
+
+// Корпусное остекление шаттлов и синдикатских баз - цельный лист в обшивке, а
+// не перегородка: держать за собой вакуум и не держать тепло оно не может.
+/obj/structure/window/shuttle/BlockThermalConductivity()
+	return anchored && density
 
 /obj/structure/window/shuttle/narsie_act()
 	add_atom_colour("#3C3434", FIXED_COLOUR_PRIORITY)
@@ -906,14 +973,17 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	extra_reinforced = TRUE
 	heat_resistance = 1600
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	smooth = SMOOTH_MORE|SMOOTH_TRUE
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass
 	cleanable_type = /obj/effect/decal/cleanable/glass/plastitanium
 	glass_material_datum = /datum/material/alloy/plastitaniumglass
 	glass_amount = 2
+
+/obj/structure/window/plastitanium/BlockThermalConductivity()
+	return anchored && density
 
 /obj/structure/window/plastitanium/unanchored
 	anchored = FALSE
@@ -984,7 +1054,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 /obj/structure/window/reinforced/clockwork/fulltile
 	icon_state = "clockwork_window"
 	smooth = SMOOTH_TRUE
-	canSmoothWith = null
+	canSmoothWith = list(/obj/structure/window/reinforced/clockwork/fulltile, /turf/closed/indestructible/riveted)
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
 	dir = FULLTILE_WINDOW_DIR
@@ -1012,7 +1082,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
 	smooth = SMOOTH_TRUE
-	canSmoothWith = list(/obj/structure/window/paperframe, /obj/structure/mineral_door/paperframe)
+	canSmoothWith = list(/obj/structure/window/paperframe, /obj/structure/mineral_door/paperframe, /turf/closed/indestructible/riveted)
 	glass_amount = 2
 	glass_type = /obj/item/stack/sheet/paperframes
 	heat_resistance = 233
@@ -1088,7 +1158,7 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 
 /obj/structure/window/bronze/fulltile
 	icon_state = "clockwork_window"
-	canSmoothWith = null
+	canSmoothWith = list(/obj/structure/window/bronze/fulltile, /turf/closed/indestructible/riveted)
 	smooth = SMOOTH_TRUE
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1

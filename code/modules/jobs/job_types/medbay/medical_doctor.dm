@@ -8,13 +8,36 @@
 	spawn_positions = 3
 	supervisors = "the chief medical officer"
 	selection_color = "#74b5e0"
+	alt_titles = list(
+		"Medical Intern", //Стажер выше, для удобства
+		"Interdyne Specialist", //Триглав выше, для удобства
+		"Coroner",
+		"Healing Fleshlight",
+		"Medi-Slut",
+		"Medi-Stud",
+		"Medical Examiner",
+		"Medical Secretary",
+		"Medical Resident",
+		"Medical Technician",
+		"Medtech",
+		"Nurse",
+		"Oral Doctor",
+		"Pathologist",
+		"Physician",
+		"Psychiatrist",
+		"Surgeon",
+		"Field Surgeon",
+		"Therapist",
+		"Trophologist",
+		"Xenosurgeon",
+		)
 
 	outfit = /datum/outfit/job/doctor
 	departments = DEPARTMENT_BITFLAG_MEDICAL
 	plasma_outfit = /datum/outfit/plasmaman/medical
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_VIROLOGY, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_VIROLOGY, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_MED
@@ -49,7 +72,7 @@
 	name = "Medical Doctor"
 	jobtype = /datum/job/doctor
 
-	belt = /obj/item/pda/medical
+	belt = /obj/item/modular_computer/pda/medical
 	ears = /obj/item/radio/headset/headset_med
 	uniform = /obj/item/clothing/under/rank/medical/doctor
 	shoes = /obj/item/clothing/shoes/sneakers/white
@@ -69,7 +92,7 @@
 	name = "Syndicate Medical Doctor"
 	jobtype = /datum/job/doctor
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -79,9 +102,11 @@
 	l_hand = /obj/item/storage/firstaid/regular
 	suit_store = /obj/item/flashlight/pen
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)

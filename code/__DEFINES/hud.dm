@@ -34,10 +34,13 @@
 	Therefore, the top right corner (except during admin shenanigans) is at "15,15"
 */
 
-/proc/ui_hand_position(i) //values based on old hand ui positions (CENTER:-/+16,SOUTH:5)
+// Центр для уи
+#define around_player "CENTER-1,CENTER-1"
+
+/proc/ui_hand_position(i, pixel_x = 0, pixel_y = 0) //values based on old hand ui positions (CENTER:-/+16,SOUTH:5)
 	var/x_off = -(!(i % 2))
 	var/y_off = round((i-1) / 2)
-	return"CENTER+[x_off]:16,SOUTH+[y_off]:5"
+	return"CENTER+[x_off]:[16+pixel_x],SOUTH+[y_off]:[5+pixel_y]"
 
 /proc/ui_equip_position(mob/M)
 	var/y_off = round((M.held_items.len-1) / 2) //values based on old equip ui position (CENTER: +/-16,SOUTH+1:5)
@@ -99,6 +102,8 @@
 #define ui_internal "EAST-1:28,CENTER+1:21" // RIP, although nobody will remember this, unsmart coders have used this for other stuff. DO NOT REMOVE UNLESS RENAMING OR REPLACING.
 #define ui_mood "EAST-1:28,CENTER:21"
 #define ui_stamina "EAST-1:28,CENTER-3:14"
+#define ui_coolant_display "EAST,CENTER+2:10"
+#define ui_hunger_thirst "EAST-1:28,CENTER+1:24"
 // #define ui_spacesuit "EAST-1:28,CENTER-4:14"
 
 //Pop-up inventory
@@ -130,7 +135,7 @@
 #define ui_drone_head "CENTER-3:14,SOUTH:5"
 
 //Cyborgs
-#define ui_borg_health "EAST-1:28,CENTER-1:15"
+#define ui_borg_health "EAST-1:25,CENTER-1:20"
 #define ui_borg_pull "EAST-2:26,SOUTH+1:7"
 #define ui_borg_radio "EAST-1:28,SOUTH+1:7"
 #define ui_borg_intents "EAST-2:26,SOUTH:5"
@@ -205,9 +210,9 @@
 #define ui_ghost_reenter_corpse "SOUTH:6,CENTER-1:24"
 #define ui_ghost_teleport "SOUTH:6,CENTER:24"
 #define ui_ghost_pai "SOUTH: 6, CENTER+1:24"
-#define ui_ghost_mafia "SOUTH: 6, CENTER+2:24"
+#define ui_ghost_mafia "SOUTH: 6, CENTER+3:24"
 #define ui_ghost_spawners "SOUTH: 6, CENTER+1:24" // LEGACY. SAME LOC AS PAI
-
+#define ui_ghost_floor_changer "SOUTH:6,CENTER+2:24" // Z
 //UI position overrides for 1:1 screen layout. (default is 7:5)
 #define ui_overridden_resist "EAST-3:24,SOUTH+1:7"
 #define ui_clickdelay "CENTER,SOUTH+1:-31"
@@ -233,6 +238,11 @@
 #define SCRN_OBJ_IN_PALETTE "palette"
 ///Inserted first in the list
 #define SCRN_OBJ_INSERT_FIRST "first"
+/// Сколько позиций кнопок действий переживает savefile: больше не читаем и не пишем
+#define ACTION_BUTTON_SAVED_POSITIONS_MAX 128
+/// Потолок длины ключа и значения одной сохранённой позиции (аргумент copytext, то есть
+/// строка режется до 64 символов)
+#define ACTION_BUTTON_SAVED_POSITION_LEN 65
 
 // Plane group keys, used to group swaths of plane masters that need to appear in subwindows
 /// The primary group, holds everything on the main window

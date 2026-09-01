@@ -27,12 +27,16 @@
 	if(..())
 		return
 	owner.become_blind(GENETIC_MUTATION)
+	RegisterSignal(owner, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/mutation/human/blind/on_losing(mob/living/carbon/human/owner)
 	if(..())
 		return
 	owner.cure_blind(GENETIC_MUTATION)
+	UnregisterSignal(owner, COMSIG_PARENT_EXAMINE)
 
+/datum/mutation/human/blind/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
+	examine_list += "<span class='warning'>[owner.ru_ego(TRUE)] глаза мутные и остекленелые...</span>"
 
 ///Thermal Vision lets you see mobs through walls
 /datum/mutation/human/thermal
@@ -66,7 +70,7 @@
 	text_gain_indication = "<span class='notice'>The walls suddenly disappear!</span>"
 	instability = 50
 	locked = TRUE
-	visionflag = TRAIT_XRAY_VISION // BLUEMOON CHANGE
+	visionflag = TRAIT_XRAY_VISION
 
 
 //Laser Eyes lets you shoot lasers from your eyes!
@@ -89,4 +93,29 @@
 
 /datum/mutation/human/laser_eyes/on_ranged_attack(atom/target, mouseparams)
 	if(owner.a_intent == INTENT_HARM)
+		if(HAS_TRAIT(owner, TRAIT_PACIFISM))
+			to_chat(owner, span_notice("Это может обжечь других! Вы не хотите рисковать навредить кому-либо..."))
+			return
 		owner.LaserEyes(target, mouseparams)
+
+/// Flash Protection — immune to handheld flashes and flashbangs (not welding arcs).
+/datum/mutation/human/flash_protection
+	name = "Flash Protection"
+	desc = "The host's eyes resist blinding light from flashes and flashbangs."
+	quality = POSITIVE
+	difficulty = 12
+	instability = 25
+	locked = TRUE
+	limb_req = BODY_ZONE_HEAD
+	text_gain_indication = "<span class='notice'>You stop noticing the glare from bright lights...</span>"
+	text_lose_indication = "<span class='danger'>Bright lights sting your eyes again.</span>"
+
+/datum/mutation/human/flash_protection/on_acquiring(mob/living/carbon/human/owner)
+	if(..())
+		return
+	ADD_TRAIT(owner, TRAIT_NOFLASH, GENETIC_MUTATION)
+
+/datum/mutation/human/flash_protection/on_losing(mob/living/carbon/human/owner)
+	if(..())
+		return
+	REMOVE_TRAIT(owner, TRAIT_NOFLASH, GENETIC_MUTATION)

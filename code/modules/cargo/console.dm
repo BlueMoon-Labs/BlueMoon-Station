@@ -124,6 +124,8 @@
 	data["supplies"] = list()
 	for(var/pack in SSshuttle.supply_packs)
 		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
+		if(P.exclusive_consoles)
+			continue
 		if(!data["supplies"][P.group])
 			data["supplies"][P.group] = list(
 				"name" = P.group,
@@ -190,6 +192,8 @@
 				return
 			if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.contraband && !contraband) || pack.DropPodOnly)
 				return
+			if(pack.exclusive_consoles && !is_type_in_list(src, pack.exclusive_consoles))
+				return
 
 			if(self_paid && !pack.can_private_buy)
 				say("This cannot be bought privately.")
@@ -248,8 +252,10 @@
 				SSshuttle.requestlist += SO
 			else
 				SSshuttle.shoppinglist += SO
-				if(self_paid)
+				if(self_paid && account)
 					say("Order processed. The price will be charged to [account.account_holder]'s bank account on delivery.")
+				else if(self_paid)
+					say("Order processed. Bank account could not be verified; charge may fail on delivery.")
 			if(requestonly && message_cooldown < world.time)
 				radio.talk_into(src, "Был запрошен новый заказ.", RADIO_CHANNEL_SUPPLY)
 				message_cooldown = world.time + 30 SECONDS

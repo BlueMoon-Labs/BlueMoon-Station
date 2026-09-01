@@ -8,6 +8,7 @@ PROCESSING_SUBSYSTEM_DEF(interactions)
 		/mob/dead,
 		/mob/dview,
 		/mob/camera, // Although it would be funny to fuck the sentient disease or AI hologram
+		/mob/living/carbon/monkey,
 		/mob/living/simple_animal/pet,
 		/mob/living/simple_animal/cockroach,
 		/mob/living/simple_animal/babyKiwi,
@@ -20,7 +21,10 @@ PROCESSING_SUBSYSTEM_DEF(interactions)
 		/mob/living/simple_animal/parrot,
 		/mob/living/simple_animal/sloth,
 		/mob/living/simple_animal/pickle,
-		/mob/living/simple_animal/hostile/retaliate/goat
+		/mob/living/simple_animal/mouse,
+		/mob/living/simple_animal/hostile/retaliate/goat,
+		/mob/living/simple_animal/hostile/retaliate/frog,
+		/mob/living/simple_animal/hostile/retaliate/poison/snake,
 	)
 	VAR_PROTECTED/initialized_blacklist
 	var/list/interactions = list()
@@ -59,6 +63,8 @@ PROCESSING_SUBSYSTEM_DEF(interactions)
  * their requirements must be satisfied, and the mob must not be of a blacklisted type.
 */
 /datum/controller/subsystem/processing/interactions/proc/is_blacklisted(mob/living/creature)
+	if(isliving(creature) && creature.client)
+		return FALSE
 	if(!creature || !initialized_blacklist)
 		return TRUE
 	if(is_type_in_typecache(creature, blacklisted_mobs))

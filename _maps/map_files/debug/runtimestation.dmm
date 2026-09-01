@@ -1925,6 +1925,12 @@
 /obj/machinery/computer/nanite_cloud_controller,
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
+"hV" = (
+/obj/item/hilbertshotel/researchfacility{
+	name = "space ruin Hilbert's Hotel"
+	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/exit/departure_lounge)
 "ia" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -2143,12 +2149,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -2795,6 +2799,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/item/hilbertshotel/ghostdojo,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "BG" = (
@@ -3072,12 +3077,8 @@
 /turf/open/floor/plasteel,
 /area/construction)
 "IV" = (
-/obj/docking_port/stationary{
-	dir = 1;
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)
@@ -3470,7 +3471,7 @@
 /turf/open/floor/plasteel,
 /area/service/bar)
 "Sj" = (
-/obj/structure/table/optable,
+/obj/structure/table/optable/loaded,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
@@ -3546,6 +3547,9 @@
 /area/service/bar)
 "Un" = (
 /obj/machinery/camera/autoname,
+/obj/item/hilbertshotel/ghostdojo{
+	name = "station Infinite Dormitories"
+	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "Ur" = (
@@ -3643,6 +3647,9 @@
 "Wu" = (
 /obj/machinery/airalarm/unlocked{
 	pixel_y = 23
+	},
+/obj/item/hilbertshotel/ghostdojo/ghostcafe{
+	name = "ghost cafe Infinite Dormitories"
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
@@ -9716,7 +9723,7 @@ fo
 eu
 eu
 et
-fO
+hV
 fO
 fO
 fO

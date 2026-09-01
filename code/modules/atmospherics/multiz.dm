@@ -3,7 +3,7 @@
 	name = "multi deck pipe adapter"
 	desc = "An adapter which allows pipes to connect to other pipenets on different decks."
 	icon = 'icons/obj/multiz.dmi'
-	icon_state = "adapter-2"
+	icon_state = "adapter-3"
 
 	dir = SOUTH
 	initialize_directions = SOUTH

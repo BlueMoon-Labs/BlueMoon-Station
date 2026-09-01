@@ -28,39 +28,66 @@
 	// else if(ckey)
 	// 	stack_trace("Mob without client but with associated ckey, [ckey], has been deleted.")
 	unset_machine()
+	SStgui.close_user_uis(src)
+	remove_from_all_current_player_lists()
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
 	QDEL_LIST(mob_spell_list)
-	QDEL_LIST(actions)
+	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src
 	// remove_from_mob_suicide_list()
 	focus = null
 	LAssailant = null
 	movespeed_modification = null
 	if(length(progressbars))
-		stack_trace("[src] destroyed with elements in its progressbars list.")
+		//COMSIG_PARENT_QDELETING уходит до Destroy и чистит список через on_user_delete,
+		//так что дожившая до сюда полоска - это do_after, заведённый уже поверх удаляемого
+		//моба. Без перечисления целей понять, чей это do_after, по трейсу невозможно.
+		var/list/leaked = list()
+		for(var/bar_target in progressbars)
+			var/list/bars = progressbars[bar_target]
+			leaked += "[bar_target || "null"] ([islist(bars) ? length(bars) : "не список"])"
+		stack_trace("[src] destroyed with elements in its progressbars list: [leaked.Join(", ")]")
 		progressbars = null
-	for (var/alert in alerts)
-		clear_alert(alert, TRUE)
+	if(alerts) //у /mob/oranges_ear списки алертов обнулены на уровне типа
+		for (var/alert in alerts.Copy())
+			clear_alert(alert, TRUE)
 	if(observers?.len)
-		for(var/mob/dead/observe as anything in observers)
+		// reset_perspective() выпиливает наблюдателя из observers - итерируем копию,
+		// иначе каждый второй пропускается и его client.eye/observetarget навсегда
+		// держат удалённого моба (утечка обсерверов при наблюдении друг за другом).
+		for(var/mob/dead/observer/observe as anything in observers.Copy())
 			observe.reset_perspective(null)
+			// У бесклиентных наблюдателей reset_perspective не чистит observetarget.
+			observe.observetarget = null
+		observers = null
 	dispose_rendering()
 	qdel(hud_used)
+	if(hud_list)
+		for(var/hud_key in hud_list)
+			var/image/hud_image = hud_list[hud_key]
+			if(istype(hud_image))
+				hud_image.loc = null
+		hud_list = null
 	QDEL_LIST(client_colours)
+	clear_typing_indicator()
+	QDEL_NULL(mob_panel)
 	ghostize()
 	if(mind?.current == src) //Let's just be safe yeah? This will occasionally be cleared, but not always. Can't do it with ghostize without changing behavior
 		mind.set_current(null)
 	// if(mock_client)
 	// 	mock_client.mob = null
 
-	return ..()
+	. = ..()
+	//предметы в руках удалены contents-циклом выше по цепочке, но unequip при
+	//QDELING(моб) пропускается - отпускаем ссылки, чтобы зависший моб не пиннил их
+	held_items = null
 
 /mob/GenerateTag()
 	tag = "mob_[next_mob_id++]"
 
-/atom/proc/prepare_huds()
+/atom/movable/proc/prepare_huds()
 	hud_list = list()
 	for(var/hud in hud_possible)
 		var/hint = hud_possible[hud]
@@ -73,7 +100,7 @@
 				hud_list[hud] = I
 
 /mob/proc/Cell()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set hidden = 1
 
 	if(!loc)
@@ -153,11 +180,16 @@
 	var/list/hearers = get_hearers_in_view(vision_distance, src) //caches the hearers and then removes ignored mobs.
 	if(!length(hearers))
 		return
+
+	var/raw_msg = message
+	if(visible_message_flags & EMOTE_MESSAGE)
+		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
+
 	hearers -= ignored_mobs
 
 	if(target_message && target && istype(target) && (target.client || target.audiovisual_redirect))
 		hearers -= target
-		if(omni)
+		if(omni || !blind_message)
 			target.show_message(target_message)
 		else
 			//This entire if/else chain could be in two lines but isn't for readibilties sake.
@@ -168,13 +200,9 @@
 			else if(target.lighting_alpha > LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE && T.is_softly_lit() && !in_range(T,target))
 				msg = blind_message
 			if(msg)
-				target.show_message(msg, MSG_VISUAL,blind_message, MSG_AUDIBLE)
+				target.show_message(msg, MSG_VISUAL, in_range(T, target) ? msg : blind_message, MSG_AUDIBLE)
 	if(self_message)
 		hearers -= src
-
-	var/raw_msg = message
-	if(visible_message_flags & EMOTE_MESSAGE)
-		message = "<span class='emote'><b>[src]</b>[separation][message]</span>" // SKYRAT EDIT - Better emotes
 
 	for(var/mob/M in hearers)
 		if(!M.client && !M.audiovisual_redirect)
@@ -198,20 +226,18 @@
 		if(visible_message_flags & EMOTE_MESSAGE && !M.is_blind())
 			M.create_chat_message(src, raw_message = raw_msg)
 
-		M.show_message(msg, MSG_VISUAL, blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
+		M.show_message(msg, MSG_VISUAL, in_range(T,M) ? msg : blind_message, MSG_AUDIBLE) //SKYRAT CHANGE
 
 ///Adds the functionality to self_message.
 /mob/visible_message(message, self_message, blind_message, vision_distance = DEFAULT_MESSAGE_RANGE, list/ignored_mobs, mob/target, target_message, omni = FALSE, runechat_popup, rune_msg, visible_message_flags)
 	. = ..()
 	if(self_message && target != src)
-		if(!omni)
-			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
-		else
+		if(omni || !blind_message)
 			show_message(self_message)
-			if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
-				create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
+		else
+			show_message(self_message, MSG_VISUAL, blind_message, MSG_AUDIBLE)
+		if(runechat_popup && client?.prefs.chat_on_map && client.prefs.see_chat_emotes) //SKYRAT CHANGE
+			create_chat_message(src, null, rune_msg ? rune_msg : self_message, list("emote", "italics"), null) //Skyrat change
 
 /**
   * Show a message to all mobs in earshot of this atom
@@ -275,7 +301,8 @@
 
 	if(istype(W))
 		if(equip_to_slot_if_possible(W, slot, FALSE, FALSE, FALSE, FALSE, TRUE))
-			W.apply_outline()
+			if(usr?.client?.prefs?.outline_enabled)
+				W.apply_outline()
 			return TRUE
 
 	if(!W)
@@ -353,6 +380,14 @@
 	set name = "Examine"
 	set category = "IC"
 
+	// Examine builds big text blobs and fires context signals: when the tick
+	// is already overloaded, run it at the start of the next one instead.
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(run_examinate), A))
+
+/mob/proc/run_examinate(atom/A)
+	if(QDELETED(A)) //верб мог отлежаться в очереди SSverb_manager, а цель - удалиться за это время
+		return
+
 	if(isturf(A) && !(sight & SEE_TURFS) && !(A in view(client ? client.view : world.view, src)))
 		// shift-click catcher may issue examinate() calls for out-of-sight turfs
 		return
@@ -363,25 +398,35 @@
 
 	face_atom(A)
 	var/list/result
+	var/examine_more = FALSE
 	if(client)
 		LAZYINITLIST(client.recent_examines)
 		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
 			result = A.examine(src)
+			if(!client)
+				return
 			client.recent_examines[A] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
 			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(clear_from_recent_examines), override=TRUE) // to flush the value if deleted early
 			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
 			handle_eye_contact(A)
 		else
+			examine_more = TRUE
 			result = A.examine_more(src)
 	else
 		result = A.examine(src) // if a tree is examined but no client is there to see it, did the tree ever really exist?
 
-	if(result && result.len) // BLUEMOON EDIT - sanity check
+	if(LAZYLEN(result)) // BLUEMOON EDIT - sanity check
+		if(!islist(result))
+			result = list(result)
+		if(examine_more)
+			result.Insert(1, span_notice("<i>Вы осматриваете - [A] - получше, и замечаете:</i>"))
 		for(var/i = 1, i <= result.len, i++)
 			if(!findtext(result[i], "<hr>"))
 				result[i] += "\n"
+	else if(examine_more)
+		result = list(span_notice("<i>Вы осматриваете - [A] - получше, но более не находите ничего интересного...</i>"))
 	else
-		result = list("You examine \the [A], seems like noone really cares about it.")
+		result = list("Вы осматриваете [A], но видите лишь серую посредственность...")
 
 	to_chat(src, examine_block("<span class='infoplain'>[result.Join()]</span>"))
 	SEND_SIGNAL(src, COMSIG_MOB_EXAMINATE, A)
@@ -508,16 +553,29 @@
 	set category = "Object"
 	set src = usr
 
-	if(ismecha(loc))
-		return
+	//предмет фиксируем в момент нажатия: верб может отлежаться в очереди,
+	//а игрок за это время сменить руку - активировать чужой предмет нельзя
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item(), active_hand_index))
 
+/**
+ * Логика для переопределений:
+ * FALSE - Действия запрещены, TRUE - Успешное действие, NULL - Можно выполнить действие
+ */
+/mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
+	if(ismecha(loc))
+		return FALSE
 	if(incapacitated())
-		return
+		return FALSE
+	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
+		return FALSE
 
 	var/obj/item/I = get_active_held_item()
 	if(I)
+		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
+		return TRUE
 
 /**
  * Get the notes of this mob
@@ -692,16 +750,15 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 // facing verbs
 /mob/proc/canface()
+	. = FALSE
 	if(world.time < client?.last_turn)
-		return FALSE
+		return
 	if(stat == DEAD || stat == UNCONSCIOUS)
-		return FALSE
+		return
 	if(anchored)
-		return FALSE
+		return
 	if(mob_transforming)
-		return FALSE
-	if(restrained())
-		return FALSE
+		return
 	return TRUE
 
 /mob/proc/fall(forced)
@@ -712,7 +769,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(EAST)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/westface()
@@ -720,7 +777,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(WEST)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/northface()
@@ -728,7 +785,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(NORTH)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
 
 /mob/verb/southface()
@@ -736,40 +793,32 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	if(!canface())
 		return FALSE
 	setDir(SOUTH)
-	client.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
+	client?.last_turn = world.time + MOB_FACE_DIRECTION_DELAY
 	return TRUE
-
-/mob/verb/eastshift()
-	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_x <= PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-		pixel_x++
-		is_shifted = TRUE
-
-/mob/verb/westshift()
-	set hidden = TRUE
-	if(!canface())
-		return FALSE
-	if(pixel_x >= -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-		pixel_x--
-		is_shifted = TRUE
 
 /mob/verb/northshift()
 	set hidden = TRUE
 	if(!canface())
 		return FALSE
-	if(pixel_y <= PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-		pixel_y++
-		is_shifted = TRUE
+	pixel_shift(NORTH)
 
 /mob/verb/southshift()
 	set hidden = TRUE
 	if(!canface())
 		return FALSE
-	if(pixel_y >= -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-		pixel_y--
-		is_shifted = TRUE
+	pixel_shift(SOUTH)
+
+/mob/verb/eastshift()
+	set hidden = TRUE
+	if(!canface())
+		return FALSE
+	pixel_shift(EAST)
+
+/mob/verb/westshift()
+	set hidden = TRUE
+	if(!canface())
+		return FALSE
+	pixel_shift(WEST)
 
 /mob/proc/IsAdvancedToolUser()//This might need a rename but it should replace the can this mob use things check
 	return FALSE
@@ -878,7 +927,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	return IsAdminGhost(src) || Adjacent(A) || A.hasSiliconAccessInArea(src)
 
 //Can the mob use Topic to interact with machines
-/mob/proc/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE)
+/mob/proc/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting=FALSE, silent = FALSE)
 	return
 
 /mob/proc/canUseStorage()
@@ -896,15 +945,22 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	return faction_check(faction, target.faction, FALSE)
 
 /proc/faction_check(list/faction_A, list/faction_B, exact_match)
-	var/list/match_list
 	if(exact_match)
-		match_list = faction_A&faction_B //only items in both lists
+		var/list/match_list = faction_A&faction_B //only items in both lists
 		var/length = LAZYLEN(match_list)
 		if(length)
 			return (length == LAZYLEN(faction_A)) //if they're not the same len(gth) or we don't have a len, then this isn't an exact match.
-	else
-		match_list = faction_A&faction_B
-		return LAZYLEN(match_list)
+		return FALSE
+
+	//The overwhelmingly common query only needs to know whether one value
+	//matches. Avoid allocating an intersection list for every AI candidate.
+	if(!LAZYLEN(faction_A) || !LAZYLEN(faction_B))
+		return FALSE
+	var/list/smaller = LAZYLEN(faction_A) <= LAZYLEN(faction_B) ? faction_A : faction_B
+	var/list/larger = smaller == faction_A ? faction_B : faction_A
+	for(var/faction_name in smaller)
+		if(faction_name in larger)
+			return TRUE
 	return FALSE
 
 
@@ -952,8 +1008,8 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 					break
 				search_id = 0
 
-		else if( search_pda && istype(A, /obj/item/pda) )
-			var/obj/item/pda/PDA = A
+		else if( search_pda && istype(A, /obj/item/modular_computer/pda) )
+			var/obj/item/modular_computer/pda/PDA = A
 			if(PDA.owner == oldname)
 				PDA.owner = newname
 				PDA.update_label()
@@ -967,7 +1023,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/update_health_hud()
 	return
 
-/mob/proc/update_sight()
+/mob/proc/update_sight(forced = TRUE)
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 
 	sync_lighting_plane_alpha()
@@ -975,8 +1031,14 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/sync_lighting_plane_alpha()
 	if(hud_used)
 		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
-		if (L)
+		if(L)
 			L.alpha = lighting_alpha
+			L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
+		// Плоскость оверлейного света обязана гаснуть синхронно с тьмой: при прозрачной
+		// lighting plane (мезоны/НВ) цветной множитель света без тьмы под ним - визуальный мусор
+		var/atom/movable/screen/plane_master/o_light_visual/O = hud_used.plane_masters["[O_LIGHTING_VISUAL_PLANE]"]
+		if(O)
+			O.alpha = lighting_alpha
 
 /mob/proc/update_mouse_pointer()
 	if (!client)
@@ -987,7 +1049,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client.mouse_pointer_icon = pull_cursor_icon
 	else if(throw_cursor_icon && throw_mode != 0)
 		client.mouse_pointer_icon = throw_cursor_icon
-	else if(combat_cursor_icon && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	else if(combat_cursor_icon && usr && SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		if(!client.prefs || !client.prefs.disable_combat_cursor) // Don't show the combat cursor for people who have it disabled in prefs.
 			client.mouse_pointer_icon = combat_cursor_icon
 	else if(examine_cursor_icon && client.keys_held["Shift"]) //mouse shit is hardcoded, make this non hard-coded once we make mouse modifiers bindable
@@ -1010,7 +1072,10 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
  * this does NOT check if the mob is missing it's eyeballs. Also see_in_dark is a BYOND mob var (that defaults to 2)
 **/
 /mob/proc/has_nightvision()
-	return HAS_TRAIT(src, TRAIT_NIGHT_VISION)
+	var/light_offset = lighting_cutoff
+	if(length(lighting_color_cutoffs) == 3)
+		light_offset += (lighting_color_cutoffs[1] + lighting_color_cutoffs[2] + lighting_color_cutoffs[3]) / 3
+	return light_offset >= LIGHTING_NIGHTVISION_THRESHOLD
 
 /// Is this mob affected by nearsight
 /mob/proc/is_nearsighted()
@@ -1113,6 +1178,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/setMovetype(newval)
 	. = ..()
+	// Родитель выходит ДО присваивания, если movement_type не изменился, и тогда
+	// возвращает null (а изменившись - старое значение, которое вполне может быть
+	// нулём: null != 0 в DM, поэтому проверка именно isnull). update_mobility()
+	// зовёт setMovetype(movement_type | CRAWLING) каждый Life-тик, то есть
+	// пересчёт скорости шёл на каждого игрока каждые 2 секунды впустую.
+	if(isnull(.))
+		return
 	// BLUEMOON ADD START - для корректного обновления скорости у парящих сверхтяжёлых персонажей
 	if(src.mob_weight > MOB_WEIGHT_HEAVY)
 		update_config_movespeed()

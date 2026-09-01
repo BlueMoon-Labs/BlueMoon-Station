@@ -6,6 +6,8 @@
 	var/linkage = SELFLOOPING
 	var/xi
 	var/yi   //imaginary placements on the grid
+	/// Whether lighting infrastructure (objects, corners) has been created for this z-level
+	var/lighting_initialized = FALSE
 
 /datum/space_level/New(new_z, new_name, list/new_traits = list())
 	z_value = new_z

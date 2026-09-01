@@ -9,7 +9,9 @@
 	explosion_block = 3
 	point_return = 4
 	atmosblock = TRUE
-	armor = list(MELEE = 25, BULLET = 25, LASER = 15, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	flags_1 = DEFAULT_RICOCHET_1
+	flags_ricochet = RICOCHET_HARD
+	armor = list(MELEE = 25, BULLET = 50, LASER = 25, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
 	var/weakened
 
 /obj/structure/blob/shield/scannerreport()
@@ -40,6 +42,28 @@
 			weakened = FALSE
 	air_update_turf(TRUE)
 
+/obj/structure/blob/shield/check_projectile_ricochet(obj/item/projectile/P)
+	return PROJECTILE_RICOCHET_FORCE
+
+/obj/structure/blob/shield/handle_ricochet(obj/item/projectile/P)
+	if(P.flag in list(BULLET, BOMB))
+		// Bullets use ricochet_incidence_leeway in /atom/proc/handle_ricochet, which blocks most impacts.
+		// Strong blob should always reflect bullets like reflective does for lasers.
+		var/turf/p_turf = get_turf(P)
+		var/face_direction = get_dir(src, p_turf)
+		var/face_angle = dir2angle(face_direction)
+		var/incidence_s = GET_ANGLE_OF_INCIDENCE(face_angle, (P.Angle + 180))
+		var/a_incidence_s = abs(incidence_s)
+		if(a_incidence_s > 90 && a_incidence_s < 270)
+			return FALSE
+		var/new_angle_s = SIMPLIFY_DEGREES(face_angle + incidence_s)
+		P.setAngle(new_angle_s)
+		P.hit_prone_targets = TRUE
+		return TRUE
+	. = ..()
+	if(.)
+		P.hit_prone_targets = TRUE
+
 /obj/structure/blob/shield/reflective
 	name = "reflective blob"
 	desc = "A solid wall of slightly twitching tendrils with a reflective glow."
@@ -51,6 +75,9 @@
 	max_integrity = 100
 	brute_resist = 1
 	explosion_block = 2
+	armor = list(MELEE = 25, BULLET = 25, LASER = 50, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
 
 /obj/structure/blob/shield/reflective/check_projectile_ricochet(obj/item/projectile/P)
-	return PROJECTILE_RICOCHET_FORCE
+	if(istype(P, /obj/item/projectile/beam/xray) || (P.flag in list(LASER, ENERGY) && is_energy_reflectable_projectile(P)))
+		return PROJECTILE_RICOCHET_FORCE
+	return ..()

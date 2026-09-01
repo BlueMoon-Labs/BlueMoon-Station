@@ -40,7 +40,8 @@
 	var/datum/action/cooldown/werewolf/transform/quirk_action = locate() in quirk_holder.actions
 
 	// Revoke quirk action
-	quirk_action.Remove(quirk_holder)
+	if(quirk_action)
+		quirk_action.Remove(quirk_holder)
 
 //
 // Quirk actions: Werewolf
@@ -102,7 +103,11 @@
 	// Check for restraints
 	if(!CHECK_MOBILITY(action_owner, MOBILITY_USE))
 		// Warn user, then return
-		action_owner.visible_message(span_warning("You cannot transform while restrained!"))
+		to_chat(action_owner, span_warning("You cannot transform while restrained!"))
+		return
+
+	if(iszombie_infectious(action_owner))
+		to_chat(action_owner, span_warning("You zombie and can't do this!"))
 		return
 
 	// Define citadel organs

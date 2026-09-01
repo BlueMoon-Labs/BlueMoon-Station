@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	</head>
+</head>
 	<body>
 		<script>
-			//this is used over window.location because window.location has a character limit in IE.
 			function sendbyond(text) {
 				var xhr = new XMLHttpRequest();
 				xhr.open('GET', '?'+text, true);

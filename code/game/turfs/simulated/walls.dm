@@ -51,6 +51,14 @@
 
 	var/list/dent_decals
 
+	///Урон, накопленный от мобов-ломателей. Сбрасывается вместе с турфом, то есть
+	///восстановленная стена снова целая.
+	var/mob_damage_taken = 0
+	///Сколько урона от мобов стена держит, прежде чем рухнуть. Голиафу (obj_damage
+	///100) нужно три удара: мгновенный снос читался игроками как "стена от касания"
+	///и делал любой построенный загон бессмысленным.
+	var/mob_damage_cap = 250
+
 /turf/closed/wall/examine(mob/user)
 	. = ..()
 	deconstruction_hints(user)
@@ -125,14 +133,25 @@
 /turf/closed/wall/attack_paw(mob/living/user)
 	return attack_hand(user)
 
+///Удар моба-ломателя: стена копит урон и рушится, только когда исчерпан запас.
+///Возвращает TRUE, если стена этот удар не пережила.
+/turf/closed/wall/proc/take_mob_smash_damage(mob/living/simple_animal/smasher)
+	mob_damage_taken += max(smasher.obj_damage, smasher.melee_damage_upper, 1)
+	if(mob_damage_taken < mob_damage_cap)
+		add_dent(WALL_DENT_HIT)
+		playsound(src, 'sound/effects/bang.ogg', 50, TRUE)
+		return FALSE
+	playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+	dismantle_wall(1)
+	return TRUE
+
 /turf/closed/wall/attack_animal(mob/living/simple_animal/M)
 	if(!M.CheckActionCooldown(CLICK_CD_MELEE))
 		return
 	M.DelayNextAction()
 	M.do_attack_animation(src)
 	if((M.environment_smash & ENVIRONMENT_SMASH_WALLS) || (M.environment_smash & ENVIRONMENT_SMASH_RWALLS))
-		playsound(src, 'sound/effects/meteorimpact.ogg', 100, 1)
-		dismantle_wall(1)
+		take_mob_smash_damage(M)
 		return
 
 /turf/closed/wall/attack_hulk(mob/living/carbon/user)
@@ -187,8 +206,9 @@
 		return
 
 	//get the user's location
-	if(!isturf(user.loc))
-		return	//can't do this stuff whilst inside objects and such
+	if(!istype(user.loc, /obj/item/integrated_circuit/manipulation))
+		if(!isturf(user.loc))
+			return	//can't do this stuff whilst inside objects and such
 
 	user.DelayNextAction()
 	add_fingerprint(user)
@@ -263,7 +283,33 @@
 			dismantle_wall()
 			visible_message("<span class='warning'>[user] smashes through [src] with [I]!</span>", "<span class='italics'>You hear the grinding of metal.</span>")
 			return TRUE
+
+	else if(istype(I, /obj/item/demolition_hammer))
+		var/obj/item/demolition_hammer/hammer = I // Checks if the hammer is dual-wielded
+		if (!hammer.wielded || INTERACTING_WITH(user, src))
+			return FALSE
+
+		var/initial_wall_type = src.type
+		to_chat(user, span_notice("You begin to crush though [src]..."))
+		playsound(src, 'sound/alien/Effects/bang1.ogg', 50, 1)
+
+		if(src.type != initial_wall_type || user.loc != T)
+			return FALSE
+
+		var/midsound_timer = addtimer(CALLBACK(src, PROC_REF(play_mid_sound), user, T), 2.5 SECONDS, TIMER_STOPPABLE)
+		if(!do_after(user, 5 SECONDS, target = src))
+			deltimer(midsound_timer)
+			return FALSE
+		I.play_tool_sound(src)
+		visible_message(span_warning("[user] crushes through [src] with [I]!"), "<i>You hear the grinding of metal.</i>")
+		dismantle_wall()
+		return TRUE
+
 	return FALSE
+
+/turf/closed/wall/proc/play_mid_sound(mob/user, turf/T)
+	if(user.loc == T)
+		playsound(src, 'sound/alien/Effects/bang7.ogg', 100, 1)
 
 /turf/closed/wall/singularity_pull(S, current_size)
 	..()
@@ -336,6 +382,7 @@
 /turf/closed/wall/rust_heretic_act()
 	if(prob(70))
 		new /obj/effect/temp_visual/glowing_rune(src)
-	ChangeTurf(/turf/closed/wall/rust)
+	var/turf/after = ChangeTurf(/turf/closed/wall/rust)
+	after?.AddElement(/datum/element/heretic_rust)
 
 #undef MAX_DENT_DECALS

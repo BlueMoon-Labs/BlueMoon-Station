@@ -11,6 +11,12 @@ GLOBAL_LIST_EMPTY(cryopod_computers)
 
 GLOBAL_LIST_EMPTY(ghost_records)
 
+/// Максимум записей в списке закриогенных перед подрезкой (ограничение утечки памяти)
+#define CRYO_FROZEN_CREW_MAX 500
+#define CRYO_FROZEN_CREW_TRIM_TO 300
+#define CRYO_GHOST_RECORDS_MAX 500
+#define CRYO_GHOST_RECORDS_TRIM_TO 300
+
 //Main cryopod console.
 /obj/machinery/computer/cryopod
 	name = "general oversight console"
@@ -26,7 +32,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	flags_1 = NODECONSTRUCT_1 // BLUEMOON ADD
 
 	max_integrity = 10000
-	obj_integrity = 10000
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+	armor = list(MELEE = 10, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+
 
 	// Used for logging people entering cryosleep and important items they are carrying.
 	var/list/frozen_crew = list()
@@ -143,30 +151,48 @@ GLOBAL_LIST_EMPTY(ghost_records)
 			usr.put_in_hands(I)
 		stored_packages -= I
 
+/// Time until despawn when a mob enters a cryopod. You can cryo other people in pods.
+#define TIME_TO_DESPAWN 30 SECONDS
+
 // Cryopods themselves.
 /obj/machinery/cryopod
 	name = "cryogenic freezer"
 	desc = "Suited for Cyborgs and Humanoids, the pod is a safe place for personnel affected by the Space Sleep Disorder to get some rest."
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "cryopod-open"
 	density = TRUE
 	anchored = TRUE
 	state_open = TRUE
+
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+	max_integrity = 500
+	armor = list(MELEE = 10, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	flags_1 = NODECONSTRUCT_1
+	interaction_flags_machine = INTERACT_MACHINE_WIRES_IF_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OPEN_SILICON | INTERACT_MACHINE_SET_MACHINE | INTERACT_MACHINE_OFFLINE
+
 	var/tele = FALSE
 
 	var/on_store_message = "has entered long-term storage."
 	var/on_store_name = "Cryogenic Oversight"
 
-	/// Time until despawn when a mob enters a cryopod. You can cryo other people in pods.
-	var/time_till_despawn = 30 SECONDS
 	/// Cooldown for when it's now safe to try an despawn the player.
 	COOLDOWN_DECLARE(despawn_world_time)
 
 	///Weakref to our controller
 	var/datum/weakref/control_computer_weakref
 
+/obj/machinery/cryopod/tele
+	name = "CentCom Teleporter"
+	desc = "Suited for everyone who wishes to leave the station and go back to CentCom.\n<span class='notice'>This is not for actually getting into CentCom, you will leave the round.</span>"
+	icon = 'modular_sand/icons/obj/machines/cent-tele.dmi'
+	tele = TRUE
+
+	on_store_message = "has been teleported to CentCom."
+	on_store_name = "Teleporter Oversight"
+
 /obj/machinery/cryopod/Initialize(mapload)
 	..()
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
 	return INITIALIZE_HINT_LATELOAD //Gotta populate the cryopod computer GLOB first
 
 /obj/machinery/cryopod/LateInitialize()
@@ -178,17 +204,26 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	control_computer_weakref = null
 	return ..()
 
+/obj/machinery/cryopod/is_operational()
+	return !(machine_stat & (BROKEN|MAINT))
+
+/obj/machinery/cryopod/on_stat_update(old_value)
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
+
 /obj/machinery/cryopod/close_machine(atom/movable/target)
 	if(!control_computer_weakref)
 		control_computer_weakref = cryo_find_control_computer(src, TRUE)
 	if((isnull(target) || isliving(target)) && state_open && !panel_open)
+		machine_wake() // the despawn countdown runs in process()
 		..(target)
 		var/mob/living/mob_occupant = occupant
 		investigate_log("\The [src] closed with occupant [key_name(occupant)] by user [key_name(target)].", INVESTIGATE_CRYOGENICS)
 		if(mob_occupant && mob_occupant.stat != DEAD)
 			to_chat(occupant, span_notice("<b>You feel cool air surround you. You go numb as your senses turn inward.</b>"))
 
-		COOLDOWN_START(src, despawn_world_time, time_till_despawn)
+		COOLDOWN_START(src, despawn_world_time, TIME_TO_DESPAWN)
 	icon_state = "cryopod"
 
 /obj/machinery/cryopod/open_machine()
@@ -210,7 +245,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /obj/machinery/cryopod/process()
 	if(!occupant)
-		return
+		return machine_sleep() // empty pod: close_machine() wakes it when someone climbs in
 
 	var/mob/living/mob_occupant = occupant
 	if(mob_occupant.stat == DEAD)
@@ -355,6 +390,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	return // Sorta gamey, but we don't really want these to be destroyed.
 
 #undef AHELP_FIRST_MESSAGE
+#undef TIME_TO_DESPAWN
 
 /obj/item/circuitboard/cryopodcontrol
 	name = "Circuit board (Cryogenic Oversight Console)"
@@ -374,7 +410,19 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 // This function can not be undone; do not call this unless you are sure
 /obj/machinery/cryopod/proc/despawn_occupant()
+	charge_cryo_exit()
 	cryoMob(occupant, control_computer_weakref, src, tele, initial(name))
+
+/obj/machinery/cryopod/proc/charge_cryo_exit()
+	var/mob/living/mob_occupant = occupant
+	if(!mob_occupant?.ckey || !SSmetadollars)
+		return
+	var/old_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	SSmetadollars.metadollar_adjust(-1, mob_occupant.ckey)
+	var/new_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	log_game("[key_name(mob_occupant)] cryo exit: charged 1 M$ (balance [old_balance] -> [new_balance]).")
+	if(mob_occupant.client)
+		to_chat(mob_occupant, span_warning("Уход в крио забрал 1 М$ из вашего счёта метадолларов."))
 
 /proc/cryoMob(mob/living/mob_occupant, datum/weakref/control_computer_weakref, obj/machinery/cryopod/pod, is_teleporter, initial_name, effects = FALSE)
 	var/list/crew_member = list()
@@ -406,17 +454,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 		crew_member["job"] = "N/A"
 
 	// Delete them from datacore.
-	var/announce_rank = null
-	for(var/datum/data/record/medical_record as anything in GLOB.data_core.medical)
-		if(medical_record.fields["name"] == mob_occupant.real_name)
-			qdel(medical_record)
-	for(var/datum/data/record/security_record as anything in GLOB.data_core.security)
-		if(security_record.fields["name"] == mob_occupant.real_name)
-			qdel(security_record)
-	for(var/datum/data/record/general_record as anything in GLOB.data_core.general)
-		if(general_record.fields["name"] == mob_occupant.real_name)
-			announce_rank = general_record.fields["rank"]
-			qdel(general_record)
+	var/announce_rank = GLOB.data_core.remove_records_by_name(mob_occupant.real_name)
 
 	var/obj/machinery/computer/cryopod/control_computer = control_computer_weakref?.resolve()
 	if(!control_computer)
@@ -424,6 +462,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		if(control_computer.z == (pod ? pod.z : mob_occupant.z)) // BLUEMOON - CRYO_ITEMS_AND_MESSAGES_FIX - ADD - в консоли не будет имени ушедшего в крио, если телепортированный не на её уровне
 			control_computer.frozen_crew += list(crew_member)
+			// Ограничение роста списка — утечка памяти при долгих раундах
+			if(length(control_computer.frozen_crew) > CRYO_FROZEN_CREW_MAX)
+				control_computer.frozen_crew.Cut(1, length(control_computer.frozen_crew) - CRYO_FROZEN_CREW_TRIM_TO)
 
 	// Make an announcement and log the person entering storage.
 	if(mob_occupant.loc.z in SSmapping.levels_by_trait(ZTRAIT_STATION)) // BLUEMOON - CRYO_ITEMS_AND_MESSAGES_FIX - ADD - не будет оповещения, если уходящий в крио вне станции
@@ -488,8 +529,8 @@ GLOBAL_LIST_EMPTY(ghost_records)
 				item_content.forceMove(pod)
 
 				// WEE WOO SNOWFLAKE TIME
-				if(istype(item_content, /obj/item/pda))
-					var/obj/item/pda/P = item_content
+				if(istype(item_content, /obj/item/modular_computer/pda))
+					var/obj/item/modular_computer/pda/P = item_content
 					if((P.owner == mind_identity) || (P.owner == occupant_identity))
 						destroying += P
 					else
@@ -527,10 +568,26 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		mob_occupant.ghostize(FALSE, penalize = TRUE, voluntary = TRUE, cryo = TRUE)
 
-	QDEL_LIST(destroying)
-	cryo_handle_objectives()
-	QDEL_NULL(mob_occupant)
-	QDEL_LIST(destroy_later)
+	cryo_handle_objectives(mob_occupant)
+	// Hand the whole despawn cascade to SSauto_cryo: qdel'ing a geared player mob in one
+	// go eats an entire tick. The mob leaves gameplay right here (nullspace + off the SSD
+	// list so the cryo scan cannot pick it a second time); the deletions are staggered.
+	// FIFO order matters: gear before the mob still wearing part of it, the mob before
+	// destroy_later (borg MMIs must outlive their shell).
+	GLOB.ssd_mob_list -= mob_occupant
+	mob_occupant.moveToNullspace()
+	// Вещи из destroying лежат ВНУТРИ капсулы (их туда кладут выше), а open_machine()
+	// ниже вытряхивает её содержимое на пол. Удаление ступенчатое, поэтому личный КПК
+	// вместе с айди-картой успевает полежать на полу и уйти в чужой карман - а удаление
+	// айди как раз и есть единственная защита крио от кражи доступов. Выносим их из
+	// капсулы прямо сейчас; при pod == null они лежат на мобе и цикл ничего не делает.
+	if(pod)
+		for(var/obj/item/doomed_item as anything in destroying)
+			if(doomed_item.loc == pod)
+				doomed_item.moveToNullspace()
+	SSauto_cryo.queue_deletion_list(destroying)
+	SSauto_cryo.queue_deletion(mob_occupant)
+	SSauto_cryo.queue_deletion_list(destroy_later)
 
 	if (pod)
 		pod.open_machine()
@@ -540,6 +597,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/effect/mob_spawn
 	/// For figuring out where the local cryopod computer is. Must be set for cryo computer announcements.
 	var/area/computer_area
+	var/addition_warning = "<span class='boldwarning'>В режим игры Extended станцию посещать допустимо, в Dynamic — запрещено!</span>"
 
 /obj/machinery/computer/cryopod/proc/announce(message_type, user, rank)
 	switch(message_type)
@@ -571,6 +629,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	var/obj/machinery/computer/cryopod/control_computer = find_control_computer()
 	var/alt_name = get_spawner_outfit_name()
 	GLOB.ghost_records.Add(list(list("name" = spawned_mob.real_name, "rank" = alt_name ? alt_name : name)))
+	// Ограничение роста глобального списка — утечка памяти при множестве спавнов из призраков
+	if(length(GLOB.ghost_records) > CRYO_GHOST_RECORDS_MAX)
+		GLOB.ghost_records.Cut(1, length(GLOB.ghost_records) - CRYO_GHOST_RECORDS_TRIM_TO)
 
 	if(control_computer)
 		control_computer.announce("CRYO_JOIN", spawned_mob.real_name, name)

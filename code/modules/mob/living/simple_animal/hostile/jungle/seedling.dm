@@ -74,25 +74,29 @@
 
 
 /datum/status_effect/seedling_beam_indicator/on_creation(mob/living/new_owner, target_plant)
+	target = target_plant
 	. = ..()
-	if(.)
-		target = target_plant
-		tick()
 
 /datum/status_effect/seedling_beam_indicator/on_apply()
 	if(owner.client)
 		seedling_screen_object = new /atom/movable/screen/seedling()
 		owner.client.screen += seedling_screen_object
-	tick()
+		tick()
 	return ..()
 
 /datum/status_effect/seedling_beam_indicator/Destroy()
-	if(owner)
-		if(owner.client)
-			owner.client.screen -= seedling_screen_object
+	if(owner?.client && seedling_screen_object)
+		owner.client.screen -= seedling_screen_object
+	QDEL_NULL(seedling_screen_object)
+	target = null
 	return ..()
 
 /datum/status_effect/seedling_beam_indicator/tick()
+	if(QDELETED(owner) || QDELETED(target))
+		qdel(src)
+		return
+	if(!seedling_screen_object)
+		return
 	var/target_angle = Get_Angle(owner, target)
 	var/matrix/final = matrix()
 	final.Turn(target_angle)
@@ -103,10 +107,13 @@
 	icon_state = "seedling_beam_indicator"
 	screen_loc = "CENTER:-16,CENTER:-16"
 
-/mob/living/simple_animal/hostile/jungle/seedling/Goto()
-	if(combatant_state != SEEDLING_STATE_NEUTRAL)
-		return
-	return ..()
+///Контроллерный гейт фаз: разминка/залп/откат замораживают планирование
+/mob/living/simple_animal/hostile/jungle/seedling/ai_attack_phase_active()
+	return combatant_state != SEEDLING_STATE_NEUTRAL
+
+///Фазы запирают и контроллерное движение (легаси-гейт Goto)
+/mob/living/simple_animal/hostile/jungle/seedling/can_ai_controller_move()
+	return combatant_state == SEEDLING_STATE_NEUTRAL
 
 /mob/living/simple_animal/hostile/jungle/seedling/AttackingTarget()
 	if(isliving(target))
@@ -199,8 +206,7 @@
 /mob/living/simple_animal/hostile/jungle/seedling/proc/ResetNeutral()
 	combatant_state = SEEDLING_STATE_NEUTRAL
 	if(target && !stat)
-		update_icons()
-		Goto(target, move_to_delay, minimum_distance)
+		update_icons() //преследование возобновляет штатный мувер контроллера
 
 /mob/living/simple_animal/hostile/jungle/seedling/adjustHealth()
 	. = ..()

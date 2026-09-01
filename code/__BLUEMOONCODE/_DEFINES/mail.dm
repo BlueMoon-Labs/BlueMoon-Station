@@ -32,6 +32,14 @@
 #define MAIL_SENDER_RANDOM_NAME "random_name"
 #define MAIL_SENDER_RANDOM_FEMALE "random_female"
 #define MAIL_SENDER_RANDOM_MALE "random_male"
+#define MAIL_SENDER_CENTCOM "Центральное Командование"
+
+#define MAIL_GENITALS_MALE list(ORGAN_SLOT_PENIS)
+#define MAIL_GENITALS_MALE_FULL list(ORGAN_SLOT_PENIS, ORGAN_SLOT_TESTICLES)
+#define MAIL_GENITALS_FEMALE list(ORGAN_SLOT_VAGINA)
+#define MAIL_GENITALS_FEMALE_FULL list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB)
+
+#define MAIL_MOOD "mail"
 
 #define MAIL_RECIPIENT_SYNTH list( \
 		/datum/species/mammal/synthetic, \

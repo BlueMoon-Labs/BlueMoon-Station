@@ -12,23 +12,15 @@ import { addChatPage, changeChatPage } from './actions';
 import { selectChatPages, selectCurrentChatPage } from './selectors';
 
 const UnreadCountWidget = ({ value }) => (
-  <Box
-    style={{
-      'font-size': '0.7em',
-      'border-radius': '0.25em',
-      'width': '1.7em',
-      'line-height': '1.55em',
-      'background-color': 'crimson',
-      'color': '#fff',
-    }}>
+  <Box className="Chat__unreadBadge">
     {Math.min(value, 99)}
   </Box>
 );
 
-export const ChatTabs = (props, context) => {
-  const pages = useSelector(context, selectChatPages);
-  const currentPage = useSelector(context, selectCurrentChatPage);
-  const dispatch = useDispatch(context);
+export const ChatTabs = (props) => {
+  const pages = useSelector(selectChatPages);
+  const currentPage = useSelector(selectCurrentChatPage);
+  const dispatch = useDispatch();
   return (
     <Flex align="center">
       <Flex.Item>

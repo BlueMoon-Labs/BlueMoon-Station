@@ -1,15 +1,17 @@
 /obj/item/ammo_box/magazine/recharge
 	name = "power pack"
 	desc = "A rechargeable, detachable battery that serves as a magazine for laser rifles."
-	icon_state = "oldrifle-20"
+	icon_state = "oldrifle"
 	ammo_type = /obj/item/ammo_casing/caseless/laser
 	caliber = LASER
 	max_ammo = 20
 
-/obj/item/ammo_box/magazine/recharge/update_icon()
+/obj/item/ammo_box/magazine/recharge/Initialize(mapload)
 	. = ..()
-	desc = "[initial(desc)] It has [stored_ammo.len] shot\s left."
-	icon_state = "oldrifle-[round(ammo_count(),4)]"
+	update_icon()
+
+/obj/item/ammo_box/magazine/recharge/update_icon_state()
+	icon_state = "[initial(icon_state)]-[round(ammo_count(),4)]"
 
 /obj/item/ammo_box/magazine/recharge/attack_self() //No popping out the "bullets"
 	return
@@ -57,7 +59,7 @@
 // MWS Batteries //
 /obj/item/ammo_casing/mws_batt
 	name = "\'MWS\' microbattery - UNKNOWN"
-	desc = "A miniature battery for an energy weapon."
+	desc = "Миниатюрная батарея для энергооружия."
 	icon = 'icons/obj/ammo.dmi'
 	icon_state = "mws_batt"
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
@@ -97,18 +99,24 @@
 		return
 
 // Specific batteries //
-/obj/item/ammo_casing/mws_batt/lethal
-	name = "'MWS' microbattery - LETHAL"
-	type_color = "#bf3d3d"
-	type_name = "<span class='lethal'>LASE</span>"
-	projectile_type = /obj/item/projectile/beam
-
 /obj/item/ammo_casing/mws_batt/stun
 	name = "'MWS' microbattery - DISABLER"
 	type_color = "#0f81bc"
 	type_name = "<span class='stun'>DISABLE</span>"
 	projectile_type = /obj/item/projectile/beam/disabler
 	e_cost = 60  //gives it 10 disabler shots in line with literally all other eguns.
+
+/obj/item/ammo_casing/mws_batt/taser
+	name = "'MWS' microbattery - TASER"
+	type_color = "#e5ff00"
+	type_name = "<span class='stun'>TASE</span>"
+	projectile_type = /obj/item/projectile/energy/electrode/security
+
+/obj/item/ammo_casing/mws_batt/lethal
+	name = "'MWS' microbattery - LETHAL"
+	type_color = "#bf3d3d"
+	type_name = "<span class='lethal'>LASER</span>"
+	projectile_type = /obj/item/projectile/beam
 
 /obj/item/ammo_casing/mws_batt/xray
 	name = "'MWS' microbattery - XRAY"
@@ -121,9 +129,3 @@
 	type_color = "#d084d6"
 	type_name = "<span class='ion'>ION</span>"
 	projectile_type = /obj/item/projectile/ion
-
-/obj/item/ammo_casing/mws_batt/taser
-	name = "'MWS' microbattery - TASER"
-	type_color = "#e5ff00"
-	type_name = "<span class='stun'>TASE</span>"
-	projectile_type = /obj/item/projectile/energy/electrode/security

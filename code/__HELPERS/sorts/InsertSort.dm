@@ -14,6 +14,7 @@
 		SI.L = L
 		SI.cmp = cmp
 		SI.associative = associative
+		SI._resolveCmpKind()
 
 		SI.binarySort(fromIndex, toIndex, fromIndex)
 	return L

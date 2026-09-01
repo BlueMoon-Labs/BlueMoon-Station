@@ -139,3 +139,12 @@
 	icon_state = "45lbox"
 
 ////////////////////////////////////////////////////////////////////
+// shotgun clips
+
+/obj/item/ammo_box/shotgun/loaded/flechette
+	ammo_type = /obj/item/ammo_casing/shotgun/flechette
+
+/obj/item/ammo_box/shotgun/loaded/frangible
+	ammo_type = /obj/item/ammo_casing/shotgun/frangible
+
+////////////////////////////////////////////////////////////////////

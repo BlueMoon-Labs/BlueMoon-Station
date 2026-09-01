@@ -40,7 +40,10 @@
 
 		A.flags_1 |= (flags_1 & ADMIN_SPAWNED_1)
 		A.GiveTarget(target)
-		A.friends = friends
+		//Копией, а не ссылкой: иначе бруд и хайвлорд делят ОДИН список, и запись о
+		//любом удалённом мобе живёт в нём у обоих до конца раунда. faction рядом
+		//копируется с самого начала, friends просто забыли.
+		A.friends = friends?.Copy()
 		A.faction = faction.Copy()
 		if(!A == /mob/living/simple_animal/hostile/poison/bees/toxin)
 			A.my_creator = type
@@ -92,11 +95,20 @@
 	var/swarming = FALSE
 	var/my_creator = null
 
+///Сколько живёт отколовшийся кусок хайвлорда, если его не убили раньше.
+///Колбек держит бруда жёстко всё это время, но снимается вместе с ним:
+///datum/Destroy() убивает active_timers, поэтому таймер не переживает qdel и
+///держателем в GC-отказах не является (проверено по раунду 10146 - у отказов
+///сборки пусто в "таймеров на датуме").
+#define HIVELORD_BROOD_LIFETIME (10 SECONDS)
+
 /mob/living/simple_animal/hostile/asteroid/hivelordbrood/Initialize(mapload)
 	. = ..()
 	if(swarming)
 		AddComponent(/datum/component/swarming) //oh god not the bees
-	addtimer(CALLBACK(src, PROC_REF(death)), 100)
+	addtimer(CALLBACK(src, PROC_REF(death)), HIVELORD_BROOD_LIFETIME)
+
+#undef HIVELORD_BROOD_LIFETIME
 
 //Legion
 /mob/living/simple_animal/hostile/asteroid/hivelord/legion
@@ -125,6 +137,15 @@
 	robust_searching = 1
 	var/dwarf_mob = FALSE
 	var/mob/living/carbon/human/stored_mob
+
+/mob/living/simple_animal/hostile/asteroid/hivelord/legion/Destroy()
+	//тело внутри легиона могли удалить отдельно (гибы, админ-удаление, чистка
+	//z-уровня): forceMove по нему уходил в "doMove qdel-нутого"
+	if(stored_mob)
+		if(!QDELETED(stored_mob))
+			stored_mob.forceMove(get_turf(src))
+		stored_mob = null
+	return ..()
 
 /mob/living/simple_animal/hostile/asteroid/hivelord/legion/random/Initialize(mapload)
 	. = ..()
@@ -156,7 +177,8 @@
 	var/turf/T = get_turf(src)
 	if(T)
 		if(stored_mob)
-			stored_mob.forceMove(get_turf(src))
+			if(!QDELETED(stored_mob))
+				stored_mob.forceMove(get_turf(src))
 			stored_mob = null
 		else if(fromtendril)
 			new /obj/effect/mob_spawn/human/corpse/charredskeleton(T)
@@ -380,7 +402,7 @@
 			if(prob(70))
 				backpack_contents += pick(list(/obj/item/stamp/clown = 1, /obj/item/reagent_containers/spray/waterflower = 1, /obj/item/reagent_containers/food/snacks/grown/banana = 1, /obj/item/megaphone/clown = 1, /obj/item/reagent_containers/food/drinks/soda_cans/canned_laughter = 1, /obj/item/pneumatic_cannon/pie = 1))
 			if(prob(30))
-				backpack_contents += list(/obj/item/stack/sheet/mineral/bananium = pickweight(list( 1 = 3, 2 = 2, 3 = 1)))
+				backpack_contents += list(/obj/item/stack/sheet/mineral/bananium = pickweight(alist(1 = 3, 2 = 2, 3 = 1)))
 			if(prob(10))
 				l_pocket = pickweight(list(/obj/item/bikehorn/golden = 3, /obj/item/bikehorn/airhorn= 1 ))
 			if(prob(10))

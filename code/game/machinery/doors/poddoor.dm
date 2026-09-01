@@ -259,7 +259,7 @@
 	else
 		icon_state = "open"
 
-/obj/machinery/door/poddoor/try_to_activate_door(mob/user)
+/obj/machinery/door/poddoor/try_to_activate_door(mob/user, access_bypass = FALSE)
 	return
 
 /obj/machinery/door/poddoor/try_to_crowbar(obj/item/I, mob/user)

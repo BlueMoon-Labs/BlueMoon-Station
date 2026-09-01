@@ -51,25 +51,12 @@ handles linking back and forth.
 		// specify explicitly in case the other component is deleted first
 		var/atom/P = parent
 		mat_container.retrieve_all(P.drop_location())
+	QDEL_NULL(after_insert)
 	return ..()
 
 /datum/component/remote_materials/proc/_MakeLocal()
 	silo = null
-	var/static/list/allowed_mats = list(
-		/datum/material/iron,
-		/datum/material/glass,
-		/datum/material/silver,
-		/datum/material/gold,
-		/datum/material/diamond,
-		/datum/material/plasma,
-		/datum/material/uranium,
-		/datum/material/bananium,
-		/datum/material/titanium,
-		/datum/material/bluespace,
-		/datum/material/plastic,
-		)
-
-	mat_container = parent.AddComponent(/datum/component/material_container, allowed_mats, local_size, allowed_types=/obj/item/stack, _after_insert = after_insert)
+	mat_container = parent.AddComponent(/datum/component/material_container, DEFAULT_REMOTE_MATERIALS, local_size, allowed_types=/obj/item/stack, _after_insert = after_insert)
 
 /datum/component/remote_materials/proc/set_local_size(size)
 	local_size = size
@@ -117,6 +104,8 @@ handles linking back and forth.
 
 /datum/component/remote_materials/proc/format_amount()
 	if(mat_container)
-		return "[mat_container.total_amount] / [mat_container.max_amount == INFINITY ? "Unlimited" : mat_container.max_amount] ([silo ? "remote" : "local"])"
+		if(silo && mat_container.max_amount == INFINITY)
+			return "Неограниченно (Сило)"
+		return "[mat_container.total_amount] / [mat_container.max_amount == INFINITY ? "Неограниченно" : mat_container.max_amount] [silo ? "(Сило)" : ""]"
 	else
 		return "0 / 0"

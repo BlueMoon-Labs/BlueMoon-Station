@@ -16,6 +16,8 @@
 /obj/item/integrated_circuit/manipulation/activator/do_work(ord)
 	var/obj/acting_object = get_pin_data_as_type(IC_INPUT, 1, /obj/)
 	var/mob/person = get_pin_data_as_type(IC_INPUT, 2, /mob/)
+	if(!acting_object || !person)
+		return
 	acting_object.interact(person)
 	activate_pin(1)
 
@@ -80,7 +82,7 @@
 				user = realuser.real_name //Станция должна знать своих героев(в данный момент сломана кодировка имени в отправке \u041c\u0430\u0440)
 			var/datum/netdata/message = new
 			var/location = "[realuser.x], [realuser.y], [realuser.z]"
-			message.data = "[acting_object] has been activated by [realuser] in [location]"
+			message.data = list("message" = "[acting_object] has been activated by [realuser] in [location]")
 
 			if(!acting_object.GetComponent(/datum/component/ntnet_interface))//Проверка istype() на тип шлюза не работает почему-то. Зато на компонент работает.
 				acting_object.ui_act(action, params)

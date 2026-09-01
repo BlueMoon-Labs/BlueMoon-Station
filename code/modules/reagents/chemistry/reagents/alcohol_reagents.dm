@@ -70,7 +70,7 @@ All effects don't start immediately, but rather get worse over time; the rate is
 			O.visible_message("<span class='warning'>[O]'s ink is smeared by [name], but doesn't wash away!</span>")
 	return
 
-/datum/reagent/consumable/ethanol/reaction_mob(mob/living/M, method=TOUCH, reac_volume)//Splashing people with ethanol isn't quite as good as fuel.
+/datum/reagent/consumable/ethanol/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)//Splashing people with ethanol isn't quite as good as fuel.
 	if(!isliving(M))
 		return
 
@@ -78,7 +78,12 @@ All effects don't start immediately, but rather get worse over time; the rate is
 		M.adjust_fire_stacks(reac_volume / 15)
 
 		// +10% success propability on each step, useful while operating in less-than-perfect conditions
-		M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
+		// boozepwr = 0 - это метка "у напитка свой эффект опьянения", а НЕ "снять стерилизацию".
+		// sterilize() трактует неположительную силу как отмену: гасит таймер и обнуляет
+		// sterilize_power. Из-за этого коктейль без градуса в одной ёмкости со стерилизином
+		// стирал хирургу весь бонус прямо внутри одного reaction().
+		if(boozepwr > 0)
+			M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
 
 	return ..()
 
@@ -1148,10 +1153,10 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_name = "Syndicate Bomb"
 	glass_desc = "A syndicate bomb."
 
-/datum/reagent/consumable/ethanol/syndicatebomb/on_mob_life(mob/living/carbon/M)
-	if(prob(5))
-		playsound(get_turf(M), 'sound/effects/explosionfar.ogg', 100, 1)
-	return ..()
+/datum/reagent/consumable/ethanol/syndicatebomb/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	if(SPT_PROB(2.5, seconds_per_tick))
+		playsound(get_turf(drinker), 'sound/effects/explosion/explosionfar.ogg', 100, TRUE)
 
 /datum/reagent/consumable/ethanol/hiveminderaser
 	name = "Hivemind Eraser"
@@ -2371,6 +2376,23 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_name = "Malibu Sunset"
 	glass_desc = "Tropical looking drinks, with ice cubes hovering on the surface and grenadine coloring the bottom."
 
+/datum/reagent/consumable/ethanol/millie_kiss
+	name = "Millie Kiss"
+	color = "#e7aee7"
+	description = "Cold coffee with strawberry flavor."
+	boozepwr = 10 // Подрочите
+	taste_description = "Purrrrifying~"
+	quality = DRINK_VERYGOOD
+	glass_icon_state = "milliecum"
+	glass_name = "glass of Millie Kiss"
+	glass_desc = "Cold coffee with strawberry flavor."
+
+/datum/reagent/consumable/ethanol/millie_kiss/on_mob_life(mob/living/carbon/M)
+	if(iscatperson(M) && prob(5))
+		M.emote(pick("mrrp","meow6"))
+		to_chat(M, span_notice(pick("Вкуснятина~", "Замурррчательно!","Мой банан требует джема~", "Трахнешь мою жопу?<3", "Клубничка во рту~~")))
+	return ..()
+
 /datum/reagent/consumable/ethanol/hotlime_miami
 	name = "Hotlime Miami"
 	description = "The essence of the 90's, if they were a bloody mess that is."
@@ -2397,7 +2419,7 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	var/disgust = 26
 	boozepwr = 50
 
-/datum/reagent/consumable/ethanol/species_drink/reaction_mob(mob/living/carbon/C, method=TOUCH)
+/datum/reagent/consumable/ethanol/species_drink/reaction_mob(mob/living/carbon/C, method=TOUCH, affected_bodypart)
 	if(method == INGEST)
 		if(C?.dna?.species?.species_category == species_required) //species have a species_category variable that refers to one of the drinks
 			quality = RACE_DRINK

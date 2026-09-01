@@ -4,7 +4,7 @@
 
 import DOMPurify from 'dompurify';
 
-// Default values
+// Default tags available to all players
 const defTag = [
   'b',
   'blockquote',
@@ -45,9 +45,11 @@ const defTag = [
   'ul',
 ];
 
-// Advanced HTML tags that we can trust admins (but not players) with
-const advTag = ['img'];
+// Advanced HTML tags that we can trust admins (but not players) with.
+// Now includes video embedding tags.
+const advTag = ['img', 'video', 'source', 'track'];
 
+// Attributes that are explicitly forbidden (removed even if tag is allowed)
 const defAttr = ['class', 'style'];
 
 /**
@@ -73,7 +75,9 @@ export const sanitizeText = (
   // kill href links or such
   if (advHtml) {
     tags = tags.concat(advTags);
+    forbidAttr = [];
   }
+
   return DOMPurify.sanitize(input, {
     ALLOWED_TAGS: tags,
     FORBID_ATTR: forbidAttr,

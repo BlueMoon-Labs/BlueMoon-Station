@@ -10,7 +10,7 @@
 /obj/item/mail
 	name = "Postal Envelope"
 	gender = NEUTER
-	desc = "Сертифицированный Пактом современный™ почтовый конверт из сверхпрочной бумаги с небольшим датчиком отпечатков пальцев. Всё ещё сильно дешевле блюспейс-доставки."
+	desc = "Сертифицированный ПАКТом современный™ почтовый конверт из сверхпрочной бумаги с небольшим датчиком отпечатков пальцев. Всё ещё сильно дешевле блюспейс-доставки."
 	icon = 'icons/obj/bureaucracy.dmi'
 	icon_state = "mail_small"
 	item_state = "paper"
@@ -262,7 +262,7 @@
 	name = "Postal Package"
 	if(recipient_name && recipient_job)
 		name += " for [recipient_name] ([recipient_job])"
-	desc = "Сертифицированный Пактом современный™ почтовый контейнер из сверхпрочной бумаги с небольшим датчиком отпечатков пальцев. Всё ещё сильно дешевле блюспейс-доставки."
+	desc = "Сертифицированный ПАКТом современный™ почтовый контейнер из сверхпрочной бумаги с небольшим датчиком отпечатков пальцев. Всё ещё сильно дешевле блюспейс-доставки."
 	icon_state = "mail_large"
 	open_state = "mail_large_tampered"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -575,11 +575,16 @@
 	drop_all_mails()
 
 /obj/machinery/mailmat/proc/drop_all_mails(damage_flag)
-	if(!isturf(get_turf(src)))
-		stack_trace("[src] не смог сбросить своё содержимое")
-		for(var/obj/item/mail in mails)
-			qdel(mail)
-		return
+	// Список отцепляется до раздачи: запись в mails обязана умирать вместе с выбросом,
+	// иначе живой автомат вечно держит ссылки на выброшенные письма, и каждое из них
+	// при последующем удалении уходит в харддел с полным ref-сканом мира.
+	var/list/obj/item/mail/dropping = mails
+	mails = list()
 	var/turf/dropturf = get_turf(src)
-	for(var/obj/item/mail in mails)
-		mail.forceMove(dropturf)
+	if(!isturf(dropturf))
+		stack_trace("[src] не смог сбросить своё содержимое")
+		for(var/obj/item/mail/undelivered as anything in dropping)
+			qdel(undelivered)
+		return
+	for(var/obj/item/mail/undelivered as anything in dropping)
+		undelivered.forceMove(dropturf)

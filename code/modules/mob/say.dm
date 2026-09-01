@@ -1,109 +1,269 @@
+// ═══════════════════════════════════════════════════════════════════════
+//  Поддержка эмоутов через звёздочку от льва
+// ═══════════════════════════════════════════════════════════════════════
+//
+// ПРОБЛЕМА: Стандартная система BlueMoon использует звёздочку для custom say,
+//           но не разделяет эмоут и речь, что приводит к дублированию акцентов.
+//
+// РЕШЕНИЕ:  Используем существующую систему say_mod(), но с правильной
+//           поддержкой кириллицы через findtext_char() вместо findtext().
+//
+// ФОРМАТ:   "улыбается* привет" → "Персонаж улыбается, "Привет""
+//           ";кивает* понял" → "[Common] Персонаж кивает, "Понял""
+//
+// ═══════════════════════════════════════════════════════════════════════
+//  АНЕКДОТ ДНЯ:
+//  Заходит программист в бар. Заказывает 1 пиво. Заказывает 0 пива.
+//  Заказывает 999999999 пива. Заказывает -1 пиво. Заказывает ящерицу.
+//  Бармен говорит: "Всё работает отлично!"
+//  Заходит обычный посетитель и спрашивает где туалет.
+//  Бар загорается.
+// ═══════════════════════════════════════════════════════════════════════
+
 //Speech verbs.
 // the _keybind verbs uses "as text" versus "as text|null" to force a popup when pressed by a keybind.
 /mob/verb/say_typing_indicator()
-	set name = "say_indicator"
+	set name = "Say (Indicator)"
 	set hidden = TRUE
 	set category = "Say"
-	client?.last_activity = world.time
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
 	display_typing_indicator(isSay = TRUE)
-	var/message = input(usr, "", "say") as text|null
-	// If they don't type anything just drop the message.
+
+	// say() вызывает sanitize() сам, поэтому на вход отдаём сырой текст, чтобы не получить двойное экранирование (&amp;&amp;, &lt;, и т.д.)
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		message = raw_input_or_reflect(src, "", "Say (Indicator)")
+
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
-	return say_verb(message)
+	client?.last_activity = world.time
 
-/mob/verb/say_verb(message as text)
-	set name = "say"
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
+
+/mob/verb/say_verb_byond(message as text)
+	set name = "Say "
+	set hidden = TRUE
+	if(!message)
+		return
+	say_verb(message)
+
+/mob/verb/say_verb(message = "" as text)
+	set name = "Say"
 	set category = "Say"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, html_encode(message))
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
+		return
+
+	// say() санитизит сам — отдаём сырой текст, иначе получим двойное экранирование (< -> &lt; -> &amp;lt;)
+	if(message)
+		message = raw_text_or_reflect(usr, message)
+	else
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = FALSE)
+		else
+			message = raw_input_or_reflect(usr, "", "Say")
+
+	//апстрим убрал отсюда clear_typing_indicator: верб теперь зовут и с готовым
+	//текстом, без блокирующего ввода. Гард нужен по-прежнему - ветка else всё ещё спит
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
+	if(!length(message))
+		return
+	client?.last_activity = world.time
+
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
+
+/mob/verb/speak_verb(message as text) // Специально для "saybutton"
+	set name = "Speak"
+	// say() санитизит сам — отдаём сырой текст, иначе получим двойное экранирование (< -> &lt; -> &amp;lt;)
+	message = raw_text_or_reflect(usr, message)
 	if(!length(message))
 		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
 	clear_typing_indicator()		// clear it immediately!
-
 	client?.last_activity = world.time
 
-	say(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
 
 /mob/verb/me_typing_indicator()
-	set name = "me_indicator"
+	set name = "Me (Indicator)"
 	set hidden = TRUE
 	set category = "Say"
-	client?.last_activity = world.time
-	display_typing_indicator(isMe = TRUE)
-	var/message = input(usr, "", "me") as message|null
-	// If they don't type anything just drop the message.
-	clear_typing_indicator()		// clear it immediately!
-	if(!length(message))
-		return
-	return me_verb(message)
-
-/mob/verb/me_verb(message as message)
-	set name = "me"
-	set category = "Say"
-	if(!length(message))
-		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
+	display_typing_indicator(isMe = TRUE)
 
-	if(length(message) > MAX_MESSAGE_LEN)
-		to_chat(usr, message)
-		to_chat(usr, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [MAX_MESSAGE_LEN]. It has NOT been sent! -----^^^</span>")
-		return
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Me (Indicator)", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(usr, "", "Me (Indicator)")
 
-	message = trim(html_encode(message), MAX_MESSAGE_LEN)
 	clear_typing_indicator()		// clear it immediately!
+
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
+	if(!length(message))
+		return
 
 	client?.last_activity = world.time
 
-	usr.emote("me",1,message,TRUE)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
+
+/mob/verb/me_verb_byond(message as message)
+	set name = "Me "
+	set hidden = TRUE
+	if(!message)
+		return
+	me_verb(message)
+
+/mob/verb/me_verb(message = "" as message)
+	set name = "Me"
+	set category = "Say"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, html_encode(message))
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
+		return
+
+	// emote() ничего не экранирует — здесь текст обязан кодироваться ровно один раз
+	if(message)
+		message = stripped_text_or_reflect(usr, message)
+	else
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Me", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			message = stripped_multiline_input_or_reflect(usr, "", "Me")
+
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
+	if(!length(message))
+		return
+
+	client?.last_activity = world.time
+
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
+
+/mob/verb/emote_verb(message as text) // Специально для "mebutton"
+	set name = "Emote"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+	// emote() ничего не экранирует, а сюда текст приходит сырым прямо из строки ввода
+	message = stripped_text_or_reflect(usr, message)
+	if(!length(message))
+		return
+	clear_typing_indicator()		// clear it immediately!
+	client?.last_activity = world.time
+
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
+
+// ═══════════════════════════════════════════════════════════════════════
+//  say_mod() - определяет глагол для речи
+// ═══════════════════════════════════════════════════════════════════════
+// Эта функция вызывается системой чтобы определить КАК говорит персонаж.
+// ВАЖНОЕ ИСПРАВЛЕНИЕ: Используем findtext_char() вместо findtext() для
+// правильной работы с кириллицей (UTF-8), где 1 символ = 2 байта.
 
 /mob/say_mod(input, message_mode)
 	if(message_mode == MODE_WHISPER_CRIT)
 		return ..()
+
+	// Обработка восклицательного знака для custom say
 	if((input[1] == "!") && (length_char(input) > 1))
 		message_mode = MODE_CUSTOM_SAY
 		return copytext_char(input, 2)
-	var/customsayverb = findtext(input, "*")
+
+	// ИСПРАВЛЕНИЕ: findtext_char() вместо findtext() для кириллицы
+	// findtext() возвращает позицию в БАЙТАХ (неправильно для UTF-8)
+	// findtext_char() возвращает позицию в СИМВОЛАХ (правильно!)
+	var/customsayverb = findtext_char(input, "*")
 	if(customsayverb)
 		message_mode = MODE_CUSTOM_SAY
+		// Возвращаем только эмоут (текст до звёздочки)
 		return lowertext(copytext_char(input, 1, customsayverb))
+
 	return ..()
+
+// ═══════════════════════════════════════════════════════════════════════
+//  uncostumize_say() - убирает кастомный глагол из сообщения
+// ═══════════════════════════════════════════════════════════════════════
+// ИСПРАВЛЕНИЕ: Также используем findtext_char() для кириллицы
 
 /proc/uncostumize_say(input, message_mode)
 	. = input
 	if(message_mode == MODE_CUSTOM_SAY)
-		var/customsayverb = findtext(input, "*")
+		// ИСПРАВЛЕНИЕ: findtext_char() вместо findtext()
+		var/customsayverb = findtext_char(input, "*")
 		return lowertext(copytext_char(input, 1, customsayverb))
 
-/*
-//This proc is no longer used for a long time.
-/mob/proc/whisper_keybind()
-	client?.last_activity = world.time
-	var/message = input(src, "", "whisper") as text|null
-	if(!length(message))
+/mob/verb/whisper_verb_byond(message as text)
+	set name = "Whisper "
+	set hidden = TRUE
+	if(!message)
 		return
-	return whisper_verb(message)
-*/
+	whisper_verb(message)
 
-/mob/verb/whisper_verb(message as text)
+/mob/verb/whisper_verb(message = "" as text)
 	set name = "Whisper"
 	set category = "Say"
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, html_encode(message))
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
+		return
+
+	// whisper() уходит в say(), который санитизит сам — отдаём сырой текст
+	if(message)
+		message = raw_text_or_reflect(usr, message)
+	else
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
+		else
+			message = raw_input_or_reflect(usr, "", "Whisper")
+
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
+
+/mob/verb/whisper_typing_indicator()
+	set name = "Whisper (Indicator)"
+	set hidden = TRUE
+	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
-	whisper(message)
+	display_typing_indicator(isSay = TRUE)
+	
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(src, "", "Whisper (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		message = raw_input_or_reflect(src, "", "Whisper (Indicator)")
+
+	clear_typing_indicator()
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
+	if(!length(message))
+		return
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
 
 /mob/proc/whisper(message, datum/language/language=null)
 	client?.last_activity = world.time
 	say(message, language) //only living mobs actually whisper, everything else just talks
 
-/mob/proc/say_dead(var/message)
+/mob/proc/say_dead(message)
 	var/name = real_name
 	var/alt_name = ""
 
@@ -111,7 +271,7 @@
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
 		return
 
-	var/jb = jobban_isbanned(src, "OOC")
+	var/jb = jobban_isbanned(src, "OOC") || jobban_isbanned(src, "deadchat")
 	if(QDELETED(src))
 		return
 
@@ -175,3 +335,20 @@
 	else if((length(message) > (length(key) + 1)) && (key in GLOB.department_radio_prefixes))
 		var/key_symbol = lowertext(message[length(key) + 1])
 		return GLOB.department_radio_keys[key_symbol]
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ТЕХНИЧЕСКАЯ СПРАВКА
+// ═══════════════════════════════════════════════════════════════════════
+//
+//  findtext() vs findtext_char():
+//  - findtext("привет*", "*") вернёт ~14 (позиция в БАЙТАХ)
+//  - findtext_char("привет*", "*") вернёт 7 (позиция в СИМВОЛАХ)
+//
+//  Для английского текста разницы нет (1 символ = 1 байт)
+//  Для русского текста критично использовать findtext_char()!
+//
+// ═══════════════════════════════════════════════════════════════════════
+//
+//  КОНЕЦ КОДА. ИДИ РПшить, ЗВЕРЁК!
+//
+// ═══════════════════════════════════════════════════════════════════════

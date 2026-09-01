@@ -9,12 +9,32 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	var/cooks = 0 //Counts cooks amount
+	alt_titles = list(
+		"Junior Cook", //Стажер выше, для удобства
+		"Waffle Co. Specialist", //Триглав выше, для удобства
+		"All-American Diner Employee",
+		"Baker",
+		"Boss of This Gym",
+		"Butcher",
+		"Chef",
+		"Chef de Partie",
+		"Chef de Sexe",
+		"Confectionist",
+		"Culinarian",
+		"Culinary Artist",
+		"Fodder",
+		"Line Cook",
+		"Nutritionist",
+		"Poissonier",
+		"Prey Prepper",
+		"Taste Tester"
+		)
 
 	outfit = /datum/outfit/job/cook
 	plasma_outfit = /datum/outfit/plasmaman/chef
 
-	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_SRV
 	bounty_types = CIV_JOB_CHEF
@@ -44,7 +64,7 @@
 	name = "Cook"
 	jobtype = /datum/job/cook
 
-	belt = /obj/item/pda/cook
+	belt = /obj/item/modular_computer/pda/cook
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/chef
 	suit = /obj/item/clothing/suit/toggle/chef
@@ -56,7 +76,7 @@
 	name = "Syndicate Cook"
 	jobtype = /datum/job/cook
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util
@@ -65,12 +85,14 @@
 	mask = /obj/item/clothing/mask/fakemoustache/italian
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/job/cook/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()

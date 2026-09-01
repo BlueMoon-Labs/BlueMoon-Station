@@ -59,18 +59,32 @@
 		"<span class='notice'>Your gel second-skin dissolves!</span>")
 	return ..()
 
+/atom/movable/screen/alert/status_effect/chilling_bluespace
+	name = "Проваливание в блюспейс"
+	desc = "Вы внезапно ощущаете как неведомая сила тянет вас в блюспейс! \nСопротивляйтесь если вы хотите избежать это!"
+	icon_state = "template"
+	overlay_state = "chronofield"
+	clickable_glow = TRUE
+
+/atom/movable/screen/alert/status_effect/chilling_bluespace/Click(location, control, params)
+	. = ..()
+	if(isliving(usr))
+		var/mob/living/L = usr
+		L.resist()
+
 /datum/status_effect/slimerecall
 	id = "slime_recall"
 	duration = -1 //Will be removed by the extract.
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/chilling_bluespace
 	var/interrupted = FALSE
 	var/mob/target
 	var/icon/bluespace
 
 /datum/status_effect/slimerecall/on_apply()
 	RegisterSignal(owner, COMSIG_LIVING_RESIST, PROC_REF(resistField))
-	to_chat(owner, "<span class='danger'>You feel a sudden tug from an unknown force, and feel a pull to bluespace!</span>")
-	to_chat(owner, "<span class='notice'>Resist if you wish avoid the force!</span>")
+	to_chat(owner, span_danger("Вы внезапно ощущаете как неведомая сила тянет вас в блюспейс!</span>"))
+	to_chat(owner, span_notice("[span_eldritch_big("Сопротивляйтесь")] если вы хотите избежать это!"))
+	SEND_SOUND(owner, 'sound/magic/ethereal_enter.ogg')
 	bluespace = icon('icons/effects/effects.dmi',"chronofield")
 	owner.add_overlay(bluespace)
 	return ..()
@@ -142,6 +156,10 @@
 	if(owner.mind)
 		originalmind = owner.mind
 		owner.mind.transfer_to(clone)
+	//Перенос сознания дёргает Logout() у оригинала, и тело уезжает в список SSD. Автокрио
+	//через несколько минут стирало его - клону было некуда возвращаться, и игрок терял
+	//персонажа насовсем. Пока клон жив, оригинал не кандидат на автоматическое крио.
+	GLOB.ssd_mob_list -= owner
 	clone.apply_status_effect(/datum/status_effect/slime_clone_decay)
 	return ..()
 
@@ -490,7 +508,7 @@
 	for(var/mob/living/simple_animal/slime/S in range(1, get_turf(owner)))
 		if(!(owner in S.Friends))
 			to_chat(owner, "<span class='notice'>[linked_extract] pulses gently as it communicates with [S]</span>")
-			S.Friends[owner] = 1
+			S.add_friend(owner)
 	return ..()
 
 /datum/status_effect/stabilized/orange
@@ -818,7 +836,7 @@
 		originalDNA = new H.dna.type
 		originalname = H.real_name
 		H.dna.copy_dna(originalDNA)
-		randomize_human(H)
+		randomize_human(H, soft = TRUE)
 	return ..()
 
 /datum/status_effect/stabilized/green/tick() //Only occasionally give examiners a warning.
@@ -864,12 +882,39 @@
 	faction_name = owner.real_name
 	return ..()
 
+/**
+ * Гасит персональную обиду фауны на носителя ауры.
+ *
+ * CanAttack проверяет `foes[цель]` ПЕРЕД общей фракцией, поэтому одной общей фракции мало:
+ * тот, кого носитель хоть раз задел предметом или подстрелил, остаётся враждебным. Срока
+ * у foes нет вообще - запись живёт до смерти моба. Именно отсюда "работает не на всей фауне".
+ * Лазарус-инъектор чистит обиды по той же причине, только целиком (clear_hostile_aggro);
+ * здесь прощаем адресно, чтобы не сбрасывать обиды на посторонних.
+ */
+/datum/status_effect/stabilized/pink/proc/forgive_grudge(mob/living/simple_animal/animal)
+	var/mob/living/simple_animal/hostile/grudge_holder = animal
+	if(!istype(grudge_holder))
+		return
+	if(grudge_holder.foes[owner] || (owner in grudge_holder.enemies))
+		//Порядок важен: remove_enemy() удерживает сигнал, пока цель ещё числится в foes.
+		grudge_holder.foes -= owner
+		grudge_holder.remove_enemy(owner)
+	var/datum/ai_controller/controller = grudge_holder.ai_controller
+	if(!controller)
+		return
+	//Обида контроллера протухает и сама, но AI_GRUDGE_TIMEOUT - это три минуты погони
+	//за носителем ауры мира, что выглядит ровно как "экстракт не работает".
+	var/list/grudges = controller.blackboard[BB_AI_GRUDGE_LIST]
+	if(grudges?[owner]) //remove_thing_from_blackboard_key роняет CRASH на отсутствующем ключе
+		controller.remove_thing_from_blackboard_key(BB_AI_GRUDGE_LIST, owner)
+
 /datum/status_effect/stabilized/pink/tick()
 	for(var/mob/living/simple_animal/M in view(7,get_turf(owner)))
 		if(!(M in mobs))
 			mobs += M
 			M.apply_status_effect(/datum/status_effect/pinkdamagetracker)
 			M.faction |= faction_name
+			forgive_grudge(M)
 	for(var/mob/living/simple_animal/M in mobs)
 		if(!(M in view(7,get_turf(owner))))
 			M.faction -= faction_name

@@ -10,13 +10,19 @@
 	p13user_emote = PLUG13_EMOTE_ANUS
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
-/datum/interaction/lewd/fingerass_self/display_interaction(mob/living/user)
+/datum/interaction/lewd/fingerass_self/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 
-	user.visible_message(span_lewd("<b>\The [user]</b> [pick(
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [pick(
 		"погружает палец в свой сфинктер.",
 		"суёт палец в своё анальное колечко.",
-		"разрабатывает своё анальное кольцо собственного пальца.")]"), ignored_mobs = user.get_unconsenting())
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+		"разрабатывает своё анальное кольцо собственного пальца.")]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_ANUS) //SPLURT edit
 
 /datum/interaction/lewd/finger_self
@@ -34,8 +40,13 @@
 		INTERACTION_FILLS_CONTAINERS
 	)
 
-/datum/interaction/lewd/finger_self/display_interaction(mob/living/user)
-
+/datum/interaction/lewd/finger_self/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/obj/item/reagent_containers/liquid_container
 
 	var/obj/item/cached_item = user.get_active_held_item()
@@ -57,6 +68,6 @@
 	if(liquid_container)
 		message += " прямо в [liquid_container]"
 
-	user.visible_message(span_lewd("<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting())
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_VAGINA)

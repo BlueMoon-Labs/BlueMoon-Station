@@ -19,6 +19,8 @@
 
 #define LAZYINITLIST(L) if (!L) { L = list(); }
 #define UNSETEMPTY(L) if (L && !length(L)) L = null
+///удалить ключ из ассоц-списка, если его значение-список опустело
+#define ASSOC_UNSETEMPTY(L, K) if (!length(L[K])) L -= K;
 ///Like LAZYCOPY - copies an input list if the list has entries, If it doesn't the assigned list is nulled
 #define LAZYLISTDUPLICATE(L) (L ? L.Copy() : null )
 #define LAZYREMOVE(L, I) if(L) { L -= I; if(!length(L)) { L = null; } }
@@ -41,12 +43,29 @@
 #define LAZYADDASSOC(L, K, V) if(!L) { L = list(); } L[K] += list(V);
 #define LAZYREMOVEASSOC(L, K, V) if(L) { if(L[K]) { L[K] -= V; if(!length(L[K])) L -= K; } if(!length(L)) L = null; }
 #define LAZYACCESSASSOC(L, I, K) L ? L[I] ? L[I][K] ? L[I][K] : null : null : null
-#define QDEL_LAZYLIST(L) for(var/I in L) qdel(I); L = null;
+/// По снапшоту, как и QDEL_LIST: Destroy элемента часто снимает его из этого же списка, а
+/// удаление текущего элемента в обходе сдвигает индексы - каждый второй оставался живым.
+#define QDEL_LAZYLIST(L) if(L) { for(var/qdel_lazylist_item in (L).Copy()) qdel(qdel_lazylist_item); } L = null;
 //These methods don't null the list
 #define LAZYCOPY(L) (L ? L.Copy() : list() ) //Use LAZYLISTDUPLICATE instead if you want it to null with no entries
 #define LAZYCLEARLIST(L) if(L) L.Cut() // Consider LAZYNULL instead
 #define SANITIZE_LIST(L) ( islist(L) ? L : list() )
 #define reverseList(L) reverseRange(L.Copy())
+
+// In-place list resize macros (Baystation port). L.len changes never reallocate,
+// unlike Cut(1,2) which shifts every remaining element - use the tail-pop pattern
+// for queue drain loops where processing order does not matter:
+//   while(length(queue))
+//       var/thing = queue[queue.len]
+//       LIST_DEC(queue)
+/// Increase the size of L by 1 at the end. Evaluates to the old last entry index.
+#define LIST_INC(L) ((L).len++)
+/// Increase the size of L by 1 at the end. Evaluates to the new last entry index.
+#define LIST_PRE_INC(L) (++(L).len)
+/// Decrease the size of L by 1 from the end. Evaluates to the old last entry index.
+#define LIST_DEC(L) ((L).len--)
+/// Decrease the size of L by 1 from the end. Evaluates to the new last entry index.
+#define LIST_PRE_DEC(L) (--(L).len)
 
 /// Performs an insertion on the given lazy list with the given key and value. If the value already exists, a new one will not be made.
 #define LAZYORASSOCLIST(lazy_list, key, value) \
@@ -207,6 +226,19 @@
 		return TRUE
 	return FALSE
 
+/// Is there at least one associative key in the list (i.e. not a numeric index)
+/// Hybrid lists will also return TRUE.
+/proc/is_assoc_list(list/L)
+	if(!LAZYLEN(L))
+		return FALSE
+
+	for(var/i = 1 to L.len)
+		var/k = L[i]
+		if(!isnull(L[k]))
+			return TRUE
+
+	return FALSE
+
 //Checks for specific types in a listc
 /proc/is_type_in_list(atom/A, list/L)
 	if(!LAZYLEN(L) || !A)
@@ -327,6 +359,14 @@
 	else
 		result = first - second
 	return result
+
+//Add all key and value from assoc list B in assoc list L
+/proc/merge_assoc_list(list/L, list/B)
+	if(!is_assoc_list(B) || !islist(L))
+		return FALSE
+	for(var/k in B)
+		L[k] = B[k]
+	return TRUE
 
 /*
  * Returns list containing entries that are in either list but not both.
@@ -489,13 +529,15 @@
 
 	return L
 
-//same, but returns nothing and acts on list in place
+//same, but returns nothing and acts on list in place, and returns same list
 /proc/shuffle_inplace(list/L)
 	if(!L)
 		return
 
 	for(var/i=1, i<L.len, ++i)
 		L.Swap(i,rand(i,L.len))
+
+	return L
 
 //Return a list with no duplicate entries
 /proc/uniqueList(list/L)
@@ -589,7 +631,20 @@
 	L.Insert(toIndex, null)
 	L.Swap(fromIndex, toIndex)
 	L.Cut(fromIndex, fromIndex+1)
+	return TRUE
 
+// Like moveElement but direct to position
+/proc/moveElementToPos(list/L, fromIndex, newPos)
+	if(!L || fromIndex < 1 || fromIndex > L.len)
+		return
+	newPos = clamp(newPos, 1, L.len)
+
+	// convert "new position" -> "insertion index"
+	var/toIndex = newPos
+	if(newPos > fromIndex)
+		toIndex = newPos + 1
+
+	return moveElement(L, fromIndex, toIndex)
 
 //Move elements [fromIndex,fromIndex+len) to [toIndex-len, toIndex)
 //Same as moveElement but for ranges of elements
@@ -613,6 +668,23 @@
 			L.Insert(toIndex, null)
 			L.Swap(fromIndex, toIndex)
 			L.Cut(fromIndex, fromIndex+1)
+
+// changes the key in the list, keeping the index of the element
+/proc/change_assoc_key_preserve_index(list/L, new_key, old_key)
+	if(!(old_key in L))
+		return FALSE
+
+	var/index = L.Find(old_key)
+	if(!index)
+		return FALSE
+
+	var/value = L[old_key]
+
+	L -= old_key
+	L.Insert(index, new_key)
+	L[new_key] = value
+
+	return TRUE
 
 //Move elements from [fromIndex, fromIndex+len) to [toIndex, toIndex+len)
 //Move any elements being overwritten by the move to the now-empty elements, preserving order
@@ -823,9 +895,20 @@
 	. = default
 	return json_encode(L)
 
+//json decode that will return null on parse error instead of runtiming.
 /proc/safe_json_decode(string, default = list())
-	. = default
-	return json_decode(string)
+	//пустой вход - это отсутствующая запись сейвфайла (новый персонаж, поле ещё не
+	//мигрировало), а не битый JSON. Логировать такое незачем: за раунд набегало
+	//под две сотни трейсов на ровном месте
+	if(isnull(string) || !length("[string]"))
+		return null
+	try
+		return json_decode(string)
+	catch(var/exception/error)
+		//молчаливый null прятал источник битого JSON - оставляем след со стеком
+		//вызова и началом входной строки, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input ([length("[string]")]): [copytext_char("[string]", 1, 200)]")
+		return null
 
 /**
  * Custom binary search sorted insert utilising comparison procs instead of vars.
@@ -862,26 +945,25 @@
 		};\
 	} while(FALSE)
 
-///Returns the src and all recursive contents as a list.
-/atom/proc/get_all_contents(ignore_flag_1)
-	. = list(src)
-	var/i = 0
-	while(i < length(.))
-		var/atom/checked_atom = .[++i]
-		if(checked_atom.flags_1 & ignore_flag_1)
-			continue
-		. += checked_atom.contents
+/** Прок ищет объект и его дочерние объекты среди указанного листа.
+ * typepath – аргумент атома, обычно записывается как [x.path]
+ * list/type_list – указанный глобально или локально лист, по которому будет произведён поиск
+ */
+/proc/ispath_in_list(atom/thing, list/type_list)
+	if(!islist(type_list))
+		return FALSE
 
-/// Ищет объект и его дочерние объекты среди указанного листа.
-/proc/is_typeof_list(typepath, list/type_list)
-	if (!ispath(typepath))
-		if (istext(typepath)) // Для работы с датумами прок учитывает то, что у нас выводится при return (Например, текстово - путь предмета /datum/gear)
-			typepath = text2path(typepath)
-		else
-			return FALSE
-	for (var/T in type_list)
-		if (ispath(typepath, T))
+	var/typepath
+	if(ispath(thing))
+		typepath = thing
+	else if(isdatum(thing))
+		typepath = thing.type
+	else
+		return FALSE
+	for(var/T in type_list)
+		if(ispath(T) && ispath(typepath, T))
 			return TRUE
+
 	return FALSE
 
 /// Returns whether a numerical index is within a given list's bounds. Faster than isnull(LAZYACCESS(L, I)).

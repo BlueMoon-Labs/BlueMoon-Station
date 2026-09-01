@@ -3,18 +3,29 @@
 	employer = "InteQ"
 	weight = 25
 	chaos = -5
-	var/assassin_prob = 25
+	assassin_prob = 25
+
+/datum/traitor_class/human/subterfuge/try_forge_assassinate_objective(datum/antagonist/traitor/T, datum/game_mode/dynamic/mode)
+	var/effective_prob = get_effective_assassin_prob(mode)
+	if(!effective_prob || !prob(effective_prob))
+		return FALSE
+	if(prob(25))
+		var/datum/objective/assassinate/internal/kill_objective = new
+		kill_objective.owner = T.owner
+		kill_objective.find_target()
+		T.add_objective(kill_objective)
+	else
+		var/datum/objective/assassinate/once/kill_objective = new
+		kill_objective.owner = T.owner
+		kill_objective.find_target()
+		T.add_objective(kill_objective)
+	return TRUE
 
 /datum/traitor_class/human/subterfuge/forge_single_objective(datum/antagonist/traitor/T)
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-		assassin_prob = max(0,mode.threat_level-20)
-	if(prob(assassin_prob))
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
+	if(try_forge_assassinate_objective(T, mode))
 		return TRUE
 	else
 		var/list/weights = list()
@@ -26,17 +37,73 @@
 		steal_objective.owner = T.owner
 		if(steal_objective.find_target())
 			weights["steal"] = length(subtypesof(/datum/objective_item/steal))
+		var/datum/objective/protect/protect_objective = new
+		protect_objective.owner = T.owner
+		if(protect_objective.find_kill_target() && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого
+			weights["protect"] = length(subtypesof(/datum/objective_item/steal))
+		// BLUEMOON ADD - цель «Подстава»
+		var/datum/objective/frame/frame_objective = new
+		frame_objective.owner = T.owner
+		if(frame_objective.find_target() && GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - «Подстава» выпадает только в Лайт-Динамик
+			weights["frame"] = length(subtypesof(/datum/objective_item/steal))
+		// BLUEMOON ADD END
+		var/datum/objective/breakout/breakout_objective = null
+		if(has_manifest_prisoner())
+			breakout_objective = new
+			breakout_objective.owner = T.owner
+			if(!breakout_objective.find_target())
+				qdel(breakout_objective)
+				breakout_objective = null
+			else
+				weights["breakout"] = length(subtypesof(/datum/objective_item/steal))
 		weights["download"] = !(locate(/datum/objective/download) in T.objectives || (T.owner.assigned_role in list("Research Director", "Scientist", "Roboticist")))
 		switch(pickweight(weights))
 			if("sabo")
 				T.add_objective(sabotage_objective)
 				qdel(steal_objective)
+				qdel(protect_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				return TRUE
 			if("steal")
 				T.add_objective(steal_objective)
 				qdel(sabotage_objective)
+				qdel(protect_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
+				return TRUE
+			if("protect")
+				T.add_objective(protect_objective)
+				qdel(sabotage_objective)
+				qdel(steal_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
+				return TRUE
+			if("frame")	// BLUEMOON ADD - цель «Подстава»
+				T.add_objective(frame_objective)
+				qdel(sabotage_objective)
+				qdel(steal_objective)
+				qdel(protect_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				return TRUE
+			if("breakout")
+				T.add_objective(breakout_objective)
+				qdel(sabotage_objective)
+				qdel(steal_objective)
+				qdel(protect_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				return TRUE
 			if("download")
+				qdel(sabotage_objective)
+				qdel(steal_objective)
+				qdel(protect_objective)
+				if(breakout_objective)
+					qdel(breakout_objective)
+				qdel(frame_objective)	// BLUEMOON ADD
 				var/datum/objective/download/download_objective = new
 				download_objective.owner = T.owner
 				download_objective.gen_amount_goal()

@@ -7,7 +7,9 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	vis_flags = VIS_INHERIT_ID|VIS_INHERIT_PLANE // Important for interaction with and visualization of openspace.
 	luminosity = 1
 
-	var/intact = 1
+	/// Битовая укладка булевых свойств турфа, см. TURF_* в code/__DEFINES/turf_flags.dm.
+	/// Одиннадцать отдельных переменных стоили по 6.4 МБ адресного пространства каждая.
+	var/turf_flags = TURF_FLAGS_DEFAULT
 
 	// baseturfs can be either a list or a single turf type.
 	// In class definition like here it should always be a single type.
@@ -17,6 +19,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/list/baseturfs = /turf/baseturf_bottom
 
 	var/initial_temperature = T20C
+	/// Heat stored in the turf frame itself (walls, windows, solid plating).
+	/// Carried by the superconduction pass in LINDA_turf_tile.dm; open turfs
+	/// keep their authoritative temperature in the air mixture instead.
+	var/temperature = T20C
 	var/to_be_destroyed = 0 //Used for fire, if a melting temperature was reached, it will be destroyed
 	var/max_fire_temperature_sustained = 0 //The max temperature of the fire which it was subjected to
 
@@ -27,20 +33,18 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/explosion_level = 0	//for preventing explosion dodging
 	var/explosion_id = 0
 
-	var/requires_activation	//add to air processing after initialize?
-	var/changing_turf = FALSE
 
 	var/bullet_bounce_sound = 'sound/weapons/bulletremove.ogg' //sound played when a shell casing is ejected ontop of the turf.
-	var/bullet_sizzle = FALSE //used by ammo_casing/bounce_away() to determine if the shell casing should make a sizzle sound when it's ejected over the turf
 							//IE if the turf is supposed to be water, set TRUE.
 
-	var/tiled_dirt = FALSE // use smooth tiled dirt decal
 
 	///the holodeck can load onto this turf if TRUE
-	var/holodeck_compatible = FALSE
 
 	/// If there's a tile over a basic floor that can be ripped out
-	var/overfloor_placed = FALSE
+
+	///ухо спатиал-грида, назначенное на этот турф текущим запросом
+	///get_hearers_in_view(); живёт только внутри одного вызова
+	var/mob/oranges_ear/assigned_oranges_ear
 
 /turf/vv_edit_var(var_name, new_value)
 	var/static/list/banned_edits = list("x", "y", "z")
@@ -61,10 +65,21 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	// by default, vis_contents is inherited from the turf that was here before
 	vis_contents.Cut()
+	// Маплоадер (initTemplateBounds) инициализирует турфы ПОСЛЕ того, как ChangeTurf
+	// привязал lighting_object к vis_contents - возвращаем ссылку, чтобы vis-канал
+	// гибридного рендера (loc + vis_contents) оставался согласованным на шаблонных турфах
+	if(lighting_object)
+		vis_contents += lighting_object
 
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
+	// BYOND платит за каждую ЗАПИСАННУЮ переменную инстанса независимо от того, равно ли
+	// записанное значение типовому дефолту (замерено: ~16 Б на слот, ступенями по четыре).
+	// У /turf оба дефолта - T20C, то есть на подавляющем большинстве турфов эта запись
+	// покупала слот под значение, которое там и так стояло.
+	if(temperature != initial_temperature)
+		temperature = initial_temperature
 	assemble_baseturfs()
 
 	levelupdate()
@@ -77,10 +92,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		Entered(AM)
 
 	var/area/A = loc
-	if(!IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
-	if(requires_activation)
+	if(turf_flags & TURF_REQUIRES_ACTIVATION)
 		CALCULATE_ADJACENT_TURFS(src)
 
 	if (light_power && light_range)
@@ -95,7 +110,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	// apply materials properly from the default custom_materials value
 	set_custom_materials(custom_materials)
@@ -113,37 +128,56 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/__auxtools_update_turf_temp_info()
 
 /turf/return_temperature()
+	return temperature
 
-/turf/proc/set_temperature()
+/turf/proc/set_temperature(new_temperature)
+	temperature = new_temperature
 
 /turf/proc/Initalize_Atmos(times_fired)
 	CALCULATE_ADJACENT_TURFS(src)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
-	if(!changing_turf)
+	var/is_changeturf = turf_flags & TURF_CHANGING
+	if(!is_changeturf)
 		stack_trace("Incorrect turf deletion")
-	changing_turf = FALSE
+	turf_flags &= ~TURF_CHANGING
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)
 		T.multiz_turf_del(src, DOWN)
 	T = SSmapping.get_turf_below(src)
 	if(T)
 		T.multiz_turf_del(src, UP)
+	if(force || !is_changeturf)
+		if(lighting_object)
+			qdel(lighting_object, force = TRUE)
 	if(force)
 		..()
 		//this will completely wipe turf state
-		var/turf/B = new world.turf(src)
+		// Use /turf/open/space, not world.turf (/turf/open/space/basic): /basic
+		// has an empty New() without ..() that deliberately skips Initialize for
+		// map loader performance, which leaves the replacement turf with null
+		// air and unregistered from auxmos. The preceding /turf/open/Destroy
+		// already deregistered us from auxmos via update_air_ref(-1), so without
+		// a proper Initialize on the replacement, adjacent turfs end up with
+		// stale adjacency and auxmos can panic on the orphaned slot (surfacing
+		// as an empty "uncaught runtime error:" via /world/Error with null E).
+		var/turf/B = new /turf/open/space(src)
 		for(var/A in B.contents)
 			qdel(A)
 		return
-	visibilityChanged()
+	// Skip during ChangeTurf for non-opaque turfs — the new turf's Initialize() handles it.
+	// Opaque turfs (walls) must still notify cameranet: updateVisibility() early-returns
+	// for non-opaque atoms, so the new turf's Initialize won't trigger the camera update.
+	if(!is_changeturf || opacity)
+		visibilityChanged()
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
-	requires_activation = FALSE
+	turf_flags &= ~TURF_REQUIRES_ACTIVATION
 	..()
 
-	vis_contents.Cut()
+	if(!is_changeturf)
+		vis_contents.Cut()
 
 /turf/on_attack_hand(mob/user)
 	user.Move_Pulled(src)
@@ -325,6 +359,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		firstbump = src
 	if(firstbump)
 		mover.Bump(firstbump)
+		if(QDELETED(mover) || mover.loc != oldloc)
+			return FALSE
 		return (mover.movement_type & PHASING)
 	return TRUE
 
@@ -332,10 +368,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	. = ..()
 	if(!. || QDELETED(mover))
 		return FALSE
-	for(var/i in contents)
-		if(i == mover)
+	// Only atoms that declare blocks_exit_checks can refuse an exit. Skipping the
+	// rest matters because this loop used to run Uncross() on every single thing
+	// standing in the turf - 553k calls in 78 seconds of a crowded round.
+	for(var/atom/movable/thing as anything in contents)
+		if(thing == mover || !thing.blocks_exit_checks)
 			continue
-		var/atom/movable/thing = i
 		if(!thing.Uncross(mover, newloc))
 			if(thing.flags_1 & ON_BORDER_1)
 				mover.Bump(thing)
@@ -350,13 +388,24 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		AM.ex_act(explosion_level)
 
 	// If an opaque movable atom moves around we need to potentially update visibility.
-	if (AM.opacity)
-		has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
-		reconsider_lights()
+	// During bulk operations (shuttle moves), skip — batch recalc handles it after.
+	if(!GLOB.lighting_defer_active)
+		if(AM.opacity)
+			lighting_flags |= TURF_HAS_OPAQUE_ATOM // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+			reconsider_lights()
+		// Non-opaque atoms with shadow_weight still cast partial contact shadows (incremental — no contents scan)
+		else if(AM.shadow_weight > 0)
+			adjust_shadow_weight(AM.shadow_weight)
 
 
 /turf/open/Entered(atom/movable/AM)
 	..()
+	//Вошедший мог не пережить вход: /turf/Entered добивает его ex_act()`ом, пока турф
+	//держит explosion_level (взрыв ещё идёт). Ронять труп на этаж ниже нельзя - doMove
+	//отказывает qdel-нутому и пишет стектрейс (раунд 10137: тубы, прутья, кабель,
+	//листы металла и рамки камер, разлетевшиеся взрывом над опенспейсом)
+	if(QDELETED(AM))
+		return
 	//melting
 	if(isobj(AM) && air && air.return_temperature() > T0C)
 		var/obj/O = AM
@@ -391,14 +440,17 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		var/list/premade_baseturfs = created_baseturf_lists[current_target]
 		if(length(premade_baseturfs))
 			baseturfs = premade_baseturfs.Copy()
-		else
+		else if(baseturfs != premade_baseturfs)
 			baseturfs = premade_baseturfs
 		return baseturfs
 
 	var/turf/next_target = initial(current_target.baseturfs)
 	//Most things only have 1 baseturf so this loop won't run in most cases
 	if(current_target == next_target)
-		baseturfs = current_target
+		// та же экономия слота, что и с temperature: обычно current_target уже равен
+		// типовому дефолту baseturfs, и запись покупала слот впустую
+		if(baseturfs != current_target)
+			baseturfs = current_target
 		created_baseturf_lists[current_target] = current_target
 		return current_target
 	var/list/new_baseturfs = list(current_target)
@@ -421,7 +473,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	for(var/obj/O in src)
 		if(O.flags_1 & INITIALIZED_1)
 			// SEND_SIGNAL(O, COMSIG_OBJ_HIDE, intact)
-			O.hide(intact)
+			O.hide(turf_flags & TURF_INTACT)
 
 // override for space turfs, since they should never hide anything
 /turf/open/space/levelupdate()
@@ -481,7 +533,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 ////////////////////////////////////////////////////
 
 /turf/singularity_act()
-	if(intact)
+	if(turf_flags & TURF_INTACT)
 		for(var/obj/O in contents) //this is for deleting things like wires contained in the turf
 			if(O.level != 1)
 				continue
@@ -494,18 +546,15 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	return TRUE
 
 /turf/proc/can_lay_cable()
-	return can_have_cabling() & !intact
+	return can_have_cabling() & !(turf_flags & TURF_INTACT)
 
 /turf/proc/visibilityChanged()
 	GLOB.cameranet.updateVisibility(src)
-	// The cameranet usually handles this for us, but if we've just been
-	// recreated we should make sure we have the cameranet vis_contents.
-	var/datum/camerachunk/C = GLOB.cameranet.chunkGenerated(x, y, z)
-	if(C)
-		if(C.obscuredTurfs[src])
-			vis_contents += GLOB.cameranet.vis_contents_objects
-		else
-			vis_contents -= GLOB.cameranet.vis_contents_objects
+	// Обычно за статику отвечает сама сеть камер, но турф мог быть только что
+	// пересоздан (ChangeTurf) - перевешиваем образ статики на новый турф.
+	var/datum/camerachunk/chunk = GLOB.cameranet.chunkGenerated(x, y, z)
+	if(chunk)
+		chunk.reattach_static(src)
 
 /turf/proc/burn_tile()
 
@@ -517,7 +566,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		affecting_level = 1
 	else if(is_shielded())
 		affecting_level = 3
-	else if(intact)
+	else if(turf_flags & TURF_INTACT)
 		affecting_level = 2
 	else
 		affecting_level = 1
@@ -537,18 +586,16 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/affecting_level
 	if(is_shielded())
 		affecting_level = 3
-	else if(intact)
+	else if(turf_flags & TURF_INTACT)
 		affecting_level = 2
 	else
 		affecting_level = 1
-	var/atom/A
-	for(var/i in contents)
+	for(var/atom/A as anything in contents)
 		if(. <= 0)
 			return FALSE
-		A = i
-		if(!QDELETED(A) && A.level >= affecting_level)
-			.  = A.wave_explode(., explosion, dir)
-	maptext = MAPTEXT("[.]")
+		if(QDELETED(A) || A.level < affecting_level)
+			continue
+		. = A.wave_explode(., explosion, dir)
 
 /turf/narsie_act(force, ignore_mobs, probability = 20)
 	. = (prob(probability) || force)
@@ -610,7 +657,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		acid_type = /obj/effect/acid/alien
 	var/has_acid_effect = FALSE
 	for(var/obj/O in src)
-		if(intact && O.level == 1) //hidden under the floor
+		if((turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
 			continue
 		if(istype(O, acid_type))
 			var/obj/effect/acid/A = O
@@ -625,6 +672,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	return
 
 /turf/handle_fall(mob/faller, forced)
+	SEND_SIGNAL(src, COMSIG_TURF_MOB_FALL, faller) //LIQUIDS ADD
 	faller.lying = pick(90, 270)
 	if(!forced)
 		return
@@ -716,7 +764,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /// Called when attempting to set fire to a turf
 /turf/proc/IgniteTurf(power, fire_color="red")
-	return
+	return FALSE
 
 /// Returns adjacent turfs in cardinal directions that are reachable via atmos
 /turf/proc/reachableAdjacentAtmosTurfs()

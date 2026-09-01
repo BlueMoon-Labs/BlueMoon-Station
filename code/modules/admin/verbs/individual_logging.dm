@@ -44,17 +44,25 @@
 	dat += "<hr style='background:#000000; border:0; height:1px'>"
 
 	var/log_source = M.logging;
-	if(source == LOGSRC_CLIENT && M.client) //if client doesn't exist just fall back to the mob log
-		log_source = M.client.player_details.logging //should exist, if it doesn't that's a bug, don't check for it not existing
+	if(source == LOGSRC_CLIENT && M.client)
+		log_source = M.client.player_details.logging
 	var/list/concatenated_logs = list()
 	for(var/log_type in log_source)
 		var/nlog_type = text2num(log_type)
 		if(nlog_type & ntype)
-			var/list/all_the_entrys = log_source[log_type]
-			for(var/entry in all_the_entrys)
-				concatenated_logs += "<b>[entry]</b><br>[all_the_entrys[entry]]"
+			var/list/all_the_entries = log_source[log_type]
+			for(var/entry in all_the_entries)
+				if(entry["time"])
+					var/health_info = entry["health"] ? " (HP: [entry["health"]])" : ""
+					var/line = "<b>[entry["time"]] [entry["who"]]</b>[health_info]<br>[entry["what"]]<br><small>[entry["where"]]</small>"
+					concatenated_logs += line
+				else if(islist(entry))
+					for(var/key in entry)
+						concatenated_logs += "<b>[key]</b><br>[entry[key]]"
+				else
+					concatenated_logs += "<b>[entry]</b>"
 	if(length(concatenated_logs))
-		sortTim(concatenated_logs, cmp = GLOBAL_PROC_REF(cmp_text_dsc)) //Sort by timestamp.
+		sortTim(concatenated_logs, cmp = GLOBAL_PROC_REF(cmp_text_dsc))
 		dat += "<font size=2px>"
 		dat += concatenated_logs.Join("<br>")
 		dat += "</font>"

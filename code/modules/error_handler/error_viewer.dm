@@ -109,6 +109,11 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 	error_entry.error_source = error_source
 	errors += error_entry
 	error_source.errors += error_entry
+	// Ограничение роста при лавине рантаймов — утечка памяти
+	if(length(errors) > 2000)
+		errors.Cut(1, length(errors) - 1500)
+	if(length(error_source.errors) > 500)
+		error_source.errors.Cut(1, length(error_source.errors) - 400)
 	if (skip_count)
 		return // Skip notifying admins about skipped errors.
 

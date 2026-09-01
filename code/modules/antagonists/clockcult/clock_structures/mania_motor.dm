@@ -1,14 +1,14 @@
 //Mania Motor: A pair of antenna that, while active, cause a variety of negative mental effects in nearby human mobs.
 /obj/structure/destructible/clockwork/powered/mania_motor
 	name = "mania motor"
-	desc = "A pair of antenna with what appear to be sockets around the base. It reminds you of an antlion."
-	clockwork_desc = "A transmitter that allows Sevtug to whisper into the minds of nearby non-servants, causing a variety of negative mental effects, up to and including conversion."
+	desc = "Пара антенн с чем-то вроде разъемов вокруг основания. Это напоминает вам муравьиного льва."
+	clockwork_desc = "Передатчик, который позволяет Севтугу шептать в сознание находящихся поблизости людей, не являющихся слугами, вызывая различные негативные психические эффекты, вплоть до обращения в веру."
 	icon_state = "mania_motor_inactive"
 	active_icon = "mania_motor"
 	inactive_icon = "mania_motor_inactive"
 	unanchored_icon = "mania_motor_unwrenched"
 	construction_value = 20
-	break_message = "<span class='warning'>The antenna break off, leaving a pile of shards!</span>"
+	break_message = "<span class='warning'>Антенна отломилась, оставив после себя груду осколков!</span>"
 	max_integrity = 100
 	light_color = "#AF0AAF"
 	debris = list(/obj/item/clockwork/alloy_shards/large = 2, \
@@ -19,13 +19,13 @@
 /obj/structure/destructible/clockwork/powered/mania_motor/examine(mob/user)
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
-		. += "<span class='sevtug_small'>It requires <b>[DisplayPower(mania_cost)]</b> to run.</span>"
+		. += "<span class='sevtug_small'>Он требует <b>[DisplayPower(mania_cost)]</b> для работы.</span>"
 
 /obj/structure/destructible/clockwork/powered/mania_motor/forced_disable(bad_effects)
 	if(active)
 		if(bad_effects)
 			try_use_power(MIN_CLOCKCULT_POWER*4)
-		visible_message("<span class='warning'>[src] hums loudly, then the sockets at its base fall dark!</span>")
+		visible_message("<span class='warning'>[src] громко гудит, затем разъемы у его основания темнеют!</span>")
 		playsound(src, 'sound/effects/screech.ogg', 40, 1)
 		toggle()
 		return TRUE
@@ -36,7 +36,7 @@
 		return
 	if(user.canUseTopic(src, !issilicon(user), NO_DEXTERY) && is_servant_of_ratvar(user))
 		if(!can_access_clockwork_power(src, mania_cost))
-			to_chat(user, "<span class='warning'>[src] needs more power to function!</span>")
+			to_chat(user, "<span class='warning'>[src] нужно больше энергии для работы!</span>")
 			return FALSE
 		toggle(0, user)
 

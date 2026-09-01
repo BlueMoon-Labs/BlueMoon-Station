@@ -2,7 +2,7 @@
 	name = "Crystalline Asteroid"
 	typepath = /datum/round_event/crystalline_reentry
 	min_players = 15
-	max_occurrences = 0 //Deactivated for now
+	enabled = FALSE //Deactivated for now
 	var/atom/special_target
 	category = EVENT_CATEGORY_SPACE
 
@@ -33,7 +33,7 @@
 	name = "Catastrophic Crystalline Asteroid Wave"
 	typepath = /datum/round_event/crystalline_wave
 	min_players = 35
-	max_occurrences = 0 //This is only an admin spawn. Ergo, wrath of the gods.
+	enabled = FALSE //This is only an admin spawn. Ergo, wrath of the gods.
 	var/atom/special_target
 	category = EVENT_CATEGORY_SPACE
 

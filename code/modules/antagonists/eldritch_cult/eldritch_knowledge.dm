@@ -201,15 +201,19 @@
 	log_game("[key_name_admin(C)] принимает контроль над ([key_name_admin(summoned)]), его хозяин [user.real_name]")
 	summoned.ghostize(FALSE)
 	summoned.key = C.key
-	summoned.mind.add_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic_monster/heretic_monster = summoned.mind.has_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic/master = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	heretic_monster.set_owner(master)
+	//Хозяин проставляется до выдачи роли: приветствие уходит игроку внутри add_antag_datum().
+	var/datum/antagonist/heretic_monster/heretic_monster = new
+	heretic_monster.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
+	summoned.mind.add_antag_datum(heretic_monster)
 	return TRUE
 
 //Ascension knowledge
 /datum/eldritch_knowledge/final_eldritch
 	var/finished = FALSE
+	/// Ключ сцены параллакса, которую вознесение вешает за иллюминатор. См.
+	/// _rendering/parallax/antag_scenes.dm. Объявляется путём, ставится здесь -
+	/// все четыре пути зовут этот прок родителя, и дублировать вызов незачем.
+	var/parallax_scene
 
 /datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc,selected_atoms)
 	if(finished)
@@ -224,6 +228,8 @@
 
 /datum/eldritch_knowledge/final_eldritch/on_finished_recipe(	mob/living/user, list/atoms, loc)
 	finished = TRUE
+	if(parallax_scene)
+		set_antag_parallax_scene(parallax_scene, ANTAG_PARALLAX_TOKEN_HERETIC)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/cleanup_atoms(list/atoms)
@@ -273,16 +279,12 @@
 				LH.sac_targetter.sac_targetted.Remove(H.real_name)
 			LH.sac_targetter = null
 			EC.total_sacrifices++
-			for(var/X in carbon_user.get_all_gear())
-				if(!istype(X,/obj/item/forbidden_book))
-					continue
-				var/obj/item/forbidden_book/FB = X
-				FB.charge++
-				FB.charge++
-				break
+			var/obj/item/forbidden_book/FB = EC.get_forbidden_book()
+			if(FB)
+				FB.charge += 2
 
 		if(!LH.target)
-			var/datum/objective/A = new
+			var/datum/objective/sacrifice_ecult/A = new
 			A.owner = user.mind
 			var/list/targets = list()
 			var/list/target_blacklist = list()
@@ -317,11 +319,35 @@
 				var/datum/antagonist/heretic/EC = carbon_user.mind.has_antag_datum(/datum/antagonist/heretic)
 				LH.sac_targetter = EC
 				EC.sac_targetted.Add(LH.target.real_name)
+				// BLUEMOON ADD START - потусторонние покровители не признают "Одну Жизнь":
+				// цель должна быть способна умереть окончательно, иначе жертва невозможна.
+				if(ishuman(LH.target))
+					remove_onelife_source(LH.target, "<span class='userdanger'><i>Нечто потустороннее смотрит на вас...</i> Вы чувствуете, что мучительная смерть снова стала для вас реальной угрозой.</span>")
+
+				// BLUEMOON ADD END
 			else
 				to_chat(user,"<span class='warning'>не удалось найти цель для живого сердца.</span>")
 
 /datum/eldritch_knowledge/spell/basic/cleanup_atoms(list/atoms)
 	return
+
+/datum/eldritch_knowledge/spell/summon
+	next_knowledge = list()
+	cost = 0
+	required_atoms = list()
+	route = "Start"
+
+/datum/eldritch_knowledge/spell/summon/heart
+	name = "Зов к сердцу"
+	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	gain_text = "Что-то живое и теплое откликается на мой зов."
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_summon/heart
+
+/datum/eldritch_knowledge/spell/summon/book
+	name = "Зов к кодексу"
+	desc = "Позволяет призывать и прятать кодекс в тайных глубинах. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	gain_text = "Я могу дотянуться до своего кодекса сквозь пространство."
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_summon/book
 
 /datum/eldritch_knowledge/living_heart
 	name = "Живое сердце"

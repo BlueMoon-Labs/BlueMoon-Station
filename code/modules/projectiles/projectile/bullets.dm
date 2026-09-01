@@ -15,6 +15,8 @@
 	embed_falloff_tile = -5
 	wound_bonus = 4
 	bare_wound_bonus = 6
+	/// Percent chance for nonlethal headshot effects on headshots.
+	var/nonlethal_headshot_chance = 0
 
 /obj/item/projectile/bullet/smite
 	name = "divine retribution"

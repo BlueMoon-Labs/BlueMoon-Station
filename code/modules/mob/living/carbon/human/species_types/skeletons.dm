@@ -2,11 +2,12 @@
 	name = "Skeleton"
 	id = SPECIES_SKELETON
 	say_mod = "rattles"
+	special_step_sounds = list(FOOTSTEP_SOUND_BONE)
 	blacklisted = 0
 	sexes = 0
 	meat = /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/skeleton
 	species_traits = list(NOBLOOD,HAS_BONE,NOTRANSSTING)
-	inherent_traits = list(TRAIT_NOPULSE,TRAIT_STABLEHEART,TRAIT_NOBREATH,,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_NOHUNGER,TRAIT_NOTHIRST,TRAIT_RADIMMUNE,TRAIT_EASYDISMEMBER,TRAIT_LIMBATTACHMENT,TRAIT_NOSOFTCRIT,TRAIT_FAKEDEATH)
+	inherent_traits = list(TRAIT_NOPULSE,TRAIT_STABLEHEART,TRAIT_NOBREATH,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_NOHUNGER,TRAIT_NOTHIRST,TRAIT_RADIMMUNE,TRAIT_EASYDISMEMBER,TRAIT_LIMBATTACHMENT,TRAIT_NOSOFTCRIT,TRAIT_FAKEDEATH, CAN_BE_OPERATED_WITHOUT_PAIN)
 	inherent_biotypes = MOB_MINERAL|MOB_HUMANOID //BLUEMOON EDIT кости без кожи, чистый кальций без плоти, поэтому и MOB_MINERAL
 	mutanttongue = /obj/item/organ/tongue/bone
 	damage_overlay_type = ""//let's not show bloody wounds or burns over bones.
@@ -21,14 +22,14 @@
 	blacklisted_quirks = list(/datum/quirk/paper_skin)
 
 /datum/species/skeleton/New()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN]) //skeletons are stronger during the spooky season!
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN]) //skeletons are stronger during the spooky season!
 		inherent_traits |= list(TRAIT_RESISTHEAT, TRAIT_NOBREATH, TRAIT_PIERCEIMMUNE, TRAIT_FAKEDEATH, TRAIT_RESISTCOLD, TRAIT_RADIMMUNE)
 		brutemod = 0.25
 		burnmod = 0.25
 	..()
 
 /datum/species/skeleton/check_roundstart_eligible()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		return TRUE
 	return ..()
 
@@ -40,7 +41,7 @@
 	balance_point_values = FALSE
 	brutemod = 0.50
 	burnmod = 0.50
-	inherent_traits = list(TRAIT_RESISTHEAT,TRAIT_NOBREATH,TRAIT_RESISTCOLD,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_RADIMMUNE,TRAIT_PIERCEIMMUNE,TRAIT_NOHUNGER,TRAIT_NOTHIRST,TRAIT_EASYDISMEMBER,TRAIT_LIMBATTACHMENT, TRAIT_FAKEDEATH, TRAIT_CALCIUM_HEALER)
+	inherent_traits = list(TRAIT_RESISTHEAT,TRAIT_NOBREATH,TRAIT_RESISTCOLD,TRAIT_RESISTHIGHPRESSURE,TRAIT_RESISTLOWPRESSURE,TRAIT_RADIMMUNE,TRAIT_PIERCEIMMUNE,TRAIT_NOHUNGER,TRAIT_NOTHIRST,TRAIT_EASYDISMEMBER,TRAIT_LIMBATTACHMENT, TRAIT_FAKEDEATH, TRAIT_CALCIUM_HEALER, CAN_BE_OPERATED_WITHOUT_PAIN)
 
 /datum/species/skeleton/space/check_roundstart_eligible()
 	return FALSE

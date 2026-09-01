@@ -103,7 +103,7 @@
 	name = "Treasure Chest"
 	},
 /obj/item/clothing/head/pirate,
-/obj/item/clothing/glasses/eyepatch,
+/obj/item/clothing/glasses/cover/eyepatch,
 /obj/item/clothing/suit/pirate,
 /obj/item/melee/sabre{
 	desc = "This isn't real however it can trick someone into thinking you have something real..";
@@ -1000,7 +1000,7 @@
 /area/awaymission/beachhotel)
 "dl" = (
 /obj/machinery/vending/medical{
-	req_access = "201"
+	req_access_txt = "201"
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/beachhotel)
@@ -3358,7 +3358,7 @@
 /area/awaymission/beach)
 "uB" = (
 /obj/structure/rack/shelf,
-/obj/item/pda/neko,
+/obj/item/modular_computer/pda/neko,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/beach)
 "uE" = (
@@ -5956,7 +5956,7 @@
 /area/awaymission/beach)
 "NQ" = (
 /obj/structure/rack/shelf,
-/obj/item/pda/chameleon/broken,
+/obj/item/modular_computer/pda/chameleon/broken,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/beach)
 "NS" = (
@@ -6748,10 +6748,6 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/awaymission/beachhotel)
-"Sb" = (
-/obj/effect/mob_spawn/human/bartender/alive,
-/turf/open/floor/wood,
-/area/awaymission/beachhotel)
 "Sd" = (
 /obj/effect/turf_decal/weather/sand/floor,
 /obj/effect/turf_decal/weather/sand/floor,
@@ -7472,10 +7468,6 @@
 /obj/machinery/space_heater,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/beachhotel)
-"WV" = (
-/obj/effect/mob_spawn/human/beach/alive/lifeguard,
-/turf/open/floor/plating/beach/sand,
-/area/awaymission/beach)
 "WX" = (
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 1
@@ -11727,7 +11719,7 @@ ba
 pC
 ak
 ak
-WV
+ak
 aI
 ak
 ak
@@ -15044,7 +15036,7 @@ sB
 ak
 sB
 ju
-Sb
+Iv
 Iv
 Iv
 Iv

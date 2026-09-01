@@ -109,6 +109,10 @@
 	name = "Flying Dutchman"
 	requires_power = FALSE
 
+/area/shuttle/medieval
+	name = "Flying Scrap"
+	requires_power = FALSE
+
 ////////////////////////////Bounty Hunter Shuttles////////////////////////////
 
 /area/shuttle/hunter
@@ -286,3 +290,7 @@
 
 /area/shuttle/lf_haron
 	name = "Haron"
+
+/area/shuttle/ruin/bigderelict/outpost
+	requires_power = TRUE
+	name = "Outpost shuttle"

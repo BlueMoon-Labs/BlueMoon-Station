@@ -7,7 +7,7 @@
 	desc = "The circuit board for a recycler."
 	id = "recycler"
 	build_path = /obj/item/circuitboard/machine/recycler
-	category = list ("Misc. Machinery")
+	category = list ("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/autoloom
@@ -15,7 +15,7 @@
 	desc = "The circuit board for an autoloom."
 	id = "autoloom"
 	build_path = /obj/item/circuitboard/machine/autoloom
-	category = list ("Misc. Machinery")
+	category = list ("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/board/holopad
@@ -31,16 +31,18 @@
 	desc = "The circuit board for an autolathe."
 	id = "autolathe"
 	build_path = /obj/item/circuitboard/machine/autolathe
-	category = list ("Misc. Machinery")
+	category = list ("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/*
 /datum/design/board/autolathe_secure
 	name = "Machine Design (Secure Autolathe Board)"
 	desc = "The circuit board for an autolathe. This one is programmed to not allow hacking."
 	id = "autolathe_secure"
 	build_path = /obj/item/circuitboard/machine/autolathe/secure
-	category = list ("Misc. Machinery")
+	category = list ("Production Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
+*/
 
 /datum/design/board/recharger
 	name = "Machine Design (Weapon Recharger Board)"
@@ -55,9 +57,9 @@
 	name = "Machine Design (Vendor Board)"
 	desc = "The circuit board for a Vendor. Use a screwdriver to turn the \"brand selection\" dial."
 	id = "vendor"
+	build_type = AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor
-	category = list ("Misc. Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_ALL
+	category = list ("initial", "Electronics")
 
 /datum/design/board/donksofttoyvendor
 	name = "Machine Design (Donksoft Toy Vendor Board)"
@@ -75,6 +77,14 @@
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/datum/design/board/electrolyzer
+	name = "Machine Design (Electrolyzer Board)"
+	desc = "The circuit board for a space electrolyzer."
+	id = "electrolyzer"
+	build_path = /obj/item/circuitboard/machine/electrolyzer
+	category = list ("Engineering Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/board/reagentgrinder
 	name = "Machine Design (All-In-One Grinder)"
 	desc = "The circuit board for an All-In-One Grinder."
@@ -88,7 +98,7 @@
 	desc = "The circuit board for a microwave."
 	id = "microwave"
 	build_path = /obj/item/circuitboard/machine/microwave
-	category = list ("Misc. Machinery")
+	category = list ("Culinary Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/smartfridge
@@ -96,7 +106,7 @@
 	desc = "The circuit board for a smartfridge."
 	id = "smartfridge"
 	build_path = /obj/item/circuitboard/machine/smartfridge
-	category = list ("Misc. Machinery")
+	category = list ("Culinary Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/cell_charger
@@ -104,7 +114,7 @@
 	desc = "The circuit board for a cell charger."
 	id = "cell_charger"
 	build_path = /obj/item/circuitboard/machine/cell_charger
-	category = list ("Misc. Machinery")
+	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/board/cell_charger_multi
@@ -112,7 +122,7 @@
 	desc = "The circuit board for a multi-cell charger."
 	id = "multi_cell_charger"
 	build_path = /obj/item/circuitboard/machine/cell_charger_multi
-	category = list ("Misc. Machinery")
+	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/board/vr_sleeper
@@ -121,7 +131,7 @@
 	id = "vr_sleeper"
 	build_path = /obj/item/circuitboard/machine/vr_sleeper
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
-	category = list ("Medical Machinery")
+	category = list ("Misc. Machinery")
 
 /datum/design/board/paystand
 	name = "Machine Design (Pay Stand)"
@@ -131,13 +141,21 @@
 	category = list ("Misc. Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/datum/design/board/vendatray
+	name = "Machine Design (Vend-A-Tray)"
+	desc = "A display case with an ID-card swiper. Use your ID to purchase the contents."
+	id = "vendatray"
+	build_path = /obj/item/circuitboard/machine/vendatray
+	category = list ("Misc. Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
+
 /datum/design/board/autoylathe
 	name = "Machine Design (Autoylathe)"
 	desc = "The circuit board for an autoylathe."
 	id = "autoylathe"
 	build_path = /obj/item/circuitboard/machine/autolathe/toy
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
-	category = list("Misc. Machinery")
+	category = list("Production Machinery")
 
 /datum/design/board/hypnochair
 	name = "Machine Design (Enhanced Interrogation Chamber)"

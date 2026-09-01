@@ -601,7 +601,7 @@
 	base_icon_state = "coffee_condi_display"
 	icon_type = "coffee condiment"
 	name = "coffee condiments display"
-	desc = "A neat small wooden box, holding all your favorite coffee condiments."
+	desc = "Аккуратная деревянная коробочка, держащая ваши любимые приправы для кофе."
 	custom_materials = list(/datum/material/wood = SHEET_MATERIAL_AMOUNT/2)
 	resistance_flags = FLAMMABLE
 	fancy_open = FALSE

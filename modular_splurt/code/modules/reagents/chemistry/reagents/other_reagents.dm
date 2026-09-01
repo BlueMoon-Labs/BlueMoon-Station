@@ -36,7 +36,7 @@
 	if(HAS_TRAIT(M,TRAIT_INCUBUS))
 		M.adjust_nutrition(1.5)
 
-/datum/reagent/blood/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume)
+/datum/reagent/blood/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume, affected_bodypart)
 	. = ..()
 	// Check if ingested
 	if(method != INGEST)
@@ -123,7 +123,7 @@
 	max_nutrition = NUTRITION_LEVEL_FAT		// From INFINITY
 	color = "#66552f" // rgb: 102, 85, 47
 
-/datum/reagent/consumable/notriment/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume)
+/datum/reagent/consumable/notriment/reaction_mob(mob/living/carbon/M, method=TOUCH, reac_volume, affected_bodypart)
 	// Check if mob can process food
 	if(!HAS_TRAIT(M, TRAIT_NO_PROCESS_FOOD))
 		// Warn user

@@ -139,6 +139,15 @@
 	destroying = TRUE
 	if(held_mob)
 		release(FALSE)
+	// Страховка на пути, где held_mob уже обнулён, а моб физически остался в
+	// contents: живого выпускаем, полуудалённого уводим в nullspace - иначе
+	// чистка contents в movable/Destroy позовёт его Destroy повторно.
+	for(var/mob/living/stray in src)
+		var/atom/drop_spot = drop_location()
+		if(QDELETED(stray) || !drop_spot)
+			stray.moveToNullspace()
+		else
+			stray.forceMove(drop_spot)
 	return ..()
 
 /obj/item/clothing/head/mob_holder/examine(mob/user)
@@ -173,11 +182,21 @@
 		if(display_messages)
 			to_chat(L, span_warning("[released_mob] wriggles free!"))
 		L.dropItemToGround(src)
-	released_mob.forceMove(drop_location())
-	released_mob.reset_perspective()
-	released_mob.setDir(SOUTH)
-	if(display_messages)
-		released_mob.visible_message(span_warning("[released_mob] uncurls!"))
+	// Destroy() моба зовёт Exited холдера через moveToNullspace - "выпускать"
+	// удаляемого моба обратно в мир нельзя, это вечный пин ссылкой из турфа
+	// (хардделы обезьян в мобхолдерах, раунд 9748).
+	if(!QDELETED(released_mob))
+		released_mob.forceMove(drop_location())
+		released_mob.reset_perspective()
+		released_mob.setDir(SOUTH)
+		if(display_messages)
+			released_mob.visible_message(span_warning("[released_mob] uncurls!"))
+	else if(released_mob.loc == src)
+		// Но и ВНУТРИ оставлять нельзя: чистка contents в movable/Destroy позовёт
+		// qdel полуудалённому мобу второй раз ("destroy proc was called multiple
+		// times", мышь в раунде 9875). Уход в nullspace его собственный Destroy
+		// и так сделал бы следующим шагом.
+		released_mob.moveToNullspace()
 	if(del_on_release && !destroying)
 		qdel(src)
 	return TRUE
@@ -235,9 +254,27 @@
 	var/atom/location = get_loc_for_air()
 	return location.remove_air(amount)
 
+/obj/item/clothing/head/mob_holder/remove_air_into(datum/gas_mixture/into, amount)
+	var/atom/location = get_loc_for_air()
+	if(location)
+		return location.remove_air_into(into, amount)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
+
 /obj/item/clothing/head/mob_holder/remove_air_ratio(ratio)
 	var/atom/location = get_loc_for_air()
 	return location.remove_air_ratio(ratio)
+
+/obj/item/clothing/head/mob_holder/remove_air_ratio_into(datum/gas_mixture/into, ratio)
+	var/atom/location = get_loc_for_air()
+	if(location)
+		return location.remove_air_ratio_into(into, ratio)
+	if(into)
+		into.clear()
+		into.set_temperature(0)
+	return FALSE
 
 /obj/item/clothing/head/mob_holder/transfer_air(datum/gas_mixture/taker, amount)
 	var/atom/location = get_loc_for_air()
