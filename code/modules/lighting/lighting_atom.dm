@@ -311,6 +311,14 @@
 /atom/proc/update_bloom()
 	cut_overlay(glow_overlay)
 	cut_overlay(exposure_overlay)
+	// LightUp: уменьшаем контраст для покрашенных ламп (баллончик)
+	var/is_painted_lamp = FALSE
+	if(istype(src, /obj/machinery/light))
+		var/obj/machinery/light/L = src
+		if(L.color)
+			is_painted_lamp = TRUE
+	var/paint_contrast_mult = is_painted_lamp ? 0.82 : 1
+	var/paint_exposure_mult = is_painted_lamp ? 0.88 : 1
 	if(glow_icon && glow_icon_state)
 		glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = -2)
 		if(layer <= LOW_OBJ_LAYER)
@@ -321,7 +329,7 @@
 		if(glow_colored)
 			var/datum/color_matrix/mat = new(
 				light_color,
-				CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power,
+				(CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * paint_contrast_mult,
 				CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power)
 			glow_overlay.color = mat.get()
 		add_overlay(glow_overlay)
@@ -332,12 +340,12 @@
 		exposure_overlay.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART
 		var/datum/color_matrix/mat = new(
 			1,
-			CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power,
+			(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
 			CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
 		if(exposure_colored)
 			mat.set_color(
 				light_color,
-				CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power,
+				(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
 				CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
 		exposure_overlay.color = mat.get()
 		var/icon/EX = icon(icon = exposure_icon, icon_state = exposure_icon_state)

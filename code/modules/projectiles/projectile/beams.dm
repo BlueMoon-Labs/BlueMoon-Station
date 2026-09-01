@@ -4,6 +4,7 @@
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE
 	damage = 20
 	light_range = 2
+	light_power = 0.9
 	damage_type = BURN
 	hitsound = 'sound/weapons/sear.ogg'
 	hitsound_wall = 'sound/weapons/effects/searwall.ogg'
@@ -17,6 +18,7 @@
 	wound_bonus = 6
 	bare_wound_bonus = 8
 	armour_penetration = 15
+	glow_icon = 'icons/obj/projectiles.dmi'
 	var/fire_hazard = FALSE
 
 /obj/item/projectile/beam/laser
