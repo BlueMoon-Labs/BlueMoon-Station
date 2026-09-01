@@ -313,6 +313,8 @@ GLOBAL_LIST(topic_status_cache)
 	qdel(src)	//shut it down
 
 /world/Reboot(reason = 0, fast_track = FALSE)
+	// Таймеры сброса после ребута не фиерят - буферы одиночных префов сбрасываем здесь.
+	flush_pending_single_prefs()
 	if (reason || fast_track) //special reboot, do none of the normal stuff
 		if (usr)
 			log_admin("[key_name(usr)] Has requested an immediate world restart via client side debugging tools")

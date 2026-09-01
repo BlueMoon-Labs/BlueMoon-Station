@@ -495,8 +495,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pref_queue_deadline = 0
 	/// То же самое для записи персонажа.
 	var/char_queue_deadline = 0
-	/// Буфер склейки одиночных записей в савфайл: ключ -> значение.
-	/// Открытие савфайла стоит столько же, сколько сама запись, поэтому поток правок
+	/// Буфер склейки одиночных записей в savefile: ключ -> значение.
+	/// Открытие savefile стоит столько же, сколько сама запись, поэтому поток правок
 	/// одного ключа копится тут и уходит на диск одним открытием. См. save_single_pref().
 	var/list/pending_single_prefs
 	/// id таймера, который сбросит буфер одиночных записей на диск.
@@ -3253,7 +3253,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("toggle")
 				modern_theme_picker_collapsed = !modern_theme_picker_collapsed
 				modern_theme_picker_animate = FALSE
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				// Обе переменные - var/tmp, в savefile их не пишет ни один ключ: сохранять нечего.
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3268,7 +3268,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("set_button_shape")
 				var/shape = href_list["shape"]
 				modern_button_shape = sanitize_inlist(shape, list("rect", "soft", "round"), initial(modern_button_shape))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_button_shape")
 				ShowChoices(user)
 				return TRUE
 			if("set_language")
@@ -3277,13 +3277,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					modern_ui_language = 1
 				else if(lang == "en")
 					modern_ui_language = 0
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_ui_language")
 				ShowChoices(user)
 				return TRUE
 			if("set_decoration_level")
 				var/level = href_list["level"]
 				ui_decoration_level = sanitize_inlist(level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("ui_decoration_level")
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3293,7 +3293,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		switch(href_list["action"])
 			if("toggle_empty")
 				collapse_empty_character_slots = !collapse_empty_character_slots
-				save_preferences(silent = TRUE)
+				save_pref_var("collapse_empty_character_slots")
 				ShowChoices(user)
 				return TRUE
 			if("delete_slot")

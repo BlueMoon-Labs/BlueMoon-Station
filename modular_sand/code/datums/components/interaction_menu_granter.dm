@@ -888,28 +888,41 @@
 			return TRUE
 		if("pref")
 			var/datum/preferences/prefs = parent_mob.client.prefs
+			// Имя переменной, которую тронула ветка: в savefile уходит только этот ключ. Ветки на
+			// переменных, отличных от cit_toggles, переставляют имя сами.
+			var/dirty_var = "cit_toggles"
 			switch(params["pref"])
 				if("use_arousal_multiplier")
 					prefs.use_arousal_multiplier = !prefs.use_arousal_multiplier
+					dirty_var = "use_arousal_multiplier"
 				if("arousal_multiplier")
 					prefs.arousal_multiplier = params["amount"]
+					dirty_var = "arousal_multiplier"
 				if("use_moaning_multiplier")
 					prefs.use_moaning_multiplier = !prefs.use_moaning_multiplier
+					dirty_var = "use_moaning_multiplier"
 				if("moaning_multiplier")
 					prefs.moaning_multiplier = params["amount"]
+					dirty_var = "moaning_multiplier"
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
+					dirty_var = "toggles"
 				if("custom_verb_consent")
 					prefs.custom_verb_consent = !prefs.custom_verb_consent
+					dirty_var = "custom_verb_consent"
 				if("ranged_verb_pref")
 					TOGGLE_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
+					dirty_var = "toggles"
 				if("lewd_verb_sounds")
 					TOGGLE_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
+					dirty_var = "toggles"
 				if("arousable")
 					prefs.arousable = !prefs.arousable
+					dirty_var = "arousable"
 				if("sexknotting")
 					prefs.sexknotting = !prefs.sexknotting
+					dirty_var = "sexknotting"
 				if("genital_examine")
 					TOGGLE_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 				if("vore_examine")
@@ -962,16 +975,19 @@
 				//
 				if("show_heart_over_self")
 					prefs.show_heart_over_self = !prefs.show_heart_over_self
+					dirty_var = "show_heart_over_self"
 				if("interaction_effect")
 					var/effect = params["effect"]
 					if(effect in GLOB.interaction_effects_list)
 						prefs.interaction_effect = effect
+					dirty_var = "interaction_effect"
 				if("block_partner_pixel_shift")
 					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
+					dirty_var = "block_partner_pixel_shift"
 				//
 				else
 					return FALSE
-			prefs.save_preferences()
+			prefs.save_pref_var(dirty_var)
 			return TRUE
 		if("genitals_menu")
 			switch(params["who"])
