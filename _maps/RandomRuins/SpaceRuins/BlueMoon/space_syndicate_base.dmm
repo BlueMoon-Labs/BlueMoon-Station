@@ -5641,7 +5641,7 @@
 /obj/structure/window/reinforced/survival_pod{
 	dir = 8
 	},
-/obj/machinery/suit_storage_unit,
+/obj/machinery/suit_storage_unit/syndicate/command,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/admiral)
 "vB" = (
@@ -8418,9 +8418,11 @@
 /obj/item/gun/energy/lasercannon{
 	pixel_y = 8
 	},
-/obj/item/gun/ballistic/shotgun/automatic/combat,
-/obj/item/gun/energy/e_gun/stun{
-	pixel_y = -9
+/obj/item/gun/energy/modular_laser_rifle/carbine{
+	pixel_y = 1
+	},
+/obj/item/gun/energy/modular_laser_rifle/carbine{
+	pixel_y = -5
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/armory)
