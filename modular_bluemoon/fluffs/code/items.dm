@@ -129,13 +129,13 @@
 
 /obj/item/sign/flag/marine/uscmc
 	name = "folded USCMC flag"
-	desc = "folded flag of United States Marine Corps. There some sign at corner: \"Delta one love\"."
+	desc = "folded flag of United States Colonial Marine Corps. There some sign at corner: \"Delta one love\"."
 	icon_state = "folded_uscmc"
 	sign_path = /obj/structure/sign/flag/marine/uscmc
 
 /obj/structure/sign/flag/marine/uscmc
 	name = "USCMC flag"
-	desc = "flag of United States Marine Corps. Commonly known as just the Colonial Marines, was the United Americas' primary \"force-in-readiness\". They specialized in force projection, being able to operate independently in environments far from home for extended periods thanks to their technological prowess and sizeable space fleet at their disposal."
+	desc = "flag of United States Colonial Marine Corps. Commonly known as just the Colonial Marines, was the United Americas' primary \"force-in-readiness\". They specialized in force projection, being able to operate independently in environments far from home for extended periods thanks to their technological prowess and sizeable space fleet at their disposal."
 	icon_state = "flag_uscmc"
 	item_flag = /obj/item/sign/flag/marine/uscmc
 
