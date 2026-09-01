@@ -268,6 +268,8 @@
 		/obj/item/doorCharge = 500,
 		/obj/item/storage/box/inteq_kit/revolver = 250,
 		/obj/item/guardiancreator = 3000,
+		/obj/item/book/granter/spell = 5000,
+		/obj/item/gun/ballistic/shotgun/boltaction = 3000,
 		//broken stuff
 		/obj/item/broken/inteq_sledgehammer = 2500,
 		/obj/item/broken/dualsaber = 2500,
@@ -279,6 +281,16 @@
 		/obj/item/broken/ushm = 2500,
 		/obj/item/broken/sniper_rifle = 2500,
 		/obj/item/broken = 10000000,
+		//Alien organs
+		/obj/item/organ/alien/plasmavessel = 1500,
+		/obj/item/organ/alien/plasmavessel/large = 3000,
+		/obj/item/organ/alien/plasmavessel/large/queen = 5000,
+		/obj/item/organ/alien/plasmavessel/small = 1000,
+		/obj/item/organ/alien/plasmavessel/small/tiny = 500,
+		/obj/item/organ/alien/hivenode = 1000,
+		/obj/item/organ/alien/resinspinner = 1500,
+		/obj/item/organ/alien/acid = 1000,
+		/obj/item/organ/alien/neurotoxin = 2500,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 50000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,

@@ -59,7 +59,7 @@
 
 /datum/design/mag_acr5
 	name = "ACR-5 Rifle Magazine (5.8mm)"
-	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m30 rifle, loaded."
+	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m26 rifle, loaded."
 	id = "mag_acr5"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 20000, /datum/material/titanium = 500)
@@ -70,7 +70,7 @@
 
 /datum/design/mag_acr5/empty
 	name = "ACR-5 Rifle Magazine (Empty)"
-	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m30 rifle."
+	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m26 rifle."
 	id = "mag_acr5_empty"
 	materials = list(/datum/material/iron = 6500)
 	build_path = /obj/item/ammo_box/magazine/acr5m30/empty
