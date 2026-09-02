@@ -2611,7 +2611,7 @@
 
 /datum/gear/donator/bm/atomas_fluted_armor
 	name = "Fluted Plate Armor"
-	slot = ITEM_SLOT_OCLOTHING
+	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/suit/armor/vest/knight/military
 	ckeywhitelist = list("atomas")
 
