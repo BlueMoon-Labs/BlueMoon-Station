@@ -860,7 +860,15 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	holder.deactivate()
 
+	if(!mentor_datum)
+		new /datum/mentors(ckey)
+	dementored = FALSE
+	add_mentor_verbs()
+	GLOB.mentors |= src
+	remove_verb(src, /client/proc/cmd_mentor_rementor)
+
 	to_chat(src, "<span class='interface'>You are now a normal player.</span>")
+	to_chat(src, "<span class='mentornotice'>Вы стали ментором. Менторские уведомления включены.</span>", confidential = TRUE)
 	log_admin("[src] deadminned themselves.")
 	message_admins("[src] deadminned themselves.")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Deadmin")
@@ -884,6 +892,9 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	if (!holder)
 		return //This can happen if an admin attempts to vv themself into somebody elses's deadmin datum by getting ref via brute force
+
+	GLOB.mentors -= src
+	remove_verb(src, /client/proc/cmd_mentor_rementor)
 
 	to_chat(src, "<span class='interface'>You are now an admin.</span>", confidential = TRUE)
 	message_admins("[src] re-adminned themselves.")
