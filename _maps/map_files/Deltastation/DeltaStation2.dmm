@@ -11112,6 +11112,7 @@
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
 "bGn" = (
@@ -39334,6 +39335,7 @@
 /obj/effect/turf_decal/tile/dark{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "eQZ" = (
@@ -122915,6 +122917,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "wwX" = (
@@ -129921,6 +129924,7 @@
 	c_tag = "Security - Office Fore";
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "xYZ" = (
