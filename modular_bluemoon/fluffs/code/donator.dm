@@ -2483,7 +2483,7 @@
 	name = "Skull mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/pmc_skull_mask
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul", "hartty")
 
 /datum/gear/donator/bm/sc_winter_coat
 	name = "Security winter coat"
@@ -2578,6 +2578,12 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/vp78tactic
 	ckeywhitelist = list("rockymed", "hartty", "leony24", "dragon9090")
+
+/datum/gear/donator/bm/flag_marine
+	name = "UA flag"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/sign/flag/marine/ua
+	ckeywhitelist = list("rockymed")
 
 /datum/gear/donator/bm/kumikoshouko_case
 	name = "Kumiko Weapon Case"

@@ -254,6 +254,7 @@
 
 /obj/machinery/light/directional/north //Pixel offsets get overwritten on New()
 	dir = NORTH
+	pixel_y = 12
 
 /obj/machinery/light/directional/south
 	dir = SOUTH
@@ -530,7 +531,7 @@
 		M.color = last_overlay_color || get_overlay_color(get_base_area(src))
 		M.dir = dir
 		. += M
-		var/mutable_appearance/emissive_overlay = mutable_appearance(overlayicon, base_state, EMISSIVE_UNBLOCKABLE_LAYER, EMISSIVE_UNBLOCKABLE_PLANE)
+		var/mutable_appearance/emissive_overlay = mutable_appearance(overlayicon, base_state, FLOAT_LAYER, EMISSIVE_PLANE)
 		emissive_overlay.alpha = overlay_alpha
 		emissive_overlay.color = M.color
 		emissive_overlay.dir = dir

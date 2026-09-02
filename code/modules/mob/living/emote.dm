@@ -926,3 +926,16 @@
 				'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', 'sound/magic/tf2/soldier_medic01.ogg', \
 				'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg', 'sound/magic/tf2/spy_medic01.ogg')
 	. = ..()
+
+/datum/emote/sound/human/aggrobark
+	key = "aggrobark"
+	key_third_person = "aggrobarks"
+	message = "barks aggressively!"
+	message_mime = "imitates barking aggressively, and gnashes at the air!"
+	emote_cooldown = 2 SECONDS
+	emote_type = EMOTE_AUDIBLE
+	vary = TRUE
+
+/datum/emote/sound/human/aggrobark/run_emote(mob/living/user)
+	sound = pick('sound/voice/human/aggrobark.ogg', 'sound/voice/human/aggrobark2.ogg', 'sound/voice/human/aggrobark3.ogg', 'sound/voice/human/aggrobark4.ogg')
+	. = ..()

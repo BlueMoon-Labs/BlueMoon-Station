@@ -1,6 +1,6 @@
 // ACR-5Mm30
 /obj/item/gun/ballistic/automatic/acr5m30
-	name = "ACR-5m30"
+	name = "ACR-5m26"
 	desc = "A military bullpup rifle, outdated by modern standarts. It is still robust enough to deal with assigned combat tasks."
 	icon_state = "acr5"
 	item_state = "acr5"

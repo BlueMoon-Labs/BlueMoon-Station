@@ -192,10 +192,11 @@
 
 /// Actually performs the harm attack after the arm has rotated.
 /obj/machinery/big_manipulator/proc/perform_harm_attack(datum/manipulator_task/harm/harm_task)
-	var/obj/item/held_item = held_object?.resolve()
-	if(!harm_task || !held_item)
+	var/atom/movable/resolved_held = held_object?.resolve()
+	if(!harm_task || !isitem(resolved_held))
 		finish_manipulation()
 		return
+	var/obj/item/held_item = resolved_held
 
 	var/turf/target_turf = get_step(src, harm_task.harm_dir)
 	if(!target_turf)
@@ -256,10 +257,11 @@
 
 /// Actually performs the interact attack after the arm has rotated.
 /obj/machinery/big_manipulator/proc/perform_interact_attack(datum/manipulator_task/interact/interact_task)
-	var/obj/item/held_item = held_object?.resolve()
-	if(!interact_task || !held_item)
+	var/atom/movable/resolved_held = held_object?.resolve()
+	if(!interact_task || !isitem(resolved_held))
 		finish_manipulation()
 		return
+	var/obj/item/held_item = resolved_held
 
 	var/turf/target_turf = get_step(src, interact_task.harm_dir)
 	if(!target_turf)

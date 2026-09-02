@@ -17,7 +17,6 @@ export const PersonalMusicBox = (props) => {
     has_track,
     track_name,
     track_duration,
-    repeat,
     volume,
     upload_ready,
     play_ready,

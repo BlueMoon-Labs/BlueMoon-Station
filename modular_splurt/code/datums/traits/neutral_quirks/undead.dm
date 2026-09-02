@@ -22,8 +22,9 @@
 	H.mob_biotypes |= MOB_UNDEAD
 	for(var/A = 1, A <= zperks.len, A++)
 		ADD_TRAIT(H, zperks[A], ROUNDSTART_TRAIT)
-	H.physiology.hunger_mod *= 1.8
-	H.physiology.thirst_mod *= 1.8
+	if(H.physiology)
+		H.physiology.hunger_mod *= 1.8
+		H.physiology.thirst_mod *= 1.8
 
 /datum/quirk/undead/remove()
 	. = ..()
@@ -35,10 +36,13 @@
 	H.mob_biotypes &= ~MOB_UNDEAD // Забытая тильда приведёт к тому, что игра инвертирует побитовую маску, сделав моба всеми биотипами, кроме undead
 	for(var/A = 1, A <= zperks.len, A++)
 		REMOVE_TRAIT(H, zperks[A], ROUNDSTART_TRAIT)
-	H.physiology.hunger_mod /= 1.8
-	H.physiology.thirst_mod /= 1.8
+	if(H.physiology)
+		H.physiology.hunger_mod /= 1.8
+		H.physiology.thirst_mod /= 1.8
 
 /datum/quirk/undead/on_process()
 	. = ..()
 	var/mob/living/carbon/human/H = quirk_holder
+	if(!H)
+		return
 	H.set_screwyhud(SCREWYHUD_HEALTHY)

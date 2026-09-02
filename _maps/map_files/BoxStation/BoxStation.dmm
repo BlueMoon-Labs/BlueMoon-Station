@@ -51289,9 +51289,30 @@
 /turf/open/floor/plasteel/textured/half,
 /area/security/checkpoint/science)
 "jAj" = (
-/obj/structure/closet/secure_closet/evidence,
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/delivery/red,
+/obj/structure/closet/secure_closet{
+	name = "Contraband Locker";
+	req_access_txt = "3"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/security/detectives_office/evidence_room)
 "jAD" = (
@@ -56274,20 +56295,20 @@
 "lCq" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = -6;
-	pixel_y = -6
-	},
-/obj/item/gun/ballistic/rocketlauncher/security,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
 /obj/structure/window/reinforced{
 	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier,
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = 3;
+	pixel_y = -3
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/ai_monitored/security/armory)
@@ -65307,14 +65328,25 @@
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/hos)
 "ppc" = (
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/turf_decal/delivery,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 3;
-	name = "3maintenance loot spawner"
+/obj/structure/rack,
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/obj/item/gun/ballistic/rocketlauncher/security,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/ai_monitored/security/armory)

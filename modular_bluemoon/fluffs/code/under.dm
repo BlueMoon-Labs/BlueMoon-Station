@@ -886,6 +886,32 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+
+/obj/item/clothing/under/donator/bm/concord/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/concord/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
+		return
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	icon_state = "[initial(icon_state)]_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/concord/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		update_icon()
 
 /obj/item/clothing/under/donator/bm/h_pmc_jeans
 	name = "PMC jeans"

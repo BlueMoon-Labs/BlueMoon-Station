@@ -1175,9 +1175,30 @@
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/hos)
 "aev" = (
-/obj/structure/closet/secure_closet/evidence,
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/delivery/red,
+/obj/structure/closet/secure_closet{
+	name = "Contraband Locker";
+	req_access_txt = "3"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/evidence_room)
 "aey" = (
@@ -42247,18 +42268,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/paramedic)
-"cSp" = (
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/turf_decal/delivery,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 3;
-	name = "3maintenance loot spawner"
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/ai_monitored/security/armory)
 "cSt" = (
 /obj/machinery/computer/slot_machine,
 /turf/open/floor/plating/damturf/scorched,
@@ -77938,6 +77947,26 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/maintenance/starboard/aft)
+"vqe" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot/yellow,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier,
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ai_monitored/security/armory)
 "vqi" = (
 /obj/machinery/computer/med_data{
 	dir = 1
@@ -110918,7 +110947,7 @@ oAQ
 sFM
 hWS
 hIv
-cSp
+mhv
 aeP
 afC
 agk
@@ -111175,7 +111204,7 @@ fkJ
 ach
 wAj
 hIv
-mhv
+vqe
 aer
 afB
 agi
