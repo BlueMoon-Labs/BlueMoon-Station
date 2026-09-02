@@ -30,14 +30,14 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 	var/list/possible_candidates = priority_only ? GLOB.ghost_eligible_mobs_priority : GLOB.ghost_eligible_mobs
 	var/list/candidates = list()
 	var/found_null = FALSE
-	for(var/mob/M as anything in possible_candidates)
-		if(isnull(M))
+	for(var/mob/candidate_mob as anything in possible_candidates)
+		if(isnull(candidate_mob))
 			found_null = TRUE
 			continue
 		// Мы уже итерируем список членства (priority-список - его подмножество):
 		// повторный линейный скан внутри can_reenter_round давал O(гостов^2) на пересбор.
-		if(M.can_reenter_round(TRUE, skip_eligibility_scan = TRUE))
-			candidates += M
+		if(candidate_mob.can_reenter_round(TRUE, skip_eligibility_scan = TRUE))
+			candidates += candidate_mob
 	if(found_null)
 		listclearnulls(GLOB.ghost_eligible_mobs)
 		listclearnulls(GLOB.ghost_eligible_mobs_priority)

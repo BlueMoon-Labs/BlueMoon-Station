@@ -836,6 +836,12 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/assess_threat(judgement_criteria, lasercolor = "", datum/callback/weaponcheck=null) //For sec bot threat assessment
 	return FALSE
 
+/// Чат-тумблеры для рассылки призракам: prefs может ещё не быть в первые тики после входа.
+/mob/proc/ghost_chat_toggles()
+	if(!client?.prefs)
+		return TOGGLES_DEFAULT_CHAT
+	return client.prefs.chat_toggles
+
 /mob/proc/get_ghost(even_if_they_cant_reenter = 0)
 	if(mind)
 		return mind.get_ghost(even_if_they_cant_reenter)

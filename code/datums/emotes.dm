@@ -84,7 +84,7 @@
             if(!M.client || isnewplayer(M))
                 continue
             var/T = get_turf(user)
-            if(M.stat == DEAD && M.client && (M.client.prefs?.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+            if(M.stat == DEAD && (M.ghost_chat_toggles() & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
                 M.show_message(dchatmsg)
 
     if(emote_type == EMOTE_AUDIBLE)

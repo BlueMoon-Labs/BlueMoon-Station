@@ -970,8 +970,8 @@
 	// от настоящей поломки арифметики.
 	TEST_ASSERT(abs(useless - (-4.2)) < 0.01, "рост VmSize за время сноса обязан читаться как отрицательная отдача, получено [useless]")
 	TEST_ASSERT(abs(useless_key - (-4.2)) < 0.01, "бесполезный снос не попал в книгу под своим ключом, там [useless_key]")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(useless_key, 0), "записанная в книгу бесполезная отдача обязана запирать следующий снос")
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(useful_key, 0), "записанная в книгу полезная отдача не должна запирать следующий снос")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(useless_key), "записанная в книгу бесполезная отдача обязана запирать следующий снос")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(useful_key), "записанная в книгу полезная отдача не должна запирать следующий снос")
 
 /**
  * Скан кандидатов не берёт уровень, чей прошлый снос уже доказал, что возвращать нечего.
@@ -1165,7 +1165,7 @@
 	TEST_ASSERT_EQUAL(first, 247, "первый замер записан неверно")
 	TEST_ASSERT_EQUAL(after_noise, 247, "шумный сэмпл перетёр честный прошлый замер: книга обязана держать максимум")
 	TEST_ASSERT_EQUAL(after_noise_key, 247, "под ключом уровня осталась не лучшая цифра, там [after_noise_key]")
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(after_noise_key, 0), "один шумный сэмпл запер уровень, который до этого честно вернул 247 МБ")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(after_noise_key), "один шумный сэмпл запер уровень, который до этого честно вернул 247 МБ")
 	TEST_ASSERT_EQUAL(after_better, 400, "выросшую отдачу книга обязана принимать")
 	// Сравнение с допуском: 3216.7 - 3220.9 даёт -4.200000000000273, см. соседний тест книги.
 	TEST_ASSERT(abs(first_bad - (-4.2)) < 0.01, "первый замер уровня пишется как есть, получено [first_bad]")
@@ -1205,7 +1205,7 @@
 	// улика остаётся, допущение подтвердилось.
 	SSlighting.zlevel_teardown_payoff["61"] = -4.2
 	var/cheap_rebuild_verdict = SSlighting.note_zlevel_lighting_rebuild(61, 1.3)
-	var/still_excluded = zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["61"], 0)
+	var/still_excluded = zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["61"])
 
 	// Тот же уровень, но подъём взял у ОС 73.8 МБ - улику снимаем.
 	var/fresh_rebuild_verdict = SSlighting.note_zlevel_lighting_rebuild(61, 73.8)

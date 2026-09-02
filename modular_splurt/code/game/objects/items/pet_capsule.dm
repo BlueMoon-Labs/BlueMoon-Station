@@ -126,8 +126,7 @@
 	stored_pet.release_vore_contents(include_absorbed = TRUE, silent = TRUE)
 	for(var/mob/living/carried in stored_pet.contents)
 		carried.forceMove(drop_turf)
-	qdel(stored_pet)
-	stored_pet = null
+	QDEL_NULL(stored_pet)
 
 /obj/item/pet_capsule/attack_self(mob/user)
 	pet_capsule_triggered(loc,TRUE,user)

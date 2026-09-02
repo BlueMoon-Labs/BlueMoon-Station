@@ -69,19 +69,21 @@ def _description_chunk_type(fullpath):
     Возвращает 'zTXt', 'tEXt', 'iTXt' или None, если описания нет.
     """
     with open(fullpath, 'rb') as handle:
-        data = handle.read()
-    if data[:8] != PNG_MAGIC:
-        return None
-    offset = 8
-    while offset + 8 <= len(data):
-        length, chunk_type = struct.unpack('>I4s', data[offset:offset + 8])
-        body = data[offset + 8:offset + 8 + length]
-        if chunk_type in (b'zTXt', b'tEXt', b'iTXt') and body.split(b'\0', 1)[0] == b'Description':
-            return chunk_type.decode('ascii')
-        if chunk_type == b'IDAT':
+        if handle.read(8) != PNG_MAGIC:
             return None
-        offset += 12 + length
-    return None
+        while True:
+            header = handle.read(8)
+            if len(header) < 8:
+                return None
+            length, chunk_type = struct.unpack('>I4s', header)
+            if chunk_type == b'IEND':
+                return None
+            if chunk_type in (b'zTXt', b'tEXt', b'iTXt'):
+                if handle.read(length).split(b'\0', 1)[0] == b'Description':
+                    return chunk_type.decode('ascii')
+                handle.seek(4, os.SEEK_CUR)
+            else:
+                handle.seek(length + 4, os.SEEK_CUR)
 
 
 def _self_test():

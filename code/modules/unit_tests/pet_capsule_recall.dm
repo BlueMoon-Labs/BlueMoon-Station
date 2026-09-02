@@ -35,7 +35,7 @@
 
 /datum/unit_test/dusts_on_catatonia_null_tolerance/Run()
 	var/mob/living/carbon/human/visitor = allocate(/mob/living/carbon/human)
-	visitor.key = "unit_test_dusts_[rand(1000, 9999)]"
+	visitor.key = "unit_test_dusts_visitor"
 	visitor.AddElement(/datum/element/dusts_on_catatonia)
 	var/datum/element/dusts_on_catatonia/element = SSdcs.GetElement(list(/datum/element/dusts_on_catatonia))
 	TEST_ASSERT(visitor in element.attached_mobs, "элемент обязан числить моба после Attach")
@@ -47,6 +47,22 @@
 	TEST_ASSERT(!(null in element.attached_mobs), "process обязан вычистить null из attached_mobs")
 	TEST_ASSERT(visitor in element.attached_mobs, "живой моб с ключом обязан остаться в списке")
 	visitor.RemoveElement(/datum/element/dusts_on_catatonia)
+
+	element.attached_mobs += null
+	START_PROCESSING(SSprocessing, element)
+	element.process()
+	TEST_ASSERT(!element.attached_mobs.len, "список из одного null обязан опустеть")
+	TEST_ASSERT(!(element in SSprocessing.processing), "пустой после чистки элемент обязан выйти из SSprocessing")
+
+/// Наблюдатель без prefs получает дефолтные чат-тумблеры, а значит и призрачное зрение эмоций.
+/datum/unit_test/ghost_chat_toggles_without_prefs
+	requires_full_map = FALSE
+
+/datum/unit_test/ghost_chat_toggles_without_prefs/Run()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	TEST_ASSERT_NULL(ghost.client, "тест рассчитывает на наблюдателя без клиента и prefs")
+	TEST_ASSERT_EQUAL(ghost.ghost_chat_toggles(), TOGGLES_DEFAULT_CHAT, "без prefs тумблеры обязаны быть дефолтными")
+	TEST_ASSERT(ghost.ghost_chat_toggles() & CHAT_GHOSTSIGHT, "дефолт обязан включать призрачное зрение")
 
 /// get_all_ghost_role_eligible переживает null в GLOB.ghost_eligible_mobs и вычищает его из обоих списков.
 /datum/unit_test/ghost_role_eligible_null_tolerance
