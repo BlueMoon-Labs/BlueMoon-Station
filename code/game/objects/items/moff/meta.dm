@@ -29,7 +29,7 @@
         "moffplush_plasmafire",
         "moffplush_bluespace",
         "moffplush_rosy",
-        "moffplush_brown"
+        "moffplush_brown",
 		"moth_plush_betan"
     )
 
