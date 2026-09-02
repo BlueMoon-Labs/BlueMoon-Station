@@ -683,6 +683,8 @@
 	var/turf/T = source
 	if(isobserver(AM))
 		return //ghosts, camera eyes, etc. don't make water splashy splashy
+	if(isrobotic(AM) && HAS_TRAIT(AM, TRAIT_BLUEMOON_WATER_VULNERABILITY))
+		synth_water_damage_start(AM)
 	if(liquid_state >= LIQUID_STATE_ANKLES)
 		if(prob(30))
 			var/sound_to_play = pick(list(

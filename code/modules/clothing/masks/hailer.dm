@@ -116,6 +116,17 @@ GLOBAL_LIST_EMPTY(sechailers)
 /obj/item/clothing/mask/gas/sechailer/screwdriver_act(mob/living/user, obj/item/I)
 	if(..())
 		return TRUE
+	// BLUEMOON ADD - harm intent снимает модуль как device/hailer
+	if(user.a_intent == INTENT_HARM)
+		var/obj/item/device/hailer/H = new(get_turf(src))
+		if(!safety)
+			H.insults = rand(1,3)
+		user.put_in_hands(H)
+		broken_hailer = TRUE
+		GLOB.sechailers -= src
+		QDEL_NULL(radio)
+		to_chat(user, span_notice("Вы выковыриваете Compli-o-Nator модуль из [src]."))
+		return TRUE
 	switch(aggressiveness)
 		if(-1)
 			to_chat(user, "<span class='notice'>You set the restrictor to the bottom position.</span>")

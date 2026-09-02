@@ -123,6 +123,13 @@
 	rapid_melee = 1
 	speak_chance = 30
 	speak = list("Я попал? Я попал, да?!", "Это там твои мозги вытекают?!", "Да куда я положил магазин, сука где он, где он?!", "Я буду убивать тебя медленно, отстреливая кусочек за кусочком~", "Нужно будет купить себе новые очки", "Да я тебя на сквозь вижу, ХАХ!", "Да я не бузумный стрелок. Я убийца!")
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/sniper_rifle = 5,
+		/obj/item/broken/sniper_rifle = 30,
+		/obj/item/ammo_box/magazine/sniper_rounds = 10,
+		/obj/item/clothing/under/inteq = 15,
+		null = 40 // ничего не выпадает
+	)
 
 /mob/living/simple_animal/hostile/inteq/ranged/sniper/Aggro()
 	..()
@@ -144,6 +151,12 @@
 	attack_verb_simple = "slash"
 	attack_sound = 'modular_bluemoon/Ren/Sound/USHM_hit.ogg'
 	status_flags = 0
+	random_loot = list(
+		/obj/item/pickaxe/drill/jackhammer/angle_grinder = 10,
+		/obj/item/broken/ushm = 35,
+		/obj/item/clothing/under/inteq = 15,
+		null = 40 // ничего не выпадает
+	)
 
 //Рандомные мобы
 /mob/living/simple_animal/hostile/skeleton/meatguy

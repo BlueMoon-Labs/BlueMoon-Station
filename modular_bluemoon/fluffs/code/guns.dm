@@ -903,7 +903,7 @@
 	name = "Anabel Kit"
 	desc = "A modkit for making a Miniature Energy Gun into Anabel."
 	product = /obj/item/gun/energy/e_gun/hos/Anabel
-	fromitem = list(/obj/item/gun/energy/e_gun/mini, /obj/item/gun/energy/e_gun/mini/expeditor)
+	fromitem = list(/obj/item/gun/energy/e_gun/mini)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

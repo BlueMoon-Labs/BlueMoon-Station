@@ -89,7 +89,7 @@
 
 /datum/manipulator_task/cargo/pickup
 	name = "pickup"
-	var/pickup_eagerness = PICKUP_CAN_WAIT
+	var/pickup_eagerness = PICKUP_EAGER
 
 /datum/manipulator_task/cargo/pickup/can_run(obj/machinery/big_manipulator/manipulator)
 	if(!..())
@@ -110,12 +110,12 @@
 /datum/manipulator_task/cargo/proc/is_valid_candidate(obj/machinery/big_manipulator/manipulator, atom/movable/candidate)
 	if(candidate.anchored || HAS_TRAIT(candidate, TRAIT_NODROP))
 		return FALSE
+	if(isliving(candidate))
+		return FALSE
 	if(isitem(candidate))
 		var/obj/item/candidate_item = candidate
 		if(candidate_item.item_flags & (ABSTRACT|DROPDEL))
 			return FALSE
-	if(isliving(candidate) && !(manipulator.obj_flags & EMAGGED))
-		return FALSE
 	return TRUE
 
 /datum/manipulator_task/cargo/pickup/run_task(obj/machinery/big_manipulator/manipulator)
@@ -261,3 +261,61 @@
 
 /datum/manipulator_task/cargo/dropoff_base/throw/do_dropoff(obj/machinery/big_manipulator/manipulator)
 	manipulator.throw_thing(src)
+
+// ===== HARM =====
+
+/datum/manipulator_task/harm
+	name = "harm"
+	/// Direction to attack in relative to the manipulator (NORTH, SOUTH, EAST, WEST).
+	var/harm_dir = NORTH
+
+/datum/manipulator_task/harm/can_run(obj/machinery/big_manipulator/manipulator)
+	if(!manipulator.held_object)
+		return FALSE
+	var/obj/item/resolved = manipulator.held_object.resolve()
+	if(!resolved)
+		return FALSE
+	return TRUE
+
+/datum/manipulator_task/harm/run_task(obj/machinery/big_manipulator/manipulator)
+	manipulator.try_harm_thing(src)
+
+/datum/manipulator_task/harm/serialize_task()
+	var/list/data = ..()
+	data["harm_dir"] = harm_dir
+	return data
+
+/datum/manipulator_task/harm/New(turf/new_turf, manipulator_tier, serialized_data)
+	..()
+	if(serialized_data)
+		harm_dir = serialized_data["harm_dir"] || NORTH
+	return
+
+// ===== INTERACT =====
+
+/datum/manipulator_task/interact
+	name = "interact"
+	/// Direction to interact in relative to the manipulator (NORTH, SOUTH, EAST, WEST).
+	var/harm_dir = NORTH
+
+/datum/manipulator_task/interact/can_run(obj/machinery/big_manipulator/manipulator)
+	if(!manipulator.held_object)
+		return FALSE
+	var/obj/item/resolved = manipulator.held_object.resolve()
+	if(!resolved)
+		return FALSE
+	return TRUE
+
+/datum/manipulator_task/interact/run_task(obj/machinery/big_manipulator/manipulator)
+	manipulator.try_interact_thing(src)
+
+/datum/manipulator_task/interact/serialize_task()
+	var/list/data = ..()
+	data["harm_dir"] = harm_dir
+	return data
+
+/datum/manipulator_task/interact/New(turf/new_turf, manipulator_tier, serialized_data)
+	..()
+	if(serialized_data)
+		harm_dir = serialized_data["harm_dir"] || NORTH
+	return

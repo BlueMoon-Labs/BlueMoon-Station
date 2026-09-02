@@ -297,8 +297,14 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	return target
 
 /datum/objective/mutiny/check_completion()
+	if(!target)
+		return TRUE
 	var/turf/T = get_turf(target.current)
-	return !T || !is_station_level(T.z)
+	// A dead head's body left on-station must not stall the revolution forever:
+	// treat a dead (or otherwise non-living) target as eliminated, matching the "kill" part of "kill or exile".
+	if(!target.current || !considered_alive(target, FALSE) || !T || !is_station_level(T.z))
+		return TRUE
+	return FALSE
 
 /datum/objective/mutiny/check_midround_completion()
 	return FALSE

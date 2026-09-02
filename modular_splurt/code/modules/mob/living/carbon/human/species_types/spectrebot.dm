@@ -57,3 +57,7 @@
 	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
 	interface?.RemoveSource("SPECIES")
 	. = ..()
+
+/datum/species/spectrebot/spec_updatehealth(mob/living/carbon/human/H)
+	if(H.getCloneLoss() > 0)
+		H.setCloneLoss(0, TRUE)

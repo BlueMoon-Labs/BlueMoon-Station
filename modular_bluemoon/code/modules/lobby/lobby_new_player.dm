@@ -361,6 +361,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(QDELETED(src) || !client)
 				return
 			ready = !ready
+			if(ready == PLAYER_READY_TO_PLAY)
+				ready_reward_pending = TRUE
+			else
+				ready_reward_pending = FALSE
 			SStitle_bm?.on_player_ready_change(ready ? 1 : -1)
 			client << output(ready, "bm_lobby_browser:bm_toggle_ready")
 			return
