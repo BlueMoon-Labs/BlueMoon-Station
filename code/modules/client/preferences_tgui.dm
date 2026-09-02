@@ -186,6 +186,7 @@
 	.["max_chat_length"] = max_chat_length
 	.["view_pixelshift"] = view_pixelshift
 	.["lighting_blur"] = lighting_blur
+	.["lighting_brightness"] = lighting_brightness
 	.["hud_toggle_color"] = hud_toggle_color
 	.["tgui_input_mode"] = tgui_input_mode
 	.["tgui_input_verbs"] = tgui_input_verbs
@@ -518,6 +519,12 @@
 						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE))
 							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
 							PM?.backdrop(user)
+				if("lighting_brightness")
+					lighting_brightness = clamp(text2num(value), LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						var/atom/movable/screen/plane_master/lighting/PM = H.plane_masters["[LIGHTING_PLANE]"]
+						PM?.backdrop(user)
 				if("preferred_chaos_level")
 					preferred_chaos_level = clamp(text2num(value), 0, 3)
 			save_preferences()

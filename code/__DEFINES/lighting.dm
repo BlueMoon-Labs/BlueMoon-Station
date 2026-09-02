@@ -94,6 +94,10 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_BLUR_BASE 0 // Minimum blur (px) always applied to smooth tile boundaries — GPU-cheap on composited plane master
 #define LIGHTING_BLUR_MULTIPLIER 2 // Edge softening: level * this = blur px (2/4/6/8)
 
+#define LIGHTING_BRIGHTNESS_MIN 0
+#define LIGHTING_BRIGHTNESS_MAX 100
+#define LIGHTING_BRIGHTNESS_DEFAULT 50
+
 #define LIGHTING_CONE_PENUMBRA 30 // Penumbra width (degrees) on each side of the cone edge — softens cone light edges
 #define LIGHTING_CONE_INNER_RADIUS 1.5 // Within this distance (tiles), light is omnidirectional — prevents dark source tile
 #define LIGHTING_FLASHLIGHT_CONE_ANGLE 90 // Standard flashlight: 90° full cone width

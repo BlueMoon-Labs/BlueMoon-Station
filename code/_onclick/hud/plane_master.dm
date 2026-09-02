@@ -261,6 +261,22 @@
 	else
 		remove_filter("lighting_blur")
 		remove_filter("lighting_blur_edge_fix")
+	// User brightness slider: 0-100, 50 = default (no change), <50 darker, >50 lighter
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	remove_filter("user_brightness")
+	if(ratio != 0)
+		// Additive color matrix brightens/darkens the multiply plane
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			ratio, ratio, ratio, 0
+		)))
 
 /*!
  * This system works by exploiting BYONDs color matrix filter to use layers to handle emissive blockers.

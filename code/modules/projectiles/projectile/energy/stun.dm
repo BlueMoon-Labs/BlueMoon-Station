@@ -1,10 +1,10 @@
 /obj/item/projectile/energy/electrode
 	name = "electrode"
 	icon_state = "spark"
-	color = "#FFFF00"
+	color = "#FFFF00" // желтоватый для тазеров
 	light_range = 2
 	light_power = 0.8
-	light_color = "#FFFF00"
+	light_color = "#FFFF00" // желтоватый для тазеров
 	glow_icon = 'icons/obj/projectiles.dmi'
 	glow_icon_state = "spark"
 	nodamage = TRUE

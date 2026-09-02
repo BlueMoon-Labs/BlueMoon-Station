@@ -642,6 +642,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
+	S["lighting_brightness"] >> lighting_brightness
 	S["light"] >> light
 	S["glowlevel"] >> glowlevel
 	S["auto_fit_viewport"] >> auto_fit_viewport
@@ -787,6 +788,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
 	light = sanitize_integer(light, 0, 7, initial(light))
 	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
@@ -1232,6 +1234,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
+	WRITE_FILE(S["lighting_brightness"], lighting_brightness)
 	WRITE_FILE(S["light"], light)
 	WRITE_FILE(S["glowlevel"], glowlevel)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)

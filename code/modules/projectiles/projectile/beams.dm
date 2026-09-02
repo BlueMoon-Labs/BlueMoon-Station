@@ -11,7 +11,7 @@
 	flag = LASER
 	eyeblur = 2
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
-	light_color = LIGHT_COLOR_RED
+	light_color = "#FF3B3B" // красноватый для лазеров
 	ricochets_max = 50	//Honk!
 	ricochet_chance = 80
 	is_reflectable = TRUE
@@ -19,6 +19,7 @@
 	bare_wound_bonus = 8
 	armour_penetration = 15
 	glow_icon = 'icons/obj/projectiles.dmi'
+	glow_icon_state = "laser"
 	var/fire_hazard = FALSE
 
 /obj/item/projectile/beam/laser
@@ -128,7 +129,11 @@
 	eyeblur = 0
 	pixels_per_second = TILES_TO_PIXELS(16.667)
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/blue_laser
-	light_color = LIGHT_COLOR_BLUE
+	light_range = 2
+	light_power = 0.9
+	light_color = LIGHT_COLOR_LIGHTBLUE // синий для станнеров/дизбайлеров
+	glow_icon = 'icons/obj/projectiles.dmi'
+	glow_icon_state = "omnilaser"
 	tracer_type = /obj/effect/projectile/tracer/disabler
 	muzzle_type = /obj/effect/projectile/muzzle/disabler
 	impact_type = /obj/effect/projectile/impact/disabler

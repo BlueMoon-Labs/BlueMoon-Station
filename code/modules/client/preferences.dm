@@ -374,6 +374,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
+	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
 	var/light = LIGHT_DEFAULT
 	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
