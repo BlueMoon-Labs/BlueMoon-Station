@@ -599,6 +599,21 @@
 	var/reward_type = null
 	var/blastdoor_id = null
 
+/turf/open/floor/plating/smooth/grass/urbanism
+	name = "urbanism grass"
+	desc = "A patch of grass found in urban areas."
+	icon = 'modular_bluemoon/icons/turf/_smooth.dmi'
+	icon_state = "grass"
+	base_icon_state = "grass"
+	footstep = FOOTSTEP_GRASS
+	barefootstep = FOOTSTEP_GRASS
+	clawfootstep = FOOTSTEP_GRASS
+	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
+	layer = 2.1
+	smooth_icon = 'modular_bluemoon/icons/turf/_smooth.dmi'
+	canSmoothWith = list(/turf/open/floor/plating/smooth/grass/urbanism, /turf/closed/indestructible)
+	smooth_offset = 8
+
 /obj/structure/urbanism_generator/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
@@ -1133,6 +1148,7 @@
 
 /obj/structure/urbanismmachines/xenplant
 	name = "strange plant"
+	layer = 5.4
 	desc = "A mysterious plant growing in the urban landscape."
 	icon = 'modular_bluemoon/icons/obj/urbanism/xensheet.dmi'
 	icon_state = "xentree"
