@@ -86,6 +86,7 @@
 ///////////////////////////////// SHRIMP /////////////////////////////////////
 // Упаковка креветок с ЦК: лоток на 8 креветок, запаянный в пищевую плёнку.
 #define SHRIMP_PACK_CAPACITY 8
+#define SHRIMP_UNWRAP_SOUND_VOLUME 50
 
 /obj/item/storage/box/shrimp_pack
 	name = "vacuum-packed shrimp"
@@ -103,10 +104,10 @@
 
 /obj/item/storage/box/shrimp_pack/ComponentInitialize()
 	. = ..()
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = SHRIMP_PACK_CAPACITY
-	STR.can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/meat/rawshrimp))
-	STR.locked = TRUE
+	var/datum/component/storage/storage_component = GetComponent(/datum/component/storage)
+	storage_component.max_items = SHRIMP_PACK_CAPACITY
+	storage_component.can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/meat/rawshrimp))
+	storage_component.locked = TRUE
 
 /obj/item/storage/box/shrimp_pack/PopulateContents()
 	for(var/i in 1 to SHRIMP_PACK_CAPACITY)
@@ -128,17 +129,26 @@
 		return
 
 	wrapped = FALSE
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.locked = FALSE
-	playsound(loc, 'sound/items/poster_ripped.ogg', vol = 50, vary = TRUE)
+	var/datum/component/storage/storage_component = GetComponent(/datum/component/storage)
+	storage_component.locked = FALSE
+	playsound(loc, 'sound/items/poster_ripped.ogg', vol = SHRIMP_UNWRAP_SOUND_VOLUME, vary = TRUE)
+	new /obj/effect/decal/cleanable/generic(get_turf(user))
 	user.visible_message(span_notice("[user] распаковывает [src]."), span_notice("Вы распаковали [src]."))
 	update_icon()
 
 /obj/item/storage/box/shrimp_pack/update_icon_state()
 	if(wrapped)
 		icon_state = "shrimp_pack"
+		name = "vacuum-packed shrimp"
+		desc = "Небольшой лоток с креветками, плотно завернутыми в пищевую пленку. Разверните пленку, держа ее в руке."
+	else if(length(contents))
+		icon_state = "shrimpbox_top"
+		name = "tray of shrimp"
+		desc = "Открытый лоток со свежими креветками."
 	else
 		icon_state = "shrimpbox_top"
+		name = "empty tray"
+		desc = "Пустой лоток из-под креветок."
 
 /obj/item/storage/box/shrimp_pack/update_overlays()
 	. = ..()
@@ -158,4 +168,13 @@
 
 	. += image(icon = initial(icon), icon_state = "shrimpbox_inner")
 
+/obj/structure/closet/secure_closet/freezer/fridge/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/closet/secure_closet/freezer/fridge/LateInitialize()
+	. = ..()
+	new /obj/item/storage/box/shrimp_pack(src)
+
 #undef SHRIMP_PACK_CAPACITY
+#undef SHRIMP_UNWRAP_SOUND_VOLUME

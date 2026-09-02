@@ -79,3 +79,11 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE
+
+/obj/item/clothing/shoes/black_sneakers
+	name = "black sneakers"
+	desc = "Black sneakers from limited collection. The label reads: 'Harr'."
+	icon_state = "black_sneakers"
+	item_state = "black_sneakers"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'

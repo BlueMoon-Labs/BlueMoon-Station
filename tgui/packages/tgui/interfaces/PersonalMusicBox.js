@@ -13,19 +13,20 @@ export const PersonalMusicBox = (props) => {
   const { act, data } = useBackend();
   const {
     playing,
+    repeat,
     has_track,
     track_name,
+    track_duration,
     volume,
     upload_ready,
     play_ready,
-    upload_cooldown,
+    upload_block_reason,
     play_cooldown,
-    file_change_cooldown,
     in_hand,
   } = data;
 
   return (
-    <Window title="Personal Music Box" width={420} height={320}>
+    <Window title="Personal Music Box" width={420} height={340}>
       <Window.Content scrollable>
         {!in_hand && (
           <NoticeBox mb={1}>
@@ -35,18 +36,31 @@ export const PersonalMusicBox = (props) => {
         <Section
           title="Воспроизведение"
           buttons={(
-            <Button
-              icon={playing ? 'stop' : 'play'}
-              content={playing ? 'Стоп' : 'Играть'}
-              color={playing ? 'bad' : 'good'}
-              disabled={playing ? false : (!has_track || !play_ready)}
-              onClick={() => act('toggle')}
-            />
+            <Box>
+              <Button
+                content={repeat ? 'Повтор' : '1 Раз'}
+                selected={repeat}
+                disabled={!has_track}
+                onClick={() => act('repeat')}
+              />
+              <Button
+                icon={playing ? 'stop' : 'play'}
+                content={playing ? 'Стоп' : 'Играть'}
+                color={playing ? 'bad' : 'good'}
+                disabled={playing ? false : (!has_track || !play_ready)}
+                onClick={() => act('toggle')}
+              />
+            </Box>
           )}>
           <LabeledList>
             <LabeledList.Item label="Трек">
               {has_track ? track_name : 'Не загружен'}
             </LabeledList.Item>
+            {!!track_duration && (
+              <LabeledList.Item label="Длительность">
+                {track_duration}
+              </LabeledList.Item>
+            )}
             <LabeledList.Item label="Статус">
               {playing ? 'Играет' : (has_track ? 'Готов' : 'Ожидает .ogg')}
             </LabeledList.Item>
@@ -76,15 +90,8 @@ export const PersonalMusicBox = (props) => {
             disabled={!in_hand || playing || !upload_ready}
             onClick={() => act('upload')}
           />
-          {!upload_ready && upload_cooldown && (
-            <NoticeBox mt={1}>
-              Повторная загрузка через: {upload_cooldown}
-            </NoticeBox>
-          )}
-          {!upload_ready && file_change_cooldown && (
-            <NoticeBox mt={1}>
-              Смена трека через: {file_change_cooldown}
-            </NoticeBox>
+          {in_hand && !upload_ready && upload_block_reason && (
+            <NoticeBox mt={1}>{upload_block_reason}</NoticeBox>
           )}
           {!play_ready && play_cooldown && (
             <NoticeBox mt={1}>

@@ -322,6 +322,24 @@
 	icon_state = "fan_tiny"
 	buildstackamount = 10
 
+/obj/structure/fans/tiny/Initialize(mapload)
+	. = ..()
+	if(!mapload && !isfloorturf(loc))
+		return INITIALIZE_HINT_QDEL
+	if(isfloorturf(loc))
+		RegisterSignal(loc, COMSIG_PARENT_QDELETING, PROC_REF(on_parent_turf_qdeleting))
+
+/obj/structure/fans/tiny/Destroy()
+	if(isfloorturf(loc))
+		UnregisterSignal(loc, COMSIG_PARENT_QDELETING)
+	return ..()
+
+// source передаётся через SEND_SIGNAL сигнала COMSIG_PARENT_QDELETING, как D, заявленный как loc в RegisterSignal() внутри Initialize()
+/obj/structure/fans/tiny/proc/on_parent_turf_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == loc && !QDELETED(src))
+		deconstruct()
+
 /obj/structure/fans/Initialize(mapload)
 	. = ..()
 	air_update_turf(TRUE)
@@ -329,6 +347,7 @@
 //Inivisible, indestructible fans
 /obj/structure/fans/tiny/invisible
 	name = "air flow blocker"
+	flags_1 = NODECONSTRUCT_1
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	invisibility = INVISIBILITY_ABSTRACT
 

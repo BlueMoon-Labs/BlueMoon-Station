@@ -4,7 +4,9 @@
 #define PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN 30 SECONDS
 #define PERSONAL_MUSIC_BOX_FILE_CHANGE_COOLDOWN 3 MINUTES
 #define PERSONAL_MUSIC_BOX_PLAY_COOLDOWN 10 SECONDS
-#define PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH 20 MINUTES
+/// Потолок длительности трека. Реальная длина снимается с файла при заливке; потолок
+/// страхует от файлов, у которых заголовок врёт про длину.
+#define PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH 20 MINUTES
 #define PERSONAL_MUSIC_BOX_DEFAULT_VOLUME 100
 /// Сколько треков один игрок может залить за раунд. Кулдаун сам по себе ничего не ограничивает:
 /// в раунде 10137 один человек залил шесть файлов на 13.3 МБ, просто дождавшись таймера.
@@ -40,11 +42,16 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 /datum/component/jukebox/personal_music_box/ui_status(mob/user)
 	return UI_CLOSE
 
-/datum/component/jukebox/personal_music_box/proc/set_custom_track(track_path, track_name)
+/datum/component/jukebox/personal_music_box/proc/set_custom_track(track_path, track_name, track_length)
 	clear_custom_track()
 	if(!track_path)
 		return
-	custom_track = new(track_name, file(track_path), PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH, 50, "personal_[REF(parent)]")
+	// song_length решает, когда компонент считает трек законченным. Прежний дефолт в 20 минут
+	// означал, что после конца короткого трека шкатулка ещё четверть часа "играла" тишину,
+	// а повтор перезапускал музыку только по истечении этих 20 минут.
+	if(!isnum(track_length) || track_length <= 0)
+		track_length = PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH
+	custom_track = new(track_name, file(track_path), track_length, 50, "personal_[REF(parent)]")
 
 /datum/component/jukebox/personal_music_box/proc/clear_custom_track()
 	var/datum/track/old_track = custom_track
@@ -160,15 +167,19 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
 	var/list/data = list()
 	data["playing"] = is_playing()
+	data["repeat"] = J?.repeat
 	data["has_track"] = has_track && curfile_path
 	data["track_name"] = song_name
 	data["volume"] = J?.volume || PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
 	data["in_hand"] = (loc == user)
+	data["repeat"] = J ? J.repeat : FALSE
+	data["track_duration"] = J?.custom_track ? DisplayTimeText(J.custom_track.song_length) : null
 	data["upload_ready"] = can_upload(user)
 	data["play_ready"] = can_start_playback()
-	data["upload_cooldown"] = get_upload_cooldown_text()
+	// Кнопка загрузки задизейблена, нажать её и получить объяснение в чат нельзя -
+	// причина отказа обязана быть видна прямо в окне.
+	data["upload_block_reason"] = get_upload_block_reason(user)
 	data["play_cooldown"] = get_play_cooldown_text()
-	data["file_change_cooldown"] = get_file_change_cooldown_text(user)
 	return data
 
 /obj/item/personal_music_box/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -182,6 +193,12 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		if("toggle")
 			toggle_playback(living_user)
 			return TRUE
+		if("repeat")
+			var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+			if(!J)
+				return
+			J.repeat = !J.repeat
+			return TRUE
 		if("upload")
 			var/block_reason = get_upload_block_reason(living_user)
 			if(block_reason)
@@ -190,6 +207,8 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 			playsound(loc, 'sound/machines/ping.ogg', 50, FALSE)
 			INVOKE_ASYNC(src, PROC_REF(upload_file), living_user)
 			return TRUE
+		if("repeat")
+			return toggle_repeat()
 		if("set_volume")
 			var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
 			if(!J)
@@ -228,8 +247,9 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	var/remaining = get_file_change_cooldown_remaining(user)
 	if(remaining > 0)
 		return "Слишком часто меняете трек. Подождите [DisplayTimeText(remaining)]."
-	if(world.time < GLOB.personal_music_boxes_last_upload + PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN)
-		return "Кто-то уже загружает трек. Подождите немного."
+	var/global_remaining = GLOB.personal_music_boxes_last_upload + PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN - world.time
+	if(global_remaining > 0)
+		return "Кто-то недавно загружал трек. Подождите [DisplayTimeText(global_remaining)]."
 	return null
 
 /obj/item/personal_music_box/proc/can_upload(mob/user, ignore_own_lock = FALSE)
@@ -244,10 +264,6 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		return FALSE
 	return TRUE
 
-/obj/item/personal_music_box/proc/get_upload_cooldown_text()
-	var/remaining = GLOB.personal_music_boxes_last_upload + PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN - world.time
-	return remaining > 0 ? DisplayTimeText(remaining) : null
-
 /obj/item/personal_music_box/proc/get_play_cooldown_text()
 	var/remaining = GLOB.personal_music_boxes_last_play + PERSONAL_MUSIC_BOX_PLAY_COOLDOWN - world.time
 	return remaining > 0 ? DisplayTimeText(remaining) : null
@@ -261,25 +277,24 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		return 0
 	return max(last_change + PERSONAL_MUSIC_BOX_FILE_CHANGE_COOLDOWN - world.time, 0)
 
-/obj/item/personal_music_box/proc/get_file_change_cooldown_text(mob/user)
-	var/remaining = get_file_change_cooldown_remaining(user)
-	return remaining > 0 ? DisplayTimeText(remaining) : null
-
-/// Проверяет, что залитый файл вообще является аудио.
+/// Длительность залитого аудиофайла в децисекундах, либо 0, если файл не распознан как аудио.
 /// ЦЕНА: прежняя проверка звала file2text() и материализовала строкой ВЕСЬ файл (до шести
 /// мегабайт, см. PERSONAL_MUSIC_BOX_MAX_FILE_SIZE) ради четырёх байт заголовка "OggS". Разовый
 /// запрос непрерывного блока такого размера во фрагментированной куче 32-битного DreamDaemon -
 /// нежелательный класс аллокации. rust-g разбирает заголовок сам, потоком, и отдаёт в DM одно
 /// число, так что шестимегабайтной строки не возникает. Если в сборке rust-g нет soundlen,
-/// откатываемся на старую проверку заголовка, чтобы не сломать заливку целиком.
-/obj/item/personal_music_box/proc/is_valid_audio_file(file_path)
+/// откатываемся на старую проверку заголовка, чтобы не сломать заливку целиком, - длина
+/// тогда неизвестна и падает в потолок PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH.
+/obj/item/personal_music_box/proc/get_audio_track_length(file_path)
 	var/reported_length
 	try
 		reported_length = rustg_sound_length(file_path)
 	catch(var/exception/error)
 		stack_trace("personal music box: rustg_sound_length недоступен ([error]), проверяем заголовок вручную")
-		return copytext(file2text(file_path), 1, 5) == "OggS"
-	return isnum(reported_length) && reported_length > 0
+		return copytext(file2text(file_path), 1, 5) == "OggS" ? PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH : 0
+	if(!isnum(reported_length) || reported_length <= 0)
+		return 0
+	return min(reported_length, PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH)
 
 /obj/item/personal_music_box/proc/upload_file(mob/living/user)
 	set waitfor = FALSE
@@ -345,7 +360,8 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 		curfile_path = null
 		to_chat(user, span_warning("Не удалось загрузить трек."))
 		return
-	if(!is_valid_audio_file(logged_filename))
+	var/track_length = get_audio_track_length(logged_filename)
+	if(!track_length)
 		if(fexists(logged_filename))
 			fdel(logged_filename)
 		curfile_path = null
@@ -362,7 +378,7 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	song_name = get_personal_music_box_track_name(filename)
 	has_track = TRUE
 	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
-	J?.set_custom_track(curfile_path, song_name)
+	J?.set_custom_track(curfile_path, song_name, track_length)
 	update_icon()
 	to_chat(user, span_notice("Трек «[song_name]» загружен."))
 
@@ -392,6 +408,22 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	else
 		halt_playback(user)
 
+/// Переключает повтор трека. Кнопка в интерфейсе была, а обработчика действия не было -
+/// переключатель не делал ничего.
+/obj/item/personal_music_box/proc/toggle_repeat()
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+	if(!J)
+		return FALSE
+	J.repeat = !J.repeat
+	// Трек уже играет: очередь повтора следует за переключателем сразу, а не со следующего запуска.
+	if(J.active && J.custom_track)
+		if(J.repeat)
+			if(!(J.custom_track in J.queuedplaylist))
+				J.queuedplaylist += J.custom_track
+		else
+			J.queuedplaylist -= J.custom_track
+	return TRUE
+
 /obj/item/personal_music_box/proc/halt_playback(mob/living/user)
 	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
 	if(!J || (!J.active && !J.playing))
@@ -417,7 +449,7 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 #undef PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN
 #undef PERSONAL_MUSIC_BOX_FILE_CHANGE_COOLDOWN
 #undef PERSONAL_MUSIC_BOX_PLAY_COOLDOWN
-#undef PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH
+#undef PERSONAL_MUSIC_BOX_MAX_TRACK_LENGTH
 #undef PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
 #undef PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND
 #undef PERSONAL_MUSIC_BOX_UPLOAD_LOCK_TIMEOUT

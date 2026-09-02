@@ -775,6 +775,8 @@
 					/obj/item/clothing/under/bm/caprevskirt = 2, // BlueMoon Add
 					/obj/item/clothing/under/bm/regaloutfit = 2, // BlueMoon Add
 					/obj/item/clothing/suit/captunic = 1,
+					/obj/item/clothing/suit/toggle/captains_parade/syndicate/winter = 1, // BlueMoon Add
+					/obj/item/clothing/suit/toggle/captains_parade/syndicate = 1, // BlueMoon Add
 					/obj/item/clothing/under/rank/captain/femformal = 2,
 					/obj/item/clothing/glasses/sunglasses/gar/supergar = 1,
 					/obj/item/clothing/gloves/color/captain = 1,

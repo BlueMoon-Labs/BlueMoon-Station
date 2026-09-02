@@ -121,16 +121,23 @@
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack fill from")
 		to_chat(user, "<span class='notice'>Вы заполнили [src] на [trans] u содержимого [target].</span>")
 
-	else if(reagents.total_volume && reagent_flags & OPENCONTAINER && spillable)
+	else if(reagents.total_volume && is_drainable() && spillable)
 		if(user.a_intent == INTENT_HARM)
 			user.visible_message("<span class='danger'>[user] разливает содержимое [src] на [target]!</span>", \
 								"<span class='notice'>Вы вылили содержимое [src] на [target].</span>")
-			// LIQUIDS ADD - pouring (not throwing) also forms a puddle
+			reagents.reaction(target, TOUCH)
+			var/turf/splash_turf = get_turf(target)
+			if(splash_turf && !istype(target, /obj/machinery/hydroponics))
+				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
+				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
+				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
+				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
 			if(isturf(target))
 				var/turf/target_turf = target
 				if(target_turf.can_liquid_spill_on_hit())
-					target_turf.add_liquid_from_reagents(reagents)
-			reagents.reaction(target, TOUCH)
+					var/datum/reagents/spill_copy = new(reagents.maximum_volume)
+					reagents.trans_to(spill_copy, reagents.total_volume, log = "reagentcontainer-glass pour spill")
+					addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
 			reagents.clear_reagents()
 
 /obj/item/reagent_containers/glass/attackby(obj/item/I, mob/user, params)

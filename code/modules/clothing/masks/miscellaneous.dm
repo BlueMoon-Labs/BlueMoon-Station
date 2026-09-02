@@ -138,6 +138,11 @@
     adjustmask(user)
 
 /obj/item/clothing/mask/kitsuneblk/AltClick(mob/user)
+    if(face_hide_capable)
+        if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+            return ..()
+        toggle_face_hiding(user)
+        return TRUE
     . = ..()
     if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
         return
@@ -160,6 +165,11 @@
     adjustmask(user)
 
 /obj/item/clothing/mask/kitsunewhi/AltClick(mob/user)
+    if(face_hide_capable)
+        if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+            return ..()
+        toggle_face_hiding(user)
+        return TRUE
     . = ..()
     if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
         return

@@ -127,3 +127,16 @@
 	)
 	result = /obj/item/reagent_containers/food/snacks/soup/secret_noodle_soup
 	subcategory = CAT_SOUP
+
+// Shrimp soup
+/datum/crafting_recipe/food/shrimpsoup
+	name = "Shrimp soup"
+	reqs = list(
+		/datum/reagent/water = 10,
+		/obj/item/reagent_containers/glass/bowl = 1,
+		/obj/item/reagent_containers/food/snacks/meat/shrimp = 2,
+		/obj/item/reagent_containers/food/snacks/grown/tomato = 1,
+		/obj/item/reagent_containers/food/snacks/grown/garlic = 1,
+	)
+	result = /obj/item/reagent_containers/food/snacks/soup/shrimp
+	subcategory = CAT_SOUP

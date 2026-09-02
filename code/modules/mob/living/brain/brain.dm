@@ -63,7 +63,7 @@
 /mob/living/brain/get_ear_protection()//no ears
 	return 2
 
-/mob/living/brain/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0)
+/mob/living/brain/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0, duration = 25)
 	return // no eyes, no flashing
 
 /mob/living/brain/can_be_revived()

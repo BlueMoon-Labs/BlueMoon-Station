@@ -892,8 +892,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 		return
 	switch(action)
 		if("power")
-			on = !on
-			update_appearance()
+			if(on)
+				turn_off()
+			else
+				turn_on()
 		if("maintenance")
 			open = !open
 		if("patrol")

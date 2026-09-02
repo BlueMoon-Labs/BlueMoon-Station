@@ -45,7 +45,7 @@
 	name = "armory shutter button"
 	desc = "Панель управления ставнями арсенала."
 	skin = "doorctrl"
-	req_one_access = list(ACCESS_CAPTAIN, ACCESS_HOS)
+	req_one_access = list(ACCESS_CAPTAIN, ACCESS_HOS, ACCESS_ARMORY)
 
 /obj/machinery/button/door/armory/warden
 	name = "Armory Blue Alert Shutter Button"

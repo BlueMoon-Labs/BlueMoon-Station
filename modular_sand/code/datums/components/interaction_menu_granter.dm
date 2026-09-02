@@ -600,6 +600,14 @@
 		.["interaction_effect"] = 			prefs.interaction_effect
 		.["block_partner_pixel_shift"] = 	prefs.block_partner_pixel_shift
 
+		.["tab_interactions_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+		.["tab_genital_options_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+		.["tab_character_prefs_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+		.["tab_sex_animations_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+		.["tab_custom_enabled"] = 				!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+		.["dynamic_window_size"] = 				prefs.dynamic_window_size
+		.["compact_custom_tab"] = 				prefs.compact_custom_tab
+
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
 		var/list/customs_mob = list()
@@ -642,6 +650,8 @@
 				"requires_tail" = custom.requires_tail,
 				"requires_telekinesis" = custom.requires_telekinesis,
 				"max_distance" = custom.max_distance,
+				"sound_keys" = custom.sound_keys,
+				"sound_labels" = custom.get_sound_labels(),
 			))
 	.["own_custom_interactions"] = own_customs
 	.["max_custom_interactions"] = self.client.prefs.get_custom_interaction_limit()
@@ -692,6 +702,16 @@
 	.["interactions"] = sent_interactions
 	.["interaction_speeds"] = GLOB.interaction_speeds
 	.["interaction_effects_list"] = GLOB.interaction_effects_list
+
+	var/list/custom_sound_options = list()
+	for(var/sound_key in GLOB.custom_interaction_sounds)
+		var/list/sound_data = GLOB.custom_interaction_sounds[sound_key]
+		custom_sound_options += list(list(
+			"key" = sound_key,
+			"label" = sound_data["label"],
+			"group" = sound_data["group"],
+		))
+	.["custom_interaction_sounds"] = custom_sound_options
 
 /proc/num_to_pref(num)
 	switch(num)
@@ -969,6 +989,21 @@
 				if("block_partner_pixel_shift")
 					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
 				//
+
+				if("tab_interactions_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+				if("tab_genital_options_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+				if("tab_character_prefs_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+				if("tab_sex_animations_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+				if("tab_custom_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+				if("dynamic_window_size")
+					prefs.dynamic_window_size = !prefs.dynamic_window_size
+				if("compact_custom_tab")
+					prefs.compact_custom_tab = !prefs.compact_custom_tab
 				else
 					return FALSE
 			prefs.save_preferences()
@@ -1009,8 +1044,13 @@
 			return custom_edit(parent_mob, params)
 		if("custom_delete")
 			return custom_delete(parent_mob, params)
-		if("open_customs_window")
-			return open_customs_window(parent_mob)
+		if("custom_preview_sound")
+			var/list/sound_data = GLOB.custom_interaction_sounds[params["sound_key"]]
+			var/soundfile = sound_data?["file"]
+			if(!soundfile)
+				return FALSE
+			parent_mob.playsound_local(get_turf(parent_mob), soundfile, 50, FALSE)
+			return TRUE
 
 //BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
@@ -1051,6 +1091,8 @@
 		details += list(list("info" = "Нужен хвост у кого-то из пары", "icon" = "paw", "color" = "purple"))
 	if(custom.requires_telekinesis)
 		details += list(list("info" = "Нужен телекинез у кого-то из пары", "icon" = "brain", "color" = "purple"))
+	if(length(custom.sound_keys))
+		details += list(list("info" = "Звук: [jointext(custom.get_sound_labels(), ", ")]", "icon" = "volume-up", "color" = "blue"))
 	interaction["additionalDetails"] = details
 	return interaction
 
@@ -1081,6 +1123,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	LAZYADD(prefs.custom_interactions, custom)
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "создал", custom)
@@ -1112,6 +1156,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	refresh_interaction_panels()
@@ -1140,18 +1186,7 @@
 	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
 	log_admin(log_text)
 
-/datum/component/interaction_menu_granter/proc/open_customs_window(mob/living/user)
-	if(!user?.client)
-		return FALSE
-	for(var/datum/tgui/ui in SStgui.get_all_open_uis(src))
-		if(ui.interface == "MobInteractionCustoms" && ui.user == user)
-			ui.send_update()
-			return TRUE
-	var/datum/tgui/ui = new(user, src, "MobInteractionCustoms", "Custom Interactions")
-	ui.open()
-	return TRUE
-
-/// Обновляет все открытые панели взаимодействия и окно кастомизации
+/// Обновляет все открытые панели взаимодействия
 /// (удаление/изменение кастомов должно немедленно отражаться везде).
 /datum/component/interaction_menu_granter/proc/refresh_interaction_panels()
 	for(var/datum/interaction_menu_panel/panel as anything in panels)

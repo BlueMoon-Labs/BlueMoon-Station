@@ -222,6 +222,20 @@
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller(src)
 
+/obj/item/storage/firstaid/tactical/vanguard //бомжатская версия для авангардцев
+	name = "Budget tactical first-aid kit"
+
+/obj/item/storage/firstaid/tactical/vanguard/PopulateContents()
+	if(empty)
+		return
+	new /obj/item/healthanalyzer/advanced(src)
+	new /obj/item/bonesetter(src)
+	new /obj/item/stack/medical/gauze(src)
+	new /obj/item/reagent_containers/medspray/sterilizine(src)
+	new /obj/item/stack/medical/mesh/advanced(src)
+	new /obj/item/stack/medical/gauze/adv(src)
+	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+
 /obj/item/storage/firstaid/radbgone
 	name = "radiation treatment kit"
 	desc = "Нужна для выведения из крови малых доз токсинов и серьёзного радиационного отравления."
