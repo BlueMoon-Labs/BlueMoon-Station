@@ -254,6 +254,7 @@
 
 /obj/machinery/light/directional/north //Pixel offsets get overwritten on New()
 	dir = NORTH
+	pixel_y = 12
 
 /obj/machinery/light/directional/south
 	dir = SOUTH
