@@ -58,7 +58,7 @@
 	desc = "Seems like some body PING it too much"
 	icon_state = "m1garand"
 
-obj/item/broken/homemadeak
+/obj/item/broken/homemadeak
 	name = "Disassembled Homemade AK"
 	desc = "How.. How it's even possible?! Oh.. somebody weld shut the barel, that's how"
 	icon = 'modular_bluemoon/phenyamomota/icon/obj/guns/rifles.dmi'
