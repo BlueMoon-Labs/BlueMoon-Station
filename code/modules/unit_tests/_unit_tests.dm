@@ -266,6 +266,7 @@
 #include "effect_system_cleanup.dm"
 #include "fov_hearers.dm"
 #include "gc_refcount.dm"
+#include "pet_capsule_recall.dm"
 #include "ghost_role_limbs.dm"
 #include "gravity_deferred_update.dm"
 #include "manifest_photo_deferred.dm"

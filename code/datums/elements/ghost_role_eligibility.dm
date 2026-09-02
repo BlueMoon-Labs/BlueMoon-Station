@@ -29,12 +29,18 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 /proc/get_all_ghost_role_eligible(silent = FALSE, priority_only = FALSE)
 	var/list/possible_candidates = priority_only ? GLOB.ghost_eligible_mobs_priority : GLOB.ghost_eligible_mobs
 	var/list/candidates = list()
-	for(var/m in possible_candidates)
-		var/mob/M = m
+	var/found_null = FALSE
+	for(var/mob/M as anything in possible_candidates)
+		if(isnull(M))
+			found_null = TRUE
+			continue
 		// Мы уже итерируем список членства (priority-список - его подмножество):
 		// повторный линейный скан внутри can_reenter_round давал O(гостов^2) на пересбор.
 		if(M.can_reenter_round(TRUE, skip_eligibility_scan = TRUE))
 			candidates += M
+	if(found_null)
+		listclearnulls(GLOB.ghost_eligible_mobs)
+		listclearnulls(GLOB.ghost_eligible_mobs_priority)
 	return candidates
 
 /// skip_eligibility_scan: вызывающий уже итерирует GLOB.ghost_eligible_mobs и ручается

@@ -78,7 +78,7 @@
 				to_chat(user, "<span class='notice'>You construct the stripper pole!</span>")
 				var/obj/structure/pole/C = new
 				C.loc = loc
-				del(src)
+				qdel(src)
 			return
 
 /obj/structure/pole/attackby(obj/item/P, mob/user, params) //un-erecting a pole. :(
@@ -89,5 +89,5 @@
 			to_chat(user, "<span class='notice'>You take down the stripper pole!</span>")
 			var/obj/item/polepack/C = new
 			C.loc = loc
-			del(src)
+			qdel(src)
 		return

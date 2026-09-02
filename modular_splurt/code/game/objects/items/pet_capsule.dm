@@ -118,7 +118,16 @@
 		open = FALSE
 		icon_state = closed_state
 		loc.visible_message("<span class='warning'>\The [src] closes, [stored_pet.name] being recalled inside of it!</span>")
-		del(stored_pet)
+		recall_pet()
+
+/// del() питомца забирал с собой и того, кто сидел у него в животе - в том числе моба игрока.
+/obj/item/pet_capsule/proc/recall_pet()
+	var/turf/drop_turf = get_turf(stored_pet)
+	stored_pet.release_vore_contents(include_absorbed = TRUE, silent = TRUE)
+	for(var/mob/living/carried in stored_pet.contents)
+		carried.forceMove(drop_turf)
+	qdel(stored_pet)
+	stored_pet = null
 
 /obj/item/pet_capsule/attack_self(mob/user)
 	pet_capsule_triggered(loc,TRUE,user)
