@@ -1,10 +1,10 @@
-// Самодельные энергетические пушки: лазерный мушкет и термальные пистолеты.
 /obj/item/gun/energy/laser/musket
 	name = "laser musket"
 	desc = "Самодельное лазерное оружие с рукояткой сбоку, которой можно зарядить его."
 	icon_state = "musket"
 	item_state = "musket"
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/musket)
+	cell_type = /obj/item/stock_parts/cell/high
 	slot_flags = ITEM_SLOT_BACK
 	obj_flags = UNIQUE_RENAME
 	weapon_weight = WEAPON_HEAVY
@@ -45,8 +45,9 @@
 	name = "thermal pistol"
 	desc = "Модифицированный ручной пушкой с метаморфным запасом выведенных из эксплуатации военизированных нанитов. Плюётся сгустками злых роботов во врагов."
 	icon_state = "infernopistol"
-	item_state = "infernopistol"
+	item_state = null
 	ammo_type = list(/obj/item/ammo_casing/energy/nanite)
+	cell_type = /obj/item/stock_parts/cell/thermal
 	shaded_charge = TRUE
 	ammo_x_offset = 1
 	obj_flags = UNIQUE_RENAME
@@ -81,7 +82,7 @@
 		Хотя сам по себе он и не манипулирует температурой, он вызывает внутренний взрыв у любого, кто сильно перегрелся. Способен генерировать \
 		боеприпасы при ручном вращении нанитного контейнера оружия."
 	icon_state = "cryopistol"
-	item_state = "cryopistol"
+	item_state = null
 	light_color = COLOR_BLUE
 	ammo_type = list(/obj/item/ammo_casing/energy/nanite/cryo)
 

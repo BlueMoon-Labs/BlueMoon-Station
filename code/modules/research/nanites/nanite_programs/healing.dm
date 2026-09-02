@@ -129,7 +129,7 @@
 /datum/nanite_program/blood_restoring/active_effect()
 	if(iscarbon(host_mob))
 		var/mob/living/carbon/C = host_mob
-		C.adjust_integration_blood(2)
+		C.adjust_integration_blood(2, 2)
 
 /datum/nanite_program/repairing
 	name = "Mechanical Repair"
@@ -264,14 +264,18 @@
 	sleep(30)
 	playsound(C, 'sound/machines/defib_zap.ogg', 50, FALSE)
 	if(check_revivable())
+		var/breathless = HAS_TRAIT(C, TRAIT_NOBREATH)
 		playsound(C, 'sound/machines/defib_success.ogg', 50, FALSE)
 		C.set_heartattack(FALSE)
 		var/oxydamage = C.getOxyLoss()
 		if(C.health < HEALTH_THRESHOLD_FULLCRIT && oxydamage)
 			var/diff = C.health - HEALTH_THRESHOLD_FULLCRIT
 			C.adjustOxyLoss(diff)	//Heal their oxydamage up to hardcrit (or if less, as much as they have, since the proc has sanity)
-		C.revive(full_heal = FALSE, admin_revive = FALSE)
-		C.emote("gasp")
+		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE)
+		if(breathless)
+			C.emote("twitch")
+		else
+			C.emote("gasp")
 		C.Jitter(100)
 		SEND_SIGNAL(C, COMSIG_LIVING_MINOR_SHOCK)
 		// BLUEMOON EDIT START - изменение памяти после смерти

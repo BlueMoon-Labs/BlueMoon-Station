@@ -399,11 +399,10 @@
 	set_light_on(is_operational)
 
 /obj/machinery/vitals_reader/process()
-	if(!COOLDOWN_FINISHED(src, beep_cd) || !is_operational)
-		return
 	if(isnull(patient))
-		stack_trace("[src] has no patient but is still processing!")
-		STOP_PROCESSING(SSmachines, src)
+		return PROCESS_KILL
+
+	if(!COOLDOWN_FINISHED(src, beep_cd) || !is_operational)
 		return
 
 	var/patient_stat = patient.stat

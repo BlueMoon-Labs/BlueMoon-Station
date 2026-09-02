@@ -130,3 +130,12 @@
 		L.throw_at(throwtarget, 3)
 
 	charging = FALSE
+
+/mob/living/simple_animal/hostile/werewolf/weakend //cuz fuck you RenIIV
+
+	maxHealth = 350
+	health = 350
+	obj_damage = 20
+	armour_penetration = 15
+	melee_damage_lower = 25
+	melee_damage_upper = 25

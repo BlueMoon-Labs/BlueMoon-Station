@@ -918,6 +918,10 @@
 	check_patient()
 	M.pixel_y = M.get_standard_pixel_y_offset()
 
+/obj/structure/table/optable/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	check_patient()
+
 /obj/structure/table/optable/process()
 	if(mask?.loc != patient || tank?.loc != src || patient?.loc != loc)
 		stop_process()
@@ -932,6 +936,7 @@
 		visible_message(span_notice("[mask] срывается и возвращается на место по втягивающемуся шлангу."))
 		patient.transferItemToLoc(mask, src, TRUE)
 	patient.internal = null
+	SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
 	patient = null
 
 /obj/structure/table/optable/Destroy()
@@ -992,9 +997,13 @@
 	var/mob/living/carbon/human/H = locate() in loc
 	if(H)
 		if(!CHECK_MOBILITY(H, MOBILITY_STAND))
-			patient = H
+			if(patient != H)
+				patient = H
+				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
 			return TRUE
 	else
+		if(!isnull(patient))
+			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
 		patient = null
 		return FALSE
 

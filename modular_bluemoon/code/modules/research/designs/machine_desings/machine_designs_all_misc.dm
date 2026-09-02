@@ -32,3 +32,29 @@
 	category = list("Misc. Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+
+// Дизайны Авангарда
+/datum/design/board/contrabandpadterminal
+	name = "Computer Design (Contraband exchange terminal)"
+	desc = "A console for exchanging contraband for bounty points."
+	id = "contrabandpadterminal"
+	build_path = /obj/item/circuitboard/computer/contrabandpad
+	category = list("Misc. Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/board/contrabandpad
+	name = "Machine Design (Contraband exchange pad)"
+	desc = "A machine designed to send contraband to CentCom for processing."
+	id = "contrabandpad"
+	build_path = /obj/item/circuitboard/machine/contrabandpad
+	category = list("Misc. Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+
+/datum/design/board/boyntyvend
+	name = "Machine Design (Bounty Vend)"
+	desc = "A secure terminal for requisitioning specialized contraband equipment using bounty points."
+	id = "bountyvend"
+	build_path = /obj/item/circuitboard/machine/bountyvend
+	category = list("Misc. Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

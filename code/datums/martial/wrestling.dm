@@ -530,7 +530,7 @@
 
 //Make sure that moves can only be used on people wearing the holodeck belt
 /datum/martial_art/wrestling/holodeck/can_use(var/mob/living/carbon/human/A, var/mob/living/carbon/human/D)
-	if(!(istype(D.mind?.martial_art, /datum/martial_art/wrestling/holodeck)))
+	if(!D || !D.mind || !istype(D.mind.martial_art, /datum/martial_art/wrestling/holodeck))
 		return FALSE
 	else
 		return ..()

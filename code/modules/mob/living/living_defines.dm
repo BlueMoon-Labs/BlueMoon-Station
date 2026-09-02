@@ -101,6 +101,8 @@
 
 	var/list/surgeries = list()	//a list of surgery datums. generally empty, they're added when the player wants them.
 
+	var/flash_overlay_timer_id // Айди stoppable таймера автоснятия flash overlay
+	var/atom/movable/screen/fullscreen/flash_overlay_screen // Объект вспышки в flash_overlay(), привязанный к таймеру выше
 	var/_sterilize_timer_id // BLUEMOON ADD timer for desterilize()
 	var/sterilize_power = 0 // BLUEMOON ADD get buff to chance surg. operations in percent
 	var/_sterilize_expire = 0 // BLUEMOON ADD for cumulative timer effect
