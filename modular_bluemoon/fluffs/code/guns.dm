@@ -1971,8 +1971,8 @@
 	return mutable_appearance(icon_file, "-[initial(icon_state)]")
 
 /obj/item/melee/baton/ice_axe/get_belt_overlay()
-    if(istype(loc, /obj/item/storage/belt/sabre))
-        return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "ice_axe")
+	if(istype(loc, /obj/item/storage/belt/sabre))
+		return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "ice_axe")
     return ..()
 
 ////////////////////////////////////////////////////////////////////////////////////////
