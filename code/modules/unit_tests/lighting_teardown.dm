@@ -882,26 +882,18 @@
 /datum/unit_test/lighting_teardown_payoff_gate/Run()
 	// Сноса ещё не было либо мерить нечем (Windows, ранний старт) - улик нет, ведём себя
 	// как раньше. Спутать это с честным нулевым возвратом нельзя: ноль - улика, null нет.
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(null, 0), "без замера отдачи уровень обязан остаться кандидатом")
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(null, 0.95), "без замера отдачи давление ничего не меняет")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(null), "без замера отдачи уровень обязан остаться кандидатом")
 
 	// Ровно цифры трёх сносов z16 из раунда 10146.
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-1.5, 0), "снос, вернувший -1.5 МБ, обязан запереть следующий")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, 0), "снос, вернувший -4.2 МБ, обязан запереть следующий")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-0.1, 0), "снос, вернувший -0.1 МБ, обязан запереть следующий")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(0, 0), "нулевой возврат - это улика, а не отсутствие замера")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-1.5), "снос, вернувший -1.5 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2), "снос, вернувший -4.2 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-0.1), "снос, вернувший -0.1 МБ, обязан запереть следующий")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(0), "нулевой возврат - это улика, а не отсутствие замера")
 
 	// Настоящий снос лаваландского z возвращает 167-253 МБ - такой уровень запирать нельзя.
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(167, 0), "полезный снос обязан остаться разрешённым")
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB, 0), "ровно на пороге снос ещё считается полезным")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB - 0.1, 0), "под порогом снос обязан запираться")
-
-	// У самого потолка запрет снимается: там вспышка дешевле смерти процесса, и уровень
-	// стоит отдать даже без надежды на возврат. Высокое давление запрет НЕ снимает - оно
-	// и так режет срок простоя, а бесполезный цикл под ним так же бесполезен.
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "под критическим давлением запрет обязан сниматься")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_HIGH), "высокое давление не должно снимать запрет")
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL - 0.01), "под границей критического давления запрет обязан держаться")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(167), "полезный снос обязан остаться разрешённым")
+	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB), "ровно на пороге снос ещё считается полезным")
+	TEST_ASSERT(zlevel_teardown_payoff_exhausted(LIGHTING_TEARDOWN_MIN_PAYOFF_MB - 0.1), "под порогом снос обязан запираться")
 
 	// Порог обязан лежать между шумом и пользой: замеры прода дают -4.2 МБ у бесполезного
 	// сноса и 167 МБ у полезного, и порог вне этих границ разделять их перестанет.
@@ -1090,7 +1082,7 @@
 	var/useful_ledger_picked = SSlighting.teardown_zlevel
 	SSlighting.abort_zlevel_lighting_teardown()
 
-	// 5. У самого потолка запрет снимается: там вспышка дешевле смерти процесса.
+	// 5. Под критическим давлением запрет держится: прод сидит у потолка почти весь раунд.
 	force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
 	for(var/datum/space_level/level as anything in probe_levels)
 		level.lighting_initialized = TRUE
@@ -1123,7 +1115,7 @@
 	TEST_ASSERT(partial_picked, "исключение одного уровня погасило скан целиком - оно обязано быть адресным")
 	TEST_ASSERT_NOTEQUAL(partial_picked, excluded_z, "скан взял именно исключённый уровень z[excluded_z]")
 	TEST_ASSERT(useful_ledger_picked, "уровень с полезной отдачей 167 МБ перестал быть кандидатом")
-	TEST_ASSERT(critical_picked, "под критическим давлением запрет не снялся - раунд у потолка умрёт молча вместо вспышки")
+	TEST_ASSERT(!critical_picked, "под критическим давлением взят z[critical_picked] с бесполезным сносом - у потолка свет снова будут качать впустую")
 
 /**
  * Книга отдачи держит ЛУЧШИЙ замер уровня, а не последний.
@@ -1254,7 +1246,7 @@
 	SSlighting.zlevel_teardown_payoff = list()
 
 	var/first_cheap_verdict = SSlighting.note_zlevel_lighting_rebuild(71, 8)
-	var/excluded_without_teardown = zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["71"], 0)
+	var/excluded_without_teardown = zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["71"])
 	var/recorded_ceiling = SSlighting.zlevel_teardown_payoff["71"]
 
 	var/second_cheap_verdict = SSlighting.note_zlevel_lighting_rebuild(71, 5)
@@ -1265,8 +1257,6 @@
 	var/threshold_verdict = SSlighting.note_zlevel_lighting_rebuild(73, LIGHTING_TEARDOWN_MIN_PAYOFF_MB)
 	var/threshold_key = SSlighting.zlevel_teardown_payoff["73"]
 
-	// Исключение снимается на чтении, а не на записи: улика в книге лежит, гейт её игнорирует.
-	var/critical_still_allowed = !zlevel_teardown_payoff_exhausted(SSlighting.zlevel_teardown_payoff["71"], LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
 
 	TEST_ASSERT_EQUAL(first_cheap_verdict, LIGHTING_REBUILD_VERDICT_EXCLUDED, "дешёвый подъём обязан исключать уровень сразу, не тратя цикл сноса на замер уже известного")
 	TEST_ASSERT(excluded_without_teardown, "уровень не исключён после дешёвого подъёма - первый снос раунда снова уйдёт в никуда")
@@ -1276,7 +1266,6 @@
 	TEST_ASSERT(stayed_candidate, "дорогой подъём вписал уровень в книгу и снял его с кандидатов - сносить было бы что, а некому")
 	TEST_ASSERT_EQUAL(threshold_verdict, LIGHTING_REBUILD_VERDICT_UNCHANGED, "ровно на пороге подъём обязан считаться свежим")
 	TEST_ASSERT_NULL(threshold_key, "подъём ровно на пороге не должен оставлять улики")
-	TEST_ASSERT(critical_still_allowed, "исключение по цене подъёма обязано сниматься у потолка наравне с исключением по замеру сноса")
 
 /// Гейт давления и пауза между сносами: ниже LIGHTING_TEARDOWN_PRESSURE_HIGH обычный снос не
 /// запускается, под критическим давлением пауза снимается.
@@ -1302,34 +1291,6 @@
 	TEST_ASSERT(lighting_teardown_spacing_elapsed(world.time, world.time, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "под критическим давлением пауза между сносами обязана сниматься")
 
 	TEST_ASSERT_EQUAL(lighting_teardown_idle_time(LIGHTING_TEARDOWN_PRESSURE_HIGH, 1), LIGHTING_TEARDOWN_IDLE_TIME_HIGH, "на самом гейте срок простоя обязан быть уже сокращённым")
-
-/**
- * Хвост итоговой строки сноса не должен объявлять исключение там, где его нет.
- *
- * Гейт zlevel_teardown_payoff_exhausted() снимается на критическом давлении, а строка всё
- * равно печатала "уровень исключён из сносов" - разбор прод-логов читал бы её как причину,
- * по которой уровень больше не берут, хотя берут его как раз всегда.
- */
-/datum/unit_test/lighting_teardown_payoff_note_matches_gate
-	requires_full_map = FALSE
-
-/datum/unit_test/lighting_teardown_payoff_note_matches_gate/Run()
-	// Под обычным давлением решение и строка совпадают: уровень исключён.
-	var/normal = zlevel_teardown_payoff_note(-4.2, 0)
-	TEST_ASSERT(zlevel_teardown_payoff_exhausted(-4.2, 0), "предпосылка: под обычным давлением гейт обязан запирать уровень")
-	TEST_ASSERT(findtext(normal, "исключён"), "под обычным давлением бесполезный снос обязан объявить уровень исключённым: [normal]")
-
-	// У самого потолка гейт снят - строка не имеет права утверждать обратное.
-	var/critical = zlevel_teardown_payoff_note(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
-	TEST_ASSERT(!zlevel_teardown_payoff_exhausted(-4.2, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "предпосылка: под критическим давлением гейт обязан быть снят")
-	TEST_ASSERT(!findtext(critical, "исключён"), "под критическим давлением строка объявила уровень исключённым, хотя гейт снят: [critical]")
-	TEST_ASSERT(length(critical) > 0, "цифра ниже порога - всё ещё улика, строка обязана её назвать, а не молчать")
-	TEST_ASSERT(findtext(critical, "[LIGHTING_TEARDOWN_MIN_PAYOFF_MB]"), "строка обязана называть фактический порог отдачи: [critical]")
-
-	// Полезный снос молчит при любом давлении.
-	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(167, 0), "", "полезный снос не должен объявлять себя исключённым")
-	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(167, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "", "полезный снос молчит и под критическим давлением")
-	TEST_ASSERT_EQUAL(zlevel_teardown_payoff_note(null, LIGHTING_TEARDOWN_PRESSURE_CRITICAL), "", "без замера хвост обязан быть пустым при любом давлении")
 
 /**
  * Снос и фоновая постройка одного z не должны перемалывать друг друга.

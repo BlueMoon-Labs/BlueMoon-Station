@@ -729,7 +729,7 @@ SUBSYSTEM_DEF(lighting)
 		// Улика прошлого сноса читается ПОСЛЕ счётчика по той же причине, что и кулдаун:
 		// исключённый уровень всё равно горит и в квоте участвует. Иначе его исключение
 		// занижало бы lit_deferred и снимало давление квоты с ОСТАЛЬНЫХ уровней.
-		if(zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key], pressure))
+		if(zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key]))
 			continue
 		idle_since_by_z[key] = since
 	// Гейт стоит после прохода: книга простоя обязана тикать и ниже порога.
@@ -965,7 +965,7 @@ SUBSYSTEM_DEF(lighting)
 	var/list/memory_after = get_process_memory_mb()
 	var/payoff_mb = record_zlevel_teardown_payoff(z, memory_after)
 	last_teardown_finished_at = world.time
-	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, memory_after)][zlevel_teardown_payoff_note(payoff_mb, memory_pressure_fraction())]")
+	log_world("## LIGHTING: Снос света z[z] завершён: объектов [teardown_objects], углов [teardown_corners], источников в отложку [teardown_parked][zlevel_teardown_memory_note(teardown_vsz_before, memory_after)][zlevel_teardown_payoff_note(payoff_mb)]")
 	abort_zlevel_lighting_teardown(completed = TRUE)
 
 /**
@@ -1011,8 +1011,7 @@ SUBSYSTEM_DEF(lighting)
 	// Отрицательная цена - чужое освобождение в окне замера, а не дешёвый подъём.
 	if(spent_mb < 0)
 		return LIGHTING_REBUILD_VERDICT_UNCHANGED
-	// Давление здесь ноль: вопрос про содержимое книги, а не про то, снимет ли гейт запрет.
-	var/was_excluded = zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key], 0)
+	var/was_excluded = zlevel_teardown_payoff_exhausted(zlevel_teardown_payoff[key])
 	zlevel_teardown_payoff[key] = spent_mb
 	return was_excluded ? LIGHTING_REBUILD_VERDICT_UNCHANGED : LIGHTING_REBUILD_VERDICT_EXCLUDED
 

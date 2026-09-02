@@ -163,16 +163,16 @@
  * против +73.8 МБ у первого). Ждать второго подтверждения значило бы заплатить за него
  * ещё одним бесполезным циклом.
  *
+ * Давление здесь не участвует: раунды 10177-10188 дали 71 снос под критическим давлением
+ * с суммарной отдачей -184 МБ, а каждый обратный подъём стоил ~1000 тяжёлых фаеров.
+ *
  * Аргументы:
  * * last_payoff_mb - сколько МБ VmSize вернул последний ДОВЕДЁННЫЙ ДО КОНЦА снос этого
  *   уровня; null = сноса ещё не было либо память мерить нечем (Windows, ранний старт),
  *   и тогда улик против уровня нет - ведём себя как раньше
- * * pressure - доля потолка адресного пространства, 0 = не замерено
  */
-/proc/zlevel_teardown_payoff_exhausted(last_payoff_mb, pressure)
+/proc/zlevel_teardown_payoff_exhausted(last_payoff_mb)
 	if(isnull(last_payoff_mb))
-		return FALSE
-	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
 		return FALSE
 	return last_payoff_mb < LIGHTING_TEARDOWN_MIN_PAYOFF_MB
 
@@ -184,21 +184,15 @@
  * нельзя было сказать, СДЕЛАЛ ли сервер из этой цифры вывод: в 10146 три сноса подряд
  * напечатали "-1.5", "-4.2" и "-0.1 МБ" и каждый раз начинали заново.
  *
- * Хвост обязан совпадать с тем, что РЕАЛЬНО решит zlevel_teardown_payoff_exhausted() на том
- * же давлении. Снос, доехавший до критического давления, ничего не исключает - там запрет
- * снят, - а строка всё равно объявляла уровень исключённым, и разбор прода читал бы её как
- * причину, по которой уровень больше не берут.
+ * Хвост обязан совпадать с тем, что РЕАЛЬНО решит zlevel_teardown_payoff_exhausted().
  *
  * Аргументы:
  * * payoff_mb - возврат последнего сноса в МБ; null = не замерено, выводов нет
- * * pressure - доля потолка адресного пространства на момент финала; 0 = не замерено
  */
-/proc/zlevel_teardown_payoff_note(payoff_mb, pressure = 0)
-	if(isnull(payoff_mb) || payoff_mb >= LIGHTING_TEARDOWN_MIN_PAYOFF_MB)
+/proc/zlevel_teardown_payoff_note(payoff_mb)
+	if(!zlevel_teardown_payoff_exhausted(payoff_mb))
 		return ""
-	if(!zlevel_teardown_payoff_exhausted(payoff_mb, pressure))
-		return ", отдача ниже порога [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ, но под критическим давлением уровень из сносов не исключается"
-	return ", уровень исключён из сносов до критического давления (порог отдачи [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ)"
+	return ", уровень исключён из сносов (порог отдачи [LIGHTING_TEARDOWN_MIN_PAYOFF_MB] МБ)"
 
 /**
  * Закоммитила ли постройка света z-уровня свежую память, а не переиспользовала старую арену.
