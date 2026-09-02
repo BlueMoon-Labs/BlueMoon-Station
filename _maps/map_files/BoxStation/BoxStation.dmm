@@ -36958,6 +36958,12 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/heads_quarters/hos/private)
+"dMU" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plasteel/textured/half{
+	dir = 8
+	},
+/area/engineering/break_room)
 "dNd" = (
 /obj/structure/filingcabinet{
 	pixel_x = 5
@@ -51049,9 +51055,13 @@
 /area/security/prison/workout)
 "jue" = (
 /obj/structure/table/reinforced,
-/obj/item/assembly/flash/handheld,
+/obj/item/storage/fancy/donut_box{
+	pixel_x = -4;
+	pixel_y = -2
+	},
 /obj/item/assembly/flash/handheld{
-	pixel_x = 8
+	pixel_x = 10;
+	pixel_y = 4
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/bridge)
@@ -67214,10 +67224,10 @@
 /turf/open/floor/plasteel/white,
 /area/command/blueshieldoffice)
 "qex" = (
-/obj/item/kirbyplants/random,
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 10
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/textured/large,
 /area/security/brig)
 "qeH" = (
@@ -71985,12 +71995,7 @@
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "sfq" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/fancy/donut_box{
-	pixel_x = 3;
-	pixel_y = 6
-	},
-/obj/item/storage/fancy/donut_box,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/bridge)
 "sfr" = (
@@ -118029,7 +118034,7 @@ caA
 bVr
 bXN
 lPx
-bZE
+dMU
 jiK
 vVr
 mkQ
