@@ -2483,7 +2483,7 @@
 	name = "Skull mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/pmc_skull_mask
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul", "hartty")
 
 /datum/gear/donator/bm/sc_winter_coat
 	name = "Security winter coat"
