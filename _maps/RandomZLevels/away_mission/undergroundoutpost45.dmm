@@ -3315,6 +3315,7 @@
 /obj/item/shard,
 /obj/item/stack/rods,
 /obj/structure/spider/terrorweb/black,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark{
 	heat_capacity = 1e+006
 	},
@@ -6274,6 +6275,7 @@
 	maxcharge = 15000
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/plating{
 	heat_capacity = 1e+006
 	},
@@ -13802,6 +13804,7 @@
 /area/survivalpod)
 "yD" = (
 /obj/machinery/telepad,
+/obj/item/disk/gatereward,
 /turf/open/floor/catwalk_floor,
 /area/survivalpod)
 "zt" = (
@@ -13927,6 +13930,12 @@
 /obj/structure/projected_forcefield,
 /turf/open/floor/pod/dark,
 /area/survivalpod)
+"CS" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plasteel/showroomfloor{
+	heat_capacity = 1e+006
+	},
+/area/awaymission/undergroundoutpost45/crew_quarters)
 "CZ" = (
 /obj/item/reagent_containers/food/drinks/bottle/vodka,
 /obj/item/reagent_containers/food/drinks/bottle/vodka,
@@ -14534,6 +14543,15 @@
 	heat_capacity = 1e+006
 	},
 /area/awaymission/undergroundoutpost45/central)
+"Tp" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/asteroid{
+	heat_capacity = 1e+006;
+	initial_gas_mix = "o2=21.78;n2=72.36;TEMP=293.15";
+	initial_temperature = 351.9;
+	name = "Cave Floor"
+	},
+/area/awaymission/undergroundoutpost45/caves)
 "TB" = (
 /obj/machinery/computer/telescience,
 /turf/open/floor/catwalk_floor,
@@ -14651,6 +14669,15 @@
 	heat_capacity = 1e+006
 	},
 /area/awaymission/undergroundoutpost45/central)
+"WR" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating/asteroid{
+	heat_capacity = 1e+006;
+	initial_gas_mix = "o2=21.78;n2=72.36;TEMP=293.15";
+	initial_temperature = 351.9;
+	name = "Cave Floor"
+	},
+/area/awaymission/undergroundoutpost45/caves)
 "Xj" = (
 /obj/machinery/door/unpowered/shuttle,
 /turf/open/floor/plating/asteroid{
@@ -50050,7 +50077,7 @@ Hy
 fk
 fv
 fM
-fZ
+CS
 Il
 fZ
 gu
@@ -55014,7 +55041,7 @@ eJ
 eJ
 eJ
 eJ
-eJ
+WR
 ad
 ad
 ad
@@ -57819,7 +57846,7 @@ ad
 eJ
 eJ
 eJ
-eJ
+Tp
 eJ
 gf
 eJ

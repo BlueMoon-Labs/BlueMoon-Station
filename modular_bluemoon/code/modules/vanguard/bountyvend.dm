@@ -16,25 +16,6 @@
 	icon_state = "syndie-voucher"
 	w_class = WEIGHT_CLASS_TINY
 
-
-// ============================================
-// DATUM ДЛЯ ТОВАРОВ
-// ============================================
-/datum/data/bounty_equipment
-	var/equipment_name = "generic"
-	var/equipment_path = null
-	var/cost = 0
-	var/category = ""
-	var/base_cost = 0
-
-/datum/data/bounty_equipment/New(name, path, cost, category)
-	src.equipment_name = name
-	src.equipment_path = path
-	src.cost = cost
-	src.category = category
-	src.base_cost = cost
-
-
 // ============================================
 // BOUNTY VEND
 // ============================================
@@ -95,21 +76,39 @@
 		new /datum/data/bounty_equipment("High quality Soap",				/obj/item/soap/syndie,											150,	"Recreational"),
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
 
-		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									25000, 	"Miscellaneous"),
-		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous"),
-
 		// ============ ELITE EQUIPMENT =========
 		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,	"Elite Equipment"),
 		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,	"Elite Equipment"),
 		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,	"Elite Equipment"),
 		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Advanced ion jetpack",			/obj/item/mod/module/jetpack/advanced,							25000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				25000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("Advanced ion jetpack",			/obj/item/mod/module/jetpack/advanced,							5000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("Nanotrasen & Syndicate Uplink",	/obj/item/syndicate_uplink/station,								75000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,								20000,	"Elite Equipment"),
 	)
+
+/datum/data/bounty_equipment
+	var/equipment_name = "generic"
+	var/equipment_path = null
+	var/cost = 0
+	var/category = ""
+	var/base_cost = 0
+
+/datum/data/bounty_equipment/New(name, path, cost, category)
+	src.equipment_name = name
+	src.equipment_path = path
+	src.cost = cost
+	src.category = category
+	src.base_cost = cost
 
 /obj/machinery/bountyvend/Initialize(mapload)
 	. = ..()
+	build_inventory()
+
+/obj/machinery/bountyvend/proc/build_inventory()
+	for(var/p in prize_list)
+		var/datum/data/bounty_equipment/M = p
+		GLOB.vending_products[M.equipment_path] = 1
 
 /obj/machinery/bountyvend/update_icon_state()
 	if(powered())
@@ -193,6 +192,9 @@
 			var/datum/data/bounty_equipment/prize = locate(params["ref"]) in prize_list
 			if(!prize || !(prize in prize_list))
 				to_chat(usr, "<span class='alert'>Error: Invalid choice!</span>")
+				flick(icon_deny, src)
+				return
+			if(ispath(prize.equipment_path, /obj/item/stack/metadollar) && !bm_bounty_vendor_can_buy_metadollar(usr))
 				flick(icon_deny, src)
 				return
 			if(prize.cost > I.contraband_points)
@@ -302,3 +304,35 @@
 	new /obj/item/kitchen/knife/combat(src)
 	new /obj/item/radio/headset/headset_exp(src)
 	new /obj/item/clothing/glasses/sunglasses(src)
+
+
+// Потому что нехорошие люди абьюзят метадолоровку - оставляю их только в специальном вендомате станции
+
+/obj/machinery/bountyvend/plus
+	name = "BountyVend Expert"
+	circuit = /obj/item/circuitboard/machine/bountyvend/plus
+
+/obj/machinery/bountyvend/plus/Initialize(mapload)
+	. = ..()
+	desc += "\nIt seems a few selections have been added."
+	prize_list += list(
+		// ============ MISCELLANEOUS ============
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									25000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
+		)
+	build_inventory()
+
+// и дабл чек что бы могли покупать только авангардцы
+/proc/bm_bounty_vendor_can_buy_metadollar(mob/user)
+	if(!ishuman(user))
+		to_chat(user, span_warning("Нужна гуманоидная форма."))
+		return FALSE
+	var/mob/living/carbon/human/H = user
+	if(!H.mind?.assigned_role)
+		to_chat(H, span_warning("Нужна зарегистрированная профессия."))
+		return FALSE
+	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
+	if(!istype(J, /datum/job/expeditor))
+		to_chat(H, span_warning("Попридержи коней, приятель. Эта награда тебе не по зубам, доступна только настоящим оперативникам."))
+		return FALSE
+	return TRUE

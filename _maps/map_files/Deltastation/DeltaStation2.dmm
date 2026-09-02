@@ -73664,8 +73664,8 @@
 /area/security/brig)
 "mfM" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mfR" = (

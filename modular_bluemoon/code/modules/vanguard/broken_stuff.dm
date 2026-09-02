@@ -53,3 +53,18 @@
 	desc = " Heavy calliber sniper rifle.. with barell broke apart! Looks that make grown up man cry"
 	icon_state = "sniper"
 
+/obj/item/broken/m1garand
+	name = "Disassembled Mars Service Rifle"
+	desc = "Seems like some body PING it too much"
+	icon_state = "m1garand"
+
+obj/item/broken/homemadeak
+	name = "Disassembled Homemade AK"
+	desc = "How.. How it's even possible?! Oh.. somebody weld shut the barel, that's how"
+	icon = 'modular_bluemoon/phenyamomota/icon/obj/guns/rifles.dmi'
+	icon_state = "ak47_hm-old"
+
+/obj/item/broken/vss
+	name = "Disassembled VSS"
+	desc = "Barel have been bent, scope was riped out by force and shatered.. not gun, but a bunch a scrap for now"
+	icon_state = "vintorez_scope_open"
