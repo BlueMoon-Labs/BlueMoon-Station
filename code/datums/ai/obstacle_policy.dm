@@ -380,13 +380,17 @@
 	closed = null
 	return ..()
 
+#define AI_BREACH_HEAP_ROOT 1
+#define AI_BREACH_HEAP_BRANCHING 2
+#define AI_BREACH_HEAP_PARENT_FACTOR 0.5
+
 ///Кладёт турф в открытый список, сохраняя свойство двоичной кучи по f-оценке.
 /datum/ai_breach_pathfinder/proc/open_push(turf/tile, score)
 	open_tiles += tile
 	open_scores += score
 	var/index = length(open_tiles)
-	while(index > 1)
-		var/parent_index = round(index * 0.5)
+	while(index > AI_BREACH_HEAP_ROOT)
+		var/parent_index = round(index * AI_BREACH_HEAP_PARENT_FACTOR)
 		if(open_scores[parent_index] <= open_scores[index])
 			return
 		open_tiles.Swap(index, parent_index)
@@ -398,15 +402,15 @@
 	var/count = length(open_tiles)
 	if(!count)
 		return null
-	. = open_tiles[1]
-	open_tiles[1] = open_tiles[count]
-	open_scores[1] = open_scores[count]
+	. = open_tiles[AI_BREACH_HEAP_ROOT]
+	open_tiles[AI_BREACH_HEAP_ROOT] = open_tiles[count]
+	open_scores[AI_BREACH_HEAP_ROOT] = open_scores[count]
 	open_tiles.Cut(count)
 	open_scores.Cut(count)
 	count--
-	var/index = 1
+	var/index = AI_BREACH_HEAP_ROOT
 	while(TRUE)
-		var/child_index = index * 2
+		var/child_index = index * AI_BREACH_HEAP_BRANCHING
 		if(child_index > count)
 			return
 		if(child_index < count && open_scores[child_index + 1] < open_scores[child_index])
@@ -500,3 +504,7 @@
 	qdel(pathfinder)
 	SSpathfinder.mobs.found(pathfinder_slot)
 	return path || list()
+
+#undef AI_BREACH_HEAP_ROOT
+#undef AI_BREACH_HEAP_BRANCHING
+#undef AI_BREACH_HEAP_PARENT_FACTOR

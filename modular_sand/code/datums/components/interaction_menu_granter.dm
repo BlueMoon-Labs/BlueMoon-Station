@@ -1008,18 +1008,25 @@
 
 				if("tab_interactions_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+					dirty_var = "panel_tab_toggles"
 				if("tab_genital_options_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+					dirty_var = "panel_tab_toggles"
 				if("tab_character_prefs_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+					dirty_var = "panel_tab_toggles"
 				if("tab_sex_animations_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+					dirty_var = "panel_tab_toggles"
 				if("tab_custom_enabled")
 					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+					dirty_var = "panel_tab_toggles"
 				if("dynamic_window_size")
 					prefs.dynamic_window_size = !prefs.dynamic_window_size
+					dirty_var = "dynamic_window_size"
 				if("compact_custom_tab")
 					prefs.compact_custom_tab = !prefs.compact_custom_tab
+					dirty_var = "compact_custom_tab"
 				else
 					return FALSE
 			prefs.save_pref_var(dirty_var)

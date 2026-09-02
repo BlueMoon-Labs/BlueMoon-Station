@@ -82,28 +82,15 @@
 /// досылка: путь, оставляющий декаль на чужом турфе насовсем, обязан звать её сам (см. gibs/streak).
 /obj/effect/decal/cleanable/proc/enforce_turf_decal_cap()
 	var/others = 0
-	var/obj/effect/decal/cleanable/same_type
-	var/obj/effect/decal/cleanable/oldest
 	for(var/obj/effect/decal/cleanable/other in loc)
-		if(other == src || QDELETED(other))
-			continue
-		others++
-		if(other.cap_exempt)
-			continue
-		if(other.type == type && (!same_type || other.decal_creation_order < same_type.decal_creation_order))
-			same_type = other
-		if(!oldest || other.decal_creation_order < oldest.decal_creation_order)
-			oldest = other
+		if(other != src && !QDELETED(other))
+			others++
 	// src уже лежит на турфе, поэтому соседям остаётся на одно место меньше.
 	var/excess = others - (CLEANABLE_DECAL_TURF_CAP - 1)
 	if(excess <= 0)
 		return
-	var/obj/effect/decal/cleanable/victim = same_type || oldest
-	if(!victim)
-		return
-	absorb_cleanable(victim, victim.type == type)
-	for(var/i in 2 to excess)
-		victim = find_cap_victim()
+	for(var/i in 1 to excess)
+		var/obj/effect/decal/cleanable/victim = find_cap_victim()
 		if(!victim)
 			return
 		absorb_cleanable(victim, victim.type == type)

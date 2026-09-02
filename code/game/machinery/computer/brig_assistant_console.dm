@@ -44,7 +44,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 
 	for(var/datum/data/record/S in GLOB.data_core.security)
 		var/status = S.fields["criminal"]
-		if(!(status in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
+		if(!is_wanted_status(status))
 			continue
 
 		var/datum/data/record/G = GLOB.data_core.general_by_name[S.fields["name"]]
@@ -127,6 +127,9 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 	data["remove"] = remove_list
 	return data
 
+/obj/machinery/computer/brig_assistant_console/proc/is_wanted_status(status)
+	return status in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)
+
 /obj/machinery/computer/brig_assistant_console/ui_act(action, params)
 	. = ..()
 	if(.)
@@ -141,7 +144,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				return
 
 			var/datum/data/record/S = GLOB.data_core.security_by_id[criminal_id]
-			if(!S || !(S.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
+			if(!S || !is_wanted_status(S.fields["criminal"]))
 				to_chat(user, span_warning("Запись не найдена или преступник больше не в розыске."))
 				return
 
@@ -186,7 +189,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			// Create poster
 			var/obj/item/photo/photo = G.get_record_photo("photo_front") || G.get_record_photo("photo_side")
 			// Съёмка спит: за это окно кликер, консоль и записи могут исчезнуть.
-			if(QDELETED(src) || QDELETED(user) || QDELETED(S) || QDELETED(G))
+			if(QDELETED(src) || QDELETED(user) || QDELETED(S) || QDELETED(G) || !is_wanted_status(S.fields["criminal"]))
 				criminal_takes -= take_stamp
 				return
 			var/icon/person_icon

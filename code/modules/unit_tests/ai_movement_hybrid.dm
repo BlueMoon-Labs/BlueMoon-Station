@@ -253,7 +253,7 @@
 	var/turf/start = run_loc_floor_bottom_left
 	var/turf/prey_turf = locate(start.x + 2, start.y + 2, start.z)
 	//Наглухо замурованная цель: ни JPS, ни фолбэк через преграды маршрута не найдут.
-	for(var/direction in GLOB.alldirs)
+	for(var/direction as anything in GLOB.alldirs)
 		allocate(/obj/structure/ai_unit_test_boundary, get_step(prey_turf, direction))
 
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
@@ -311,7 +311,7 @@
 /datum/unit_test/ai_breach_fallback_runs_when_jps_exhausted/Run()
 	var/turf/start = run_loc_floor_bottom_left
 	var/turf/prey_turf = locate(start.x + 2, start.y + 2, start.z)
-	for(var/direction in GLOB.alldirs)
+	for(var/direction as anything in GLOB.alldirs)
 		allocate(/obj/structure/ai_unit_test_boundary, get_step(prey_turf, direction))
 
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)

@@ -2,8 +2,8 @@
 #define RECORD_PHOTO_INFLIGHT_TIMEOUT (10 SECONDS)
 #define RECORD_PHOTO_MAX_IN_FLIGHT 2
 
-/// Сколько кадров записей строится прямо сейчас.
-GLOBAL_VAR_INIT(record_photos_in_flight, 0)
+/// Источники, чьи кадры строятся прямо сейчас: источник -> время старта съёмки.
+GLOBAL_LIST_EMPTY(record_photos_in_flight)
 
 //TODO: someone please get rid of this shit
 /datum/datacore
@@ -73,20 +73,28 @@ GLOBAL_VAR_INIT(record_photos_in_flight, 0)
 	generated = TRUE
 	generating = TRUE
 	var/slot_deadline = world.time + inflight_timeout
-	UNTIL(GLOB.record_photos_in_flight < RECORD_PHOTO_MAX_IN_FLIGHT || world.time > slot_deadline)
-	if(GLOB.record_photos_in_flight >= RECORD_PHOTO_MAX_IN_FLIGHT)
-		log_world("## DATACORE: счётчик съёмок записей завис на [GLOB.record_photos_in_flight], сброшен")
-		GLOB.record_photos_in_flight = 0
-	GLOB.record_photos_in_flight++
+	UNTIL(length(GLOB.record_photos_in_flight) < RECORD_PHOTO_MAX_IN_FLIGHT || world.time > slot_deadline)
+	if(length(GLOB.record_photos_in_flight) >= RECORD_PHOTO_MAX_IN_FLIGHT)
+		evict_stuck_photo_builds()
+	GLOB.record_photos_in_flight[src] = world.time
 	try
 		cached_icon = build_photo_icon()
 	catch(var/exception/photo_error)
 		cached_icon = null
 		stack_trace("record_photo_source: съёмка кадра сорвалась ([photo_error])")
-	GLOB.record_photos_in_flight = max(GLOB.record_photos_in_flight - 1, 0)
+	// Снятие по ключу: уже вычищенная как зависшая съёмка не трогает чужие слоты.
+	GLOB.record_photos_in_flight -= src
 	frozen_appearance = null
 	generating = FALSE
 	return cached_icon
+
+/// Выбрасывает из слотов съёмки только те, что идут дольше таймаута: живые снимут себя сами.
+/datum/record_photo_source/proc/evict_stuck_photo_builds()
+	for(var/datum/record_photo_source/other as anything in GLOB.record_photos_in_flight)
+		if(world.time - GLOB.record_photos_in_flight[other] < inflight_timeout)
+			continue
+		GLOB.record_photos_in_flight -= other
+		log_world("## DATACORE: съёмка кадра записи идёт дольше [inflight_timeout / (1 SECONDS)] с, слот освобождён")
 
 /// Собственно съёмка; вынесена отдельным проком, чтобы тест считал реальные генерации.
 /datum/record_photo_source/proc/build_photo_icon()
@@ -730,6 +738,3 @@ GLOBAL_VAR_INIT(record_photos_in_flight, 0)
 		locked += L
 		locked_by_id[L.fields["id"]] = L
 	return
-
-#undef RECORD_PHOTO_INFLIGHT_TIMEOUT
-#undef RECORD_PHOTO_MAX_IN_FLIGHT

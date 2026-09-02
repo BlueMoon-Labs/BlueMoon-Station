@@ -164,7 +164,7 @@
 /datum/unit_test/manifest_photo_lazy_inflight_cap/Run()
 	var/mob/living/carbon/human/crewmember = allocate(/mob/living/carbon/human)
 	var/readers = 3
-	TEST_ASSERT_EQUAL(GLOB.record_photos_in_flight, 0, "Sanity: до теста съёмок в полёте нет")
+	TEST_ASSERT_EQUAL(length(GLOB.record_photos_in_flight), 0, "Sanity: до теста съёмок в полёте нет")
 	for(var/i in 1 to readers)
 		var/datum/data/record/target = new
 		target.fields["name"] = "Cap Subject [i]"
@@ -174,17 +174,73 @@
 
 	var/deadline = world.time + 10 SECONDS
 	while(finished_readers < readers && world.time < deadline)
-		peak_in_flight = max(peak_in_flight, GLOB.record_photos_in_flight)
+		peak_in_flight = max(peak_in_flight, length(GLOB.record_photos_in_flight))
 		sleep(1)
 
 	TEST_ASSERT_EQUAL(finished_readers, readers, "Все читатели обязаны дождаться своих кадров")
 	TEST_ASSERT(peak_in_flight > 0, "Sanity: съёмка вообще шла")
 	TEST_ASSERT(peak_in_flight < readers, "Лимит одновременных съёмок не сработал: пик [peak_in_flight] при [readers] читателях")
-	TEST_ASSERT_EQUAL(GLOB.record_photos_in_flight, 0, "Счётчик съёмок в полёте обязан вернуться к нулю")
+	TEST_ASSERT_EQUAL(length(GLOB.record_photos_in_flight), 0, "Список съёмок в полёте обязан опустеть")
 	for(var/datum/data/record/target as anything in records)
 		var/datum/record_photo_source/unit_test_counted/source = target.photo_source
 		TEST_ASSERT_EQUAL(source.build_count, 1, "Каждая запись обязана сняться ровно один раз")
 		TEST_ASSERT(istype(target.fields["photo_front"], /obj/item/photo), "Каждая запись обязана получить фото")
+		qdel(target.fields["photo_front"])
+		qdel(target.fields["photo_side"])
+	records.Cut()
+
+/// Тот же источник со съёмкой дольше таймаута слота.
+/datum/record_photo_source/unit_test_counted/stalled
+
+/datum/record_photo_source/unit_test_counted/stalled/build_photo_icon()
+	sleep(1 SECONDS)
+	return ..()
+
+/// Две съёмки дольше таймаута не запирают третьего читателя, а доехав, снимают только свои слоты.
+/datum/unit_test/manifest_photo_lazy_inflight_stall
+	var/list/datum/data/record/records = list()
+	var/finished_readers = 0
+
+/datum/unit_test/manifest_photo_lazy_inflight_stall/proc/read_record_async(datum/data/record/target)
+	target.get_record_photo("photo_front")
+	finished_readers++
+
+/datum/unit_test/manifest_photo_lazy_inflight_stall/Run()
+	var/mob/living/carbon/human/crewmember = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_EQUAL(length(GLOB.record_photos_in_flight), 0, "Sanity: до теста съёмок в полёте нет")
+	var/list/stalled_sources = list()
+	for(var/i in 1 to RECORD_PHOTO_MAX_IN_FLIGHT)
+		var/datum/data/record/target = new
+		target.fields["name"] = "Stalled Subject [i]"
+		var/datum/record_photo_source/unit_test_counted/stalled/source = new(crewmember, null, null)
+		source.inflight_timeout = 2
+		target.photo_source = source
+		stalled_sources += source
+		records += target
+		INVOKE_ASYNC(src, PROC_REF(read_record_async), target)
+	TEST_ASSERT_EQUAL(length(GLOB.record_photos_in_flight), RECORD_PHOTO_MAX_IN_FLIGHT, "Sanity: все слоты съёмки заняты")
+
+	var/datum/data/record/third = new
+	third.fields["name"] = "Third Subject"
+	var/datum/record_photo_source/unit_test_counted/third_source = new(crewmember, null, null)
+	third_source.inflight_timeout = 2
+	third.photo_source = third_source
+	records += third
+	var/started = world.time
+	var/obj/item/photo/third_photo = third.get_record_photo("photo_front")
+	TEST_ASSERT(istype(third_photo), "Третий читатель обязан получить фото, а не null")
+	TEST_ASSERT(world.time - started >= third_source.inflight_timeout, "Sanity: третий читатель отстоял таймаут слота")
+	for(var/datum/record_photo_source/source as anything in stalled_sources)
+		TEST_ASSERT(source.generating, "Долгая съёмка ещё идёт: третий читатель не должен был её дожидаться")
+	TEST_ASSERT(!(third_source in GLOB.record_photos_in_flight), "Третий читатель обязан снять свой слот после съёмки")
+
+	var/finish_deadline = world.time + 5 SECONDS
+	UNTIL(finished_readers >= RECORD_PHOTO_MAX_IN_FLIGHT || world.time > finish_deadline)
+	TEST_ASSERT_EQUAL(finished_readers, RECORD_PHOTO_MAX_IN_FLIGHT, "Долгие съёмки обязаны доехать")
+	TEST_ASSERT_EQUAL(length(GLOB.record_photos_in_flight), 0, "Доехавшие съёмки снимают себя по ключу, слотов в полёте не остаётся")
+	for(var/datum/data/record/target as anything in records)
+		var/datum/record_photo_source/unit_test_counted/source = target.photo_source
+		TEST_ASSERT_EQUAL(source.build_count, 1, "Каждая запись обязана сняться ровно один раз")
 		qdel(target.fields["photo_front"])
 		qdel(target.fields["photo_side"])
 	records.Cut()
