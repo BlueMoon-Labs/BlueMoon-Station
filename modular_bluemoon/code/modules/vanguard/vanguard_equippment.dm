@@ -70,7 +70,7 @@
 	new /obj/item/retractor/upgraded_t2(src)
 	new /obj/item/hemostat/upgraded_t2(src)
 	new /obj/item/cautery/upgraded_t2(src)
-
+	new /obj/item/surgical_drapes(src)
 
 /obj/item/storage/bag/marksman
 	name = "marksman's knife pouch"
