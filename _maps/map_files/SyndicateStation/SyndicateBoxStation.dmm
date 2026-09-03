@@ -2433,10 +2433,10 @@
 /turf/open/floor/wood,
 /area/hallway/primary/fore)
 "aiG" = (
-/obj/item/kirbyplants/random,
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 10
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/mineral/plastitanium/red,
 /area/security/brig)
 "aiL" = (
@@ -12684,9 +12684,12 @@
 /area/command/bridge)
 "aSv" = (
 /obj/structure/table/reinforced/plastitanium,
-/obj/item/assembly/flash/handheld,
 /obj/item/assembly/flash/handheld{
 	pixel_x = 8
+	},
+/obj/item/storage/fancy/donut_box{
+	pixel_x = 3;
+	pixel_y = 6
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
@@ -13282,12 +13285,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
 "aUc" = (
-/obj/structure/table/reinforced/plastitanium,
-/obj/item/storage/fancy/donut_box{
-	pixel_x = 3;
-	pixel_y = 6
-	},
-/obj/item/storage/fancy/donut_box,
+/obj/machinery/recharge_station,
 /turf/open/floor/mineral/plastitanium,
 /area/command/bridge)
 "aUe" = (
@@ -45913,6 +45911,10 @@
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/service/hydroponics/garden)
+"eMz" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/break_room)
 "eNr" = (
 /obj/effect/turf_decal/loading_area{
 	icon_state = "half_stairs_wood";
@@ -71976,16 +71978,16 @@
 	dir = 8;
 	pixel_x = -26
 	},
-/obj/item/flashlight/lamp{
-	pixel_x = -6;
-	pixel_y = 10
-	},
 /obj/item/folder/white,
 /obj/item/pen,
 /obj/effect/turf_decal/trimline/blue/filled/mid_joiner{
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/blue/filled/mid_joiner,
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 10
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/paramedic)
 "skN" = (
@@ -76253,8 +76255,8 @@
 	},
 /area/maintenance/aft)
 "uAC" = (
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (
@@ -114385,7 +114387,7 @@ caA
 bVr
 bXN
 bZy
-bZy
+eMz
 cig
 cCT
 cdn

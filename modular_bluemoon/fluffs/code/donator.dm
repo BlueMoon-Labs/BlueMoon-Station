@@ -2632,3 +2632,21 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
 	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/atomas_fluted_armor
+	name = "Fluted Plate Armor"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/suit/armor/vest/knight/military
+	ckeywhitelist = list("atomas")
+
+/datum/gear/donator/bm/atomas_hounskull
+	name = "Hounskull With Aventail"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/military
+	ckeywhitelist = list("atomas")
+
+/datum/gear/donator/bm/sawwr_coat
+	name = "Dark Amber"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/tie/sawwr_coat
+	ckeywhitelist = list("hartty", "sawwarrr")

@@ -23298,13 +23298,13 @@
 	icon_state = "2-8"
 	},
 /obj/effect/turf_decal/tile/purple/fourcorners,
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/tile/purple{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
 	},
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "bZq" = (
@@ -32932,6 +32932,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/medical/paramedic)
 "cwE" = (
@@ -65901,6 +65902,7 @@
 	pixel_x = 0;
 	pixel_y = -32
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "mah" = (
@@ -78202,6 +78204,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "ryN" = (
@@ -92556,6 +92559,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/security/office)
 "xXd" = (

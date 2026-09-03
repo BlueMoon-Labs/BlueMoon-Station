@@ -1,17 +1,17 @@
 // C3D (Борги) — BR2 (технический)
 /obj/item/projectile/bullet/c3d
 	damage = 30
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD
+	armour_penetration = BULLET_BR4   // BLUEMOON ADD
 
 // Mech LMG — BR2
 /obj/item/projectile/bullet/lmg
 	damage = 30
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD
+	armour_penetration = BULLET_BR4   // BLUEMOON ADD
 
 // Mech FNX-99 — BR2
 /obj/item/projectile/bullet/incendiary/fnx99
 	damage = 30
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD
+	armour_penetration = BULLET_BR5   // BLUEMOON ADD
 
 // Турели
 /obj/item/projectile/bullet/manned_turret

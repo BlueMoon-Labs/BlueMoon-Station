@@ -112,6 +112,8 @@
 		return FALSE
 	if(isliving(candidate))
 		return FALSE
+	if(isobserver(candidate))
+		return FALSE
 	if(isitem(candidate))
 		var/obj/item/candidate_item = candidate
 		if(candidate_item.item_flags & (ABSTRACT|DROPDEL))

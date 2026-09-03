@@ -21,6 +21,12 @@
 ///TRUE = легаси-автострельба OpenFire из AttackingTarget подавлена таблицей
 /mob/living/simple_animal/hostile
 	var/ai_attack_tables_active = FALSE
+	var/list/random_loot = null
+
+/mob/living/simple_animal/hostile/Initialize(mapload)
+	. = ..()
+	if(random_loot && length(random_loot))
+		AddComponent(/datum/component/random_loot, random_loot)
 
 // ===== Вендиго =====
 

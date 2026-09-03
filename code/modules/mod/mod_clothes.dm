@@ -22,6 +22,9 @@
 	var/list/linked_modules = list()
 	var/theme_category
 
+/obj/item/clothing/mod_part/obj_break(damage_flag)
+	return FALSE
+
 /obj/item/clothing/mod_part/equipped(mob/user, slot)
 	. = ..()
 	if(!mod?.wearer)
