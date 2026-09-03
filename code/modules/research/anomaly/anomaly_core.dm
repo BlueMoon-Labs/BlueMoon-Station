@@ -100,5 +100,5 @@
 /obj/item/assembly/signaler/anomaly/fog
 	name = "\improper fog anomaly core"
 	desc = "The neutralized core of a fog anomaly. It constantly leaks a thick veil of short-lived smoke."
-	icon_state = "vortex_core"
+	icon_state = "dimensional_core"
 	anomaly_type = /obj/effect/anomaly/fog

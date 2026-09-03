@@ -359,6 +359,14 @@
 
 /obj/item/clothing/suit/armor/reactive/smoke
 	name = "reactive smoke armor"
-	desc = "An experimental suit of armor that animates nearby objects with a ghostly possession."
-	reactivearmor_cooldown_duration = 10 SECONDS
+	desc = "An experimental suit of armor that leaks clouds of thick smoke."
+	reactivearmor_cooldown_duration = 15 SECONDS
 
+/obj/item/clothing/suit/armor/reactive/smoke/block_action(mob/living/carbon/human/owner, atom/movable/hitby, attack_text, final_block_chance, damage)
+	if(world.time < reactivearmor_cooldown)
+		return
+	var/datum/effect_system/smoke_spread/smoke = new
+	smoke.set_up(5, src)
+	smoke.start()
+	reactivearmor_cooldown = world.time + reactivearmor_cooldown_duration
+	return TRUE

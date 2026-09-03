@@ -4913,6 +4913,7 @@
 #include "modular_bluemoon\code\modules\events\psi_wave.dm"
 #include "modular_bluemoon\code\modules\events\spacebattle.dm"
 #include "modular_bluemoon\code\modules\events\zombie_event.dm"
+#include "modular_bluemoon\code\modules\events\anomaly\anomaly_fog.dm"
 #include "modular_bluemoon\code\modules\events\wizard_dice\wizard_dice_event.dm"
 #include "modular_bluemoon\code\modules\events\wizard_dice\wizard_dice_helpers.dm"
 #include "modular_bluemoon\code\modules\flufftext\psychosis_hallucinations.dm"

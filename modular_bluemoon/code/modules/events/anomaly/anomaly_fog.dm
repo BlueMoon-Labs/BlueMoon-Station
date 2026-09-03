@@ -1,6 +1,7 @@
 /datum/round_event_control/anomaly/anomaly_fog
 	name = "Anomaly: Fog"
 	typepath = /datum/round_event/anomaly/anomaly_fog
+	min_players = 30
 	max_occurrences = 2
 	weight = 20
 	description = "Аномалия ползучего тумана."
