@@ -57,6 +57,7 @@
 	pixel_x = 17;
 	pixel_y = 7
 	},
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/plating/beach/sand,
 /area/awaymission/beach)
 "ao" = (
@@ -680,6 +681,7 @@
 "cl" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/drinks/shaker,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/beach)
 "cm" = (
@@ -989,6 +991,7 @@
 "df" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /obj/item/clothing/neck/necklace/dope,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/beach)
 "dg" = (
@@ -1791,6 +1794,7 @@
 	pixel_x = -13;
 	pixel_y = -1
 	},
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel,
 /area/awaymission/beach)
 "je" = (
@@ -3130,6 +3134,7 @@
 	},
 /obj/structure/table/bronze,
 /obj/effect/turf_decal/weather/sand/floor,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/awaymission/beach)
 "tr" = (
@@ -4985,6 +4990,7 @@
 	pixel_x = 3;
 	pixel_y = 9
 	},
+/obj/item/disk/gatereward,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/beach)
 "GT" = (
@@ -5595,6 +5601,7 @@
 	pixel_x = -6;
 	pixel_y = -5
 	},
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/awaymission/beachhotel)
 "LG" = (
@@ -6336,6 +6343,7 @@
 "PP" = (
 /obj/structure/safe,
 /obj/item/stack/spacecash/c1000,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/beach)
 "PQ" = (

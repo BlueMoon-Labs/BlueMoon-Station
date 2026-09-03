@@ -203,6 +203,7 @@
 
 /mob/living/carbon/emp_act(severity)
 	. = ..()
+	SEND_SIGNAL(src, COMSIG_LIVING_FORCE_EMP, severity)
 	if(. & EMP_PROTECT_CONTENTS)
 		return
 	if(isrobotic(src))

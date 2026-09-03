@@ -316,3 +316,17 @@
 
 /obj/item/choice_beacon/box/desk/generate_display_names()
 	return toy_desk
+
+/obj/item/choice_beacon/departmental_protholate
+	name = "Spare departmental protolathe circuitbords!"
+	desc = "For those in need when your lathe have been stolen or eaten! Opens with Department head acces. ATTENTION: case made from pure adminium, and indesctructable"
+
+/obj/item/choice_beacon/departmental_protholate/generate_display_names()
+	var/static/list/departmental_protholate_list
+	if(!departmental_protholate_list)
+		departmental_protholate_list = list()
+		var/list/templist = subtypesof(/obj/item/storage/lockbox/departmental_lathe/) //we have to convert type = name to name = type, how lovely!
+		for(var/V in templist)
+			var/atom/A = V
+			departmental_protholate_list[initial(A.name)] = A
+	return departmental_protholate_list

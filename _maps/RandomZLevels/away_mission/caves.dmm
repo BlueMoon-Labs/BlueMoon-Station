@@ -2438,6 +2438,12 @@
 	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
 	},
 /area/awaymission/caves/BMP_asteroid/level_two)
+"sv" = (
+/obj/item/disk/gatereward/bigest,
+/turf/open/floor/plating/asteroid/basalt/lava{
+	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
+	},
+/area/awaymission/caves/BMP_asteroid/level_four)
 "sT" = (
 /obj/effect/decal/cleanable/crayon{
 	color = "#4682B4";
@@ -2650,6 +2656,12 @@
 	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
 	},
 /area/awaymission/caves/BMP_asteroid)
+"Gw" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating{
+	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
+	},
+/area/awaymission/caves/BMP_asteroid/level_two)
 "GV" = (
 /obj/structure/barricade/wooden,
 /obj/structure/cable{
@@ -2793,6 +2805,12 @@
 	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
 	},
 /area/awaymission/caves/BMP_asteroid)
+"Ud" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/asteroid/basalt{
+	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
+	},
+/area/awaymission/caves/BMP_asteroid)
 "Uo" = (
 /obj/structure/fluff/divine/nexus,
 /turf/open/floor/plating/asteroid/basalt/lava{
@@ -2864,6 +2882,13 @@
 	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
 	},
 /area/awaymission/caves/BMP_asteroid/level_four)
+"Yw" = (
+/obj/structure/spawner/mining/goliath,
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating/asteroid/basalt{
+	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"
+	},
+/area/awaymission/caves/BMP_asteroid/level_three)
 
 (1,1,1) = {"
 aa
@@ -12876,7 +12901,7 @@ bM
 bV
 bV
 bV
-bV
+Ud
 bL
 bL
 bL
@@ -15988,7 +16013,7 @@ ah
 ah
 ah
 ae
-be
+Yw
 ae
 ah
 ah
@@ -61545,7 +61570,7 @@ ad
 ad
 ad
 ad
-ad
+ai
 ad
 ad
 ad
@@ -61802,8 +61827,8 @@ ad
 ad
 ad
 ad
-ad
-ad
+ai
+ai
 ad
 ad
 ad
@@ -62322,8 +62347,8 @@ ad
 ad
 ad
 ad
-ad
-ad
+ai
+ai
 ad
 ad
 ad
@@ -62579,7 +62604,7 @@ ad
 ad
 ad
 ad
-ad
+ai
 ad
 ad
 ad
@@ -62832,6 +62857,7 @@ ad
 ad
 ad
 ad
+ai
 ad
 ad
 ad
@@ -62840,8 +62866,7 @@ ad
 ad
 ad
 ad
-ad
-ad
+ai
 ad
 ad
 ad
@@ -63088,6 +63113,8 @@ ad
 ad
 ad
 ad
+ai
+ai
 ad
 ad
 ad
@@ -63095,10 +63122,8 @@ ad
 ad
 ad
 ad
-ad
-ad
-ad
-ad
+ai
+ai
 ad
 ad
 ad
@@ -63354,11 +63379,11 @@ ad
 ad
 ad
 ad
+ai
 ad
 ad
-ad
-ad
-ad
+ai
+ai
 ad
 ad
 ad
@@ -63615,7 +63640,7 @@ ad
 ad
 ad
 ad
-ad
+ai
 ad
 ad
 ad
@@ -63865,8 +63890,8 @@ ad
 ad
 ad
 ad
-ad
-ad
+ai
+ai
 ad
 ad
 ad
@@ -64122,7 +64147,7 @@ ad
 ad
 ad
 ad
-ad
+ai
 ad
 ad
 ad
@@ -65160,7 +65185,7 @@ ad
 ad
 ad
 ad
-ad
+ai
 ad
 ad
 ad
@@ -65416,8 +65441,8 @@ ad
 ad
 ad
 ad
-ad
-ad
+ai
+sv
 ad
 ad
 ad
@@ -66256,7 +66281,7 @@ bK
 bK
 bQ
 bT
-bT
+Gw
 bQ
 bK
 bK

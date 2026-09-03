@@ -2644,3 +2644,9 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/helmet/military
 	ckeywhitelist = list("atomas")
+
+/datum/gear/donator/bm/sawwr_coat
+	name = "Dark Amber"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/tie/sawwr_coat
+	ckeywhitelist = list("hartty", "sawwarrr")
