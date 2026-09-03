@@ -93,9 +93,6 @@
 
 /obj/effect/anomaly/fog/Initialize(mapload, new_lifespan)
 	. = ..()
-	// var/icon/fog_inside = icon(initial(icon), initial(icon_state), , 1)
-	// fog_inside.Blend(icon('icons/effects/effects.dmi', "smoke", , 1), ICON_MULTIPLY)
-	// add_overlay(fog_inside)
 	add_overlay(mutable_appearance('icons/effects/effects.dmi', "smoke"))
 	new /obj/effect/particle_effect/smoke/fog(loc, src)
 
