@@ -279,7 +279,7 @@
 
 /obj/item/card/vanguard_access_card
 	name = "mining access card"
-	desc = "A small card, that when used on any ID, will add Vanguard operative access."
+	desc = "A small card, that when used on any ID, will add Vanguard Operative access."
 	icon_state = "data_1"
 
 /obj/item/card/vanguard_access_card/afterattack(atom/movable/AM, mob/user, proximity)
@@ -289,7 +289,7 @@
 		I.access |=	ACCESS_RESEARCH
 		I.access |= ACCESS_GATEWAY
 		I.access |= ACCESS_PRODUCTION_SCIENCE
-		to_chat(user, "You upgrade [I] with Vanguard operative access.")
+		to_chat(user, "You upgrade [I] with Vanguard Operative access.")
 		qdel(src)
 
 /obj/item/storage/backpack/duffelbag/vanguard/conscript

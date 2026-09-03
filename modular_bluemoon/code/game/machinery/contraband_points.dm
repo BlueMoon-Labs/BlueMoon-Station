@@ -133,6 +133,7 @@
 		/obj/item/gun/ballistic/automatic/pistol/hl9mm = 500,
 		/obj/item/gun/energy/alien = 10000,
 		/obj/item/gun/energy/shrink_ray = 15000,
+		/obj/item/gun/ballistic/automatic/pistol/luger = 0,
 		//revolvers
 		/obj/item/gun/ballistic/revolver = 500,
 		/obj/item/gun/ballistic/revolver/detective = 0,

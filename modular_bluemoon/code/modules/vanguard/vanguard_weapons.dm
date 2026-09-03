@@ -121,6 +121,30 @@
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
+	repair_material = /obj/item/stack/sheet/plasteel
+
+/obj/item/shield/riot/pointman/shatter(mob/living/carbon/human/owner)
+	playsound(owner, 'sound/effects/glassbr3.ogg', 100)
+	new /obj/item/pointman_broken((get_turf(src)))
+
+/obj/item/pointman_broken
+	name = "broken pointman shield"
+	desc = "Might be able to be repaired with plasteel and a welder."
+	icon_state = "riot_broken"
+	icon = 'modular_bluemoon/icons/mob/vanguard/riot.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+
+//broken shield fixing
+/datum/crafting_recipe/pointman
+	name = "Broken Riot Repair"
+	result = /obj/item/shield/riot/pointman
+	reqs = list(/obj/item/pointman_broken = 1,
+				/obj/item/stack/sheet/plasteel = 3,
+				/obj/item/stack/sheet/rglass = 3)
+	time = 40
+	category = CAT_WEAPONRY
+	subcategory = CAT_MELEE
+	tools = list(TOOL_WELDER)
 
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"
