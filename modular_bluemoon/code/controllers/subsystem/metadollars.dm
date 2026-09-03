@@ -11,6 +11,7 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metadollar_leaderboard = list()
 	var/metadollar_leaderboard_positions_tracked = 5
 	var/list/metashop_round_limited_purchases = list()
+	var/leaderboard_refresh_running = FALSE
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -36,7 +37,7 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings = list()
 	metadollar_burn_round_notice = null
 	metashop_round_limited_purchases = list()
-	refresh_metadollar_leaderboard_from_saves()
+	INVOKE_ASYNC(src, PROC_REF(refresh_metadollar_leaderboard_from_saves))
 
 /datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
 	if(!limit_key)
@@ -223,7 +224,11 @@ SUBSYSTEM_DEF(metadollars)
 	return max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
 
 /datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
+	if(leaderboard_refresh_running)
+		return FALSE
+	leaderboard_refresh_running = TRUE
 	var/list/rebuilt = list()
+	var/list/rebuilt_ckeys = list()
 	if(fexists("data/player_saves"))
 		for(var/letterdir in flist("data/player_saves/"))
 			var/prefix = "data/player_saves/[letterdir]"
@@ -234,17 +239,45 @@ SUBSYSTEM_DEF(metadollars)
 				if(!target_ckey)
 					continue
 				var/amount = read_metadollar_balance_from_save(target_ckey)
+				CHECK_TICK
 				if(amount < 1)
 					continue
 				var/display_key = resolve_leaderboard_display_key(target_ckey, save_dir_name)
 				if(!display_key)
 					continue
-				rebuilt[display_key] = amount
+				offer_leaderboard_entry(rebuilt, display_key, amount)
+				rebuilt_ckeys[display_key] = target_ckey
+	// Обход растянут по тикам, поэтому баланс, изменившийся за это время, берём из кэша.
+	var/list/emptied = list()
+	for(var/display_key in rebuilt)
+		var/target_ckey = rebuilt_ckeys[display_key]
+		if(!(target_ckey in metadollar_amount_cache))
+			continue
+		rebuilt[display_key] = metadollar_amount_cache[target_ckey]
+		if(rebuilt[display_key] < 1)
+			emptied += display_key
+	rebuilt -= emptied
 	metadollar_leaderboard = rebuilt
 	sort_metadollar_leaderboard()
 	while(metadollar_leaderboard.len > metadollar_leaderboard_positions_tracked)
 		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
 	save_metadollar_leaderboard()
+	leaderboard_refresh_running = FALSE
+	return TRUE
+
+/// Держит в board не больше positions_tracked лучших записей, чтобы не сортировать тысячи ckey.
+/datum/controller/subsystem/metadollars/proc/offer_leaderboard_entry(list/board, display_key, amount)
+	if(board.len < metadollar_leaderboard_positions_tracked)
+		board[display_key] = amount
+		return
+	var/weakest_key = board[1]
+	for(var/key in board)
+		if(board[key] < board[weakest_key])
+			weakest_key = key
+	if(board[weakest_key] >= amount)
+		return
+	board -= weakest_key
+	board[display_key] = amount
 
 /datum/controller/subsystem/metadollars/proc/save_metadollar_leaderboard()
 	var/leaderboard_file = file("data/metadollar_leaderboard.json")
